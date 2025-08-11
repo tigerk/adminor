@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, reactive } from "vue";
-  import { FormProps } from "@/views/house/focus/components/utils/types";
+  import { FormProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
   import FocusAssignRoom from "@/views/house/focus/components/FocusAssignRoom.vue";
   import FocusExtraInfo from "@/views/house/focus/components/FocusExtraInfo.vue";
   import FocusBasicInfo from "@/views/house/focus/components/FocusBasicInfo.vue";
@@ -44,7 +44,7 @@
   const form = reactive(props.formInline);
 
   // 步骤激活状态
-  const stepActive = ref(2);
+  const stepActive = ref(0);
   const stepNext = () => {
     if (stepActive.value++ > 2) {
       stepActive.value = 0;

@@ -222,7 +222,6 @@
 
   // 保存项目信息
   function clickSaveFocusHouse() {
-    form.id = useFocusEdit().saveFocusHouse(form);
     emit("save-focus-house");
   }
 
