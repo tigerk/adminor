@@ -45,6 +45,14 @@ interface RoomStatusProps {
   locked: boolean;
   // 楼层
   floor: number;
+  // 房间类型id
+  houseLayoutId: string;
+  // 房间价格
+  price: number;
+  // 朝向
+  direction: string;
+  // 面积
+  area: number;
 }
 
 export type { FormItemProps, FormProps, RoomStatusProps };
