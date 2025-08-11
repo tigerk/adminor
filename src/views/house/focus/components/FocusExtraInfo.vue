@@ -432,11 +432,5 @@
     background-color: var(--el-text-color-regular);
     border-radius: 22px;
     transform: translateX(-50%);
-
-    /** 将下面的 left: 50%; bottom: 80px; transform: translateX(-50%); 注释掉
-*  解开下面 left: 40px; top: 40px; 注释，体验不一样的感觉。啊？还是差强人意，自己调整位置吧🥹
-*/
-    // left: 40px;
-    // top: 40px;
   }
 </style>
