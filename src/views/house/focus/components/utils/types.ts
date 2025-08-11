@@ -39,6 +39,7 @@ interface FormProps {
 }
 
 interface RoomStatusProps {
+  id: string;
   // 房间号
   roomNumber: string;
   // 房间锁定状态
