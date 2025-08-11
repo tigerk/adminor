@@ -55,4 +55,14 @@ interface RoomStatusProps {
   area: number;
 }
 
-export type { FormItemProps, FormProps, RoomStatusProps };
+// 接口定义
+interface HouseLayoutProps {
+  id: string;
+  layoutName: string;
+  bedroom: number;
+  livingRoom: number;
+  kitchen: number;
+  bathroom: number;
+}
+
+export type { FormItemProps, FormProps, RoomStatusProps, HouseLayoutProps };
