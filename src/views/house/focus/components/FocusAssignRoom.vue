@@ -44,7 +44,7 @@
                 @click="selectedRoomTypeId = roomType.id"
               >
                 <div>
-                  <div class="font-medium text-gray-900">{{ roomType.name }}</div>
+                  <div class="font-medium text-gray-900">{{ roomType.layoutName }}</div>
                   <div class="text-xs text-gray-500">{{ roomType.bedroom }}室{{ roomType.livingRoom }}厅{{ roomType.kitchen }}厨{{ roomType.bathroom }}卫</div>
                 </div>
                 <div class="flex space-x-1">
@@ -150,7 +150,7 @@
                 <div>
                   <el-select v-model="batchConfig.roomTypeId" placeholder="请选择房型" class="w-full">
                     <template #prefix>房型</template>
-                    <el-option v-for="roomType in roomTypes" :key="roomType.id" :label="roomType.name" :value="roomType.id" />
+                    <el-option v-for="roomType in roomTypes" :key="roomType.id" :label="roomType.layoutName" :value="roomType.id" />
                   </el-select>
                 </div>
 
@@ -279,16 +279,7 @@
   import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
   import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
-
-  // 接口定义
-  interface RoomType {
-    id: string;
-    name: string;
-    bedroom: number;
-    livingRoom: number;
-    kitchen: number;
-    bathroom: number;
-  }
+  import { HouseLayoutProps } from "@/views/house/focus/components/utils/types";
 
   interface Room {
     id: string;
@@ -301,10 +292,10 @@
   }
 
   // 响应式数据
-  const roomTypes = ref<RoomType[]>([
+  const roomTypes = ref<HouseLayoutProps[]>([
     {
       id: "1",
-      name: "精装一房",
+      layoutName: "精装一房",
       bedroom: 1,
       livingRoom: 1,
       kitchen: 1,
@@ -312,7 +303,7 @@
     },
     {
       id: "2",
-      name: "精装二房",
+      layoutName: "精装二房",
       bedroom: 2,
       livingRoom: 1,
       kitchen: 1,
@@ -424,7 +415,7 @@
 
   const getRoomTypeName = (roomTypeId: string) => {
     const roomType = roomTypes.value.find(rt => rt.id === roomTypeId);
-    return roomType ? roomType.name : "未知房型";
+    return roomType ? roomType.layoutName : "未知房型";
   };
 
   const getRoomTypeTagType = (roomTypeId: string): "success" | "warning" | "info" | "danger" => {
@@ -642,10 +633,10 @@
     newRoomForm.floor = 1;
   };
 
-  const editRoomType = (roomType: RoomType) => {
+  const editRoomType = (roomType: HouseLayoutProps) => {
     isEditing.value = true;
     roomTypeForm.id = roomType.id;
-    roomTypeForm.name = roomType.name;
+    roomTypeForm.name = roomType.layoutName;
     roomTypeForm.bedroom = roomType.bedroom;
     roomTypeForm.livingRoom = roomType.livingRoom;
     roomTypeForm.kitchen = roomType.kitchen;
@@ -691,7 +682,7 @@
         if (index > -1) {
           roomTypes.value[index] = {
             ...roomTypes.value[index],
-            name: roomTypeForm.name,
+            layoutName: roomTypeForm.name,
             bedroom: roomTypeForm.bedroom,
             livingRoom: roomTypeForm.livingRoom,
             kitchen: roomTypeForm.kitchen,
@@ -700,9 +691,9 @@
           ElMessage.success("房型更新成功");
         }
       } else {
-        const newRoomType: RoomType = {
+        const newRoomType: HouseLayoutProps = {
           id: Date.now().toString(),
-          name: roomTypeForm.name,
+          layoutName: roomTypeForm.name,
           bedroom: roomTypeForm.bedroom,
           livingRoom: roomTypeForm.livingRoom,
           kitchen: roomTypeForm.kitchen,
