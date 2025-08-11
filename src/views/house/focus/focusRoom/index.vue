@@ -94,9 +94,21 @@
         <div class="grid-content ep-bg-purple" style="align-items: flex-start">
           <el-space>
             <el-form-item>
-              <el-radio-group v-model="queryForm.roomStatus">
-                <el-radio-button v-for="item in roomStatusTotal" :key="item.roomStatus" :value="item.roomStatus" :style="{ color: item.roomStatusColor }">
-                  {{ item.roomStatusName }}（{{ item.total }}）
+              <el-radio-group v-model="queryForm.roomStatus" @change="onSearch">
+                <el-radio-button
+                  v-for="item in roomStatusTotal"
+                  :key="item.roomStatus"
+                  :value="item.roomStatus"
+                  :class="['room-status-button', `status-${item.roomStatus || 'all'}`]"
+                  :style="{
+                    '--status-color': item.roomStatusColor,
+                    '--status-bg-color': item.roomStatusColor + '20' // 添加透明度
+                  }"
+                >
+                  <span class="status-content">
+                    <span class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
+                    {{ item.roomStatusName }}（{{ item.total }}）
+                  </span>
                 </el-radio-button>
               </el-radio-group>
             </el-form-item>
@@ -153,5 +165,92 @@
     height: 8px;
     border-radius: 50%;
     margin-right: 6px;
+  }
+
+  /* 房间状态按钮样式 */
+  .room-status-button {
+    position: relative;
+
+    :deep(.el-radio-button__inner) {
+      color: var(--status-color, #606266);
+      background-color: var(--status-bg-color, transparent);
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+
+      &:hover {
+        //border-color: var(--status-color);
+        background-color: var(--status-bg-color);
+      }
+    }
+
+    /* 选中状态 */
+    :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
+      background-color: var(--status-color) !important;
+      border-color: var(--status-color) !important;
+      color: #fff !important;
+      z-index: 2;
+    }
+
+    /* 修复选中状态的左侧边框显示问题 */
+    :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
+      border-left-color: var(--status-color) !important;
+      box-shadow: none;
+    }
+
+    /* 确保第一个按钮的左边框显示 */
+    &:first-child :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
+      border-left-color: var(--status-color) !important;
+    }
+
+    /* 确保相邻按钮之间的边框处理 */
+    &:not(:first-child) :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
+      margin-left: -1px;
+      border-left-color: var(--status-color) !important;
+    }
+
+    /* 当前一个按钮选中时，确保当前按钮的左边框正确显示 */
+    &:not(:first-child) :deep(.el-radio-button__inner) {
+      margin-left: -1px;
+    }
+  }
+
+  .status-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* 特定状态的自定义样式（如果需要） */
+  .status-all {
+    /* 全部状态的特殊样式 */
+  }
+
+  .status-0 {
+    /* 空置状态的特殊样式 */
+  }
+
+  .status-1 {
+    /* 已租状态的特殊样式 */
+  }
+
+  .status-2 {
+    /* 锁房状态的特殊样式 */
+  }
+
+  .status-3 {
+    /* 配置中状态的特殊样式 */
+  }
+
+  .status-4 {
+    /* 下架状态的特殊样式 */
   }
 </style>
