@@ -283,7 +283,7 @@
 
 <script setup lang="ts">
   import { ref, computed, reactive, onMounted, onUnmounted, watch } from "vue";
-  import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
+  import { CheckboxValueType, ElMessage, ElMessageBox, type FormInstance } from "element-plus";
   import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled, Lock } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
   import { HouseLayoutProps, RoomStatusProps, FormItemProps } from "@/views/house/focus/components/utils/types";
@@ -514,11 +514,14 @@
     return selectedFloorRooms.length > 0 && selectedFloorRooms.length < floorRooms.length;
   };
 
-  const handleFloorSelectAll = (floor: number, checked: boolean) => {
+  const handleFloorSelectAll = (floor: number, checked: CheckboxValueType) => {
+    // 转换为 boolean 类型
+    const isChecked = Boolean(checked);
+
     const floorRooms = getRoomsByFloor(floor);
     const floorRoomIds = floorRooms.map(room => room.id);
 
-    if (checked) {
+    if (isChecked) {
       floorRoomIds.forEach(roomId => {
         if (!selectedRooms.value.includes(roomId)) {
           selectedRooms.value.push(roomId);
