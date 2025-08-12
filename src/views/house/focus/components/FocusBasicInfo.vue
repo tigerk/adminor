@@ -8,6 +8,7 @@
   import { InfoFilled } from "@element-plus/icons-vue";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
   import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
+  import { ElMessage } from "element-plus";
 
   // 定义 props
   const props = defineProps<{
@@ -17,7 +18,7 @@
   // 定义 emits
   const emit = defineEmits<{
     "update:formData": [value: FormProps["formInline"]];
-    "save-focus-house": [];
+    "to-assign-room": [];
   }>();
 
   // 使用响应式数据，基于 props
@@ -90,10 +91,18 @@
       const roomStatusMap = new Map<string, RoomStatusProps>();
 
       for (let room = 1; room <= form.roomCountPerFloor; room++) {
-        roomStatusMap.set(room.toString(), {
-          roomNumber: room.toString(),
+        const roomNum = room.toString();
+
+        // 如果选择了去掉4，则跳过包含4的房间号
+        if (form.excludeFour && roomNum.includes("4")) {
+          continue;
+        }
+
+        roomStatusMap.set(roomNum, {
+          id: `${floor}-${room}`,
+          roomNumber: roomNum,
           locked: false,
-          floor: floor
+          floor
         });
       }
 
@@ -102,7 +111,7 @@
 
     if (form.selectedFloor) {
       currentRoomList.value = Array.from(form.roomsStatusOfFloors.get(form.selectedFloor).values());
-      currentRoomCount.value = form.roomCountPerFloor;
+      currentRoomCount.value = form.roomsStatusOfFloors.get(form.selectedFloor).size;
     }
   };
 
@@ -111,10 +120,18 @@
     const roomStatusMap = new Map<string, RoomStatusProps>();
 
     for (let i = 1; i <= roomCount; i++) {
-      roomStatusMap.set(i.toString(), {
-        roomNumber: i.toString(),
+      const roomNum = i.toString();
+
+      // 如果选择了去掉4，则跳过包含4的房间号
+      if (form.excludeFour && roomNum.includes("4")) {
+        continue;
+      }
+
+      roomStatusMap.set(roomNum, {
+        id: `${floor}-${i}`,
+        roomNumber: roomNum,
         locked: false,
-        floor: floor
+        floor
       });
     }
 
@@ -141,9 +158,10 @@
       // 增加房间
       for (let i = currentSize + 1; i <= newRoomCount; i++) {
         currentFloor.set(i.toString(), {
+          id: `${floor}-${i}`,
           roomNumber: i.toString(),
           locked: false,
-          floor: floor
+          floor
         });
       }
     } else if (newRoomCount < currentSize) {
@@ -185,7 +203,7 @@
   });
 
   // 监听多个值，统一处理
-  watch([() => form.floorTotal, () => form.roomCountPerFloor], () => {
+  watch([() => form.floorTotal, () => form.roomCountPerFloor, () => form.excludeFour], () => {
     initAllFloors();
   });
 
@@ -221,8 +239,22 @@
   }
 
   // 保存项目信息
-  function clickSaveFocusHouse() {
-    emit("save-focus-house");
+  async function clickSaveFocusHouse() {
+    try {
+      // 验证表单
+      await ruleFormRef.value.validate();
+
+      // 检查负责人信息
+      if (!form.deptId || !form.salesmanId) {
+        ElMessage.warning("请选择归属部门和负责人");
+        return;
+      }
+
+      // 验证通过，触发保存事件
+      emit("to-assign-room");
+    } catch (error) {
+      ElMessage.warning("请完善必填项信息");
+    }
   }
 
   // 处理房间点击事件
@@ -245,6 +277,7 @@
 </script>
 
 <template>
+  <!-- 保持原有模板不变 -->
   <div>
     <el-form ref="ruleFormRef" :model="form" label-position="top" :rules="focusBasicInfoRules">
       <div>
@@ -338,7 +371,7 @@
           <el-col :span="6">
             <div class="grid-content ep-bg-purple text-center">
               <el-form-item label="&nbsp;" class="el-form-item">
-                <el-checkbox v-model="form.excludeFour" label="房间号去“4”" border />
+                <el-checkbox v-model="form.excludeFour" label="房间号去4" border />
               </el-form-item>
             </div>
           </el-col>
@@ -350,7 +383,7 @@
             <el-alert
               title="楼层设置说明"
               type="info"
-              description="修改楼层总数或每层房间数后，系统将自动重新初始化所有楼层房间信息。您可以在下方“选择楼层”和“调整房间数量”。"
+              description="修改楼层总数或每层房间数后，系统将自动重新初始化所有楼层房间信息。您可以在下方选择楼层和调整房间数量。"
               show-icon
               :closable="false"
               style="margin-bottom: 20px"
@@ -435,13 +468,13 @@
         <el-row :gutter="20">
           <el-col :span="6">
             <div class="grid-content ep-bg-purple">
-              <el-form-item label="归属部门" class="el-form-item" required>
+              <el-form-item label="归属部门" class="el-form-item" prop="deptId" required>
                 <DeptCascader @dept-selected="handleDeptSelected" />
               </el-form-item>
             </div>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="负责人" class="el-form-item" required>
+            <el-form-item label="负责人" class="el-form-item" prop="salesmanId" required>
               <el-select v-model="form.salesmanId" filterable placeholder="请选择负责人" style="width: 240px">
                 <el-option v-for="item in salesmanList" :key="item.value" :label="item.username" :value="item.id" />
               </el-select>
@@ -460,6 +493,7 @@
 </template>
 
 <style scoped>
+  /* 保持原有样式不变 */
   :deep(.el-form-item--label-top .el-form-item__label) {
     font-size: 12px;
     color: #43464c;

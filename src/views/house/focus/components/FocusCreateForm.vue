@@ -4,6 +4,8 @@
   import FocusAssignRoom from "@/views/house/focus/components/FocusAssignRoom.vue";
   import FocusExtraInfo from "@/views/house/focus/components/FocusExtraInfo.vue";
   import FocusBasicInfo from "@/views/house/focus/components/FocusBasicInfo.vue";
+  import { ElMessage } from "element-plus";
+  import { createFocusHouse } from "@/api/house/focus";
 
   const props = withDefaults(defineProps<FormProps>(), {
     formInline: () => ({
@@ -45,6 +47,12 @@
 
   // 步骤激活状态
   const stepActive = ref(0);
+
+  // 组件引用
+  const basicInfoRef = ref();
+  const assignRoomRef = ref();
+  const extraInfoRef = ref();
+
   const stepNext = () => {
     if (stepActive.value++ > 2) {
       stepActive.value = 0;
@@ -52,12 +60,10 @@
   };
 
   const stepPrevious = () => {
-    if (stepActive.value-- > 2) {
+    if (stepActive.value-- < 0) {
       stepActive.value = 0;
     }
   };
-
-  const basicInfoRef = ref();
 
   function getRef() {
     return basicInfoRef.value?.getRef();
@@ -74,6 +80,58 @@
   const handleSaveFocusHouse = () => {
     stepNext();
   };
+
+  // 处理配置房间的下一步
+  const handleAssignRoomNext = () => {
+    stepNext();
+  };
+
+  // 提交所有数据到后台
+  const submitAllData = async () => {
+    try {
+      // 收集所有数据
+      const submitData = {
+        // 基本信息
+        ...form,
+
+        // 房型信息
+        houseLayouts: assignRoomRef.value?.houseLayouts || [],
+
+        // 房间信息
+        rooms: [],
+
+        // FocusExtraInfo组件的数据
+        extraInfo: extraInfoRef.value?.formData || {}
+      };
+
+      // 转换房间数据格式
+      if (assignRoomRef.value?.allRooms) {
+        submitData.rooms = assignRoomRef.value.allRooms.map(room => ({
+          id: room.id,
+          roomNumber: room.roomNumber,
+          floor: room.floor,
+          locked: room.locked,
+          houseLayoutId: room.houseLayoutId,
+          price: room.price,
+          direction: room.direction,
+          area: room.area
+        }));
+      }
+
+      // 调用后台接口
+      const response = await createFocusHouse(submitData);
+
+      if (response.code === 0) {
+        ElMessage.success("项目创建成功！");
+        // 可以根据需要进行页面跳转或其他操作
+      } else {
+        ElMessage.error(response.message || "提交失败");
+      }
+    } catch (error) {
+      console.error("提交失败:", error);
+      ElMessage.error("提交失败，请稍后重试");
+    }
+  };
 </script>
 
 <template>
@@ -84,20 +142,20 @@
   </el-steps>
   <div class="property-form">
     <div v-if="stepActive == 0">
-      <FocusBasicInfo ref="basicInfoRef" :form-data="form" @update:form-data="handleFormDataUpdate" @save-focus-house="handleSaveFocusHouse" />
+      <FocusBasicInfo ref="basicInfoRef" :form-data="form" @update:form-data="handleFormDataUpdate" @to-assign-room="handleSaveFocusHouse" />
     </div>
     <div v-if="stepActive == 1">
-      <FocusAssignRoom />
+      <FocusAssignRoom ref="assignRoomRef" :form-data="form" @update:form-data="handleFormDataUpdate" @to-add-extra="handleAssignRoomNext" />
     </div>
     <div v-if="stepActive == 2">
-      <FocusExtraInfo />
+      <FocusExtraInfo ref="extraInfoRef" />
     </div>
     <!-- 其他步骤的按钮 -->
     <el-row v-if="stepActive !== 0" :gutter="20">
       <el-col :span="24" class="text-right">
         <el-button v-if="stepActive == 1 || stepActive == 2" type="primary" style="margin-top: 12px" @click="stepPrevious">上一步</el-button>
-        <el-button v-if="stepActive == 1" type="primary" style="margin-top: 12px" @click="stepNext">保存并完善项目</el-button>
-        <el-button v-if="stepActive == 2" type="primary" style="margin-top: 12px">保存</el-button>
+        <el-button v-if="stepActive == 1" type="primary" style="margin-top: 12px" @click="handleAssignRoomNext">保存并完善项目</el-button>
+        <el-button v-if="stepActive == 2" type="primary" style="margin-top: 12px" @click="submitAllData">保存</el-button>
       </el-col>
     </el-row>
   </div>
