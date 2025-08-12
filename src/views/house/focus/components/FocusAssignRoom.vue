@@ -2,13 +2,13 @@
   <el-row :gutter="20" class="flex items-center justify-end p-1">
     <el-col :span="12">
       <el-space>
-        <el-text tag="b" class="mx-1" size="large">项目名称：{{ projectName }}</el-text>
+        <el-text tag="b" class="mx-1" size="large">项目名称 {{ projectName }}</el-text>
       </el-space>
     </el-col>
     <el-col :span="6" class="text-right">
       <el-space>
-        <el-text class="mx-1">共 {{ totalFloors }} 层</el-text>
-        <el-text class="mx-1">共 {{ totalRooms }} 间</el-text>
+        <el-tag type="info">共 {{ totalFloors }} 层</el-tag>
+        <el-tag type="info">共 {{ totalRooms }} 间</el-tag>
       </el-space>
     </el-col>
     <el-col :span="6" class="text-right">
