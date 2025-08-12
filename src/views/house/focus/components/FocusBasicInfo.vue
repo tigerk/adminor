@@ -109,9 +109,21 @@
       form.roomsStatusOfFloors.set(floor, roomStatusMap);
     }
 
-    if (form.selectedFloor) {
-      currentRoomList.value = Array.from(form.roomsStatusOfFloors.get(form.selectedFloor).values());
-      currentRoomCount.value = form.roomsStatusOfFloors.get(form.selectedFloor).size;
+    // 自动选中第一个楼层并显示房间列表
+    if (form.floorTotal > 0) {
+      form.selectedFloor = 1;
+      updateCurrentRoomDisplay(1);
+    }
+  };
+
+  // 更新当前显示的房间列表
+  const updateCurrentRoomDisplay = (floor: number) => {
+    if (form.roomsStatusOfFloors && form.roomsStatusOfFloors.has(floor)) {
+      currentRoomList.value = Array.from(form.roomsStatusOfFloors.get(floor).values());
+      currentRoomCount.value = form.roomsStatusOfFloors.get(floor).size;
+    } else {
+      currentRoomList.value = [];
+      currentRoomCount.value = 0;
     }
   };
 
@@ -141,7 +153,7 @@
 
   function handleCurrentRoomCountChange(value) {
     updateRoomCountForFloor(form.selectedFloor, value);
-    currentRoomList.value = Array.from(form.roomsStatusOfFloors.get(form.selectedFloor).values());
+    updateCurrentRoomDisplay(form.selectedFloor);
   }
 
   // 更新特定楼层房间数量
@@ -157,9 +169,16 @@
     if (newRoomCount > currentSize) {
       // 增加房间
       for (let i = currentSize + 1; i <= newRoomCount; i++) {
-        currentFloor.set(i.toString(), {
+        const roomNum = i.toString();
+
+        // 如果选择了去掉4，则跳过包含4的房间号
+        if (form.excludeFour && roomNum.includes("4")) {
+          continue;
+        }
+
+        currentFloor.set(roomNum, {
           id: `${floor}-${i}`,
-          roomNumber: i.toString(),
+          roomNumber: roomNum,
           locked: false,
           floor
         });
@@ -182,14 +201,12 @@
   // 楼层选择处理
   const handleFloorSelect = (floor: number) => {
     form.selectedFloor = floor;
+    updateCurrentRoomDisplay(floor);
 
-    // 更新当前房间数
-    if (form.roomsStatusOfFloors.has(floor)) {
-      currentRoomCount.value = form.roomsStatusOfFloors.get(floor).size;
-      currentRoomList.value = Array.from(form.roomsStatusOfFloors.get(floor).values());
-    } else {
-      currentRoomCount.value = form.roomCountPerFloor;
-      currentRoomList.value = initRoomListOfFloor(floor, form.roomCountPerFloor);
+    // 如果选中的楼层没有房间数据，使用默认房间数量初始化
+    if (!form.roomsStatusOfFloors.has(floor) && form.roomCountPerFloor) {
+      initRoomListOfFloor(floor, form.roomCountPerFloor);
+      updateCurrentRoomDisplay(floor);
     }
   };
 
@@ -203,9 +220,26 @@
   });
 
   // 监听多个值，统一处理
-  watch([() => form.floorTotal, () => form.roomCountPerFloor, () => form.excludeFour], () => {
-    initAllFloors();
-  });
+  watch(
+    [() => form.floorTotal, () => form.roomCountPerFloor, () => form.excludeFour],
+    ([newFloorTotal, newRoomCount, newExcludeFour], [oldFloorTotal, oldRoomCount, oldExcludeFour]) => {
+      // 只有当楼层总数或每层房间数量有效时才初始化
+      if (newFloorTotal && newRoomCount) {
+        initAllFloors();
+      }
+    }
+  );
+
+  // 在组件挂载时，如果已有数据则初始化显示
+  watch(
+    () => form.selectedFloor,
+    newFloor => {
+      if (newFloor && form.roomsStatusOfFloors && form.roomsStatusOfFloors.has(newFloor)) {
+        updateCurrentRoomDisplay(newFloor);
+      }
+    },
+    { immediate: true }
+  );
 
   const formatRoomNumber = (num: number) => {
     return useFocusEdit().formatRoomNumber(form.roomPrefix, form.roomNumberLength, form.selectedFloor, String(num));
@@ -395,7 +429,7 @@
         </el-row>
 
         <h3 class="pb-4">房间信息</h3>
-        <el-row :gutter="20">
+        <el-row v-if="computedFloorList.length > 0" :gutter="20">
           <el-col :span="24">
             <el-card>
               <template #header>
