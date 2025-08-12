@@ -2,20 +2,20 @@
   <el-row :gutter="20" class="flex items-center justify-end p-1">
     <el-col :span="12">
       <el-space>
-        <el-text class="mx-1" size="large">项目名称：2312312</el-text>
+        <el-text tag="b" class="mx-1" size="large">项目名称：{{ projectName }}</el-text>
       </el-space>
     </el-col>
     <el-col :span="6" class="text-right">
       <el-space>
-        <el-text class="mx-1">共 28 层</el-text>
-        <el-text class="mx-1">共 252 间</el-text>
+        <el-text class="mx-1">共 {{ totalFloors }} 层</el-text>
+        <el-text class="mx-1">共 {{ totalRooms }} 间</el-text>
       </el-space>
     </el-col>
     <el-col :span="6" class="text-right">
       <el-space>
-        <el-tag type="danger" size="large">剩余 1 间未分配</el-tag>
-        <el-tag type="success" size="large">启用 1 间</el-tag>
-        <el-tag type="info" size="large">禁用 1 间</el-tag>
+        <el-tag type="danger" size="large">剩余 {{ unassignedRooms }} 间未分配</el-tag>
+        <el-tag type="success" size="large">启用 {{ enabledRooms }} 间</el-tag>
+        <el-tag type="info" size="large">禁用 {{ disabledRooms }} 间</el-tag>
       </el-space>
     </el-col>
   </el-row>
@@ -37,23 +37,23 @@
             <!-- 房型列表 -->
             <div class="space-y-2 mb-4">
               <div
-                v-for="roomType in roomTypes"
-                :key="roomType.id"
+                v-for="houseLayout in houseLayouts"
+                :key="houseLayout.id"
                 class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                :class="{ 'bg-blue-50 border-blue-300': selectedRoomTypeId === roomType.id }"
-                @click="selectedRoomTypeId = roomType.id"
+                :class="{ 'bg-blue-50 border-blue-300': selectedHouseLayoutId === houseLayout.id }"
+                @click="selectedHouseLayoutId = houseLayout.id"
               >
                 <div>
-                  <div class="font-medium text-gray-900">{{ roomType.layoutName }}</div>
-                  <div class="text-xs text-gray-500">{{ roomType.bedroom }}室{{ roomType.livingRoom }}厅{{ roomType.kitchen }}厨{{ roomType.bathroom }}卫</div>
+                  <div class="font-medium text-gray-900">{{ houseLayout.layoutName }}</div>
+                  <div class="text-xs text-gray-500">{{ houseLayout.bedroom }}室{{ houseLayout.livingRoom }}厅{{ houseLayout.kitchen }}厨{{ houseLayout.bathroom }}卫</div>
                 </div>
                 <div class="flex space-x-1">
-                  <el-button size="small" type="primary" text @click.stop="editRoomType(roomType)">
+                  <el-button size="small" type="primary" text @click.stop="editHouseLayout(houseLayout)">
                     <el-icon>
                       <Edit />
                     </el-icon>
                   </el-button>
-                  <el-button size="small" type="danger" text @click.stop="deleteRoomType(roomType.id)">
+                  <el-button size="small" type="danger" text @click.stop="deleteHouseLayout(houseLayout.id)">
                     <el-icon>
                       <Delete />
                     </el-icon>
@@ -101,10 +101,17 @@
                       @contextmenu.prevent="handleRoomRightClick($event, room)"
                     >
                       <div
-                        v-if="room.roomTypeId"
+                        v-if="room.houseLayoutId"
                         class="absolute -top-2 -right-1 bg-red-300 text-white text-xs px-1 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center border border-white shadow-sm z-10"
                       >
                         {{ room.price }}元 {{ room.area }}m²
+                      </div>
+
+                      <!-- 锁定图标 -->
+                      <div v-if="room.locked" class="absolute top-1 left-1">
+                        <el-icon class="text-red-500" size="14">
+                          <Lock />
+                        </el-icon>
                       </div>
 
                       <!-- 选中图标 -->
@@ -117,9 +124,9 @@
                       <div class="text-center">
                         <!-- 房间号和房型标签放在同一行 -->
                         <el-space width="auto">
-                          <span class="font-medium text-sm">{{ room.number }}</span>
-                          <el-tag v-if="room.roomTypeId" :type="getRoomTypeTagType(room.roomTypeId)" size="small" class="text-xs px-1">
-                            {{ getRoomTypeName(room.roomTypeId) }}
+                          <span class="font-medium text-sm" :class="{ 'text-gray-400 line-through': room.locked }">{{ room.roomNumber }}</span>
+                          <el-tag v-if="room.houseLayoutId" :type="getHouseLayoutTagType(room.houseLayoutId)" size="small" class="text-xs px-1">
+                            {{ getHouseLayoutName(room.houseLayoutId) }}
                           </el-tag>
                         </el-space>
                       </div>
@@ -146,23 +153,23 @@
                 <span class="text-red-700 font-medium">对「{{ getSelectedRoomNumbers() }}」房间进行统一配置</span>
               </div>
 
-              <div class="grid grid-cols-5 gap-3 mb-3">
-                <div>
-                  <el-select v-model="batchConfig.roomTypeId" placeholder="请选择房型" class="w-full">
+              <div class="grid grid-cols-12 gap-3 mb-3">
+                <div class="col-span-2">
+                  <el-select v-model="batchConfig.houseLayoutId" placeholder="请选择房型" class="w-full">
                     <template #prefix>房型</template>
-                    <el-option v-for="roomType in roomTypes" :key="roomType.id" :label="roomType.layoutName" :value="roomType.id" />
+                    <el-option v-for="houseLayout in houseLayouts" :key="houseLayout.id" :label="houseLayout.layoutName" :value="houseLayout.id" />
                   </el-select>
                 </div>
 
-                <div>
+                <div class="col-span-3">
                   <el-input v-model="batchConfig.price" placeholder="请输入价格" type="number">
-                    <template #prepend>出租价格</template>
+                    <template #prepend>价格</template>
                     <template #append>元</template>
                   </el-input>
                 </div>
 
-                <div>
-                  <el-select v-model="batchConfig.direction" placeholder="请选择" class="w-full">
+                <div class="col-span-2">
+                  <el-select v-model="batchConfig.direction" placeholder="朝向" class="w-full">
                     <el-option label="东" value="东" />
                     <el-option label="南" value="南" />
                     <el-option label="西" value="西" />
@@ -171,18 +178,18 @@
                     <el-option label="西南" value="西南" />
                     <el-option label="东北" value="东北" />
                     <el-option label="西北" value="西北" />
-                    <template #prefix>朝向</template>
                   </el-select>
                 </div>
-                <div>
-                  <el-input v-model="batchConfig.area" placeholder="请输入面积" type="number">
+
+                <div class="col-span-2">
+                  <el-input v-model="batchConfig.area" placeholder="面积" type="number">
                     <template #append>m²</template>
-                    <template #prepend>面积</template>
                   </el-input>
                 </div>
-                <div>
+
+                <div class="col-span-3">
                   <!-- 按钮放在同一行右侧 -->
-                  <div class="flex justify-end space-x-2">
+                  <div class="flex justify-end space-x-2 text-right">
                     <el-button type="primary" @click="applyBatchConfig">应用配置</el-button>
                     <el-button @click="clearSelection">取消选择</el-button>
                   </div>
@@ -215,28 +222,28 @@
 
         <!-- 创建/编辑房型对话框 -->
         <el-dialog v-model="showCreateDialog" :title="isEditing ? '编辑房型' : '创建房型'" width="600px" @closed="resetForm">
-          <el-form ref="formRef" :model="roomTypeForm" :rules="rules" label-width="80px">
+          <el-form ref="formRef" :model="houseLayoutForm" :rules="rules" label-width="80px">
             <el-form-item label="房型名称" prop="name">
-              <el-input v-model="roomTypeForm.name" placeholder="请输入房型名称" />
+              <el-input v-model="houseLayoutForm.name" placeholder="请输入房型名称" />
             </el-form-item>
 
             <el-form-item label="户型配置">
               <el-row>
                 <el-col :span="6">
                   <label class="text-sm text-gray-600 block mb-1">卧室</label>
-                  <el-input-number v-model="roomTypeForm.bedroom" :min="0" :max="10" size="small" class="w-full" />
+                  <el-input-number v-model="houseLayoutForm.bedroom" :min="0" :max="10" size="small" class="w-full" />
                 </el-col>
                 <el-col :span="6">
                   <label class="text-sm text-gray-600 block mb-1">客厅</label>
-                  <el-input-number v-model="roomTypeForm.livingRoom" :min="0" :max="5" size="small" class="w-full" />
+                  <el-input-number v-model="houseLayoutForm.livingRoom" :min="0" :max="5" size="small" class="w-full" />
                 </el-col>
                 <el-col :span="6">
                   <label class="text-sm text-gray-600 block mb-1">厨房</label>
-                  <el-input-number v-model="roomTypeForm.kitchen" :min="0" :max="3" size="small" class="w-full" />
+                  <el-input-number v-model="houseLayoutForm.kitchen" :min="0" :max="3" size="small" class="w-full" />
                 </el-col>
                 <el-col :span="6">
                   <label class="text-sm text-gray-600 block mb-1">卫生间</label>
-                  <el-input-number v-model="roomTypeForm.bathroom" :min="0" :max="5" size="small" class="w-full" />
+                  <el-input-number v-model="houseLayoutForm.bathroom" :min="0" :max="5" size="small" class="w-full" />
                 </el-col>
               </el-row>
             </el-form-item>
@@ -245,7 +252,7 @@
           <template #footer>
             <span class="dialog-footer">
               <el-button @click="showCreateDialog = false">取消</el-button>
-              <el-button type="primary" @click="saveRoomType">
+              <el-button type="primary" @click="saveHouseLayout">
                 {{ isEditing ? "更新" : "创建" }}
               </el-button>
             </span>
@@ -256,7 +263,7 @@
         <el-dialog v-model="showAddRoomDialog" :title="isEditingRoom ? '编辑房间' : '添加房间'" width="350px" @closed="resetRoomForm">
           <el-form :model="newRoomForm" label-width="80px">
             <el-form-item label="房间号" required>
-              <el-input v-model="newRoomForm.number" placeholder="请输入房间号" />
+              <el-input v-model="newRoomForm.roomNumber" placeholder="请输入房间号" />
             </el-form-item>
           </el-form>
 
@@ -275,24 +282,26 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, reactive, onMounted, onUnmounted } from "vue";
+  import { ref, computed, reactive, onMounted, onUnmounted, watch } from "vue";
   import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
-  import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled } from "@element-plus/icons-vue";
+  import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled, Lock } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
-  import { HouseLayoutProps } from "@/views/house/focus/components/utils/types";
+  import { HouseLayoutProps, RoomStatusProps, FormItemProps } from "@/views/house/focus/components/utils/types";
+  import { useFocusEdit } from "@/views/house/focus/components/utils/hook";
 
-  interface Room {
-    id: string;
-    number: string;
-    floor: number;
-    roomTypeId?: string;
-    price?: number;
-    direction?: string;
-    area?: number;
-  }
+  // 定义 props
+  const props = defineProps<{
+    formData: FormItemProps;
+  }>();
+
+  // 定义 emits
+  const emit = defineEmits<{
+    "update:formData": [value: FormItemProps];
+    "to-add-extra": [];
+  }>();
 
   // 响应式数据
-  const roomTypes = ref<HouseLayoutProps[]>([
+  const houseLayouts = ref<HouseLayoutProps[]>([
     {
       id: "1",
       layoutName: "精装一房",
@@ -311,40 +320,11 @@
     }
   ]);
 
-  // 房间数据
-  const allRooms = ref<Room[]>([
-    // 1楼
-    { id: "B1001", number: "B1001", floor: 1, roomTypeId: "1", price: 2750, direction: "南", area: 67 },
-    { id: "B1002", number: "B1002", floor: 1, roomTypeId: "1" },
-    { id: "B1003", number: "B1003", floor: 1 },
-    { id: "B1005", number: "B1005", floor: 1, roomTypeId: "1" },
-    { id: "B1006", number: "B1006", floor: 1, roomTypeId: "1" },
-    { id: "B1007", number: "B1007", floor: 1, roomTypeId: "1" },
-    { id: "B1008", number: "B1008", floor: 1, roomTypeId: "1" },
-    { id: "B1009", number: "B1009", floor: 1, roomTypeId: "1" },
-    { id: "B1010", number: "B1010", floor: 1, roomTypeId: "1" },
-    // 2楼
-    { id: "B2001", number: "B2001", floor: 2, roomTypeId: "1" },
-    { id: "B2002", number: "B2002", floor: 2, roomTypeId: "1" },
-    { id: "B2009", number: "B2009", floor: 2, roomTypeId: "1" },
-    { id: "B2010", number: "B2010", floor: 2, roomTypeId: "1" },
-    { id: "B2003", number: "B2003", floor: 2 },
-    { id: "B2005", number: "B2005", floor: 2 },
-    { id: "B2006", number: "B2006", floor: 2 },
-    { id: "B2007", number: "B2007", floor: 2 },
-    { id: "B2008", number: "B2008", floor: 2 },
-    // 3楼
-    { id: "B3001", number: "B3001", floor: 3 },
-    { id: "B3002", number: "B3002", floor: 3 },
-    { id: "B3003", number: "B3003", floor: 3 },
-    { id: "B3005", number: "B3005", floor: 3 },
-    { id: "B3006", number: "B3006", floor: 3 },
-    { id: "B3007", number: "B3007", floor: 3 },
-    { id: "B3008", number: "B3008", floor: 3 }
-  ]);
+  // 房间数据 - 从props初始化
+  const allRooms = ref<RoomStatusProps[]>([]);
 
   // 状态管理
-  const selectedRoomTypeId = ref<string>("");
+  const selectedHouseLayoutId = ref<string>("");
   const selectedRooms = ref<string[]>([]);
   const showCreateDialog = ref(false);
   const showAddRoomDialog = ref(false);
@@ -357,19 +337,19 @@
     visible: false,
     x: 0,
     y: 0,
-    room: null as Room | null
+    room: null as RoomStatusProps | null
   });
 
   // 批量配置表单
   const batchConfig = reactive({
-    roomTypeId: "",
+    houseLayoutId: "",
     price: "",
     direction: "",
     area: ""
   });
 
   // 房型表单
-  const roomTypeForm = reactive({
+  const houseLayoutForm = reactive({
     id: "",
     name: "",
     bedroom: 1,
@@ -381,7 +361,7 @@
   // 新房间表单
   const newRoomForm = reactive({
     id: "",
-    number: "",
+    roomNumber: "",
     floor: 1
   });
 
@@ -394,10 +374,68 @@
   };
 
   // 计算属性
+  const projectName = computed(() => props.formData?.houseName || "未命名项目");
+  const totalFloors = computed(() => props.formData?.floorTotal || 0);
+  const totalRooms = computed(() => allRooms.value.length);
+  const unassignedRooms = computed(() => allRooms.value.filter(room => !room.houseLayoutId).length);
+  const enabledRooms = computed(() => allRooms.value.filter(room => !room.locked).length);
+  const disabledRooms = computed(() => allRooms.value.filter(room => room.locked).length);
+
   const floors = computed(() => {
     const floorSet = new Set(allRooms.value.map(room => room.floor));
     return Array.from(floorSet).sort((a, b) => a - b);
   });
+
+  // 初始化房间数据
+  const initRoomsFromFormData = () => {
+    if (!props.formData?.roomsStatusOfFloors) return;
+
+    allRooms.value = [];
+
+    props.formData.roomsStatusOfFloors.forEach((roomMap, floor) => {
+      roomMap.forEach((roomStatus, roomNumber) => {
+        // 如果选择了去掉4，则跳过包含4的房间号
+        if (props.formData.excludeFour && roomNumber && roomNumber.includes("4")) {
+          return;
+        }
+
+        // 检查房间是否被锁定
+        const isLocked = props.formData.closedRooms?.some(closed => closed.floor === floor && closed.roomNumber === roomStatus.roomNumber) || false;
+
+        const formattedRoomNumber = formatRoomNumber(roomStatus.roomNumber, floor);
+
+        // 只有房间号有效时才添加到列表
+        if (formattedRoomNumber) {
+          allRooms.value.push({
+            id: `${floor}-${roomNumber}`,
+            roomNumber: formattedRoomNumber,
+            floor: floor,
+            locked: isLocked,
+            houseLayoutId: roomStatus.houseLayoutId,
+            price: roomStatus.price,
+            direction: roomStatus.direction,
+            area: roomStatus.area
+          });
+        }
+      });
+    });
+  };
+
+  // 格式化房间编号 - 使用统一的工具方法
+  const formatRoomNumber = (num: string, floor: number) => {
+    const prefix = props.formData?.roomPrefix || "";
+    const length = props.formData?.roomNumberLength || 3;
+    return useFocusEdit().formatRoomNumber(prefix, length, floor, num);
+  };
+
+  // 监听props变化
+  watch(
+    () => props.formData,
+    () => {
+      initRoomsFromFormData();
+    },
+    { deep: true, immediate: true }
+  );
 
   // 生命周期钩子
   onMounted(() => {
@@ -410,25 +448,43 @@
 
   // 方法
   const getRoomsByFloor = (floor: number) => {
-    return allRooms.value.filter(room => room.floor === floor).sort((a, b) => a.number.localeCompare(b.number));
+    return allRooms.value
+      .filter(room => room.floor === floor)
+      .filter(room => {
+        // 如果选择了去掉4，过滤掉包含4的房间
+        if (props.formData?.excludeFour && room.roomNumber) {
+          // 检查房间号是否包含数字4
+          return !room.roomNumber.includes("4");
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        // 确保 roomNumber 不为 null
+        const aNum = a.roomNumber || "";
+        const bNum = b.roomNumber || "";
+        return aNum.localeCompare(bNum);
+      });
   };
 
-  const getRoomTypeName = (roomTypeId: string) => {
-    const roomType = roomTypes.value.find(rt => rt.id === roomTypeId);
-    return roomType ? roomType.layoutName : "未知房型";
+  const getHouseLayoutName = (houseLayoutId: string) => {
+    const houseLayout = houseLayouts.value.find(hl => hl.id === houseLayoutId);
+    return houseLayout ? houseLayout.layoutName : "未知房型";
   };
 
-  const getRoomTypeTagType = (roomTypeId: string): "success" | "warning" | "info" | "danger" => {
+  const getHouseLayoutTagType = (houseLayoutId: string): "success" | "warning" | "info" | "danger" => {
     const colors: ("success" | "warning" | "info" | "danger")[] = ["success", "warning", "info", "danger"];
-    const index = parseInt(roomTypeId) % colors.length;
+    const index = parseInt(houseLayoutId) % colors.length;
     return colors[index];
   };
 
-  const getRoomCardClass = (room: Room) => {
+  const getRoomCardClass = (room: RoomStatusProps) => {
+    if (room.locked) {
+      return "border-red-300 bg-red-50";
+    }
     if (selectedRooms.value.includes(room.id)) {
       return "border-blue-500 bg-blue-50";
     }
-    if (room.roomTypeId) {
+    if (room.houseLayoutId) {
       return "border-green-300 bg-white hover:bg-green-50";
     }
     return "border-gray-200 bg-white hover:bg-gray-50";
@@ -463,14 +519,12 @@
     const floorRoomIds = floorRooms.map(room => room.id);
 
     if (checked) {
-      // 添加该楼层所有房间到选中列表
       floorRoomIds.forEach(roomId => {
         if (!selectedRooms.value.includes(roomId)) {
           selectedRooms.value.push(roomId);
         }
       });
     } else {
-      // 从选中列表移除该楼层所有房间
       selectedRooms.value = selectedRooms.value.filter(roomId => !floorRoomIds.includes(roomId));
     }
   };
@@ -486,7 +540,7 @@
 
   const getSelectedRoomNumbers = () => {
     return selectedRooms.value
-      .map(id => allRooms.value.find(room => room.id === id)?.number)
+      .map(id => allRooms.value.find(room => room.id === id)?.roomNumber)
       .filter(Boolean)
       .join("、");
   };
@@ -500,8 +554,8 @@
     selectedRooms.value.forEach(roomId => {
       const room = allRooms.value.find(r => r.id === roomId);
       if (room) {
-        if (batchConfig.roomTypeId !== "") {
-          room.roomTypeId = batchConfig.roomTypeId || undefined;
+        if (batchConfig.houseLayoutId !== "") {
+          room.houseLayoutId = batchConfig.houseLayoutId || undefined;
         }
         if (batchConfig.price) {
           room.price = Number(batchConfig.price);
@@ -515,20 +569,51 @@
       }
     });
 
+    // 更新到formData
+    updateFormDataRooms();
+
     ElMessage.success(`已对${selectedRooms.value.length}个房间应用配置`);
     clearSelection();
   };
 
+  const updateFormDataRooms = () => {
+    // 将修改后的房间数据同步回formData
+    const updatedRoomsMap = new Map<number, Map<string, RoomStatusProps>>();
+
+    allRooms.value.forEach(room => {
+      if (!updatedRoomsMap.has(room.floor)) {
+        updatedRoomsMap.set(room.floor, new Map());
+      }
+
+      const floorMap = updatedRoomsMap.get(room.floor)!;
+      const roomNumber = room.roomNumber.replace(props.formData.roomPrefix || "", "").replace(/^0+/, "");
+
+      floorMap.set(roomNumber, {
+        id: room.id,
+        roomNumber: roomNumber,
+        locked: room.locked,
+        floor: room.floor,
+        houseLayoutId: room.houseLayoutId,
+        price: room.price,
+        direction: room.direction,
+        area: room.area
+      });
+    });
+
+    const updatedFormData = { ...props.formData, roomsStatusOfFloors: updatedRoomsMap };
+    emit("update:formData", updatedFormData);
+  };
+
   const clearSelection = () => {
     selectedRooms.value = [];
-    batchConfig.roomTypeId = "";
+    batchConfig.houseLayoutId = "";
     batchConfig.price = "";
     batchConfig.direction = "";
     batchConfig.area = "";
   };
 
   // 右键菜单相关方法
-  const handleRoomRightClick = (event: MouseEvent, room: Room) => {
+  const handleRoomRightClick = (event: MouseEvent, room: RoomStatusProps) => {
     event.preventDefault();
     contextMenu.visible = true;
     contextMenu.x = event.clientX;
@@ -541,22 +626,22 @@
     contextMenu.room = null;
   };
 
-  const editRoom = (room: Room | null) => {
+  const editRoom = (room: RoomStatusProps | null) => {
     if (!room) return;
 
     isEditingRoom.value = true;
     newRoomForm.id = room.id;
-    newRoomForm.number = room.number;
+    newRoomForm.roomNumber = room.roomNumber;
     newRoomForm.floor = room.floor;
     showAddRoomDialog.value = true;
     hideContextMenu();
   };
 
-  const deleteRoom = async (room: Room | null) => {
+  const deleteRoom = async (room: RoomStatusProps | null) => {
     if (!room) return;
 
     try {
-      await ElMessageBox.confirm(`确定要删除房间 ${room.number} 吗？`, "警告", {
+      await ElMessageBox.confirm(`确定要删除房间 ${room.roomNumber} 吗？`, "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
@@ -565,11 +650,11 @@
       const index = allRooms.value.findIndex(r => r.id === room.id);
       if (index > -1) {
         allRooms.value.splice(index, 1);
-        // 如果该房间被选中，从选中列表中移除
         const selectedIndex = selectedRooms.value.indexOf(room.id);
         if (selectedIndex > -1) {
           selectedRooms.value.splice(selectedIndex, 1);
         }
+        updateFormDataRooms();
         ElMessage.success("房间删除成功");
       }
     } catch {
@@ -585,15 +670,13 @@
   };
 
   const saveRoom = () => {
-    if (!newRoomForm.number) {
+    if (!newRoomForm.roomNumber) {
       ElMessage.warning("请输入房间号");
       return;
     }
 
     if (isEditingRoom.value) {
-      // 编辑房间
-      // 检查房间号是否已存在（排除当前房间）
-      const exists = allRooms.value.some(room => room.number === newRoomForm.number && room.id !== newRoomForm.id);
+      const exists = allRooms.value.some(room => room.roomNumber === newRoomForm.roomNumber && room.id !== newRoomForm.id);
       if (exists) {
         ElMessage.warning("房间号已存在");
         return;
@@ -601,25 +684,26 @@
 
       const room = allRooms.value.find(r => r.id === newRoomForm.id);
       if (room) {
-        room.number = newRoomForm.number;
+        room.roomNumber = newRoomForm.roomNumber;
+        updateFormDataRooms();
         ElMessage.success("房间修改成功");
       }
     } else {
-      // 新增房间
-      // 检查房间号是否已存在
-      const exists = allRooms.value.some(room => room.number === newRoomForm.number);
+      const exists = allRooms.value.some(room => room.roomNumber === newRoomForm.roomNumber);
       if (exists) {
         ElMessage.warning("房间号已存在");
         return;
       }
 
-      const newRoom: Room = {
+      const newRoom: RoomStatusProps = {
         id: Date.now().toString(),
-        number: newRoomForm.number,
-        floor: newRoomForm.floor
+        roomNumber: newRoomForm.roomNumber,
+        floor: newRoomForm.floor,
+        locked: false
       };
 
       allRooms.value.push(newRoom);
+      updateFormDataRooms();
       ElMessage.success("房间添加成功");
     }
 
@@ -629,23 +713,23 @@
   const resetRoomForm = () => {
     isEditingRoom.value = false;
     newRoomForm.id = "";
-    newRoomForm.number = "";
+    newRoomForm.roomNumber = "";
     newRoomForm.floor = 1;
   };
 
-  const editRoomType = (roomType: HouseLayoutProps) => {
+  const editHouseLayout = (houseLayout: HouseLayoutProps) => {
     isEditing.value = true;
-    roomTypeForm.id = roomType.id;
-    roomTypeForm.name = roomType.layoutName;
-    roomTypeForm.bedroom = roomType.bedroom;
-    roomTypeForm.livingRoom = roomType.livingRoom;
-    roomTypeForm.kitchen = roomType.kitchen;
-    roomTypeForm.bathroom = roomType.bathroom;
+    houseLayoutForm.id = houseLayout.id;
+    houseLayoutForm.name = houseLayout.layoutName;
+    houseLayoutForm.bedroom = houseLayout.bedroom;
+    houseLayoutForm.livingRoom = houseLayout.livingRoom;
+    houseLayoutForm.kitchen = houseLayout.kitchen;
+    houseLayoutForm.bathroom = houseLayout.bathroom;
     showCreateDialog.value = true;
   };
 
-  const deleteRoomType = async (id: string) => {
-    const assignedRooms = allRooms.value.filter(room => room.roomTypeId === id);
+  const deleteHouseLayout = async (id: string) => {
+    const assignedRooms = allRooms.value.filter(room => room.houseLayoutId === id);
     if (assignedRooms.length > 0) {
       ElMessage.warning(`该房型已分配给${assignedRooms.length}个房间，请先清除房间分配后再删除`);
       return;
@@ -658,11 +742,11 @@
         type: "warning"
       });
 
-      const index = roomTypes.value.findIndex(rt => rt.id === id);
+      const index = houseLayouts.value.findIndex(hl => hl.id === id);
       if (index > -1) {
-        roomTypes.value.splice(index, 1);
-        if (selectedRoomTypeId.value === id) {
-          selectedRoomTypeId.value = "";
+        houseLayouts.value.splice(index, 1);
+        if (selectedHouseLayoutId.value === id) {
+          selectedHouseLayoutId.value = "";
         }
         ElMessage.success("房型删除成功");
       }
@@ -671,35 +755,35 @@
     }
   };
 
-  const saveRoomType = async () => {
+  const saveHouseLayout = async () => {
     if (!formRef.value) return;
 
     try {
       await formRef.value.validate();
 
       if (isEditing.value) {
-        const index = roomTypes.value.findIndex(rt => rt.id === roomTypeForm.id);
+        const index = houseLayouts.value.findIndex(hl => hl.id === houseLayoutForm.id);
         if (index > -1) {
-          roomTypes.value[index] = {
-            ...roomTypes.value[index],
-            layoutName: roomTypeForm.name,
-            bedroom: roomTypeForm.bedroom,
-            livingRoom: roomTypeForm.livingRoom,
-            kitchen: roomTypeForm.kitchen,
-            bathroom: roomTypeForm.bathroom
+          houseLayouts.value[index] = {
+            ...houseLayouts.value[index],
+            layoutName: houseLayoutForm.name,
+            bedroom: houseLayoutForm.bedroom,
+            livingRoom: houseLayoutForm.livingRoom,
+            kitchen: houseLayoutForm.kitchen,
+            bathroom: houseLayoutForm.bathroom
           };
           ElMessage.success("房型更新成功");
         }
       } else {
-        const newRoomType: HouseLayoutProps = {
+        const newHouseLayout: HouseLayoutProps = {
           id: Date.now().toString(),
-          layoutName: roomTypeForm.name,
-          bedroom: roomTypeForm.bedroom,
-          livingRoom: roomTypeForm.livingRoom,
-          kitchen: roomTypeForm.kitchen,
-          bathroom: roomTypeForm.bathroom
+          layoutName: houseLayoutForm.name,
+          bedroom: houseLayoutForm.bedroom,
+          livingRoom: houseLayoutForm.livingRoom,
+          kitchen: houseLayoutForm.kitchen,
+          bathroom: houseLayoutForm.bathroom
         };
-        roomTypes.value.push(newRoomType);
+        houseLayouts.value.push(newHouseLayout);
         ElMessage.success("房型创建成功");
       }
 
@@ -711,14 +795,20 @@
 
   const resetForm = () => {
     isEditing.value = false;
-    roomTypeForm.id = "";
-    roomTypeForm.name = "";
-    roomTypeForm.bedroom = 1;
-    roomTypeForm.livingRoom = 1;
-    roomTypeForm.kitchen = 1;
-    roomTypeForm.bathroom = 1;
+    houseLayoutForm.id = "";
+    houseLayoutForm.name = "";
+    houseLayoutForm.bedroom = 1;
+    houseLayoutForm.livingRoom = 1;
+    houseLayoutForm.kitchen = 1;
+    houseLayoutForm.bathroom = 1;
     formRef.value?.clearValidate();
   };
+
+  // 暴露给父组件的方法
+  defineExpose({
+    houseLayouts,
+    allRooms
+  });
 </script>
 
 <style scoped>
