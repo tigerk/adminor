@@ -217,8 +217,11 @@
     getDeptUserList({
       deptId: deptId
     }).then(resp => {
-      form.salesmanId = null;
       salesmanList.value = resp.data;
+      const salesmanExists = salesmanList.value.some(salesman => salesman.id === form.salesmanId);
+      if (!salesmanExists) {
+        form.salesmanId = null;
+      }
     });
   }
 
@@ -469,7 +472,7 @@
           <el-col :span="6">
             <div class="grid-content ep-bg-purple">
               <el-form-item label="归属部门" class="el-form-item" prop="deptId" required>
-                <DeptCascader @dept-selected="handleDeptSelected" />
+                <DeptCascader v-model="form.deptId" :emit-on-default="true" @dept-selected="handleDeptSelected" />
               </el-form-item>
             </div>
           </el-col>
