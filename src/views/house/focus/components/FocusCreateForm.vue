@@ -46,7 +46,7 @@
   const form = reactive(props.formInline);
 
   // 步骤激活状态
-  const stepActive = ref(0);
+  const stepActive = ref(2);
 
   // 组件引用
   const basicInfoRef = ref();
@@ -163,7 +163,7 @@
 
 <style scoped>
   .property-form {
-    margin: 0 auto;
     padding: 20px;
+    margin: 0 auto;
   }
 </style>

@@ -1,8 +1,9 @@
 interface FormItemProps {
   id?: number;
+  dictId?: number;
   /** 用于判断是`新增`还是`修改` */
   title: string;
-  label: string;
+  name: string;
   value: string;
   color: string;
   sort: number;

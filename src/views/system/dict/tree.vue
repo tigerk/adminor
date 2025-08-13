@@ -15,8 +15,8 @@
 
   interface Tree {
     id: number;
-    name: string;
-    code: string;
+    dictName: string;
+    dictCode: string;
     highlight?: boolean;
     children?: Tree[];
   }
@@ -28,16 +28,16 @@
   const highlightMap = ref({});
   const defaultProps = {
     children: "children",
-    label: "name"
+    label: "dictName"
   };
 
   const { isDark } = useDark();
 
-  const { treeLoading, treeData, openDictDialog, getDictTreeData } = useDict();
+  const { treeLoading, treeData, getDictTreeData } = useDict();
 
   const filterNode = (value: string, data: Tree) => {
     if (!value) return true;
-    return `${data.name}（${data.code}）`.includes(value);
+    return `${data.dictName}（${data.dictCode}）`.includes(value);
   };
 
   function nodeClick(value) {
@@ -54,57 +54,7 @@
         v.highlight = false;
       }
     });
-    emit(
-      "tree-select",
-      highlightMap.value[nodeId]?.highlight
-        ? Object.assign({ ...value, selected: true })
-        : Object.assign({ ...value, selected: false })
-    );
-  }
-
-  // https://docs.imengyu.top/vue3-context-menu-docs/
-  function onContextMenu(e: MouseEvent, { name, data }) {
-    e.preventDefault();
-    ContextMenu.showContextMenu({
-      x: e.x,
-      y: e.y,
-      theme: isDark.value ? "dark" : "default",
-      items: [
-        {
-          label: "修改",
-          icon: h(useRenderIcon(EditPen)),
-          onClick: () => {
-            openDictDialog("修改", data);
-          }
-        },
-        {
-          label: "删除",
-          icon: h(useRenderIcon(Delete)),
-          // disabled: true,
-          onClick: () => {
-            ElMessageBox.confirm(
-              `确定要删除 <strong style='color:var(--el-color-primary)'>${
-                name
-              }</strong> 字典吗?`,
-              "系统提示",
-              {
-                confirmButtonText: "确定",
-                cancelButtonText: "取消",
-                type: "warning",
-                dangerouslyUseHTMLString: true,
-                draggable: true
-              }
-            ).then(() => {
-              // 实际开发中请调用删除字典接口
-              getDictTreeData();
-              message("已成功删除", {
-                type: "success"
-              });
-            });
-          }
-        }
-      ]
-    });
+    emit("tree-select", highlightMap.value[nodeId]?.highlight ? Object.assign({ ...value, selected: true }) : Object.assign({ ...value, selected: false }));
   }
 
   watch(searchValue, val => {
@@ -113,25 +63,12 @@
 </script>
 
 <template>
-  <div
-    v-loading="treeLoading"
-    class="h-full bg-bg_color overflow-hidden relative"
-    :style="{ minHeight: `calc(100vh - 141px)` }"
-  >
+  <div v-loading="treeLoading" class="h-full bg-bg_color overflow-hidden relative" :style="{ minHeight: `calc(100vh - 141px)` }">
     <div class="flex items-center h-[34px]">
-      <el-input
-        v-model="searchValue"
-        class="mx-2"
-        size="small"
-        placeholder="请输入字典名称"
-        clearable
-      >
+      <el-input v-model="searchValue" class="mx-2" size="small" placeholder="请输入字典名称" clearable>
         <template #suffix>
           <el-icon class="el-input__icon">
-            <IconifyIconOffline
-              v-show="searchValue.length === 0"
-              icon="ri/search-line"
-            />
+            <IconifyIconOffline v-show="searchValue.length === 0" icon="ri/search-line" />
           </el-icon>
         </template>
       </el-input>
@@ -159,34 +96,19 @@
               'rounded',
               'select-none',
               'hover:text-primary',
-              searchValue.trim().length > 0 &&
-                `${node.label}（${data.code}）`.includes(searchValue) &&
-                'text-red-500!',
+              searchValue.trim().length > 0 && `${node.label}（${data.dictCode}）`.includes(searchValue) && 'text-red-500!',
               highlightMap[node.id]?.highlight ? 'dark:text-primary!' : ''
             ]"
             :style="{
-              color: highlightMap[node.id]?.highlight
-                ? 'var(--el-color-primary)'
-                : '',
-              background: highlightMap[node.id]?.highlight
-                ? 'var(--el-color-primary-light-7)'
-                : 'transparent'
+              color: highlightMap[node.id]?.highlight ? 'var(--el-color-primary)' : '',
+              background: highlightMap[node.id]?.highlight ? 'var(--el-color-primary-light-7)' : 'transparent'
             }"
-            @contextmenu="onContextMenu($event, { name: node.label, data })"
           >
-            {{ `${node.label}（${data.code}）` }}
+            {{ `${node.label}（${data.dictCode}）` }}
           </ReText>
         </template>
       </el-tree>
     </el-scrollbar>
-    <el-button
-      class="w-[90%] absolute bottom-[22px] left-[50%] -translate-x-[50%]"
-      type="primary"
-      :icon="useRenderIcon(AddFill)"
-      @click="openDictDialog()"
-    >
-      新增字典
-    </el-button>
   </div>
 </template>
 

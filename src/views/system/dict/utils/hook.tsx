@@ -1,5 +1,4 @@
 import dayjs from "dayjs";
-import DictForm from "../form/dict.vue";
 import editForm from "../form/index.vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
@@ -9,7 +8,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
-import { getDictTree, getDictDetail } from "@/api/system";
+import { createDictData, getDictData, getDictTree } from "@/api/sys/dict";
 
 export function useDict() {
   // 左侧字典树的id
@@ -30,11 +29,11 @@ export function useDict() {
   const columns: TableColumnList = [
     {
       label: "字典标签",
-      prop: "label",
+      prop: "name",
       minWidth: 130,
       cellRenderer: scope => (
         <el-button size="small" color={scope.row.color}>
-          {scope.row.label}
+          {scope.row.name}
         </el-button>
       )
     },
@@ -77,8 +76,7 @@ export function useDict() {
       label: "创建时间",
       minWidth: 90,
       prop: "createTime",
-      formatter: ({ createTime }) =>
-        dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ createTime }) => dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",
@@ -89,37 +87,21 @@ export function useDict() {
   ];
 
   function onChange({ row, index }) {
-    ElMessageBox.confirm(
-      `确定要<strong>${
-        row.status === 0 ? "停用" : "启用"
-      }</strong><strong style='color:var(--el-color-primary)'>${
-        row.label
-      }</strong>字典标签吗?`,
-      "系统提示",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-        dangerouslyUseHTMLString: true,
-        draggable: true
-      }
-    )
+    ElMessageBox.confirm(`确定要<strong>${row.status === 0 ? "停用" : "启用"}</strong><strong style='color:var(--el-color-primary)'>${row.name}</strong>字典标签吗?`, "系统提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+      dangerouslyUseHTMLString: true,
+      draggable: true
+    })
       .then(() => {
-        switchLoadMap.value[index] = Object.assign(
-          {},
-          switchLoadMap.value[index],
-          {
-            loading: true
-          }
-        );
+        switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], {
+          loading: true
+        });
         setTimeout(() => {
-          switchLoadMap.value[index] = Object.assign(
-            {},
-            switchLoadMap.value[index],
-            {
-              loading: false
-            }
-          );
+          switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], {
+            loading: false
+          });
           message("已成功修改状态", {
             type: "success"
           });
@@ -131,7 +113,7 @@ export function useDict() {
   }
 
   function handleDelete(row) {
-    message(`您删除了字典标签为${row.label}的这条数据`, { type: "success" });
+    message(`您删除了字典标签为${row.name}的这条数据`, { type: "success" });
     onSearch();
   }
 
@@ -144,12 +126,23 @@ export function useDict() {
   }
 
   async function onSearch() {
+    let data: any = {
+      list: [],
+      total: 0,
+      pageSize: 10,
+      currentPage: 1
+    };
+
+    if (dictId.value != null && dictId.value !== "") {
+      const resp = await getDictData({ dictId: dictId.value });
+      data = resp.data;
+    }
+
     loading.value = true;
-    const { data } = await getDictDetail({ dictId: dictId.value });
     dataList.value = data.list;
-    pagination.total = data.total;
-    pagination.pageSize = data.pageSize;
-    pagination.currentPage = data.currentPage;
+    pagination.total = Number(data.total);
+    pagination.pageSize = Number(data.pageSize);
+    pagination.currentPage = Number(data.currentPage);
 
     setTimeout(() => {
       loading.value = false;
@@ -167,7 +160,9 @@ export function useDict() {
       props: {
         formInline: {
           title,
-          label: row?.label ?? "",
+          id: row?.id ?? "",
+          dictId: dictId.value,
+          name: row?.name ?? "",
           value: row?.value ?? "",
           color: row?.color ?? "#6abe39",
           sort: row?.sort ?? 999,
@@ -184,57 +179,23 @@ export function useDict() {
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
-        function chores() {
-          message(`您${title}了字典标签为${curData.label}的这条数据`, {
-            type: "success"
-          });
-          done(); // 关闭弹框
-          onSearch(); // 刷新表格数据
-        }
-        FormRef.validate(valid => {
-          if (valid) {
-            console.log("curData", curData);
-            // 表单规则校验通过
-            if (title === "新增") {
-              // 实际开发先调用新增接口，再进行下面操作
-              chores();
-            } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
-            }
-          }
-        });
-      }
-    });
-  }
 
-  function openDictDialog(title = "新增", row?: any) {
-    addDialog({
-      title: `${title}字典`,
-      props: {
-        formInline: {
-          title,
-          name: row?.name ?? "",
-          code: row?.code ?? "",
-          remark: row?.remark ?? ""
-        }
-      },
-      width: "32%",
-      draggable: true,
-      fullscreen: deviceDetection(),
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(DictForm, { ref: formRef, formInline: null }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline;
         function chores() {
-          message(`您${title}了字典名称为${curData.name}的这条数据`, {
-            type: "success"
+          createDictData(curData).then(resp => {
+            if (resp.code === 0) {
+              message(`您${title}了字典标签为${curData.name}的这条数据`, {
+                type: "success"
+              });
+              done(); // 关闭弹框
+              onSearch(); // 刷新表格数据
+            } else {
+              message(resp.message, {
+                type: "error"
+              });
+            }
           });
-          done(); // 关闭弹框
-          getDictTreeData(); // 刷新左侧字典树
         }
+
         FormRef.validate(valid => {
           if (valid) {
             console.log("curData", curData);
@@ -280,7 +241,6 @@ export function useDict() {
     openDialog,
     onTreeSelect,
     handleDelete,
-    openDictDialog,
     getDictTreeData,
     handleSizeChange,
     handleCurrentChange
