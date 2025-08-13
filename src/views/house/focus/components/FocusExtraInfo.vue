@@ -88,9 +88,11 @@
 
       <!-- 项目标签 -->
       <div class="section">
-        <el-form-item label="项目标签">
+        <el-form-item label="项目标签 (方案二)">
           <div class="tag-section">
-            <el-input v-model="formData.projectTags" placeholder="可输入补充标签，回车添加" maxlength="100" show-word-limit />
+            <el-select v-model="formData.tags" multiple filterable allow-create default-first-option :reserve-keyword="false" placeholder="输入标签后按回车添加" class="full-width">
+              <el-option v-for="item in tagOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
           </div>
         </el-form-item>
       </div>
@@ -127,7 +129,7 @@
               <el-progress class="mt-2!" :stroke-width="2" :text-inside="true" :show-text="false" :percentage="file.percentage" />
             </div>
             <div v-else @mouseenter.stop="imgDrop(file.uid)">
-              <img class="el-upload-list__item-thumbnail select-none" :src="file.url" />
+              <img class="el-upload-list__item-thumbnail select-none" :src="file.url" alt="" />
               <span id="pure-upload-item" :class="['el-upload-list__item-actions', fileList.length > 1 && 'cursor-move!']">
                 <span title="查看" class="hover:text-primary" @click="handlePictureCardPreview(file)">
                   <IconifyIconOffline :icon="Eye" class="hover:scale-125 duration-100" />
@@ -179,13 +181,22 @@
   import Delete from "~icons/ri/delete-bin-7-line";
   import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
 
+  // 预设标签选项
+  const tagOptions = ref([
+    { label: "精装修", value: "精装修" },
+    { label: "近地铁", value: "近地铁" },
+    { label: "商圈核心", value: "商圈核心" },
+    { label: "拎包入住", value: "拎包入住" },
+    { label: "高性价比", value: "高性价比" }
+  ]);
+
   interface FormData {
     phone: string;
     water: string;
     electricity: string;
     heating: string;
     hasGas: boolean;
-    verificationCode: string;
+    hasElevator: boolean;
     facilities: {
       laundry: boolean;
       hotWater: boolean;
@@ -209,10 +220,9 @@
       supermarket: boolean;
       elevator: boolean;
     };
-    vrAddress: string;
     projectDescription: string;
     businessDescription: string;
-    projectTags: string;
+    tags: string[];
     notes: string;
   }
 
@@ -222,7 +232,7 @@
     electricity: "commercial",
     heating: "central",
     hasGas: true,
-    verificationCode: "",
+    hasElevator: true,
     facilities: {
       laundry: true,
       hotWater: true,
@@ -246,10 +256,9 @@
       supermarket: false,
       elevator: true
     },
-    vrAddress: "",
     projectDescription: "",
     businessDescription: "",
-    projectTags: "",
+    tags: [],
     notes: ""
   });
 
@@ -357,10 +366,10 @@
   }
 
   .section-title {
+    margin-bottom: 16px;
     font-size: 16px;
     font-weight: 600;
     color: #303133;
-    margin-bottom: 16px;
   }
 
   .form-row {
@@ -374,9 +383,9 @@
 
   .tag-limit,
   .note-limit {
-    color: #909399;
-    font-size: 12px;
     margin-right: 8px;
+    font-size: 12px;
+    color: #909399;
   }
 
   .upload-demo {
@@ -384,8 +393,8 @@
   }
 
   :deep(.el-form-item__label) {
-    color: #606266;
     font-weight: 500;
+    color: #606266;
   }
 
   :deep(.el-input__wrapper) {
