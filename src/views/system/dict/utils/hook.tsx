@@ -8,7 +8,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
-import { createDictData, getDictData, getDictTree } from "@/api/sys/dict";
+import { createDictData, getDictData, getDictTree, switchDictDataStatus } from "@/api/sys/dict";
 
 export function useDict() {
   // 左侧字典树的id
@@ -98,14 +98,17 @@ export function useDict() {
         switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], {
           loading: true
         });
-        setTimeout(() => {
-          switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], {
-            loading: false
-          });
-          message("已成功修改状态", {
-            type: "success"
-          });
-        }, 300);
+
+        createDictData(row).then(resp => {
+          setTimeout(() => {
+            switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], {
+              loading: false
+            });
+            message("已成功修改状态", {
+              type: "success"
+            });
+          }, 300);
+        });
       })
       .catch(() => {
         row.status === 0 ? (row.status = 1) : (row.status = 0);
