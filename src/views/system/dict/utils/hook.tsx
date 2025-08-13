@@ -121,23 +121,29 @@ export function useDict() {
   }
 
   function handleSizeChange(val: number) {
-    console.log(`${val} items per page`);
+    pagination.pageSize = val;
+    onSearch();
   }
 
   function handleCurrentChange(val: number) {
-    console.log(`current page: ${val}`);
+    pagination.currentPage = val;
+    onSearch();
   }
 
   async function onSearch() {
     let data: any = {
       list: [],
       total: 0,
-      pageSize: 10,
-      currentPage: 1
+      pageSize: pagination.pageSize,
+      currentPage: pagination.currentPage
     };
 
     if (dictId.value != null && dictId.value !== "") {
-      const resp = await getDictData({ dictId: dictId.value });
+      const resp = await getDictData({
+        dictId: dictId.value,
+        pageSize: pagination.pageSize,
+        currentPage: pagination.currentPage
+      });
       data = resp.data;
     }
 
