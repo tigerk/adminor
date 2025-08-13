@@ -36,3 +36,8 @@ export const getDictData = (data?: object) => {
 export const createDictData = (data?: object) => {
   return http.request<Result>("post", baseUrlApi("sys/dict/data/create"), { data });
 };
+
+/** 新增字典数据 */
+export const switchDictDataStatus = (data?: object) => {
+  return http.request<Result>("post", baseUrlApi("sys/dict/data/updateStatus"), { data });
+};
