@@ -109,7 +109,8 @@
       <!-- 项目图片 -->
       <div class="section">
         <h3 class="section-title">项目图片</h3>
-        <UploadFile />
+        {{ fileList }}
+        <UploadImage v-model="fileList" :limit="10" />
       </div>
     </el-form>
   </div>
@@ -119,7 +120,7 @@
   import { reactive, ref } from "vue";
   import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
   import { ExtraFormItemProps } from "@/views/house/focus/components/utils/types";
-  import UploadFile from "@/components/Business/UploadFile.vue";
+  import UploadImage from "@/components/Business/UploadImage.vue";
 
   // 预设标签选项
   const tagOptions = ref([
