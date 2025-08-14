@@ -1,11 +1,9 @@
 <script setup lang="ts">
   import Sortable from "sortablejs";
   import { ref, computed } from "vue";
-  import { useRouter } from "vue-router";
   import { message } from "@/utils/message";
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
-  import { getKeyList, extractFields, downloadByData } from "@pureadmin/utils";
-  import axios from "axios";
+  import { getKeyList, extractFields } from "@pureadmin/utils";
 
   import EpPlus from "~icons/ep/plus?width=30&height=30";
   import Eye from "~icons/ri/eye-line";
@@ -13,20 +11,28 @@
   import { uploadFile } from "@/api/upload";
 
   defineOptions({
-    name: "UploadFile"
+    name: "UploadImage"
   });
 
-  const fileList = ref([]);
-  const router = useRouter();
+  const props = defineProps({
+    limit: {
+      type: Number,
+      default: 3
+    }
+  });
+
+  const fileList = defineModel<UploadFile[]>();
   const curOpenImgIndex = ref(0);
   const dialogVisible = ref(false);
 
   // 获取vite环境变量中的host
-  const baseURL = import.meta.env.VITE_BASE_URL || "http://localhost:8888";
-  const uploadUrl = `${baseURL}/admin/file/upload`;
-
-  const urlList = computed(() => getKeyList(fileList.value, "url"));
-  const imgInfos = computed(() => extractFields(fileList.value, "name", "size"));
+  const urlList = computed(() => getKeyList(fileList.value || [], "url"));
+  const imgInfos = computed(() => {
+    if (!fileList.value || !Array.isArray(fileList.value)) {
+      return [];
+    }
+    return extractFields(fileList.value, "name", "size");
+  });
 
   const getImgUrl = name => new URL(`./imgs/${name}.jpg`, import.meta.url).href;
   const srcList = Array.from({ length: 3 }).map((_, index) => {
@@ -78,9 +84,10 @@
   /** 上传成功回调 */
   const onUploadSuccess = (response: any, file: UploadFile) => {
     // 更新文件列表中的url，假设服务器返回的url在response.data.url中
+    debugger;
     const fileItem = fileList.value.find(item => item.uid === file.uid);
-    if (fileItem && response.data && response.data.url) {
-      fileItem.url = response.data.url;
+    if (fileItem && response) {
+      fileItem.url = response;
     }
   };
 
@@ -93,7 +100,7 @@
 
   /** 超出最大上传数时触发 */
   const onExceed = () => {
-    message("最多上传3张图片，请先删除再上传");
+    message(`最多上传` + props.limit + `张图片，请先删除再上传`);
   };
 
   /** 移除上传的文件 */
@@ -139,7 +146,7 @@
       class="pure-upload"
       list-type="picture-card"
       accept="image/jpeg,image/png,image/gif"
-      :limit="3"
+      :limit="props.limit"
       :http-request="customUpload"
       :on-exceed="onExceed"
       :before-upload="onBefore"
@@ -153,7 +160,7 @@
           <el-progress class="mt-2!" :stroke-width="2" :text-inside="true" :show-text="false" :percentage="file.percentage" />
         </div>
         <div v-else @mouseenter.stop="imgDrop(file.uid)">
-          <img class="el-upload-list__item-thumbnail select-none" :src="file.url" />
+          <img class="el-upload-list__item-thumbnail select-none" :src="file.url" alt="" />
           <span id="pure-upload-item" :class="['el-upload-list__item-actions', fileList.length > 1 && 'cursor-move!']">
             <span title="查看" class="hover:text-primary" @click="handlePictureCardPreview(file)">
               <IconifyIconOffline :icon="Eye" class="hover:scale-125 duration-100" />
@@ -185,7 +192,7 @@
         </p>
       </div>
     </teleport>
-    <p class="el-upload__tip">可拖拽上传最多3张单个不超过2MB且格式为jpeg/png/gif的图片</p>
+    <p class="el-upload__tip">可拖拽上传最多{{ props.limit }}张单个不超过2MB且格式为jpeg/png/gif的图片</p>
   </el-card>
 </template>
 
