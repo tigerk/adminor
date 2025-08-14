@@ -3,8 +3,9 @@
   import { ref, computed } from "vue";
   import { useRouter } from "vue-router";
   import { message } from "@/utils/message";
-  import type { UploadFile, UploadRequestOptions } from "element-plus";
+  import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
   import { getKeyList, extractFields, downloadByData } from "@pureadmin/utils";
+  import axios from "axios";
 
   import EpPlus from "~icons/ep/plus?width=30&height=30";
   import Eye from "~icons/ri/eye-line";
@@ -56,13 +57,8 @@
     try {
       // 传入进度回调函数
       const response = await uploadFile(formData, progress => {
-        // 构造符合 UploadProgressEvent 接口的对象
-        const progressEvent: UploadProgressEvent = {
-          percent: Math.round(progress), // 确保是整数
-          total: file.size || 0,
-          loaded: Math.round((progress / 100) * (file.size || 0))
-        };
-        onProgress(progressEvent);
+        // 调用 Element Plus 的进度回调
+        onProgress({ percent: progress } as UploadProgressEvent);
       });
 
       // 假设服务器返回的数据格式为 { code: 0, data: { url: '...' }, message: '...' }

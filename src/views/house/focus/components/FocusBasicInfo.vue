@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { ref, reactive, computed, watch } from "vue";
   import { FormProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
-  import RegionCascader from "@/components/business/RegionCascader.vue";
-  import DeptCascader from "@/components/business/DeptUserCascader.vue";
+  import RegionCascader from "@/components/Business/RegionCascader.vue";
+  import DeptCascader from "@/components/Business/DeptUserCascader.vue";
   import { getDeptUserList } from "@/api/sys/dept";
   import { useFocusEdit } from "@/views/house/focus/components/utils/hook";
   import { InfoFilled } from "@element-plus/icons-vue";
@@ -543,8 +543,8 @@
   }
 
   :deep(.el-radio-button__inner) {
+    padding: 8px;
     color: #43464c;
-    padding: 8px 8px;
   }
 
   /* 楼层标签基础样式 */
@@ -557,21 +557,21 @@
   /* 已关闭楼层的样式 */
   .closed-floor {
     color: #c0c4cc !important;
-    opacity: 0.6;
     text-decoration: line-through;
+    opacity: 0.6;
   }
 
   /* 已关闭房间的样式 */
   .closed-room {
     color: #c0c4cc !important;
-    opacity: 0.6;
     text-decoration: line-through;
+    opacity: 0.6;
   }
 
   .room-title-container {
     display: flex;
-    align-items: center;
     gap: 8px;
+    align-items: center;
   }
 
   .room-title {
@@ -580,8 +580,8 @@
   }
 
   .info-icon {
-    color: #909399;
     font-size: 14px;
+    color: #909399;
     cursor: pointer;
   }
 </style>
