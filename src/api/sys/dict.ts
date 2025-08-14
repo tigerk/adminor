@@ -41,3 +41,8 @@ export const createDictData = (data?: object) => {
 export const switchDictDataStatus = (data?: object) => {
   return http.request<Result>("post", baseUrlApi("sys/dict/data/updateStatus"), { data });
 };
+
+/** 通过字典编号查询数据项 */
+export const getDictDataByDictCode = (data?: object) => {
+  return http.request<Result>("get", baseUrlApi("sys/dict/data/listByDictCode"), { params: data });
+};
