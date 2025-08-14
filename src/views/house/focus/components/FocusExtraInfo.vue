@@ -119,7 +119,7 @@
   import { reactive, ref } from "vue";
   import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
   import { ExtraFormItemProps } from "@/views/house/focus/components/utils/types";
-  import UploadFile from "@/components/business/UploadFile.vue";
+  import UploadFile from "@/components/Business/UploadFile.vue";
 
   // 预设标签选项
   const tagOptions = ref([
