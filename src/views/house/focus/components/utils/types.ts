@@ -66,4 +66,40 @@ interface HouseLayoutProps {
   bathroom: number;
 }
 
-export type { FormItemProps, FormProps, RoomStatusProps, HouseLayoutProps };
+interface ExtraFormItemProps {
+  phone: string;
+  water: string;
+  electricity: string;
+  heating: string;
+  hasGas: boolean;
+  hasElevator: boolean;
+  facilities: {
+    laundry: boolean;
+    hotWater: boolean;
+    drinkingWater: boolean;
+    kitchen: boolean;
+    parking: boolean;
+    coffee: boolean;
+    tv: boolean;
+    fridge: boolean;
+    microwave: boolean;
+    washingMachine: boolean;
+    airCondition: boolean;
+    oven: boolean;
+    security24: boolean;
+    regularCleaning: boolean;
+    gym: boolean;
+    reception: boolean;
+    garbageDisposal: boolean;
+    swimmingPool: boolean;
+    publicWifi: boolean;
+    supermarket: boolean;
+    elevator: boolean;
+  };
+  projectDescription: string;
+  businessDescription: string;
+  tags: string[];
+  notes: string;
+}
+
+export type { FormItemProps, FormProps, RoomStatusProps, HouseLayoutProps, ExtraFormItemProps };
