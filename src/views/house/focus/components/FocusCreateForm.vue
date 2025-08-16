@@ -49,7 +49,8 @@
       projectDescription: "",
       businessDescription: "",
       tags: [],
-      remark: ""
+      remark: "",
+      projectFileList: []
     })
   });
 

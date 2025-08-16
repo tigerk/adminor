@@ -31,6 +31,7 @@ interface FormItemProps {
   deptId: number;
   // 业务员id
   salesmanId: number;
+
   // extra info
   phone: string;
   water: string;
@@ -43,6 +44,7 @@ interface FormItemProps {
   businessDescription: string;
   tags: string[];
   remark: string;
+  projectFileList: [];
 }
 
 interface FormProps {
@@ -77,18 +79,4 @@ interface HouseLayoutProps {
   bathroom: number;
 }
 
-interface ExtraFormItemProps {
-  phone: string;
-  water: string;
-  electricity: string;
-  heating: string;
-  hasGas: boolean;
-  hasElevator: boolean;
-  facilities: any;
-  projectDescription: string;
-  businessDescription: string;
-  tags: string[];
-  remark: string;
-}
-
-export type { FormItemProps, FormProps, RoomStatusProps, HouseLayoutProps, ExtraFormItemProps };
+export type { FormItemProps, FormProps, RoomStatusProps, HouseLayoutProps };
