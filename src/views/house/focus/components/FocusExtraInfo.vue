@@ -45,27 +45,9 @@
           <el-col :span="24">
             <el-form-item label="项目配置" required>
               <el-space wrap size="large" class="items-start">
-                <el-checkbox v-model="formData.facilities.laundry" border>洗衣房</el-checkbox>
-                <el-checkbox v-model="formData.facilities.hotWater" border>热水器</el-checkbox>
-                <el-checkbox v-model="formData.facilities.drinkingWater" border>饮水机</el-checkbox>
-                <el-checkbox v-model="formData.facilities.kitchen" border>厨房</el-checkbox>
-                <el-checkbox v-model="formData.facilities.parking" border>停车位</el-checkbox>
-                <el-checkbox v-model="formData.facilities.coffee" border>咖啡厅</el-checkbox>
-                <el-checkbox v-model="formData.facilities.tv" border>电视</el-checkbox>
-                <el-checkbox v-model="formData.facilities.fridge" border>冰箱</el-checkbox>
-                <el-checkbox v-model="formData.facilities.microwave" border>微波炉</el-checkbox>
-                <el-checkbox v-model="formData.facilities.washingMachine" border>洗衣机</el-checkbox>
-                <el-checkbox v-model="formData.facilities.airCondition" border>空调</el-checkbox>
-                <el-checkbox v-model="formData.facilities.oven" border>烤箱</el-checkbox>
-                <el-checkbox v-model="formData.facilities.security24" border>24小时保安</el-checkbox>
-                <el-checkbox v-model="formData.facilities.regularCleaning" border>常规保洁</el-checkbox>
-                <el-checkbox v-model="formData.facilities.gym" border>健身房</el-checkbox>
-                <el-checkbox v-model="formData.facilities.reception" border>前台</el-checkbox>
-                <el-checkbox v-model="formData.facilities.garbageDisposal" border>代收快递</el-checkbox>
-                <el-checkbox v-model="formData.facilities.swimmingPool" border>游泳池</el-checkbox>
-                <el-checkbox v-model="formData.facilities.publicWifi" border>公共WIFI</el-checkbox>
-                <el-checkbox v-model="formData.facilities.supermarket" border>超市</el-checkbox>
-                <el-checkbox v-model="formData.facilities.elevator" border>电梯</el-checkbox>
+                <el-checkbox v-for="item in facilitiesOptions" :key="item.value" v-model="formData.facilities[item.value]" border>
+                  {{ item.label }}
+                </el-checkbox>
               </el-space>
             </el-form-item>
           </el-col>
@@ -88,7 +70,7 @@
 
       <!-- 项目标签 -->
       <div class="section">
-        <el-form-item label="项目标签 (方案二)">
+        <el-form-item label="项目标签">
           <div class="tag-section">
             <el-select v-model="formData.tags" multiple filterable allow-create default-first-option :reserve-keyword="false" placeholder="输入标签后按回车添加" class="full-width">
               <el-option v-for="item in tagOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -109,7 +91,6 @@
       <!-- 项目图片 -->
       <div class="section">
         <h3 class="section-title">项目图片</h3>
-        {{ fileList }}
         <UploadImage v-model="fileList" :limit="10" />
       </div>
     </el-form>
@@ -117,10 +98,11 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref } from "vue";
+  import { onMounted, reactive, ref } from "vue";
   import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
   import { ExtraFormItemProps } from "@/views/house/focus/components/utils/types";
   import UploadImage from "@/components/Business/UploadImage.vue";
+  import { getDictDataByDictCode } from "@/api/sys/dict";
 
   // 预设标签选项
   const tagOptions = ref([
@@ -138,38 +120,29 @@
     heating: "central",
     hasGas: true,
     hasElevator: true,
-    facilities: {
-      laundry: true,
-      hotWater: true,
-      drinkingWater: false,
-      kitchen: true,
-      parking: true,
-      coffee: false,
-      tv: true,
-      fridge: true,
-      microwave: true,
-      washingMachine: false,
-      airCondition: true,
-      oven: false,
-      security24: true,
-      regularCleaning: true,
-      gym: true,
-      reception: true,
-      garbageDisposal: true,
-      swimmingPool: false,
-      publicWifi: false,
-      supermarket: false,
-      elevator: true
-    },
+    facilities: {},
     projectDescription: "",
     businessDescription: "",
     tags: [],
     notes: ""
   });
 
+  const facilitiesOptions = ref([]);
+
   // 导出表单数据，供父组件使用
   defineExpose({
     formData
+  });
+
+  onMounted(() => {
+    getDictDataByDictCode({
+      dictCode: "house_facilities"
+    }).then(res => {
+      facilitiesOptions.value = res.data.map(item => ({
+        label: item.name,
+        value: item.value
+      }));
+    });
   });
 
   const fileList = ref([]);
