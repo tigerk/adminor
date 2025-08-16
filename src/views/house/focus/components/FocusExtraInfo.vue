@@ -91,18 +91,37 @@
       <!-- 项目图片 -->
       <div class="section">
         <h3 class="section-title">项目图片</h3>
-        <UploadImage v-model="fileList" :limit="10" />
+        <UploadImage v-model="formData.projectFileList" :limit="10" />
       </div>
     </el-form>
+
+    <el-row :gutter="20">
+      <el-col :span="24" class="text-right">
+        <el-button type="primary" style="margin-top: 12px" @click="stepPrevious">上一步</el-button>
+        <el-button type="primary" style="margin-top: 12px" @click="clickCreateHouse">完成创建</el-button>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from "vue";
+  import { onMounted, reactive, ref, watch } from "vue";
   import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
-  import { ExtraFormItemProps } from "@/views/house/focus/components/utils/types";
+  import { FormItemProps } from "@/views/house/focus/components/utils/types";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
+
+  // 定义 props
+  const props = defineProps<{
+    formData: FormItemProps;
+  }>();
+
+  // 定义 emits
+  const emit = defineEmits<{
+    "update:formData": [value: FormItemProps];
+    "step-previous": [];
+    "to-create-house": [];
+  }>();
 
   // 预设标签选项
   const tagOptions = ref([
@@ -113,21 +132,55 @@
     { label: "高性价比", value: "高性价比" }
   ]);
 
-  const formData = reactive<ExtraFormItemProps>({
-    phone: "",
-    water: "commercial",
-    electricity: "commercial",
-    heating: "central",
-    hasGas: true,
-    hasElevator: true,
-    facilities: {},
-    projectDescription: "",
-    businessDescription: "",
-    tags: [],
-    remark: ""
+  // 使用响应式数据，基于 props 中的相关字段
+  const formData = reactive({
+    phone: props.formData?.phone || "",
+    water: props.formData?.water || "commercial",
+    electricity: props.formData?.electricity || "commercial",
+    heating: props.formData?.heating || "central",
+    hasGas: props.formData?.hasGas !== undefined ? props.formData.hasGas : true,
+    hasElevator: props.formData?.hasElevator !== undefined ? props.formData.hasElevator : true,
+    facilities: props.formData?.facilities || {},
+    projectDescription: props.formData?.projectDescription || "",
+    businessDescription: props.formData?.businessDescription || "",
+    tags: props.formData?.tags || [],
+    remark: props.formData?.remark || "",
+    projectFileList: props.formData?.projectFileList || []
   });
 
   const facilitiesOptions = ref([]);
+
+  // 监听 props 变化，同步到本地 formData
+  watch(
+    () => props.formData,
+    newVal => {
+      if (newVal) {
+        formData.phone = newVal.phone || "";
+        formData.water = newVal.water || "commercial";
+        formData.electricity = newVal.electricity || "commercial";
+        formData.heating = newVal.heating || "central";
+        formData.hasGas = newVal.hasGas !== undefined ? newVal.hasGas : true;
+        formData.hasElevator = newVal.hasElevator !== undefined ? newVal.hasElevator : true;
+        formData.facilities = newVal.facilities || {};
+        formData.projectDescription = newVal.projectDescription || "";
+        formData.businessDescription = newVal.businessDescription || "";
+        formData.tags = newVal.tags || [];
+        formData.remark = newVal.remark || "";
+        formData.projectFileList = newVal.projectFileList || [];
+      }
+    },
+    { deep: true }
+  );
+
+  // 监听本地 formData 变化，向上传递
+  watch(
+    formData,
+    newVal => {
+      const updatedFormData = { ...props.formData, ...newVal };
+      emit("update:formData", updatedFormData);
+    },
+    { deep: true }
+  );
 
   // 导出表单数据，供父组件使用
   defineExpose({
@@ -145,7 +198,13 @@
     });
   });
 
-  const fileList = ref([]);
+  async function stepPrevious() {
+    emit("step-previous");
+  }
+
+  async function clickCreateHouse() {
+    emit("to-create-house");
+  }
 </script>
 
 <style lang="scss" scoped>
