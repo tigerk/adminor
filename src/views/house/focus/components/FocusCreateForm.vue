@@ -152,12 +152,6 @@
     <div v-if="stepActive == 2">
       <FocusExtraInfo ref="extraInfoRef" :form-data="form" @update:form-data="handleFormDataUpdate" @step-previous="stepPrevious" @to-create-house="submitAllData" />
     </div>
-    <!-- 其他步骤的按钮 -->
-    <el-row v-if="stepActive !== 0" :gutter="20">
-      <el-col :span="24" class="text-right">
-        <el-button v-if="stepActive == 2" type="primary" style="margin-top: 12px" @click="submitAllData">保存</el-button>
-      </el-col>
-    </el-row>
   </div>
 </template>
 
