@@ -279,6 +279,12 @@
       </div>
     </el-col>
   </el-row>
+  <el-row :gutter="20">
+    <el-col :span="24" class="text-right">
+      <el-button type="primary" style="margin-top: 12px" @click="stepPrevious">上一步</el-button>
+      <el-button type="primary" style="margin-top: 12px" @click="clickSaveAssignRoom">保存并完善项目</el-button>
+    </el-col>
+  </el-row>
 </template>
 
 <script setup lang="ts">
@@ -298,6 +304,7 @@
   const emit = defineEmits<{
     "update:formData": [value: FormItemProps];
     "to-add-extra": [];
+    "step-previous": [];
   }>();
 
   // 响应式数据
@@ -702,7 +709,11 @@
         id: Date.now().toString(),
         roomNumber: newRoomForm.roomNumber,
         floor: newRoomForm.floor,
-        locked: false
+        locked: false,
+        houseLayoutId: undefined,
+        price: undefined,
+        direction: undefined,
+        area: undefined
       };
 
       allRooms.value.push(newRoom);
@@ -812,6 +823,20 @@
     houseLayouts,
     allRooms
   });
+
+  // 保存项目信息
+  async function clickSaveAssignRoom() {
+    try {
+      // 验证表单
+      emit("to-add-extra");
+    } catch (error) {
+      ElMessage.warning("请分配房间");
+    }
+  }
+
+  async function stepPrevious() {
+    emit("step-previous");
+  }
 </script>
 
 <style scoped>
@@ -825,6 +850,6 @@
   }
 
   .bg-blue-25 {
-    background-color: rgba(59, 130, 246, 0.1);
+    background-color: rgb(59 130 246 / 10%);
   }
 </style>

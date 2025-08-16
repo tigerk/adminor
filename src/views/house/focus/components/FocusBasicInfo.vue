@@ -276,7 +276,7 @@
   }
 
   // 保存项目信息
-  async function clickSaveFocusHouse() {
+  async function clickSaveBasicInfo() {
     try {
       // 验证表单
       await ruleFormRef.value.validate();
@@ -523,7 +523,7 @@
 
     <el-row :gutter="20">
       <el-col :span="24" class="text-right">
-        <el-button type="primary" style="margin-top: 12px" @click="clickSaveFocusHouse">保存并配置房间</el-button>
+        <el-button type="primary" style="margin-top: 12px" @click="clickSaveBasicInfo">保存并配置房间</el-button>
       </el-col>
     </el-row>
   </div>

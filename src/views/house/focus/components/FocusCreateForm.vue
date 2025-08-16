@@ -17,7 +17,6 @@
       building: "",
       unit: "",
       doorNumber: "",
-      remark: "",
       // 总楼层
       floorTotal: 34,
       // 每个楼层的房间数量
@@ -38,7 +37,19 @@
       // 房间编号长度
       roomNumberLength: 3,
       deptId: 0,
-      salesmanId: 0
+      salesmanId: 0,
+      // 第三步填写
+      phone: "",
+      water: "commercial",
+      electricity: "commercial",
+      heating: "central",
+      hasGas: true,
+      hasElevator: true,
+      facilities: {},
+      projectDescription: "",
+      businessDescription: "",
+      tags: [],
+      remark: ""
     })
   });
 
@@ -46,7 +57,7 @@
   const form = reactive(props.formInline);
 
   // 步骤激活状态
-  const stepActive = ref(2);
+  const stepActive = ref(0);
 
   // 组件引用
   const basicInfoRef = ref();
@@ -74,16 +85,6 @@
   // 处理基本信息组件的表单数据更新
   const handleFormDataUpdate = (newFormData: any) => {
     Object.assign(form, newFormData);
-  };
-
-  // 处理保存并进入下一步
-  const handleSaveFocusHouse = () => {
-    stepNext();
-  };
-
-  // 处理配置房间的下一步
-  const handleAssignRoomNext = () => {
-    stepNext();
   };
 
   // 提交所有数据到后台
@@ -142,19 +143,17 @@
   </el-steps>
   <div class="property-form">
     <div v-if="stepActive == 0">
-      <FocusBasicInfo ref="basicInfoRef" :form-data="form" @update:form-data="handleFormDataUpdate" @to-assign-room="handleSaveFocusHouse" />
+      <FocusBasicInfo ref="basicInfoRef" :form-data="form" @update:form-data="handleFormDataUpdate" @to-assign-room="stepNext" />
     </div>
     <div v-if="stepActive == 1">
-      <FocusAssignRoom ref="assignRoomRef" :form-data="form" @update:form-data="handleFormDataUpdate" @to-add-extra="handleAssignRoomNext" />
+      <FocusAssignRoom ref="assignRoomRef" :form-data="form" @update:form-data="handleFormDataUpdate" @step-previous="stepPrevious" @to-add-extra="stepNext" />
     </div>
     <div v-if="stepActive == 2">
-      <FocusExtraInfo ref="extraInfoRef" />
+      <FocusExtraInfo ref="extraInfoRef" :form-data="form" @update:form-data="handleFormDataUpdate" @step-previous="stepPrevious" @to-create-house="submitAllData" />
     </div>
     <!-- 其他步骤的按钮 -->
     <el-row v-if="stepActive !== 0" :gutter="20">
       <el-col :span="24" class="text-right">
-        <el-button v-if="stepActive == 1 || stepActive == 2" type="primary" style="margin-top: 12px" @click="stepPrevious">上一步</el-button>
-        <el-button v-if="stepActive == 1" type="primary" style="margin-top: 12px" @click="handleAssignRoomNext">保存并完善项目</el-button>
         <el-button v-if="stepActive == 2" type="primary" style="margin-top: 12px" @click="submitAllData">保存</el-button>
       </el-col>
     </el-row>

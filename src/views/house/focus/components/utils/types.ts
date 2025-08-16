@@ -9,7 +9,6 @@ interface FormItemProps {
   building: string;
   unit: string;
   doorNumber: string;
-  remark: string;
   // 总楼层
   floorTotal: number;
   // 每个楼层的房间数量
@@ -32,6 +31,18 @@ interface FormItemProps {
   deptId: number;
   // 业务员id
   salesmanId: number;
+  // extra info
+  phone: string;
+  water: string;
+  electricity: string;
+  heating: string;
+  hasGas: boolean;
+  hasElevator: boolean;
+  facilities: any;
+  projectDescription: string;
+  businessDescription: string;
+  tags: string[];
+  remark: string;
 }
 
 interface FormProps {
@@ -77,7 +88,7 @@ interface ExtraFormItemProps {
   projectDescription: string;
   businessDescription: string;
   tags: string[];
-  notes: string;
+  remark: string;
 }
 
 export type { FormItemProps, FormProps, RoomStatusProps, HouseLayoutProps, ExtraFormItemProps };
