@@ -83,7 +83,7 @@
       <div class="section">
         <el-form-item label="备注">
           <div class="note-section">
-            <el-input v-model="formData.notes" type="textarea" placeholder="请输入备注信息" :rows="3" maxlength="500" show-word-limit />
+            <el-input v-model="formData.remark" type="textarea" placeholder="请输入备注信息" :rows="3" maxlength="500" show-word-limit />
           </div>
         </el-form-item>
       </div>
@@ -124,7 +124,7 @@
     projectDescription: "",
     businessDescription: "",
     tags: [],
-    notes: ""
+    remark: ""
   });
 
   const facilitiesOptions = ref([]);
