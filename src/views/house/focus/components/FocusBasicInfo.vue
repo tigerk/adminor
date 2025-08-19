@@ -56,16 +56,10 @@
     }
 
     // 清空现有数据
-    if (form.value.roomsStatusOfFloors) {
-      form.value.roomsStatusOfFloors.clear();
-    } else {
-      form.value.roomsStatusOfFloors = new Map<number, Map<string, RoomStatusProps>>();
-    }
+    form.value.roomList = [];
 
     // 初始化每个楼层的房间数据
     for (let floor = 1; floor <= form.value.floorTotal; floor++) {
-      const roomStatusMap = new Map<string, RoomStatusProps>();
-
       for (let room = 1; room <= form.value.roomCountPerFloor; room++) {
         const roomNum = room.toString();
 
@@ -74,7 +68,7 @@
           continue;
         }
 
-        roomStatusMap.set(roomNum, {
+        form.value.roomList.push({
           id: `${floor}-${room}`,
           roomNumber: roomNum,
           locked: false,
@@ -85,8 +79,6 @@
           area: 0
         });
       }
-
-      form.value.roomsStatusOfFloors.set(floor, roomStatusMap);
     }
 
     // 自动选中第一个楼层并显示房间列表
@@ -98,9 +90,10 @@
 
   // 更新当前显示的房间列表
   const updateCurrentRoomDisplay = (floor: number) => {
-    if (form.value.roomsStatusOfFloors && form.value.roomsStatusOfFloors.has(floor)) {
-      currentRoomList.value = Array.from(form.value.roomsStatusOfFloors.get(floor).values());
-      currentRoomCount.value = form.value.roomsStatusOfFloors.get(floor).size;
+    let roomsByFloor = useFocusEdit().getRoomsByFloor(form.value.roomList, floor, form.value.excludeFour);
+    if (roomsByFloor.length > 0) {
+      currentRoomList.value = roomsByFloor;
+      currentRoomCount.value = roomsByFloor.length;
     } else {
       currentRoomList.value = [];
       currentRoomCount.value = 0;
@@ -109,8 +102,6 @@
 
   // 初始化特定楼层房间列表
   const initRoomListOfFloor = (floor: number, roomCount: number) => {
-    const roomStatusMap = new Map<string, RoomStatusProps>();
-
     for (let i = 1; i <= roomCount; i++) {
       const roomNum = i.toString();
 
@@ -119,7 +110,7 @@
         continue;
       }
 
-      roomStatusMap.set(roomNum, {
+      form.value.roomList.push({
         id: `${floor}-${i}`,
         roomNumber: roomNum,
         locked: false,
@@ -130,25 +121,22 @@
         area: 0
       });
     }
-
-    form.value.roomsStatusOfFloors.set(floor, roomStatusMap);
-    return Array.from(roomStatusMap.values());
   };
 
-  function handleCurrentRoomCountChange(value) {
-    updateRoomCountForFloor(form.value.selectedFloor, value);
+  function handleCurrentRoomCountChange(value: string) {
+    updateRoomCountForFloor(form.value.selectedFloor, Number(value));
     updateCurrentRoomDisplay(form.value.selectedFloor);
   }
 
   // 更新特定楼层房间数量
   const updateRoomCountForFloor = (floor: number, newRoomCount: number) => {
-    if (!form.value.roomsStatusOfFloors.has(floor)) {
+    let currentFloorRooms = useFocusEdit().getRoomsByFloor(form.value.roomList, floor, form.value.excludeFour);
+    if (currentFloorRooms.length === 0) {
       initRoomListOfFloor(floor, newRoomCount);
       return;
     }
 
-    const currentFloor = form.value.roomsStatusOfFloors.get(floor);
-    const currentSize = currentFloor.size;
+    const currentSize = currentFloorRooms.length;
 
     if (newRoomCount > currentSize) {
       // 增加房间
@@ -160,7 +148,7 @@
           continue;
         }
 
-        currentFloor.set(roomNum, {
+        form.value.roomList.push({
           id: `${floor}-${i}`,
           roomNumber: roomNum,
           locked: false,
@@ -173,16 +161,11 @@
       }
     } else if (newRoomCount < currentSize) {
       // 减少房间 - 截断
-      const newMap = new Map<string, RoomStatusProps>();
-      let count = 0;
-
-      for (const [key, value] of currentFloor) {
-        if (count >= newRoomCount) break;
-        newMap.set(key, value);
-        count++;
-      }
-
-      form.value.roomsStatusOfFloors.set(floor, newMap);
+      form.value.roomList.forEach(item => {
+        if (item.floor === floor && Number(item.roomNumber) > newRoomCount) {
+          form.value.roomList.splice(form.value.roomList.indexOf(item), 1);
+        }
+      });
     }
   };
 
@@ -192,7 +175,8 @@
     updateCurrentRoomDisplay(floor);
 
     // 如果选中的楼层没有房间数据，使用默认房间数量初始化
-    if (!form.value.roomsStatusOfFloors.has(floor) && form.value.roomCountPerFloor) {
+    let roomsByFloor = useFocusEdit().getRoomsByFloor(form.value.roomList, floor, form.value.excludeFour);
+    if (roomsByFloor.length === 0 && form.value.roomCountPerFloor) {
       initRoomListOfFloor(floor, form.value.roomCountPerFloor);
       updateCurrentRoomDisplay(floor);
     }

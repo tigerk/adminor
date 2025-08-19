@@ -114,6 +114,21 @@
   // 获取 FocusCreateForm 中的form数据，vue3.3+
   const formData = defineModel<FocusFormItemProps>();
 
+  // 初始化操作，没有值时进行默认值处理
+  formData.value.projectFileList = formData.value?.projectFileList || [];
+  formData.value.phone = formData.value?.phone || "";
+  formData.value.water = formData.value?.water || "commercial";
+  formData.value.electricity = formData.value?.electricity || "commercial";
+  formData.value.heating = formData.value?.heating || "central";
+  formData.value.hasGas = formData.value?.hasGas !== undefined ? formData.value.hasGas : true;
+  formData.value.hasElevator = formData.value?.hasElevator !== undefined ? formData.value.hasElevator : true;
+  formData.value.facilities = formData.value?.facilities || {};
+  formData.value.projectDesc = formData.value?.projectDesc || "";
+  formData.value.businessDesc = formData.value?.businessDesc || "";
+  formData.value.tags = formData.value?.tags || [];
+  formData.value.remark = formData.value?.remark || "";
+  formData.value.projectFileList = formData.value?.projectFileList || [];
+
   // 定义 emits
   const emit = defineEmits<{
     "step-previous": [];
