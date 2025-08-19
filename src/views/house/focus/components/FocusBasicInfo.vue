@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, reactive, computed, watch } from "vue";
-  import { FormProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
+  import { FormProps, FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
   import RegionCascader from "@/components/Business/RegionCascader.vue";
   import DeptCascader from "@/components/Business/DeptUserCascader.vue";
   import { getDeptUserList } from "@/api/sys/dept";
@@ -10,46 +10,22 @@
   import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
   import { ElMessage } from "element-plus";
 
-  // 定义 props
-  const props = defineProps<{
-    formData: FormProps["formInline"];
-  }>();
+  // 获取 FocusCreateForm 中的form数据，vue3.3+
+  const form = defineModel<FocusFormItemProps>();
 
   // 定义 emits
   const emit = defineEmits<{
-    "update:formData": [value: FormProps["formInline"]];
     "to-assign-room": [];
   }>();
 
-  // 使用响应式数据，基于 props
-  const form = reactive({ ...props.formData });
-
-  // 监听 props 变化，同步到本地 form
-  watch(
-    () => props.formData,
-    newVal => {
-      Object.assign(form, newVal);
-    },
-    { deep: true }
-  );
-
-  // 监听本地 form 变化，向上传递
-  watch(
-    form,
-    newVal => {
-      emit("update:formData", newVal);
-    },
-    { deep: true }
-  );
-
   // 确保房间号长度有默认值
-  if (form.roomNumberLength === undefined || form.roomNumberLength === null) {
-    form.roomNumberLength = 3;
+  if (form.value.roomNumberLength === undefined || form.value.roomNumberLength === null) {
+    form.value.roomNumberLength = 3;
   }
 
   // 确保房间号前缀有默认值
-  if (form.roomPrefix === undefined || form.roomPrefix === null) {
-    form.roomPrefix = "A";
+  if (form.value.roomPrefix === undefined || form.value.roomPrefix === null) {
+    form.value.roomPrefix = "A";
   }
 
   const currentRoomCount = ref(null);
@@ -67,34 +43,34 @@
 
   // 计算楼层列表
   const computedFloorList = computed(() => {
-    if (!form.floorTotal) {
+    if (!form.value.floorTotal) {
       return [];
     }
-    return Array.from({ length: form.floorTotal }, (_, i) => i + 1);
+    return Array.from({ length: form.value.floorTotal }, (_, i) => i + 1);
   });
 
   // 初始化所有楼层房间状态
   const initAllFloors = () => {
-    if (!form.floorTotal || !form.roomCountPerFloor) {
+    if (!form.value.floorTotal || !form.value.roomCountPerFloor) {
       return;
     }
 
     // 清空现有数据
-    if (form.roomsStatusOfFloors) {
-      form.roomsStatusOfFloors.clear();
+    if (form.value.roomsStatusOfFloors) {
+      form.value.roomsStatusOfFloors.clear();
     } else {
-      form.roomsStatusOfFloors = new Map<number, Map<string, RoomStatusProps>>();
+      form.value.roomsStatusOfFloors = new Map<number, Map<string, RoomStatusProps>>();
     }
 
     // 初始化每个楼层的房间数据
-    for (let floor = 1; floor <= form.floorTotal; floor++) {
+    for (let floor = 1; floor <= form.value.floorTotal; floor++) {
       const roomStatusMap = new Map<string, RoomStatusProps>();
 
-      for (let room = 1; room <= form.roomCountPerFloor; room++) {
+      for (let room = 1; room <= form.value.roomCountPerFloor; room++) {
         const roomNum = room.toString();
 
         // 如果选择了去掉4，则跳过包含4的房间号
-        if (form.excludeFour && roomNum.includes("4")) {
+        if (form.value.excludeFour && roomNum.includes("4")) {
           continue;
         }
 
@@ -102,25 +78,29 @@
           id: `${floor}-${room}`,
           roomNumber: roomNum,
           locked: false,
-          floor
+          floor: floor,
+          houseLayoutId: null,
+          price: 0,
+          direction: "",
+          area: 0
         });
       }
 
-      form.roomsStatusOfFloors.set(floor, roomStatusMap);
+      form.value.roomsStatusOfFloors.set(floor, roomStatusMap);
     }
 
     // 自动选中第一个楼层并显示房间列表
-    if (form.floorTotal > 0) {
-      form.selectedFloor = 1;
+    if (form.value.floorTotal > 0) {
+      form.value.selectedFloor = 1;
       updateCurrentRoomDisplay(1);
     }
   };
 
   // 更新当前显示的房间列表
   const updateCurrentRoomDisplay = (floor: number) => {
-    if (form.roomsStatusOfFloors && form.roomsStatusOfFloors.has(floor)) {
-      currentRoomList.value = Array.from(form.roomsStatusOfFloors.get(floor).values());
-      currentRoomCount.value = form.roomsStatusOfFloors.get(floor).size;
+    if (form.value.roomsStatusOfFloors && form.value.roomsStatusOfFloors.has(floor)) {
+      currentRoomList.value = Array.from(form.value.roomsStatusOfFloors.get(floor).values());
+      currentRoomCount.value = form.value.roomsStatusOfFloors.get(floor).size;
     } else {
       currentRoomList.value = [];
       currentRoomCount.value = 0;
@@ -135,7 +115,7 @@
       const roomNum = i.toString();
 
       // 如果选择了去掉4，则跳过包含4的房间号
-      if (form.excludeFour && roomNum.includes("4")) {
+      if (form.value.excludeFour && roomNum.includes("4")) {
         continue;
       }
 
@@ -143,27 +123,31 @@
         id: `${floor}-${i}`,
         roomNumber: roomNum,
         locked: false,
-        floor
+        floor: floor,
+        houseLayoutId: null,
+        price: 0,
+        direction: "",
+        area: 0
       });
     }
 
-    form.roomsStatusOfFloors.set(floor, roomStatusMap);
+    form.value.roomsStatusOfFloors.set(floor, roomStatusMap);
     return Array.from(roomStatusMap.values());
   };
 
   function handleCurrentRoomCountChange(value) {
-    updateRoomCountForFloor(form.selectedFloor, value);
-    updateCurrentRoomDisplay(form.selectedFloor);
+    updateRoomCountForFloor(form.value.selectedFloor, value);
+    updateCurrentRoomDisplay(form.value.selectedFloor);
   }
 
   // 更新特定楼层房间数量
   const updateRoomCountForFloor = (floor: number, newRoomCount: number) => {
-    if (!form.roomsStatusOfFloors.has(floor)) {
+    if (!form.value.roomsStatusOfFloors.has(floor)) {
       initRoomListOfFloor(floor, newRoomCount);
       return;
     }
 
-    const currentFloor = form.roomsStatusOfFloors.get(floor);
+    const currentFloor = form.value.roomsStatusOfFloors.get(floor);
     const currentSize = currentFloor.size;
 
     if (newRoomCount > currentSize) {
@@ -172,7 +156,7 @@
         const roomNum = i.toString();
 
         // 如果选择了去掉4，则跳过包含4的房间号
-        if (form.excludeFour && roomNum.includes("4")) {
+        if (form.value.excludeFour && roomNum.includes("4")) {
           continue;
         }
 
@@ -180,7 +164,11 @@
           id: `${floor}-${i}`,
           roomNumber: roomNum,
           locked: false,
-          floor
+          floor: floor,
+          houseLayoutId: null,
+          price: 0,
+          direction: "",
+          area: 0
         });
       }
     } else if (newRoomCount < currentSize) {
@@ -194,25 +182,25 @@
         count++;
       }
 
-      form.roomsStatusOfFloors.set(floor, newMap);
+      form.value.roomsStatusOfFloors.set(floor, newMap);
     }
   };
 
   // 楼层选择处理
   const handleFloorSelect = (floor: number) => {
-    form.selectedFloor = floor;
+    form.value.selectedFloor = floor;
     updateCurrentRoomDisplay(floor);
 
     // 如果选中的楼层没有房间数据，使用默认房间数量初始化
-    if (!form.roomsStatusOfFloors.has(floor) && form.roomCountPerFloor) {
-      initRoomListOfFloor(floor, form.roomCountPerFloor);
+    if (!form.value.roomsStatusOfFloors.has(floor) && form.value.roomCountPerFloor) {
+      initRoomListOfFloor(floor, form.value.roomCountPerFloor);
       updateCurrentRoomDisplay(floor);
     }
   };
 
   const getCurrentFloorRooms = computed(() => {
     // 房间去掉第4个
-    if (form.excludeFour) {
+    if (form.value.excludeFour) {
       return currentRoomList.value.filter(item => item.roomNumber.charAt(item.roomNumber.length - 1) !== "4");
     }
 
@@ -221,7 +209,7 @@
 
   // 监听多个值，统一处理
   watch(
-    [() => form.floorTotal, () => form.roomCountPerFloor, () => form.excludeFour],
+    [() => form.value.floorTotal, () => form.value.roomCountPerFloor, () => form.value.excludeFour],
     ([newFloorTotal, newRoomCount, newExcludeFour], [oldFloorTotal, oldRoomCount, oldExcludeFour]) => {
       // 只有当楼层总数或每层房间数量有效时才初始化
       if (newFloorTotal && newRoomCount) {
@@ -232,9 +220,9 @@
 
   // 在组件挂载时，如果已有数据则初始化显示
   watch(
-    () => form.selectedFloor,
+    () => form.value.selectedFloor,
     newFloor => {
-      if (newFloor && form.roomsStatusOfFloors && form.roomsStatusOfFloors.has(newFloor)) {
+      if (newFloor && form.value.roomsStatusOfFloors && form.value.roomsStatusOfFloors.has(newFloor)) {
         updateCurrentRoomDisplay(newFloor);
       }
     },
@@ -242,36 +230,36 @@
   );
 
   const formatRoomNumber = (num: number) => {
-    return useFocusEdit().formatRoomNumber(form.roomPrefix, form.roomNumberLength, form.selectedFloor, String(num));
+    return useFocusEdit().formatRoomNumber(form.value.roomPrefix, form.value.roomNumberLength, form.value.selectedFloor, String(num));
   };
 
   function handleDeptSelected(deptId: number) {
-    form.deptId = deptId;
+    form.value.deptId = deptId;
 
     getDeptUserList({
       deptId: deptId
     }).then(resp => {
-      salesmanList.value = resp.data;
-      const salesmanExists = salesmanList.value.some(salesman => salesman.id === form.salesmanId);
+      salesmanList.value = Array.isArray(resp.data) ? resp.data : [];
+      const salesmanExists = salesmanList.value.some(salesman => salesman.id === form.value.salesmanId);
       if (!salesmanExists) {
-        form.salesmanId = null;
+        form.value.salesmanId = null;
       }
     });
   }
 
   function handleCloseFloor() {
     // 确保 closedFloors 是数组
-    if (!Array.isArray(form.closedFloors)) {
-      form.closedFloors = [];
+    if (!Array.isArray(form.value.closedFloors)) {
+      form.value.closedFloors = [];
     }
 
-    const index = form.closedFloors.indexOf(form.selectedFloor);
+    const index = form.value.closedFloors.indexOf(form.value.selectedFloor);
     if (index > -1) {
       // 如果已关闭，则开启
-      form.closedFloors.splice(index, 1);
+      form.value.closedFloors.splice(index, 1);
     } else {
       // 如果未关闭，则关闭
-      form.closedFloors.push(form.selectedFloor);
+      form.value.closedFloors.push(form.value.selectedFloor);
     }
   }
 
@@ -282,7 +270,7 @@
       await ruleFormRef.value.validate();
 
       // 检查负责人信息
-      if (!form.deptId || !form.salesmanId) {
+      if (!form.value.deptId || !form.value.salesmanId) {
         ElMessage.warning("请选择归属部门和负责人");
         return;
       }
@@ -297,17 +285,17 @@
   // 处理房间点击事件
   const handleRoomClick = (roomStatus: RoomStatusProps) => {
     // 确保 closedRooms 是数组
-    if (!Array.isArray(form.closedRooms)) {
-      form.closedRooms = [];
+    if (!Array.isArray(form.value.closedRooms)) {
+      form.value.closedRooms = [];
     }
 
     roomStatus.locked = !roomStatus.locked;
     if (roomStatus.locked) {
-      form.closedRooms.push({ floor: form.selectedFloor, roomNumber: roomStatus.roomNumber });
+      form.value.closedRooms.push({ floor: form.value.selectedFloor, roomNumber: roomStatus.roomNumber });
     } else {
-      const index = form.closedRooms.findIndex(item => item.floor === form.selectedFloor && item.roomNumber === roomStatus.roomNumber);
+      const index = form.value.closedRooms.findIndex(item => item.floor === form.value.selectedFloor && item.roomNumber === roomStatus.roomNumber);
       if (index > -1) {
-        form.closedRooms.splice(index, 1);
+        form.value.closedRooms.splice(index, 1);
       }
     }
   };

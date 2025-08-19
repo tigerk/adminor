@@ -3,7 +3,7 @@ import { addDialog } from "@/components/ReDialog/index";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
-import type { FormItemProps } from "@/views/house/focus/components/utils/types";
+import type { FocusFormItemProps } from "@/views/house/focus/components/utils/types";
 import { createFocusHouse } from "@/api/house/focus";
 
 export function useFocusEdit() {
@@ -15,7 +15,7 @@ export function useFocusEdit() {
 
   const formRef = ref();
 
-  function openFocusEditDialog(title = "新增", row?: FormItemProps) {
+  function openFocusEditDialog(title = "新增", row?: FocusFormItemProps) {
     addDialog({
       title: `${title}项目`,
       props: {
@@ -33,7 +33,7 @@ export function useFocusEdit() {
       contentRenderer: () => h(FocusCreateForm, { ref: formRef, formInline: null }),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as FormItemProps;
+        const curData = options.props.formInline as FocusFormItemProps;
 
         function chores() {
           message(`您${title}了角色名称为${curData.houseName}的这条数据`, {
@@ -59,7 +59,7 @@ export function useFocusEdit() {
     });
   }
 
-  function saveFocusHouse(row?: FormItemProps) {
+  function saveFocusHouse(row?: FocusFormItemProps) {
     // 创建一个可序列化的数据副本
     const requestData = {
       ...row,

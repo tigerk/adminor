@@ -26,6 +26,8 @@
       closedRooms: [],
       // 所有楼层的房间状态
       roomsStatusOfFloors: new Map<number, Map<string, RoomStatusProps>>(),
+      // 所有房间
+      roomList: [],
       // 选择的楼层
       selectedFloor: 1,
       // 选择的房间数量
@@ -46,11 +48,29 @@
       hasGas: true,
       hasElevator: true,
       facilities: {},
-      projectDescription: "",
-      businessDescription: "",
+      projectDesc: "",
+      businessDesc: "",
       tags: [],
       remark: "",
-      projectFileList: []
+      projectFileList: [],
+      houseLayoutList: [
+        {
+          id: "1",
+          layoutName: "精装一房",
+          bedroom: 1,
+          livingRoom: 1,
+          kitchen: 1,
+          bathroom: 1
+        },
+        {
+          id: "2",
+          layoutName: "精装二房",
+          bedroom: 2,
+          livingRoom: 1,
+          kitchen: 1,
+          bathroom: 1
+        }
+      ]
     })
   });
 
@@ -144,13 +164,13 @@
   </el-steps>
   <div class="property-form">
     <div v-if="stepActive == 0">
-      <FocusBasicInfo ref="basicInfoRef" :form-data="form" @update:form-data="handleFormDataUpdate" @to-assign-room="stepNext" />
+      <FocusBasicInfo ref="basicInfoRef" v-model="form" :form-data="form" @update:form-data="handleFormDataUpdate" @to-assign-room="stepNext" />
     </div>
     <div v-if="stepActive == 1">
-      <FocusAssignRoom ref="assignRoomRef" :form-data="form" @update:form-data="handleFormDataUpdate" @step-previous="stepPrevious" @to-add-extra="stepNext" />
+      <FocusAssignRoom ref="assignRoomRef" v-model="form" @step-previous="stepPrevious" @to-add-extra="stepNext" />
     </div>
     <div v-if="stepActive == 2">
-      <FocusExtraInfo ref="extraInfoRef" :form-data="form" @update:form-data="handleFormDataUpdate" @step-previous="stepPrevious" @to-create-house="submitAllData" />
+      <FocusExtraInfo ref="extraInfoRef" v-model="form" :form-data="form" @update:form-data="handleFormDataUpdate" @step-previous="stepPrevious" @to-create-house="submitAllData" />
     </div>
   </div>
 </template>

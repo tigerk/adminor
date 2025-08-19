@@ -1,6 +1,6 @@
 // 虽然字段很少 但是抽离出来 后续有扩展字段需求就很方便了
 
-interface FormItemProps {
+interface FocusFormItemProps {
   id: number;
   businessMode: number;
   houseCode: string;
@@ -19,6 +19,8 @@ interface FormItemProps {
   closedRooms: { floor: number; roomNumber: string }[];
   // 所有楼层的房间状态
   roomsStatusOfFloors: Map<number, Map<string, RoomStatusProps>>;
+  // 所有房间
+  roomList: RoomStatusProps[];
   // 选择的楼层
   selectedFloor: number;
   // 房间前缀
@@ -31,7 +33,6 @@ interface FormItemProps {
   deptId: number;
   // 业务员id
   salesmanId: number;
-
   // extra info
   phone: string;
   water: string;
@@ -40,15 +41,18 @@ interface FormItemProps {
   hasGas: boolean;
   hasElevator: boolean;
   facilities: any;
-  projectDescription: string;
-  businessDescription: string;
+  projectDesc: string;
+  businessDesc: string;
+  // 项目标签
   tags: string[];
   remark: string;
+  // 项目文件列表
   projectFileList: [];
+  houseLayoutList: HouseLayoutProps[];
 }
 
 interface FormProps {
-  formInline: FormItemProps;
+  formInline: FocusFormItemProps;
 }
 
 interface RoomStatusProps {
@@ -79,4 +83,4 @@ interface HouseLayoutProps {
   bathroom: number;
 }
 
-export type { FormItemProps, FormProps, RoomStatusProps, HouseLayoutProps };
+export type { FocusFormItemProps, FormProps, RoomStatusProps, HouseLayoutProps };

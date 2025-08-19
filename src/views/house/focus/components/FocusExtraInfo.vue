@@ -107,18 +107,18 @@
 <script setup lang="ts">
   import { onMounted, reactive, ref, watch } from "vue";
   import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
-  import { FormItemProps } from "@/views/house/focus/components/utils/types";
+  import { FocusFormItemProps } from "@/views/house/focus/components/utils/types";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
 
   // 定义 props
   const props = defineProps<{
-    formData: FormItemProps;
+    formData: FocusFormItemProps;
   }>();
 
   // 定义 emits
   const emit = defineEmits<{
-    "update:formData": [value: FormItemProps];
+    "update:formData": [value: FocusFormItemProps];
     "step-previous": [];
     "to-create-house": [];
   }>();
