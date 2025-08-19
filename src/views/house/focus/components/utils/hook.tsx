@@ -3,7 +3,7 @@ import { addDialog } from "@/components/ReDialog/index";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
-import type { FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
+import type { FocusFormItemProps } from "@/views/house/focus/components/utils/types";
 import { createFocusHouse } from "@/api/house/focus";
 
 export function useFocusEdit() {
@@ -103,31 +103,11 @@ export function useFocusEdit() {
     return (roomPrefix ? roomPrefix : "") + String(selectedFloor).padEnd(prefix, "0") + num.padStart(tmp, "0");
   };
 
-  /**
-   * 获取每一层的房间数据
-   */
-  const getRoomsByFloor = (allRooms: RoomStatusProps[], floor: number, excludeFour: boolean) => {
-    return allRooms
-      .filter(room => room.floor === floor)
-      .filter(room => {
-        // 如果选择了去掉4，过滤掉包含4的房间
-        if (excludeFour && room.roomNumber) {
-          // 检查房间号是否包含数字4
-          return !room.roomNumber.includes("4");
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        return Number(a.roomNumber) - Number(b.roomNumber);
-      });
-  };
-
   return {
     form,
     formRef,
     openFocusEditDialog,
     saveFocusHouse,
-    getRoomsByFloor,
     formatRoomNumber
   };
 }

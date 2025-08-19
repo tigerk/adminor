@@ -23,6 +23,7 @@
       roomCountPerFloor: null,
       // 关闭楼层楼层
       closedFloors: [],
+      // 关闭的房间
       closedRooms: [],
       // 所有楼层的房间状态
       roomsStatusOfFloors: new Map<number, Map<string, RoomStatusProps>>(),

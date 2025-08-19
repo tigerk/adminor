@@ -16,7 +16,7 @@ interface FocusFormItemProps {
   // 关闭的楼层列表
   closedFloors: number[];
   // 关闭的房间
-  closedRooms: { floor: number; roomNumber: string }[];
+  closedRooms: RoomStatusProps[];
   // 所有楼层的房间状态
   roomsStatusOfFloors: Map<number, Map<string, RoomStatusProps>>;
   // 所有房间
@@ -57,6 +57,7 @@ interface FormProps {
 
 interface RoomStatusProps {
   id: string;
+  roomIndex: number;
   // 房间号
   roomNumber: string;
   // 房间锁定状态
