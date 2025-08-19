@@ -102,7 +102,7 @@
                   :class="['room-status-button', `status-${item.roomStatus || 'all'}`]"
                   :style="{
                     '--status-color': item.roomStatusColor,
-                    '--status-bg-color': item.roomStatusColor + '20' // 添加透明度
+                    '--status-bg-color': item.roomStatusColor + '5' // 添加透明度
                   }"
                 >
                   <span class="status-content">
@@ -163,8 +163,8 @@
     display: inline-block;
     width: 8px;
     height: 8px;
-    border-radius: 50%;
     margin-right: 6px;
+    border-radius: 50%;
   }
 
   /* 房间状态按钮样式 */
@@ -172,24 +172,16 @@
     position: relative;
 
     :deep(.el-radio-button__inner) {
+      position: relative;
+      z-index: 1;
       color: var(--status-color, #606266);
       background-color: var(--status-bg-color, transparent);
       transition: all 0.3s ease;
-      position: relative;
-      z-index: 1;
 
       &:hover {
         //border-color: var(--status-color);
         background-color: var(--status-bg-color);
       }
-    }
-
-    /* 选中状态 */
-    :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      background-color: var(--status-color) !important;
-      border-color: var(--status-color) !important;
-      color: #fff !important;
-      z-index: 2;
     }
 
     /* 修复选中状态的左侧边框显示问题 */
@@ -217,16 +209,16 @@
 
   .status-content {
     display: flex;
-    align-items: center;
     gap: 6px;
+    align-items: center;
   }
 
   .status-dot {
     display: inline-block;
+    flex-shrink: 0;
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    flex-shrink: 0;
   }
 
   /* 特定状态的自定义样式（如果需要） */

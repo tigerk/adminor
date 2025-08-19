@@ -124,31 +124,8 @@
       // 收集所有数据
       const submitData = {
         // 基本信息
-        ...form,
-
-        // 房型信息
-        houseLayouts: assignRoomRef.value?.houseLayouts || [],
-
-        // 房间信息
-        rooms: [],
-
-        // FocusExtraInfo组件的数据
-        extraInfo: extraInfoRef.value?.formData || {}
+        ...form
       };
-
-      // 转换房间数据格式
-      if (assignRoomRef.value?.allRooms) {
-        submitData.rooms = assignRoomRef.value.allRooms.map(room => ({
-          id: room.id,
-          roomNumber: room.roomNumber,
-          floor: room.floor,
-          locked: room.locked,
-          houseLayoutId: room.houseLayoutId,
-          price: room.price,
-          direction: room.direction,
-          area: room.area
-        }));
-      }
 
       // 调用后台接口
       const response = await createFocusHouse(submitData);
