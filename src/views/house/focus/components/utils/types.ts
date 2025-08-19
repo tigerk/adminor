@@ -5,6 +5,7 @@ interface FocusFormItemProps {
   businessMode: number;
   houseCode: string;
   houseName: string;
+  region: any[];
   address: string;
   building: string;
   unit: string;

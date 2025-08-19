@@ -13,11 +13,11 @@
 </template>
 
 <script setup>
-  import { onMounted, ref } from "vue";
+  import { defineModel, onMounted, ref } from "vue";
   import { getRegionList } from "@/api/region.ts";
   import { handleTree } from "@/utils/tree.ts";
 
-  const selectedValue = ref([]); // 用于存储选中的值
+  const selectedValue = defineModel({ default: [] });
   const options = ref([]); // 用于存储级联选择器的选项数据 (树形结构)
   const loading = ref(false); // 用于控制加载状态
 

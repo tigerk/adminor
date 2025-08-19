@@ -13,6 +13,7 @@
       businessMode: 0,
       houseCode: "",
       houseName: "",
+      region: [],
       address: "",
       building: "",
       unit: "",
@@ -124,7 +125,9 @@
       // 收集所有数据
       const submitData = {
         // 基本信息
-        ...form
+        ...form,
+        projectFileList: form.projectFileList.map((file: any) => file?.url).filter(Boolean),
+        regionId: form.region[form.region.length - 1]
       };
 
       // 调用后台接口

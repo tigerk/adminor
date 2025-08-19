@@ -314,7 +314,7 @@
           <el-col :span="6">
             <div class="grid-content ep-bg-purple">
               <el-form-item label="选择区域" class="el-form-item">
-                <RegionCascader />
+                <RegionCascader v-model="form.region" />
               </el-form-item>
             </div>
           </el-col>
