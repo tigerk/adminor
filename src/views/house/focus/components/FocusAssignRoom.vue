@@ -93,11 +93,11 @@
                   <div class="grid grid-cols-6 gap-3">
                     <div
                       v-for="room in getRoomsByFloor(floor)"
-                      :key="room.id"
+                      :key="room.cursor"
                       class="relative border rounded-lg p-2 cursor-pointer transition-all hover:shadow-sm"
                       :class="getRoomCardClass(room)"
                       style="min-width: 100px"
-                      @click="toggleRoomSelection(room.id)"
+                      @click="toggleRoomSelection(room.cursor)"
                       @contextmenu.prevent="handleRoomRightClick($event, room)"
                     >
                       <div
@@ -109,7 +109,7 @@
 
                       <!-- 选中图标 -->
                       <div class="absolute top-1 right-1">
-                        <el-icon v-if="selectedRooms.includes(room.id)" class="text-blue-500" size="14">
+                        <el-icon v-if="selectedRooms.includes(room.cursor)" class="text-blue-500" size="14">
                           <CircleCheckFilled />
                         </el-icon>
                       </div>
@@ -363,7 +363,7 @@
 
   // 新房间表单
   const newRoomForm = reactive({
-    id: "",
+    cursor: "",
     roomNumber: "",
     floor: 1
   });
@@ -412,7 +412,7 @@
         // 只有房间号有效时才添加到列表
         if (formattedRoomNumber) {
           form.value.roomList.push({
-            id: `${floor}-${roomNumber}`,
+            cursor: `${floor}-${roomNumber}`,
             roomIndex: roomStatus.roomIndex,
             roomNumber: formattedRoomNumber,
             floor: floor,
@@ -504,7 +504,7 @@
   };
 
   const getRoomCardClass = (room: RoomStatusProps) => {
-    if (selectedRooms.value.includes(room.id)) {
+    if (selectedRooms.value.includes(room.cursor)) {
       return "border-blue-500 bg-blue-50";
     }
     if (room.houseLayoutId) {
@@ -515,7 +515,7 @@
 
   const getFloorBorderClass = (floor: number) => {
     const floorRooms = getRoomsByFloor(floor);
-    const selectedFloorRooms = floorRooms.filter(room => selectedRooms.value.includes(room.id));
+    const selectedFloorRooms = floorRooms.filter(room => selectedRooms.value.includes(room.cursor));
 
     if (selectedFloorRooms.length === floorRooms.length && floorRooms.length > 0) {
       return "border-blue-500 bg-blue-50";
@@ -527,13 +527,13 @@
 
   const getFloorChecked = (floor: number) => {
     const floorRooms = getRoomsByFloor(floor);
-    const selectedFloorRooms = floorRooms.filter(room => selectedRooms.value.includes(room.id));
+    const selectedFloorRooms = floorRooms.filter(room => selectedRooms.value.includes(room.cursor));
     return { value: selectedFloorRooms.length === floorRooms.length && floorRooms.length > 0 };
   };
 
   const getFloorIndeterminate = (floor: number) => {
     const floorRooms = getRoomsByFloor(floor);
-    const selectedFloorRooms = floorRooms.filter(room => selectedRooms.value.includes(room.id));
+    const selectedFloorRooms = floorRooms.filter(room => selectedRooms.value.includes(room.cursor));
     return selectedFloorRooms.length > 0 && selectedFloorRooms.length < floorRooms.length;
   };
 
@@ -542,7 +542,7 @@
     const isChecked = Boolean(checked);
 
     const floorRooms = getRoomsByFloor(floor);
-    const floorRoomIds = floorRooms.map(room => room.id);
+    const floorRoomIds = floorRooms.map(room => room.cursor);
 
     if (isChecked) {
       floorRoomIds.forEach(roomId => {
@@ -566,7 +566,7 @@
 
   const getSelectedRoomNumbers = () => {
     return selectedRooms.value
-      .map(id => form.value.roomList.find(room => room.id === id)?.roomNumber)
+      .map(id => form.value.roomList.find(room => room.cursor === id)?.roomNumber)
       .filter(Boolean)
       .join("、");
   };
@@ -578,7 +578,7 @@
     }
 
     selectedRooms.value.forEach(roomId => {
-      const room = form.value.roomList.find(r => r.id === roomId);
+      const room = form.value.roomList.find(r => r.cursor === roomId);
       if (room) {
         if (batchConfig.houseLayoutId !== "") {
           room.houseLayoutId = batchConfig.houseLayoutId || undefined;
@@ -625,7 +625,7 @@
     if (!room) return;
 
     isEditingRoom.value = true;
-    newRoomForm.id = room.id;
+    newRoomForm.id = room.cursor;
     newRoomForm.roomNumber = room.roomNumber;
     newRoomForm.floor = room.floor;
     showAddRoomDialog.value = true;
@@ -642,10 +642,10 @@
         type: "warning"
       });
 
-      const index = form.value.roomList.findIndex(r => r.id === room.id);
+      const index = form.value.roomList.findIndex(r => r.cursor === room.cursor);
       if (index > -1) {
         form.value.roomList.splice(index, 1);
-        const selectedIndex = selectedRooms.value.indexOf(room.id);
+        const selectedIndex = selectedRooms.value.indexOf(room.cursor);
         if (selectedIndex > -1) {
           selectedRooms.value.splice(selectedIndex, 1);
         }
@@ -670,13 +670,13 @@
     }
 
     if (isEditingRoom.value) {
-      const exists = form.value.roomList.some(room => room.roomNumber === newRoomForm.roomNumber && room.id !== newRoomForm.id);
+      const exists = form.value.roomList.some(room => room.roomNumber === newRoomForm.roomNumber && room.cursor !== newRoomForm.cursor);
       if (exists) {
         ElMessage.warning("房间号已存在");
         return;
       }
 
-      const room = form.value.roomList.find(r => r.id === newRoomForm.id);
+      const room = form.value.roomList.find(r => r.cursor === newRoomForm.id);
       if (room) {
         room.roomNumber = newRoomForm.roomNumber;
         ElMessage.success("房间修改成功");
@@ -690,7 +690,7 @@
 
       let tmpId = Date.now();
       const newRoom: RoomStatusProps = {
-        id: tmpId.toString(),
+        cursor: tmpId.toString(),
         roomIndex: tmpId,
         roomNumber: newRoomForm.roomNumber,
         floor: newRoomForm.floor,

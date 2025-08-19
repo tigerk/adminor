@@ -56,7 +56,7 @@ interface FormProps {
 }
 
 interface RoomStatusProps {
-  id: string;
+  cursor: string;
   roomIndex: number;
   // 房间号
   roomNumber: string;

@@ -69,7 +69,7 @@
       for (let room = 1; room <= form.value.roomCountPerFloor; room++) {
         const roomNum = room.toString();
         roomStatusMap.set(roomNum, {
-          id: `${floor}-${room}`,
+          cursor: `${floor}-${room}`,
           roomIndex: room,
           roomNumber: roomNum,
           locked: false,
@@ -110,7 +110,7 @@
       const roomNum = i.toString();
 
       roomStatusMap.set(roomNum, {
-        id: `${floor}-${i}`,
+        cursor: `${floor}-${i}`,
         roomIndex: i,
         roomNumber: roomNum,
         locked: false,
@@ -147,7 +147,7 @@
         const roomNum = i.toString();
 
         currentFloor.set(roomNum, {
-          id: `${floor}-${i}`,
+          cursor: `${floor}-${i}`,
           roomIndex: i,
           roomNumber: roomNum,
           locked: false,
