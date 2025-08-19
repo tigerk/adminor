@@ -298,7 +298,30 @@
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
 
-  console.log("户型数据" + form.value.houseLayoutList);
+  if (form.value.houseLayoutList === undefined || form.value.houseLayoutList === null) {
+    form.value.houseLayoutList = [
+      {
+        id: "1",
+        layoutName: "精装一房",
+        bedroom: 1,
+        livingRoom: 1,
+        kitchen: 1,
+        bathroom: 1
+      },
+      {
+        id: "2",
+        layoutName: "精装二房",
+        bedroom: 2,
+        livingRoom: 1,
+        kitchen: 1,
+        bathroom: 1
+      }
+    ];
+  }
+
+  // 添加多个调试点
+  console.log("=== FocusAssignRoom 组件初始化 ===");
+  console.log("初始 form.value:", form.value.houseLayoutList);
 
   // 定义 emits
   const emit = defineEmits<{
@@ -425,8 +448,24 @@
     { deep: true, immediate: true }
   );
 
+  // 立即检查数据
+  const checkFormData = () => {
+    console.log("=== 检查表单数据 ===");
+    console.log("form.value 存在:", !!form.value);
+    console.log("form.value:", form.value);
+
+    if (form.value) {
+      console.log("houseLayoutList 存在:", !!form.value.houseLayoutList);
+      console.log("houseLayoutList 长度:", form.value.houseLayoutList?.length);
+      console.log("houseLayoutList 内容:", form.value.houseLayoutList);
+    }
+  };
+
   // 生命周期钩子
   onMounted(() => {
+    console.log("=== onMounted ===");
+    checkFormData();
+
     document.addEventListener("click", hideContextMenu);
   });
 

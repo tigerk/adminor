@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, reactive } from "vue";
+  import { ref, reactive, watch } from "vue";
   import { FormProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
   import FocusAssignRoom from "@/views/house/focus/components/FocusAssignRoom.vue";
   import FocusExtraInfo from "@/views/house/focus/components/FocusExtraInfo.vue";
@@ -74,8 +74,17 @@
     })
   });
 
-  // 表单数据
-  const form = reactive(props.formInline);
+  // 表单数据 - 确保响应式
+  const form = reactive({ ...props.formInline });
+  // 监听 props 变化，同步到 form
+  watch(
+    () => props.formInline,
+    newFormInline => {
+      Object.assign(form, newFormInline);
+      console.log("form 数据更新:", form);
+    },
+    { deep: true, immediate: true }
+  );
 
   // 步骤激活状态
   const stepActive = ref(0);
@@ -164,13 +173,13 @@
   </el-steps>
   <div class="property-form">
     <div v-if="stepActive == 0">
-      <FocusBasicInfo ref="basicInfoRef" v-model="form" :form-data="form" @update:form-data="handleFormDataUpdate" @to-assign-room="stepNext" />
+      <FocusBasicInfo ref="basicInfoRef" v-model="form" @to-assign-room="stepNext" />
     </div>
     <div v-if="stepActive == 1">
       <FocusAssignRoom ref="assignRoomRef" v-model="form" @step-previous="stepPrevious" @to-add-extra="stepNext" />
     </div>
     <div v-if="stepActive == 2">
-      <FocusExtraInfo ref="extraInfoRef" v-model="form" :form-data="form" @update:form-data="handleFormDataUpdate" @step-previous="stepPrevious" @to-create-house="submitAllData" />
+      <FocusExtraInfo ref="extraInfoRef" v-model="form" @step-previous="stepPrevious" @to-create-house="submitAllData" />
     </div>
   </div>
 </template>

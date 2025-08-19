@@ -57,14 +57,14 @@
       <!-- 项目介绍 -->
       <div class="section">
         <el-form-item label="项目介绍">
-          <el-input v-model="formData.projectDescription" type="text" placeholder="请输入项目介绍" :rows="4" maxlength="500" show-word-limit />
+          <el-input v-model="formData.projectDesc" type="text" placeholder="请输入项目介绍" :rows="4" maxlength="500" show-word-limit />
         </el-form-item>
       </div>
 
       <!-- 商圈介绍 -->
       <div class="section">
         <el-form-item label="商圈介绍">
-          <el-input v-model="formData.businessDescription" type="text" placeholder="请输入商圈介绍" :rows="3" maxlength="500" show-word-limit />
+          <el-input v-model="formData.businessDesc" type="text" placeholder="请输入商圈介绍" :rows="3" maxlength="500" show-word-limit />
         </el-form-item>
       </div>
 
@@ -111,14 +111,11 @@
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
 
-  // 定义 props
-  const props = defineProps<{
-    formData: FocusFormItemProps;
-  }>();
+  // 获取 FocusCreateForm 中的form数据，vue3.3+
+  const formData = defineModel<FocusFormItemProps>();
 
   // 定义 emits
   const emit = defineEmits<{
-    "update:formData": [value: FocusFormItemProps];
     "step-previous": [];
     "to-create-house": [];
   }>();
@@ -132,60 +129,44 @@
     { label: "高性价比", value: "高性价比" }
   ]);
 
-  // 使用响应式数据，基于 props 中的相关字段
-  const formData = reactive({
-    phone: props.formData?.phone || "",
-    water: props.formData?.water || "commercial",
-    electricity: props.formData?.electricity || "commercial",
-    heating: props.formData?.heating || "central",
-    hasGas: props.formData?.hasGas !== undefined ? props.formData.hasGas : true,
-    hasElevator: props.formData?.hasElevator !== undefined ? props.formData.hasElevator : true,
-    facilities: props.formData?.facilities || {},
-    projectDescription: props.formData?.projectDescription || "",
-    businessDescription: props.formData?.businessDescription || "",
-    tags: props.formData?.tags || [],
-    remark: props.formData?.remark || "",
-    projectFileList: props.formData?.projectFileList || []
-  });
+  // const formData = reactive({
+  //   phone: props.formData?.phone || "",
+  //   water: props.formData?.water || "commercial",
+  //   electricity: props.formData?.electricity || "commercial",
+  //   heating: props.formData?.heating || "central",
+  //   hasGas: props.formData?.hasGas !== undefined ? props.formData.hasGas : true,
+  //   hasElevator: props.formData?.hasElevator !== undefined ? props.formData.hasElevator : true,
+  //   facilities: props.formData?.facilities || {},
+  //   projectDescription: props.formData?.projectDescription || "",
+  //   businessDescription: props.formData?.businessDescription || "",
+  //   tags: props.formData?.tags || [],
+  //   remark: props.formData?.remark || "",
+  //   projectFileList: props.formData?.projectFileList || []
+  // });
 
   const facilitiesOptions = ref([]);
 
   // 监听 props 变化，同步到本地 formData
-  watch(
-    () => props.formData,
-    newVal => {
-      if (newVal) {
-        formData.phone = newVal.phone || "";
-        formData.water = newVal.water || "commercial";
-        formData.electricity = newVal.electricity || "commercial";
-        formData.heating = newVal.heating || "central";
-        formData.hasGas = newVal.hasGas !== undefined ? newVal.hasGas : true;
-        formData.hasElevator = newVal.hasElevator !== undefined ? newVal.hasElevator : true;
-        formData.facilities = newVal.facilities || {};
-        formData.projectDescription = newVal.projectDescription || "";
-        formData.businessDescription = newVal.businessDescription || "";
-        formData.tags = newVal.tags || [];
-        formData.remark = newVal.remark || "";
-        formData.projectFileList = newVal.projectFileList || [];
-      }
-    },
-    { deep: true }
-  );
-
-  // 监听本地 formData 变化，向上传递
-  watch(
-    formData,
-    newVal => {
-      const updatedFormData = { ...props.formData, ...newVal };
-      emit("update:formData", updatedFormData);
-    },
-    { deep: true }
-  );
-
-  // 导出表单数据，供父组件使用
-  defineExpose({
-    formData
-  });
+  // watch(
+  //   () => props.formData,
+  //   newVal => {
+  //     if (newVal) {
+  //       formData.value.phone = newVal.phone || "";
+  //       formData.value.water = newVal.water || "commercial";
+  //       formData.value.electricity = newVal.electricity || "commercial";
+  //       formData.value.heating = newVal.heating || "central";
+  //       formData.value.hasGas = newVal.hasGas !== undefined ? newVal.hasGas : true;
+  //       formData.value.hasElevator = newVal.hasElevator !== undefined ? newVal.hasElevator : true;
+  //       formData.value.facilities = newVal.facilities || {};
+  //       formData.value.projectDescription = newVal.projectDescription || "";
+  //       formData.value.businessDescription = newVal.businessDescription || "";
+  //       formData.value.tags = newVal.tags || [];
+  //       formData.value.remark = newVal.remark || "";
+  //       formData.value.projectFileList = newVal.projectFileList || [];
+  //     }
+  //   },
+  //   { deep: true }
+  // );
 
   onMounted(() => {
     getDictDataByDictCode({
