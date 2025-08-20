@@ -66,7 +66,7 @@ export function useFocusEdit() {
           imageList: row?.imageList ?? [],
           houseLayoutList: row?.houseLayoutList ?? [
             {
-              id: "1",
+              id: "tmp1",
               layoutName: "精装一房",
               bedroom: 1,
               livingRoom: 1,
@@ -74,7 +74,7 @@ export function useFocusEdit() {
               bathroom: 1
             },
             {
-              id: "2",
+              id: "tmp2",
               layoutName: "精装二房",
               bedroom: 2,
               livingRoom: 1,

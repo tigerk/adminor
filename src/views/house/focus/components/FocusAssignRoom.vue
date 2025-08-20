@@ -774,7 +774,7 @@
         }
       } else {
         const newHouseLayout: HouseLayoutProps = {
-          id: Date.now().toString(),
+          id: "tmp" + Date.now().toString(),
           layoutName: houseLayoutForm.name,
           bedroom: houseLayoutForm.bedroom,
           livingRoom: houseLayoutForm.livingRoom,
