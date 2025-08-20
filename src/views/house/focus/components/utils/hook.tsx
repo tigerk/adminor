@@ -1,5 +1,5 @@
 import FocusCreateForm from "../FocusCreateForm.vue";
-import { addDialog, closeDialog } from "@/components/ReDialog/index";
+import { addDialog, closeAllDialog } from "@/components/ReDialog/index";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import type { FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
@@ -18,8 +18,8 @@ export function useFocusEdit() {
       title: `${title}项目`,
       props: {
         formInline: {
-          id: row?.id ?? 0,
-          businessMode: row?.businessMode ?? 0,
+          id: row?.id ?? null,
+          businessMode: row?.businessMode ?? 1,
           houseCode: row?.houseCode ?? "",
           houseName: row?.houseName ?? "",
           region: row?.region ?? [],
@@ -28,23 +28,23 @@ export function useFocusEdit() {
           unit: row?.unit ?? "",
           doorNumber: row?.doorNumber ?? "",
           // 总楼层
-          floorTotal: row?.floorTotal ?? 34,
+          floorTotal: row?.floorTotal ?? undefined,
           // 每个楼层的房间数量
-          roomCountPerFloor: row?.roomCountPerFloor ?? null,
+          roomCountPerFloor: row?.roomCountPerFloor ?? undefined,
           // 关闭楼层楼层
-          closedFloors: row?.closedFloors ?? [],
+          closedFloors: row?.closedFloors ?? null,
           // 关闭的房间
-          closedRooms: row?.closedRooms ?? [],
+          closedRooms: row?.closedRooms ?? null,
           // 所有楼层的房间状态
           roomsStatusOfFloors: row?.roomsStatusOfFloors ?? new Map<number, Map<string, RoomStatusProps>>(),
           // 所有房间
-          roomList: row?.roomList ?? [],
+          roomList: row?.roomList ?? null,
           // 选择的楼层
           selectedFloor: row?.selectedFloor ?? 1,
           // 选择的房间数量
           selectedRooms: null,
           // 房间前缀
-          roomPrefix: row?.roomPrefix ?? "",
+          roomPrefix: row?.roomPrefix ?? "A",
           // 去掉4
           excludeFour: row?.excludeFour ?? false,
           // 房间编号长度
@@ -97,8 +97,8 @@ export function useFocusEdit() {
           formInline: null,
           // 传递关闭弹窗的回调函数
           onCreateSuccess: () => {
-            // 直接调用 closeDialog 关闭对话框
-            // closeDialog();
+            // 传入 dialog 实例以正确关闭
+            closeAllDialog();
           }
         })
     });

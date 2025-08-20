@@ -18,16 +18,6 @@
     "to-assign-room": [];
   }>();
 
-  // 确保房间号长度有默认值
-  if (form.value.roomNumberLength === undefined || form.value.roomNumberLength === null) {
-    form.value.roomNumberLength = 3;
-  }
-
-  // 确保房间号前缀有默认值
-  if (form.value.roomPrefix === undefined || form.value.roomPrefix === null) {
-    form.value.roomPrefix = "A";
-  }
-
   const currentRoomCount = ref(null);
   const currentRoomList = ref([]);
 
