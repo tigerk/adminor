@@ -43,18 +43,18 @@
       deptId: 0,
       salesmanId: 0,
       // 第三步填写
-      phone: "",
+      storePhone: "",
       water: "commercial",
       electricity: "commercial",
       heating: "central",
       hasGas: true,
       hasElevator: true,
       facilities: {},
-      projectDesc: "",
+      houseDesc: "",
       businessDesc: "",
       tags: [],
       remark: "",
-      projectFileList: [],
+      imageList: [],
       houseLayoutList: [
         {
           id: "1",
@@ -126,7 +126,8 @@
       const submitData = {
         // 基本信息
         ...form,
-        projectFileList: form.projectFileList.map((file: any) => file?.url).filter(Boolean),
+        facilities: Array.from(form.facilities.keys()).filter(Boolean),
+        imageList: form.imageList.map((file: any) => file?.url).filter(Boolean),
         regionId: form.region[form.region.length - 1]
       };
 

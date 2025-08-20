@@ -7,7 +7,7 @@
         <el-row :gutter="20" class="form-row">
           <el-col :span="5">
             <el-form-item class="el-form-item" label="联系电话" required>
-              <el-input v-model="formData.phone" placeholder="请输入联系电话" />
+              <el-input v-model="formData.storePhone" placeholder="请输入联系电话" />
             </el-form-item>
           </el-col>
           <el-col :span="5">
@@ -57,7 +57,7 @@
       <!-- 项目介绍 -->
       <div class="section">
         <el-form-item label="项目介绍">
-          <el-input v-model="formData.projectDesc" type="text" placeholder="请输入项目介绍" :rows="4" maxlength="500" show-word-limit />
+          <el-input v-model="formData.houseDesc" type="text" placeholder="请输入项目介绍" :rows="4" maxlength="500" show-word-limit />
         </el-form-item>
       </div>
 
@@ -91,7 +91,7 @@
       <!-- 项目图片 -->
       <div class="section">
         <h3 class="section-title">项目图片</h3>
-        <UploadImage v-model="formData.projectFileList" :limit="10" />
+        <UploadImage v-model="formData.imageList" :limit="10" />
       </div>
     </el-form>
 
@@ -115,19 +115,18 @@
   const formData = defineModel<FocusFormItemProps>();
 
   // 初始化操作，没有值时进行默认值处理
-  formData.value.projectFileList = formData.value?.projectFileList || [];
-  formData.value.phone = formData.value?.phone || "";
+  formData.value.storePhone = formData.value?.storePhone || "";
   formData.value.water = formData.value?.water || "commercial";
   formData.value.electricity = formData.value?.electricity || "commercial";
   formData.value.heating = formData.value?.heating || "central";
   formData.value.hasGas = formData.value?.hasGas !== undefined ? formData.value.hasGas : true;
   formData.value.hasElevator = formData.value?.hasElevator !== undefined ? formData.value.hasElevator : true;
   formData.value.facilities = formData.value?.facilities || {};
-  formData.value.projectDesc = formData.value?.projectDesc || "";
+  formData.value.houseDesc = formData.value?.houseDesc || "";
   formData.value.businessDesc = formData.value?.businessDesc || "";
   formData.value.tags = formData.value?.tags || [];
   formData.value.remark = formData.value?.remark || "";
-  formData.value.projectFileList = formData.value?.projectFileList || [];
+  formData.value.imageList = formData.value?.imageList || [];
 
   // 定义 emits
   const emit = defineEmits<{
@@ -144,44 +143,7 @@
     { label: "高性价比", value: "高性价比" }
   ]);
 
-  // const formData = reactive({
-  //   phone: props.formData?.phone || "",
-  //   water: props.formData?.water || "commercial",
-  //   electricity: props.formData?.electricity || "commercial",
-  //   heating: props.formData?.heating || "central",
-  //   hasGas: props.formData?.hasGas !== undefined ? props.formData.hasGas : true,
-  //   hasElevator: props.formData?.hasElevator !== undefined ? props.formData.hasElevator : true,
-  //   facilities: props.formData?.facilities || {},
-  //   projectDescription: props.formData?.projectDescription || "",
-  //   businessDescription: props.formData?.businessDescription || "",
-  //   tags: props.formData?.tags || [],
-  //   remark: props.formData?.remark || "",
-  //   projectFileList: props.formData?.projectFileList || []
-  // });
-
   const facilitiesOptions = ref([]);
-
-  // 监听 props 变化，同步到本地 formData
-  // watch(
-  //   () => props.formData,
-  //   newVal => {
-  //     if (newVal) {
-  //       formData.value.phone = newVal.phone || "";
-  //       formData.value.water = newVal.water || "commercial";
-  //       formData.value.electricity = newVal.electricity || "commercial";
-  //       formData.value.heating = newVal.heating || "central";
-  //       formData.value.hasGas = newVal.hasGas !== undefined ? newVal.hasGas : true;
-  //       formData.value.hasElevator = newVal.hasElevator !== undefined ? newVal.hasElevator : true;
-  //       formData.value.facilities = newVal.facilities || {};
-  //       formData.value.projectDescription = newVal.projectDescription || "";
-  //       formData.value.businessDescription = newVal.businessDescription || "";
-  //       formData.value.tags = newVal.tags || [];
-  //       formData.value.remark = newVal.remark || "";
-  //       formData.value.projectFileList = newVal.projectFileList || [];
-  //     }
-  //   },
-  //   { deep: true }
-  // );
 
   onMounted(() => {
     getDictDataByDictCode({

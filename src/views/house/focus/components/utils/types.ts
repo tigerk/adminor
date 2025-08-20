@@ -35,20 +35,20 @@ interface FocusFormItemProps {
   // 业务员id
   salesmanId: number;
   // extra info
-  phone: string;
+  storePhone: string;
   water: string;
   electricity: string;
   heating: string;
   hasGas: boolean;
   hasElevator: boolean;
   facilities: any;
-  projectDesc: string;
+  houseDesc: string;
   businessDesc: string;
   // 项目标签
   tags: string[];
   remark: string;
   // 项目文件列表
-  projectFileList: [];
+  imageList: [];
   houseLayoutList: HouseLayoutProps[];
 }
 
