@@ -112,10 +112,12 @@ export function userFocusRoom() {
     queryForm.pageSize = pagination.pageSize;
 
     const { data } = await getRoomList(toRaw(queryForm));
-    dataList.value = data.list;
-    pagination.total = Number(data.total);
-    pagination.pageSize = Number(data.pageSize);
-    pagination.currentPage = Number(data.currentPage);
+    if (data) {
+      dataList.value = data.list;
+      pagination.total = Number(data.total);
+      pagination.pageSize = Number(data.pageSize);
+      pagination.currentPage = Number(data.currentPage);
+    }
 
     setTimeout(() => {
       loading.value = false;

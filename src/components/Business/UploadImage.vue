@@ -84,7 +84,6 @@
   /** 上传成功回调 */
   const onUploadSuccess = (response: any, file: UploadFile) => {
     // 更新文件列表中的url，假设服务器返回的url在response.data.url中
-    debugger;
     const fileItem = fileList.value.find(item => item.uid === file.uid);
     if (fileItem && response) {
       fileItem.url = response;

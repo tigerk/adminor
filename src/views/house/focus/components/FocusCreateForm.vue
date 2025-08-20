@@ -6,6 +6,7 @@
   import FocusBasicInfo from "@/views/house/focus/components/FocusBasicInfo.vue";
   import { ElMessage } from "element-plus";
   import { createFocusHouse } from "@/api/house/focus";
+  import { message } from "@/utils/message";
 
   const props = withDefaults(defineProps<FormProps>(), {
     formInline: () => ({
@@ -126,25 +127,32 @@
       const submitData = {
         // 基本信息
         ...form,
-        facilities: Array.from(form.facilities.keys()).filter(Boolean),
+        facilities: Array.from(form.facilities)
+          .filter(([key, value]) => value === true)
+          .map(([key]) => key),
         imageList: form.imageList.map((file: any) => file?.url).filter(Boolean),
-        regionId: form.region[form.region.length - 1]
+        regionId: form.region ? form.region[form.region.length - 1] : 0
       };
 
       // 调用后台接口
       const response = await createFocusHouse(submitData);
 
       if (response.code === 0) {
-        ElMessage.success("项目创建成功！");
-        // 可以根据需要进行页面跳转或其他操作
+        message("项目创建成功！", { type: "success" });
+        emit("create-success");
       } else {
-        ElMessage.error(response.message || "提交失败");
+        message(response.message || "提交失败", { type: "error" });
       }
     } catch (error) {
       console.error("提交失败:", error);
-      ElMessage.error("提交失败，请稍后重试");
+      message("提交失败，请稍后重试", { type: "error" });
     }
   };
+
+  // 添加 emit 定义
+  const emit = defineEmits<{
+    "create-success": [];
+  }>();
 </script>
 
 <template>

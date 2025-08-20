@@ -1,10 +1,8 @@
 import FocusCreateForm from "../FocusCreateForm.vue";
-import { addDialog } from "@/components/ReDialog/index";
+import { addDialog, closeDialog } from "@/components/ReDialog/index";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
-import { message } from "@/utils/message";
-import type { FocusFormItemProps } from "@/views/house/focus/components/utils/types";
-import { createFocusHouse } from "@/api/house/focus";
+import type { FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
 
 export function useFocusEdit() {
   const form = reactive({
@@ -20,7 +18,70 @@ export function useFocusEdit() {
       title: `${title}项目`,
       props: {
         formInline: {
-          houseName: row?.houseName ?? ""
+          id: row?.id ?? 0,
+          businessMode: row?.businessMode ?? 0,
+          houseCode: row?.houseCode ?? "",
+          houseName: row?.houseName ?? "",
+          region: row?.region ?? [],
+          address: row?.address ?? "",
+          building: row?.building ?? "",
+          unit: row?.unit ?? "",
+          doorNumber: row?.doorNumber ?? "",
+          // 总楼层
+          floorTotal: row?.floorTotal ?? 34,
+          // 每个楼层的房间数量
+          roomCountPerFloor: row?.roomCountPerFloor ?? null,
+          // 关闭楼层楼层
+          closedFloors: row?.closedFloors ?? [],
+          // 关闭的房间
+          closedRooms: row?.closedRooms ?? [],
+          // 所有楼层的房间状态
+          roomsStatusOfFloors: row?.roomsStatusOfFloors ?? new Map<number, Map<string, RoomStatusProps>>(),
+          // 所有房间
+          roomList: row?.roomList ?? [],
+          // 选择的楼层
+          selectedFloor: row?.selectedFloor ?? 1,
+          // 选择的房间数量
+          selectedRooms: null,
+          // 房间前缀
+          roomPrefix: row?.roomPrefix ?? "",
+          // 去掉4
+          excludeFour: row?.excludeFour ?? false,
+          // 房间编号长度
+          roomNumberLength: row?.roomNumberLength ?? 3,
+          deptId: row?.deptId ?? 0,
+          salesmanId: row?.salesmanId ?? 0,
+          // 第三步填写
+          storePhone: row?.storePhone ?? "",
+          water: row?.water ?? "commercial",
+          electricity: row?.electricity ?? "commercial",
+          heating: row?.heating ?? "central",
+          hasGas: row?.hasGas ?? true,
+          hasElevator: row?.hasElevator ?? true,
+          facilities: row?.facilities ?? {},
+          houseDesc: row?.houseDesc ?? "",
+          businessDesc: row?.businessDesc ?? "",
+          tags: row?.tags ?? [],
+          remark: row?.remark ?? "",
+          imageList: row?.imageList ?? [],
+          houseLayoutList: row?.houseLayoutList ?? [
+            {
+              id: "1",
+              layoutName: "精装一房",
+              bedroom: 1,
+              livingRoom: 1,
+              kitchen: 1,
+              bathroom: 1
+            },
+            {
+              id: "2",
+              layoutName: "精装二房",
+              bedroom: 2,
+              livingRoom: 1,
+              kitchen: 1,
+              bathroom: 1
+            }
+          ]
         }
       },
       top: "1%",
@@ -30,69 +91,17 @@ export function useFocusEdit() {
       fullscreenIcon: true,
       closeOnClickModal: false,
       footerRenderer: () => null,
-      contentRenderer: () => h(FocusCreateForm, { ref: formRef, formInline: null }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as FocusFormItemProps;
-
-        function chores() {
-          message(`您${title}了角色名称为${curData.houseName}的这条数据`, {
-            type: "success"
-          });
-          done(); // 关闭弹框
-        }
-
-        FormRef.validate(valid => {
-          if (valid) {
-            console.log("curData", curData);
-            // 表单规则校验通过
-            if (title === "新增") {
-              // 实际开发先调用新增接口，再进行下面操作
-              chores();
-            } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
-            }
+      contentRenderer: () =>
+        h(FocusCreateForm, {
+          ref: formRef,
+          formInline: null,
+          // 传递关闭弹窗的回调函数
+          onCreateSuccess: () => {
+            // 直接调用 closeDialog 关闭对话框
+            // closeDialog();
           }
-        });
-      }
+        })
     });
-  }
-
-  function saveFocusHouse(row?: FocusFormItemProps) {
-    // 创建一个可序列化的数据副本
-    const requestData = {
-      ...row,
-      roomList: []
-    };
-
-    // 将 Map 转换为普通对象
-    if (row.roomsStatusOfFloors instanceof Map) {
-      row.roomsStatusOfFloors.forEach((roomMap, floor) => {
-        if (roomMap instanceof Map) {
-          roomMap.forEach(roomStatus => {
-            requestData.roomList.push({
-              roomNumber: formatRoomNumber(row.roomPrefix, row.roomNumberLength, floor, roomStatus.roomNumber),
-              locked: roomStatus.locked,
-              floorLevel: floor
-            });
-          });
-        }
-      });
-    }
-
-    let id: number = 0;
-    createFocusHouse(requestData).then(resp => {
-      if (resp.code === 0) {
-        message(`您保存了项目名称为${row.houseName}的这条数据，请您配置房间！`, {
-          type: "success"
-        });
-
-        id = resp.data;
-      }
-    });
-
-    return id;
   }
 
   // 格式化房间编号
@@ -107,7 +116,6 @@ export function useFocusEdit() {
     form,
     formRef,
     openFocusEditDialog,
-    saveFocusHouse,
     formatRoomNumber
   };
 }
