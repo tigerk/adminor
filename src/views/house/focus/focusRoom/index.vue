@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, nextTick, onMounted } from "vue";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-  import { delay, subBefore, useResizeObserver } from "@pureadmin/utils";
+  import { debounce, delay, subBefore, useResizeObserver } from "@pureadmin/utils";
 
   import Delete from "~icons/ep/delete";
   import EditPen from "~icons/ep/edit-pen";
@@ -80,8 +80,8 @@
             <el-option v-for="item in houseOptions" :key="item.id" :label="item.houseName" :value="item.id" />
           </el-select>
           <el-button type="primary" :icon="useRenderIcon(EditPen)" :loading="loading" @click="onSearch" />
-          <el-button :icon="useRenderIcon(Delete)" @click="resetForm(formRef)" />
-          <el-input placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签" clearable style="width: 400px">
+          <el-button :icon="useRenderIcon(Delete)" @click="resetForm(queryForm)" />
+          <el-input v-model="queryForm.keywords" placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签" clearable style="width: 400px" @keyup.enter="onSearch">
             <template #suffix>
               <IconifyIconOffline :icon="Search" />
             </template>
@@ -120,7 +120,7 @@
           <IconifyIconOnline icon="flat-color-icons:department" class="mr-1" />
           {{ displayModeToList ? "切换房态模式" : "切换列表模式" }}
         </el-button>
-        <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()">添加新项目</el-button>
+        <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()" @created-focus-house="onSearch">添加新项目</el-button>
       </el-col>
     </el-row>
     <el-row class="bg-bg_color w-full p-4 pt-[12px] overflow-auto">

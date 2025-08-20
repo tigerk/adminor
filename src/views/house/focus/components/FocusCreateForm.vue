@@ -6,7 +6,6 @@
   import FocusBasicInfo from "@/views/house/focus/components/FocusBasicInfo.vue";
   import { ElMessage } from "element-plus";
   import { createFocusHouse } from "@/api/house/focus";
-  import { message } from "@/utils/message";
 
   const props = withDefaults(defineProps<FormProps>(), {
     formInline: () => ({
@@ -50,7 +49,7 @@
       heating: "central",
       hasGas: true,
       hasElevator: true,
-      facilities: {},
+      facilities: [],
       houseDesc: "",
       businessDesc: "",
       tags: [],
@@ -77,17 +76,11 @@
     })
   });
 
+  // 定义 emits
+  const emit = defineEmits(["create-success", "created-focus-house"]);
+
   // 表单数据 - 确保响应式
   const form = reactive({ ...props.formInline });
-  // 监听 props 变化，同步到 form
-  watch(
-    () => props.formInline,
-    newFormInline => {
-      Object.assign(form, newFormInline);
-      console.log("form 数据更新:", form);
-    },
-    { deep: true, immediate: true }
-  );
 
   // 步骤激活状态
   const stepActive = ref(0);
@@ -127,32 +120,26 @@
       const submitData = {
         // 基本信息
         ...form,
-        facilities: Array.from(form.facilities)
-          .filter(([key, value]) => value === true)
-          .map(([key]) => key),
         imageList: form.imageList.map((file: any) => file?.url).filter(Boolean),
-        regionId: form.region ? form.region[form.region.length - 1] : 0
+        regionId: form.region[form.region.length - 1]
       };
 
       // 调用后台接口
       const response = await createFocusHouse(submitData);
 
       if (response.code === 0) {
-        message("项目创建成功！", { type: "success" });
+        ElMessage.success("项目创建成功！");
+        // 可以根据需要进行页面跳转或其他操作
         emit("create-success");
+        emit("created-focus-house", response.data);
       } else {
-        message(response.message || "提交失败", { type: "error" });
+        ElMessage.error(response.message || "提交失败");
       }
     } catch (error) {
       console.error("提交失败:", error);
-      message("提交失败，请稍后重试", { type: "error" });
+      ElMessage.error("提交失败，请稍后重试");
     }
   };
-
-  // 添加 emit 定义
-  const emit = defineEmits<{
-    "create-success": [];
-  }>();
 </script>
 
 <template>

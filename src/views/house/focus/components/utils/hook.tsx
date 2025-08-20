@@ -28,9 +28,9 @@ export function useFocusEdit() {
           unit: row?.unit ?? "",
           doorNumber: row?.doorNumber ?? "",
           // 总楼层
-          floorTotal: row?.floorTotal ?? undefined,
+          floorTotal: row?.floorTotal ?? 2,
           // 每个楼层的房间数量
-          roomCountPerFloor: row?.roomCountPerFloor ?? undefined,
+          roomCountPerFloor: row?.roomCountPerFloor ?? 10,
           // 关闭楼层楼层
           closedFloors: row?.closedFloors ?? null,
           // 关闭的房间
@@ -58,7 +58,7 @@ export function useFocusEdit() {
           heating: row?.heating ?? "central",
           hasGas: row?.hasGas ?? true,
           hasElevator: row?.hasElevator ?? true,
-          facilities: row?.facilities ?? {},
+          facilities: row?.facilities ?? [],
           houseDesc: row?.houseDesc ?? "",
           businessDesc: row?.businessDesc ?? "",
           tags: row?.tags ?? [],
@@ -97,6 +97,7 @@ export function useFocusEdit() {
           formInline: null,
           // 传递关闭弹窗的回调函数
           onCreateSuccess: () => {
+            debugger;
             // 传入 dialog 实例以正确关闭
             closeAllDialog();
           }

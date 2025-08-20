@@ -9,7 +9,7 @@ import { getFocusHouseOptions } from "@/api/house/focus";
 export function userFocusRoom() {
   const pagination = reactive<PaginationProps>({
     total: 0,
-    pageSize: 10,
+    pageSize: 15,
     currentPage: 1,
     background: true
   });
@@ -18,7 +18,7 @@ export function userFocusRoom() {
     keywords: "",
     houseId: null,
     roomStatus: null,
-    pageSize: 10,
+    pageSize: 15,
     currentPage: 1
   });
 

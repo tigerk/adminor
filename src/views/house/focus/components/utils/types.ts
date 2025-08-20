@@ -41,7 +41,7 @@ interface FocusFormItemProps {
   heating: string;
   hasGas: boolean;
   hasElevator: boolean;
-  facilities: any;
+  facilities: string[];
   houseDesc: string;
   businessDesc: string;
   // 项目标签

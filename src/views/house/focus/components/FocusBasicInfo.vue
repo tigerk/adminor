@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, reactive, computed, watch } from "vue";
+  import { ref, reactive, computed, watch, onMounted } from "vue";
   import { FormProps, FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
   import RegionCascader from "@/components/Business/RegionCascader.vue";
   import DeptCascader from "@/components/Business/DeptUserCascader.vue";
@@ -208,6 +208,10 @@
     { immediate: true }
   );
 
+  onMounted(() => {
+    initAllFloors();
+  });
+
   const formatRoomNumber = (num: number) => {
     return useFocusEdit().formatRoomNumber(form.value.roomPrefix, form.value.roomNumberLength, form.value.selectedFloor, String(num));
   };
@@ -396,7 +400,7 @@
         </el-row>
 
         <h3 class="pb-4">房间信息</h3>
-        <el-row v-if="computedFloorList.length > 0" :gutter="20">
+        <el-row :gutter="20">
           <el-col :span="24">
             <el-card>
               <template #header>
@@ -413,7 +417,7 @@
                   </el-radio-button>
                 </el-radio-group>
               </template>
-              <el-row>
+              <el-row v-if="computedFloorList.length > 0">
                 <el-col :span="20">
                   <el-space>
                     第 {{ form.selectedFloor }} 层，共
@@ -434,7 +438,7 @@
                   </el-button>
                 </el-col>
               </el-row>
-              <el-row>
+              <el-row v-if="computedFloorList.length > 0">
                 <el-col :span="24">
                   <div class="room-title-container">
                     <span class="room-title">房间号</span>

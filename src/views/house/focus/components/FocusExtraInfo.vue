@@ -45,7 +45,24 @@
           <el-col :span="24">
             <el-form-item label="项目配置" required>
               <el-space wrap size="large" class="items-start">
-                <el-checkbox v-for="item in facilitiesOptions" :key="item.value" v-model="formData.facilities[item.value]" border>
+                <el-checkbox
+                  v-for="item in facilitiesOptions"
+                  :key="item.value"
+                  :checked="formData.facilities.includes(item.value)"
+                  border
+                  @change="
+                    (val: boolean) => {
+                      if (val) {
+                        formData.facilities.push(item.value);
+                      } else {
+                        const index = formData.facilities.indexOf(item.value);
+                        if (index > -1) {
+                          formData.facilities.splice(index, 1);
+                        }
+                      }
+                    }
+                  "
+                >
                   {{ item.label }}
                 </el-checkbox>
               </el-space>
@@ -121,7 +138,7 @@
   formData.value.heating = formData.value?.heating || "central";
   formData.value.hasGas = formData.value?.hasGas !== undefined ? formData.value.hasGas : true;
   formData.value.hasElevator = formData.value?.hasElevator !== undefined ? formData.value.hasElevator : true;
-  formData.value.facilities = formData.value?.facilities || {};
+  formData.value.facilities = formData.value?.facilities || [];
   formData.value.houseDesc = formData.value?.houseDesc || "";
   formData.value.businessDesc = formData.value?.businessDesc || "";
   formData.value.tags = formData.value?.tags || [];
