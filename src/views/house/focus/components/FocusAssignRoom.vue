@@ -303,7 +303,8 @@
         bedroom: 1,
         livingRoom: 1,
         kitchen: 1,
-        bathroom: 1
+        bathroom: 1,
+        newly: true
       },
       {
         id: "2",
@@ -311,7 +312,8 @@
         bedroom: 2,
         livingRoom: 1,
         kitchen: 1,
-        bathroom: 1
+        bathroom: 1,
+        newly: true
       }
     ];
   }
@@ -625,7 +627,7 @@
     if (!room) return;
 
     isEditingRoom.value = true;
-    newRoomForm.id = room.cursor;
+    newRoomForm.cursor = room.cursor;
     newRoomForm.roomNumber = room.roomNumber;
     newRoomForm.floor = room.floor;
     showAddRoomDialog.value = true;
@@ -676,7 +678,7 @@
         return;
       }
 
-      const room = form.value.roomList.find(r => r.cursor === newRoomForm.id);
+      const room = form.value.roomList.find(r => r.cursor === newRoomForm.cursor);
       if (room) {
         room.roomNumber = newRoomForm.roomNumber;
         ElMessage.success("房间修改成功");
@@ -710,7 +712,7 @@
 
   const resetRoomForm = () => {
     isEditingRoom.value = false;
-    newRoomForm.id = "";
+    newRoomForm.cursor = "";
     newRoomForm.roomNumber = "";
     newRoomForm.floor = 1;
   };
@@ -774,12 +776,13 @@
         }
       } else {
         const newHouseLayout: HouseLayoutProps = {
-          id: "tmp" + Date.now().toString(),
+          id: Date.now().toString(),
           layoutName: houseLayoutForm.name,
           bedroom: houseLayoutForm.bedroom,
           livingRoom: houseLayoutForm.livingRoom,
           kitchen: houseLayoutForm.kitchen,
-          bathroom: houseLayoutForm.bathroom
+          bathroom: houseLayoutForm.bathroom,
+          newly: true
         };
         form.value.houseLayoutList.push(newHouseLayout);
         ElMessage.success("房型创建成功");

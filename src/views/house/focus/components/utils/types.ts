@@ -83,6 +83,7 @@ interface HouseLayoutProps {
   livingRoom: number;
   kitchen: number;
   bathroom: number;
+  newly: boolean;
 }
 
 export type { FocusFormItemProps, FormProps, RoomStatusProps, HouseLayoutProps };
