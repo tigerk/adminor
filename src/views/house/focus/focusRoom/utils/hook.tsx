@@ -5,6 +5,7 @@ import { reactive, ref, onMounted, toRaw } from "vue";
 import router from "@/router";
 import { getRoomList, getRoomTotal } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
+import type { HouseLayoutProps } from "@/views/house/focus/components/utils/types";
 
 export function userFocusRoom() {
   const pagination = reactive<PaginationProps>({
@@ -70,22 +71,40 @@ export function userFocusRoom() {
       width: 120
     },
     {
-      label: "房型",
-      prop: "houseLayout.layoutName"
+      label: "房型 / 门牌号",
+      prop: "houseLayout.layoutName",
+      cellRenderer: ({ row }) => (
+        <span>
+          {row.houseLayout?.layoutName ?? ""} {row.roomNumber}
+        </span>
+      )
+    },
+    {
+      label: "价格(元/月)",
+      prop: "price",
+      width: 120
+    },
+    {
+      label: "户型",
+      cellRenderer: ({ row }) => <span>{formatHouseLayout(row.houseLayout)}</span>
+    },
+    {
+      label: "面积",
+      prop: "area",
+      cellRenderer: ({ row }) => <span>{row.area}㎡</span>
+    },
+    {
+      label: "朝向",
+      prop: "direction"
     },
     {
       label: "负责人",
       prop: "salesmanName",
       cellRenderer: ({ row }) => (
         <span>
-          {row.salesmanName} {row.salesmanPhone}
+          {row.salesmanName} - {row.salesmanPhone}
         </span>
       )
-    },
-    {
-      label: "操作",
-      fixed: "right",
-      slot: "operation"
     }
   ];
 
@@ -172,6 +191,12 @@ export function userFocusRoom() {
     } else {
       router.go(-1);
     }
+  }
+
+  function formatHouseLayout(layout: HouseLayoutProps): string {
+    if (!layout) return "";
+    const { bedroom, livingRoom, kitchen, bathroom } = layout;
+    return `${bedroom || 0}室${livingRoom || 0}厅${kitchen || 0}厨${bathroom || 0}卫`;
   }
 
   return {
