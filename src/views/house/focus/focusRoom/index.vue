@@ -8,6 +8,7 @@
   import Search from "~icons/ri/search-eye-line";
   import { useFocusEdit } from "@/views/house/focus/components/utils/hook";
   import { userFocusRoom } from "@/views/house/focus/focusRoom/utils/hook";
+  import { getFocusHouseById } from "@/api/house/focus";
 
   defineOptions({
     name: "FocusRoom"
@@ -45,6 +46,7 @@
   const tableSize = ref("default");
   const displayModeToList = ref(true);
 
+  // 初始化加载
   onMounted(() => {
     useResizeObserver(contentRef, async () => {
       await nextTick();
@@ -56,6 +58,16 @@
 
   function handleDisplayClick() {
     displayModeToList.value = !displayModeToList.value;
+  }
+
+  function modifyFocusHouse() {
+    if (queryForm.houseId) {
+      getFocusHouseById({
+        id: queryForm.houseId
+      }).then(res => {
+        openFocusEditDialog("更新", res.data);
+      });
+    }
   }
 
   const statusRadio = ref("all");
@@ -79,9 +91,16 @@
           <el-select v-model="queryForm.houseId" placeholder="项目名称" clearable class="w-[180px]!" @change="onSearch">
             <el-option v-for="item in houseOptions" :key="item.id" :label="item.houseName" :value="item.id" />
           </el-select>
-          <el-button type="primary" :icon="useRenderIcon(EditPen)" :loading="loading" @click="onSearch" />
+          <el-button type="primary" :icon="useRenderIcon(EditPen)" :loading="loading" @click="modifyFocusHouse" />
           <el-button :icon="useRenderIcon(Delete)" @click="resetForm(queryForm)" />
-          <el-input v-model="queryForm.keywords" placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签" clearable style="width: 400px" @keyup.enter="onSearch">
+          <el-input
+            v-model="queryForm.keywords"
+            placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签"
+            clearable
+            style="width: 400px"
+            @keyup.enter="onSearch"
+            @clear="onSearch"
+          >
             <template #suffix>
               <IconifyIconOffline :icon="Search" />
             </template>

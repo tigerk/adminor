@@ -66,20 +66,22 @@ export function useFocusEdit() {
           imageList: row?.imageList ?? [],
           houseLayoutList: row?.houseLayoutList ?? [
             {
-              id: "tmp1",
+              id: "1",
               layoutName: "精装一房",
               bedroom: 1,
               livingRoom: 1,
               kitchen: 1,
-              bathroom: 1
+              bathroom: 1,
+              newly: true
             },
             {
-              id: "tmp2",
+              id: "1",
               layoutName: "精装二房",
               bedroom: 2,
               livingRoom: 1,
               kitchen: 1,
-              bathroom: 1
+              bathroom: 1,
+              newly: true
             }
           ]
         }
@@ -97,7 +99,6 @@ export function useFocusEdit() {
           formInline: null,
           // 传递关闭弹窗的回调函数
           onCreateSuccess: () => {
-            debugger;
             // 传入 dialog 实例以正确关闭
             closeAllDialog();
           }

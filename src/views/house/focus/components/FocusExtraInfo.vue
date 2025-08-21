@@ -108,7 +108,7 @@
       <!-- 项目图片 -->
       <div class="section">
         <h3 class="section-title">项目图片</h3>
-        <UploadImage v-model="formData.imageList" :limit="10" />
+        <UploadImage v-model="transformedImageList" :limit="10" />
       </div>
     </el-form>
 
@@ -122,11 +122,12 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref, watch } from "vue";
+  import { computed, onMounted, reactive, ref, watch } from "vue";
   import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
   import { FocusFormItemProps } from "@/views/house/focus/components/utils/types";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
+  import { UploadFile } from "element-plus";
 
   // 获取 FocusCreateForm 中的form数据，vue3.3+
   const formData = defineModel<FocusFormItemProps>();
@@ -171,6 +172,47 @@
         value: item.value
       }));
     });
+  });
+
+  // 核心：图片数据转换逻辑
+  const transformedImageList = computed({
+    get(): UploadFile[] {
+      if (!formData.value.imageList || formData.value.imageList.length === 0) {
+        return [];
+      }
+
+      // 如果已经是UploadFile格式，直接返回
+      if (formData.value.imageList[0] && typeof formData.value.imageList[0] === "object" && "uid" in formData.value.imageList[0]) {
+        return formData.value.imageList as UploadFile[];
+      }
+
+      // 如果是字符串数组（后台返回的URL数组），转换为UploadFile格式
+      if (typeof formData.value.imageList[0] === "string") {
+        return (formData.value.imageList as string[]).map((url, index) => {
+          return {
+            uid: `${Date.now()}-${index}`,
+            name: url.split("/").pop() || `image${index + 1}.jpg`,
+            url: url,
+            status: "success",
+            size: 0,
+            raw: undefined,
+            percentage: 100
+          } as unknown as UploadFile;
+        });
+      }
+
+      return [];
+    },
+    set(value: UploadFile[]) {
+      // 当组件内部修改图片列表时，同步更新formData
+      // 根据需要决定存储格式：
+
+      // 选项1：存储为URL数组（推荐，因为提交给后台通常只需要URL）
+      formData.value.imageList = value.map(file => file.url).filter(url => url) as string[];
+
+      // 选项2：存储为完整的UploadFile数组（如果需要保留更多信息）
+      // formData.value.imageList = value;
+    }
   });
 
   async function stepPrevious() {
