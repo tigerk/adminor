@@ -141,6 +141,17 @@ export function userFocusRoom() {
     setTimeout(() => {
       loading.value = false;
     }, 500);
+
+    getRoomTotal(toRaw(queryForm)).then(res => {
+      roomStatusTotal.value = res.data.statusList;
+
+      let total = 0;
+      res.data.statusList.forEach(item => {
+        total += item.total;
+      });
+
+      roomStatusTotal.value.unshift({ roomStatus: "", roomStatusName: "全部", total: total });
+    });
   }
 
   const resetForm = formEl => {
@@ -164,17 +175,6 @@ export function userFocusRoom() {
   onMounted(async () => {
     onSearch();
     onHouseOptions();
-
-    getRoomTotal(toRaw(queryForm)).then(res => {
-      roomStatusTotal.value = res.data.statusList;
-
-      let total = 0;
-      res.data.statusList.forEach(item => {
-        total += item.total;
-      });
-
-      roomStatusTotal.value.unshift({ roomStatus: "", roomStatusName: "全部", total: total });
-    });
   });
 
   function onHouseOptions() {
