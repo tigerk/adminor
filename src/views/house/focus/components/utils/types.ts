@@ -48,7 +48,7 @@ interface FocusFormItemProps {
   tags: string[];
   remark: string;
   // 项目文件列表
-  imageList: [];
+  imageList: any[];
   houseLayoutList: HouseLayoutProps[];
 }
 

@@ -34,7 +34,7 @@ export function useFocusEdit() {
           // 关闭楼层楼层
           closedFloors: row?.closedFloors ?? null,
           // 关闭的房间
-          closedRooms: row?.closedRooms ?? null,
+          closedRooms: row?.closedRooms ?? [],
           // 所有楼层的房间状态
           roomsStatusOfFloors: row?.roomsStatusOfFloors ?? new Map<number, Map<string, RoomStatusProps>>(),
           // 所有房间

@@ -1,5 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
+import type { FocusFormItemProps } from "@/views/house/focus/components/utils/types";
 
 type ResultList = {
   code: number;
@@ -7,29 +8,14 @@ type ResultList = {
   data?: Array<any>;
 };
 
-type Result = {
+type Result<T> = {
   code: number;
   message: string;
-  data?: any;
-};
-
-type ResultTable = {
-  code: number;
-  message: string;
-  data?: {
-    /** 列表数据 */
-    list: Array<any>;
-    /** 总条目数 */
-    total?: number;
-    /** 每页显示条目个数 */
-    pageSize?: number;
-    /** 当前页数 */
-    currentPage?: number;
-  };
+  data?: T;
 };
 
 export const createFocusHouse = (data?: object) => {
-  return http.request<Result>("post", baseUrlApi("house/focus/create"), { data });
+  return http.request<Result<any>>("post", baseUrlApi("house/focus/create"), { data });
 };
 
 export const getFocusHouseOptions = (data?: object) => {
@@ -37,5 +23,5 @@ export const getFocusHouseOptions = (data?: object) => {
 };
 
 export const getFocusHouseById = (data?: object) => {
-  return http.request<ResultList>("get", baseUrlApi("house/focus/get"), { params: data });
+  return http.request<Result<FocusFormItemProps>>("get", baseUrlApi("house/focus/get"), { params: data });
 };

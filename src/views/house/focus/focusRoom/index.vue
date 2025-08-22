@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import { ref, nextTick, onMounted } from "vue";
+  import { nextTick, onMounted, ref } from "vue";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-  import { debounce, delay, subBefore, useResizeObserver } from "@pureadmin/utils";
+  import { delay, subBefore, useResizeObserver } from "@pureadmin/utils";
 
   import Delete from "~icons/ep/delete";
   import EditPen from "~icons/ep/edit-pen";
@@ -65,6 +65,12 @@
       getFocusHouseById({
         id: queryForm.houseId
       }).then(res => {
+        res.data.closedRooms = res.data.roomList?.filter(room => room.locked === true) || [];
+        res.data.roomList = res.data.roomList?.map(room => ({
+          ...room,
+          cursor: `${room.floor}-${room.roomNumber}`
+        }));
+
         openFocusEditDialog("更新", res.data);
       });
     }

@@ -58,10 +58,14 @@
 
       for (let room = 1; room <= form.value.roomCountPerFloor; room++) {
         const roomNum = room.toString();
+        if (form.value.excludeFour && roomNum.endsWith("4")) {
+          continue;
+        }
+
         roomStatusMap.set(roomNum, {
           cursor: `${floor}-${room}`,
           roomIndex: room,
-          roomNumber: roomNum,
+          roomNumber: useFocusEdit().formatRoomNumber(form.value.roomPrefix, form.value.roomNumberLength, floor, roomNum),
           locked: false,
           floor: floor,
           houseLayoutId: null,
@@ -102,7 +106,7 @@
       roomStatusMap.set(roomNum, {
         cursor: `${floor}-${i}`,
         roomIndex: i,
-        roomNumber: roomNum,
+        roomNumber: useFocusEdit().formatRoomNumber(form.value.roomPrefix, form.value.roomNumberLength, floor, roomNum),
         locked: false,
         floor: floor,
         houseLayoutId: null,
@@ -190,12 +194,15 @@
   });
 
   // 监听多个值，统一处理
-  watch([() => form.value.floorTotal, () => form.value.roomCountPerFloor], ([newFloorTotal, newRoomCount], [oldFloorTotal, oldRoomCount]) => {
-    // 只有当楼层总数或每层房间数量有效时才初始化
-    if (newFloorTotal && newRoomCount) {
-      initAllFloors();
+  watch(
+    [() => form.value.floorTotal, () => form.value.roomCountPerFloor, () => form.value.excludeFour, () => form.value.roomPrefix, () => form.value.roomNumberLength],
+    ([newFloorTotal, newRoomCount, newExcludeFour, newRoomPrefix, newRoomNumberLength], [oldFloorTotal, oldRoomCount, oldExcludeFour, oldRoomPrefix, oldRoomNumberLength]) => {
+      // 只有当楼层总数或每层房间数量有效时才初始化
+      if (newFloorTotal && newRoomCount) {
+        initAllFloors();
+      }
     }
-  });
+  );
 
   // 在组件挂载时，如果已有数据则初始化显示
   watch(
@@ -208,13 +215,57 @@
     { immediate: true }
   );
 
-  onMounted(() => {
-    initAllFloors();
-  });
+  /**
+   * 从roomList 初始化所有的房间列表数据
+   */
+  const initAllFloorsFromRoomList = () => {
+    // 清空现有数据
+    if (form.value.roomsStatusOfFloors) {
+      form.value.roomsStatusOfFloors.clear();
+    } else {
+      form.value.roomsStatusOfFloors = new Map<number, Map<string, RoomStatusProps>>();
+    }
 
-  const formatRoomNumber = (num: number) => {
-    return useFocusEdit().formatRoomNumber(form.value.roomPrefix, form.value.roomNumberLength, form.value.selectedFloor, String(num));
+    // 初始化每个楼层的房间数据
+    let i = 1;
+    form.value.roomList.forEach(room => {
+      const floor = room.floor;
+      const roomNum = room.roomNumber;
+
+      if (!form.value.roomsStatusOfFloors.has(floor)) {
+        form.value.roomsStatusOfFloors.set(floor, new Map<string, RoomStatusProps>());
+      }
+
+      const roomStatusMap = form.value.roomsStatusOfFloors.get(floor);
+      roomStatusMap.set(roomNum, {
+        cursor: `${floor}-${i}`,
+        roomIndex: i,
+        roomNumber: roomNum,
+        locked: room.locked,
+        floor: floor,
+        houseLayoutId: room.houseLayoutId,
+        price: room.price,
+        direction: room.direction,
+        area: room.area
+      });
+
+      i++;
+    });
+
+    // 自动选中第一个楼层并显示房间列表
+    if (form.value.floorTotal > 0) {
+      form.value.selectedFloor = 1;
+      updateCurrentRoomDisplay(1);
+    }
   };
+
+  onMounted(() => {
+    if (form.value.roomList) {
+      initAllFloorsFromRoomList();
+    } else {
+      initAllFloors();
+    }
+  });
 
   function handleDeptSelected(deptId: number) {
     form.value.deptId = deptId;
@@ -391,7 +442,7 @@
             <el-alert
               title="楼层设置说明"
               type="info"
-              description="修改楼层总数或每层房间数后，系统将自动重新初始化所有楼层房间信息。您可以在下方选择楼层和调整房间数量。"
+              description="修改楼层相关信息后，系统将自动重新初始化所有楼层房间信息。您可以在下方选择楼层和调整房间数量。"
               show-icon
               :closable="false"
               style="margin-bottom: 20px"
@@ -462,7 +513,7 @@
                     >
                       <el-space :size="4">
                         <IconifyIconOffline v-if="roomStatus.locked" :icon="AntDesignLockFilled" />
-                        <span>{{ formatRoomNumber(roomStatus.roomNumber) }}</span>
+                        <span>{{ roomStatus.roomNumber }}</span>
                       </el-space>
                     </el-check-tag>
                   </el-space>

@@ -401,39 +401,23 @@
 
     form.value.roomsStatusOfFloors.forEach((roomMap, floor) => {
       roomMap.forEach((roomStatus, roomNumber) => {
-        // 如果选择了去掉4，则跳过包含4的房间号
-        if (form.value.excludeFour && roomNumber && roomNumber.includes("4")) {
-          return;
-        }
-
         // 检查房间是否被锁定
         const isLocked = form.value.closedRooms?.some(closed => closed.floor === floor && closed.roomNumber === roomStatus.roomNumber) || false;
 
-        const formattedRoomNumber = formatRoomNumber(roomStatus.roomNumber, floor);
-
         // 只有房间号有效时才添加到列表
-        if (formattedRoomNumber) {
-          form.value.roomList.push({
-            cursor: `${floor}-${roomNumber}`,
-            roomIndex: roomStatus.roomIndex,
-            roomNumber: formattedRoomNumber,
-            floor: floor,
-            locked: isLocked,
-            houseLayoutId: roomStatus.houseLayoutId,
-            price: roomStatus.price,
-            direction: roomStatus.direction,
-            area: roomStatus.area
-          });
-        }
+        form.value.roomList.push({
+          cursor: `${floor}-${roomNumber}`,
+          roomIndex: roomStatus.roomIndex,
+          roomNumber: roomStatus.roomNumber,
+          floor: floor,
+          locked: isLocked,
+          houseLayoutId: roomStatus.houseLayoutId,
+          price: roomStatus.price,
+          direction: roomStatus.direction,
+          area: roomStatus.area
+        });
       });
     });
-  };
-
-  // 格式化房间编号 - 使用统一的工具方法
-  const formatRoomNumber = (num: string, floor: number) => {
-    const prefix = form.value?.roomPrefix || "";
-    const length = form.value?.roomNumberLength || 3;
-    return useFocusEdit().formatRoomNumber(prefix, length, floor, num);
   };
 
   // 监听props变化

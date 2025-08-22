@@ -62,7 +62,8 @@
           bedroom: 1,
           livingRoom: 1,
           kitchen: 1,
-          bathroom: 1
+          bathroom: 1,
+          newly: true
         },
         {
           id: "2",
@@ -70,7 +71,8 @@
           bedroom: 2,
           livingRoom: 1,
           kitchen: 1,
-          bathroom: 1
+          bathroom: 1,
+          newly: true
         }
       ]
     })
@@ -128,7 +130,7 @@
       const response = await createFocusHouse(submitData);
 
       if (response.code === 0) {
-        ElMessage.success("项目创建成功！");
+        ElMessage.success("项目保存成功！");
         // 可以根据需要进行页面跳转或其他操作
         emit("create-success");
         emit("created-focus-house", response.data);
