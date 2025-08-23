@@ -85,7 +85,7 @@
       <el-col :span="12" class="text-right">
         <el-button plain @click="handleDisplayClick">
           <IconifyIconOnline icon="flat-color-icons:department" class="mr-1" />
-          {{ displayModeToList ? "切换列表模式" : "切换房态模式" }}
+          {{ displayModeToList ? "切换房态模式" : "切换列表模式" }}
         </el-button>
         <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()" @created-focus-house="onSearch">添加新项目</el-button>
       </el-col>
