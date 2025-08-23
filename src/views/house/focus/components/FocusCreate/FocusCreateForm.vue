@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import { ref, reactive, watch } from "vue";
-  import { FormProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
-  import FocusAssignRoom from "@/views/house/focus/components/FocusAssignRoom.vue";
-  import FocusExtraInfo from "@/views/house/focus/components/FocusExtraInfo.vue";
-  import FocusBasicInfo from "@/views/house/focus/components/FocusBasicInfo.vue";
+  import { FormProps, RoomStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+  import FocusAssignRoom from "@/views/house/focus/components/FocusCreate/FocusAssignRoom.vue";
+  import FocusExtraInfo from "@/views/house/focus/components/FocusCreate/FocusExtraInfo.vue";
+  import FocusBasicInfo from "@/views/house/focus/components/FocusCreate/FocusBasicInfo.vue";
   import { ElMessage } from "element-plus";
   import { createFocusHouse } from "@/api/house/focus";
 

@@ -14,6 +14,9 @@
     name: "UploadImage"
   });
 
+  // 初始化时处理可能的字符串数组
+  const rawFileList = defineModel<UploadFile[] | string[]>();
+
   const props = defineProps({
     limit: {
       type: Number,
@@ -62,9 +65,6 @@
   const isStringArray = (arr: unknown): arr is string[] => {
     return Array.isArray(arr) && arr.every(item => typeof item === "string");
   };
-
-  // 初始化时处理可能的字符串数组
-  const rawFileList = defineModel<UploadFile[] | string[]>();
 
   // 创建响应式的文件列表，确保始终是UploadFile数组
   const fileList = computed<UploadFile[]>({

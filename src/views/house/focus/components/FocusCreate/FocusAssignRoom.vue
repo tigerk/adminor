@@ -288,8 +288,8 @@
   import { CheckboxValueType, ElMessage, ElMessageBox, type FormInstance } from "element-plus";
   import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled, Lock } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
-  import { HouseLayoutProps, RoomStatusProps, FocusFormItemProps } from "@/views/house/focus/components/utils/types";
-  import { useFocusEdit } from "@/views/house/focus/components/utils/hook";
+  import { HouseLayoutProps, RoomStatusProps, FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
 
   // 获取 FocusCreateForm 中的form数据

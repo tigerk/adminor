@@ -6,9 +6,10 @@
   import Delete from "~icons/ep/delete";
   import EditPen from "~icons/ep/edit-pen";
   import Search from "~icons/ri/search-eye-line";
-  import { useFocusEdit } from "@/views/house/focus/components/utils/hook";
+  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
   import { userFocusRoom } from "@/views/house/focus/focusRoom/utils/hook";
   import { getFocusHouseById } from "@/api/house/focus";
+  import RoomStatusGrid from "../components/FocusRoomGrid/RoomStatusGrid.vue";
 
   defineOptions({
     name: "FocusRoom"
@@ -18,25 +19,19 @@
   const {
     queryForm,
     onBack,
-    isShow,
-    curRow,
     loading,
     columns,
-    rowStyle,
-    dataList,
-    treeData,
-    isLinkage,
+    roomTableList,
     pagination,
-    treeSearchValue,
     onSearch,
     resetForm,
-    handleDelete,
-    filterMethod,
-    transformI18n,
     handleSizeChange,
     handleCurrentChange,
     houseOptions,
-    roomStatusTotal
+    roomStatusTotal,
+    displayModeToList,
+    displayModeText,
+    handleDisplayClick
   } = userFocusRoom();
 
   const formRef = ref();
@@ -44,7 +39,6 @@
   const contentRef = ref();
   const treeHeight = ref();
   const tableSize = ref("default");
-  const displayModeToList = ref(true);
 
   // 初始化加载
   onMounted(() => {
@@ -55,10 +49,6 @@
       });
     });
   });
-
-  function handleDisplayClick() {
-    displayModeToList.value = !displayModeToList.value;
-  }
 
   function modifyFocusHouse() {
     if (queryForm.houseId) {
@@ -82,17 +72,51 @@
 <template>
   <div class="main">
     <el-row class="bg-bg_color w-full p-4 pt-[12px] overflow-auto">
-      <el-col :span="8">
+      <el-col :span="12">
         <el-page-header @back="onBack">
           <template #content>
             <div class="flex items-center">
               <span class="text-large font-600 mr-3">集中式房间列表</span>
-              <el-tag>列表模式</el-tag>
+              <el-tag>{{ displayModeText }}</el-tag>
             </div>
           </template>
         </el-page-header>
       </el-col>
-      <el-col :span="16" class="text-right">
+      <el-col :span="12" class="text-right">
+        <el-button plain @click="handleDisplayClick">
+          <IconifyIconOnline icon="flat-color-icons:department" class="mr-1" />
+          {{ displayModeToList ? "切换列表模式" : "切换房态模式" }}
+        </el-button>
+        <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()" @created-focus-house="onSearch">添加新项目</el-button>
+      </el-col>
+    </el-row>
+    <el-row class="search-form bg-bg_color w-full px-4 pt-[12px] overflow-auto">
+      <el-col :span="12">
+        <div class="grid-content ep-bg-purple" style="align-items: flex-start">
+          <el-space>
+            <el-form-item>
+              <el-radio-group v-model="queryForm.roomStatus" @change="onSearch">
+                <el-radio-button
+                  v-for="item in roomStatusTotal"
+                  :key="item.roomStatus"
+                  :value="item.roomStatus"
+                  :class="['room-status-button', `status-${item.roomStatus || 'all'}`]"
+                  :style="{
+                    // '--status-color': item.roomStatusColor
+                    // '--status-bg-color': item.roomStatusColor + '5' // 添加透明度
+                  }"
+                >
+                  <span class="status-content">
+                    <span class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
+                    {{ item.roomStatusName }}（{{ item.total }}）
+                  </span>
+                </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-space>
+        </div>
+      </el-col>
+      <el-col :span="12" class="text-right">
         <el-space>
           <el-select v-model="queryForm.houseId" placeholder="项目名称" clearable class="w-[180px]!" @change="onSearch">
             <el-option v-for="item in houseOptions" :key="item.id" :label="item.houseName" :value="item.id" />
@@ -114,41 +138,8 @@
         </el-space>
       </el-col>
     </el-row>
-    <el-row class="search-form bg-bg_color w-full px-4 pt-[12px] overflow-auto">
-      <el-col :span="18">
-        <div class="grid-content ep-bg-purple" style="align-items: flex-start">
-          <el-space>
-            <el-form-item>
-              <el-radio-group v-model="queryForm.roomStatus" @change="onSearch">
-                <el-radio-button
-                  v-for="item in roomStatusTotal"
-                  :key="item.roomStatus"
-                  :value="item.roomStatus"
-                  :class="['room-status-button', `status-${item.roomStatus || 'all'}`]"
-                  :style="{
-                    '--status-color': item.roomStatusColor,
-                    '--status-bg-color': item.roomStatusColor + '5' // 添加透明度
-                  }"
-                >
-                  <span class="status-content">
-                    <span class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
-                    {{ item.roomStatusName }}（{{ item.total }}）
-                  </span>
-                </el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-          </el-space>
-        </div>
-      </el-col>
-      <el-col :span="6" class="text-right">
-        <el-button plain @click="handleDisplayClick">
-          <IconifyIconOnline icon="flat-color-icons:department" class="mr-1" />
-          {{ displayModeToList ? "切换房态模式" : "切换列表模式" }}
-        </el-button>
-        <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()" @created-focus-house="onSearch">添加新项目</el-button>
-      </el-col>
-    </el-row>
-    <el-row class="bg-bg_color w-full p-4 pt-[12px] overflow-auto">
+    <!--项目列表-->
+    <el-row v-if="displayModeToList" class="bg-bg_color w-full p-4 pt-[12px] overflow-auto">
       <pure-table
         border
         row-key="id"
@@ -159,7 +150,7 @@
         :loading-config="{ background: 'transparent' }"
         adaptive
         :adaptiveConfig="{ offsetBottom: 108 }"
-        :data="dataList"
+        :data="roomTableList"
         :columns="columns"
         :pagination="pagination"
         :header-cell-style="{
@@ -169,6 +160,11 @@
         @page-size-change="handleSizeChange"
         @page-current-change="handleCurrentChange"
       />
+    </el-row>
+    <el-row v-if="!displayModeToList">
+      <el-col :span="24" class="text-right">
+        <RoomStatusGrid v-model="queryForm" />
+      </el-col>
     </el-row>
   </div>
 </template>
@@ -241,8 +237,8 @@
   .status-dot {
     display: inline-block;
     flex-shrink: 0;
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
   }
 

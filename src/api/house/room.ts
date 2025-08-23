@@ -24,8 +24,18 @@ type RoomTotal = {
   };
 };
 
+type ResultList = {
+  code: number;
+  message: string;
+  data?: Array<any>;
+};
+
 export const getRoomList = (data?: object) => {
   return http.request<ResultTable>("post", baseUrlApi("room/list"), { data });
+};
+
+export const getRoomGrid = (data?: object) => {
+  return http.request<ResultList>("post", baseUrlApi("room/grid"), { data });
 };
 
 export const getRoomTotal = (data?: object) => {

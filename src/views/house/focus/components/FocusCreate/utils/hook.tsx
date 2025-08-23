@@ -2,7 +2,7 @@ import FocusCreateForm from "../FocusCreateForm.vue";
 import { addDialog, closeAllDialog } from "@/components/ReDialog/index";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
-import type { FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
+import type { FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
 
 export function useFocusEdit() {
   const form = reactive({

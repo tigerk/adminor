@@ -123,8 +123,8 @@
 
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, watch } from "vue";
-  import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
-  import { FocusFormItemProps } from "@/views/house/focus/components/utils/types";
+  import { focusBasicInfoRules } from "@/views/house/focus/components/FocusCreate/utils/rule";
+  import { FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
   import { UploadFile } from "element-plus";

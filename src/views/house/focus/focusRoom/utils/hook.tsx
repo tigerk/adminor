@@ -5,7 +5,7 @@ import { reactive, ref, onMounted, toRaw } from "vue";
 import router from "@/router";
 import { getRoomList, getRoomTotal } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
-import type { HouseLayoutProps } from "@/views/house/focus/components/utils/types";
+import type { HouseLayoutProps } from "@/views/house/focus/components/FocusCreate/utils/types";
 
 export function userFocusRoom() {
   const pagination = reactive<PaginationProps>({
@@ -24,7 +24,7 @@ export function userFocusRoom() {
   });
 
   const curRow = ref();
-  const dataList = ref([]);
+  const roomTableList = ref([]);
   const houseOptions = ref([]);
   const roomStatusTotal = ref([]);
   const treeData = ref([]);
@@ -32,6 +32,8 @@ export function userFocusRoom() {
   const loading = ref(true);
   const isLinkage = ref(false);
   const treeSearchValue = ref();
+  const displayModeToList = ref(false);
+  const displayModeText = ref("房态模式");
 
   const columns: TableColumnList = [
     {
@@ -132,7 +134,7 @@ export function userFocusRoom() {
 
     const { data } = await getRoomList(toRaw(queryForm));
     if (data) {
-      dataList.value = data.list;
+      roomTableList.value = data.list;
       pagination.total = Number(data.total);
       pagination.pageSize = Number(data.pageSize);
       pagination.currentPage = Number(data.currentPage);
@@ -199,6 +201,11 @@ export function userFocusRoom() {
     return `${bedroom || 0}室${livingRoom || 0}厅${kitchen || 0}厨${bathroom || 0}卫`;
   }
 
+  function handleDisplayClick() {
+    displayModeToList.value = !displayModeToList.value;
+    displayModeText.value = displayModeToList.value ? "列表模式" : "房态模式";
+  }
+
   return {
     queryForm,
     onBack,
@@ -207,9 +214,12 @@ export function userFocusRoom() {
     loading,
     columns,
     rowStyle,
-    dataList,
+    roomTableList,
     houseOptions,
     roomStatusTotal,
+    displayModeToList,
+    displayModeText,
+    handleDisplayClick,
     treeData,
     isLinkage,
     pagination,

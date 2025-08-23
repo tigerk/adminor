@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { FocusFormItemProps } from "@/views/house/focus/components/utils/types";
+import type { FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
 
 type ResultList = {
   code: number;

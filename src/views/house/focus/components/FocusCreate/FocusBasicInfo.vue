@@ -1,13 +1,13 @@
 <script setup lang="ts">
   import { ref, reactive, computed, watch, onMounted } from "vue";
-  import { FormProps, FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/utils/types";
+  import { FormProps, FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
   import RegionCascader from "@/components/Business/RegionCascader.vue";
   import DeptCascader from "@/components/Business/DeptUserCascader.vue";
   import { getDeptUserList } from "@/api/sys/dept";
-  import { useFocusEdit } from "@/views/house/focus/components/utils/hook";
+  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
   import { InfoFilled } from "@element-plus/icons-vue";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
-  import { focusBasicInfoRules } from "@/views/house/focus/components/utils/rule";
+  import { focusBasicInfoRules } from "@/views/house/focus/components/FocusCreate/utils/rule";
   import { ElMessage } from "element-plus";
 
   // 获取 FocusCreateForm 中的form数据，vue3.3+
