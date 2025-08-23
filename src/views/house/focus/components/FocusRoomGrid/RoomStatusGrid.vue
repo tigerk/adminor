@@ -5,7 +5,7 @@
       <!-- 项目分组 -->
       <div v-for="house in groupedRooms" :key="house.houseId" class="house-group">
         <div class="house-header">
-          <h3 class="house-title">{{ house.houseName }}</h3>
+          <h3 class="house-title">项目 - {{ house.houseName }}</h3>
           <div class="house-stats">
             <el-tag type="info">共 {{ house.totalRooms }} 间</el-tag>
             <el-tag type="success" class="ml-2">出租率 {{ house.leasedRate }}%</el-tag>
@@ -232,7 +232,7 @@
       });
 
       if (data) {
-        roomList.value = (data.list as RoomItemDTO[]) || (data as RoomItemDTO[]) || [];
+        roomList.value = Array.isArray(data?.list) ? (data.list as RoomItemDTO[]) : [];
       }
     } catch (error) {
       console.error("加载房间数据失败:", error);
@@ -306,7 +306,7 @@
   watch(
     () => queryForm.value,
     (newVal, oldVal) => {
-      if (newVal && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+      if (newVal) {
         loadRooms();
       }
     },
@@ -325,8 +325,6 @@
 </script>
 
 <style lang="scss" scoped>
-
-
   // 响应式设计
   @media (width <= 768px) {
     .room-grid {
