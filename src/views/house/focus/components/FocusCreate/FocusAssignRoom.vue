@@ -15,7 +15,7 @@
       <el-space>
         <el-tag type="danger" size="large">剩余 {{ unassignedRooms }} 间未分配</el-tag>
         <el-tag type="success" size="large">启用 {{ enabledRooms }} 间</el-tag>
-        <el-tag type="info" size="large">禁用 {{ disabledRooms }} 间</el-tag>
+        <el-tag type="info" size="large">锁房 {{ disabledRooms }} 间</el-tag>
       </el-space>
     </el-col>
   </el-row>

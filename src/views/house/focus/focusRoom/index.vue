@@ -87,7 +87,7 @@
           <IconifyIconOnline icon="flat-color-icons:department" class="mr-1" />
           {{ displayModeToList ? "切换房态模式" : "切换列表模式" }}
         </el-button>
-        <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()" @created-focus-house="onSearch">添加新项目</el-button>
+        <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()" @created-focus-house="onSearch">添加房源</el-button>
       </el-col>
     </el-row>
     <el-row class="search-form bg-bg_color w-full px-4 pt-[12px] overflow-auto">
