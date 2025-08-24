@@ -24,7 +24,14 @@
 
           <!-- 房间网格 -->
           <div class="room-grid">
-            <div v-for="room in floor.rooms" :key="room.roomId" class="room-card" :class="getRoomCardClass(room)" @click="handleRoomClick(room)">
+            <div
+              v-for="room in floor.rooms"
+              :key="room.roomId"
+              class="room-card"
+              :class="getRoomCardClass(room)"
+              :style="{ borderLeftColor: room.roomStatusColor }"
+              @click="handleRoomClick(room)"
+            >
               <!-- 房间号和房型 -->
               <div class="room-header">
                 <div class="room-number">{{ room.roomNumber }}</div>
@@ -47,9 +54,7 @@
 
               <!-- 锁定状态 -->
               <div v-if="room.locked" class="room-locked">
-                <el-icon>
-                  <Lock />
-                </el-icon>
+                <el-icon><Lock /></el-icon>
               </div>
             </div>
           </div>
@@ -272,10 +277,6 @@
         break;
     }
 
-    if (room.locked) {
-      classes.push("room-disabled");
-    }
-
     return classes;
   };
 
@@ -325,6 +326,8 @@
 </script>
 
 <style lang="scss" scoped>
+
+
   // 响应式设计
   @media (width <= 768px) {
     .room-grid {
@@ -523,6 +526,7 @@
     color: #909399;
 
     .room-price {
+      font-size: 13px;
       font-weight: 500;
       color: #f56c6c;
     }
