@@ -32,8 +32,8 @@ export function userFocusRoom() {
   const loading = ref(true);
   const isLinkage = ref(false);
   const treeSearchValue = ref();
-  const displayModeToList = ref(false);
-  const displayModeText = ref("房态模式");
+  const displayModeToList = ref(true);
+  const displayModeText = ref("列表模式");
 
   const columns: TableColumnList = [
     {
@@ -107,6 +107,12 @@ export function userFocusRoom() {
           {row.salesmanName} - {row.salesmanPhone}
         </span>
       )
+    },
+    {
+      label: "操作",
+      fixed: "right",
+      width: 80,
+      slot: "operation"
     }
   ];
 

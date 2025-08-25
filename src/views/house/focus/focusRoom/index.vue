@@ -10,6 +10,7 @@
   import { userFocusRoom } from "@/views/house/focus/focusRoom/utils/hook";
   import { getFocusHouseById } from "@/api/house/focus";
   import RoomStatusGrid from "../components/FocusRoomGrid/RoomStatusGrid.vue";
+  import AddFill from "~icons/*";
 
   defineOptions({
     name: "FocusRoom"
