@@ -47,10 +47,6 @@ export default defineComponent({
       });
     });
 
-    return () => (
-      <div ref={typedItRef}>
-        {slots.default?.() ?? <span class="type-it"></span>}
-      </div>
-    );
+    return () => <div ref={typedItRef}>{slots.default?.() ?? <span class="type-it"></span>}</div>;
   }
 });

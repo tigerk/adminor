@@ -1,34 +1,33 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
-import { useWatermark } from "@pureadmin/utils";
+  import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
+  import { useWatermark } from "@pureadmin/utils";
 
-defineOptions({
-  name: "WaterMark"
-});
+  defineOptions({
+    name: "WaterMark"
+  });
 
-const local = ref();
-const preventLocal = ref();
-const color = ref("#409EFF");
-const value = ref("vue-pure-admin");
-const { setWatermark, clear } = useWatermark();
-const { setWatermark: setLocalWatermark, clear: clearLocal } =
-  useWatermark(local);
-const { setWatermark: setPreventLocalWatermark } = useWatermark(preventLocal);
+  const local = ref();
+  const preventLocal = ref();
+  const color = ref("#409EFF");
+  const value = ref("vue-pure-admin");
+  const { setWatermark, clear } = useWatermark();
+  const { setWatermark: setLocalWatermark, clear: clearLocal } = useWatermark(local);
+  const { setWatermark: setPreventLocalWatermark } = useWatermark(preventLocal);
 
-onMounted(() => {
-  nextTick(() => {
-    setPreventLocalWatermark("无法删除的水印", {
-      forever: true,
-      width: 180,
-      height: 70
+  onMounted(() => {
+    nextTick(() => {
+      setPreventLocalWatermark("无法删除的水印", {
+        forever: true,
+        width: 180,
+        height: 70
+      });
     });
   });
-});
 
-onBeforeUnmount(() => {
-  // 在离开该页面时清除整页水印
-  clear();
-});
+  onBeforeUnmount(() => {
+    // 在离开该页面时清除整页水印
+    clear();
+  });
 </script>
 
 <template>
@@ -36,34 +35,22 @@ onBeforeUnmount(() => {
     <template #header>
       <div class="card-header">
         <span class="font-medium">
-          <el-link
-            href="https://pure-admin-utils.netlify.app/hooks/useWatermark/useWatermark"
-            target="_blank"
-            style="margin: 0 5px 4px 0; font-size: 16px"
-          >
-            页面水印
-          </el-link>
+          <el-link href="https://pure-admin-utils.netlify.app/hooks/useWatermark/useWatermark" target="_blank" style="margin: 0 5px 4px 0; font-size: 16px">页面水印</el-link>
         </span>
       </div>
-      <el-link
-        class="mt-2"
-        href="https://github.com/pure-admin/vue-pure-admin/blob/main/src/views/able/watermark.vue"
-        target="_blank"
-      >
+      <el-link class="mt-2" href="https://github.com/pure-admin/vue-pure-admin/blob/main/src/views/able/watermark.vue" target="_blank">
         代码位置 src/views/able/watermark.vue
       </el-link>
     </template>
     <el-space wrap class="mb-2!">
-      <span> 请输入要创建水印的值：</span>
+      <span>请输入要创建水印的值：</span>
       <el-input v-model="value" class="mr-4" style="width: 200px" clearable />
       <span>请选择要创建水印的颜色：</span>
       <el-color-picker v-model="color" show-alpha />
     </el-space>
 
     <el-space wrap>
-      <el-button plain @click="setWatermark(value, { color })">
-        创建整页水印
-      </el-button>
+      <el-button plain @click="setWatermark(value, { color })">创建整页水印</el-button>
       <el-button
         plain
         @click="
@@ -194,9 +181,6 @@ onBeforeUnmount(() => {
       <el-button plain @click="clearLocal">清除局部水印</el-button>
     </el-space>
 
-    <div
-      ref="preventLocal"
-      class="w-1/2 h-[200px] border border-indigo-500 mt-4"
-    />
+    <div ref="preventLocal" class="w-1/2 h-[200px] border border-indigo-500 mt-4" />
   </el-card>
 </template>

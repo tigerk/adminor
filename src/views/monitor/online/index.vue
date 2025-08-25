@@ -12,46 +12,18 @@
   });
 
   const formRef = ref();
-  const {
-    form,
-    loading,
-    columns,
-    dataList,
-    onSearch,
-    resetForm,
-    handleOffline,
-    handleSelectionChange
-  } = useRole();
+  const { form, loading, columns, dataList, onSearch, resetForm, handleOffline, handleSelectionChange } = useRole();
 </script>
 
 <template>
   <div class="main">
-    <el-form
-      ref="formRef"
-      :inline="true"
-      :model="form"
-      class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto"
-    >
+    <el-form ref="formRef" :inline="true" :model="form" class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto">
       <el-form-item label="用户名" prop="username">
-        <el-input
-          v-model="form.username"
-          placeholder="请输入用户名"
-          clearable
-          class="w-[180px]!"
-        />
+        <el-input v-model="form.username" placeholder="请输入用户名" clearable class="w-[180px]!" />
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          :icon="useRenderIcon('ri/search-line')"
-          :loading="loading"
-          @click="onSearch(form.username)"
-        >
-          搜索
-        </el-button>
-        <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">
-          重置
-        </el-button>
+        <el-button type="primary" :icon="useRenderIcon('ri:search-line')" :loading="loading" @click="onSearch(form.username)">搜索</el-button>
+        <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -74,20 +46,9 @@
           @selection-change="handleSelectionChange"
         >
           <template #operation="{ row }">
-            <el-popconfirm
-              :title="`是否强制下线${row.username}`"
-              @confirm="handleOffline(row)"
-            >
+            <el-popconfirm :title="`是否强制下线${row.username}`" @confirm="handleOffline(row)">
               <template #reference>
-                <el-button
-                  class="reset-margin"
-                  link
-                  type="primary"
-                  :size="size"
-                  :icon="useRenderIcon(Plane)"
-                >
-                  强退
-                </el-button>
+                <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(Plane)">强退</el-button>
               </template>
             </el-popconfirm>
           </template>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { html } from "pinyin-pro";
+  import { html } from "pinyin-pro";
 
-defineOptions({
-  name: "Pinyin"
-});
+  defineOptions({
+    name: "Pinyin"
+  });
 </script>
 
 <template>
@@ -11,13 +11,7 @@ defineOptions({
     <template #header>
       <div class="card-header">
         <p class="font-medium">汉语拼音</p>
-        <el-link
-          class="mt-2"
-          href="https://github.com/pure-admin/vue-pure-admin/blob/main/src/views/able/pinyin.vue"
-          target="_blank"
-        >
-          代码位置 src/views/able/pinyin.vue
-        </el-link>
+        <el-link class="mt-2" href="https://github.com/pure-admin/vue-pure-admin/blob/main/src/views/able/pinyin.vue" target="_blank">代码位置 src/views/able/pinyin.vue</el-link>
       </div>
     </template>
     <p v-html="html('带 音 调')" />
@@ -27,15 +21,15 @@ defineOptions({
 </template>
 
 <style lang="scss" scoped>
-.custom {
-  /* 汉字的样式 */
-  :deep(.py-chinese-item) {
-    color: #409eff;
-  }
+  .custom {
+    /* 汉字的样式 */
+    :deep(.py-chinese-item) {
+      color: #409eff;
+    }
 
-  /* 拼音的样式 */
-  :deep(.py-pinyin-item) {
-    color: #f56c6c;
+    /* 拼音的样式 */
+    :deep(.py-pinyin-item) {
+      color: #f56c6c;
+    }
   }
-}
 </style>

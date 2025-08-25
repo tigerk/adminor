@@ -32,13 +32,7 @@ export class CanvasRenderer {
     }
   }
 
-  public addImage(
-    url: string,
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ) {
+  public addImage(url: string, x: number, y: number, width: number, height: number) {
     const img = new Image();
     img.src = url;
 
@@ -58,13 +52,7 @@ export class CanvasRenderer {
 
     this.images.forEach(imgProps => {
       const x = imgProps.x + this.positionX;
-      this.ctx.drawImage(
-        imgProps.img,
-        x,
-        imgProps.y,
-        imgProps.width,
-        imgProps.height
-      );
+      this.ctx.drawImage(imgProps.img, x, imgProps.y, imgProps.width, imgProps.height);
     });
   }
 
@@ -80,10 +68,7 @@ export class CanvasRenderer {
     this.render();
 
     // 当前勾选图片的索引
-    const index =
-      Math.ceil(
-        (Math.abs(this.positionX) + event.offsetX) / this.images[0].width
-      ) - 1;
+    const index = Math.ceil((Math.abs(this.positionX) + event.offsetX) / this.images[0].width) - 1;
     const x = event.offsetX;
     const y = event.offsetY;
 
@@ -160,12 +145,8 @@ export class CanvasRenderer {
     if (!this.isDragging) return;
 
     const deltaX = clientX - this.startX;
-    const maxPositionX =
-      this.images.length * this.images[0].width - this.container.clientWidth;
-    this.positionX = Math.max(
-      Math.min(this.positionX + deltaX, 0),
-      -maxPositionX
-    );
+    const maxPositionX = this.images.length * this.images[0].width - this.container.clientWidth;
+    this.positionX = Math.max(Math.min(this.positionX + deltaX, 0), -maxPositionX);
     this.startX = clientX;
 
     this.render();

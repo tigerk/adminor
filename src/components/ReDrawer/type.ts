@@ -7,13 +7,7 @@ type ArgsType = {
   command: "cancel" | "sure" | "close";
 };
 
-type ButtonType =
-  | "primary"
-  | "success"
-  | "warning"
-  | "danger"
-  | "info"
-  | "text";
+type ButtonType = "primary" | "success" | "warning" | "danger" | "info" | "text";
 
 type DrawerProps = {
   /** `Drawer` 的显示与隐藏 */
@@ -163,75 +157,23 @@ interface DrawerOptions extends DrawerProps {
    * @description 自定义抽屉标题的内容渲染器
    * @see {@link https://element-plus.org/zh-CN/component/drawer.html#%E6%8F%92%E6%A7%BD}
    */
-  headerRenderer?: ({
-    close,
-    titleId,
-    titleClass
-  }: {
-    close: Function;
-    titleId: string;
-    titleClass: string;
-  }) => VNode | Component;
+  headerRenderer?: ({ close, titleId, titleClass }: { close: Function; titleId: string; titleClass: string }) => VNode | Component;
   /** 自定义内容渲染器 */
-  contentRenderer?: ({
-    options,
-    index
-  }: {
-    options: DrawerOptions;
-    index: number;
-  }) => VNode | Component;
+  contentRenderer?: ({ options, index }: { options: DrawerOptions; index: number }) => VNode | Component;
   /** 自定义按钮操作区的内容渲染器，会覆盖`footerButtons`以及默认的 `取消` 和 `确定` 按钮 */
-  footerRenderer?: ({
-    options,
-    index
-  }: {
-    options: DrawerOptions;
-    index: number;
-  }) => VNode | Component;
+  footerRenderer?: ({ options, index }: { options: DrawerOptions; index: number }) => VNode | Component;
   /** 自定义底部按钮操作 */
   footerButtons?: Array<ButtonProps>;
   /** `Drawer` 打开后的回调 */
-  open?: ({
-    options,
-    index
-  }: {
-    options: DrawerOptions;
-    index: number;
-  }) => void;
+  open?: ({ options, index }: { options: DrawerOptions; index: number }) => void;
   /** `Drawer` 关闭后的回调（只有点击右上角关闭按钮或空白页或按下了esc键关闭页面时才会触发） */
-  close?: ({
-    options,
-    index
-  }: {
-    options: DrawerOptions;
-    index: number;
-  }) => void;
+  close?: ({ options, index }: { options: DrawerOptions; index: number }) => void;
   /** `Drawer` 关闭后的回调。 `args` 返回的 `command` 值解析：`cancel` 点击取消按钮、`sure` 点击确定按钮、`close` 点击右上角关闭按钮或空白页或按下了esc键  */
-  closeCallBack?: ({
-    options,
-    index,
-    args
-  }: {
-    options: DrawerOptions;
-    index: number;
-    args: any;
-  }) => void;
+  closeCallBack?: ({ options, index, args }: { options: DrawerOptions; index: number; args: any }) => void;
   /** 输入焦点聚焦在 `Drawer` 内容时的回调 */
-  openAutoFocus?: ({
-    options,
-    index
-  }: {
-    options: DrawerOptions;
-    index: number;
-  }) => void;
+  openAutoFocus?: ({ options, index }: { options: DrawerOptions; index: number }) => void;
   /** 输入焦点从 `Drawer` 内容失焦时的回调 */
-  closeAutoFocus?: ({
-    options,
-    index
-  }: {
-    options: DrawerOptions;
-    index: number;
-  }) => void;
+  closeAutoFocus?: ({ options, index }: { options: DrawerOptions; index: number }) => void;
 
   /** 点击底部取消按钮的回调，会暂停 `Drawer` 的关闭. 回调函数内执行 `done` 参数方法的时候才是真正关闭对话框的时候 */
   beforeCancel?: (

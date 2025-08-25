@@ -68,7 +68,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" :icon="useRenderIcon('ri/search-line')" :loading="loading" @click="onSearch">搜索</el-button>
+          <el-button type="primary" :icon="useRenderIcon('ri:search-line')" :loading="loading" @click="onSearch">搜索</el-button>
           <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">重置</el-button>
         </el-form-item>
       </el-form>

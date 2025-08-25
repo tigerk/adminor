@@ -44,10 +44,7 @@ export function useDataThemeChange() {
   }
 
   /** 设置导航主题色 */
-  function setLayoutThemeColor(
-    theme = getConfig().Theme ?? "light",
-    isClick = true
-  ) {
+  function setLayoutThemeColor(theme = getConfig().Theme ?? "light", isClick = true) {
     layoutTheme.value.theme = theme;
     document.documentElement.setAttribute("data-theme", theme);
     // 如果非isClick，保留之前的themeColor
@@ -71,10 +68,7 @@ export function useDataThemeChange() {
   }
 
   function setPropertyPrimary(mode: string, i: number, color: string) {
-    document.documentElement.style.setProperty(
-      `--el-color-primary-${mode}-${i}`,
-      dataTheme.value ? darken(color, i / 10) : lighten(color, i / 10)
-    );
+    document.documentElement.style.setProperty(`--el-color-primary-${mode}-${i}`, dataTheme.value ? darken(color, i / 10) : lighten(color, i / 10));
   }
 
   /** 设置 `element-plus` 主题色 */

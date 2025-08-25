@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Amap } from "@/components/ReMap";
+  import { Amap } from "@/components/ReMap";
 
-defineOptions({
-  name: "MapPage"
-});
+  defineOptions({
+    name: "MapPage"
+  });
 </script>
 
 <template>
@@ -11,7 +11,7 @@ defineOptions({
 </template>
 
 <style scoped>
-.main-content {
-  margin: 2px 0 0 !important;
-}
+  .main-content {
+    margin: 2px 0 0 !important;
+  }
 </style>

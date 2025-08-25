@@ -125,9 +125,7 @@ const latestNewsData = cloneDeep(tableData)
   .slice(0, 14)
   .map((item, index) => {
     return Object.assign(item, {
-      date: `${dayjs().subtract(index, "day").format("YYYY-MM-DD")} ${
-        days[dayjs().subtract(index, "day").day()]
-      }`
+      date: `${dayjs().subtract(index, "day").format("YYYY-MM-DD")} ${days[dayjs().subtract(index, "day").day()]}`
     });
   });
 

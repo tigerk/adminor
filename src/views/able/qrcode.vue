@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { ref, unref } from "vue";
-import { message } from "@/utils/message";
-import ReQrcode from "@/components/ReQrcode";
+  import { ref, unref } from "vue";
+  import { message } from "@/utils/message";
+  import ReQrcode from "@/components/ReQrcode";
 
-defineOptions({
-  name: "QrCode"
-});
+  defineOptions({
+    name: "QrCode"
+  });
 
-const qrcodeText = "vue-pure-admin";
+  const qrcodeText = "vue-pure-admin";
 
-const asyncTitle = ref("");
-setTimeout(() => {
-  asyncTitle.value = unref(qrcodeText);
-}, 3000);
-const codeClick = () => {
-  message("点击事件", { type: "info" });
-};
-const disabledClick = () => {
-  message("失效", { type: "info" });
-};
+  const asyncTitle = ref("");
+  setTimeout(() => {
+    asyncTitle.value = unref(qrcodeText);
+  }, 3000);
+  const codeClick = () => {
+    message("点击事件", { type: "info" });
+  };
+  const disabledClick = () => {
+    message("失效", { type: "info" });
+  };
 </script>
 
 <template>
@@ -27,22 +27,10 @@ const disabledClick = () => {
       <template #header>
         <div class="font-medium">
           二维码（基于
-          <el-link
-            href="https://github.com/soldair/node-qrcode"
-            target="_blank"
-            style="margin: 0 5px 4px 0; font-size: 16px"
-          >
-            qrcode
-          </el-link>
+          <el-link href="https://github.com/soldair/node-qrcode" target="_blank" style="margin: 0 5px 4px 0; font-size: 16px">qrcode</el-link>
           生成）
         </div>
-        <el-link
-          class="mt-2"
-          href="https://github.com/pure-admin/vue-pure-admin/blob/main/src/views/able/qrcode.vue"
-          target="_blank"
-        >
-          代码位置 src/views/able/qrcode.vue
-        </el-link>
+        <el-link class="mt-2" href="https://github.com/pure-admin/vue-pure-admin/blob/main/src/views/able/qrcode.vue" target="_blank">代码位置 src/views/able/qrcode.vue</el-link>
       </template>
       <el-row :gutter="20" justify="space-between">
         <el-col :xl="6" :lg="6" :md="12" :sm="24" :xs="24">
@@ -86,20 +74,13 @@ const disabledClick = () => {
         <el-col :xl="6" :lg="6" :md="12" :sm="24" :xs="24">
           <el-card shadow="hover" class="mb-[10px] text-center">
             <div class="font-bold">失效</div>
-            <ReQrcode
-              :text="qrcodeText"
-              disabled
-              @disabled-click="disabledClick"
-            />
+            <ReQrcode :text="qrcodeText" disabled @disabled-click="disabledClick" />
           </el-card>
         </el-col>
         <el-col :xl="6" :lg="6" :md="12" :sm="24" :xs="24">
           <el-card shadow="hover" class="mb-[10px] text-center">
             <div class="font-bold">logo配置</div>
-            <ReQrcode
-              :text="qrcodeText"
-              logo="https://avatars.githubusercontent.com/u/44761321?v=4"
-            />
+            <ReQrcode :text="qrcodeText" logo="https://avatars.githubusercontent.com/u/44761321?v=4" />
           </el-card>
         </el-col>
         <el-col :xl="6" :lg="6" :md="12" :sm="24" :xs="24">

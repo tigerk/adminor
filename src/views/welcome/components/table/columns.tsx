@@ -26,9 +26,7 @@ export function useColumns() {
         { text: "<16000", value: "less" }
       ],
       filterMethod: (value, { requiredNumber }) => {
-        return value === "more"
-          ? requiredNumber >= 16000
-          : requiredNumber < 16000;
+        return value === "more" ? requiredNumber >= 16000 : requiredNumber < 16000;
       }
     },
     {
@@ -50,10 +48,7 @@ export function useColumns() {
         <div class="flex justify-center w-full">
           <span class="flex items-center w-[60px]">
             <span class="ml-auto mr-2">{row.satisfaction}%</span>
-            <iconifyIconOffline
-              icon={row.satisfaction > 98 ? Hearts : ThumbUp}
-              color="#e85f33"
-            />
+            <iconifyIconOffline icon={row.satisfaction > 98 ? Hearts : ThumbUp} color="#e85f33" />
           </span>
         </div>
       )

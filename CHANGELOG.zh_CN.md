@@ -1,3 +1,20 @@
+# 6.1.0 (2025-07-31)
+
+### ✔️ Refactor
+
+- 升级至`vite7`，更新依赖，相关兼容处理
+
+### 🐞 Bug fixes
+
+- 修复`ReSegmented`分段控制器组件在浅色和深色整体风格切换时的闪烁问题
+- 修复`resetRouter`未清空全部路由数据问题
+- 修复标签页-关闭左侧标签页关闭异常问题
+
+### 🍏 Perf
+
+- 优化导航样式
+- 升级`@pureadmin/table`兼容最新版`element-plus`的`el-table`的所有`API`
+
 # 6.0.0 (2025-04-10)
 
 ### ✔️ Refactor
@@ -31,7 +48,7 @@
 
 ### ✔️ Refactor
 
-- 升级`vite`至`v6`版本，升级`sass`至最新版，重构主题写法，弃用 [@pureadmin/theme](https://www.npmjs.com/package/@pureadmin/theme)，点击查看 [相关优化点细节](https://github.com/pure-admin/vue-pure-admin/pull/1188#issue-2630095115)。对于拥有 [Max版本](https://pure-admin.cn/pages/max/) 的用户平台强烈建议升级，后续`Max版本用户`会享有一套更现代、美观且自定义程度高的主题色
+- 升级`vite`至`v6`版本，升级`sass`至最新版，重构主题写法，弃用 [@pureadmin/theme](https://www.npmjs.com/package/@pureadmin/theme)，点击查看 [相关优化点细节](https://github.com/pure-admin/vue-pure-admin/pull/1188#issue-2630095115)。对于拥有 [Max版本](https://pure-admin.cn/pages/service/#max-%E7%89%88%E6%9C%AC) 的用户平台强烈建议升级，后续`Max版本用户`会享有一套更现代、美观且自定义程度高的主题色
 - 使用 [code-inspector-plugin](https://www.npmjs.com/package/code-inspector-plugin) 替换 [vite-plugin-vue-inspector](https://www.npmjs.com/package/vite-plugin-vue-inspector)
 
 ### 🎫 Feat

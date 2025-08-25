@@ -1,11 +1,4 @@
-import {
-  watch,
-  unref,
-  computed,
-  reactive,
-  onMounted,
-  defineComponent
-} from "vue";
+import { watch, unref, computed, reactive, onMounted, defineComponent } from "vue";
 import { countToProps } from "./props";
 import { isNumber } from "@pureadmin/utils";
 
@@ -98,33 +91,15 @@ export default defineComponent({
       state.remaining = (state.localDuration as number) - progress;
       if (useEasing) {
         if (unref(getCountDown)) {
-          state.printVal =
-            state.localStartVal -
-            easingFn(
-              progress,
-              0,
-              state.localStartVal - endVal,
-              state.localDuration as number
-            );
+          state.printVal = state.localStartVal - easingFn(progress, 0, state.localStartVal - endVal, state.localDuration as number);
         } else {
-          state.printVal = easingFn(
-            progress,
-            state.localStartVal,
-            endVal - state.localStartVal,
-            state.localDuration as number
-          );
+          state.printVal = easingFn(progress, state.localStartVal, endVal - state.localStartVal, state.localDuration as number);
         }
       } else {
         if (unref(getCountDown)) {
-          state.printVal =
-            state.localStartVal -
-            (state.localStartVal - endVal) *
-              (progress / (state.localDuration as number));
+          state.printVal = state.localStartVal - (state.localStartVal - endVal) * (progress / (state.localDuration as number));
         } else {
-          state.printVal =
-            state.localStartVal +
-            (endVal - state.localStartVal) *
-              (progress / (state.localDuration as number));
+          state.printVal = state.localStartVal + (endVal - state.localStartVal) * (progress / (state.localDuration as number));
         }
       }
       if (unref(getCountDown)) {
