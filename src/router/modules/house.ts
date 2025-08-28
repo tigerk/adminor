@@ -1,6 +1,5 @@
 export default {
   path: "/house",
-  redirect: "/house/index",
   name: "House",
   meta: {
     icon: "ep/set-up",

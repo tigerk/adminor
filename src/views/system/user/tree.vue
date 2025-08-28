@@ -147,11 +147,12 @@
             ]"
             :style="{
               color: highlightMap[node.id]?.highlight ? 'var(--el-color-primary)' : '',
-              background: highlightMap[node.id]?.highlight ? 'var(--el-color-primary-light-7)' : 'transparent'
+              fontWeight: highlightMap[node.id]?.highlight ? 'bolder' : '',
+              background: highlightMap[node.id]?.highlight ? '' : 'transparent'
             }"
           >
             <IconifyIconOffline :icon="data.type === 1 ? OfficeBuilding : data.type === 2 ? LocationCompany : Dept" />
-            <span class="w-[120px]! truncate!" :title="node.label">
+            <span class="w-[100px]! truncate!" :title="node.label">
               {{ node.label }}
             </span>
           </div>

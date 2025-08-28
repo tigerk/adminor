@@ -153,6 +153,6 @@
   }
 
   .main-content {
-    margin: 24px;
+    margin: 12px;
   }
 </style>
