@@ -70,6 +70,7 @@ menus:
   pureTenantManagement: 公司管理
   pureTenantList: 公司列表
   pureTenantPackage: 公司套餐
+  pureSchedule: 日历排班
   pureSysManagement: 系统管理
   pureUser: 用户管理
   pureRole: 角色管理

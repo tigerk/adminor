@@ -67,6 +67,7 @@ menus:
   pureLogin: ログイン
   pureEmpty: Layoutページなし
   pureTable: テーブル
+  pureSchedule: カレンダースケジュール
   pureTenantManagement: テナント管理
   pureTenantList: テナント一覧
   pureTenantPackage: テナントパッケージ

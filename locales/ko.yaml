@@ -67,6 +67,7 @@ menus:
   pureLogin: 로그인
   pureEmpty: 레이아웃 없음
   pureTable: 표
+  pureSchedule: 달력 일정
   pureTenantManagement: 임차인 관리
   pureTenantList: 임차인 목록
   pureTenantPackage: 테넌트 패키지

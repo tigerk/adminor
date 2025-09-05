@@ -67,6 +67,7 @@ menus:
   pureLogin: 登入
   pureEmpty: 無Layout頁
   pureTable: 表格
+  pureSchedule: 日曆排班
   pureTenantManagement: 租戶管理
   pureTenantList: 租戶列表
   pureTenantPackage: 租戶套餐

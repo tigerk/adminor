@@ -37,6 +37,7 @@ import RiBookmark2Line from "~icons/ri/bookmark-2-line?raw";
 import RiFileSearchLine from "~icons/ri/file-search-line?raw";
 import RiChatSearchLine from "~icons/ri/chat-search-line?raw";
 import RiInformationLine from "~icons/ri/information-line?raw";
+import RiCalendarTodoLine from "~icons/ri/calendar-todo-line?raw";
 import RiTerminalWindowLine from "~icons/ri/terminal-window-line?raw";
 import RiCheckboxCircleLine from "~icons/ri/checkbox-circle-line?raw";
 import RiBarChartHorizontalLine from "~icons/ri/bar-chart-horizontal-line?raw";
@@ -76,6 +77,7 @@ const icons = [
   ["ri/file-search-line", RiFileSearchLine],
   ["ri/chat-search-line", RiChatSearchLine],
   ["ri/information-line", RiInformationLine],
+  ["ri/calendar-todo-line", RiCalendarTodoLine],
   ["ri/terminal-window-line", RiTerminalWindowLine],
   ["ri/checkbox-circle-line", RiCheckboxCircleLine],
   ["ri/bar-chart-horizontal-line", RiBarChartHorizontalLine]
