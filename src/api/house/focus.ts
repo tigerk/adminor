@@ -19,7 +19,7 @@ export const createFocusHouse = (data?: object) => {
 };
 
 export const getFocusHouseOptions = (data?: object) => {
-  return http.request<ResultList>("post", baseUrlApi("house/focus/house/options"), { data });
+  return http.request<ResultList>("post", baseUrlApi("house/focus/options"), { data });
 };
 
 export const getFocusHouseById = (data?: object) => {
