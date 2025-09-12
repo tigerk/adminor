@@ -19,6 +19,8 @@ export interface DataInfo<T> {
   roles?: Array<string>;
   /** 当前登录用户的按钮级别权限 */
   permissions?: Array<string>;
+  curCompanyId: number;
+  companyList?: Array<any>;
 }
 
 export const userKey = "user-info";
@@ -34,9 +36,7 @@ export const multipleTabsKey = "multiple-tabs";
 /** 获取`token` */
 export function getToken(): DataInfo<number> {
   // 此处与`TokenKey`相同，此写法解决初始化时`Cookies`中不存在`TokenKey`报错
-  return Cookies.get(TokenKey)
-    ? JSON.parse(Cookies.get(TokenKey))
-    : storageLocal().getItem(userKey);
+  return Cookies.get(TokenKey) ? JSON.parse(Cookies.get(TokenKey)) : storageLocal().getItem(userKey);
 }
 
 /**
@@ -68,12 +68,14 @@ export function setToken(data: DataInfo<number>) {
       : {}
   );
 
-  function setUserKey({ avatar, username, nickname, roles, permissions }) {
+  function setUserKey({ avatar, username, nickname, roles, permissions, curCompanyId, companyList }) {
     useUserStoreHook().SET_AVATAR(avatar);
     useUserStoreHook().SET_USERNAME(username);
     useUserStoreHook().SET_NICKNAME(nickname);
     useUserStoreHook().SET_ROLES(roles);
     useUserStoreHook().SET_PERMS(permissions);
+    useUserStoreHook().SET_CUR_COMPANY_ID(curCompanyId);
+    useUserStoreHook().SET_COMPANY_LIST(companyList);
     storageLocal().setItem(userKey, {
       refreshToken,
       expires,
@@ -81,7 +83,9 @@ export function setToken(data: DataInfo<number>) {
       username,
       nickname,
       roles,
-      permissions
+      permissions,
+      curCompanyId,
+      companyList
     });
   }
 
@@ -92,25 +96,26 @@ export function setToken(data: DataInfo<number>) {
       username,
       nickname: data?.nickname ?? "",
       roles,
-      permissions: data?.permissions ?? []
+      permissions: data?.permissions ?? [],
+      curCompanyId: data?.curCompanyId ?? 0,
+      companyList: data?.companyList ?? []
     });
   } else {
-    const avatar =
-      storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "";
-    const username =
-      storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "";
-    const nickname =
-      storageLocal().getItem<DataInfo<number>>(userKey)?.nickname ?? "";
-    const roles =
-      storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [];
-    const permissions =
-      storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [];
+    const avatar = storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "";
+    const username = storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "";
+    const nickname = storageLocal().getItem<DataInfo<number>>(userKey)?.nickname ?? "";
+    const roles = storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [];
+    const permissions = storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [];
+    const curCompanyId = storageLocal().getItem<DataInfo<number>>(userKey)?.curCompanyId ?? 0;
+    const companyList = storageLocal().getItem<DataInfo<number>>(userKey)?.companyList ?? [];
     setUserKey({
       avatar,
       username,
       nickname,
       roles,
-      permissions
+      permissions,
+      curCompanyId,
+      companyList
     });
   }
 }
@@ -134,8 +139,6 @@ export const hasPerms = (value: string | Array<string>): boolean => {
   const { permissions } = useUserStoreHook();
   if (!permissions) return false;
   if (permissions.length === 1 && permissions[0] === allPerms) return true;
-  const isAuths = isString(value)
-    ? permissions.includes(value)
-    : isIncludeAllChildren(value, permissions);
+  const isAuths = isString(value) ? permissions.includes(value) : isIncludeAllChildren(value, permissions);
   return isAuths ? true : false;
 };

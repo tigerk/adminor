@@ -11,35 +11,10 @@ import { addDialog } from "@/components/ReDialog";
 import type { PaginationProps } from "@pureadmin/table";
 import ReCropperPreview from "@/components/ReCropperPreview";
 import type { FormItemProps, RoleFormItemProps } from "../utils/types";
-import {
-  getKeyList,
-  isAllEmpty,
-  hideTextAtIndex,
-  deviceDetection
-} from "@pureadmin/utils";
-import {
-  getRoleIds,
-  getUserList,
-  getAllRoleList,
-  createUser
-} from "@/api/system";
-import {
-  ElForm,
-  ElInput,
-  ElFormItem,
-  ElProgress,
-  ElMessageBox
-} from "element-plus";
-import {
-  type Ref,
-  h,
-  ref,
-  toRaw,
-  watch,
-  computed,
-  reactive,
-  onMounted
-} from "vue";
+import { getKeyList, isAllEmpty, hideTextAtIndex, deviceDetection } from "@pureadmin/utils";
+import { getRoleIds, getUserList, getAllRoleList, createUser } from "@/api/system";
+import { ElForm, ElInput, ElFormItem, ElProgress, ElMessageBox } from "element-plus";
+import { type Ref, h, ref, toRaw, watch, computed, reactive, onMounted } from "vue";
 import { getDeptList } from "@/api/sys/dept";
 
 export function useUser(tableRef: Ref, treeRef: Ref) {
@@ -109,11 +84,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       prop: "gender",
       minWidth: 90,
       cellRenderer: ({ row, props }) => (
-        <el-tag
-          size={props.size}
-          type={row.gender === 1 ? "danger" : null}
-          effect="plain"
-        >
+        <el-tag size={props.size} type={row.gender === 1 ? "danger" : null} effect="plain">
           {row.gender === 0 ? "男" : "女"}
         </el-tag>
       )
@@ -152,8 +123,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       label: "创建时间",
       minWidth: 90,
       prop: "createTime",
-      formatter: ({ createTime }) =>
-        dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ createTime }) => dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",
@@ -163,13 +133,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     }
   ];
   const buttonClass = computed(() => {
-    return [
-      "h-[20px]!",
-      "reset-margin",
-      "text-gray-500!",
-      "dark:text-white!",
-      "dark:hover:text-primary!"
-    ];
+    return ["h-[20px]!", "reset-margin", "text-gray-500!", "dark:text-white!", "dark:hover:text-primary!"];
   });
   // 重置的新密码
   const pwdForm = reactive({
@@ -187,37 +151,21 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   const roleOptions = ref([]);
 
   function onChange({ row, index }) {
-    ElMessageBox.confirm(
-      `确认要<strong>${
-        row.status === 0 ? "启用" : "停用"
-      }</strong><strong style='color:var(--el-color-primary)'>${
-        row.username
-      }</strong>用户吗?`,
-      "系统提示",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-        dangerouslyUseHTMLString: true,
-        draggable: true
-      }
-    )
+    ElMessageBox.confirm(`确认要<strong>${row.status === 0 ? "启用" : "停用"}</strong><strong style='color:var(--el-color-primary)'>${row.username}</strong>用户吗?`, "系统提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+      dangerouslyUseHTMLString: true,
+      draggable: true
+    })
       .then(() => {
-        switchLoadMap.value[index] = Object.assign(
-          {},
-          switchLoadMap.value[index],
-          {
-            loading: true
-          }
-        );
+        switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], {
+          loading: true
+        });
         setTimeout(() => {
-          switchLoadMap.value[index] = Object.assign(
-            {},
-            switchLoadMap.value[index],
-            {
-              loading: false
-            }
-          );
+          switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], {
+            loading: false
+          });
           message("已成功修改用户状态", {
             type: "success"
           });
@@ -396,11 +344,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     });
   }
 
-  watch(
-    pwdForm,
-    ({ newPwd }) =>
-      (curScore.value = isAllEmpty(newPwd) ? -1 : zxcvbn(newPwd).score)
-  );
+  watch(pwdForm, ({ newPwd }) => (curScore.value = isAllEmpty(newPwd) ? -1 : zxcvbn(newPwd).score));
 
   /** 重置密码 */
   function handleReset(row) {
@@ -423,21 +367,12 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
                 }
               ]}
             >
-              <ElInput
-                clearable
-                show-password
-                type="password"
-                v-model={pwdForm.newPwd}
-                placeholder="请输入新密码"
-              />
+              <ElInput clearable show-password type="password" v-model={pwdForm.newPwd} placeholder="请输入新密码" />
             </ElFormItem>
           </ElForm>
           <div class="my-4 flex">
             {pwdProgress.map(({ color, text }, idx) => (
-              <div
-                class="w-[19vw]"
-                style={{ marginLeft: idx !== 0 ? "4px" : 0 }}
-              >
+              <div class="w-[19vw]" style={{ marginLeft: idx !== 0 ? "4px" : 0 }}>
                 <ElProgress
                   striped
                   striped-flow
@@ -447,10 +382,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
                   stroke-width={10}
                   show-text={false}
                 />
-                <p
-                  class="text-center"
-                  style={{ color: curScore.value === idx ? color : "" }}
-                >
+                <p class="text-center" style={{ color: curScore.value === idx ? color : "" }}>
                   {text}
                 </p>
               </div>

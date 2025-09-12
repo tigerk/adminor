@@ -21,6 +21,10 @@ export type UserResult = {
     refreshToken: string;
     /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
     expires: number;
+    /** 当前公司 */
+    curCompanyId: number;
+    /** 公司列表 */
+    companyList: Array<any>;
   };
 };
 
@@ -88,4 +92,8 @@ export const getMine = (data?: object) => {
 /** 账户设置-个人安全日志 */
 export const getMineLogs = (data?: object) => {
   return http.request<ResultTable>("get", "/mine-logs", { data });
+};
+
+export const switchCompany = (data?: object) => {
+  return http.request<UserResult>("post", baseUrlApi("switchCompany"), { params: data });
 };

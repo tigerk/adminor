@@ -14,10 +14,48 @@
   import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
   import Setting from "~icons/ri/settings-3-line";
   import Check from "~icons/ep/check";
+  import { ref } from "vue";
 
-  const { layout, device, logout, onPanel, pureApp, username, userAvatar, avatarsStyle, toggleSideBar, toAccountSettings, getDropdownItemStyle, getDropdownItemClass } = useNav();
+  import { setToken } from "@/utils/auth";
+  import { switchCompany } from "@/api/user";
+  import { ElMessage } from "element-plus";
+
+  const {
+    layout,
+    device,
+    logout,
+    onPanel,
+    pureApp,
+    username,
+    userAvatar,
+    avatarsStyle,
+    toggleSideBar,
+    toAccountSettings,
+    getDropdownItemStyle,
+    getDropdownItemClass,
+    getCurCompanyId,
+    getCompanyList
+  } = useNav();
+  const selectedCompanyId = ref<number>(getCurCompanyId);
 
   const { t, locale, translationCh, translationTw, translationEn, translationJa, translationKo } = useTranslationLang();
+
+  // 处理公司切换事件
+  const handleCompanyChange = (companyId: string) => {
+    if (companyId) {
+      // 实现切换公司的逻辑，比如调用API等
+      console.log("Switching to company:", companyId);
+      // 示例：调用API切换公司
+      switchCompany({ companyId: companyId }).then(r => {
+        if (r.code == 0) {
+          setToken(r.data);
+          window.location.reload();
+        } else {
+          ElMessage.error(r.message);
+        }
+      });
+    }
+  };
 </script>
 
 <template>
@@ -29,6 +67,10 @@
     <LayNavMix v-if="layout === 'mix'" />
 
     <div v-if="/vertical|double/.test(layout)" class="vertical-header-right">
+      <!-- 菜单搜索 -->
+      <el-select v-model="selectedCompanyId" placeholder="切换公司" clearable class="w-[280px]!" @change="handleCompanyChange">
+        <el-option v-for="item in getCompanyList" :key="item.companyId" :label="item.companyName" :value="item.companyId" />
+      </el-select>
       <!-- 菜单搜索 -->
       <LaySearch id="header-search" />
       <!-- 国际化 -->

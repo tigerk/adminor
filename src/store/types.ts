@@ -48,4 +48,6 @@ export type userType = {
   currentPage?: number;
   isRemembered?: boolean;
   loginDay?: number;
+  curCompanyId?: number;
+  companyList?: Array<any>;
 };

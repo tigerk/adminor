@@ -142,6 +142,16 @@ export function useNav() {
     return new URL("/logo.svg", import.meta.url).href;
   }
 
+  /** 当前选中公司 */
+  const getCurCompanyId = computed(() => {
+    return useUserStoreHook()?.curCompanyId ? useUserStoreHook()?.curCompanyId : 0;
+  });
+
+  /** 用户的公司列表 */
+  const getCompanyList = computed(() => {
+    return isAllEmpty(useUserStoreHook()?.companyList) ? [] : useUserStoreHook()?.companyList;
+  });
+
   return {
     title,
     device,
@@ -170,6 +180,8 @@ export function useNav() {
     tooltipEffect,
     toAccountSettings,
     getDropdownItemStyle,
-    getDropdownItemClass
+    getDropdownItemClass,
+    getCurCompanyId,
+    getCompanyList
   };
 }
