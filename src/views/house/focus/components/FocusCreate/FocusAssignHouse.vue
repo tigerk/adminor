@@ -288,7 +288,7 @@
   import { CheckboxValueType, ElMessage, ElMessageBox, type FormInstance } from "element-plus";
   import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled, Lock } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
-  import { HouseLayoutProps, RoomStatusProps, FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+  import { HouseLayoutProps, HouseStatusProps, FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
   import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
 
@@ -342,7 +342,7 @@
     visible: false,
     x: 0,
     y: 0,
-    room: null as RoomStatusProps | null
+    room: null as HouseStatusProps | null
   });
 
   // 批量配置表单
@@ -489,7 +489,7 @@
     return colors[index];
   };
 
-  const getRoomCardClass = (room: RoomStatusProps) => {
+  const getRoomCardClass = (room: HouseStatusProps) => {
     if (selectedRooms.value.includes(room.cursor)) {
       return "border-blue-500 bg-blue-50";
     }
@@ -594,7 +594,7 @@
   };
 
   // 右键菜单相关方法
-  const handleRoomRightClick = (event: MouseEvent, room: RoomStatusProps) => {
+  const handleRoomRightClick = (event: MouseEvent, room: HouseStatusProps) => {
     event.preventDefault();
     contextMenu.visible = true;
     contextMenu.x = event.clientX;
@@ -607,22 +607,22 @@
     contextMenu.room = null;
   };
 
-  const editRoom = (room: RoomStatusProps | null) => {
+  const editRoom = (room: HouseStatusProps | null) => {
     if (!room) return;
 
     isEditingRoom.value = true;
     newRoomForm.cursor = room.cursor;
-    newRoomForm.roomNumber = room.roomNumber;
+    newRoomForm.roomNumber = room.doorNumber;
     newRoomForm.floor = room.floor;
     showAddRoomDialog.value = true;
     hideContextMenu();
   };
 
-  const deleteRoom = async (room: RoomStatusProps | null) => {
+  const deleteRoom = async (room: HouseStatusProps | null) => {
     if (!room) return;
 
     try {
-      await ElMessageBox.confirm(`确定要删除房间 ${room.roomNumber} 吗？`, "警告", {
+      await ElMessageBox.confirm(`确定要删除房间 ${room.doorNumber} 吗？`, "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
@@ -675,10 +675,10 @@
       }
 
       let tmpId = Date.now();
-      const newRoom: RoomStatusProps = {
+      const newRoom: HouseStatusProps = {
         cursor: tmpId.toString(),
-        roomIndex: tmpId,
-        roomNumber: newRoomForm.roomNumber,
+        houseIndex: tmpId,
+        doorNumber: newRoomForm.roomNumber,
         floor: newRoomForm.floor,
         locked: false,
         houseLayoutId: undefined,

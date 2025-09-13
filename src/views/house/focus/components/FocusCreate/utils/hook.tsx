@@ -2,7 +2,7 @@ import FocusCreateForm from "../FocusCreateForm.vue";
 import { addDialog, closeAllDialog } from "@/components/ReDialog/index";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
-import type { FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+import type { FocusFormItemProps, HouseStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
 
 export function useFocusEdit() {
   const form = reactive({
@@ -36,9 +36,9 @@ export function useFocusEdit() {
           // 关闭的房间
           closedRooms: row?.closedRooms ?? [],
           // 所有楼层的房间状态
-          roomsStatusOfFloors: row?.roomsStatusOfFloors ?? new Map<number, Map<string, RoomStatusProps>>(),
+          roomsStatusOfFloors: row?.houseStatusOfFloors ?? new Map<number, Map<string, HouseStatusProps>>(),
           // 所有房间
-          roomList: row?.roomList ?? null,
+          roomList: row?.houseList ?? null,
           // 选择的楼层
           selectedFloor: row?.selectedFloor ?? 1,
           // 选择的房间数量

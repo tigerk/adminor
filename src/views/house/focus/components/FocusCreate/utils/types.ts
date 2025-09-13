@@ -1,5 +1,6 @@
 // 虽然字段很少 但是抽离出来 后续有扩展字段需求就很方便了
 
+// 表单定义
 interface FocusFormItemProps {
   id: number;
   businessMode: number;
@@ -7,29 +8,11 @@ interface FocusFormItemProps {
   houseName: string;
   region: any[];
   address: string;
-  building: string;
-  unit: string;
-  doorNumber: string;
-  // 总楼层
-  floorTotal: number;
-  // 每个楼层的房间数量
-  roomCountPerFloor: number;
-  // 关闭的楼层列表
-  closedFloors: number[];
-  // 关闭的房间
-  closedRooms: RoomStatusProps[];
+  buildings: FocusBuildingProps[];
   // 所有楼层的房间状态
-  roomsStatusOfFloors: Map<number, Map<string, RoomStatusProps>>;
+  houseStatusOfFloors: Map<number, Map<string, HouseStatusProps>>;
   // 所有房间
-  roomList: RoomStatusProps[];
-  // 选择的楼层
-  selectedFloor: number;
-  // 房间前缀
-  roomPrefix: string;
-  // 去掉4
-  excludeFour: boolean;
-  // 房间编号长度
-  roomNumberLength: number;
+  houseList: HouseStatusProps[];
   // 部门id
   deptId: number;
   // 业务员id
@@ -52,15 +35,17 @@ interface FocusFormItemProps {
   houseLayoutList: HouseLayoutProps[];
 }
 
+// 表单
 interface FormProps {
   formInline: FocusFormItemProps;
 }
 
-interface RoomStatusProps {
+// 房间状态
+interface HouseStatusProps {
   cursor: string;
-  roomIndex: number;
+  houseIndex: number;
   // 房间号
-  roomNumber: string;
+  doorNumber: string;
   // 房间锁定状态
   locked: boolean;
   // 楼层
@@ -75,6 +60,29 @@ interface RoomStatusProps {
   area: number;
 }
 
+interface FocusBuildingProps {
+  // 座栋
+  building: string;
+  // 单元
+  unit: string;
+  // 总楼层
+  floorTotal: number;
+  // 每个楼层的房间数量
+  houseCountPerFloor: number;
+  // 关闭的楼层列表
+  closedFloors: number[];
+  // 关闭的房间
+  closedHouses: HouseStatusProps[];
+  // 选择的楼层
+  selectedFloor: number;
+  // 房间前缀
+  housePrefix: string;
+  // 去掉4
+  excludeFour: boolean;
+  // 房间编号长度
+  numberLength: number;
+}
+
 // 接口定义
 interface HouseLayoutProps {
   id: string;
@@ -86,4 +94,4 @@ interface HouseLayoutProps {
   newly: boolean;
 }
 
-export type { FocusFormItemProps, FormProps, RoomStatusProps, HouseLayoutProps };
+export type { FocusFormItemProps, FormProps, HouseStatusProps, FocusBuildingProps, HouseLayoutProps };

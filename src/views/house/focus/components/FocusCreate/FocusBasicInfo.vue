@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, reactive, computed, watch, onMounted } from "vue";
-  import { FormProps, FocusFormItemProps, RoomStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+  import { FormProps, FocusFormItemProps, HouseStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
   import RegionCascader from "@/components/Business/RegionCascader.vue";
   import DeptCascader from "@/components/Business/DeptUserCascader.vue";
   import { getDeptUserList } from "@/api/sys/dept";
@@ -49,12 +49,12 @@
     if (form.value.roomsStatusOfFloors) {
       form.value.roomsStatusOfFloors.clear();
     } else {
-      form.value.roomsStatusOfFloors = new Map<number, Map<string, RoomStatusProps>>();
+      form.value.roomsStatusOfFloors = new Map<number, Map<string, HouseStatusProps>>();
     }
 
     // 初始化每个楼层的房间数据
     for (let floor = 1; floor <= form.value.floorTotal; floor++) {
-      const roomStatusMap = new Map<string, RoomStatusProps>();
+      const roomStatusMap = new Map<string, HouseStatusProps>();
 
       for (let room = 1; room <= form.value.roomCountPerFloor; room++) {
         const roomNum = room.toString();
@@ -64,8 +64,8 @@
 
         roomStatusMap.set(roomNum, {
           cursor: `${floor}-${room}`,
-          roomIndex: room,
-          roomNumber: useFocusEdit().formatRoomNumber(form.value.roomPrefix, form.value.roomNumberLength, floor, roomNum),
+          houseIndex: room,
+          doorNumber: useFocusEdit().formatRoomNumber(form.value.roomPrefix, form.value.roomNumberLength, floor, roomNum),
           locked: false,
           floor: floor,
           houseLayoutId: null,
@@ -98,15 +98,15 @@
 
   // 初始化特定楼层房间列表
   const initRoomListOfFloor = (floor: number, roomCount: number) => {
-    const roomStatusMap = new Map<string, RoomStatusProps>();
+    const roomStatusMap = new Map<string, HouseStatusProps>();
 
     for (let i = 1; i <= roomCount; i++) {
       const roomNum = i.toString();
 
       roomStatusMap.set(roomNum, {
         cursor: `${floor}-${i}`,
-        roomIndex: i,
-        roomNumber: useFocusEdit().formatRoomNumber(form.value.roomPrefix, form.value.roomNumberLength, floor, roomNum),
+        houseIndex: i,
+        doorNumber: useFocusEdit().formatRoomNumber(form.value.roomPrefix, form.value.roomNumberLength, floor, roomNum),
         locked: false,
         floor: floor,
         houseLayoutId: null,
@@ -154,7 +154,7 @@
       }
     } else if (newRoomCount < currentSize) {
       // 减少房间 - 截断
-      const newMap = new Map<string, RoomStatusProps>();
+      const newMap = new Map<string, HouseStatusProps>();
       let count = 0;
 
       for (const [key, value] of currentFloor) {
@@ -223,7 +223,7 @@
     if (form.value.roomsStatusOfFloors) {
       form.value.roomsStatusOfFloors.clear();
     } else {
-      form.value.roomsStatusOfFloors = new Map<number, Map<string, RoomStatusProps>>();
+      form.value.roomsStatusOfFloors = new Map<number, Map<string, HouseStatusProps>>();
     }
 
     // 初始化每个楼层的房间数据
@@ -233,7 +233,7 @@
       const roomNum = room.roomNumber;
 
       if (!form.value.roomsStatusOfFloors.has(floor)) {
-        form.value.roomsStatusOfFloors.set(floor, new Map<string, RoomStatusProps>());
+        form.value.roomsStatusOfFloors.set(floor, new Map<string, HouseStatusProps>());
       }
 
       const roomStatusMap = form.value.roomsStatusOfFloors.get(floor);
@@ -317,7 +317,7 @@
   }
 
   // 处理房间点击事件
-  const handleRoomClick = (roomStatus: RoomStatusProps) => {
+  const handleRoomClick = (roomStatus: HouseStatusProps) => {
     // 确保 closedRooms 是数组
     if (!Array.isArray(form.value.closedRooms)) {
       form.value.closedRooms = [];
@@ -327,7 +327,7 @@
     if (roomStatus.locked) {
       form.value.closedRooms.push(roomStatus);
     } else {
-      const index = form.value.closedRooms.findIndex(item => item.floor === form.value.selectedFloor && item.roomNumber === roomStatus.roomNumber);
+      const index = form.value.closedRooms.findIndex(item => item.floor === form.value.selectedFloor && item.roomNumber === roomStatus.doorNumber);
       if (index > -1) {
         form.value.closedRooms.splice(index, 1);
       }
@@ -371,7 +371,7 @@
             </div>
           </el-col>
         </el-row>
-
+        <!-- 添加楼栋 -->
         <el-row :gutter="20">
           <el-col :span="3">
             <div class="grid-content ep-bg-purple">
@@ -435,22 +435,7 @@
             </div>
           </el-col>
         </el-row>
-
-        <!-- 添加楼层设置提示 -->
-        <el-row :gutter="20">
-          <el-col :span="24">
-            <el-alert
-              title="楼层设置说明"
-              type="info"
-              description="修改楼层相关信息后，系统将自动重新初始化所有楼层房间信息。您可以在下方选择楼层和调整房间数量。"
-              show-icon
-              :closable="false"
-              style="margin-bottom: 20px"
-            />
-          </el-col>
-        </el-row>
-
-        <h3 class="pb-4">房间信息</h3>
+        <h5 class="pb-4">房间信息</h5>
         <el-row :gutter="20">
           <el-col :span="24">
             <el-card>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, reactive, watch } from "vue";
-  import { FormProps, RoomStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
-  import FocusAssignRoom from "@/views/house/focus/components/FocusCreate/FocusAssignRoom.vue";
+  import { FormProps, HouseStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+  import FocusAssignHouse from "@/views/house/focus/components/FocusCreate/FocusAssignHouse.vue";
   import FocusExtraInfo from "@/views/house/focus/components/FocusCreate/FocusExtraInfo.vue";
   import FocusBasicInfo from "@/views/house/focus/components/FocusCreate/FocusBasicInfo.vue";
   import { ElMessage } from "element-plus";
@@ -27,9 +27,9 @@
       // 关闭的房间
       closedRooms: [],
       // 所有楼层的房间状态
-      roomsStatusOfFloors: new Map<number, Map<string, RoomStatusProps>>(),
+      houseStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>(),
       // 所有房间
-      roomList: [],
+      houseList: [],
       // 选择的楼层
       selectedFloor: 1,
       // 选择的房间数量
@@ -89,7 +89,7 @@
 
   // 组件引用
   const basicInfoRef = ref();
-  const assignRoomRef = ref();
+  const assignHouseRef = ref();
   const extraInfoRef = ref();
 
   const stepNext = () => {
@@ -155,7 +155,7 @@
       <FocusBasicInfo ref="basicInfoRef" v-model="form" @to-assign-room="stepNext" />
     </div>
     <div v-if="stepActive == 1">
-      <FocusAssignRoom ref="assignRoomRef" v-model="form" @step-previous="stepPrevious" @to-add-extra="stepNext" />
+      <FocusAssignHouse ref="assignHouseRef" v-model="form" @step-previous="stepPrevious" @to-add-extra="stepNext" />
     </div>
     <div v-if="stepActive == 2">
       <FocusExtraInfo ref="extraInfoRef" v-model="form" @step-previous="stepPrevious" @to-create-house="submitAllData" />
