@@ -19,6 +19,7 @@
       </el-space>
     </el-col>
   </el-row>
+
   <el-row :gutter="20">
     <el-col :span="24">
       <div class="house-floor-management p-1" style="height: 80vh">
@@ -49,14 +50,10 @@
                 </div>
                 <div class="flex space-x-1">
                   <el-button size="small" type="primary" text @click.stop="editHouseLayout(houseLayout)">
-                    <el-icon>
-                      <Edit />
-                    </el-icon>
+                    <el-icon><Edit /></el-icon>
                   </el-button>
                   <el-button size="small" type="danger" text @click.stop="deleteHouseLayout(houseLayout.id)">
-                    <el-icon>
-                      <Delete />
-                    </el-icon>
+                    <el-icon><Delete /></el-icon>
                   </el-button>
                 </div>
               </div>
@@ -92,7 +89,8 @@
             </div>
 
             <h3 class="text-md font-medium text-gray-800 mb-3">房源信息 - {{ getCurrentBuildingName() }}</h3>
-            <!-- 按楼层显示房源 - 减小高度 -->
+
+            <!-- 按楼层显示房源 -->
             <div class="flex-1 overflow-y-auto space-y-3" style="max-height: calc(100% - 180px)">
               <div v-for="floor in currentBuildingFloors" :key="floor" class="floor-section">
                 <div class="flex justify-between items-center mb-1">
@@ -133,11 +131,11 @@
                       </div>
 
                       <div class="text-center">
-                        <!-- 房源号和房型标签放在同一行 -->
                         <el-space width="auto">
-                          <!--锁定图标-->
                           <IconifyIconOffline v-if="house.locked" :icon="AntDesignLockFilled" />
-                          <span class="font-medium text-sm" :class="{ 'text-gray-400 line-through': house.locked }">{{ house.doorNumber }}</span>
+                          <span class="font-medium text-sm" :class="{ 'text-gray-400 line-through': house.locked }">
+                            {{ house.doorNumber }}
+                          </span>
                           <el-tag v-if="house.houseLayoutId" :type="getHouseLayoutTagType(house.houseLayoutId)" size="small" class="text-xs px-1">
                             {{ getHouseLayoutName(house.houseLayoutId) }}
                           </el-tag>
@@ -151,16 +149,14 @@
                       style="min-width: 120px"
                       @click="addHouse(floor)"
                     >
-                      <el-icon class="text-gray-400">
-                        <Plus />
-                      </el-icon>
+                      <el-icon class="text-gray-400"><Plus /></el-icon>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- 批量配置区域 - 调整布局 -->
+            <!-- 批量配置区域 -->
             <div class="mt-4 border-2 border-b-gray-300 rounded-lg p-2 bg-blue-25 flex-shrink-0">
               <div class="mb-3">
                 <span class="text-red-700 font-medium">对「{{ getSelectedHouseNumbers() }}」房源进行统一配置</span>
@@ -201,7 +197,6 @@
                 </div>
 
                 <div class="col-span-3">
-                  <!-- 按钮放在同一行右侧 -->
                   <div class="flex justify-end space-x-2 text-right">
                     <el-button type="primary" @click="applyBatchConfig">应用配置</el-button>
                     <el-button @click="clearSelection">取消选择</el-button>
@@ -220,15 +215,11 @@
           @click="hideContextMenu"
         >
           <div class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center" @click="editHouse(contextMenu.house)">
-            <el-icon class="mr-2">
-              <Edit />
-            </el-icon>
+            <el-icon class="mr-2"><Edit /></el-icon>
             修改
           </div>
-          <div class="px-3 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer flex items-center" @click="deleteHouse(contextMenu.house)">
-            <el-icon class="mr-2">
-              <Delete />
-            </el-icon>
+          <div class="px-3 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer flex items-center" @click="deleteHouseAction(contextMenu.house)">
+            <el-icon class="mr-2"><Delete /></el-icon>
             删除
           </div>
         </div>
@@ -292,27 +283,29 @@
       </div>
     </el-col>
   </el-row>
+
   <el-row :gutter="20">
     <el-col :span="24" class="text-right">
       <el-button type="primary" style="margin-top: 12px" @click="stepPrevious">上一步</el-button>
-      <el-button type="primary" style="margin-top: 12px" @click="initHousesFromFormData">重置</el-button>
+      <el-button type="primary" style="margin-top: 12px" @click="resetHouses">重置</el-button>
       <el-button type="primary" style="margin-top: 12px" @click="clickSaveAssignHouse">保存并完善项目</el-button>
     </el-col>
   </el-row>
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, reactive, onMounted, onUnmounted, watch, defineModel } from "vue";
+  import { ref, computed, reactive, onMounted, onUnmounted, defineModel } from "vue";
   import { CheckboxValueType, ElMessage, ElMessageBox, type FormInstance } from "element-plus";
-  import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled, Lock } from "@element-plus/icons-vue";
+  import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
+  import AntDesignLockFilled from "~icons/ant-design/lock-filled";
   import { HouseLayoutProps, HouseStatusProps, FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
   import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
-  import AntDesignLockFilled from "~icons/ant-design/lock-filled";
 
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
 
+  // 初始化默认房型
   if (!form.value.houseLayoutList || form.value.houseLayoutList.length === 0) {
     form.value.houseLayoutList = [
       {
@@ -341,6 +334,9 @@
     "to-add-extra": [];
     "step-previous": [];
   }>();
+
+  // 使用 hook 中的方法
+  const { getHouseListForFloor, addHouseToFloor, updateHouseInfo, deleteHouse, convertBuildingsToHouseList, initAllFloorsForBuilding } = useFocusEdit();
 
   // 状态管理
   const selectedHouseLayoutId = ref<string>("");
@@ -400,50 +396,93 @@
   // 计算属性
   const projectName = computed(() => form.value.houseName || "未命名项目");
 
-  // 统计信息基于所有楼栋
+  // 当前楼栋
+  const currentBuilding = computed(() => {
+    return form.value.buildings?.[selectedBuildingIndex.value] || null;
+  });
+
+  // 当前楼栋的楼层列表
+  const currentBuildingFloors = computed(() => {
+    if (!currentBuilding.value?.housesStatusOfFloors) return [];
+
+    const floors = Array.from(currentBuilding.value.housesStatusOfFloors.keys());
+    return floors.sort((a, b) => a - b);
+  });
+
+  // 统计信息（基于所有楼栋）
   const totalFloors = computed(() => {
     return form.value.buildings?.reduce((total, building) => total + (building.floorTotal || 0), 0) || 0;
   });
 
   const totalHouses = computed(() => {
-    return form.value.houseList?.length || 0;
+    let count = 0;
+    form.value.buildings?.forEach(building => {
+      if (building.housesStatusOfFloors) {
+        for (const [floor, houseMap] of building.housesStatusOfFloors) {
+          if (!building.closedFloors?.includes(floor)) {
+            count += houseMap.size;
+          }
+        }
+      }
+    });
+    return count;
   });
 
   const unassignedHouses = computed(() => {
-    return form.value.houseList?.filter(house => !house.houseLayoutId).length || 0;
+    let count = 0;
+    form.value.buildings?.forEach(building => {
+      if (building.housesStatusOfFloors) {
+        for (const [floor, houseMap] of building.housesStatusOfFloors) {
+          if (!building.closedFloors?.includes(floor)) {
+            for (const [_, house] of houseMap) {
+              if (!house.houseLayoutId && !house.locked) {
+                count++;
+              }
+            }
+          }
+        }
+      }
+    });
+    return count;
   });
 
   const enabledHouses = computed(() => {
-    return form.value.houseList?.filter(house => !house.locked).length || 0;
+    let count = 0;
+    form.value.buildings?.forEach(building => {
+      if (building.housesStatusOfFloors) {
+        for (const [floor, houseMap] of building.housesStatusOfFloors) {
+          if (!building.closedFloors?.includes(floor)) {
+            for (const [_, house] of houseMap) {
+              if (!house.locked) {
+                count++;
+              }
+            }
+          }
+        }
+      }
+    });
+    return count;
   });
 
   const disabledHouses = computed(() => {
-    return form.value.houseList?.filter(house => house.locked).length || 0;
-  });
-
-  // 当前楼栋相关计算属性
-  const currentBuilding = computed(() => {
-    return form.value.buildings?.[selectedBuildingIndex.value] || null;
-  });
-
-  const currentBuildingFloors = computed(() => {
-    if (!currentBuilding.value) return [];
-
-    // 从当前楼栋的房源数据中获取楼层信息
-    const floors = new Set<number>();
-    form.value.houseList?.forEach(house => {
-      if (house.building === currentBuilding.value?.building && house.unit === currentBuilding.value?.unit) {
-        floors.add(house.floor);
+    let count = 0;
+    form.value.buildings?.forEach(building => {
+      if (building.housesStatusOfFloors) {
+        for (const [_, houseMap] of building.housesStatusOfFloors) {
+          for (const [_, house] of houseMap) {
+            if (house.locked) {
+              count++;
+            }
+          }
+        }
       }
     });
-
-    return Array.from(floors).sort((a, b) => a - b);
+    return count;
   });
 
   // 楼栋切换相关方法
   const selectBuilding = (index: number) => {
     selectedBuildingIndex.value = index;
-    // 切换楼栋时清空选中的房源
     selectedHouses.value = [];
   };
 
@@ -454,76 +493,21 @@
 
   const getBuildingHouseCount = (buildingIndex: number) => {
     const building = form.value.buildings?.[buildingIndex];
-    if (!building) return 0;
+    if (!building?.housesStatusOfFloors) return 0;
 
-    return form.value.houseList?.filter(house => house.building === building.building && house.unit === building.unit).length || 0;
-  };
-
-  // 初始化房源数据 - 从buildings数据结构转换为houseList
-  const initHousesFromFormData = () => {
-    if (!form.value?.buildings) return;
-
-    form.value.houseList = [];
-
-    form.value.buildings.forEach(building => {
-      if (building.housesStatusOfFloors) {
-        for (const [floor, houseMap] of building.housesStatusOfFloors) {
-          for (const [_, houseStatus] of houseMap) {
-            form.value.houseList.push({
-              ...houseStatus,
-              building: building.building,
-              unit: building.unit
-            });
-          }
-        }
+    let count = 0;
+    for (const [floor, houseMap] of building.housesStatusOfFloors) {
+      if (!building.closedFloors?.includes(floor)) {
+        count += houseMap.size;
       }
-    });
-  };
-
-  // 监听props变化
-  watch(
-    () => form.value,
-    () => {
-      // 初始化过时，不再进行初始化
-      if (!form.value?.houseList || form.value.houseList.length === 0) {
-        initHousesFromFormData();
-      }
-    },
-    { deep: true, immediate: true }
-  );
-
-  // 生命周期钩子
-  onMounted(() => {
-    document.addEventListener("click", hideContextMenu);
-
-    // 确保有楼栋时默认选中第一个
-    if (form.value.buildings && form.value.buildings.length > 0) {
-      selectedBuildingIndex.value = 0;
     }
-  });
+    return count;
+  };
 
-  onUnmounted(() => {
-    document.removeEventListener("click", hideContextMenu);
-  });
-
-  // 获取当前楼栋每一层的房源数据
+  // 获取当前楼栋某层的房源
   const getHousesByFloor = (floor: number) => {
     if (!currentBuilding.value) return [];
-
-    return form.value.houseList
-      .filter(house => house.floor === floor && house.building === currentBuilding.value?.building && house.unit === currentBuilding.value?.unit)
-      .filter(house => {
-        // 如果选择了去掉4，过滤掉包含4的房源
-        if (currentBuilding.value?.excludeFour && house.doorNumber) {
-          return !house.doorNumber.includes("4");
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        const aNum = a.doorNumber || "";
-        const bNum = b.doorNumber || "";
-        return aNum.localeCompare(bNum);
-      });
+    return getHouseListForFloor(currentBuilding.value, floor);
   };
 
   // 获取房型名称
@@ -598,33 +582,49 @@
   };
 
   const getSelectedHouseNumbers = () => {
-    return selectedHouses.value
-      .map(id => form.value.houseList.find(house => house.cursor === id)?.doorNumber)
-      .filter(Boolean)
-      .join("、");
+    const houses: string[] = [];
+
+    selectedHouses.value.forEach(cursor => {
+      if (currentBuilding.value?.housesStatusOfFloors) {
+        for (const [_, houseMap] of currentBuilding.value.housesStatusOfFloors) {
+          for (const [_, house] of houseMap) {
+            if (house.cursor === cursor) {
+              houses.push(house.doorNumber);
+              break;
+            }
+          }
+        }
+      }
+    });
+
+    return houses.join("、");
   };
 
+  // 批量配置
   const applyBatchConfig = () => {
     if (selectedHouses.value.length === 0) {
       ElMessage.warning("请先选择房源");
       return;
     }
 
-    selectedHouses.value.forEach(houseId => {
-      const house = form.value.houseList.find(h => h.cursor === houseId);
-      if (house) {
-        if (batchConfig.houseLayoutId !== "") {
-          house.houseLayoutId = batchConfig.houseLayoutId || undefined;
-        }
-        if (batchConfig.price) {
-          house.price = Number(batchConfig.price);
-        }
-        if (batchConfig.direction) {
-          house.direction = batchConfig.direction;
-        }
-        if (batchConfig.area) {
-          house.area = Number(batchConfig.area);
-        }
+    selectedHouses.value.forEach(cursor => {
+      const updates: Partial<HouseStatusProps> = {};
+
+      if (batchConfig.houseLayoutId) {
+        updates.houseLayoutId = batchConfig.houseLayoutId;
+      }
+      if (batchConfig.price) {
+        updates.price = Number(batchConfig.price);
+      }
+      if (batchConfig.direction) {
+        updates.direction = batchConfig.direction;
+      }
+      if (batchConfig.area) {
+        updates.area = Number(batchConfig.area);
+      }
+
+      if (currentBuilding.value) {
+        updateHouseInfo(currentBuilding.value, cursor, updates);
       }
     });
 
@@ -665,8 +665,8 @@
     hideContextMenu();
   };
 
-  const deleteHouse = async (house: HouseStatusProps | null) => {
-    if (!house) return;
+  const deleteHouseAction = async (house: HouseStatusProps | null) => {
+    if (!house || !currentBuilding.value) return;
 
     try {
       await ElMessageBox.confirm(`确定要删除房源 ${house.doorNumber} 吗？`, "警告", {
@@ -675,9 +675,7 @@
         type: "warning"
       });
 
-      const index = form.value.houseList.findIndex(h => h.cursor === house.cursor);
-      if (index > -1) {
-        form.value.houseList.splice(index, 1);
+      if (deleteHouse(currentBuilding.value, house.cursor)) {
         const selectedIndex = selectedHouses.value.indexOf(house.cursor);
         if (selectedIndex > -1) {
           selectedHouses.value.splice(selectedIndex, 1);
@@ -713,48 +711,21 @@
     }
 
     if (isEditingHouse.value) {
-      const exists = form.value.houseList.some(
-        house =>
-          house.doorNumber === newHouseForm.houseNumber &&
-          house.cursor !== newHouseForm.cursor &&
-          house.building === currentBuilding.value?.building &&
-          house.unit === currentBuilding.value?.unit
-      );
-      if (exists) {
-        ElMessage.warning("该楼栋中房源号已存在");
-        return;
-      }
-
-      const house = form.value.houseList.find(h => h.cursor === newHouseForm.cursor);
-      if (house) {
-        house.doorNumber = newHouseForm.houseNumber;
+      // 编辑房源
+      if (updateHouseInfo(currentBuilding.value, newHouseForm.cursor, { doorNumber: newHouseForm.houseNumber })) {
         ElMessage.success("房源修改成功");
       }
     } else {
-      const exists = form.value.houseList.some(
-        house => house.doorNumber === newHouseForm.houseNumber && house.building === currentBuilding.value?.building && house.unit === currentBuilding.value?.unit
-      );
+      // 新增房源
+      const existingHouses = getHousesByFloor(newHouseForm.floor);
+      const exists = existingHouses.some(house => house.doorNumber === newHouseForm.houseNumber);
+
       if (exists) {
-        ElMessage.warning("该楼栋中房源号已存在");
+        ElMessage.warning("该楼层中房源号已存在");
         return;
       }
 
-      let tmpId = Date.now();
-      const newHouse: HouseStatusProps = {
-        cursor: tmpId.toString(),
-        houseIndex: tmpId,
-        doorNumber: newHouseForm.houseNumber,
-        floor: newHouseForm.floor,
-        building: currentBuilding.value.building,
-        unit: currentBuilding.value.unit,
-        locked: false,
-        houseLayoutId: undefined,
-        price: undefined,
-        direction: undefined,
-        area: undefined
-      };
-
-      form.value.houseList.push(newHouse);
+      addHouseToFloor(currentBuilding.value, newHouseForm.floor, newHouseForm.houseNumber);
       ElMessage.success("房源添加成功");
     }
 
@@ -768,6 +739,7 @@
     newHouseForm.floor = 1;
   };
 
+  // 房型管理
   const editHouseLayout = (houseLayout: HouseLayoutProps) => {
     isEditing.value = true;
     houseLayoutForm.id = houseLayout.id;
@@ -780,9 +752,22 @@
   };
 
   const deleteHouseLayout = async (id: string) => {
-    const assignedHouses = form.value.houseList.filter(house => house.houseLayoutId === id);
-    if (assignedHouses.length > 0) {
-      ElMessage.warning(`该房型已分配给${assignedHouses.length}个房源，请先清除房源分配后再删除`);
+    // 检查是否有房源使用了该房型
+    let assignedCount = 0;
+    form.value.buildings?.forEach(building => {
+      if (building.housesStatusOfFloors) {
+        for (const [_, houseMap] of building.housesStatusOfFloors) {
+          for (const [_, house] of houseMap) {
+            if (house.houseLayoutId === id) {
+              assignedCount++;
+            }
+          }
+        }
+      }
+    });
+
+    if (assignedCount > 0) {
+      ElMessage.warning(`该房型已分配给${assignedCount}个房源，请先清除房源分配后再删除`);
       return;
     }
 
@@ -856,19 +841,56 @@
     formRef.value?.clearValidate();
   };
 
-  // 保存项目信息
-  async function clickSaveAssignHouse() {
+  // 重置房源数据
+  const resetHouses = () => {
+    form.value.buildings?.forEach(building => {
+      initAllFloorsForBuilding(building);
+    });
+    selectedHouses.value = [];
+    ElMessage.success("房源数据已重置");
+  };
+
+  // 保存并进入下一步
+  const clickSaveAssignHouse = async () => {
     try {
-      // 验证表单
+      // 转换 Map 结构为 houseList 数组
+      form.value.houseList = convertBuildingsToHouseList(form.value.buildings);
+
+      if (form.value.houseList.length === 0) {
+        ElMessage.warning("请至少配置一间房源");
+        return;
+      }
+
       emit("to-add-extra");
     } catch (error) {
-      ElMessage.warning("请分配房源");
+      ElMessage.warning("请完善房源配置");
     }
-  }
+  };
 
-  async function stepPrevious() {
+  const stepPrevious = () => {
     emit("step-previous");
-  }
+  };
+
+  // 生命周期钩子
+  onMounted(() => {
+    document.addEventListener("click", hideContextMenu);
+
+    // 确保有楼栋时默认选中第一个
+    if (form.value.buildings && form.value.buildings.length > 0) {
+      selectedBuildingIndex.value = 0;
+
+      // 如果楼栋没有初始化房源数据，进行初始化
+      form.value.buildings.forEach(building => {
+        if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
+          initAllFloorsForBuilding(building);
+        }
+      });
+    }
+  });
+
+  onUnmounted(() => {
+    document.removeEventListener("click", hideContextMenu);
+  });
 </script>
 
 <style scoped>

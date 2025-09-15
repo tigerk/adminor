@@ -15,38 +15,25 @@
       houseName: "",
       region: [],
       address: "",
-      // 楼栋列表
       buildings: [
         {
-          // 座栋
           building: "",
-          // 单元
           unit: "",
-          // 总楼层
           floorTotal: 34,
-          // 每个楼层的房间数量
           houseCountPerFloor: 10,
-          // 关闭的楼层列表
           closedFloors: [],
-          // 关闭的房间
           closedHouses: [],
-          // 选择的楼层
           selectedFloor: 1,
-          // 房间前缀
           housePrefix: "A",
-          // 去掉4
           excludeFour: false,
-          // 房间编号长度
           numberLength: 4,
-          // 选择的房间数量
-          selectedHouses: null
+          selectedHouses: null,
+          housesStatusOfFloors: new Map() // 确保初始化
         }
       ],
-      // 所有房间
       houseList: [],
       deptId: 0,
       salesmanId: 0,
-      // 第三步填写
       storePhone: "",
       water: "commercial",
       electricity: "commercial",
@@ -59,7 +46,6 @@
       tags: [],
       remark: "",
       imageList: [],
-      // 户型列表
       houseLayoutList: [
         {
           id: "1",
@@ -83,11 +69,43 @@
     })
   });
 
-  // 定义 emits
   const emit = defineEmits(["create-success", "created-focus-house"]);
 
-  // 表单数据 - 确保响应式
-  const form = reactive({ ...props.formInline });
+  // 深度克隆函数，确保 Map 对象被正确复制
+  const deepCloneForm = (source: any) => {
+    const result = JSON.parse(
+      JSON.stringify(source, (key, value) => {
+        if (value instanceof Map) {
+          return Array.from(value.entries());
+        }
+        return value;
+      })
+    );
+
+    // 重新构建 Map 对象
+    if (result.buildings) {
+      result.buildings.forEach((building: any) => {
+        if (building.housesStatusOfFloors && Array.isArray(building.housesStatusOfFloors)) {
+          const newMap = new Map();
+          building.housesStatusOfFloors.forEach(([floor, houses]: [number, any[]]) => {
+            const houseMap = new Map();
+            houses.forEach(([houseKey, houseValue]: [string, any]) => {
+              houseMap.set(houseKey, houseValue);
+            });
+            newMap.set(floor, houseMap);
+          });
+          building.housesStatusOfFloors = newMap;
+        } else {
+          building.housesStatusOfFloors = new Map();
+        }
+      });
+    }
+
+    return result;
+  };
+
+  // 使用深度克隆确保响应式
+  const form = reactive(deepCloneForm(props.formInline));
 
   // 步骤激活状态
   const stepActive = ref(0);
@@ -123,20 +141,16 @@
   // 提交所有数据到后台
   const submitAllData = async () => {
     try {
-      // 收集所有数据
       const submitData = {
-        // 基本信息
         ...form,
         imageList: form.imageList.map((file: any) => file?.url).filter(Boolean),
         regionId: form.region[form.region.length - 1]
       };
 
-      // 调用后台接口
       const response = await createFocusHouse(submitData);
 
       if (response.code === 0) {
         ElMessage.success("项目保存成功！");
-        // 可以根据需要进行页面跳转或其他操作
         emit("create-success");
         emit("created-focus-house", response.data);
       } else {
@@ -157,7 +171,7 @@
   </el-steps>
   <div class="property-form">
     <div v-if="stepActive == 0">
-      <FocusBasicInfo ref="basicInfoRef" v-model="form" @to-assign-room="stepNext" />
+      <FocusBasicInfo ref="basicInfoRef" v-model="form" @to-assign-house="stepNext" />
     </div>
     <div v-if="stepActive == 1">
       <FocusAssignHouse ref="assignHouseRef" v-model="form" @step-previous="stepPrevious" @to-add-extra="stepNext" />

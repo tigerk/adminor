@@ -16,7 +16,7 @@
 
   // 定义 emits
   const emit = defineEmits<{
-    "to-assign-room": [];
+    "to-assign-house": [];
   }>();
 
   // 负责人列表
@@ -29,7 +29,21 @@
 
   defineExpose({ getRef });
 
-  // 添加新楼栋
+  // 使用hook中的方法
+  const {
+    formatHouseNumber,
+    initHouseListOfFloor,
+    initAllFloorsForBuilding,
+    getFloorList,
+    getHouseListForFloor,
+    getHouseCountForFloor,
+    updateHouseCountForFloor,
+    handleHouseClick,
+    handleCloseFloor,
+    handleFloorSelect
+  } = useFocusEdit();
+
+  // 添加新楼栋 - 修复版本
   const addBuilding = () => {
     const newBuilding: FocusBuildingProps = {
       building: "",
@@ -39,15 +53,28 @@
       closedFloors: [],
       closedHouses: [],
       selectedFloor: 1,
-      housePrefix: `B${form.value.buildings.length + 1}`,
+      housePrefix: `B`,
       excludeFour: false,
       numberLength: 3,
       housesStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>()
     };
+
+    // 先添加到数组
     form.value.buildings.push(newBuilding);
-    // 初始化新楼栋
-    nextTick(() => {
-      initAllFloorsForBuilding(form.value.buildings.length - 1);
+
+    // 立即初始化新楼栋的房源数据
+    initAllFloorsForBuilding(newBuilding);
+  };
+
+  // 检查楼栋是否重复
+  const checkBuildingDuplicate = (building: string, unit: string, excludeIndex?: number): boolean => {
+    return form.value.buildings.some((item, index) => {
+      // 如果指定了排除索引（用于编辑时），跳过该索引
+      if (excludeIndex !== undefined && index === excludeIndex) {
+        return false;
+      }
+      // 楼栋号和单元号都相同时认为重复
+      return item.building === building && item.unit === unit;
     });
   };
 
@@ -69,226 +96,67 @@
       .catch(() => {});
   };
 
-  // 为指定楼栋初始化所有楼层房源状态
-  const initAllFloorsForBuilding = (buildingIndex: number) => {
-    const building = form.value.buildings[buildingIndex];
-    if (!building.floorTotal || !building.houseCountPerFloor) {
-      return;
-    }
-
-    // 初始化 Map
-    if (!building.housesStatusOfFloors) {
-      building.housesStatusOfFloors = new Map<number, Map<string, HouseStatusProps>>();
-    } else {
-      building.housesStatusOfFloors.clear();
-    }
-
-    // 初始化每个楼层的房源数据
-    for (let floor = 1; floor <= building.floorTotal; floor++) {
-      const houseStatusMap = new Map<string, HouseStatusProps>();
-
-      for (let house = 1; house <= building.houseCountPerFloor; house++) {
-        const houseNum = house.toString();
-        if (building.excludeFour && houseNum.endsWith("4")) {
-          continue;
-        }
-
-        houseStatusMap.set(houseNum, {
-          cursor: `${buildingIndex}-${floor}-${house}`,
-          houseIndex: house,
-          doorNumber: useFocusEdit().formatHouseNumber(building.housePrefix, building.numberLength, floor, houseNum),
-          locked: false,
-          floor: floor,
-          building: building.building,
-          unit: building.unit,
-          houseLayoutId: null,
-          price: 0,
-          direction: "",
-          area: 0
-        });
-      }
-
-      building.housesStatusOfFloors.set(floor, houseStatusMap);
-    }
-
-    // 自动选中第一个楼层
-    if (building.floorTotal > 0 && !building.selectedFloor) {
-      building.selectedFloor = 1;
-    }
-  };
-
-  // 获取指定楼栋的楼层列表
-  const getFloorList = (buildingIndex: number) => {
-    const building = form.value.buildings[buildingIndex];
-    if (!building?.floorTotal) {
-      return [];
-    }
-    return Array.from({ length: building.floorTotal }, (_, i) => i + 1);
-  };
-
-  // 获取指定楼栋指定楼层的房源列表
-  const getHouseListForFloor = (buildingIndex: number, floor: number) => {
-    const building = form.value.buildings[buildingIndex];
-    if (!building?.housesStatusOfFloors || !building.housesStatusOfFloors.has(floor)) {
-      return [];
-    }
-
-    let houses = Array.from(building.housesStatusOfFloors.get(floor).values());
-
-    // 如果启用了"去4"选项，则过滤掉房源号末位是4的房源
-    if (building.excludeFour) {
-      houses = houses.filter(item => !item.doorNumber.endsWith("4"));
-    }
-
-    return houses;
-  };
-
-  // 获取指定楼栋指定楼层的房源数量
-  const getHouseCountForFloor = (buildingIndex: number, floor: number) => {
-    const building = form.value.buildings[buildingIndex];
-    if (!building?.housesStatusOfFloors || !building.housesStatusOfFloors.has(floor)) {
-      return 0;
-    }
-    return building.housesStatusOfFloors.get(floor).size;
-  };
-
-  // 楼层选择处理
-  const handleFloorSelect = (buildingIndex: number, floor: number) => {
-    const building = form.value.buildings[buildingIndex];
-    building.selectedFloor = floor;
-
-    // 如果选中的楼层没有房源数据，使用默认房源数量初始化
-    if (!building.housesStatusOfFloors.has(floor) && building.houseCountPerFloor) {
-      initHouseListOfFloor(buildingIndex, floor, building.houseCountPerFloor);
-    }
-  };
-
-  // 初始化特定楼层房源列表
-  const initHouseListOfFloor = (buildingIndex: number, floor: number, houseCount: number) => {
-    const building = form.value.buildings[buildingIndex];
-    const houseStatusMap = new Map<string, HouseStatusProps>();
-
-    for (let i = 1; i <= houseCount; i++) {
-      const houseNum = i.toString();
-      if (building.excludeFour && houseNum.endsWith("4")) {
-        continue;
-      }
-
-      houseStatusMap.set(houseNum, {
-        cursor: `${buildingIndex}-${floor}-${i}`,
-        houseIndex: i,
-        doorNumber: useFocusEdit().formatHouseNumber(building.housePrefix, building.numberLength, floor, houseNum),
-        locked: false,
-        floor: floor,
-        building: building.building,
-        unit: building.unit,
-        houseLayoutId: null,
-        price: 0,
-        direction: "",
-        area: 0
-      });
-    }
-
-    building.housesStatusOfFloors.set(floor, houseStatusMap);
-  };
-
-  // 更新特定楼栋楼层的房源数量
-  const updateHouseCountForFloor = (buildingIndex: number, floor: number, newHouseCount: number) => {
-    const building = form.value.buildings[buildingIndex];
-    const houseCount = Number(newHouseCount);
-
-    if (isNaN(houseCount) || houseCount < 1) {
-      return;
-    }
-
-    if (!building.housesStatusOfFloors.has(floor)) {
-      initHouseListOfFloor(buildingIndex, floor, houseCount);
-      return;
-    }
-
-    const currentFloor = building.housesStatusOfFloors.get(floor);
-    const currentSize = currentFloor.size;
-
-    if (houseCount > currentSize) {
-      // 增加房源
-      for (let i = currentSize + 1; i <= houseCount; i++) {
-        const houseNum = i.toString();
-        if (building.excludeFour && houseNum.endsWith("4")) {
-          continue;
-        }
-
-        currentFloor.set(houseNum, {
-          cursor: `${buildingIndex}-${floor}-${i}`,
-          houseIndex: i,
-          doorNumber: useFocusEdit().formatHouseNumber(building.housePrefix, building.numberLength, floor, houseNum),
-          locked: false,
-          floor: floor,
-          building: building.building,
-          unit: building.unit,
-          houseLayoutId: null,
-          price: 0,
-          direction: "",
-          area: 0
-        });
-      }
-    } else if (houseCount < currentSize) {
-      // 减少房源 - 截断
-      const newMap = new Map<string, HouseStatusProps>();
-      let count = 0;
-
-      for (const [key, value] of currentFloor) {
-        if (count >= houseCount) break;
-        newMap.set(key, value);
-        count++;
-      }
-
-      building.housesStatusOfFloors.set(floor, newMap);
-    }
-  };
-
   // 监听楼栋配置变化，重新初始化
   const handleBuildingConfigChange = (buildingIndex: number) => {
     const building = form.value.buildings[buildingIndex];
     if (building.floorTotal && building.houseCountPerFloor) {
-      initAllFloorsForBuilding(buildingIndex);
+      // 重新初始化该楼栋的所有楼层
+      initAllFloorsForBuilding(building);
     }
   };
 
-  // 处理关闭楼层
-  const handleCloseFloor = (buildingIndex: number) => {
+  // Wrapper 方法 - 适配原有的基于索引的调用方式
+  const handleFloorSelectWrapper = (buildingIndex: number, floor: number) => {
     const building = form.value.buildings[buildingIndex];
-    // 确保 closedFloors 是数组
-    if (!Array.isArray(building.closedFloors)) {
-      building.closedFloors = [];
-    }
-
-    const index = building.closedFloors.indexOf(building.selectedFloor);
-    if (index > -1) {
-      // 如果已关闭，则开启
-      building.closedFloors.splice(index, 1);
-    } else {
-      // 如果未关闭，则关闭
-      building.closedFloors.push(building.selectedFloor);
-    }
+    handleFloorSelect(building, floor);
   };
 
-  // 处理房源点击事件
-  const handleHouseClick = (buildingIndex: number, houseStatus: HouseStatusProps) => {
+  const handleCloseFloorWrapper = (buildingIndex: number) => {
     const building = form.value.buildings[buildingIndex];
-    // 确保 closedHouses 是数组
-    if (!Array.isArray(building.closedHouses)) {
-      building.closedHouses = [];
+    handleCloseFloor(building);
+  };
+
+  const handleHouseClickWrapper = (buildingIndex: number, houseStatus: HouseStatusProps) => {
+    const building = form.value.buildings[buildingIndex];
+    handleHouseClick(building, houseStatus);
+  };
+
+  const getFloorListWrapper = (buildingIndex: number) => {
+    const building = form.value.buildings[buildingIndex];
+
+    // 如果 Map 不存在，先初始化
+    if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
+      initAllFloorsForBuilding(building);
     }
 
-    houseStatus.locked = !houseStatus.locked;
-    if (houseStatus.locked) {
-      building.closedHouses.push(houseStatus);
-    } else {
-      const index = building.closedHouses.findIndex(item => item.floor === building.selectedFloor && item.doorNumber === houseStatus.doorNumber);
-      if (index > -1) {
-        building.closedHouses.splice(index, 1);
-      }
+    return getFloorList(building);
+  };
+
+  const getHouseListForFloorWrapper = (buildingIndex: number, floor: number) => {
+    const building = form.value.buildings[buildingIndex];
+
+    // 如果 Map 不存在，先初始化
+    if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
+      initAllFloorsForBuilding(building);
     }
+
+    return getHouseListForFloor(building, floor);
+  };
+
+  const getHouseCountForFloorWrapper = (buildingIndex: number, floor: number) => {
+    const building = form.value.buildings[buildingIndex];
+
+    // 如果 Map 不存在，先初始化
+    if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
+      initAllFloorsForBuilding(building);
+    }
+
+    return getHouseCountForFloor(building, floor);
+  };
+
+  const updateHouseCountForFloorWrapper = (buildingIndex: number, floor: number, newHouseCount: number) => {
+    const building = form.value.buildings[buildingIndex];
+    updateHouseCountForFloor(building, floor, newHouseCount);
   };
 
   onMounted(() => {
@@ -311,9 +179,13 @@
       ];
     }
 
-    // 初始化所有楼栋
-    form.value.buildings.forEach((_, index) => {
-      initAllFloorsForBuilding(index);
+    // 初始化所有楼栋 - 确保每个楼栋都有 Map 数据
+    form.value.buildings.forEach(building => {
+      // 如果楼栋没有 Map 或 Map 为空，初始化它
+      if (!building.housesStatusOfFloors || !(building.housesStatusOfFloors instanceof Map) || building.housesStatusOfFloors.size === 0) {
+        building.housesStatusOfFloors = new Map<number, Map<string, HouseStatusProps>>();
+        initAllFloorsForBuilding(building);
+      }
     });
 
     getCompanyUserOptions().then(resp => {
@@ -348,6 +220,19 @@
         return;
       }
 
+      // 检查楼栋重复
+      const buildingMap = new Map();
+      for (let i = 0; i < form.value.buildings.length; i++) {
+        const building = form.value.buildings[i];
+        const key = `${building.building}-${building.unit || ""}`;
+
+        if (buildingMap.has(key)) {
+          ElMessage.warning(`楼栋 ${building.building}${building.unit ? " " + building.unit + "单元" : ""} 存在重复，请修改`);
+          return;
+        }
+        buildingMap.set(key, true);
+      }
+
       // 检查负责人信息
       if (!form.value.deptId || !form.value.salesmanId) {
         ElMessage.warning("请选择归属部门和负责人");
@@ -374,7 +259,7 @@
       }
 
       // 验证通过，触发保存事件
-      emit("to-assign-room");
+      emit("to-assign-house");
       ElMessage.success("基本信息保存成功");
     } catch (error) {
       console.error("表单验证失败:", error);
@@ -516,7 +401,7 @@
                 </el-col>
                 <el-col :span="3">
                   <el-form-item label="选项">
-                    <el-checkbox v-model="building.excludeFour" label="房间号去“4”" @change="handleBuildingConfigChange(buildingIndex)" />
+                    <el-checkbox v-model="building.excludeFour" label="房间号去4" @change="handleBuildingConfigChange(buildingIndex)" />
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -528,7 +413,7 @@
                 <!-- 楼层选择 -->
                 <div class="floor-selector">
                   <el-radio-group v-model="building.selectedFloor">
-                    <el-radio-button v-for="floor in getFloorList(buildingIndex)" :key="floor" :value="floor" @click="handleFloorSelect(buildingIndex, floor)">
+                    <el-radio-button v-for="floor in getFloorListWrapper(buildingIndex)" :key="floor" :value="floor" @click="handleFloorSelectWrapper(buildingIndex, floor)">
                       <span
                         :class="{
                           'floor-label': true,
@@ -548,19 +433,19 @@
                       <el-space>
                         第 {{ building.selectedFloor }} 层，共
                         <el-input
-                          :model-value="getHouseCountForFloor(buildingIndex, building.selectedFloor)"
+                          :model-value="getHouseCountForFloorWrapper(buildingIndex, building.selectedFloor)"
                           size="small"
                           type="number"
                           :style="{ width: '60px' }"
                           :min="1"
                           :max="100"
-                          @input="val => updateHouseCountForFloor(buildingIndex, building.selectedFloor, val)"
+                          @input="val => updateHouseCountForFloorWrapper(buildingIndex, building.selectedFloor, val)"
                         />
                         间房源
                       </el-space>
                     </el-col>
                     <el-col :span="4" class="text-right">
-                      <el-button type="danger" plain size="small" @click="handleCloseFloor(buildingIndex)">
+                      <el-button type="danger" plain size="small" @click="handleCloseFloorWrapper(buildingIndex)">
                         {{ building.closedFloors?.includes(building.selectedFloor) ? "开启楼层" : "关闭楼层" }}
                       </el-button>
                     </el-col>
@@ -577,13 +462,14 @@
                       </el-tooltip>
                     </div>
 
-                    <el-space wrap :size="10">
+                    <!-- 添加 v-if 判断，确保有数据时才渲染 -->
+                    <el-space v-if="getHouseListForFloorWrapper(buildingIndex, building.selectedFloor).length > 0" wrap :size="10">
                       <el-check-tag
-                        v-for="(houseStatus, houseIndex) in getHouseListForFloor(buildingIndex, building.selectedFloor)"
-                        :key="houseIndex"
+                        v-for="(houseStatus, houseIndex) in getHouseListForFloorWrapper(buildingIndex, building.selectedFloor)"
+                        :key="houseStatus.cursor || houseIndex"
                         :class="['house-tag', houseStatus.locked && 'closed-house']"
                         :checked="!houseStatus.locked"
-                        @click="handleHouseClick(buildingIndex, houseStatus)"
+                        @click="handleHouseClickWrapper(buildingIndex, houseStatus)"
                       >
                         <el-space :size="4">
                           <el-icon v-if="houseStatus.locked">
@@ -593,6 +479,9 @@
                         </el-space>
                       </el-check-tag>
                     </el-space>
+
+                    <!-- 无数据时的提示 -->
+                    <el-empty v-else description="暂无房源数据，请配置楼层信息" :image-size="60" />
                   </div>
                 </div>
               </div>
