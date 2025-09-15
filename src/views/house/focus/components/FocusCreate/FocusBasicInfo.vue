@@ -9,6 +9,7 @@
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
   import { focusBasicInfoRules } from "@/views/house/focus/components/FocusCreate/utils/rule";
   import { ElMessage, ElMessageBox } from "element-plus";
+  import { getCompanyUserOptions } from "@/api/company";
 
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
@@ -314,20 +315,25 @@
     form.value.buildings.forEach((_, index) => {
       initAllFloorsForBuilding(index);
     });
+
+    getCompanyUserOptions().then(resp => {
+      salesmanList.value = resp.data;
+    });
   });
 
   function handleDeptSelected(deptId: number) {
-    form.value.deptId = deptId;
-
-    getDeptUserList({
-      deptId: deptId
-    }).then(resp => {
-      salesmanList.value = Array.isArray(resp.data) ? resp.data : [];
-      const salesmanExists = salesmanList.value.some(salesman => salesman.id === form.value.salesmanId);
-      if (!salesmanExists) {
-        form.value.salesmanId = null;
-      }
-    });
+    return;
+    // form.value.deptId = deptId;
+    //
+    // getDeptUserList({
+    //   deptId: deptId
+    // }).then(resp => {
+    //   salesmanList.value = Array.isArray(resp.data) ? resp.data : [];
+    //   const salesmanExists = salesmanList.value.some(salesman => salesman.id === form.value.salesmanId);
+    //   if (!salesmanExists) {
+    //     form.value.salesmanId = null;
+    //   }
+    // });
   }
 
   // 保存项目信息
@@ -605,7 +611,7 @@
           <el-col :span="6">
             <el-form-item label="负责人" prop="salesmanId">
               <el-select v-model="form.salesmanId" filterable placeholder="请选择负责人" clearable>
-                <el-option v-for="item in salesmanList" :key="item.id" :label="item.username" :value="item.id" />
+                <el-option v-for="item in salesmanList" :key="item.id" :label="item.name" :value="item.id" />
               </el-select>
             </el-form-item>
           </el-col>

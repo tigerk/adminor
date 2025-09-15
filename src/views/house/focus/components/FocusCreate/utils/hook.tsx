@@ -2,7 +2,7 @@ import FocusCreateForm from "../FocusCreateForm.vue";
 import { addDialog, closeAllDialog } from "@/components/ReDialog/index";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
-import type { FocusFormItemProps, HouseStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+import type { FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
 
 export function useFocusEdit() {
   const form = reactive({
@@ -25,38 +25,11 @@ export function useFocusEdit() {
           region: row?.region ?? [],
           address: row?.address ?? "",
           // 楼栋列表
-          buildings: [
-            {
-              // 座栋
-              building: row?.building ?? "",
-              // 单元
-              unit: row?.unit ?? "",
-              // 总楼层
-              floorTotal: row?.floorTotal ?? 2,
-              // 每个楼层的房间数量
-              roomCountPerFloor: row?.roomCountPerFloor ?? 10,
-              // 关闭的楼层列表
-              closedFloors: row?.closedFloors ?? null,
-              // 关闭的房间
-              closedRooms: row?.closedRooms ?? [],
-              // 选择的楼层
-              selectedFloor: row?.selectedFloor ?? 1,
-              // 选择的房间数量
-              selectedHouses: null,
-              // 房间前缀
-              roomPrefix: row?.roomPrefix ?? "A",
-              // 去掉4
-              excludeFour: row?.excludeFour ?? false,
-              // 房间编号长度
-              numberLength: row?.numberLength ?? 3
-            }
-          ],
-          // 所有楼层的房间状态
-          roomsStatusOfFloors: row?.houseStatusOfFloors ?? new Map<number, Map<string, HouseStatusProps>>(),
+          buildings: row?.buildings ?? [],
           // 所有房间
-          roomList: row?.houseList ?? null,
+          houseList: row?.houseList ?? [],
           deptId: row?.deptId ?? 0,
-          salesmanId: row?.salesmanId ?? 0,
+          salesmanId: row?.salesmanId ?? null,
           // 第三步填写
           storePhone: row?.storePhone ?? "",
           water: row?.water ?? "commercial",

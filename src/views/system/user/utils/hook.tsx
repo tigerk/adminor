@@ -12,7 +12,7 @@ import type { PaginationProps } from "@pureadmin/table";
 import ReCropperPreview from "@/components/ReCropperPreview";
 import type { FormItemProps, RoleFormItemProps } from "../utils/types";
 import { getKeyList, isAllEmpty, hideTextAtIndex, deviceDetection } from "@pureadmin/utils";
-import { getRoleIds, getUserList, getAllRoleList, createUser } from "@/api/system";
+import { getRoleIds, pageUserList, getAllRoleList, createUser } from "@/api/system";
 import { ElForm, ElInput, ElFormItem, ElProgress, ElMessageBox } from "element-plus";
 import { type Ref, h, ref, toRaw, watch, computed, reactive, onMounted } from "vue";
 import { getDeptList } from "@/api/sys/dept";
@@ -221,7 +221,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
 
   async function onSearch() {
     loading.value = true;
-    const { data } = await getUserList(toRaw(form));
+    const { data } = await pageUserList(toRaw(form));
     dataList.value = data.list;
     pagination.total = data.total;
     pagination.pageSize = data.pageSize;

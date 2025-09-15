@@ -23,7 +23,7 @@ type ResultTable = {
 };
 
 /** 获取系统管理-用户管理列表 */
-export const getUserList = (data?: object) => {
+export const pageUserList = (data?: object) => {
   return http.request<ResultTable>("post", baseUrlApi("user/list"), { data });
 };
 
