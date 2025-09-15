@@ -239,25 +239,6 @@
         return;
       }
 
-      // 收集所有楼栋的房源数据
-      const allHouses = [];
-      form.value.buildings.forEach(building => {
-        if (building.housesStatusOfFloors) {
-          for (const [floor, houses] of building.housesStatusOfFloors) {
-            for (const [_, house] of houses) {
-              allHouses.push(house);
-            }
-          }
-        }
-      });
-
-      form.value.houseList = allHouses;
-
-      if (allHouses.length === 0) {
-        ElMessage.warning("请至少配置一间房源");
-        return;
-      }
-
       // 验证通过，触发保存事件
       emit("to-assign-house");
       ElMessage.success("基本信息保存成功");
