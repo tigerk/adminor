@@ -2,20 +2,15 @@
   <el-row :gutter="20" class="flex items-center justify-end p-1">
     <el-col :span="12">
       <el-space>
-        <el-text tag="b" class="mx-1" size="large">项目名称 {{ projectName }}</el-text>
+        <el-text size="large" class="font-bold italic">项目名称： {{ projectName }}</el-text>
       </el-space>
     </el-col>
-    <el-col :span="6" class="text-right">
+    <el-col :span="12" class="text-right">
       <el-space>
-        <el-tag type="info">共 {{ totalFloors }} 层</el-tag>
-        <el-tag type="info">共 {{ totalHouses }} 间</el-tag>
-      </el-space>
-    </el-col>
-    <el-col :span="6" class="text-right">
-      <el-space>
-        <el-tag type="danger" size="large">剩余 {{ unassignedHouses }} 间未分配</el-tag>
-        <el-tag type="success" size="large">启用 {{ enabledHouses }} 间</el-tag>
-        <el-tag type="info" size="large">锁房 {{ disabledHouses }} 间</el-tag>
+        <el-text size="large" class="font-bold">总房数： {{ totalHouses }} 间</el-text>
+        <el-tag type="danger">剩余 {{ unassignedHouses }} 间未分配</el-tag>
+        <el-tag type="success">启用 {{ enabledHouses }} 间</el-tag>
+        <el-tag type="info">锁房 {{ disabledHouses }} 间</el-tag>
       </el-space>
     </el-col>
   </el-row>
@@ -25,7 +20,7 @@
       <div class="house-floor-management p-1" style="height: 80vh">
         <!-- 左侧房型管理 -->
         <div class="flex space-x-6 h-full">
-          <div class="w-60 rounded-lg shadow-sm p-4 h-fit">
+          <div class="w-60 rounded-lg shadow p-4 h-fit">
             <div class="flex justify-between items-center mb-1">
               <h2 class="text-lg font-semibold text-gray-800">房型名称</h2>
               <el-tooltip content="创建房型" placement="top">
@@ -71,20 +66,29 @@
           <!-- 右侧房源信息 -->
           <div class="flex-1 rounded-lg shadow-sm p-3 h-full overflow-hidden flex flex-col">
             <!-- 楼栋切换区域 -->
-            <div class="building-selector mb-4 pb-2 border-b border-gray-200">
-              <h2 class="text-lg font-semibold text-gray-800 mb-3">楼栋选择</h2>
-              <div class="flex flex-wrap gap-2">
-                <el-button
-                  v-for="(building, index) in form.buildings"
-                  :key="index"
-                  :type="selectedBuildingIndex === index ? 'primary' : 'default'"
-                  size="default"
-                  @click="selectBuilding(index)"
-                >
-                  {{ building.building }}栋
-                  {{ building.unit ? `${building.unit}单元` : "" }}
-                  <el-tag v-if="getBuildingHouseCount(index) > 0" size="small" class="ml-1" effect="light">{{ getBuildingHouseCount(index) }}间</el-tag>
-                </el-button>
+            <div class="building-selector mb-4 pb-2 border-b border-gray-100">
+              <div class="flex justify-between" style="align-items: baseline; min-height: 40px; padding: 4px 0">
+                <div class="flex flex-wrap gap-2" style="align-items: baseline">
+                  <el-button
+                    v-for="(building, index) in form.buildings"
+                    :key="index"
+                    :type="selectedBuildingIndex === index ? 'primary' : 'default'"
+                    size="default"
+                    @click="selectBuilding(index)"
+                  >
+                    {{ building.building }}栋
+                    {{ building.unit ? `${building.unit}单元` : "" }}
+                    <el-tag v-if="getBuildingHouseCount(index) > 0" size="small" class="ml-1" effect="light">{{ getBuildingHouseCount(index) }}间</el-tag>
+                  </el-button>
+                </div>
+                <div class="flex flex-wrap gap-2" style="align-items: baseline">
+                  <!-- 使用当前楼栋的统计数据 -->
+                  <el-tag type="info">共 {{ currentBuildingStats.floors }} 层</el-tag>
+                  <el-tag type="info">共 {{ currentBuildingStats.total }} 间</el-tag>
+                  <el-tag type="danger">剩余 {{ currentBuildingStats.unassigned }} 间未分配</el-tag>
+                  <el-tag type="success">启用 {{ currentBuildingStats.enabled }} 间</el-tag>
+                  <el-tag type="info">锁房 {{ currentBuildingStats.disabled }} 间</el-tag>
+                </div>
               </div>
             </div>
 
@@ -108,7 +112,7 @@
                     <div
                       v-for="house in getHousesByFloor(floor)"
                       :key="house.cursor"
-                      class="relative border rounded-lg p-2 cursor-pointer transition-all hover:shadow-sm"
+                      class="relative border rounded-lg p-2 cursor-pointer transition-all hover:shadow"
                       :class="getHouseCardClass(house)"
                       style="min-width: 100px"
                       @click="toggleHouseSelection(house.cursor)"
@@ -116,7 +120,7 @@
                     >
                       <div
                         v-if="house.houseLayoutId"
-                        class="absolute -top-2 -right-1 bg-red-300 text-white text-xs px-1 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center border border-white shadow-sm z-10"
+                        class="absolute -top-2 -right-1 bg-red-300 text-white text-xs px-1 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center border border-white shadow z-10"
                       >
                         {{ house.price }}元 {{ house.area }}m²
                       </div>
@@ -209,7 +213,7 @@
         <div
           v-show="contextMenu.visible"
           :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
-          class="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-24"
+          class="fixed z-50 bg-white border border-gray-200 rounded-lg shadow py-1 min-w-24"
           @click="hideContextMenu"
         >
           <div class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center" @click="editHouse(contextMenu.house)">
@@ -883,6 +887,52 @@
 
   onUnmounted(() => {
     document.removeEventListener("click", hideContextMenu);
+  });
+
+  // 当前楼栋的统计信息
+  const currentBuildingStats = computed(() => {
+    const building = currentBuilding.value;
+    if (!building) {
+      return {
+        floors: 0,
+        total: 0,
+        unassigned: 0,
+        enabled: 0,
+        disabled: 0
+      };
+    }
+
+    let total = 0;
+    let unassigned = 0;
+    let enabled = 0;
+    let disabled = 0;
+    const floors = building.floorTotal || 0;
+
+    if (building.housesStatusOfFloors) {
+      for (const [floor, houseMap] of building.housesStatusOfFloors) {
+        if (!building.closedFloors?.includes(floor)) {
+          for (const [_, house] of houseMap) {
+            total++;
+            if (house.locked) {
+              disabled++;
+            } else {
+              enabled++;
+              if (!house.houseLayoutId) {
+                unassigned++;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      floors,
+      total,
+      unassigned,
+      enabled,
+      disabled
+    };
   });
 </script>
 

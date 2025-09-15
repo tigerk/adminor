@@ -53,7 +53,7 @@
       closedFloors: [],
       closedHouses: [],
       selectedFloor: 1,
-      housePrefix: `B`,
+      housePrefix: `A`,
       excludeFour: false,
       numberLength: 3,
       housesStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>()
