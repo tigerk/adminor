@@ -88,8 +88,6 @@
               </div>
             </div>
 
-            <h3 class="text-md font-medium text-gray-800 mb-3">房源信息 - {{ getCurrentBuildingName() }}</h3>
-
             <!-- 按楼层显示房源 -->
             <div class="flex-1 overflow-y-auto space-y-3" style="max-height: calc(100% - 180px)">
               <div v-for="floor in currentBuildingFloors" :key="floor" class="floor-section">
@@ -484,11 +482,6 @@
   const selectBuilding = (index: number) => {
     selectedBuildingIndex.value = index;
     selectedHouses.value = [];
-  };
-
-  const getCurrentBuildingName = () => {
-    if (!currentBuilding.value) return "";
-    return `${currentBuilding.value.building}栋${currentBuilding.value.unit ? `${currentBuilding.value.unit}单元` : ""}`;
   };
 
   const getBuildingHouseCount = (buildingIndex: number) => {
