@@ -15,31 +15,35 @@
       houseName: "",
       region: [],
       address: "",
-      building: "",
-      unit: "",
-      doorNumber: "",
-      // 总楼层
-      floorTotal: 34,
-      // 每个楼层的房间数量
-      roomCountPerFloor: null,
-      // 关闭楼层楼层
-      closedFloors: [],
-      // 关闭的房间
-      closedRooms: [],
-      // 所有楼层的房间状态
-      houseStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>(),
+      // 楼栋列表
+      buildings: [
+        {
+          // 座栋
+          building: "",
+          // 单元
+          unit: "",
+          // 总楼层
+          floorTotal: 34,
+          // 每个楼层的房间数量
+          houseCountPerFloor: 10,
+          // 关闭的楼层列表
+          closedFloors: [],
+          // 关闭的房间
+          closedHouses: [],
+          // 选择的楼层
+          selectedFloor: 1,
+          // 房间前缀
+          housePrefix: "A",
+          // 去掉4
+          excludeFour: false,
+          // 房间编号长度
+          numberLength: 4,
+          // 选择的房间数量
+          selectedHouses: null
+        }
+      ],
       // 所有房间
       houseList: [],
-      // 选择的楼层
-      selectedFloor: 1,
-      // 选择的房间数量
-      selectedRooms: null,
-      // 房间前缀
-      roomPrefix: "",
-      // 去掉4
-      excludeFour: false,
-      // 房间编号长度
-      roomNumberLength: 3,
       deptId: 0,
       salesmanId: 0,
       // 第三步填写
@@ -55,6 +59,7 @@
       tags: [],
       remark: "",
       imageList: [],
+      // 户型列表
       houseLayoutList: [
         {
           id: "1",

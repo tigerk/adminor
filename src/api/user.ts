@@ -37,6 +37,8 @@ export type RefreshTokenResult = {
     refreshToken: string;
     /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
     expires: number;
+    /** 当前公司 */
+    curCompanyId: number;
   };
 };
 

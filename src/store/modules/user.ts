@@ -67,15 +67,11 @@ export const useUserStore = defineStore("pure-user", {
       this.loginDay = Number(value);
     },
     /** 存储头像 */
-    SET_CUR_COMPANY_ID(curCompanyId: string) {
+    SET_CUR_COMPANY_ID(curCompanyId: number) {
       this.curCompanyId = curCompanyId;
     },
-    SET_COMPANY_LIST(companyList: string) {
+    SET_COMPANY_LIST(companyList: any) {
       this.companyList = companyList;
-    },
-    /** 存储头像 */
-    SET_AVATAR(avatar: string) {
-      this.avatar = avatar;
     },
     /** 登入 */
     async loginByUsername(data) {

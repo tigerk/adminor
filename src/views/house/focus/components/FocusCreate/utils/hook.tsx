@@ -24,31 +24,37 @@ export function useFocusEdit() {
           houseName: row?.houseName ?? "",
           region: row?.region ?? [],
           address: row?.address ?? "",
-          building: row?.building ?? "",
-          unit: row?.unit ?? "",
-          doorNumber: row?.doorNumber ?? "",
-          // 总楼层
-          floorTotal: row?.floorTotal ?? 2,
-          // 每个楼层的房间数量
-          roomCountPerFloor: row?.roomCountPerFloor ?? 10,
-          // 关闭楼层楼层
-          closedFloors: row?.closedFloors ?? null,
-          // 关闭的房间
-          closedRooms: row?.closedRooms ?? [],
+          // 楼栋列表
+          buildings: [
+            {
+              // 座栋
+              building: row?.building ?? "",
+              // 单元
+              unit: row?.unit ?? "",
+              // 总楼层
+              floorTotal: row?.floorTotal ?? 2,
+              // 每个楼层的房间数量
+              roomCountPerFloor: row?.roomCountPerFloor ?? 10,
+              // 关闭的楼层列表
+              closedFloors: row?.closedFloors ?? null,
+              // 关闭的房间
+              closedRooms: row?.closedRooms ?? [],
+              // 选择的楼层
+              selectedFloor: row?.selectedFloor ?? 1,
+              // 选择的房间数量
+              selectedHouses: null,
+              // 房间前缀
+              roomPrefix: row?.roomPrefix ?? "A",
+              // 去掉4
+              excludeFour: row?.excludeFour ?? false,
+              // 房间编号长度
+              numberLength: row?.numberLength ?? 3
+            }
+          ],
           // 所有楼层的房间状态
           roomsStatusOfFloors: row?.houseStatusOfFloors ?? new Map<number, Map<string, HouseStatusProps>>(),
           // 所有房间
           roomList: row?.houseList ?? null,
-          // 选择的楼层
-          selectedFloor: row?.selectedFloor ?? 1,
-          // 选择的房间数量
-          selectedRooms: null,
-          // 房间前缀
-          roomPrefix: row?.roomPrefix ?? "A",
-          // 去掉4
-          excludeFour: row?.excludeFour ?? false,
-          // 房间编号长度
-          roomNumberLength: row?.roomNumberLength ?? 3,
           deptId: row?.deptId ?? 0,
           salesmanId: row?.salesmanId ?? 0,
           // 第三步填写
@@ -106,18 +112,16 @@ export function useFocusEdit() {
     });
   }
 
-  // 格式化房间编号
-  const formatRoomNumber = (roomPrefix: string, roomNumberLength: number, selectedFloor: number, num: string) => {
+  const formatHouseNumber = (housePrefix: string, houseNumberLength: number, selectedFloor: number, num: string) => {
     const tmp = Math.min(2, num.toString().length);
-
-    const prefix = roomNumberLength - tmp;
-    return (roomPrefix ? roomPrefix : "") + String(selectedFloor).padEnd(prefix, "0") + num.padStart(tmp, "0");
+    const prefix = houseNumberLength - tmp;
+    return (housePrefix ? housePrefix : "") + String(selectedFloor).padEnd(prefix, "0") + num.padStart(tmp, "0");
   };
 
   return {
     form,
     formRef,
     openFocusEditDialog,
-    formatRoomNumber
+    formatHouseNumber
   };
 }

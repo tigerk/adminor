@@ -9,8 +9,6 @@ interface FocusFormItemProps {
   region: any[];
   address: string;
   buildings: FocusBuildingProps[];
-  // 所有楼层的房间状态
-  houseStatusOfFloors: Map<number, Map<string, HouseStatusProps>>;
   // 所有房间
   houseList: HouseStatusProps[];
   // 部门id
@@ -42,17 +40,22 @@ interface FormProps {
 
 // 房间状态
 interface HouseStatusProps {
+  // 座栋
+  building: string;
+  // 单元
+  unit: string;
+  // 游标
   cursor: string;
   houseIndex: number;
-  // 房间号
+  // 房源号
   doorNumber: string;
-  // 房间锁定状态
+  // 房源锁定状态
   locked: boolean;
   // 楼层
   floor: number;
-  // 房间类型id
+  // 房源类型id
   houseLayoutId: string;
-  // 房间价格
+  // 房源价格
   price: number;
   // 朝向
   direction: string;
@@ -67,20 +70,22 @@ interface FocusBuildingProps {
   unit: string;
   // 总楼层
   floorTotal: number;
-  // 每个楼层的房间数量
+  // 每个楼层的房源数量
   houseCountPerFloor: number;
   // 关闭的楼层列表
   closedFloors: number[];
-  // 关闭的房间
+  // 关闭的房源
   closedHouses: HouseStatusProps[];
   // 选择的楼层
   selectedFloor: number;
-  // 房间前缀
+  // 房源前缀
   housePrefix: string;
   // 去掉4
   excludeFour: boolean;
-  // 房间编号长度
+  // 房源编号长度
   numberLength: number;
+  // 所有楼层的房源状态
+  housesStatusOfFloors: Map<number, Map<string, HouseStatusProps>>;
 }
 
 // 接口定义
