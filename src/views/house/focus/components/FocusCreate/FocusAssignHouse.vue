@@ -302,6 +302,18 @@
             </el-icon>
             修改
           </div>
+          <!-- 添加锁房/解锁选项 -->
+          <div
+            class="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex items-center"
+            :class="contextMenu.house?.locked ? 'text-green-600' : 'text-orange-400'"
+            @click="toggleHouseLock(contextMenu.house)"
+          >
+            <el-icon class="mr-2">
+              <Unlock v-if="contextMenu.house?.locked" />
+              <Lock v-else />
+            </el-icon>
+            {{ contextMenu.house?.locked ? "解锁" : "锁房" }}
+          </div>
           <div class="px-3 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer flex items-center" @click="deleteHouseAction(contextMenu.house)">
             <el-icon class="mr-2">
               <Delete />
@@ -1188,6 +1200,28 @@
     }
 
     building.housesStatusOfFloors.set(floor, houseStatusMap);
+  };
+
+  // 添加锁房/解锁方法
+  const toggleHouseLock = async (house: HouseStatusProps | null) => {
+    if (!house || !currentBuilding.value) return;
+
+    const action = house.locked ? "解锁" : "锁房";
+
+    // 更新房源的锁定状态
+    if (updateHouseInfo(currentBuilding.value, house.cursor, { locked: !house.locked })) {
+      // 如果锁房，从选中列表中移除
+      if (!house.locked) {
+        const selectedIndex = selectedHouses.value.indexOf(house.cursor);
+        if (selectedIndex > -1) {
+          selectedHouses.value.splice(selectedIndex, 1);
+        }
+      }
+
+      ElMessage.success(`${action}成功`);
+    }
+
+    hideContextMenu();
   };
 </script>
 
