@@ -164,11 +164,13 @@
 </script>
 
 <template>
-  <el-steps :active="stepActive" finish-status="success" align-center>
-    <el-step title="基本信息" />
-    <el-step title="配置房间" />
-    <el-step title="完善项目" />
-  </el-steps>
+  <div class="steps-container">
+    <el-steps :active="stepActive" finish-status="success" align-center>
+      <el-step title="基本信息" />
+      <el-step title="配置房间" />
+      <el-step title="完善项目" />
+    </el-steps>
+  </div>
   <div class="property-form">
     <div v-if="stepActive == 0">
       <FocusBasicInfo ref="basicInfoRef" v-model="form" @to-assign-house="stepNext" />
@@ -184,7 +186,13 @@
 
 <style scoped>
   .property-form {
-    padding: 20px;
+    padding: 15px 20px;
     margin: 0 auto;
+  }
+
+  .steps-container {
+    margin-bottom: -10px;
+    transform: scale(0.85);
+    transform-origin: center top;
   }
 </style>

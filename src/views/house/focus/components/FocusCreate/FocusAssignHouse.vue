@@ -17,7 +17,7 @@
 
   <el-row :gutter="20">
     <el-col :span="24">
-      <div class="house-floor-management p-1" style="height: 68vh">
+      <div class="house-floor-management p-1" style="height: 70vh">
         <!-- 左侧房型管理 -->
         <div class="flex space-x-6 h-full">
           <div class="w-60 rounded-lg shadow p-4 h-fit" style="display: flex; flex-direction: column; max-height: 65vh">
