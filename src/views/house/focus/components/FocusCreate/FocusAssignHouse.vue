@@ -45,10 +45,14 @@
                 </div>
                 <div class="flex space-x-1">
                   <el-button size="small" type="primary" text @click.stop="editHouseLayout(houseLayout)">
-                    <el-icon><Edit /></el-icon>
+                    <el-icon>
+                      <Edit />
+                    </el-icon>
                   </el-button>
                   <el-button size="small" type="danger" text @click.stop="deleteHouseLayout(houseLayout.id)">
-                    <el-icon><Delete /></el-icon>
+                    <el-icon>
+                      <Delete />
+                    </el-icon>
                   </el-button>
                 </div>
               </div>
@@ -69,9 +73,9 @@
           <!-- 右侧房源信息 -->
           <div class="flex-1 rounded-lg shadow-sm p-3 h-full overflow-hidden flex flex-col">
             <!-- 楼栋切换区域 -->
-            <div class="building-selector mb-4 pb-2 border-b border-gray-100">
-              <div class="flex justify-between" style="align-items: baseline; min-height: 40px; padding: 4px 0">
-                <div class="flex flex-wrap gap-2" style="align-items: baseline">
+            <div class="mb-4 pb-2 border-b border-gray-100">
+              <div class="flex justify-between" style="align-items: center; min-height: 40px; padding: 4px 0">
+                <div class="flex flex-wrap gap-2" style="align-items: center">
                   <el-button
                     v-for="(building, index) in form.buildings"
                     :key="index"
@@ -84,7 +88,25 @@
                     <el-tag v-if="getBuildingHouseCount(index) > 0" size="small" class="ml-1" effect="light">{{ getBuildingHouseCount(index) }}间</el-tag>
                   </el-button>
                 </div>
-                <div class="flex flex-wrap gap-2" style="align-items: baseline">
+                <div class="flex flex-wrap gap-2" style="align-items: center">
+                  <!-- 添加楼层按钮 -->
+                  <el-popover v-model:visible="showAddFloorPopover" placement="bottom" :width="300" trigger="click">
+                    <template #reference>
+                      <el-button plain type="primary" size="small" :icon="Plus">添加楼层</el-button>
+                    </template>
+                    <div>
+                      <el-form @submit.prevent="confirmAddFloor">
+                        <el-form-item label="楼层号">
+                          <el-input-number v-model="newFloorNumber" :min="1" :max="99" placeholder="请输入楼层号" style="width: 100%" />
+                        </el-form-item>
+                        <div class="text-gray-500 text-xs mb-3">将按照当前楼栋配置创建：每层 {{ currentBuilding?.houseCountPerFloor || 0 }} 间房源</div>
+                        <div class="text-right">
+                          <el-button size="small" @click="showAddFloorPopover = false">取消</el-button>
+                          <el-button type="primary" size="small" @click="confirmAddFloor">确定</el-button>
+                        </div>
+                      </el-form>
+                    </div>
+                  </el-popover>
                   <!-- 使用当前楼栋的统计数据 -->
                   <el-tag type="info">共 {{ currentBuildingStats.floors }} 层</el-tag>
                   <el-tag type="info">共 {{ currentBuildingStats.total }} 间</el-tag>
@@ -99,30 +121,73 @@
             <div class="flex-1 overflow-y-auto space-y-3" style="max-height: calc(100% - 180px)">
               <div v-for="floor in currentBuildingFloors" :key="floor" class="floor-section">
                 <div class="flex justify-between items-center mb-1">
-                  <h4 class="text-md font-medium text-gray-700">{{ floor }}F</h4>
-                  <el-checkbox
-                    v-model="getFloorChecked(floor).value"
-                    :indeterminate="getFloorIndeterminate(floor)"
-                    class="floor-checkbox"
-                    @change="handleFloorSelectAll(floor, $event)"
-                  >
-                    全选
-                  </el-checkbox>
+                  <h4 class="text-md font-medium" :class="{ 'text-gray-400': isFloorDisabled(floor), 'text-gray-700': !isFloorDisabled(floor) }">
+                    {{ floor }}F
+                    <el-tag v-if="isFloorDisabled(floor)" type="info" size="small" class="ml-2">已禁用</el-tag>
+                  </h4>
+
+                  <div class="flex items-center gap-2">
+                    <!-- 禁用/启用楼层按钮 -->
+                    <el-button size="small" :type="isFloorDisabled(floor) ? 'success' : 'warning'" plain @click="toggleFloorStatus(floor)">
+                      <el-icon>
+                        <Lock v-if="!isFloorDisabled(floor)" />
+                        <Unlock v-else />
+                      </el-icon>
+                      {{ isFloorDisabled(floor) ? "启用楼层" : "禁用楼层" }}
+                    </el-button>
+
+                    <!-- 删除楼层按钮 -->
+                    <el-popconfirm
+                      :title="`确定要删除第 ${floor} 层吗？该楼层的 ${getHousesByFloor(floor).length} 个房源数据将被永久删除。`"
+                      confirm-button-text="确定"
+                      cancel-button-text="取消"
+                      :icon="InfoFilled"
+                      icon-color="#ff4949"
+                      @confirm="deleteFloor(floor)"
+                    >
+                      <template #reference>
+                        <el-button size="small" type="danger" plain>
+                          <el-icon>
+                            <Delete />
+                          </el-icon>
+                          删除楼层
+                        </el-button>
+                      </template>
+                    </el-popconfirm>
+
+                    <!-- 全选复选框 -->
+                    <el-checkbox
+                      v-model="getFloorChecked(floor).value"
+                      :indeterminate="getFloorIndeterminate(floor)"
+                      :disabled="isFloorDisabled(floor)"
+                      class="floor-checkbox"
+                      @change="handleFloorSelectAll(floor, $event)"
+                    >
+                      全选
+                    </el-checkbox>
+                  </div>
                 </div>
 
-                <div class="border-2 rounded-lg p-4" :class="getFloorBorderClass(floor)">
+                <div class="border-2 rounded-lg p-4 transition-all" :class="getFloorBorderClass(floor)" :style="{ opacity: isFloorDisabled(floor) ? 0.5 : 1 }">
                   <div class="grid grid-cols-6 gap-3">
                     <div
                       v-for="house in getHousesByFloor(floor)"
                       :key="house.cursor"
-                      class="relative border rounded-lg p-2 cursor-pointer transition-all hover:shadow"
-                      :class="getHouseCardClass(house)"
+                      class="relative border rounded-lg p-2 transition-all"
+                      :class="[
+                        getHouseCardClass(house),
+                        {
+                          'cursor-pointer hover:shadow': !isFloorDisabled(floor),
+                          'cursor-not-allowed': isFloorDisabled(floor)
+                        }
+                      ]"
                       style="min-width: 100px"
-                      @click="toggleHouseSelection(house.cursor)"
-                      @contextmenu.prevent="handleHouseRightClick($event, house)"
+                      @click="!isFloorDisabled(floor) && toggleHouseSelection(house.cursor)"
+                      @contextmenu.prevent="!isFloorDisabled(floor) && handleHouseRightClick($event, house)"
                     >
+                      <!-- 房源内容保持不变 -->
                       <div
-                        v-if="house.houseLayoutId"
+                        v-if="house.houseLayoutId && !isFloorDisabled(floor)"
                         class="absolute -top-2 -right-1 bg-red-300 text-white text-xs px-1 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center border border-white shadow z-10"
                       >
                         {{ house.price }}元 {{ house.area }}m²
@@ -130,18 +195,18 @@
 
                       <!-- 选中图标 -->
                       <div class="absolute top-1 right-1">
-                        <el-icon v-if="selectedHouses.includes(house.cursor)" class="text-blue-500" size="14">
+                        <el-icon v-if="selectedHouses.includes(house.cursor) && !isFloorDisabled(floor)" class="text-blue-500" size="14">
                           <CircleCheckFilled />
                         </el-icon>
                       </div>
 
                       <div class="text-center">
                         <el-space width="auto">
-                          <IconifyIconOffline v-if="house.locked" :icon="AntDesignLockFilled" />
-                          <span class="font-medium text-sm" :class="{ 'text-gray-400 line-through': house.locked }">
+                          <IconifyIconOffline v-if="house.locked || isFloorDisabled(floor)" :icon="AntDesignLockFilled" />
+                          <span class="font-medium text-sm" :class="{ 'text-gray-400 line-through': house.locked || isFloorDisabled(floor) }">
                             {{ house.doorNumber }}
                           </span>
-                          <el-tag v-if="house.houseLayoutId" :type="getHouseLayoutTagType(house.houseLayoutId)" size="small" class="text-xs px-1">
+                          <el-tag v-if="house.houseLayoutId && !isFloorDisabled(floor)" :type="getHouseLayoutTagType(house.houseLayoutId)" size="small" class="text-xs px-1">
                             {{ getHouseLayoutName(house.houseLayoutId) }}
                           </el-tag>
                         </el-space>
@@ -150,11 +215,14 @@
 
                     <!-- 添加房源按钮 -->
                     <div
+                      v-if="!isFloorDisabled(floor)"
                       class="border-2 border-dashed border-gray-300 rounded-lg p-2 flex items-center justify-center hover:border-blue-300 cursor-pointer transition-colors"
                       style="min-width: 120px"
                       @click="addHouse(floor)"
                     >
-                      <el-icon class="text-gray-400"><Plus /></el-icon>
+                      <el-icon class="text-gray-400">
+                        <Plus />
+                      </el-icon>
                     </div>
                   </div>
                 </div>
@@ -220,11 +288,15 @@
           @click="hideContextMenu"
         >
           <div class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center" @click="editHouse(contextMenu.house)">
-            <el-icon class="mr-2"><Edit /></el-icon>
+            <el-icon class="mr-2">
+              <Edit />
+            </el-icon>
             修改
           </div>
           <div class="px-3 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer flex items-center" @click="deleteHouseAction(contextMenu.house)">
-            <el-icon class="mr-2"><Delete /></el-icon>
+            <el-icon class="mr-2">
+              <Delete />
+            </el-icon>
             删除
           </div>
         </div>
@@ -301,14 +373,18 @@
 <script setup lang="ts">
   import { ref, computed, reactive, onMounted, onUnmounted, defineModel } from "vue";
   import { CheckboxValueType, ElMessage, ElMessageBox, type FormInstance } from "element-plus";
-  import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled } from "@element-plus/icons-vue";
+  import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled, InfoFilled } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
   import { HouseLayoutProps, HouseStatusProps, FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
   import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
+  import { Lock, Unlock } from "@element-plus/icons-vue";
 
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
+  // 添加新的状态
+  const showAddFloorPopover = ref(false);
+  const newFloorNumber = ref<number>(1);
 
   // 初始化默认房型
   if (!form.value.houseLayoutList || form.value.houseLayoutList.length === 0) {
@@ -341,7 +417,7 @@
   }>();
 
   // 使用 hook 中的方法
-  const { getHouseListForFloor, addHouseToFloor, updateHouseInfo, deleteHouse, convertBuildingsToHouseList, initAllFloorsForBuilding } = useFocusEdit();
+  const { getHouseListForFloor, addHouseToFloor, updateHouseInfo, deleteHouse, convertBuildingsToHouseList, initAllFloorsForBuilding, formatHouseNumber } = useFocusEdit();
 
   // 状态管理
   const selectedHouseLayoutId = ref<string>("");
@@ -411,7 +487,7 @@
     if (!currentBuilding.value?.housesStatusOfFloors) return [];
 
     const floors = Array.from(currentBuilding.value.housesStatusOfFloors.keys());
-    return floors.sort((a, b) => a - b);
+    return floors.sort((a, b) => a - b); // 确保按楼层号升序排列
   });
 
   // 统计信息（基于所有楼栋）
@@ -532,7 +608,12 @@
     return "border-gray-200 bg-white hover:bg-gray-50";
   };
 
+  // 修改 getFloorBorderClass 方法，考虑禁用状态
   const getFloorBorderClass = (floor: number) => {
+    if (isFloorDisabled(floor)) {
+      return "border-gray-300 bg-gray-100";
+    }
+
     const floorHouses = getHousesByFloor(floor);
     const selectedFloorHouses = floorHouses.filter(house => selectedHouses.value.includes(house.cursor));
 
@@ -541,7 +622,7 @@
     } else if (selectedFloorHouses.length > 0) {
       return "border-blue-300 bg-blue-25";
     }
-    return "border-b-gray-300";
+    return "border-gray-300";
   };
 
   const getFloorChecked = (floor: number) => {
@@ -893,6 +974,7 @@
   });
 
   // 当前楼栋的统计信息
+  // 修改统计信息，排除禁用楼层
   const currentBuildingStats = computed(() => {
     const building = currentBuilding.value;
     if (!building) {
@@ -909,20 +991,25 @@
     let unassigned = 0;
     let enabled = 0;
     let disabled = 0;
-    const floors = building.floorTotal || 0;
+
+    // 计算活跃楼层数（未禁用的楼层）
+    const activeFloors = building.floorTotal - (building.closedFloors?.length || 0);
 
     if (building.housesStatusOfFloors) {
       for (const [floor, houseMap] of building.housesStatusOfFloors) {
-        if (!building.closedFloors?.includes(floor)) {
-          for (const [_, house] of houseMap) {
-            total++;
-            if (house.locked) {
-              disabled++;
-            } else {
-              enabled++;
-              if (!house.houseLayoutId) {
-                unassigned++;
-              }
+        // 跳过已禁用的楼层
+        if (building.closedFloors?.includes(floor)) {
+          continue;
+        }
+
+        for (const [_, house] of houseMap) {
+          total++;
+          if (house.locked) {
+            disabled++;
+          } else {
+            enabled++;
+            if (!house.houseLayoutId) {
+              unassigned++;
             }
           }
         }
@@ -930,23 +1017,174 @@
     }
 
     return {
-      floors,
+      floors: activeFloors,
       total,
       unassigned,
       enabled,
       disabled
     };
   });
+
+  // 检查楼层是否被禁用
+  const isFloorDisabled = (floor: number) => {
+    return currentBuilding.value?.closedFloors?.includes(floor) || false;
+  };
+
+  // 切换楼层禁用状态
+  const toggleFloorStatus = async (floor: number) => {
+    if (!currentBuilding.value) return;
+
+    // 确保 closedFloors 是数组
+    if (!currentBuilding.value.closedFloors) {
+      currentBuilding.value.closedFloors = [];
+    }
+
+    const index = currentBuilding.value.closedFloors.indexOf(floor);
+
+    if (index > -1) {
+      // 启用楼层
+      try {
+        await ElMessageBox.confirm(`确定要启用第 ${floor} 层吗？该楼层的所有房源将恢复可用状态。`, "启用楼层", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        });
+
+        currentBuilding.value.closedFloors.splice(index, 1);
+        ElMessage.success(`第 ${floor} 层已启用`);
+      } catch {
+        // 用户取消
+      }
+    } else {
+      // 禁用楼层
+      try {
+        const floorHouses = getHousesByFloor(floor);
+        await ElMessageBox.confirm(`确定要禁用第 ${floor} 层吗？该楼层的 ${floorHouses.length} 个房源将被禁用。`, "禁用楼层", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        });
+
+        currentBuilding.value.closedFloors.push(floor);
+
+        // 从选中列表中移除该楼层的房源
+        const floorHouseIds = floorHouses.map(h => h.cursor);
+        selectedHouses.value = selectedHouses.value.filter(id => !floorHouseIds.includes(id));
+
+        ElMessage.success(`第 ${floor} 层已禁用`);
+      } catch {
+        // 用户取消
+      }
+    }
+  };
+
+  // 删除楼层方法
+  // 删除楼层方法（已有的，确保更新楼层总数）
+  const deleteFloor = (floor: number) => {
+    if (!currentBuilding.value) return;
+
+    // 删除楼层数据
+    if (currentBuilding.value.housesStatusOfFloors) {
+      currentBuilding.value.housesStatusOfFloors.delete(floor);
+
+      // 如果删除的是最高层，更新楼层总数
+      const remainingFloors = Array.from(currentBuilding.value.housesStatusOfFloors.keys());
+      if (remainingFloors.length > 0) {
+        currentBuilding.value.floorTotal = Math.max(...remainingFloors);
+      } else {
+        currentBuilding.value.floorTotal = 0;
+      }
+    }
+
+    // 从禁用列表中移除
+    if (currentBuilding.value.closedFloors) {
+      const index = currentBuilding.value.closedFloors.indexOf(floor);
+      if (index > -1) {
+        currentBuilding.value.closedFloors.splice(index, 1);
+      }
+    }
+
+    // 从选中列表中移除该楼层的房源
+    const floorHouses = getHousesByFloor(floor);
+    const floorHouseIds = floorHouses.map(h => h.cursor);
+    selectedHouses.value = selectedHouses.value.filter(id => !floorHouseIds.includes(id));
+
+    ElMessage.success(`第 ${floor} 层已删除`);
+  };
+
+  // 添加楼层的方法
+  const confirmAddFloor = () => {
+    if (!currentBuilding.value) {
+      ElMessage.warning("请先选择楼栋");
+      return;
+    }
+
+    const floor = newFloorNumber.value;
+
+    // 检查楼层是否已存在
+    if (currentBuilding.value.housesStatusOfFloors?.has(floor)) {
+      ElMessage.warning(`第 ${floor} 层已存在`);
+      return;
+    }
+
+    // 使用 hook 中的方法初始化新楼层
+    initFloorWithConfig(floor);
+
+    // 更新楼层总数（如果新楼层超出了原有总数）
+    if (currentBuilding.value.floorTotal < floor) {
+      currentBuilding.value.floorTotal = floor;
+    }
+
+    ElMessage.success(`第 ${floor} 层创建成功`);
+    showAddFloorPopover.value = false;
+    newFloorNumber.value = 1;
+  };
+
+  // 使用当前楼栋配置初始化楼层
+  const initFloorWithConfig = (floor: number) => {
+    if (!currentBuilding.value) return;
+
+    const building = currentBuilding.value;
+    const houseCount = building.houseCountPerFloor || 10;
+    const houseStatusMap = new Map<string, HouseStatusProps>();
+
+    for (let i = 1; i <= houseCount; i++) {
+      const houseNum = i.toString();
+
+      // 如果启用了"去4"选项，跳过包含4的房间号
+      if (building.excludeFour && houseNum.includes("4")) {
+        continue;
+      }
+
+      const doorNumber = formatHouseNumber(building.housePrefix, building.numberLength, floor, houseNum);
+
+      houseStatusMap.set(houseNum, {
+        cursor: `${building.building}-${building.unit || "0"}-${floor}-${i}`,
+        houseIndex: i,
+        doorNumber: doorNumber,
+        locked: false,
+        floor: floor,
+        building: building.building,
+        unit: building.unit,
+        houseLayoutId: undefined,
+        price: 0,
+        direction: "",
+        area: 0
+      });
+    }
+
+    // 确保 housesStatusOfFloors 存在
+    if (!building.housesStatusOfFloors) {
+      building.housesStatusOfFloors = new Map();
+    }
+
+    building.housesStatusOfFloors.set(floor, houseStatusMap);
+  };
 </script>
 
 <style scoped>
   .house-floor-management {
     /* 样式保持不变 */
-  }
-
-  .building-selector {
-    padding-bottom: 0;
-    border-bottom: 1px solid #e4e7ed;
   }
 
   .building-selector h2 {
@@ -976,5 +1214,14 @@
     color: #c0c4cc !important;
     text-decoration: line-through;
     opacity: 0.6;
+  }
+
+  /* 添加禁用楼层的样式 */
+  .floor-section {
+    transition: all 0.3s ease;
+  }
+
+  .floor-section:hover {
+    transform: translateX(2px);
   }
 </style>
