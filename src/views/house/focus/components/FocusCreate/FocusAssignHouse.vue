@@ -168,7 +168,16 @@
                   </div>
                 </div>
 
-                <div class="border-2 rounded-lg p-4 transition-all" :class="getFloorBorderClass(floor)" :style="{ opacity: isFloorDisabled(floor) ? 0.5 : 1 }">
+                <div class="border-2 rounded-lg p-4 transition-all relative" :class="getFloorBorderClass(floor)">
+                  <!-- 添加遮罩层 -->
+                  <div v-if="isFloorDisabled(floor)" class="absolute inset-0 bg-gray-900 bg-opacity-50 rounded-lg z-10 flex items-center justify-center">
+                    <div class="bg-white px-4 py-2 rounded-lg shadow-lg">
+                      <el-icon class="text-gray-600 mr-2">
+                        <Lock />
+                      </el-icon>
+                      <span class="text-gray-600 font-medium">楼层已禁用</span>
+                    </div>
+                  </div>
                   <div class="grid grid-cols-6 gap-3">
                     <div
                       v-for="house in getHousesByFloor(floor)"
@@ -611,7 +620,7 @@
   // 修改 getFloorBorderClass 方法，考虑禁用状态
   const getFloorBorderClass = (floor: number) => {
     if (isFloorDisabled(floor)) {
-      return "border-gray-300 bg-gray-100";
+      return "border-gray-300"; // 移除 bg-gray-100
     }
 
     const floorHouses = getHousesByFloor(floor);
@@ -1221,7 +1230,25 @@
     transition: all 0.3s ease;
   }
 
-  .floor-section:hover {
-    transform: translateX(2px);
+  /* 确保遮罩层正确定位 */
+  .relative {
+    position: relative;
+  }
+
+  .absolute {
+    position: absolute;
+  }
+
+  .inset-0 {
+    inset: 0;
+  }
+
+  .z-10 {
+    z-index: 10;
+  }
+
+  /* 半透明背景 */
+  .bg-opacity-50 {
+    background-color: rgb(17 24 39 / 50%);
   }
 </style>
