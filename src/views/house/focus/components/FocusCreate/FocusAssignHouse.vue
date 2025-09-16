@@ -945,8 +945,7 @@
   }
 
   .building-selector {
-    padding-bottom: 12px;
-    margin-bottom: 16px;
+    padding-bottom: 0;
     border-bottom: 1px solid #e4e7ed;
   }
 
