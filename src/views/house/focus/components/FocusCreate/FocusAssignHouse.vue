@@ -17,9 +17,9 @@
 
   <el-row :gutter="20">
     <el-col :span="24">
-      <div class="house-floor-management p-1">
+      <div class="house-floor-management p-1" style="height: 80vh">
         <!-- 左侧房型管理 -->
-        <div class="flex space-x-6">
+        <div class="flex space-x-6 h-full">
           <div class="w-60 rounded-lg shadow p-4 h-fit">
             <div class="flex justify-between items-center mb-1">
               <h2 class="text-lg font-semibold text-gray-800">房型名称</h2>
@@ -64,7 +64,7 @@
           </div>
 
           <!-- 右侧房源信息 -->
-          <div class="flex-1 rounded-lg shadow-sm p-3 flex flex-col">
+          <div class="flex-1 rounded-lg shadow-sm p-3 h-full overflow-hidden flex flex-col">
             <!-- 楼栋切换区域 -->
             <div class="building-selector mb-4 pb-2 border-b border-gray-100">
               <div class="flex justify-between" style="align-items: baseline; min-height: 40px; padding: 4px 0">
@@ -93,7 +93,7 @@
             </div>
 
             <!-- 按楼层显示房源 -->
-            <div class="space-y-3 mt-4">
+            <div class="flex-1 overflow-y-auto space-y-3" style="max-height: calc(100% - 180px)">
               <div v-for="floor in currentBuildingFloors" :key="floor" class="floor-section">
                 <div class="flex justify-between items-center mb-1">
                   <h4 class="text-md font-medium text-gray-700">{{ floor }}F</h4>
@@ -938,8 +938,7 @@
 
 <style scoped>
   .house-floor-management {
-    /* 移除 height: 80vh */
-    min-height: 60vh; /* 设置最小高度 */
+    /* 样式保持不变 */
   }
 
   .building-selector {
