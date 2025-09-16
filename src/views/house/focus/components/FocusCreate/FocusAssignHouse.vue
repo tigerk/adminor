@@ -20,7 +20,7 @@
       <div class="house-floor-management p-1" style="height: 68vh">
         <!-- 左侧房型管理 -->
         <div class="flex space-x-6 h-full">
-          <div class="w-60 rounded-lg shadow p-4 h-fit">
+          <div class="w-60 rounded-lg shadow p-4 h-fit" style="display: flex; flex-direction: column; max-height: 65vh">
             <div class="flex justify-between items-center mb-1">
               <h2 class="text-lg font-semibold text-gray-800">房型名称</h2>
               <el-tooltip content="创建房型" placement="top">
@@ -31,7 +31,7 @@
             </div>
 
             <!-- 房型列表 -->
-            <div class="space-y-2 mb-4">
+            <div class="space-y-2 mb-4 overflow-y-auto flex-1" style="max-height: calc(65vh - 120px)">
               <div
                 v-for="houseLayout in form.houseLayoutList"
                 :key="houseLayout.id"
@@ -55,7 +55,10 @@
             </div>
 
             <!-- 创建房型 -->
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-1 text-center hover:border-blue-300 cursor-pointer transition-colors" @click="showCreateDialog = true">
+            <div
+              class="border-2 border-dashed border-gray-300 rounded-lg p-1 text-center hover:border-blue-300 cursor-pointer transition-colors flex-shrink-0"
+              @click="showCreateDialog = true"
+            >
               <el-space>
                 <IconifyIconOffline :icon="AntDesignPlusCircleOutlined" />
                 <div class="text-sm text-gray-600">创建房型</div>
