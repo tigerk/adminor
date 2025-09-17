@@ -35,7 +35,7 @@ export function useFocusEdit() {
         cursor: `${building.building}-${building.unit || "0"}-${floor}-${i}`,
         houseIndex: i,
         doorNumber: formatHouseNumber(building.housePrefix, building.numberLength, floor, houseNum),
-        locked: false,
+        closed: false,
         floor: floor,
         building: building.building,
         unit: building.unit,
@@ -74,7 +74,7 @@ export function useFocusEdit() {
         if (floorMap) {
           for (const [_, house] of floorMap) {
             if (house.doorNumber === closedHouse.doorNumber) {
-              house.locked = true;
+              house.closed = true;
               break;
             }
           }
@@ -152,7 +152,7 @@ export function useFocusEdit() {
           cursor: `${building.building}-${building.unit || "0"}-${floor}-${i}`,
           houseIndex: i,
           doorNumber: formatHouseNumber(building.housePrefix, building.numberLength, floor, houseNum),
-          locked: false,
+          closed: false,
           floor: floor,
           building: building.building,
           unit: building.unit,
@@ -184,9 +184,9 @@ export function useFocusEdit() {
       building.closedHouses = [];
     }
 
-    houseStatus.locked = !houseStatus.locked;
+    houseStatus.closed = !houseStatus.closed;
 
-    if (houseStatus.locked) {
+    if (houseStatus.closed) {
       // 添加到关闭房源列表
       const existingIndex = building.closedHouses.findIndex(item => item.floor === houseStatus.floor && item.doorNumber === houseStatus.doorNumber);
       if (existingIndex === -1) {
@@ -244,7 +244,7 @@ export function useFocusEdit() {
       floor: floor,
       building: building.building,
       unit: building.unit,
-      locked: false,
+      closed: false,
       houseLayoutId: undefined,
       price: 0,
       direction: "",
@@ -326,18 +326,18 @@ export function useFocusEdit() {
   };
 
   // 批量锁定/解锁楼层的所有房源
-  const toggleFloorLock = (building: FocusBuildingProps, floor: number, locked: boolean) => {
+  const toggleFloorLock = (building: FocusBuildingProps, floor: number, closed: boolean) => {
     const floorMap = building.housesStatusOfFloors?.get(floor);
     if (!floorMap) return;
 
     for (const [_, house] of floorMap) {
-      house.locked = locked;
+      house.closed = closed;
 
       if (!Array.isArray(building.closedHouses)) {
         building.closedHouses = [];
       }
 
-      if (locked) {
+      if (closed) {
         const exists = building.closedHouses.some(ch => ch.floor === house.floor && ch.doorNumber === house.doorNumber);
         if (!exists) {
           building.closedHouses.push({ ...house });

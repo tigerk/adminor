@@ -448,12 +448,12 @@
                       <el-check-tag
                         v-for="(houseStatus, houseIndex) in getHouseListForFloorWrapper(buildingIndex, building.selectedFloor)"
                         :key="houseStatus.cursor || houseIndex"
-                        :class="['house-tag', houseStatus.locked && 'closed-house']"
-                        :checked="!houseStatus.locked"
+                        :class="['house-tag', houseStatus.closed && 'closed-house']"
+                        :checked="!houseStatus.closed"
                         @click="handleHouseClickWrapper(buildingIndex, houseStatus)"
                       >
                         <el-space :size="4">
-                          <el-icon v-if="houseStatus.locked">
+                          <el-icon v-if="houseStatus.closed">
                             <AntDesignLockFilled />
                           </el-icon>
                           <span>{{ houseStatus.doorNumber }}</span>

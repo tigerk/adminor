@@ -49,8 +49,8 @@ interface HouseStatusProps {
   houseIndex: number;
   // 房源号
   doorNumber: string;
-  // 房源锁定状态
-  locked: boolean;
+  // 房源禁用状态
+  closed: boolean;
   // 楼层
   floor: number;
   // 房源类型id

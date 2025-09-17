@@ -211,8 +211,8 @@
 
                       <div class="text-center">
                         <el-space width="auto">
-                          <IconifyIconOffline v-if="house.locked || isFloorDisabled(floor)" :icon="AntDesignLockFilled" />
-                          <span class="font-medium text-sm" :class="{ 'text-gray-400 line-through': house.locked || isFloorDisabled(floor) }">
+                          <IconifyIconOffline v-if="house.closed || isFloorDisabled(floor)" :icon="AntDesignLockFilled" />
+                          <span class="font-medium text-sm" :class="{ 'text-gray-400 line-through': house.closed || isFloorDisabled(floor) }">
                             {{ house.doorNumber }}
                           </span>
                           <el-tag v-if="house.houseLayoutId && !isFloorDisabled(floor)" :type="getHouseLayoutTagType(house.houseLayoutId)" size="small" class="text-xs px-1">
@@ -305,14 +305,14 @@
           <!-- 添加锁房/解锁选项 -->
           <div
             class="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex items-center"
-            :class="contextMenu.house?.locked ? 'text-green-600' : 'text-orange-400'"
+            :class="contextMenu.house?.closed ? 'text-green-600' : 'text-orange-400'"
             @click="toggleHouseLock(contextMenu.house)"
           >
             <el-icon class="mr-2">
-              <Unlock v-if="contextMenu.house?.locked" />
+              <Unlock v-if="contextMenu.house?.closed" />
               <Lock v-else />
             </el-icon>
-            {{ contextMenu.house?.locked ? "解锁" : "锁房" }}
+            {{ contextMenu.house?.closed ? "解锁" : "锁房" }}
           </div>
           <div class="px-3 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer flex items-center" @click="deleteHouseAction(contextMenu.house)">
             <el-icon class="mr-2">
@@ -537,7 +537,7 @@
         for (const [floor, houseMap] of building.housesStatusOfFloors) {
           if (!building.closedFloors?.includes(floor)) {
             for (const [_, house] of houseMap) {
-              if (!house.houseLayoutId && !house.locked) {
+              if (!house.houseLayoutId && !house.closed) {
                 count++;
               }
             }
@@ -555,7 +555,7 @@
         for (const [floor, houseMap] of building.housesStatusOfFloors) {
           if (!building.closedFloors?.includes(floor)) {
             for (const [_, house] of houseMap) {
-              if (!house.locked) {
+              if (!house.closed) {
                 count++;
               }
             }
@@ -572,7 +572,7 @@
       if (building.housesStatusOfFloors) {
         for (const [_, houseMap] of building.housesStatusOfFloors) {
           for (const [_, house] of houseMap) {
-            if (house.locked) {
+            if (house.closed) {
               count++;
             }
           }
@@ -1025,7 +1025,7 @@
 
         for (const [_, house] of houseMap) {
           total++;
-          if (house.locked) {
+          if (house.closed) {
             disabled++;
           } else {
             enabled++;
@@ -1183,7 +1183,7 @@
         cursor: `${building.building}-${building.unit || "0"}-${floor}-${i}`,
         houseIndex: i,
         doorNumber: doorNumber,
-        locked: false,
+        closed: false,
         floor: floor,
         building: building.building,
         unit: building.unit,
@@ -1206,12 +1206,12 @@
   const toggleHouseLock = async (house: HouseStatusProps | null) => {
     if (!house || !currentBuilding.value) return;
 
-    const action = house.locked ? "解锁" : "锁房";
+    const action = house.closed ? "解锁" : "锁房";
 
     // 更新房源的锁定状态
-    if (updateHouseInfo(currentBuilding.value, house.cursor, { locked: !house.locked })) {
+    if (updateHouseInfo(currentBuilding.value, house.cursor, { closed: !house.closed })) {
       // 如果锁房，从选中列表中移除
-      if (!house.locked) {
+      if (!house.closed) {
         const selectedIndex = selectedHouses.value.indexOf(house.cursor);
         if (selectedIndex > -1) {
           selectedHouses.value.splice(selectedIndex, 1);
