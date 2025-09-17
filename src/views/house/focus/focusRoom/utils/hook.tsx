@@ -68,8 +68,8 @@ export function userFocusRoom() {
       )
     },
     {
-      label: "项目",
-      prop: "houseName",
+      label: "小区/项目名称",
+      prop: "propertyName",
       width: 120
     },
     {
