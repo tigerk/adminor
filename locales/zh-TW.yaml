@@ -86,9 +86,9 @@ menus:
   pureMarkdown: Markdown
   pureEditor: 編輯器
   pureAbnormal: 異常頁面
-  pureFourZeroFour: "404"
-  pureFourZeroOne: "403"
-  pureFive: "500"
+  purePageNotFound: "404"
+  pureAccessDenied: "403"
+  pureServerError: "500"
   pureComponents: 組件
   pureDialog: 函數式彈窗
   pureDrawer: 函數式抽屜

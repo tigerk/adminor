@@ -86,9 +86,9 @@ menus:
   pureMarkdown: Markdown
   pureEditor: エディター
   pureAbnormal: 異常ページ
-  pureFourZeroFour: "404"
-  pureFourZeroOne: "403"
-  pureFive: "500"
+  purePageNotFound: "404"
+  pureAccessDenied: "403"
+  pureServerError: "500"
   pureComponents: コンポーネント
   pureDialog: 関数型ポップアップ
   pureDrawer: 関数型引き出し

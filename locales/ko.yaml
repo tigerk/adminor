@@ -86,9 +86,9 @@ menus:
   pureMarkdown: Markdown
   pureEditor: 편집기
   pureAbnormal: 예외 페이지
-  pureFourZeroFour: "404"
-  pureFourZeroOne: "403"
-  pureFive: "500"
+  purePageNotFound: "404"
+  pureAccessDenied: "403"
+  pureServerError: "500"
   pureComponents: 컴포넌트
   pureDialog: 함수형 팝업
   pureDrawer: 함수형 서랍
