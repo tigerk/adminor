@@ -39,7 +39,6 @@
     getFloorList,
     getHouseListForFloor,
     getHouseCountForFloor,
-    updateHouseCountForFloor,
     handleHouseClick,
     handleCloseFloor,
     handleFloorSelect
@@ -163,7 +162,7 @@
     }
 
     const building = form.value.buildings[buildingIndex];
-    updateHouseCountForFloor(building, floor, numValue);
+    initHouseListOfFloor(building, floor, numValue);
   };
 
   onMounted(() => {
@@ -431,7 +430,7 @@
                           size="small"
                           type="number"
                           :style="{ width: '60px' }"
-                          :min="1"
+                          :min="0"
                           :max="100"
                           @input="val => updateHouseCountForFloorWrapper(buildingIndex, building.selectedFloor, val)"
                         />

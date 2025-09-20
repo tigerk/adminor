@@ -25,16 +25,24 @@ export function useFocusEdit() {
   const initHouseListOfFloor = (building: FocusBuildingProps, floor: number, houseCount: number) => {
     const houseStatusMap = new Map<string, HouseStatusProps>();
 
-    for (let i = 1; i <= houseCount; i++) {
-      const houseNum = i.toString();
-      if (building.excludeFour && houseNum.endsWith("4")) {
+    let actualCount = 0;
+    let doorIndex = 1;
+
+    while (actualCount < houseCount) {
+      const houseNum = doorIndex.toString();
+
+      const houseNumber = formatHouseNumber(building.housePrefix, building.numberLength, floor, houseNum);
+
+      // 如果启用了去4选项且房间号以4结尾，跳过这个房间号
+      if (building.excludeFour && houseNumber.endsWith("4")) {
+        doorIndex++;
         continue;
       }
 
       houseStatusMap.set(houseNum, {
-        cursor: `${building.building}-${building.unit || "0"}-${floor}-${i}`,
-        houseIndex: i,
-        doorNumber: formatHouseNumber(building.housePrefix, building.numberLength, floor, houseNum),
+        cursor: `${building.building}-${building.unit || "0"}-${floor}-${doorIndex}`,
+        houseIndex: doorIndex,
+        doorNumber: houseNumber,
         closed: false,
         floor: floor,
         building: building.building,
@@ -44,6 +52,9 @@ export function useFocusEdit() {
         direction: "",
         area: 0
       });
+
+      actualCount++;
+      doorIndex++;
     }
 
     building.housesStatusOfFloors.set(floor, houseStatusMap);
@@ -118,59 +129,6 @@ export function useFocusEdit() {
       return building.houseCountPerFloor || 0;
     }
     return building.housesStatusOfFloors.get(floor).size;
-  };
-
-  // 更新特定楼栋楼层的房源数量
-  const updateHouseCountForFloor = (building: FocusBuildingProps, floor: number, newHouseCount: number) => {
-    const houseCount = Number(newHouseCount);
-
-    if (isNaN(houseCount) || houseCount < 1) {
-      return;
-    }
-
-    if (!building.housesStatusOfFloors.has(floor)) {
-      initHouseListOfFloor(building, floor, houseCount);
-      return;
-    }
-
-    const currentFloor = building.housesStatusOfFloors.get(floor);
-    const currentSize = currentFloor.size;
-
-    if (houseCount > currentSize) {
-      // 增加房源
-      for (let i = currentSize + 1; i <= houseCount; i++) {
-        const houseNum = i.toString();
-        if (building.excludeFour && houseNum.endsWith("4")) {
-          continue;
-        }
-
-        currentFloor.set(houseNum, {
-          cursor: `${building.building}-${building.unit || "0"}-${floor}-${i}`,
-          houseIndex: i,
-          doorNumber: formatHouseNumber(building.housePrefix, building.numberLength, floor, houseNum),
-          closed: false,
-          floor: floor,
-          building: building.building,
-          unit: building.unit,
-          houseLayoutId: undefined,
-          price: 0,
-          direction: "",
-          area: 0
-        });
-      }
-    } else if (houseCount < currentSize) {
-      // 减少房源 - 截断
-      const newMap = new Map<string, HouseStatusProps>();
-      let count = 0;
-
-      for (const [key, value] of currentFloor) {
-        if (count >= houseCount) break;
-        newMap.set(key, value);
-        count++;
-      }
-
-      building.housesStatusOfFloors.set(floor, newMap);
-    }
   };
 
   // 处理房源点击事件（锁定/解锁）
@@ -430,7 +388,6 @@ export function useFocusEdit() {
     getFloorList,
     getHouseListForFloor,
     getHouseCountForFloor,
-    updateHouseCountForFloor,
     handleHouseClick,
     handleCloseFloor,
     handleFloorSelect,

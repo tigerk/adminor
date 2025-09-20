@@ -76,7 +76,7 @@ export function userFocusRoom() {
     {
       label: "房源地址",
       prop: "houseName",
-      width: 200
+      width: 300
     },
     {
       label: "房型",
@@ -108,7 +108,7 @@ export function userFocusRoom() {
     {
       label: "负责人",
       prop: "salesmanName",
-      width: 120,
+      width: 180,
       cellRenderer: ({ row }) => (
         <span>
           {row.salesmanName} - {row.salesmanPhone}
