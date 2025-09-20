@@ -15,13 +15,13 @@ type Result<T> = {
 };
 
 export const createFocusHouse = (data?: object) => {
-  return http.request<Result<any>>("post", baseUrlApi("house/focus/create"), { data });
+  return http.request<Result<any>>("post", baseUrlApi("focus/create"), { data });
 };
 
 export const getFocusHouseOptions = (data?: object) => {
-  return http.request<ResultList>("post", baseUrlApi("house/focus/options"), { data });
+  return http.request<ResultList>("post", baseUrlApi("focus/options"), { data });
 };
 
-export const getFocusHouseById = (data?: object) => {
-  return http.request<Result<FocusFormItemProps>>("get", baseUrlApi("house/focus/get"), { params: data });
+export const getFocusById = (data?: object) => {
+  return http.request<Result<FocusFormItemProps>>("get", baseUrlApi("focus/get"), { params: data });
 };

@@ -8,7 +8,7 @@
   import Search from "~icons/ri/search-eye-line";
   import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
   import { userFocusRoom } from "@/views/house/focus/focusRoom/utils/hook";
-  import { getFocusHouseById } from "@/api/house/focus";
+  import { getFocusById } from "@/api/house/focus";
   import RoomStatusGrid from "../components/FocusRoomGrid/RoomStatusGrid.vue";
   import AddFill from "~icons/*";
 
@@ -53,7 +53,7 @@
 
   function modifyFocusHouse() {
     if (queryForm.houseId) {
-      getFocusHouseById({
+      getFocusById({
         id: queryForm.houseId
       }).then(res => {
         res.data.closedHouses = res.data.houseList?.filter(room => room.closed === true) || [];
