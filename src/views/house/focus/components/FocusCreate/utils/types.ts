@@ -1,12 +1,22 @@
 // 虽然字段很少 但是抽离出来 后续有扩展字段需求就很方便了
 
+interface CommunityProps {
+  name: string;
+  address: string;
+  cityId: number;
+  // 行政区域
+  adcode: number;
+  district: string;
+  location: string;
+}
+
 // 表单定义
 interface FocusFormItemProps {
   id: number;
   businessMode: number;
-  houseCode: string;
-  houseName: string;
-  region: any[];
+  focusCode: string;
+  focusName: string;
+  community: CommunityProps;
   address: string;
   buildings: FocusBuildingProps[];
   // 所有房间

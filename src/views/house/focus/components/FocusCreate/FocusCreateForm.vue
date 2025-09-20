@@ -11,10 +11,10 @@
     formInline: () => ({
       id: 0,
       businessMode: 0,
-      houseCode: "",
-      houseName: "",
-      region: [],
+      focusCode: "",
+      focusName: "",
       address: "",
+      community: null,
       buildings: [
         {
           building: "",
@@ -143,8 +143,7 @@
     try {
       const submitData = {
         ...form,
-        imageList: form.imageList.map((file: any) => file?.url).filter(Boolean),
-        regionId: form.region[form.region.length - 1]
+        imageList: form.imageList.map((file: any) => file?.url).filter(Boolean)
       };
 
       const response = await createFocusHouse(submitData);

@@ -27,7 +27,7 @@ export function useFocusEdit() {
 
     for (let i = 1; i <= houseCount; i++) {
       const houseNum = i.toString();
-      if (building.excludeFour && houseNum.includes("4")) {
+      if (building.excludeFour && houseNum.endsWith("4")) {
         continue;
       }
 
@@ -106,7 +106,7 @@ export function useFocusEdit() {
 
     // 如果启用了"去4"选项，则过滤掉房源号包含4的房源
     if (building.excludeFour) {
-      houses = houses.filter(item => !item.doorNumber.includes("4"));
+      houses = houses.filter(item => !item.doorNumber.endsWith("4"));
     }
 
     return houses.sort((a, b) => a.houseIndex - b.houseIndex);
@@ -117,11 +117,7 @@ export function useFocusEdit() {
     if (!building?.housesStatusOfFloors || !building.housesStatusOfFloors.has(floor)) {
       return building.houseCountPerFloor || 0;
     }
-    const floorMap = building.housesStatusOfFloors.get(floor);
-    if (building.excludeFour) {
-      return Array.from(floorMap.values()).filter(h => !h.doorNumber.includes("4")).length;
-    }
-    return floorMap.size;
+    return building.housesStatusOfFloors.get(floor).size;
   };
 
   // 更新特定楼栋楼层的房源数量
@@ -144,7 +140,7 @@ export function useFocusEdit() {
       // 增加房源
       for (let i = currentSize + 1; i <= houseCount; i++) {
         const houseNum = i.toString();
-        if (building.excludeFour && houseNum.includes("4")) {
+        if (building.excludeFour && houseNum.endsWith("4")) {
           continue;
         }
 
@@ -384,9 +380,8 @@ export function useFocusEdit() {
         formInline: {
           id: row?.id ?? null,
           businessMode: row?.businessMode ?? 1,
-          houseCode: row?.houseCode ?? "",
-          houseName: row?.houseName ?? "",
-          region: row?.region ?? [],
+          houseCode: row?.focusCode ?? "",
+          houseName: row?.focusName ?? "",
           address: row?.address ?? "",
           buildings: row?.buildings ?? [],
           houseList: row?.houseList ?? [],

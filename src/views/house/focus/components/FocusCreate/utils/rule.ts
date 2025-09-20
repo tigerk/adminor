@@ -5,7 +5,7 @@ import type { FormRules } from "element-plus";
 export const focusBasicInfoRules = reactive(<FormRules>{
   houseCode: [{ required: true, message: "项目编码为必填项", trigger: "blur" }],
   houseName: [{ required: true, message: "项目名称为必填项", trigger: "blur" }],
-  address: [{ required: true, message: "项目地址为必填项", trigger: "blur" }],
+  ["community.name"]: [{ required: true, message: "项目地址为必填项", trigger: "blur" }],
   deptId: [
     { required: true, message: "归属部门为必填项", trigger: "change" },
     { type: "number", message: "请选择归属部门", trigger: "change", transform: value => Number(value) }

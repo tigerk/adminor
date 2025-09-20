@@ -56,10 +56,10 @@
       getFocusHouseById({
         id: queryForm.houseId
       }).then(res => {
-        res.data.closedRooms = res.data.roomList?.filter(room => room.locked === true) || [];
-        res.data.roomList = res.data.roomList?.map(room => ({
+        res.data.closedHouses = res.data.houseList?.filter(room => room.closed === true) || [];
+        res.data.houseList = res.data.houseList?.map(room => ({
           ...room,
-          cursor: `${room.floor}-${room.roomNumber}`
+          cursor: `${room.floor}-${room.doorNumber}`
         }));
 
         openFocusEditDialog("更新", res.data);
@@ -120,7 +120,7 @@
       <el-col :span="12" class="text-right">
         <el-space>
           <el-select v-model="queryForm.houseId" placeholder="项目名称" clearable class="w-[180px]!" @change="onSearch">
-            <el-option v-for="item in houseOptions" :key="item.id" :label="item.houseName" :value="item.id" />
+            <el-option v-for="item in houseOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
           <el-button type="primary" :icon="useRenderIcon(EditPen)" :loading="loading" @click="modifyFocusHouse" />
           <el-button :icon="useRenderIcon(Delete)" @click="resetForm(queryForm)" />

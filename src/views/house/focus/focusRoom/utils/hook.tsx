@@ -40,6 +40,7 @@ export function userFocusRoom() {
       label: "状态",
       prop: "roomStatusName",
       width: 100,
+      fixed: "left",
       cellRenderer: ({ row }) => (
         <div
           style={{
@@ -70,16 +71,18 @@ export function userFocusRoom() {
     {
       label: "小区/项目名称",
       prop: "propertyName",
-      width: 120
+      width: 150
     },
     {
-      label: "房型 / 门牌号",
+      label: "房源地址",
+      prop: "houseName",
+      width: 200
+    },
+    {
+      label: "房型",
       prop: "houseLayout.layoutName",
-      cellRenderer: ({ row }) => (
-        <span>
-          {row.houseLayout?.layoutName ?? ""} {row.roomNumber}
-        </span>
-      )
+      width: 150,
+      cellRenderer: ({ row }) => <span>{row.houseLayout?.layoutName ?? ""}</span>
     },
     {
       label: "价格(元/月)",
@@ -88,31 +91,29 @@ export function userFocusRoom() {
     },
     {
       label: "户型",
+      width: 120,
       cellRenderer: ({ row }) => <span>{formatHouseLayout(row.houseLayout)}</span>
     },
     {
       label: "面积",
       prop: "area",
+      width: 80,
       cellRenderer: ({ row }) => <span>{row.area}㎡</span>
     },
     {
       label: "朝向",
-      prop: "direction"
+      prop: "direction",
+      width: 80
     },
     {
       label: "负责人",
       prop: "salesmanName",
+      width: 120,
       cellRenderer: ({ row }) => (
         <span>
           {row.salesmanName} - {row.salesmanPhone}
         </span>
       )
-    },
-    {
-      label: "操作",
-      fixed: "right",
-      width: 80,
-      slot: "operation"
     }
   ];
 

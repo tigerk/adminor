@@ -10,6 +10,8 @@
   import { focusBasicInfoRules } from "@/views/house/focus/components/FocusCreate/utils/rule";
   import { ElMessage, ElMessageBox } from "element-plus";
   import { getCompanyUserOptions } from "@/api/company";
+  import PoiSearch from "@/components/Business/PoiSearch.vue";
+  import EpCircleClose from "~icons/ep/circle-close";
 
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
@@ -154,9 +156,14 @@
     return getHouseCountForFloor(building, floor);
   };
 
-  const updateHouseCountForFloorWrapper = (buildingIndex: number, floor: number, newHouseCount: number) => {
+  const updateHouseCountForFloorWrapper = (buildingIndex: number, floor: number, newHouseCount: number | string) => {
+    const numValue = Number(newHouseCount);
+    if (isNaN(numValue) || numValue < 1 || numValue > 100) {
+      return; // 忽略无效输入
+    }
+
     const building = form.value.buildings[buildingIndex];
-    updateHouseCountForFloor(building, floor, newHouseCount);
+    updateHouseCountForFloor(building, floor, numValue);
   };
 
   onMounted(() => {
@@ -247,6 +254,17 @@
       ElMessage.warning("请完善必填项信息");
     }
   }
+
+  const handlePoiSelected = (poi: any) => {
+    form.value.community = {
+      name: poi.name, // poi名称
+      adcode: poi.adcode, // 地区编码
+      cityId: poi.cityId, // 区域ID
+      address: poi.address, // 地址
+      district: poi.district, // 区域
+      location: poi.location // 经纬度
+    };
+  };
 </script>
 
 <template>
@@ -257,23 +275,18 @@
         <h3 class="pb-4">项目信息</h3>
         <el-row :gutter="20" class="bor">
           <el-col :span="6">
-            <el-form-item label="项目编号" prop="houseCode">
-              <el-input v-model="form.houseCode" placeholder="请输入项目编号" clearable />
+            <el-form-item label="项目编号" prop="focusCode">
+              <el-input v-model="form.focusCode" placeholder="请输入项目编号" clearable />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="项目名称" prop="houseName">
-              <el-input v-model="form.houseName" placeholder="请输入项目名称" clearable />
+            <el-form-item label="项目名称" prop="focusName">
+              <el-input v-model="form.focusName" placeholder="请输入项目名称" clearable />
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-form-item label="选择区域" prop="region">
-              <RegionCascader v-model="form.region" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="项目地址" prop="address">
-              <el-input v-model="form.address" placeholder="请输入项目地址" clearable />
+          <el-col :span="12">
+            <el-form-item label="项目地址" prop="community.name">
+              <PoiSearch @poi-selected="handlePoiSelected" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -436,7 +449,7 @@
                   <div class="house-list">
                     <div class="house-title-container">
                       <span class="house-title">房源号</span>
-                      <el-tooltip content="点击房源号将房源锁定，再次点击解锁" placement="right" effect="light">
+                      <el-tooltip content="点击房源号将房源禁用，再次点击启用" placement="right" effect="light">
                         <el-icon class="info-icon">
                           <InfoFilled />
                         </el-icon>
@@ -454,7 +467,7 @@
                       >
                         <el-space :size="4">
                           <el-icon v-if="houseStatus.closed">
-                            <AntDesignLockFilled />
+                            <EpCircleClose />
                           </el-icon>
                           <span>{{ houseStatus.doorNumber }}</span>
                         </el-space>
