@@ -19,9 +19,13 @@ export const createFocusHouse = (data?: object) => {
 };
 
 export const getFocusHouseOptions = (data?: object) => {
-  return http.request<ResultList>("post", baseUrlApi("focus/options"), { data });
+  return http.request<ResultList>("get", baseUrlApi("focus/options"), { params: data });
 };
 
 export const getFocusById = (data?: object) => {
   return http.request<Result<FocusFormItemProps>>("get", baseUrlApi("focus/get"), { params: data });
+};
+
+export const checkFocusCodeExist = (data?: object) => {
+  return http.request<Result<boolean>>("get", baseUrlApi("focus/code/check"), { params: data });
 };
