@@ -17,7 +17,8 @@ export function userFocusRoom() {
 
   const queryForm = reactive({
     keywords: "",
-    houseId: null,
+    modeRefId: null,
+    leaseMode: 1, // 集中式
     roomStatus: null,
     pageSize: 15,
     currentPage: 1
@@ -25,7 +26,7 @@ export function userFocusRoom() {
 
   const curRow = ref();
   const roomTableList = ref([]);
-  const houseOptions = ref([]);
+  const focusOptions = ref([]);
   const roomStatusTotal = ref([]);
   const treeData = ref([]);
   const isShow = ref(false);
@@ -183,12 +184,12 @@ export function userFocusRoom() {
 
   onMounted(async () => {
     onSearch();
-    onHouseOptions();
+    onFocusOptions();
   });
 
-  function onHouseOptions() {
+  function onFocusOptions() {
     getFocusHouseOptions().then(res => {
-      houseOptions.value = res.data;
+      focusOptions.value = res.data;
     });
   }
 
@@ -222,7 +223,7 @@ export function userFocusRoom() {
     columns,
     rowStyle,
     roomTableList,
-    houseOptions,
+    focusOptions,
     roomStatusTotal,
     displayModeToList,
     displayModeText,

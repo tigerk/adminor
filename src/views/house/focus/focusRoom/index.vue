@@ -28,7 +28,7 @@
     resetForm,
     handleSizeChange,
     handleCurrentChange,
-    houseOptions,
+    focusOptions,
     roomStatusTotal,
     displayModeToList,
     displayModeText,
@@ -119,8 +119,8 @@
       </el-col>
       <el-col :span="12" class="text-right">
         <el-space>
-          <el-select v-model="queryForm.houseId" placeholder="项目名称" clearable class="w-[180px]!" @change="onSearch">
-            <el-option v-for="item in houseOptions" :key="item.id" :label="item.name" :value="item.id" />
+          <el-select v-model="queryForm.modeRefId" placeholder="项目名称" clearable class="w-[180px]!" @change="onSearch">
+            <el-option v-for="item in focusOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
           <el-button type="primary" :icon="useRenderIcon(EditPen)" :loading="loading" @click="modifyFocusHouse" />
           <el-button :icon="useRenderIcon(Delete)" @click="resetForm(queryForm)" />
