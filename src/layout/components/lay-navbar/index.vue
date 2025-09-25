@@ -20,6 +20,8 @@
   import { switchCompany } from "@/api/user";
   import { ElMessage } from "element-plus";
 
+  import FunctionMenu from "../../../components/Business/FunctionMenu.vue"; // 导入功能菜单组件
+
   const {
     layout,
     device,
@@ -36,7 +38,7 @@
     getCurCompanyId,
     getCompanyList
   } = useNav();
-  const selectedCompanyId = ref<number>(getCurCompanyId);
+  const selectedCompanyId = ref<any>(getCurCompanyId);
 
   const { t, locale, translationCh, translationTw, translationEn, translationJa, translationKo } = useTranslationLang();
 
@@ -71,6 +73,10 @@
       <el-select v-model="selectedCompanyId" placeholder="切换公司" clearable class="w-[280px]!" @change="handleCompanyChange">
         <el-option v-for="item in getCompanyList" :key="item.companyId" :label="item.companyName" :value="item.companyId" />
       </el-select>
+
+      <!-- 功能菜单 -->
+      <FunctionMenu :style="{ marginLeft: '15px' }" />
+
       <!-- 菜单搜索 -->
       <LaySearch id="header-search" />
       <!-- 国际化 -->

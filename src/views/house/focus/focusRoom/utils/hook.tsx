@@ -80,6 +80,11 @@ export function userFocusRoom() {
       width: 300
     },
     {
+      label: "房号",
+      prop: "roomNumber",
+      width: 100
+    },
+    {
       label: "房型",
       prop: "houseLayout.layoutName",
       width: 150,
@@ -105,6 +110,11 @@ export function userFocusRoom() {
       label: "朝向",
       prop: "direction",
       width: 80
+    },
+    {
+      label: "所属门店",
+      prop: "deptName",
+      width: 120
     },
     {
       label: "负责人",
