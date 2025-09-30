@@ -150,7 +150,7 @@
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 
   // 获取父组件的查询表单数据
-  const queryForm = defineModel<QueryFormItemProps>("queryForm", { default: () => ({}) });
+  const queryForm = defineModel<QueryFormItemProps>("modelValue", { default: () => ({}) });
 
   // ==================== 使用 Hook ====================
   const {

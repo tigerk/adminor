@@ -186,7 +186,7 @@ export type ResultRoomGrid = {
 };
 
 export const getRoomList = (data?: object) => {
-  return http.request<ResultTable>("get", baseUrlApi("room/list"), { data });
+  return http.request<ResultTable>("post", baseUrlApi("room/list"), { data });
 };
 
 /**
@@ -194,7 +194,7 @@ export const getRoomList = (data?: object) => {
  * @param data
  */
 export const getRoomGrid = (data?: object) => {
-  return http.request<ResultRoomGrid>("get", baseUrlApi("room/grid"), { data });
+  return http.request<ResultRoomGrid>("post", baseUrlApi("room/grid"), { data });
 };
 
 export const getRoomTotal = (data?: object) => {
