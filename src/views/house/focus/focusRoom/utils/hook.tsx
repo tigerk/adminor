@@ -33,7 +33,7 @@ export function userFocusRoom() {
   const loading = ref(true);
   const isLinkage = ref(false);
   const treeSearchValue = ref();
-  const displayModeToList = ref(true);
+  const displayModeToList = ref(false);
   const displayModeText = ref("列表模式");
 
   const columns: TableColumnList = [
