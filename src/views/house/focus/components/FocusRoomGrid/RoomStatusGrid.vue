@@ -80,9 +80,6 @@
                   <span class="price-amount">{{ formatPrice(room.price) }}</span>
                   <span class="price-unit">元/月</span>
                   <span class="price-extra">（押1付3）</span>
-                  <el-icon class="price-search">
-                    <Search />
-                  </el-icon>
                 </div>
 
                 <!-- 租期信息 -->
