@@ -1,7 +1,7 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
 
-type ResultTable = {
+export type ResultTable = {
   code: number;
   message: string;
   data?: {
@@ -16,7 +16,7 @@ type ResultTable = {
   };
 };
 
-type RoomTotal = {
+export type RoomTotal = {
   code: number;
   message: string;
   data?: {
@@ -25,9 +25,32 @@ type RoomTotal = {
 };
 
 /**
+ * 房型数据
+ */
+export type HouseLayoutDTO = {
+  layoutName?: string;
+  bedroom?: number;
+  livingRoom?: number;
+  kitchen?: number;
+  bathroom?: number;
+};
+
+/**
+ * 租期信息（前端扩展，后端添加后可移除）
+ */
+export type LeaseInfoDTO = {
+  leaseStartDate?: string;
+  leaseEndDate?: string;
+  availableDate?: string;
+  daysUntilAvailable?: number;
+  tenantName?: string;
+  tenantPhone?: string;
+};
+
+/**
  * 房间项数据传输对象
  */
-type RoomItemDTO = {
+export type RoomItemDTO = {
   /** 房间id */
   roomId?: number;
   /** 房源ID */
@@ -45,7 +68,7 @@ type RoomItemDTO = {
   /** 房源租赁类型：1、集中式；2、整租、3、合租 */
   leaseMode?: number;
   /** 房型 */
-  houseLayout?: any;
+  houseLayout?: HouseLayoutDTO;
   /** 部门id */
   deptId?: number;
   /** 部门名称 */
@@ -82,12 +105,18 @@ type RoomItemDTO = {
   salesmanName?: string;
   /** 负责人手机号 */
   salesmanPhone?: string;
+  /** 租期信息（前端扩展） */
+  leaseInfo?: LeaseInfoDTO;
+  /** 是否有阳台（前端扩展） */
+  balcony?: boolean;
+  /** 房间标签 */
+  roomLabel?: string;
 };
 
 /**
  * 小区分组
  */
-type CommunityGroup = {
+export type CommunityGroup = {
   /** 小区id */
   communityId?: number;
   /** 小区名称 */
@@ -109,7 +138,7 @@ type CommunityGroup = {
 /**
  * 楼栋单元分组
  */
-type UnitGroup = {
+export type UnitGroup = {
   /** 楼栋号 */
   building?: string;
   /** 单元号 */
@@ -125,7 +154,7 @@ type UnitGroup = {
 /**
  * 楼层分组
  */
-type FloorGroup = {
+export type FloorGroup = {
   /** 楼层号 */
   floor?: number;
   /** 房间数量 */
@@ -136,21 +165,21 @@ type FloorGroup = {
   occupancyRate?: string;
 };
 
-type RoomGridItemDTO = {
+export type RoomGridItemDTO = {
   communityGroup: CommunityGroup;
   unitGroup: UnitGroup;
   floorGroup: FloorGroup;
   rooms: Array<RoomItemDTO>;
 };
 
-type RoomGridDTO = {
+export type RoomGridDTO = {
   roomGridItemList: Array<RoomGridItemDTO>;
   currentPage: number;
   pageSize: number;
   hasMore: boolean;
 };
 
-type ResultRoomGrid = {
+export type ResultRoomGrid = {
   code: number;
   message: string;
   data?: RoomGridDTO;
