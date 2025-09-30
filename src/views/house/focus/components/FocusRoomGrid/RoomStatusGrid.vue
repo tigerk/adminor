@@ -29,21 +29,33 @@
           </div>
         </div>
 
-        <!-- 按楼栋单元遍历楼层 -->
-        <template v-for="[buildingUnitKey, floors] in community.buildingUnits" :key="`${community.communityId}-${buildingUnitKey}`">
-          <div v-for="floor in floors" :key="`${community.communityId}-${buildingUnitKey}-${floor.floor}`" class="floor-group">
+        <!-- 按楼栋单元分组 -->
+        <div v-for="buildingUnit in community.buildingUnits" :key="`${community.communityId}-${buildingUnit.building}-${buildingUnit.unit}`" class="building-unit-group">
+          <!-- 楼栋单元头部 -->
+          <div class="building-unit-header">
+            <div class="building-unit-info">
+              <el-icon>
+                <OfficeBuilding />
+              </el-icon>
+              <h4 class="building-unit-title">{{ buildingUnit.buildingUnitName }}</h4>
+              <span class="building-unit-stats">（共 {{ buildingUnit.floorCount }} 层，{{ buildingUnit.totalRooms }} 间，出租率 {{ buildingUnit.occupancyRate }}%）</span>
+            </div>
+          </div>
+
+          <!-- 楼层分组 -->
+          <div v-for="floor in buildingUnit.floors" :key="`${community.communityId}-${buildingUnit.building}-${buildingUnit.unit}-${floor.floor}`" class="floor-group">
             <div class="floor-header">
               <div class="floor-info">
-                <h4 class="floor-title">{{ floor.floorName }}</h4>
+                <h5 class="floor-title">{{ floor.floorName }}</h5>
                 <span class="floor-count">（共 {{ floor.roomCount }} 间，出租率 {{ floor.occupancyRate }}%）</span>
               </div>
             </div>
 
             <!-- 房间网格 -->
             <div class="room-grid">
-              <div v-for="room in floor.rooms" :key="room.roomId" class="room-card" :class="getRoomCardClass(room)">
+              <div v-for="room in floor.rooms" :key="room.roomId" class="room-card" :class="getRoomCardClass(room)" :style="getRoomCardStyle(room)">
                 <!-- 房间状态标签（右上角） -->
-                <div class="room-status-label" :class="`status-${room.roomStatus}`">
+                <div class="room-status-label" :style="{ color: room.roomStatusColor }">
                   {{ room.roomStatusName }}
                   <span v-if="room.roomStatus === 1 && room.leaseInfo?.daysUntilAvailable" class="status-sub">有欠款</span>
                 </div>
@@ -122,7 +134,7 @@
               </div>
             </div>
           </div>
-        </template>
+        </div>
       </div>
 
       <!-- 空状态 -->
@@ -133,7 +145,7 @@
 
 <script setup lang="ts">
   import { onMounted, watch } from "vue";
-  import { Location, Setting, EditPen, View, Search, Lock, User } from "@element-plus/icons-vue";
+  import { Location, Setting, EditPen, View, Search, Lock, User, OfficeBuilding } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/focus/components/FocusRoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 
@@ -141,8 +153,19 @@
   const queryForm = defineModel<QueryFormItemProps>("queryForm", { default: () => ({}) });
 
   // ==================== 使用 Hook ====================
-  const { loading, processedRoomGroups, loadRoomGrid, handleQuickAction, handleManageCommunity, getRoomCardClass, getRoomTypeLabel, formatDate, formatDateRange, formatPrice } =
-    useRoomGrid(queryForm);
+  const {
+    loading,
+    processedRoomGroups,
+    loadRoomGrid,
+    handleQuickAction,
+    handleManageCommunity,
+    getRoomCardClass,
+    getRoomTypeLabel,
+    formatDate,
+    formatDateRange,
+    formatPrice,
+    getRoomCardStyle
+  } = useRoomGrid(queryForm);
 
   // ==================== 生命周期 ====================
   watch(
@@ -181,7 +204,8 @@
   }
 
   @media (width <= 768px) {
-    .property-header {
+    .property-header,
+    .building-unit-header {
       flex-direction: column;
       gap: 12px;
       align-items: flex-start;
@@ -240,8 +264,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px;
-    color: #fff;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    //color: #fff;
+    //background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
     .property-header-left {
       display: flex;
@@ -279,7 +303,7 @@
       }
 
       .el-button {
-        color: #fff;
+        //color: #fff;
 
         &:hover {
           background: rgb(255 255 255 / 10%);
@@ -288,9 +312,50 @@
     }
   }
 
+  // 楼栋单元分组样式
+  .building-unit-group {
+    &:not(:last-child) {
+      border-bottom: 3px solid #e4e7ed;
+    }
+  }
+
+  // 楼栋单元头部
+  .building-unit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f0f2f5 0%, #fafbfc 100%);
+    border-bottom: 2px solid #ebeef5;
+
+    .building-unit-info {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+
+      .el-icon {
+        font-size: 20px;
+        color: #409eff;
+      }
+
+      .building-unit-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #303133;
+      }
+
+      .building-unit-stats {
+        font-size: 14px;
+        font-weight: normal;
+        color: #606266;
+      }
+    }
+  }
+
   .floor-group {
     &:not(:last-child) {
-      border-bottom: 2px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0;
     }
   }
 
@@ -298,7 +363,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 20px;
+    padding: 12px 20px;
     background: #fafbfc;
     border-bottom: 1px solid #ebeef5;
 
@@ -306,12 +371,13 @@
       display: flex;
       gap: 8px;
       align-items: baseline;
+      padding-left: 30px; // 缩进以显示层级
 
       .floor-title {
         margin: 0;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 500;
-        color: #303133;
+        color: #606266;
       }
 
       .floor-count {
@@ -340,52 +406,6 @@
     &:hover {
       box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
       transform: translateY(-2px);
-    }
-
-    // 房间状态样式
-    &.status-vacant {
-      background: linear-gradient(135deg, #f6ffed 0%, #fff 100%);
-      border-color: #67c23a;
-
-      .room-status-label {
-        color: #67c23a;
-      }
-    }
-
-    &.status-occupied {
-      background: linear-gradient(135deg, #fff4f4 0%, #fff 100%);
-      border-color: #f56c6c;
-
-      .room-status-label {
-        color: #f56c6c;
-      }
-    }
-
-    &.status-locked {
-      background: linear-gradient(135deg, #fffaf0 0%, #fff 100%);
-      border-color: #e6a23c;
-
-      .room-status-label {
-        color: #e6a23c;
-      }
-    }
-
-    &.status-configuring {
-      background: linear-gradient(135deg, #f0f9ff 0%, #fff 100%);
-      border-color: #409eff;
-
-      .room-status-label {
-        color: #409eff;
-      }
-    }
-
-    &.status-offline {
-      background: linear-gradient(135deg, #f5f7fa 0%, #fff 100%);
-      border-color: #909399;
-
-      .room-status-label {
-        color: #909399;
-      }
     }
 
     &.room-disabled {

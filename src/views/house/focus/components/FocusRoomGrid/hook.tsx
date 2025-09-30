@@ -18,6 +18,20 @@ interface ProcessedFloorGroup {
 }
 
 /**
+ * 楼栋单元分组
+ */
+interface ProcessedBuildingUnit {
+  building: string;
+  unit: string;
+  buildingUnitName: string;
+  totalRooms: number;
+  leasedCount: number;
+  occupancyRate: string;
+  floorCount: number;
+  floors: ProcessedFloorGroup[];
+}
+
+/**
  * 处理后的小区分组
  */
 interface ProcessedCommunityGroup {
@@ -27,7 +41,7 @@ interface ProcessedCommunityGroup {
   totalRooms: number;
   leasedCount: number;
   occupancyRate: string;
-  buildingUnits: Map<string, ProcessedFloorGroup[]>;
+  buildingUnits: ProcessedBuildingUnit[];
 }
 
 // ==================== Hook 定义 ====================
@@ -55,16 +69,29 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
           totalRooms: 0,
           leasedCount: 0,
           occupancyRate: "0",
-          buildingUnits: new Map()
+          buildingUnits: []
         });
       }
 
       const community = communityMap.get(communityId)!;
-      const buildingUnitKey = `${item.unitGroup.building}-${item.unitGroup.unit}`;
 
-      // 按楼栋单元分组
-      if (!community.buildingUnits.has(buildingUnitKey)) {
-        community.buildingUnits.set(buildingUnitKey, []);
+      // 查找或创建楼栋单元
+      const building = item.unitGroup.building || "";
+      const unit = item.unitGroup.unit || "";
+      let buildingUnit = community.buildingUnits.find(bu => bu.building === building && bu.unit === unit);
+
+      if (!buildingUnit) {
+        buildingUnit = {
+          building,
+          unit,
+          buildingUnitName: building ? `${building}栋${unit ? unit + "单元" : ""}` : "默认楼栋",
+          totalRooms: 0,
+          leasedCount: 0,
+          occupancyRate: "0",
+          floorCount: 0,
+          floors: []
+        };
+        community.buildingUnits.push(buildingUnit);
       }
 
       // 排序房间
@@ -77,29 +104,51 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       // 添加楼层数据
       const floorGroup: ProcessedFloorGroup = {
         floor: item.floorGroup.floor || 0,
-        floorName: item.unitGroup.building ? `${item.unitGroup.building}栋${item.unitGroup.unit || ""}单元${item.floorGroup.floor}层` : `${item.floorGroup.floor}层`,
+        floorName: `${item.floorGroup.floor}层`,
         roomCount: item.floorGroup.roomCount || 0,
         leasedCount: item.floorGroup.leasedCount || 0,
         occupancyRate: item.floorGroup.occupancyRate || "0",
         rooms: sortedRooms
       };
 
-      community.buildingUnits.get(buildingUnitKey)!.push(floorGroup);
+      buildingUnit.floors.push(floorGroup);
+
+      // 更新楼栋单元统计
+      buildingUnit.totalRooms += floorGroup.roomCount;
+      buildingUnit.leasedCount += floorGroup.leasedCount;
+      buildingUnit.floorCount = buildingUnit.floors.length;
 
       // 更新小区统计
       community.totalRooms += floorGroup.roomCount;
       community.leasedCount += floorGroup.leasedCount;
     });
 
-    // 计算小区出租率并排序
+    // 计算出租率并排序
     const result = Array.from(communityMap.values()).map(community => {
+      // 计算小区出租率
       if (community.totalRooms > 0) {
         community.occupancyRate = ((community.leasedCount / community.totalRooms) * 100).toFixed(1);
       }
 
-      // 对每个楼栋单元的楼层进行排序
-      community.buildingUnits.forEach(floors => {
-        floors.sort((a, b) => a.floor - b.floor);
+      // 对每个楼栋单元进行处理
+      community.buildingUnits.forEach(buildingUnit => {
+        // 计算楼栋单元出租率
+        if (buildingUnit.totalRooms > 0) {
+          buildingUnit.occupancyRate = ((buildingUnit.leasedCount / buildingUnit.totalRooms) * 100).toFixed(1);
+        }
+
+        // 对楼层进行排序
+        buildingUnit.floors.sort((a, b) => a.floor - b.floor);
+      });
+
+      // 对楼栋单元进行排序（按楼栋号和单元号）
+      community.buildingUnits.sort((a, b) => {
+        const buildingA = parseInt(a.building.replace(/\D/g, "")) || 0;
+        const buildingB = parseInt(b.building.replace(/\D/g, "")) || 0;
+        if (buildingA !== buildingB) {
+          return buildingA - buildingB;
+        }
+        return (a.unit || "").localeCompare(b.unit || "");
       });
 
       return community;
@@ -191,29 +240,48 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const getRoomCardClass = (room: RoomItemDTO) => {
     const classes: string[] = [];
 
-    switch (room.roomStatus) {
-      case 0:
-        classes.push("status-vacant");
-        break;
-      case 1:
-        classes.push("status-occupied");
-        break;
-      case 2:
-        classes.push("status-locked");
-        break;
-      case 3:
-        classes.push("status-configuring");
-        break;
-      case 4:
-        classes.push("status-offline");
-        break;
-    }
-
     if (room.closed) {
       classes.push("room-disabled");
     }
 
     return classes;
+  };
+
+  // 辅助函数：将hex颜色转换为rgba
+  const hexToRgba = (hex: string, alpha: number = 1) => {
+    // 移除#号
+    hex = hex.replace("#", "");
+
+    // 处理3位或6位的hex
+    if (hex.length === 3) {
+      hex = hex
+        .split("")
+        .map(char => char + char)
+        .join("");
+    }
+
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  // 获取房间卡片动态样式
+  const getRoomCardStyle = (room: RoomItemDTO) => {
+    const style: any = {};
+
+    if (room.roomStatusColor) {
+      // 使用接口返回的颜色
+      style.borderColor = room.roomStatusColor;
+
+      // 根据状态设置背景渐变
+      const colorHex = room.roomStatusColor;
+      // 将颜色转换为更淡的背景色
+      style.background = `linear-gradient(135deg, ${hexToRgba(colorHex, 0.05)} 0%, #fff 100%)`;
+    }
+
+    return style;
   };
 
   // 获取房型标签
@@ -267,6 +335,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     handleQuickAction,
     handleManageCommunity,
     getRoomCardClass,
+    getRoomCardStyle,
     getRoomTypeLabel,
     formatDate,
     formatDateRange,
@@ -275,4 +344,4 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 };
 
 // 导出类型供组件使用
-export type { ProcessedCommunityGroup, ProcessedFloorGroup };
+export type { ProcessedCommunityGroup, ProcessedFloorGroup, ProcessedBuildingUnit };
