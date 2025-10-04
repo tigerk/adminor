@@ -38,7 +38,9 @@
                 <OfficeBuilding />
               </el-icon>
               <h4 class="building-unit-title">{{ buildingUnit.buildingUnitName }}</h4>
-              <span class="building-unit-stats">（共 {{ buildingUnit.floorCount }} 层，{{ buildingUnit.totalRooms }} 间，出租率 {{ buildingUnit.occupancyRate }}%）</span>
+              <span class="building-unit-stats text-right">
+                （共 {{ buildingUnit.floorCount }} 层，{{ buildingUnit.totalRooms }} 间，出租率 {{ buildingUnit.occupancyRate }}%）
+              </span>
             </div>
           </div>
 
