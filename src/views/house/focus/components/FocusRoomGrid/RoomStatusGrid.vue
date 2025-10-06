@@ -1,7 +1,7 @@
 <template>
   <div class="room-status-grid">
     <!-- 房间网格容器 -->
-    <div v-loading="loading" class="room-grid-container full-height">
+    <div ref="scrollContainer" v-loading="loading" class="room-grid-container full-height">
       <!-- 按小区分组 -->
       <div v-for="community in processedRoomGroups" :key="community.communityId" class="property-group">
         <!-- 小区头部 -->
@@ -139,21 +139,39 @@
       <!-- 空状态 -->
       <el-empty v-if="!loading && processedRoomGroups.length === 0" description="暂无房间数据" />
     </div>
+
+    <!-- 加载更多触发器 - 关键：这个元素用于 IntersectionObserver 观察 -->
+    <div v-if="hasMore && !loading" ref="loadMoreTrigger" class="loading-more">
+      <el-icon v-if="loadingMore" class="is-loading">
+        <Loading />
+      </el-icon>
+      <span v-if="loadingMore">正在加载更多...</span>
+    </div>
+
+    <!-- 没有更多数据提示 -->
+    <div v-if="!hasMore && processedRoomGroups.length > 0 && !loading" class="no-more">
+      <span>已加载全部数据</span>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { onMounted, watch } from "vue";
-  import { Location, Setting, EditPen, View, Search, Lock, User, OfficeBuilding } from "@element-plus/icons-vue";
+  import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+  import { Location, Setting, EditPen, View, Search, Lock, User, OfficeBuilding, Loading } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/focus/components/FocusRoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 
   // 获取父组件的查询表单数据
   const queryForm = defineModel<QueryFormItemProps>("modelValue", { default: () => ({}) });
 
+  const scrollContainer = ref<HTMLElement>();
+  const loadMoreTrigger = ref<HTMLElement>(); // 加载更多触发器
+
   // ==================== 使用 Hook ====================
   const {
     loading,
+    loadingMore,
+    hasMore,
     processedRoomGroups,
     loadRoomGrid,
     handleQuickAction,
@@ -163,10 +181,12 @@
     formatDate,
     formatDateRange,
     formatPrice,
-    getRoomCardStyle
+    getRoomCardStyle,
+    setupLoadMore,
+    cleanupObserver
   } = useRoomGrid(queryForm);
 
-  // ==================== 生命周期 ====================
+  // 监听查询条件变化
   watch(
     () => queryForm.value,
     newVal => {
@@ -177,8 +197,23 @@
     { deep: true }
   );
 
-  onMounted(async () => {
-    await loadRoomGrid();
+  // ==================== 生命周期 ====================
+  // 监听 hasMore 变化，重新设置 observer
+  watch([hasMore, () => processedRoomGroups.value.length], () => {
+    nextTick(() => {
+      setupLoadMore(loadMoreTrigger.value);
+    });
+  });
+
+  onMounted(() => {
+    loadRoomGrid();
+    nextTick(() => {
+      setupLoadMore(loadMoreTrigger.value);
+    });
+  });
+
+  onUnmounted(() => {
+    cleanupObserver();
   });
 
   // ==================== 暴露方法 ====================
@@ -559,6 +594,21 @@
         background: #f56c6c;
         border-radius: 4px;
       }
+    }
+  }
+
+  .loading-wrapper,
+  .loading-more,
+  .no-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-size: 14px;
+    color: #999;
+
+    .el-icon {
+      margin-right: 8px;
     }
   }
 </style>

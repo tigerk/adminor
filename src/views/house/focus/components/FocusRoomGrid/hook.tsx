@@ -49,19 +49,28 @@ interface ProcessedCommunityGroup {
 export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   // 响应式数据
   const loading = ref(false);
+  const loadingMore = ref(false);
   const roomGridData = ref<RoomGridDTO | null>(null);
+  const hasMore = ref(false);
+  const currentPage = ref(1);
+  const pageSize = ref(3); // 可根据需要调整每页大小
+
+  // 存储所有原始数据项
+  const allRoomGridItems = ref<RoomGridItemDTO[]>([]);
 
   // 计算属性：处理后的房间分组数据
   const processedRoomGroups: ComputedRef<ProcessedCommunityGroup[]> = computed(() => {
-    if (!roomGridData.value?.roomGridItemList) return [];
+    if (!allRoomGridItems.value.length) return [];
 
-    // 按小区分组
+    // 按小区分组，但保持原始顺序
     const communityMap = new Map<number, ProcessedCommunityGroup>();
+    const communityOrder: number[] = []; // 记录小区出现的顺序
 
-    roomGridData.value.roomGridItemList.forEach((item: RoomGridItemDTO) => {
+    allRoomGridItems.value.forEach((item: RoomGridItemDTO) => {
       const communityId = item.communityGroup.communityId || 0;
 
       if (!communityMap.has(communityId)) {
+        communityOrder.push(communityId); // 记录顺序
         communityMap.set(communityId, {
           communityId,
           communityName: item.communityGroup.communityName || "未知小区",
@@ -123,8 +132,13 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       community.leasedCount += floorGroup.leasedCount;
     });
 
-    // 计算出租率并排序
-    const result = Array.from(communityMap.values()).map(community => {
+    // 处理每个小区的数据
+    const result: ProcessedCommunityGroup[] = [];
+
+    // 按照原始顺序处理小区
+    communityOrder.forEach(communityId => {
+      const community = communityMap.get(communityId)!;
+
       // 计算小区出租率
       if (community.totalRooms > 0) {
         community.occupancyRate = ((community.leasedCount / community.totalRooms) * 100).toFixed(1);
@@ -151,32 +165,50 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         return (a.unit || "").localeCompare(b.unit || "");
       });
 
-      return community;
+      result.push(community);
     });
 
-    // 按小区名称排序
-    return result.sort((a, b) => a.communityName.localeCompare(b.communityName));
+    // 不再按小区名称排序，保持原始顺序
+    return result;
   });
 
   // 加载房间数据
-  const loadRoomGrid = async () => {
-    if (loading.value) return;
+  const loadRoomGrid = async (isLoadMore = false) => {
+    // 如果正在加载，则不重复请求
+    if (loading.value || loadingMore.value) return;
 
-    loading.value = true;
+    // 如果是加载更多且没有更多数据，直接返回
+    if (isLoadMore && !hasMore.value) {
+      return;
+    }
+
+    // 设置加载状态
+    if (isLoadMore) {
+      loadingMore.value = true;
+      currentPage.value++; // ⚠️ 在请求前增加页码
+    } else {
+      loading.value = true;
+      // 如果不是加载更多，重置分页
+      currentPage.value = 1;
+      allRoomGridItems.value = [];
+    }
+
     try {
       const { data } = await getRoomGrid({
         ...queryForm.value,
-        pageSize: 3,
-        currentPage: 1
+        pageSize: pageSize.value,
+        currentPage: currentPage.value
       });
 
       if (data) {
         roomGridData.value = data;
+        hasMore.value = data.hasMore || false;
 
         // 临时模拟租期信息（后端添加后删除）
         if (data.roomGridItemList) {
-          data.roomGridItemList.forEach((item: RoomGridItemDTO) => {
-            item.rooms = item.rooms.map((room: RoomItemDTO) => ({
+          const processedItems = data.roomGridItemList.map((item: RoomGridItemDTO) => ({
+            ...item,
+            rooms: item.rooms.map((room: RoomItemDTO) => ({
               ...room,
               leaseInfo:
                 room.roomStatus === 1
@@ -195,16 +227,57 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
                       }
                     : undefined,
               balcony: Math.random() > 0.7
-            }));
-          });
+            }))
+          }));
+
+          // 追加或替换数据
+          if (isLoadMore) {
+            allRoomGridItems.value.push(...processedItems);
+          } else {
+            allRoomGridItems.value = processedItems;
+          }
         }
       }
     } catch (error) {
       console.error("加载房间数据失败:", error);
       ElMessage.error("加载数据失败");
+      if (isLoadMore) {
+        currentPage.value--; // 失败时回滚页码
+      }
     } finally {
       loading.value = false;
+      loadingMore.value = false;
     }
+  };
+
+  // 加载更多数据
+  const loadMore = async () => {
+    await loadRoomGrid(true);
+  };
+
+  // 处理滚动事件（可在组件中使用）
+  const handleScroll = (event: Event) => {
+    const target = event.target as HTMLElement;
+    if (!target) return;
+
+    // 计算是否接近底部（距离底部小于100px时触发）
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+
+    if (scrollHeight - scrollTop - clientHeight < 100) {
+      if (!loadingMore.value && hasMore.value) {
+        loadMore();
+      }
+    }
+  };
+
+  // 重置并重新加载
+  const resetAndReload = async () => {
+    currentPage.value = 1;
+    allRoomGridItems.value = [];
+    hasMore.value = false;
+    await loadRoomGrid(false);
   };
 
   // 处理快速操作
@@ -325,13 +398,70 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     return typeof price === "number" ? price.toLocaleString() : parseFloat(price).toLocaleString();
   };
 
+  // 添加 IntersectionObserver 相关
+  let observer: IntersectionObserver | null = null;
+
+  const setupLoadMore = (triggerElement?: HTMLElement) => {
+    if (!triggerElement) {
+      console.warn("IntersectionObserver: 触发元素不存在");
+      return;
+    }
+
+    if (observer) {
+      observer.disconnect();
+    }
+
+    console.log("初始化 IntersectionObserver");
+
+    observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          console.log("IntersectionObserver 触发:", {
+            isIntersecting: entry.isIntersecting,
+            hasMore: hasMore.value,
+            loadingMore: loadingMore.value,
+            loading: loading.value,
+            currentPage: currentPage.value
+          });
+
+          if (entry.isIntersecting && hasMore.value && !loadingMore.value && !loading.value) {
+            console.log("开始加载更多数据");
+            loadMore();
+          }
+        });
+      },
+      {
+        root: null, // ⚠️ 使用 null 表示相对于视口
+        rootMargin: "100px",
+        threshold: 0.1
+      }
+    );
+
+    observer.observe(triggerElement);
+    console.log("开始观察触发元素");
+  };
+
+  const cleanupObserver = () => {
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
+  };
+
   return {
     // 响应式数据
     loading,
+    loadingMore,
     roomGridData,
     processedRoomGroups,
+    hasMore,
+    currentPage,
+    pageSize,
     // 方法
     loadRoomGrid,
+    loadMore,
+    handleScroll,
+    resetAndReload,
     handleQuickAction,
     handleManageCommunity,
     getRoomCardClass,
@@ -339,7 +469,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     getRoomTypeLabel,
     formatDate,
     formatDateRange,
-    formatPrice
+    formatPrice,
+    setupLoadMore,
+    cleanupObserver
   };
 };
 
