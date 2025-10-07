@@ -6,6 +6,7 @@
   import FocusBasicInfo from "@/views/house/focus/components/FocusCreate/FocusBasicInfo.vue";
   import { ElMessage } from "element-plus";
   import { createFocusHouse } from "@/api/house/focus";
+  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
 
   const props = withDefaults(defineProps<FormProps>(), {
     formInline: () => ({
@@ -69,6 +70,9 @@
     })
   });
 
+  // 使用hook中的方法
+  const { distributeHousesToBuildings } = useFocusEdit();
+
   const emit = defineEmits(["create-success", "created-focus-house"]);
 
   // 深度克隆函数，确保 Map 对象被正确复制
@@ -82,24 +86,7 @@
       })
     );
 
-    // 重新构建 Map 对象
-    if (result.buildings) {
-      result.buildings.forEach((building: any) => {
-        if (building.housesStatusOfFloors && Array.isArray(building.housesStatusOfFloors)) {
-          const newMap = new Map();
-          building.housesStatusOfFloors.forEach(([floor, houses]: [number, any[]]) => {
-            const houseMap = new Map();
-            houses.forEach(([houseKey, houseValue]: [string, any]) => {
-              houseMap.set(houseKey, houseValue);
-            });
-            newMap.set(floor, houseMap);
-          });
-          building.housesStatusOfFloors = newMap;
-        } else {
-          building.housesStatusOfFloors = new Map();
-        }
-      });
-    }
+    distributeHousesToBuildings(result);
 
     return result;
   };

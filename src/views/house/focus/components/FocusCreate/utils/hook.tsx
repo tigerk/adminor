@@ -212,7 +212,9 @@ export function useFocusEdit() {
   // 更新房源信息
   const updateHouseInfo = (building: FocusBuildingProps, cursor: string, updates: Partial<HouseStatusProps>) => {
     for (const [floor, floorMap] of building.housesStatusOfFloors) {
+      console.log("housesStatusOfFloors foreach, key={}, house={}", floor, floorMap);
       for (const [key, house] of floorMap) {
+        console.log("floorMap foreach, key={}, house={}", key, house);
         if (house.cursor === cursor) {
           Object.assign(house, updates);
           return true;
@@ -225,6 +227,7 @@ export function useFocusEdit() {
   // 删除房源
   const deleteHouse = (building: FocusBuildingProps, cursor: string) => {
     for (const [floor, floorMap] of building.housesStatusOfFloors) {
+      console.log("building.housesStatusOfFloors, floor=%s, floorMap=%s", floor, floorMap);
       for (const [key, house] of floorMap) {
         if (house.cursor === cursor) {
           floorMap.delete(key);
@@ -379,6 +382,46 @@ export function useFocusEdit() {
     });
   }
 
+  /**
+   * 将 houseList 按照 building 和 unit 分配到对应的 buildings.housesStatusOfFloors 中
+   * @param formData 表单数据
+   */
+  function distributeHousesToBuildings(formData: FocusFormItemProps): void {
+    // 如果没有 houseList，直接返回
+    if (!formData.houseList || formData.houseList.length === 0) {
+      return;
+    }
+
+    // 遍历每个 building
+    formData.buildings.forEach(building => {
+      // 清空当前的 housesStatusOfFloors
+      // ✅ 现在（安全）
+      if (!building.housesStatusOfFloors) {
+        building.housesStatusOfFloors = new Map();
+      } else {
+        building.housesStatusOfFloors.clear();
+      }
+
+      // 筛选出属于当前 building 和 unit 的房源
+      const buildingHouses = formData.houseList.filter(house => house.building === building.building && house.unit === building.unit);
+
+      // 按楼层分组
+      buildingHouses.forEach(house => {
+        const floor = house.floor;
+
+        // 获取或创建该楼层的 Map
+        if (!building.housesStatusOfFloors.has(floor)) {
+          building.housesStatusOfFloors.set(floor, new Map<string, HouseStatusProps>());
+        }
+
+        const floorMap = building.housesStatusOfFloors.get(floor)!;
+
+        // 将房源添加到该楼层的 Map 中，以门牌号为 key
+        floorMap.set(house.doorNumber, house);
+      });
+    });
+  }
+
   return {
     form,
     formRef,
@@ -398,6 +441,7 @@ export function useFocusEdit() {
     applyLayoutToFloor,
     copyFloorConfiguration,
     toggleFloorLock,
-    convertBuildingsToHouseList
+    convertBuildingsToHouseList,
+    distributeHousesToBuildings
   };
 }

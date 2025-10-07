@@ -16,7 +16,6 @@ export const createFocusBasicInfoRules = (form: any) => {
     console.log("项目名称:", form.focusName);
 
     try {
-      debugger;
       const res = await checkFocusCodeExist({ id: form.value.id, focusCode: value });
       if (res.data) {
         callback(new Error("项目编号已存在"));
