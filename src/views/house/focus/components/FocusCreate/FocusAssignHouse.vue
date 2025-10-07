@@ -496,7 +496,7 @@
   };
 
   // 计算属性
-  const projectName = computed(() => form.value.houseName || "未命名项目");
+  const projectName = computed(() => form.value.focusName || "未命名项目");
 
   // 当前楼栋
   const currentBuilding = computed(() => {

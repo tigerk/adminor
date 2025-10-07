@@ -22,6 +22,21 @@
   const salesmanList = ref([]);
   const ruleFormRef = ref();
 
+  // 判断是否处于编辑模式
+  const isEditMode = computed(() => {
+    return form.value?.id && form.value.id !== 0;
+  });
+
+  // 判断特定楼栋是否可编辑（新添加的楼栋在编辑模式下也可以编辑）
+  const isBuildingEditable = (building: FocusBuildingProps) => {
+    // 如果不是编辑模式，所有楼栋都可编辑
+    if (!isEditMode.value) {
+      return false; // 返回false表示不禁用
+    }
+    // 编辑模式下，只有新添加的楼栋可编辑
+    return !building.isNew; // 返回true表示禁用（已存在的楼栋）
+  };
+
   function getRef() {
     return ruleFormRef.value;
   }
@@ -54,13 +69,14 @@
       housePrefix: `A`,
       excludeFour: false,
       numberLength: 3,
-      housesStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>()
+      housesStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>(),
+      isNew: true // 标记为新添加的楼栋
     };
 
     // 先添加到数组
     form.value.buildings.push(newBuilding);
 
-    // 立即初始化新楼栋的房源数据
+    // 新楼栋始终需要初始化房源数据
     initAllFloorsForBuilding(newBuilding);
   };
 
@@ -97,9 +113,13 @@
   // 监听楼栋配置变化，重新初始化
   const handleBuildingConfigChange = (buildingIndex: number) => {
     const building = form.value.buildings[buildingIndex];
-    if (building.floorTotal && building.houseCountPerFloor) {
-      // 重新初始化该楼栋的所有楼层
-      initAllFloorsForBuilding(building);
+
+    // 只有新楼栋或非编辑模式下才重新初始化
+    if (building.isNew || !isEditMode.value) {
+      if (building.floorTotal && building.houseCountPerFloor) {
+        // 重新初始化该楼栋的所有楼层
+        initAllFloorsForBuilding(building);
+      }
     }
   };
 
@@ -122,9 +142,12 @@
   const getFloorListWrapper = (buildingIndex: number) => {
     const building = form.value.buildings[buildingIndex];
 
-    // 如果 Map 不存在，先初始化
-    if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
-      initAllFloorsForBuilding(building);
+    // 新楼栋或非编辑模式下才初始化
+    if (building.isNew || !isEditMode.value) {
+      // 如果 Map 不存在，先初始化
+      if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
+        initAllFloorsForBuilding(building);
+      }
     }
 
     return getFloorList(building);
@@ -133,9 +156,12 @@
   const getHouseListForFloorWrapper = (buildingIndex: number, floor: number) => {
     const building = form.value.buildings[buildingIndex];
 
-    // 如果 Map 不存在，先初始化
-    if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
-      initAllFloorsForBuilding(building);
+    // 新楼栋或非编辑模式下才初始化
+    if (building.isNew || !isEditMode.value) {
+      // 如果 Map 不存在，先初始化
+      if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
+        initAllFloorsForBuilding(building);
+      }
     }
 
     return getHouseListForFloor(building, floor);
@@ -144,9 +170,12 @@
   const getHouseCountForFloorWrapper = (buildingIndex: number, floor: number) => {
     const building = form.value.buildings[buildingIndex];
 
-    // 如果 Map 不存在，先初始化
-    if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
-      initAllFloorsForBuilding(building);
+    // 新楼栋或非编辑模式下才初始化
+    if (building.isNew || !isEditMode.value) {
+      // 如果 Map 不存在，先初始化
+      if (!building.housesStatusOfFloors || building.housesStatusOfFloors.size === 0) {
+        initAllFloorsForBuilding(building);
+      }
     }
 
     return getHouseCountForFloor(building, floor);
@@ -177,19 +206,32 @@
           housePrefix: "A",
           excludeFour: false,
           numberLength: 3,
-          housesStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>()
+          housesStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>(),
+          isNew: false // 初始楼栋不是新的
         }
       ];
+    } else {
+      // 如果是编辑模式，标记所有已存在的楼栋为非新楼栋
+      if (isEditMode.value) {
+        form.value.buildings.forEach(building => {
+          if (building.isNew === undefined) {
+            building.isNew = false; // 已存在的楼栋标记为false
+          }
+        });
+      }
     }
 
-    // 初始化所有楼栋 - 确保每个楼栋都有 Map 数据
-    form.value.buildings.forEach(building => {
-      // 如果楼栋没有 Map 或 Map 为空，初始化它
-      if (!building.housesStatusOfFloors || !(building.housesStatusOfFloors instanceof Map) || building.housesStatusOfFloors.size === 0) {
-        building.housesStatusOfFloors = new Map<number, Map<string, HouseStatusProps>>();
-        initAllFloorsForBuilding(building);
-      }
-    });
+    // 编辑模式下不初始化已存在楼栋的房源配置
+    if (!isEditMode.value) {
+      // 初始化所有楼栋 - 确保每个楼栋都有 Map 数据
+      form.value.buildings.forEach(building => {
+        // 如果楼栋没有 Map 或 Map 为空，初始化它
+        if (!building.housesStatusOfFloors || !(building.housesStatusOfFloors instanceof Map) || building.housesStatusOfFloors.size === 0) {
+          building.housesStatusOfFloors = new Map<number, Map<string, HouseStatusProps>>();
+          initAllFloorsForBuilding(building);
+        }
+      });
+    }
 
     getCompanyUserOptions().then(resp => {
       salesmanList.value = resp.data;
@@ -303,6 +345,8 @@
                   <span class="building-title">
                     {{ building.building ? `${building.building}栋` : `楼栋${buildingIndex + 1}` }}
                     {{ building.unit ? `${building.unit}单元` : "" }}
+                    <!-- 新楼栋标记（可选） -->
+                    <el-tag v-if="building.isNew" type="success" size="small" style="margin-left: 10px">新增</el-tag>
                   </span>
                   <el-button type="danger" :icon="Delete" size="small" :disabled="form.buildings.length <= 1" @click="removeBuilding(buildingIndex)">删除</el-button>
                 </div>
@@ -312,14 +356,14 @@
               <el-row :gutter="20">
                 <el-col :span="3">
                   <el-form-item label="楼栋" :prop="`buildings.${buildingIndex}.building`" :rules="[{ required: true, message: '楼栋号为必填项', trigger: 'blur' }]">
-                    <el-input v-model="building.building" placeholder="楼栋号">
+                    <el-input v-model="building.building" placeholder="楼栋号" :disabled="isBuildingEditable(building)">
                       <template #append>栋</template>
                     </el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="3">
                   <el-form-item label="单元" :prop="`buildings.${buildingIndex}.unit`">
-                    <el-input v-model="building.unit" placeholder="选填">
+                    <el-input v-model="building.unit" placeholder="选填" :disabled="isBuildingEditable(building)">
                       <template #append>单元</template>
                     </el-input>
                   </el-form-item>
@@ -340,7 +384,12 @@
                       }
                     ]"
                   >
-                    <el-input v-model.number="building.floorTotal" placeholder="楼层数" @change="handleBuildingConfigChange(buildingIndex)">
+                    <el-input
+                      v-model.number="building.floorTotal"
+                      placeholder="楼层数"
+                      :disabled="isBuildingEditable(building)"
+                      @change="handleBuildingConfigChange(buildingIndex)"
+                    >
                       <template #prepend>共</template>
                       <template #append>层</template>
                     </el-input>
@@ -362,14 +411,19 @@
                       }
                     ]"
                   >
-                    <el-input v-model.number="building.houseCountPerFloor" placeholder="房源数" @change="handleBuildingConfigChange(buildingIndex)">
+                    <el-input
+                      v-model.number="building.houseCountPerFloor"
+                      placeholder="房源数"
+                      :disabled="isBuildingEditable(building)"
+                      @change="handleBuildingConfigChange(buildingIndex)"
+                    >
                       <template #append>间</template>
                     </el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="3">
                   <el-form-item label="房源号前缀">
-                    <el-input v-model="building.housePrefix" placeholder="前缀" @change="handleBuildingConfigChange(buildingIndex)" />
+                    <el-input v-model="building.housePrefix" placeholder="前缀" :disabled="isBuildingEditable(building)" @change="handleBuildingConfigChange(buildingIndex)" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="3">
@@ -387,18 +441,24 @@
                       }
                     ]"
                   >
-                    <el-input v-model.number="building.numberLength" placeholder="长度" type="number" @change="handleBuildingConfigChange(buildingIndex)" />
+                    <el-input
+                      v-model.number="building.numberLength"
+                      placeholder="长度"
+                      type="number"
+                      :disabled="isBuildingEditable(building)"
+                      @change="handleBuildingConfigChange(buildingIndex)"
+                    />
                   </el-form-item>
                 </el-col>
                 <el-col :span="3">
                   <el-form-item label="选项">
-                    <el-checkbox v-model="building.excludeFour" label="房间号去4" @change="handleBuildingConfigChange(buildingIndex)" />
+                    <el-checkbox v-model="building.excludeFour" label="房间号去4" :disabled="isBuildingEditable(building)" @change="handleBuildingConfigChange(buildingIndex)" />
                   </el-form-item>
                 </el-col>
               </el-row>
 
-              <!-- 房源配置区域 -->
-              <div class="house-config-section">
+              <!-- 房源配置区域 - 已存在的楼栋在编辑模式下不显示，新楼栋始终显示 -->
+              <div v-if="building.isNew || !isEditMode" class="house-config-section">
                 <h5>房源配置</h5>
 
                 <!-- 楼层选择 -->

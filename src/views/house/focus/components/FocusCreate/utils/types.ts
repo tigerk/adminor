@@ -50,6 +50,7 @@ interface FormProps {
 
 // 房间状态
 interface HouseStatusProps {
+  id?: number;
   // 座栋
   building: string;
   // 单元
@@ -96,6 +97,8 @@ interface FocusBuildingProps {
   numberLength: number;
   // 所有楼层的房源状态
   housesStatusOfFloors: Map<number, Map<string, HouseStatusProps>>;
+  // 是否是新增的
+  isNew: boolean;
 }
 
 // 接口定义

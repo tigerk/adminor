@@ -27,8 +27,8 @@
           housePrefix: "A",
           excludeFour: false,
           numberLength: 4,
-          selectedHouses: null,
-          housesStatusOfFloors: new Map() // 确保初始化
+          housesStatusOfFloors: new Map(),
+          isNew: true
         }
       ],
       houseList: [],
