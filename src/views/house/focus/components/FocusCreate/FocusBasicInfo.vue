@@ -1,13 +1,10 @@
 <script setup lang="ts">
   import { ref, reactive, computed, watch, onMounted, nextTick } from "vue";
   import { FormProps, FocusFormItemProps, HouseStatusProps, FocusBuildingProps } from "@/views/house/focus/components/FocusCreate/utils/types";
-  import RegionCascader from "@/components/Business/RegionCascader.vue";
   import DeptCascader from "@/components/Business/DeptUserCascader.vue";
-  import { getDeptUserList } from "@/api/sys/dept";
   import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
   import { InfoFilled, Plus, Delete } from "@element-plus/icons-vue";
-  import AntDesignLockFilled from "~icons/ant-design/lock-filled";
-  import { focusBasicInfoRules } from "@/views/house/focus/components/FocusCreate/utils/rule";
+  import { createFocusBasicInfoRules } from "@/views/house/focus/components/FocusCreate/utils/rule";
   import { ElMessage, ElMessageBox } from "element-plus";
   import { getCompanyUserOptions } from "@/api/company";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
@@ -264,6 +261,7 @@
       location: poi.location // 经纬度
     };
   };
+  const focusBasicInfoRules = createFocusBasicInfoRules(form);
 </script>
 
 <template>
@@ -285,7 +283,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="项目地址" prop="community.name">
-              <PoiSearch @poi-selected="handlePoiSelected" />
+              <PoiSearch :cityId="form?.community?.cityId" :name="form?.community?.name" @poi-selected="handlePoiSelected" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -303,7 +301,7 @@
               <template #header>
                 <div class="card-header">
                   <span class="building-title">
-                    {{ building.building || `楼栋${buildingIndex + 1}` }}
+                    {{ building.building ? `${building.building}栋` : `楼栋${buildingIndex + 1}` }}
                     {{ building.unit ? `${building.unit}单元` : "" }}
                   </span>
                   <el-button type="danger" :icon="Delete" size="small" :disabled="form.buildings.length <= 1" @click="removeBuilding(buildingIndex)">删除</el-button>

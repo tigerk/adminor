@@ -338,8 +338,9 @@ export function useFocusEdit() {
         formInline: {
           id: row?.id ?? null,
           businessMode: row?.businessMode ?? 1,
-          houseCode: row?.focusCode ?? "",
-          houseName: row?.focusName ?? "",
+          focusCode: row?.focusCode ?? "",
+          focusName: row?.focusName ?? "",
+          community: row?.community ?? null,
           address: row?.address ?? "",
           buildings: row?.buildings ?? [],
           houseList: row?.houseList ?? [],

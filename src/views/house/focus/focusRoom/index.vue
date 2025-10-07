@@ -52,16 +52,10 @@
   });
 
   function modifyFocusHouse() {
-    if (queryForm.houseId) {
+    if (queryForm.modeRefId) {
       getFocusById({
-        id: queryForm.houseId
+        id: queryForm.modeRefId
       }).then(res => {
-        res.data.closedHouses = res.data.houseList?.filter(room => room.closed === true) || [];
-        res.data.houseList = res.data.houseList?.map(room => ({
-          ...room,
-          cursor: `${room.floor}-${room.doorNumber}`
-        }));
-
         openFocusEditDialog("更新", res.data);
       });
     }
@@ -123,7 +117,6 @@
             <el-option v-for="item in focusOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
           <el-button type="primary" :icon="useRenderIcon(EditPen)" :loading="loading" @click="modifyFocusHouse" />
-          <el-button :icon="useRenderIcon(Delete)" @click="resetForm(queryForm)" />
           <el-input
             v-model="queryForm.keywords"
             placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签"

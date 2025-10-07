@@ -45,10 +45,14 @@
 </template>
 
 <script setup>
-  import { onMounted, ref } from "vue";
+  import { onMounted, ref, watchEffect } from "vue";
   import { getRegionCityList, getRegionPoiTips } from "@/api/region.js";
-  import { ElMessage } from "element-plus";
   import EpLocationFilled from "~icons/ep/location-filled";
+
+  const props = defineProps({
+    name: String,
+    cityId: Number
+  });
 
   const emit = defineEmits(["poi-selected"]);
 
@@ -104,6 +108,25 @@
       loading.value = false;
     });
   }
+
+  // 使用 watchEffect 自动追踪依赖
+  watchEffect(() => {
+    // 当 cityOptions 和 props.cityId 都存在时才执行
+    if (cityOptions.value && props.cityId) {
+      selectedCityId.value = props.cityId;
+      const opt = cityOptions.value.find(o => o.id === props.cityId);
+      if (opt) {
+        selectedCityName.value = opt.name;
+      }
+    }
+  });
+
+  // 监听 props.name
+  watchEffect(() => {
+    if (props.name) {
+      searchText.value = props.name;
+    }
+  });
 </script>
 
 <style scoped>
