@@ -366,9 +366,13 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   // 获取房型标签
   const getRoomTypeLabel = (room: RoomItemDTO) => {
     const layout = room.houseLayout;
-    if (!layout) return "未分配";
+    if (!layout) {
+      return "未分配";
+    }
 
-    if (layout.layoutName) return layout.layoutName;
+    if (layout.layoutName) {
+      return layout.layoutName;
+    }
 
     const bedroom = layout.bedroom || 0;
     const labels: Record<number, string> = {

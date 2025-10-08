@@ -81,7 +81,7 @@
                 <div class="room-price-info">
                   <span class="price-amount">{{ formatPrice(room.price) }}</span>
                   <span class="price-unit">元/月</span>
-                  <span class="price-extra">（押1付3）</span>
+                  <span class="price-extra">（f押1付3）</span>
                 </div>
 
                 <!-- 租期信息 -->
