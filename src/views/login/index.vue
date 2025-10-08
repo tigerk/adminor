@@ -189,46 +189,9 @@
               </el-form-item>
             </Motion>
 
-            <Motion :delay="200">
-              <el-form-item prop="verifyCode">
-                <el-input v-model="ruleForm.verifyCode" clearable :placeholder="t('login.pureVerifyCode')" :prefix-icon="useRenderIcon(Keyhole)">
-                  <template v-slot:append>
-                    <ReImageVerify v-model:code="imgCode" />
-                  </template>
-                </el-input>
-              </el-form-item>
-            </Motion>
-
             <Motion :delay="250">
               <el-form-item>
                 <div class="w-full h-[20px] flex justify-between items-center">
-                  <el-checkbox v-model="checked">
-                    <span class="flex">
-                      <select
-                        v-model="loginDay"
-                        :style="{
-                          width: loginDay < 10 ? '10px' : '16px',
-                          outline: 'none',
-                          background: 'none',
-                          appearance: 'none',
-                          border: 'none'
-                        }"
-                      >
-                        <option value="1">1</option>
-                        <option value="7">7</option>
-                        <option value="30">30</option>
-                      </select>
-                      {{ t("login.pureRemember") }}
-                      <IconifyIconOffline
-                        v-tippy="{
-                          content: t('login.pureRememberInfo'),
-                          placement: 'top'
-                        }"
-                        :icon="Info"
-                        class="ml-1"
-                      />
-                    </span>
-                  </el-checkbox>
                   <el-button link type="primary" @click="useUserStoreHook().SET_CURRENTPAGE(4)">
                     {{ t("login.pureForget") }}
                   </el-button>
@@ -249,21 +212,6 @@
               </el-form-item>
             </Motion>
           </el-form>
-
-          <Motion v-if="currentPage === 0" :delay="350">
-            <el-form-item>
-              <el-divider>
-                <p class="text-gray-500 text-xs">
-                  {{ t("login.pureThirdLogin") }}
-                </p>
-              </el-divider>
-              <div class="w-full flex justify-evenly">
-                <span v-for="(item, index) in thirdParty" :key="index" :title="t(item.title)">
-                  <IconifyIconOnline :icon="`ri:${item.icon}-fill`" width="20" class="cursor-pointer text-gray-500 hover:text-blue-400" />
-                </span>
-              </div>
-            </el-form-item>
-          </Motion>
           <!-- 手机号登录 -->
           <LoginPhone v-if="currentPage === 1" />
           <!-- 二维码登录 -->

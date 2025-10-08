@@ -18,9 +18,9 @@
               共
               <strong>{{ community.totalRooms }}</strong>
               套， 出租率
-              <strong class="rate-value">{{ community.occupancyRate }}%</strong>
+              <strong class="text-green-500">{{ community.occupancyRate }}%</strong>
             </span>
-            <el-button link type="primary" size="small" @click="handleManageCommunity(community)">
+            <el-button link type="primary" @click="handleManageCommunity(community)">
               <el-icon>
                 <Setting />
               </el-icon>
@@ -297,7 +297,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px;
+    padding: 12px;
     //color: #fff;
     //background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
@@ -329,10 +329,6 @@
         strong {
           font-size: 16px;
           font-weight: 600;
-        }
-
-        .rate-value {
-          color: #10f310;
         }
       }
 
