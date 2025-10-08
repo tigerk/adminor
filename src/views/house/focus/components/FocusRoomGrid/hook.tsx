@@ -85,8 +85,8 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       const community = communityMap.get(communityId)!;
 
       // 查找或创建楼栋单元
-      const building = item.unitGroup.building || "";
-      const unit = item.unitGroup.unit || "";
+      const building = item.buildingGroup.building || "";
+      const unit = item.buildingGroup.unit || "";
       let buildingUnit = community.buildingUnits.find(bu => bu.building === building && bu.unit === unit);
 
       if (!buildingUnit) {

@@ -138,7 +138,7 @@ export type CommunityGroup = {
 /**
  * 楼栋单元分组
  */
-export type UnitGroup = {
+export type BuildingGroup = {
   /** 楼栋号 */
   building?: string;
   /** 单元号 */
@@ -167,7 +167,7 @@ export type FloorGroup = {
 
 export type RoomGridItemDTO = {
   communityGroup: CommunityGroup;
-  unitGroup: UnitGroup;
+  buildingGroup: BuildingGroup;
   floorGroup: FloorGroup;
   rooms: Array<RoomItemDTO>;
 };
