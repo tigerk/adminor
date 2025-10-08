@@ -34,7 +34,7 @@ interface ProcessedBuildingUnit {
 /**
  * 处理后的小区分组
  */
-interface ProcessedAreaGroup {
+interface ProcessedCompoundGroup {
   modeRefId: number;
   leaseMode: number;
   displayName: string;
@@ -62,25 +62,25 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const allRoomGridItems = ref<RoomGridItemDTO[]>([]);
 
   // 计算属性：处理后的房间分组数据
-  const processedRoomGroups: ComputedRef<ProcessedAreaGroup[]> = computed(() => {
+  const processedRoomGroups: ComputedRef<ProcessedCompoundGroup[]> = computed(() => {
     if (!allRoomGridItems.value.length) return [];
 
     // 按小区分组，但保持原始顺序
-    const communityMap = new Map<number, ProcessedAreaGroup>();
-    const communityOrder: number[] = []; // 记录小区出现的顺序
+    const compoundMap = new Map<number, ProcessedCompoundGroup>();
+    const compoundOrder: number[] = []; // 记录小区出现的顺序
 
     allRoomGridItems.value.forEach((item: RoomGridItemDTO) => {
-      const communityId = item.areaGroup.communityId || 0;
+      const modeRefId = item.compoundGroup.modeRefId || 0;
 
-      if (!communityMap.has(communityId)) {
-        communityOrder.push(communityId); // 记录顺序
-        communityMap.set(communityId, {
-          modeRefId: item.areaGroup.modeRefId ?? 0,
-          leaseMode: item.areaGroup.leaseMode,
-          displayName: item.areaGroup.displayName || "未知小区",
-          communityId,
-          communityName: item.areaGroup.communityName || "未知小区",
-          communityAddress: item.areaGroup.communityAddress || "未知地址",
+      if (!compoundMap.has(modeRefId)) {
+        compoundOrder.push(modeRefId); // 记录顺序
+        compoundMap.set(modeRefId, {
+          modeRefId: item.compoundGroup.modeRefId ?? 0,
+          leaseMode: item.compoundGroup.leaseMode,
+          displayName: item.compoundGroup.displayName || "未知小区",
+          communityId: modeRefId,
+          communityName: item.compoundGroup.communityName || "未知小区",
+          communityAddress: item.compoundGroup.communityAddress || "未知地址",
           totalRooms: 0,
           leasedCount: 0,
           occupancyRate: "0",
@@ -88,12 +88,12 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         });
       }
 
-      const community = communityMap.get(communityId)!;
+      const compound = compoundMap.get(modeRefId)!;
 
       // 查找或创建楼栋单元
       const building = item.buildingGroup.building || "";
       const unit = item.buildingGroup.unit || "";
-      let buildingUnit = community.buildingUnits.find(bu => bu.building === building && bu.unit === unit);
+      let buildingUnit = compound.buildingUnits.find(bu => bu.building === building && bu.unit === unit);
 
       if (!buildingUnit) {
         buildingUnit = {
@@ -106,7 +106,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
           floorCount: 0,
           floors: []
         };
-        community.buildingUnits.push(buildingUnit);
+        compound.buildingUnits.push(buildingUnit);
       }
 
       // 排序房间
@@ -134,24 +134,24 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       buildingUnit.floorCount = buildingUnit.floors.length;
 
       // 更新小区统计
-      community.totalRooms += floorGroup.roomCount;
-      community.leasedCount += floorGroup.leasedCount;
+      compound.totalRooms += floorGroup.roomCount;
+      compound.leasedCount += floorGroup.leasedCount;
     });
 
     // 处理每个小区的数据
-    const result: ProcessedAreaGroup[] = [];
+    const result: ProcessedCompoundGroup[] = [];
 
     // 按照原始顺序处理小区
-    communityOrder.forEach(communityId => {
-      const community = communityMap.get(communityId)!;
+    compoundOrder.forEach(modeRefId => {
+      const compound = compoundMap.get(modeRefId)!;
 
       // 计算小区出租率
-      if (community.totalRooms > 0) {
-        community.occupancyRate = ((community.leasedCount / community.totalRooms) * 100).toFixed(1);
+      if (compound.totalRooms > 0) {
+        compound.occupancyRate = ((compound.leasedCount / compound.totalRooms) * 100).toFixed(1);
       }
 
       // 对每个楼栋单元进行处理
-      community.buildingUnits.forEach(buildingUnit => {
+      compound.buildingUnits.forEach(buildingUnit => {
         // 计算楼栋单元出租率
         if (buildingUnit.totalRooms > 0) {
           buildingUnit.occupancyRate = ((buildingUnit.leasedCount / buildingUnit.totalRooms) * 100).toFixed(1);
@@ -162,7 +162,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       });
 
       // 对楼栋单元进行排序（按楼栋号和单元号）
-      community.buildingUnits.sort((a, b) => {
+      compound.buildingUnits.sort((a, b) => {
         const buildingA = parseInt(a.building.replace(/\D/g, "")) || 0;
         const buildingB = parseInt(b.building.replace(/\D/g, "")) || 0;
         if (buildingA !== buildingB) {
@@ -171,7 +171,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         return (a.unit || "").localeCompare(b.unit || "");
       });
 
-      result.push(community);
+      result.push(compound);
     });
 
     // 不再按小区名称排序，保持原始顺序
@@ -311,7 +311,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 管理小区
-  const handleManageCommunity = (community: ProcessedAreaGroup) => {
+  const handleManageCompound = (community: ProcessedCompoundGroup) => {
     ElMessage.info(`管理小区：${community.communityName}`);
   };
 
@@ -469,7 +469,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     handleScroll,
     resetAndReload,
     handleQuickAction,
-    handleManageCommunity,
+    handleManageCompound,
     getRoomCardClass,
     getRoomCardStyle,
     getRoomTypeLabel,
@@ -482,4 +482,4 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 };
 
 // 导出类型供组件使用
-export type { ProcessedAreaGroup, ProcessedFloorGroup, ProcessedBuildingUnit };
+export type { ProcessedCompoundGroup, ProcessedFloorGroup, ProcessedBuildingUnit };

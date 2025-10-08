@@ -20,7 +20,7 @@
               套， 出租率
               <strong class="text-green-500">{{ community.occupancyRate }}%</strong>
             </span>
-            <el-button link type="primary" @click="handleManageCommunity(community)">
+            <el-button link type="primary" @click="handleManageCompound(community)">
               <el-icon>
                 <Setting />
               </el-icon>
@@ -175,7 +175,7 @@
     processedRoomGroups,
     loadRoomGrid,
     handleQuickAction,
-    handleManageCommunity,
+    handleManageCompound,
     getRoomCardClass,
     getRoomTypeLabel,
     formatDate,

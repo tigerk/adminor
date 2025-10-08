@@ -116,7 +116,7 @@ export type RoomItemDTO = {
 /**
  * 小区分组
  */
-export type AreaGroup = {
+export type CompoundGroup = {
   /** 模式引用ID */
   modeRefId?: number;
   /** 租赁模式 */
@@ -172,7 +172,8 @@ export type FloorGroup = {
 };
 
 export type RoomGridItemDTO = {
-  areaGroup: AreaGroup;
+  /** 区域信息，集中式时，为项目信息，分布式时，为小区信息 */
+  compoundGroup: CompoundGroup;
   buildingGroup: BuildingGroup;
   floorGroup: FloorGroup;
   rooms: Array<RoomItemDTO>;
