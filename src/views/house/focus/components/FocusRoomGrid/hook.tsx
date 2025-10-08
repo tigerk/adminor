@@ -34,10 +34,13 @@ interface ProcessedBuildingUnit {
 /**
  * 处理后的小区分组
  */
-interface ProcessedCommunityGroup {
+interface ProcessedAreaGroup {
+  modeRefId: number;
+  leaseMode: number;
+  displayName: string;
   communityId: number;
   communityName: string;
-  address: string;
+  communityAddress: string;
   totalRooms: number;
   leasedCount: number;
   occupancyRate: string;
@@ -59,22 +62,25 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const allRoomGridItems = ref<RoomGridItemDTO[]>([]);
 
   // 计算属性：处理后的房间分组数据
-  const processedRoomGroups: ComputedRef<ProcessedCommunityGroup[]> = computed(() => {
+  const processedRoomGroups: ComputedRef<ProcessedAreaGroup[]> = computed(() => {
     if (!allRoomGridItems.value.length) return [];
 
     // 按小区分组，但保持原始顺序
-    const communityMap = new Map<number, ProcessedCommunityGroup>();
+    const communityMap = new Map<number, ProcessedAreaGroup>();
     const communityOrder: number[] = []; // 记录小区出现的顺序
 
     allRoomGridItems.value.forEach((item: RoomGridItemDTO) => {
-      const communityId = item.communityGroup.communityId || 0;
+      const communityId = item.areaGroup.communityId || 0;
 
       if (!communityMap.has(communityId)) {
         communityOrder.push(communityId); // 记录顺序
         communityMap.set(communityId, {
+          modeRefId: item.areaGroup.modeRefId ?? 0,
+          leaseMode: item.areaGroup.leaseMode,
+          displayName: item.areaGroup.displayName || "未知小区",
           communityId,
-          communityName: item.communityGroup.communityName || "未知小区",
-          address: item.communityGroup.address || "未知地址",
+          communityName: item.areaGroup.communityName || "未知小区",
+          communityAddress: item.areaGroup.communityAddress || "未知地址",
           totalRooms: 0,
           leasedCount: 0,
           occupancyRate: "0",
@@ -133,7 +139,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     });
 
     // 处理每个小区的数据
-    const result: ProcessedCommunityGroup[] = [];
+    const result: ProcessedAreaGroup[] = [];
 
     // 按照原始顺序处理小区
     communityOrder.forEach(communityId => {
@@ -305,7 +311,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 管理小区
-  const handleManageCommunity = (community: ProcessedCommunityGroup) => {
+  const handleManageCommunity = (community: ProcessedAreaGroup) => {
     ElMessage.info(`管理小区：${community.communityName}`);
   };
 
@@ -476,4 +482,4 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 };
 
 // 导出类型供组件使用
-export type { ProcessedCommunityGroup, ProcessedFloorGroup, ProcessedBuildingUnit };
+export type { ProcessedAreaGroup, ProcessedFloorGroup, ProcessedBuildingUnit };

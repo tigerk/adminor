@@ -116,13 +116,19 @@ export type RoomItemDTO = {
 /**
  * 小区分组
  */
-export type CommunityGroup = {
+export type AreaGroup = {
+  /** 模式引用ID */
+  modeRefId?: number;
+  /** 租赁模式 */
+  leaseMode?: number;
+  /** 卡片显示名称 */
+  displayName?: string;
   /** 小区id */
   communityId?: number;
   /** 小区名称 */
   communityName?: string;
   /** 小区地址 */
-  address?: string;
+  communityAddress?: string;
   /** 总楼栋数 */
   buildingCount?: number;
   /** 总楼层数 */
@@ -166,7 +172,7 @@ export type FloorGroup = {
 };
 
 export type RoomGridItemDTO = {
-  communityGroup: CommunityGroup;
+  areaGroup: AreaGroup;
   buildingGroup: BuildingGroup;
   floorGroup: FloorGroup;
   rooms: Array<RoomItemDTO>;

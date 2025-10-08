@@ -10,8 +10,8 @@
             <el-icon>
               <Location />
             </el-icon>
-            <h3 class="property-title">{{ community.communityName }}</h3>
-            <span class="property-address">（{{ community.address }}）</span>
+            <h3 class="property-title">{{ community.displayName }}</h3>
+            <span class="property-address">{{ community.communityAddress }}</span>
           </div>
           <div class="property-stats">
             <span class="stat-item">
@@ -354,7 +354,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 12px 20px;
     background: linear-gradient(135deg, #f0f2f5 0%, #fafbfc 100%);
     border-bottom: 2px solid #ebeef5;
 
@@ -393,7 +393,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 20px;
+    padding: 10px 20px;
     background: #fafbfc;
     border-bottom: 1px solid #ebeef5;
 
@@ -401,7 +401,7 @@
       display: flex;
       gap: 8px;
       align-items: baseline;
-      padding-left: 30px; // 缩进以显示层级
+      padding-left: 5px; // 缩进以显示层级
 
       .floor-title {
         margin: 0;
