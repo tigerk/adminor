@@ -20,7 +20,7 @@
               套， 出租率
               <strong class="text-green-500">{{ community.occupancyRate }}%</strong>
             </span>
-            <el-button link type="primary" @click="handleManageCompound(community)">
+            <el-button v-if="community.leaseMode == 1" link type="primary" @click="handleManageCompound(community)">
               <el-icon>
                 <Setting />
               </el-icon>
@@ -158,7 +158,7 @@
 <script setup lang="ts">
   import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
   import { Location, Setting, EditPen, View, Search, Lock, User, OfficeBuilding, Loading } from "@element-plus/icons-vue";
-  import { useRoomGrid } from "@/views/house/focus/components/FocusRoomGrid/hook";
+  import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 
   // 获取父组件的查询表单数据

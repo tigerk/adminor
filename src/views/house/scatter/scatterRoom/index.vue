@@ -7,13 +7,14 @@
   import EditPen from "~icons/ep/edit-pen";
   import Search from "~icons/ri/search-eye-line";
   import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
-  import { userFocusRoom } from "@/views/house/focus/focusRoom/utils/hook";
+  import { useScatterRoom } from "@/views/house/scatter/scatterRoom/utils/hook";
   import { getFocusById } from "@/api/house/focus";
-  import RoomStatusGrid from "@/views/house/components/RoomGrid/RoomStatusGrid.vue";
+  import RoomStatusGrid from "../../components/RoomGrid/RoomStatusGrid.vue";
   import AddFill from "~icons/*";
+  import EpArrowRightBold from "~icons/ep/arrow-right-bold";
 
   defineOptions({
-    name: "FocusRoom"
+    name: "ScatterRoom"
   });
 
   const { openFocusEditDialog } = useFocusEdit();
@@ -33,7 +34,7 @@
     displayModeToList,
     displayModeText,
     handleDisplayClick
-  } = userFocusRoom();
+  } = useScatterRoom();
 
   const formRef = ref();
   const tableRef = ref();
@@ -71,7 +72,7 @@
         <el-page-header @back="onBack">
           <template #content>
             <div class="flex items-center">
-              <span class="text-large font-600 mr-3">集中式房间列表</span>
+              <span class="text-large font-600 mr-3">整/合租列表</span>
               <el-tag>{{ displayModeText }}</el-tag>
             </div>
           </template>
@@ -82,7 +83,18 @@
           <IconifyIconOnline icon="flat-color-icons:department" class="mr-1" />
           {{ displayModeToList ? "切换房态模式" : "切换列表模式" }}
         </el-button>
-        <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()" @created-focus-house="onSearch">添加房源</el-button>
+        <el-dropdown class="pl-2">
+          <el-button type="primary" color="#626aef" :dark="true">
+            添加房源 &nbsp;
+            <IconifyIconOnline icon="ep:arrow-down-bold" />
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item>合租房源</el-dropdown-item>
+              <el-dropdown-item>整租房源</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </el-col>
     </el-row>
     <el-row class="search-form bg-bg_color w-full px-4 overflow-auto">
@@ -113,10 +125,6 @@
       </el-col>
       <el-col :span="12" class="text-right">
         <el-space>
-          <el-select v-model="queryForm.modeRefId" placeholder="项目名称" clearable class="w-[180px]!" @change="onSearch">
-            <el-option v-for="item in focusOptions" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-          <el-button type="primary" :icon="useRenderIcon(EditPen)" :loading="loading" @click="modifyFocusHouse" />
           <el-input
             v-model="queryForm.keywords"
             placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签"

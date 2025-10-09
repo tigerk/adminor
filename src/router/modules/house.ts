@@ -35,6 +35,15 @@ export default {
           }
         }
       ]
+    },
+    {
+      path: "/house/scatter",
+      name: "HouseScatter",
+      meta: {
+        title: "整/合租",
+        showParent: true
+      },
+      component: () => import("@/views/house/scatter/scatterRoom/index.vue")
     }
   ]
 } satisfies RouteConfigsTable;
