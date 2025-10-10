@@ -173,14 +173,14 @@
     </div>
 
     <!-- 主体内容 -->
-    <div class="main-container">
+    <div class="login-container">
       <!-- 左侧表单区域 -->
       <div class="form-section">
         <div class="form-card">
           <!-- 登录页面 -->
           <Motion v-if="currentPage === 'login'" key="login">
             <div class="form-header">
-              <h1 class="form-title">欢迎回来</h1>
+              <h1 class="form-title">欢迎使用{{ title }}</h1>
               <p class="form-subtitle">登录您的账户以继续</p>
             </div>
 
@@ -406,8 +406,6 @@
               <rect x="340" y="320" width="60" height="4" rx="2" fill="url(#grad2)" opacity="0.3" />
             </svg>
           </div>
-
-          <h2 class="display-title">智能化管理平台</h2>
           <p class="display-description">构建高效、安全、智能的企业管理生态系统</p>
         </div>
       </div>
@@ -421,12 +419,50 @@
 </template>
 
 <style scoped lang="scss">
+
+
+  /* 响应式设计 */
+  @media (width <= 1024px) {
+    .login-container {
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .display-section {
+      display: none;
+    }
+
+    .form-section {
+      flex: 0 0 auto;
+      width: 100%;
+      max-width: 480px;
+    }
+  }
+
+  @media (width <= 640px) {
+    .header-bar {
+      padding: 16px 20px;
+    }
+
+    .login-container {
+      padding: 20px;
+    }
+
+    .form-card {
+      padding: 32px 24px;
+    }
+
+    .form-title {
+      font-size: 24px;
+    }
+  }
+
   .login-wrapper {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   }
 
   /* 背景装饰 */
@@ -440,47 +476,47 @@
 
   .circle {
     position: absolute;
-    border-radius: 50%;
     background: white;
+    border-radius: 50%;
     opacity: 0.1;
   }
 
   .circle-1 {
-    width: 400px;
-    height: 400px;
     top: -200px;
     left: -200px;
+    width: 400px;
+    height: 400px;
   }
 
   .circle-2 {
+    right: -300px;
+    bottom: -300px;
     width: 600px;
     height: 600px;
-    bottom: -300px;
-    right: -300px;
   }
 
   .circle-3 {
-    width: 300px;
-    height: 300px;
     top: 50%;
     left: 70%;
+    width: 300px;
+    height: 300px;
   }
 
   /* 顶部栏 */
   .header-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 40px;
-    background: transparent;
     position: relative;
     z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    background: transparent;
   }
 
   .logo-section {
     display: flex;
-    align-items: center;
     gap: 12px;
+    align-items: center;
   }
 
   .logo {
@@ -496,8 +532,8 @@
 
   .header-actions {
     display: flex;
-    align-items: center;
     gap: 16px;
+    align-items: center;
   }
 
   .lang-icon {
@@ -513,16 +549,16 @@
   }
 
   /* 主体容器 */
-  .main-container {
-    flex: 1;
+  .login-container {
     display: flex;
+    flex: 1;
+    gap: 160px;
     align-items: center;
     justify-content: center;
-    padding: 40px;
-    gap: 160px;
-    max-width: 1200px;
-    margin: 0 auto;
     width: 100%;
+    max-width: 1200px;
+    padding: 40px;
+    margin: 0 auto;
   }
 
   /* 表单区域 */
@@ -531,22 +567,22 @@
   }
 
   .form-card {
+    padding: 48px;
     background: white;
     border-radius: 20px;
-    padding: 48px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 40px rgb(0 0 0 / 8%);
   }
 
   .form-header {
-    text-align: center;
     margin-bottom: 36px;
+    text-align: center;
   }
 
   .form-title {
-    font-size: 28px;
+    margin-bottom: 8px;
+    font-size: 24px;
     font-weight: 700;
     color: #1a1a1a;
-    margin-bottom: 8px;
   }
 
   .form-subtitle {
@@ -561,9 +597,9 @@
 
     :deep(.el-input__wrapper) {
       padding: 4px 16px;
+      border: 1px solid #e0e0e0;
       border-radius: 10px;
       box-shadow: none !important;
-      border: 1px solid #e0e0e0;
       transition: all 0.3s;
 
       &:hover {
@@ -595,15 +631,15 @@
 
     .verify-btn {
       flex-shrink: 0;
-      padding: 0 20px;
       height: 48px;
+      padding: 0 20px;
       border-radius: 10px;
     }
   }
 
   .form-actions {
-    text-align: right;
     margin-bottom: 20px;
+    text-align: right;
 
     .el-button {
       font-size: 14px;
@@ -613,32 +649,32 @@
   .submit-btn {
     width: 100%;
     height: 48px;
+    margin-bottom: 24px;
     font-size: 16px;
     font-weight: 600;
-    border-radius: 10px;
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     border: none;
-    margin-bottom: 24px;
+    border-radius: 10px;
     transition: all 0.3s;
 
     &:hover {
+      box-shadow: 0 8px 20px rgb(239 68 68 / 30%);
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
     }
   }
 
   .divider {
     position: relative;
-    text-align: center;
     margin: 24px 0;
+    text-align: center;
 
     &::before,
     &::after {
-      content: "";
       position: absolute;
       top: 50%;
       width: calc(50% - 20px);
       height: 1px;
+      content: "";
       background: #e0e0e0;
     }
 
@@ -651,51 +687,51 @@
     }
 
     span {
-      color: #999;
-      font-size: 14px;
-      padding: 0 10px;
-      background: white;
       position: relative;
+      padding: 0 10px;
+      font-size: 14px;
+      color: #999;
+      background: white;
     }
   }
 
   .social-buttons {
     display: flex;
-    justify-content: center;
     gap: 16px;
+    justify-content: center;
     margin-bottom: 24px;
   }
 
   .social-btn {
-    width: 48px;
-    height: 48px;
-    border: 1px solid #e0e0e0;
-    border-radius: 50%;
-    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 48px;
+    height: 48px;
     cursor: pointer;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 50%;
     transition: all 0.3s;
 
     &:hover {
+      box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     &.wechat:hover {
-      border-color: #07c160;
       color: #07c160;
+      border-color: #07c160;
     }
 
     &.qq:hover {
-      border-color: #1890ff;
       color: #1890ff;
+      border-color: #1890ff;
     }
 
     &.alipay:hover {
-      border-color: #00a1e9;
       color: #00a1e9;
+      border-color: #00a1e9;
     }
 
     :deep(.el-icon) {
@@ -704,9 +740,9 @@
   }
 
   .switch-page {
-    text-align: center;
     font-size: 14px;
     color: #666;
+    text-align: center;
 
     .el-button {
       font-size: 14px;
@@ -715,15 +751,15 @@
 
   /* 右侧展示区域 */
   .display-section {
-    flex: 1;
     display: flex;
+    flex: 1;
     align-items: center;
     justify-content: center;
   }
 
   .display-content {
-    text-align: center;
     max-width: 500px;
+    text-align: center;
   }
 
   .illustration-wrapper {
@@ -737,17 +773,17 @@
   }
 
   .display-title {
+    margin-bottom: 16px;
     font-size: 32px;
     font-weight: 700;
     color: #1a1a1a;
-    margin-bottom: 16px;
   }
 
   .display-description {
-    font-size: 16px;
-    color: #666;
     margin-bottom: 40px;
+    font-size: 16px;
     line-height: 1.6;
+    color: #666;
   }
 
   .features {
@@ -759,28 +795,28 @@
 
   .feature-item {
     display: flex;
-    align-items: center;
     gap: 16px;
+    align-items: center;
     padding: 16px 20px;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 10px rgb(0 0 0 / 5%);
     transition: all 0.3s;
 
     &:hover {
+      box-shadow: 0 4px 20px rgb(0 0 0 / 10%);
       transform: translateX(5px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
   }
 
   .feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
     height: 40px;
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 
     svg {
       width: 20px;
@@ -797,44 +833,8 @@
 
     p {
       margin: 0;
-      color: #666;
       font-size: 14px;
-    }
-  }
-
-  /* 响应式设计 */
-  @media (max-width: 1024px) {
-    .main-container {
-      flex-direction: column;
-      gap: 40px;
-    }
-
-    .display-section {
-      display: none;
-    }
-
-    .form-section {
-      flex: 0 0 auto;
-      width: 100%;
-      max-width: 480px;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .header-bar {
-      padding: 16px 20px;
-    }
-
-    .main-container {
-      padding: 20px;
-    }
-
-    .form-card {
-      padding: 32px 24px;
-    }
-
-    .form-title {
-      font-size: 24px;
+      color: #666;
     }
   }
 
@@ -854,7 +854,7 @@
 
     .form-card {
       background: #1e1e1e;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 10px 40px rgb(0 0 0 / 30%);
     }
 
     .form-title {
