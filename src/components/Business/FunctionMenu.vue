@@ -179,7 +179,7 @@
 <script setup lang="ts">
   import { Plus, ArrowDown, Document, DocumentChecked, Calendar, House, User, OfficeBuilding, UserFilled, Edit, Tickets, Tools, Brush, Van, List } from "@element-plus/icons-vue";
   import { ElMessage } from "element-plus";
-  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
+  import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 
   const { openFocusEditDialog } = useFocusEdit();
 

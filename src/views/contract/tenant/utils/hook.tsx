@@ -5,7 +5,7 @@ import { reactive, ref, onMounted, toRaw, h } from "vue";
 import router from "@/router";
 import { getRoomList, getRoomTotal } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
-import type { HouseLayoutProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+import type { HouseLayoutProps } from "@/views/house/components/FocusCreate/utils/types";
 import type { FormItemProps } from "@/views/system/user/utils/types";
 import { addDialog } from "@/components/ReDialog/index";
 import { deviceDetection } from "@pureadmin/utils";

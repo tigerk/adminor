@@ -123,10 +123,10 @@
 
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, watch } from "vue";
-  import { FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+  import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
-  import { createFocusBasicInfoRules } from "@/views/house/focus/components/FocusCreate/utils/rule";
+  import { createFocusBasicInfoRules } from "@/views/house/components/FocusCreate/utils/rule";
 
   // 获取 FocusCreateForm 中的form数据，vue3.3+
   const formData = defineModel<FocusFormItemProps>();

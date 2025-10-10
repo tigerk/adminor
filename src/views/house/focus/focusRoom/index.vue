@@ -6,7 +6,7 @@
   import Delete from "~icons/ep/delete";
   import EditPen from "~icons/ep/edit-pen";
   import Search from "~icons/ri/search-eye-line";
-  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
+  import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { userFocusRoom } from "@/views/house/focus/focusRoom/utils/hook";
   import { getFocusById } from "@/api/house/focus";
   import RoomStatusGrid from "@/views/house/components/RoomGrid/RoomStatusGrid.vue";

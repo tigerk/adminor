@@ -397,8 +397,8 @@
   import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled, InfoFilled } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
-  import { HouseLayoutProps, HouseStatusProps, FocusFormItemProps } from "@/views/house/focus/components/FocusCreate/utils/types";
-  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
+  import { HouseLayoutProps, HouseStatusProps, FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
+  import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { Lock, Unlock } from "@element-plus/icons-vue";
 
   // 获取 FocusCreateForm 中的form数据

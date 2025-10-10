@@ -1,12 +1,12 @@
 <script setup lang="ts">
   import { ref, reactive, watch } from "vue";
-  import { FormProps, HouseStatusProps } from "@/views/house/focus/components/FocusCreate/utils/types";
-  import FocusAssignHouse from "@/views/house/focus/components/FocusCreate/FocusAssignHouse.vue";
-  import FocusExtraInfo from "@/views/house/focus/components/FocusCreate/FocusExtraInfo.vue";
-  import FocusBasicInfo from "@/views/house/focus/components/FocusCreate/FocusBasicInfo.vue";
+  import { FormProps, HouseStatusProps } from "@/views/house/components/FocusCreate/utils/types";
+  import FocusAssignHouse from "@/views/house/components/FocusCreate/FocusAssignHouse.vue";
+  import FocusExtraInfo from "@/views/house/components/FocusCreate/FocusExtraInfo.vue";
+  import FocusBasicInfo from "@/views/house/components/FocusCreate/FocusBasicInfo.vue";
   import { ElMessage } from "element-plus";
   import { createFocusHouse } from "@/api/house/focus";
-  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
+  import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 
   const props = withDefaults(defineProps<FormProps>(), {
     formInline: () => ({

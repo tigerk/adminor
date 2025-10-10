@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { ref, reactive, computed, watch, onMounted, nextTick } from "vue";
-  import { FormProps, FocusFormItemProps, HouseStatusProps, FocusBuildingProps } from "@/views/house/focus/components/FocusCreate/utils/types";
+  import { FormProps, FocusFormItemProps, HouseStatusProps, FocusBuildingProps } from "@/views/house/components/FocusCreate/utils/types";
   import DeptCascader from "@/components/Business/DeptUserCascader.vue";
-  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
+  import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { InfoFilled, Plus, Delete } from "@element-plus/icons-vue";
-  import { createFocusBasicInfoRules } from "@/views/house/focus/components/FocusCreate/utils/rule";
+  import { createFocusBasicInfoRules } from "@/views/house/components/FocusCreate/utils/rule";
   import { ElMessage, ElMessageBox } from "element-plus";
   import { getCompanyUserOptions } from "@/api/company";
   import PoiSearch from "@/components/Business/PoiSearch.vue";

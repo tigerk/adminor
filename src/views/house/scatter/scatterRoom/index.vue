@@ -1,23 +1,23 @@
 <script setup lang="ts">
   import { nextTick, onMounted, ref } from "vue";
-  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import { delay, subBefore, useResizeObserver } from "@pureadmin/utils";
 
   import Delete from "~icons/ep/delete";
   import EditPen from "~icons/ep/edit-pen";
   import Search from "~icons/ri/search-eye-line";
-  import { useFocusEdit } from "@/views/house/focus/components/FocusCreate/utils/hook";
+  import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { useScatterRoom } from "@/views/house/scatter/scatterRoom/utils/hook";
   import { getFocusById } from "@/api/house/focus";
   import RoomStatusGrid from "../../components/RoomGrid/RoomStatusGrid.vue";
   import AddFill from "~icons/*";
   import EpArrowRightBold from "~icons/ep/arrow-right-bold";
+  import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 
   defineOptions({
     name: "ScatterRoom"
   });
 
-  const { openFocusEditDialog } = useFocusEdit();
+  const { openEntireEditDialog } = useEntireEdit();
   const {
     queryForm,
     onBack,
@@ -57,7 +57,7 @@
       getFocusById({
         id: queryForm.modeRefId
       }).then(res => {
-        openFocusEditDialog("更新", res.data);
+        openEntireEditDialog("更新", res.data);
       });
     }
   }
@@ -90,8 +90,8 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item @click="openEntireEditDialog()">整租房源</el-dropdown-item>
               <el-dropdown-item>合租房源</el-dropdown-item>
-              <el-dropdown-item>整租房源</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
