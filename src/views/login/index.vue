@@ -48,7 +48,7 @@
   initStorage();
   const { dataTheme, overallStyle, dataThemeChange } = useDataThemeChange();
   dataThemeChange(overallStyle.value);
-  const { title } = useNav();
+  const { title, getLogo } = useNav();
   const { locale, translationCh, translationEn } = useTranslationLang();
   const { isDisabled, text, start } = useVerifyCode();
 
@@ -157,285 +157,302 @@
 
 <template>
   <div class="login-wrapper">
-    <!-- 背景装饰 -->
-    <div class="background-pattern">
-      <div class="circle circle-1" />
-      <div class="circle circle-2" />
-      <div class="circle circle-3" />
-    </div>
-
-    <!-- 顶部操作栏 -->
-    <div class="header-bar">
-      <div class="logo-section">
-        <avatar class="logo" />
-        <span class="logo-title">{{ title }}</span>
+    <!-- 左侧区域 -->
+    <div class="left-section">
+      <!-- 背景装饰 -->
+      <div class="background-pattern">
+        <div class="circle circle-1" />
+        <div class="circle circle-2" />
+        <div class="circle circle-3" />
       </div>
-    </div>
 
-    <!-- 主体内容 -->
-    <div class="login-container">
-      <!-- 左侧表单区域 -->
-      <div class="form-section">
-        <div class="form-card">
-          <!-- 登录页面 -->
-          <Motion v-if="currentPage === 'login'" key="login">
-            <div class="form-header">
-              <h1 class="form-title">欢迎使用{{ title }}</h1>
-              <p class="form-subtitle">登录您的账户以继续</p>
-            </div>
-
-            <el-form ref="ruleFormRef" :model="loginForm" :rules="loginRules" class="auth-form">
-              <el-form-item prop="username">
-                <el-input v-model="loginForm.username" size="large" clearable placeholder="用户名 / 手机号 / 邮箱">
-                  <template #prefix>
-                    <el-icon><User /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <el-form-item prop="password">
-                <el-input v-model="loginForm.password" size="large" :type="showPassword ? 'text' : 'password'" placeholder="请输入密码">
-                  <template #prefix>
-                    <el-icon><Lock /></el-icon>
-                  </template>
-                  <template #suffix>
-                    <el-icon class="cursor-pointer" @click="showPassword = !showPassword">
-                      <Eye v-if="showPassword" />
-                      <EyeOff v-else />
-                    </el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <div class="form-actions">
-                <el-button link type="primary" @click="currentPage = 'forgot'">忘记密码？</el-button>
-              </div>
-
-              <el-button type="primary" size="large" class="submit-btn" :loading="loading" :disabled="disabled" @click="onLogin(ruleFormRef)">登 录</el-button>
-
-              <div class="switch-page">
-                没有账户？
-                <el-button link type="primary" @click="currentPage = 'register'">立即注册</el-button>
-              </div>
-            </el-form>
-          </Motion>
-
-          <!-- 注册页面 -->
-          <Motion v-if="currentPage === 'register'" key="register">
-            <div class="form-header">
-              <h1 class="form-title">创建账户</h1>
-              <p class="form-subtitle">注册新账户开始使用</p>
-            </div>
-
-            <el-form :model="registerForm" :rules="loginRules" class="auth-form">
-              <el-form-item prop="username">
-                <el-input v-model="registerForm.username" size="large" clearable placeholder="用户名">
-                  <template #prefix>
-                    <el-icon><User /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <el-form-item prop="phone">
-                <el-input v-model="registerForm.phone" size="large" clearable placeholder="手机号">
-                  <template #prefix>
-                    <el-icon><Phone /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <el-form-item prop="email">
-                <el-input v-model="registerForm.email" size="large" clearable placeholder="邮箱地址">
-                  <template #prefix>
-                    <el-icon><Mail /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <el-form-item prop="verifyCode">
-                <div class="verify-code-wrapper">
-                  <el-input v-model="registerForm.verifyCode" size="large" clearable placeholder="验证码">
-                    <template #prefix>
-                      <el-icon><Shield /></el-icon>
-                    </template>
-                  </el-input>
-                  <el-button class="verify-btn" :disabled="isDisabled" @click="sendVerificationCode(ruleFormRef, 'phone')">
-                    {{ text || "获取验证码" }}
-                  </el-button>
-                </div>
-              </el-form-item>
-
-              <el-form-item prop="password">
-                <el-input v-model="registerForm.password" size="large" type="password" placeholder="设置密码">
-                  <template #prefix>
-                    <el-icon><Lock /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <el-form-item prop="confirmPassword">
-                <el-input v-model="registerForm.confirmPassword" size="large" type="password" placeholder="确认密码">
-                  <template #prefix>
-                    <el-icon><Lock /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onRegister(ruleFormRef)">注 册</el-button>
-
-              <div class="switch-page">
-                已有账户？
-                <el-button link type="primary" @click="currentPage = 'login'">立即登录</el-button>
-              </div>
-            </el-form>
-          </Motion>
-
-          <!-- 忘记密码页面 -->
-          <Motion v-if="currentPage === 'forgot'" key="forgot">
-            <div class="form-header">
-              <h1 class="form-title">重置密码</h1>
-              <p class="form-subtitle">输入您的手机号重置密码</p>
-            </div>
-
-            <el-form :model="forgotForm" :rules="updateRules" class="auth-form">
-              <el-form-item prop="phone">
-                <el-input v-model="forgotForm.phone" size="large" clearable placeholder="手机号">
-                  <template #prefix>
-                    <el-icon><Phone /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <el-form-item prop="verifyCode">
-                <div class="verify-code-wrapper">
-                  <el-input v-model="forgotForm.verifyCode" size="large" clearable placeholder="验证码">
-                    <template #prefix>
-                      <el-icon><Shield /></el-icon>
-                    </template>
-                  </el-input>
-                  <el-button class="verify-btn" :disabled="isDisabled" @click="sendVerificationCode(ruleFormRef, 'phone')">
-                    {{ text || "获取验证码" }}
-                  </el-button>
-                </div>
-              </el-form-item>
-
-              <el-form-item prop="password">
-                <el-input v-model="forgotForm.password" size="large" type="password" placeholder="新密码">
-                  <template #prefix>
-                    <el-icon><Lock /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <el-form-item prop="confirmPassword">
-                <el-input v-model="forgotForm.confirmPassword" size="large" type="password" placeholder="确认新密码">
-                  <template #prefix>
-                    <el-icon><Lock /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-
-              <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onResetPassword(ruleFormRef)">重置密码</el-button>
-
-              <div class="switch-page">
-                想起密码了？
-                <el-button link type="primary" @click="currentPage = 'login'">返回登录</el-button>
-              </div>
-            </el-form>
-          </Motion>
+      <!-- 顶部操作栏 -->
+      <div class="header-bar">
+        <div class="logo-section">
+          <img :src="getLogo()" alt="logo" />
+          <span class="logo-title">{{ title }}</span>
         </div>
       </div>
 
-      <!-- 右侧展示区域 -->
-      <div class="display-section">
-        <div class="display-content">
-          <!-- 动态插画 -->
-          <div class="illustration-wrapper">
-            <svg class="illustration" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color: #ef4444; stop-opacity: 1" />
-                  <stop offset="100%" style="stop-color: #dc2626; stop-opacity: 1" />
-                </linearGradient>
-                <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color: #f87171; stop-opacity: 1" />
-                  <stop offset="100%" style="stop-color: #ef4444; stop-opacity: 1" />
-                </linearGradient>
-              </defs>
+      <!-- 表单容器 -->
+      <div class="form-container">
+        <div class="form-section">
+          <div class="form-card">
+            <!-- 登录页面 -->
+            <Motion v-if="currentPage === 'login'" key="login">
+              <div class="form-header">
+                <h1 class="form-title">欢迎使用{{ title }}</h1>
+                <p class="form-subtitle">登录您的账户以继续</p>
+              </div>
 
-              <!-- 主圆圈 -->
-              <circle cx="250" cy="200" r="80" fill="url(#grad1)" opacity="0.1">
-                <animate attributeName="r" values="80;90;80" dur="4s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="250" cy="200" r="60" fill="url(#grad1)" opacity="0.2">
-                <animate attributeName="r" values="60;70;60" dur="4s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="250" cy="200" r="40" fill="url(#grad1)" opacity="0.3">
-                <animate attributeName="r" values="40;45;40" dur="4s" repeatCount="indefinite" />
-              </circle>
+              <el-form ref="ruleFormRef" :model="loginForm" :rules="loginRules" class="auth-form">
+                <el-form-item prop="username">
+                  <el-input v-model="loginForm.username" size="large" clearable placeholder="用户名 / 手机号 / 邮箱">
+                    <template #prefix>
+                      <el-icon>
+                        <User />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
 
-              <!-- 数据点 -->
-              <circle cx="180" cy="150" r="4" fill="#EF4444">
-                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="320" cy="170" r="4" fill="#DC2626">
-                <animate attributeName="opacity" values="0;1;0" dur="2s" begin="0.5s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="290" cy="250" r="4" fill="#F87171">
-                <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="210" cy="240" r="4" fill="#B91C1C">
-                <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1.5s" repeatCount="indefinite" />
-              </circle>
+                <el-form-item prop="password">
+                  <el-input v-model="loginForm.password" size="large" :type="showPassword ? 'text' : 'password'" placeholder="请输入密码">
+                    <template #prefix>
+                      <el-icon>
+                        <Lock />
+                      </el-icon>
+                    </template>
+                    <template #suffix>
+                      <el-icon class="cursor-pointer" @click="showPassword = !showPassword">
+                        <Eye v-if="showPassword" />
+                        <EyeOff v-else />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
 
-              <!-- 连线 -->
-              <path d="M180,150 Q250,120 320,170" stroke="url(#grad1)" stroke-width="2" fill="none" opacity="0.3">
-                <animate attributeName="stroke-dasharray" values="0,300;300,0" dur="3s" repeatCount="indefinite" />
-              </path>
-              <path d="M320,170 Q350,200 290,250" stroke="url(#grad2)" stroke-width="2" fill="none" opacity="0.3">
-                <animate attributeName="stroke-dasharray" values="0,300;300,0" dur="3s" begin="1s" repeatCount="indefinite" />
-              </path>
+                <div class="form-actions">
+                  <el-button link type="primary" @click="currentPage = 'forgot'">忘记密码？</el-button>
+                </div>
 
-              <!-- 装饰性元素 -->
-              <rect x="100" y="300" width="60" height="4" rx="2" fill="url(#grad1)" opacity="0.5" />
-              <rect x="100" y="310" width="100" height="4" rx="2" fill="url(#grad2)" opacity="0.3" />
-              <rect x="100" y="320" width="80" height="4" rx="2" fill="url(#grad1)" opacity="0.4" />
+                <el-button type="primary" size="large" class="submit-btn" :loading="loading" :disabled="disabled" @click="onLogin(ruleFormRef)">登 录</el-button>
 
-              <rect x="320" y="300" width="80" height="4" rx="2" fill="url(#grad2)" opacity="0.4" />
-              <rect x="300" y="310" width="100" height="4" rx="2" fill="url(#grad1)" opacity="0.5" />
-              <rect x="340" y="320" width="60" height="4" rx="2" fill="url(#grad2)" opacity="0.3" />
-            </svg>
+                <div class="switch-page">
+                  没有账户？
+                  <el-button link type="primary" @click="currentPage = 'register'">立即注册</el-button>
+                </div>
+              </el-form>
+            </Motion>
+
+            <!-- 注册页面 -->
+            <Motion v-if="currentPage === 'register'" key="register">
+              <div class="form-header">
+                <h1 class="form-title">创建账户</h1>
+                <p class="form-subtitle">注册新账户开始使用</p>
+              </div>
+
+              <el-form :model="registerForm" :rules="loginRules" class="auth-form">
+                <el-form-item prop="username">
+                  <el-input v-model="registerForm.username" size="large" clearable placeholder="用户名">
+                    <template #prefix>
+                      <el-icon>
+                        <User />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item prop="phone">
+                  <el-input v-model="registerForm.phone" size="large" clearable placeholder="手机号">
+                    <template #prefix>
+                      <el-icon>
+                        <Phone />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item prop="email">
+                  <el-input v-model="registerForm.email" size="large" clearable placeholder="邮箱地址">
+                    <template #prefix>
+                      <el-icon>
+                        <Mail />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item prop="verifyCode">
+                  <div class="verify-code-wrapper">
+                    <el-input v-model="registerForm.verifyCode" size="large" clearable placeholder="验证码">
+                      <template #prefix>
+                        <el-icon>
+                          <Shield />
+                        </el-icon>
+                      </template>
+                    </el-input>
+                    <el-button class="verify-btn" :disabled="isDisabled" @click="sendVerificationCode(ruleFormRef, 'phone')">
+                      {{ text || "获取验证码" }}
+                    </el-button>
+                  </div>
+                </el-form-item>
+
+                <el-form-item prop="password">
+                  <el-input v-model="registerForm.password" size="large" type="password" placeholder="设置密码">
+                    <template #prefix>
+                      <el-icon>
+                        <Lock />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item prop="confirmPassword">
+                  <el-input v-model="registerForm.confirmPassword" size="large" type="password" placeholder="确认密码">
+                    <template #prefix>
+                      <el-icon>
+                        <Lock />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onRegister(ruleFormRef)">注 册</el-button>
+
+                <div class="switch-page">
+                  已有账户？
+                  <el-button link type="primary" @click="currentPage = 'login'">立即登录</el-button>
+                </div>
+              </el-form>
+            </Motion>
+
+            <!-- 忘记密码页面 -->
+            <Motion v-if="currentPage === 'forgot'" key="forgot">
+              <div class="form-header">
+                <h1 class="form-title">重置密码</h1>
+                <p class="form-subtitle">输入您的手机号重置密码</p>
+              </div>
+
+              <el-form :model="forgotForm" :rules="updateRules" class="auth-form">
+                <el-form-item prop="phone">
+                  <el-input v-model="forgotForm.phone" size="large" clearable placeholder="手机号">
+                    <template #prefix>
+                      <el-icon>
+                        <Phone />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item prop="verifyCode">
+                  <div class="verify-code-wrapper">
+                    <el-input v-model="forgotForm.verifyCode" size="large" clearable placeholder="验证码">
+                      <template #prefix>
+                        <el-icon>
+                          <Shield />
+                        </el-icon>
+                      </template>
+                    </el-input>
+                    <el-button class="verify-btn" :disabled="isDisabled" @click="sendVerificationCode(ruleFormRef, 'phone')">
+                      {{ text || "获取验证码" }}
+                    </el-button>
+                  </div>
+                </el-form-item>
+
+                <el-form-item prop="password">
+                  <el-input v-model="forgotForm.password" size="large" type="password" placeholder="新密码">
+                    <template #prefix>
+                      <el-icon>
+                        <Lock />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item prop="confirmPassword">
+                  <el-input v-model="forgotForm.confirmPassword" size="large" type="password" placeholder="确认新密码">
+                    <template #prefix>
+                      <el-icon>
+                        <Lock />
+                      </el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onResetPassword(ruleFormRef)">重置密码</el-button>
+
+                <div class="switch-page">
+                  想起密码了？
+                  <el-button link type="primary" @click="currentPage = 'login'">返回登录</el-button>
+                </div>
+              </el-form>
+            </Motion>
           </div>
-          <p class="display-description">构建高效、安全、智能的企业管理生态系统</p>
         </div>
       </div>
+
+      <!-- 底部信息 -->
+      <footer class="footer">
+        <p>© 2025 {{ title }}. All rights reserved.</p>
+      </footer>
     </div>
 
-    <!-- 底部信息 -->
-    <footer class="footer">
-      <p>© 2025 {{ title }}. All rights reserved.</p>
-    </footer>
+    <!-- 右侧展示区域 -->
+    <div class="display-section">
+      <div class="display-content">
+        <!-- 动态插画 -->
+        <div class="illustration-wrapper">
+          <svg class="illustration" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color: #ef4444; stop-opacity: 1" />
+                <stop offset="100%" style="stop-color: #dc2626; stop-opacity: 1" />
+              </linearGradient>
+              <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color: #f87171; stop-opacity: 1" />
+                <stop offset="100%" style="stop-color: #ef4444; stop-opacity: 1" />
+              </linearGradient>
+            </defs>
+
+            <!-- 主圆圈 -->
+            <circle cx="250" cy="200" r="80" fill="url(#grad1)" opacity="0.1">
+              <animate attributeName="r" values="80;90;80" dur="4s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="250" cy="200" r="60" fill="url(#grad1)" opacity="0.2">
+              <animate attributeName="r" values="60;70;60" dur="4s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="250" cy="200" r="40" fill="url(#grad1)" opacity="0.3">
+              <animate attributeName="r" values="40;45;40" dur="4s" repeatCount="indefinite" />
+            </circle>
+
+            <!-- 数据点 -->
+            <circle cx="180" cy="150" r="4" fill="#EF4444">
+              <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="320" cy="170" r="4" fill="#DC2626">
+              <animate attributeName="opacity" values="0;1;0" dur="2s" begin="0.5s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="290" cy="250" r="4" fill="#F87171">
+              <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="210" cy="240" r="4" fill="#B91C1C">
+              <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1.5s" repeatCount="indefinite" />
+            </circle>
+
+            <!-- 连线 -->
+            <path d="M180,150 Q250,120 320,170" stroke="url(#grad1)" stroke-width="2" fill="none" opacity="0.3">
+              <animate attributeName="stroke-dasharray" values="0,300;300,0" dur="3s" repeatCount="indefinite" />
+            </path>
+            <path d="M320,170 Q350,200 290,250" stroke="url(#grad2)" stroke-width="2" fill="none" opacity="0.3">
+              <animate attributeName="stroke-dasharray" values="0,300;300,0" dur="3s" begin="1s" repeatCount="indefinite" />
+            </path>
+
+            <!-- 装饰性元素 -->
+            <rect x="100" y="300" width="60" height="4" rx="2" fill="url(#grad1)" opacity="0.5" />
+            <rect x="100" y="310" width="100" height="4" rx="2" fill="url(#grad2)" opacity="0.3" />
+            <rect x="100" y="320" width="80" height="4" rx="2" fill="url(#grad1)" opacity="0.4" />
+
+            <rect x="320" y="300" width="80" height="4" rx="2" fill="url(#grad2)" opacity="0.4" />
+            <rect x="300" y="310" width="100" height="4" rx="2" fill="url(#grad1)" opacity="0.5" />
+            <rect x="340" y="320" width="60" height="4" rx="2" fill="url(#grad2)" opacity="0.3" />
+          </svg>
+        </div>
+        <p class="display-description">构建高效、安全、智能的企业管理生态系统</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-
-
   /* 响应式设计 */
   @media (width <= 1024px) {
-    .login-container {
-      flex-direction: column;
-      gap: 40px;
-    }
-
     .display-section {
       display: none;
     }
 
-    .form-section {
-      flex: 0 0 auto;
+    .left-section {
       width: 100%;
-      max-width: 480px;
     }
   }
 
@@ -444,7 +461,7 @@
       padding: 16px 20px;
     }
 
-    .login-container {
+    .form-container {
       padding: 20px;
     }
 
@@ -458,10 +475,23 @@
   }
 
   .login-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* 左侧区域 - 包含 header、form、footer */
+  .left-section {
     position: relative;
     display: flex;
+    flex: 1;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    overflow-y: auto;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   }
 
@@ -497,7 +527,7 @@
 
   .circle-3 {
     top: 50%;
-    left: 70%;
+    left: 50%;
     width: 300px;
     height: 300px;
   }
@@ -517,6 +547,11 @@
     display: flex;
     gap: 12px;
     align-items: center;
+
+    img {
+      display: inline-block;
+      height: 32px;
+    }
   }
 
   .logo {
@@ -548,22 +583,21 @@
     }
   }
 
-  /* 主体容器 */
-  .login-container {
+  /* 表单容器 */
+  .form-container {
+    position: relative;
+    z-index: 10;
     display: flex;
     flex: 1;
-    gap: 160px;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    max-width: 1200px;
     padding: 40px;
-    margin: 0 auto;
   }
 
   /* 表单区域 */
   .form-section {
-    flex: 0 0 420px;
+    width: 100%;
+    max-width: 420px;
   }
 
   .form-card {
@@ -749,16 +783,23 @@
     }
   }
 
-  /* 右侧展示区域 */
+  /* 右侧展示区域 - 固定520px宽度，独立区域 */
   .display-section {
+    position: relative;
     display: flex;
-    flex: 1;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
+    width: 600px;
+    height: 100vh;
+    padding: 40px;
+    overflow-y: auto;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   }
 
   .display-content {
-    max-width: 500px;
+    width: 100%;
+    max-width: 440px;
     text-align: center;
   }
 
@@ -825,8 +866,10 @@
     }
   }
 
-  /* 底部 */
+  /* 底部 - 只在左侧显示 */
   .footer {
+    position: relative;
+    z-index: 10;
     padding: 20px;
     text-align: center;
     background: transparent;
@@ -840,12 +883,8 @@
 
   /* 深色模式适配 */
   :global(.dark) {
-    .login-wrapper {
+    .left-section {
       background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    }
-
-    .header-bar {
-      background: transparent;
     }
 
     .logo-title {
@@ -891,6 +930,10 @@
       border-color: #3a3a3a;
     }
 
+    .display-section {
+      background: linear-gradient(135deg, #2a1a1a 0%, #3a2020 100%);
+    }
+
     .display-title {
       color: #f0f0f0;
     }
@@ -903,8 +946,8 @@
       background: #1e1e1e;
     }
 
-    .footer {
-      background: transparent;
+    .footer p {
+      color: #999;
     }
   }
 </style>
