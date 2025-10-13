@@ -155,8 +155,10 @@
       <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onRegister(ruleFormRef)">注 册</el-button>
 
       <div class="switch-page">
-        已有账户？
-        <el-button link type="primary" @click="emit('switchPage', 'login')">立即登录</el-button>
+        <el-space>
+          <span>已有账户？</span>
+          <el-button link type="primary" @click="emit('switchPage', 'login')">立即登录</el-button>
+        </el-space>
       </div>
     </el-form>
   </Motion>

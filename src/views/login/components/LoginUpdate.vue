@@ -134,8 +134,10 @@
       <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onUpdate(ruleFormRef)">重置密码</el-button>
 
       <div class="switch-page">
-        想起密码了？
-        <el-button link type="primary" @click="emit('switchPage', 'login')">返回登录</el-button>
+        <el-space>
+          <span>想起密码了？</span>
+          <el-button link type="primary" @click="emit('switchPage', 'login')">返回登录</el-button>
+        </el-space>
       </div>
     </el-form>
   </Motion>
