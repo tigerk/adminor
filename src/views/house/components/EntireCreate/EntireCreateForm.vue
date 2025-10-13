@@ -77,35 +77,4 @@
   </div>
 </template>
 
-<style scoped>
-  :deep(.house-container .el-table__cell) {
-    height: 40px;
-    padding: 0;
-  }
-
-  :deep(.house-container .cell) {
-    padding: 0;
-  }
-
-  :deep(.house-container .el-input__wrapper) {
-    padding: 0;
-    background: transparent !important; /* 背景透明，可选 */
-    border: none !important; /* 去掉边框 */
-    box-shadow: none !important; /* 去掉外层阴影 */
-  }
-
-  :deep(.house-container .el-input__inner) {
-    text-align: center; /* 水平居中 */
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  :deep(.house-container .el-input__wrapper.is-focus) {
-    box-shadow: none !important; /* 聚焦时仍然无边框 */
-  }
-
-  :deep(.house-container .el-input__inner.is-focus) {
-    outline: none !important; /* 去掉聚焦外框 */
-  }
-</style>
+<style scoped></style>
