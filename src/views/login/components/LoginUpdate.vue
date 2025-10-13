@@ -16,6 +16,7 @@
   const { t } = useI18n();
   const emit = defineEmits<{
     (e: "switchPage", page: string): void;
+    (e: "showImageVerify", callback: () => void): void;
   }>();
 
   const loading = ref(false);
@@ -52,6 +53,7 @@
     if (!formEl) return;
     await formEl.validate(valid => {
       if (valid) {
+        // 模拟重置密码请求
         loginUpdate({ phone: forgotForm.phone, verifyCode: forgotForm.verifyCode, password: forgotForm.password }).then(resp => {
           message(transformI18n($t("login.purePassWordUpdateReg")), {
             type: "success"
@@ -65,15 +67,27 @@
     });
   };
 
-  // 发送验证码
+  // 发送验证码 - 通知父组件显示图形验证码
   const sendVerificationCode = async (formEl: FormInstance | undefined, field: string) => {
-    useVerifyCode().start(formEl, field, 60);
+    if (!formEl) return;
 
-    sendSmsCode({
-      phone: forgotForm.phone
-    }).then(resp => {
-      // 模拟发送验证码
-      message("验证码已发送", { type: "success" });
+    // 先验证手机号
+    await formEl.validateField(field, async valid => {
+      if (!valid) {
+        return;
+      }
+
+      // 通知父组件显示图形验证码，并传入回调函数
+      emit("showImageVerify", () => {
+        // 图形验证码验证成功后的回调
+        sendSmsCode({
+          phone: forgotForm.phone
+        }).then(resp => {
+          // 模拟发送验证码
+          useVerifyCode().start(ruleFormRef.value, "phone", 60);
+          message("验证码已发送", { type: "success" });
+        });
+      });
     });
   };
 

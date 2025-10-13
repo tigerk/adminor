@@ -13,10 +13,12 @@
   import Phone from "~icons/ri/phone-fill";
   import Mail from "~icons/ri/mail-fill";
   import Shield from "~icons/ri/shield-keyhole-line";
+  import { sendSmsCode } from "@/api/user";
 
   const { t } = useI18n();
   const emit = defineEmits<{
     (e: "switchPage", page: string): void;
+    (e: "showImageVerify", callback: () => void): void;
   }>();
 
   const loading = ref(false);
@@ -67,11 +69,28 @@
     });
   };
 
-  // 发送验证码
+  // 发送验证码 - 通知父组件显示图形验证码
   const sendVerificationCode = async (formEl: FormInstance | undefined, field: string) => {
-    useVerifyCode().start(formEl, field, 60);
-    // 模拟发送验证码
-    message("验证码已发送", { type: "success" });
+    if (!formEl) return;
+
+    // 先验证手机号
+    await formEl.validateField(field, async valid => {
+      if (!valid) {
+        return;
+      }
+
+      // 通知父组件显示图形验证码，并传入回调函数
+      emit("showImageVerify", () => {
+        // 图形验证码验证成功后的回调
+        sendSmsCode({
+          phone: registerForm.phone
+        }).then(resp => {
+          // 模拟发送验证码
+          useVerifyCode().start(ruleFormRef.value, "phone", 60);
+          message("验证码已发送", { type: "success" });
+        });
+      });
+    });
   };
 
   // 组件销毁时清理定时器
