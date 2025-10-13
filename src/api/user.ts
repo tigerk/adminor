@@ -99,3 +99,11 @@ export const getMineLogs = (data?: object) => {
 export const switchCompany = (data?: object) => {
   return http.request<UserResult>("post", baseUrlApi("switchCompany"), { params: data });
 };
+
+export const sendSmsCode = (data?: object) => {
+  return http.request<UserResult>("post", baseUrlApi("login/sms/send"), { params: data });
+};
+
+export const loginUpdate = (data?: object) => {
+  return http.request<UserResult>("post", baseUrlApi("login/update"), { data });
+};

@@ -11,6 +11,7 @@
   import Lock from "~icons/ri/lock-fill";
   import Phone from "~icons/ri/phone-fill";
   import Shield from "~icons/ri/shield-keyhole-line";
+  import { loginUpdate, sendSmsCode } from "@/api/user";
 
   const { t } = useI18n();
   const emit = defineEmits<{
@@ -51,14 +52,13 @@
     if (!formEl) return;
     await formEl.validate(valid => {
       if (valid) {
-        // 模拟重置密码请求
-        setTimeout(() => {
+        loginUpdate({ phone: forgotForm.phone, verifyCode: forgotForm.verifyCode, password: forgotForm.password }).then(resp => {
           message(transformI18n($t("login.purePassWordUpdateReg")), {
             type: "success"
           });
           emit("switchPage", "login");
           loading.value = false;
-        }, 2000);
+        });
       } else {
         loading.value = false;
       }
@@ -68,8 +68,13 @@
   // 发送验证码
   const sendVerificationCode = async (formEl: FormInstance | undefined, field: string) => {
     useVerifyCode().start(formEl, field, 60);
-    // 模拟发送验证码
-    message("验证码已发送", { type: "success" });
+
+    sendSmsCode({
+      phone: forgotForm.phone
+    }).then(resp => {
+      // 模拟发送验证码
+      message("验证码已发送", { type: "success" });
+    });
   };
 
   // 组件销毁时清理定时器
