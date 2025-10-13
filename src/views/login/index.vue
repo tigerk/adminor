@@ -3,7 +3,7 @@
   import Motion from "./utils/motion";
   import { useRouter } from "vue-router";
   import { message } from "@/utils/message";
-  import { loginRules, updateRules } from "./utils/rule";
+  import { loginRules } from "./utils/rule";
   import { debounce } from "@pureadmin/utils";
   import { useNav } from "@/layout/hooks/useNav";
   import { useEventListener } from "@vueuse/core";
@@ -11,26 +11,16 @@
   import { useLayout } from "@/layout/hooks/useLayout";
   import { useUserStoreHook } from "@/store/modules/user";
   import { initRouter, getTopMenu } from "@/router/utils";
-  import { ref, reactive, watch, computed } from "vue";
-  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+  import { ref, reactive } from "vue";
   import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
   import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
-  import { useVerifyCode } from "./utils/verifyCode";
-  import { avatar } from "./utils/static";
 
-  import dayIcon from "@/assets/svg/day.svg?component";
-  import darkIcon from "@/assets/svg/dark.svg?component";
-  import globalization from "@/assets/svg/globalization.svg?component";
-  import Lock from "~icons/ri/lock-fill";
   import User from "~icons/ri/user-3-fill";
+  import Lock from "~icons/ri/lock-fill";
   import Eye from "~icons/ri/eye-line";
   import EyeOff from "~icons/ri/eye-off-line";
-  import Phone from "~icons/ri/phone-fill";
-  import Mail from "~icons/ri/mail-fill";
-  import Shield from "~icons/ri/shield-keyhole-line";
-  import Wechat from "~icons/ri/wechat-fill";
-  import QQ from "~icons/ri/qq-fill";
-  import Alipay from "~icons/ri/alipay-fill";
+  import LoginUpdate from "@/views/login/components/LoginUpdate.vue";
+  import LoginRegister from "@/views/login/components/LoginRegister.vue";
 
   defineOptions({
     name: "Login"
@@ -50,30 +40,11 @@
   dataThemeChange(overallStyle.value);
   const { title, getLogo } = useNav();
   const { locale, translationCh, translationEn } = useTranslationLang();
-  const { isDisabled, text, start } = useVerifyCode();
 
   // 登录表单
   const loginForm = reactive({
     username: "kimi",
     password: "test0214"
-  });
-
-  // 注册表单
-  const registerForm = reactive({
-    username: "",
-    phone: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    verifyCode: ""
-  });
-
-  // 忘记密码表单
-  const forgotForm = reactive({
-    phone: "",
-    verifyCode: "",
-    password: "",
-    confirmPassword: ""
   });
 
   // 登录处理
@@ -107,43 +78,9 @@
     });
   };
 
-  // 注册处理
-  const onRegister = async (formEl: FormInstance | undefined) => {
-    if (!formEl) return;
-    await formEl.validate(valid => {
-      if (valid) {
-        loading.value = true;
-        // 模拟注册请求
-        setTimeout(() => {
-          message("注册成功", { type: "success" });
-          currentPage.value = "login";
-          loading.value = false;
-        }, 1500);
-      }
-    });
-  };
-
-  // 重置密码处理
-  const onResetPassword = async (formEl: FormInstance | undefined) => {
-    if (!formEl) return;
-    await formEl.validate(valid => {
-      if (valid) {
-        loading.value = true;
-        // 模拟重置密码请求
-        setTimeout(() => {
-          message("密码重置成功", { type: "success" });
-          currentPage.value = "login";
-          loading.value = false;
-        }, 1500);
-      }
-    });
-  };
-
-  // 发送验证码
-  const sendVerificationCode = async (formEl: FormInstance | undefined, field: string) => {
-    start(formEl, field, 60);
-    // 模拟发送验证码
-    message("验证码已发送", { type: "success" });
+  // 切换页面
+  const switchPage = (page: string) => {
+    currentPage.value = page;
   };
 
   const immediateDebounce: any = debounce(formRef => onLogin(formRef), 1000, true);
@@ -225,149 +162,11 @@
               </el-form>
             </Motion>
 
-            <!-- 注册页面 -->
-            <Motion v-if="currentPage === 'register'" key="register">
-              <div class="form-header">
-                <h1 class="form-title">创建账户</h1>
-                <p class="form-subtitle">注册新账户开始使用</p>
-              </div>
+            <!-- 注册页面 - 使用拆分的组件 -->
+            <LoginRegister v-if="currentPage === 'register'" @switch-page="switchPage" />
 
-              <el-form :model="registerForm" :rules="loginRules" class="auth-form">
-                <el-form-item prop="username">
-                  <el-input v-model="registerForm.username" size="large" clearable placeholder="用户名">
-                    <template #prefix>
-                      <el-icon>
-                        <User />
-                      </el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-
-                <el-form-item prop="phone">
-                  <el-input v-model="registerForm.phone" size="large" clearable placeholder="手机号">
-                    <template #prefix>
-                      <el-icon>
-                        <Phone />
-                      </el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-
-                <el-form-item prop="email">
-                  <el-input v-model="registerForm.email" size="large" clearable placeholder="邮箱地址">
-                    <template #prefix>
-                      <el-icon>
-                        <Mail />
-                      </el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-
-                <el-form-item prop="verifyCode">
-                  <div class="verify-code-wrapper">
-                    <el-input v-model="registerForm.verifyCode" size="large" clearable placeholder="验证码">
-                      <template #prefix>
-                        <el-icon>
-                          <Shield />
-                        </el-icon>
-                      </template>
-                    </el-input>
-                    <el-button class="verify-btn" :disabled="isDisabled" @click="sendVerificationCode(ruleFormRef, 'phone')">
-                      {{ text || "获取验证码" }}
-                    </el-button>
-                  </div>
-                </el-form-item>
-
-                <el-form-item prop="password">
-                  <el-input v-model="registerForm.password" size="large" type="password" placeholder="设置密码">
-                    <template #prefix>
-                      <el-icon>
-                        <Lock />
-                      </el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-
-                <el-form-item prop="confirmPassword">
-                  <el-input v-model="registerForm.confirmPassword" size="large" type="password" placeholder="确认密码">
-                    <template #prefix>
-                      <el-icon>
-                        <Lock />
-                      </el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-
-                <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onRegister(ruleFormRef)">注 册</el-button>
-
-                <div class="switch-page">
-                  已有账户？
-                  <el-button link type="primary" @click="currentPage = 'login'">立即登录</el-button>
-                </div>
-              </el-form>
-            </Motion>
-
-            <!-- 忘记密码页面 -->
-            <Motion v-if="currentPage === 'forgot'" key="forgot">
-              <div class="form-header">
-                <h1 class="form-title">重置密码</h1>
-                <p class="form-subtitle">输入您的手机号重置密码</p>
-              </div>
-
-              <el-form :model="forgotForm" :rules="updateRules" class="auth-form">
-                <el-form-item prop="phone">
-                  <el-input v-model="forgotForm.phone" size="large" clearable placeholder="手机号">
-                    <template #prefix>
-                      <el-icon>
-                        <Phone />
-                      </el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-
-                <el-form-item prop="verifyCode">
-                  <div class="verify-code-wrapper">
-                    <el-input v-model="forgotForm.verifyCode" size="large" clearable placeholder="验证码">
-                      <template #prefix>
-                        <el-icon>
-                          <Shield />
-                        </el-icon>
-                      </template>
-                    </el-input>
-                    <el-button class="verify-btn" :disabled="isDisabled" @click="sendVerificationCode(ruleFormRef, 'phone')">
-                      {{ text || "获取验证码" }}
-                    </el-button>
-                  </div>
-                </el-form-item>
-
-                <el-form-item prop="password">
-                  <el-input v-model="forgotForm.password" size="large" type="password" placeholder="新密码">
-                    <template #prefix>
-                      <el-icon>
-                        <Lock />
-                      </el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-
-                <el-form-item prop="confirmPassword">
-                  <el-input v-model="forgotForm.confirmPassword" size="large" type="password" placeholder="确认新密码">
-                    <template #prefix>
-                      <el-icon>
-                        <Lock />
-                      </el-icon>
-                    </template>
-                  </el-input>
-                </el-form-item>
-
-                <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onResetPassword(ruleFormRef)">重置密码</el-button>
-
-                <div class="switch-page">
-                  想起密码了？
-                  <el-button link type="primary" @click="currentPage = 'login'">返回登录</el-button>
-                </div>
-              </el-form>
-            </Motion>
+            <!-- 忘记密码页面 - 使用拆分的组件 -->
+            <LoginUpdate v-if="currentPage === 'forgot'" @switch-page="switchPage" />
           </div>
         </div>
       </div>
@@ -565,24 +364,6 @@
     color: #333;
   }
 
-  .header-actions {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-  }
-
-  .lang-icon {
-    width: 20px;
-    height: 20px;
-    color: #666;
-    cursor: pointer;
-    transition: color 0.3s;
-
-    &:hover {
-      color: #ef4444;
-    }
-  }
-
   /* 表单容器 */
   .form-container {
     position: relative;
@@ -614,7 +395,7 @@
 
   .form-title {
     margin-bottom: 8px;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
     color: #1a1a1a;
   }
@@ -659,18 +440,6 @@
     }
   }
 
-  .verify-code-wrapper {
-    display: flex;
-    gap: 12px;
-
-    .verify-btn {
-      flex-shrink: 0;
-      height: 48px;
-      padding: 0 20px;
-      border-radius: 10px;
-    }
-  }
-
   .form-actions {
     margin-bottom: 20px;
     text-align: right;
@@ -697,82 +466,6 @@
     }
   }
 
-  .divider {
-    position: relative;
-    margin: 24px 0;
-    text-align: center;
-
-    &::before,
-    &::after {
-      position: absolute;
-      top: 50%;
-      width: calc(50% - 20px);
-      height: 1px;
-      content: "";
-      background: #e0e0e0;
-    }
-
-    &::before {
-      left: 0;
-    }
-
-    &::after {
-      right: 0;
-    }
-
-    span {
-      position: relative;
-      padding: 0 10px;
-      font-size: 14px;
-      color: #999;
-      background: white;
-    }
-  }
-
-  .social-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-bottom: 24px;
-  }
-
-  .social-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    cursor: pointer;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 50%;
-    transition: all 0.3s;
-
-    &:hover {
-      box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
-      transform: translateY(-2px);
-    }
-
-    &.wechat:hover {
-      color: #07c160;
-      border-color: #07c160;
-    }
-
-    &.qq:hover {
-      color: #1890ff;
-      border-color: #1890ff;
-    }
-
-    &.alipay:hover {
-      color: #00a1e9;
-      border-color: #00a1e9;
-    }
-
-    :deep(.el-icon) {
-      color: inherit;
-    }
-  }
-
   .switch-page {
     font-size: 14px;
     color: #666;
@@ -783,7 +476,7 @@
     }
   }
 
-  /* 右侧展示区域 - 固定520px宽度，独立区域 */
+  /* 右侧展示区域 - 固定600px宽度，独立区域 */
   .display-section {
     position: relative;
     display: flex;
@@ -813,57 +506,11 @@
     height: auto;
   }
 
-  .display-title {
-    margin-bottom: 16px;
-    font-size: 32px;
-    font-weight: 700;
-    color: #1a1a1a;
-  }
-
   .display-description {
     margin-bottom: 40px;
     font-size: 16px;
     line-height: 1.6;
     color: #666;
-  }
-
-  .features {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    text-align: left;
-  }
-
-  .feature-item {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    padding: 16px 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgb(0 0 0 / 5%);
-    transition: all 0.3s;
-
-    &:hover {
-      box-shadow: 0 4px 20px rgb(0 0 0 / 10%);
-      transform: translateX(5px);
-    }
-  }
-
-  .feature-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    border-radius: 10px;
-
-    svg {
-      width: 20px;
-      height: 20px;
-      color: white;
-    }
   }
 
   /* 底部 - 只在左侧显示 */
@@ -919,31 +566,12 @@
       }
     }
 
-    .divider {
-      span {
-        background: #1e1e1e;
-      }
-    }
-
-    .social-btn {
-      background: #2a2a2a;
-      border-color: #3a3a3a;
-    }
-
     .display-section {
       background: linear-gradient(135deg, #2a1a1a 0%, #3a2020 100%);
     }
 
-    .display-title {
-      color: #f0f0f0;
-    }
-
     .display-description {
       color: #999;
-    }
-
-    .feature-item {
-      background: #1e1e1e;
     }
 
     .footer p {
