@@ -9,7 +9,7 @@
   import Delete from "~icons/ep/delete";
 
   // 使用hook中的方法
-  const { columns, dataList, onAdd, onDel, openEntireEditDialog } = useEntireEdit();
+  const { openEntireEditDialog } = useEntireEdit();
 
   const props = withDefaults(defineProps<EntireFormProps>(), {});
 
@@ -80,31 +80,6 @@
       </div>
       <div class="house-container">
         <h3 class="pb-4">房源信息</h3>
-        <el-row :gutter="20">
-          <el-col :span="24">
-            <pure-table
-              row-key="id"
-              align-whole="center"
-              :header-cell-style="{
-                background: '#E9F3FF',
-                color: 'var(--el-text-color-primary)',
-                fontWeight: '500'
-              }"
-              border
-              :data="dataList"
-              :columns="columns"
-              :highlightCurrentRow="false"
-            >
-              <template #empty>
-                <Empty fill="var(--el-svg-monochrome-grey)" class="m-auto" />
-              </template>
-              <template #operation="{ row }">
-                <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(Delete)" @click="onDel(row)" />
-              </template>
-            </pure-table>
-          </el-col>
-        </el-row>
-        <el-button plain class="w-full my-2!" :icon="useRenderIcon(AddFill)" @click="onAdd">添加一行数据</el-button>
       </div>
     </el-form>
   </div>
