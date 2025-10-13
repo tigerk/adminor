@@ -1,13 +1,8 @@
 <script setup lang="ts">
-  import { ref, reactive, watch } from "vue";
-  import { ElMessage } from "element-plus";
+  import { reactive } from "vue";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
   import { EntireFormProps } from "@/views/house/components/EntireCreate/types";
-  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-  import AddFill from "~icons/ri/add-circle-line";
-  import Delete from "~icons/ep/delete";
-
   // 使用hook中的方法
   const { openEntireEditDialog } = useEntireEdit();
 
@@ -25,9 +20,6 @@
       location: poi.location // 经纬度
     };
   };
-
-  onAdd();
-  onAdd();
 </script>
 
 <template>
