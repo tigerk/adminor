@@ -146,8 +146,16 @@
       </div>
       <div class="house-container">
         <h3 class="pb-4">房源信息</h3>
-
         <div v-for="(house, index) in houseList" :key="index" class="house-form-card">
+          <el-row :gutter="20" class="mb-1">
+            <el-col :span="12">
+              <h3 class="pb-4">房源 {{ index + 1 }}</h3>
+            </el-col>
+            <!-- 左侧表单区域 -->
+            <el-col :span="12" class="text-right">
+              <el-button v-if="houseList.length > 1" type="danger" plain class="remove-btn" @click="removeHouse(index)">删除此房源</el-button>
+            </el-col>
+          </el-row>
           <el-row :gutter="20">
             <!-- 左侧表单区域 -->
             <el-col :span="18">
@@ -288,11 +296,6 @@
               </el-row>
             </el-col>
           </el-row>
-          <div class="status-section">
-            <div class="remove-btn-wrapper">
-              <el-button v-if="houseList.length > 1" type="danger" plain class="remove-btn" @click="removeHouse(index)">删除此房源</el-button>
-            </div>
-          </div>
         </div>
 
         <!-- 添加新房源按钮 -->
@@ -363,7 +366,7 @@
   }
 
   .remove-btn {
-    width: 20vh;
+    width: 10vh;
     margin-top: auto;
   }
 
