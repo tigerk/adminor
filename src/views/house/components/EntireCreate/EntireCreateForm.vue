@@ -1,11 +1,13 @@
 <script setup lang="ts">
-  import { reactive } from "vue";
+  import { onMounted, reactive } from "vue";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
   import { EntireFormProps } from "@/views/house/components/EntireCreate/types";
   import { ref } from "vue";
   import { Plus, CircleCheck } from "@element-plus/icons-vue";
   import type { HouseItemProps } from "./types";
+  import DeptCascader from "@/components/Business/DeptUserCascader.vue";
+  import { getCompanyUserOptions } from "@/api/company";
 
   // 使用hook中的方法
   const { openEntireEditDialog } = useEntireEdit();
@@ -13,6 +15,9 @@
   const props = withDefaults(defineProps<EntireFormProps>(), {});
 
   const entireForm = reactive(props.formInline);
+
+  // 负责人列表
+  const salesmanList = ref([]);
 
   const handlePoiSelected = (poi: any) => {
     entireForm.community = {
@@ -88,6 +93,12 @@
     });
   };
 
+  onMounted(() => {
+    getCompanyUserOptions().then(resp => {
+      salesmanList.value = resp.data;
+    });
+  });
+
   const copyHouse = (index: number) => {
     const houseToCopy = houseList.value[index];
     // 深拷贝当前房源数据
@@ -161,7 +172,7 @@
             </el-col>
             <!-- 左侧表单区域 -->
             <el-col :span="12" class="text-right">
-              <el-button type="warning" @click="copyHouse(index)">复制此房源</el-button>
+              <el-button type="warning" plain @click="copyHouse(index)">复制此房源</el-button>
               <el-button v-if="houseList.length > 1" type="danger" plain class="remove-btn" @click="removeHouse(index)">删除此房源</el-button>
             </el-col>
           </el-row>
@@ -316,6 +327,24 @@
             添加新房源
           </el-button>
         </div>
+        <div>
+          <!-- 负责人信息 -->
+          <h3 class="py-4">负责人信息</h3>
+          <el-row :gutter="20">
+            <el-col :span="6">
+              <el-form-item label="归属部门" prop="deptId">
+                <DeptCascader v-model="entireForm.deptId" :emit-on-default="true" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="负责人" prop="salesmanId">
+                <el-select v-model="entireForm.salesmanId" filterable placeholder="请选择负责人" clearable>
+                  <el-option v-for="item in salesmanList" :key="item.id" :label="item.name" :value="item.id" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
       </div>
     </el-form>
   </div>
@@ -375,7 +404,6 @@
   }
 
   .remove-btn {
-    width: 10vh;
     margin-top: auto;
   }
 

@@ -53,6 +53,8 @@ interface EntireFormItemProps {
   hasElevator: boolean;
   facilities: string[];
   houseList?: HouseItemProps[]; // 房源列表
+  deptId: number;
+  salesmanId: number;
 }
 
 // 表单
