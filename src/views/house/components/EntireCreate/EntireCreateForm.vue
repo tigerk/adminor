@@ -344,7 +344,7 @@
   }
 
   .remove-btn {
-    width: 100%;
+    width: 20vh;
     margin-top: auto;
   }
 
