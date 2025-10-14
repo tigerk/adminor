@@ -88,6 +88,14 @@
     });
   };
 
+  const copyHouse = (index: number) => {
+    const houseToCopy = houseList.value[index];
+    // 深拷贝当前房源数据
+    const newHouse = JSON.parse(JSON.stringify(houseToCopy));
+    // 在当前房源后面插入新房源
+    houseList.value.splice(index + 1, 0, newHouse);
+  };
+
   // 删除房源
   const removeHouse = (index: number) => {
     if (houseList.value.length > 1) {
@@ -153,6 +161,7 @@
             </el-col>
             <!-- 左侧表单区域 -->
             <el-col :span="12" class="text-right">
+              <el-button type="warning" @click="copyHouse(index)">复制此房源</el-button>
               <el-button v-if="houseList.length > 1" type="danger" plain class="remove-btn" @click="removeHouse(index)">删除此房源</el-button>
             </el-col>
           </el-row>
