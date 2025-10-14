@@ -235,24 +235,30 @@
               <el-row :gutter="20">
                 <el-col :span="8">
                   <el-form-item label="房源特色">
-                    <el-button class="status-btn" disabled>
-                      <el-icon><CircleCheck /></el-icon>
+                    <el-button class="status-btn">
+                      <el-icon>
+                        <CircleCheck />
+                      </el-icon>
                       <span>未设置</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
                   <el-form-item label="房源配置">
-                    <el-button class="status-btn" disabled>
-                      <el-icon><CircleCheck /></el-icon>
+                    <el-button class="status-btn">
+                      <el-icon>
+                        <CircleCheck />
+                      </el-icon>
                       <span>未设置</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
                   <el-form-item label="产权信息">
-                    <el-button class="status-btn" disabled>
-                      <el-icon><CircleCheck /></el-icon>
+                    <el-button class="status-btn">
+                      <el-icon>
+                        <CircleCheck />
+                      </el-icon>
                       <span>未设置</span>
                     </el-button>
                   </el-form-item>
@@ -261,16 +267,20 @@
               <el-row :gutter="20">
                 <el-col :span="8">
                   <el-form-item label="房源图片">
-                    <el-button class="status-btn" disabled>
-                      <el-icon><CircleCheck /></el-icon>
+                    <el-button class="status-btn">
+                      <el-icon>
+                        <CircleCheck />
+                      </el-icon>
                       <span>未设置</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
                   <el-form-item label="更多信息">
-                    <el-button class="status-btn" disabled>
-                      <el-icon><CircleCheck /></el-icon>
+                    <el-button class="status-btn">
+                      <el-icon>
+                        <CircleCheck />
+                      </el-icon>
                       <span>未设置</span>
                     </el-button>
                   </el-form-item>
@@ -279,14 +289,18 @@
             </el-col>
           </el-row>
           <div class="status-section">
-            <el-button v-if="houseList.length > 1" type="danger" plain class="remove-btn" @click="removeHouse(index)">删除此房源</el-button>
+            <div class="remove-btn-wrapper">
+              <el-button v-if="houseList.length > 1" type="danger" plain class="remove-btn" @click="removeHouse(index)">删除此房源</el-button>
+            </div>
           </div>
         </div>
 
         <!-- 添加新房源按钮 -->
         <div class="add-button-wrapper">
           <el-button type="primary" plain @click="addNewHouse">
-            <el-icon><Plus /></el-icon>
+            <el-icon>
+              <Plus />
+            </el-icon>
             添加新房源
           </el-button>
         </div>
@@ -324,6 +338,11 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+  }
+
+  .status-section .remove-btn-wrapper {
+    display: flex;
+    justify-content: flex-end; /* 使子元素（即删除按钮）靠右 */
   }
 
   .status-section .el-form-item {
