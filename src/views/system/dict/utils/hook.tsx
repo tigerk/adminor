@@ -38,11 +38,6 @@ export function useDict() {
       )
     },
     {
-      label: "字典值",
-      prop: "value",
-      minWidth: 130
-    },
-    {
       label: "状态",
       prop: "status",
       minWidth: 90,
@@ -174,7 +169,7 @@ export function useDict() {
           name: row?.name ?? "",
           value: row?.value ?? "",
           color: row?.color ?? "#6abe39",
-          sort: row?.sort ?? 999,
+          sort: row?.sort ?? 1,
           status: row?.status ?? 1,
           remark: row?.remark ?? ""
         }

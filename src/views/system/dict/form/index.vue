@@ -38,12 +38,6 @@
         </el-form-item>
       </re-col>
       <re-col>
-        <el-form-item label="字典值" prop="value">
-          <el-input v-model="newFormInline.value" clearable placeholder="请输入字典值" />
-        </el-form-item>
-      </re-col>
-
-      <re-col>
         <el-form-item label="标签颜色">
           <el-input v-model="newFormInline.color" class="color-input" clearable placeholder="请输入或选择标签颜色">
             <template #append>

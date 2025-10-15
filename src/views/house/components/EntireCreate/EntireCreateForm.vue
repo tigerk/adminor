@@ -68,6 +68,16 @@
     { label: "西北", value: "西北" }
   ];
 
+  const decorationTypeOptions = [
+    { label: "豪华装", value: "豪华装" },
+    { label: "简装", value: "简装" },
+    { label: "精装", value: "精装" },
+    { label: "毛坯", value: "毛坯" },
+    { label: "清水", value: "清水" },
+    { label: "简约", value: "简约" },
+    { label: "未装修", value: "未装修" }
+  ];
+
   // 添加新房源
   const addNewHouse = () => {
     houseList.value.push({
@@ -253,7 +263,9 @@
                 </el-col>
                 <el-col :span="4">
                   <el-form-item label="装修类型" prop="decorationType">
-                    <el-input v-model="house.decorationType" placeholder="请输入装修类型" />
+                    <el-select v-model="house.decorationType" placeholder="请选择装修类型" style="width: 100%">
+                      <el-option v-for="item in decorationTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
