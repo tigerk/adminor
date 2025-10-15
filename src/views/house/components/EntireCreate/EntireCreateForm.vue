@@ -8,6 +8,7 @@
   import type { HouseItemProps } from "./types";
   import DeptCascader from "@/components/Business/DeptUserCascader.vue";
   import { getCompanyUserOptions } from "@/api/company";
+  import HouseLayoutSelector from "@/views/house/components/HouseLayoutSelector.vue";
 
   // 使用hook中的方法
   const { openEntireEditDialog } = useEntireEdit();
@@ -51,15 +52,6 @@
       moreInfo: null
     }
   ]);
-
-  // 户型选项
-  const layoutOptions = [
-    { label: "1室1厅1厨", value: "1室1厅1厨" },
-    { label: "2室1厅1厨", value: "2室1厅1厨" },
-    { label: "2室2厅1厨", value: "2室2厅1厨" },
-    { label: "3室1厅1厨", value: "3室1厅1厨" },
-    { label: "3室2厅1厨", value: "3室2厅1厨" }
-  ];
 
   // 朝向选项
   const directionOptions = [
@@ -219,9 +211,7 @@
               <el-row :gutter="20">
                 <el-col :span="4">
                   <el-form-item label="户型" prop="houseLayout">
-                    <el-select v-model="house.houseLayout" placeholder="请选择户型" style="width: 100%">
-                      <el-option v-for="item in layoutOptions" :key="item.value" :label="item.label" :value="item.value" />
-                    </el-select>
+                    <HouseLayoutSelector v-model="house.houseLayout" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
