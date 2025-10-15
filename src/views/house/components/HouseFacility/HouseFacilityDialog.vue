@@ -1,28 +1,27 @@
 <script setup lang="ts">
-  import { ref, reactive, watch } from "vue";
-  import { ElMessage } from "element-plus";
+  import { reactive, watch } from "vue";
+  import { Plus, Minus } from "@element-plus/icons-vue";
+  import { type FacilityFormProps } from "@/views/house/components/HouseFacility/types";
 
-  interface FacilityItem {
-    name: string;
-    count: number;
+  const props = withDefaults(defineProps<FacilityFormProps>(), {});
+  const facilities = reactive(props.formInline);
+
+  // 存储选中的配置及其数量
+  const selectedFacilities = reactive<Record<string, number>>({});
+
+  if (facilities) {
+    // 清空现有数据
+    Object.keys(selectedFacilities).forEach(key => {
+      delete selectedFacilities[key];
+    });
+
+    // 加载传入的数据
+    if (facilities && facilities.length > 0) {
+      facilities.forEach(item => {
+        selectedFacilities[item.name] = item.count;
+      });
+    }
   }
-
-  interface Props {
-    modelValue: boolean;
-    facilities?: FacilityItem[];
-  }
-
-  interface Emits {
-    (e: "update:modelValue", value: boolean): void;
-    (e: "confirm", facilities: FacilityItem[]): void;
-  }
-
-  const props = withDefaults(defineProps<Props>(), {
-    modelValue: false,
-    facilities: () => []
-  });
-
-  const emit = defineEmits<Emits>();
 
   // 配置项列表
   const facilityOptions = [
@@ -53,29 +52,6 @@
     { label: "智能门锁", value: "智能门锁" }
   ];
 
-  // 存储选中的配置及其数量
-  const selectedFacilities = reactive<Record<string, number>>({});
-
-  // 监听对话框打开，初始化数据
-  watch(
-    () => props.modelValue,
-    newVal => {
-      if (newVal) {
-        // 清空现有数据
-        Object.keys(selectedFacilities).forEach(key => {
-          delete selectedFacilities[key];
-        });
-
-        // 加载传入的数据
-        if (props.facilities && props.facilities.length > 0) {
-          props.facilities.forEach(item => {
-            selectedFacilities[item.name] = item.count;
-          });
-        }
-      }
-    }
-  );
-
   // 切换选中状态
   const toggleFacility = (value: string) => {
     if (selectedFacilities[value]) {
@@ -99,28 +75,6 @@
     }
   };
 
-  // 关闭对话框
-  const handleClose = () => {
-    emit("update:modelValue", false);
-  };
-
-  // 取消
-  const handleCancel = () => {
-    handleClose();
-  };
-
-  // 保存
-  const handleConfirm = () => {
-    const result: FacilityItem[] = Object.entries(selectedFacilities).map(([name, count]) => ({
-      name,
-      count
-    }));
-
-    emit("confirm", result);
-    emit("update:modelValue", false);
-    ElMessage.success("保存成功");
-  };
-
   // 判断是否选中
   const isSelected = (value: string) => {
     return selectedFacilities.hasOwnProperty(value);
@@ -130,38 +84,35 @@
   const getCount = (value: string) => {
     return selectedFacilities[value] || 1;
   };
+
+  function getRef() {
+    return selectedFacilities;
+  }
+
+  defineExpose({ getRef });
 </script>
 
 <template>
-  <el-dialog :model-value="modelValue" title="编辑房源配置" width="800px" @close="handleClose">
-    <div class="facilities-container">
-      <h4 class="section-title">物品配置</h4>
-      <div class="facilities-grid">
-        <div v-for="option in facilityOptions" :key="option.value" class="facility-item">
-          <el-checkbox :model-value="isSelected(option.value)" @change="toggleFacility(option.value)">
-            {{ option.label }}
-          </el-checkbox>
+  <div class="facilities-container">
+    <h4 class="section-title">物品配置</h4>
+    <div class="facilities-grid">
+      <div v-for="option in facilityOptions" :key="option.value" class="facility-item">
+        <el-checkbox :model-value="isSelected(option.value)" @change="toggleFacility(option.value)">
+          {{ option.label }}
+        </el-checkbox>
 
-          <div v-if="isSelected(option.value)" class="count-control">
-            <el-button size="small" circle :disabled="getCount(option.value) <= 1" @click="decreaseCount(option.value)">
-              <span class="control-icon">−</span>
-            </el-button>
-            <span class="count-text">{{ getCount(option.value) }}</span>
-            <el-button size="small" circle @click="increaseCount(option.value)">
-              <span class="control-icon">+</span>
-            </el-button>
-          </div>
+        <div v-if="isSelected(option.value)" class="count-control">
+          <el-button size="small" circle :disabled="getCount(option.value) <= 1" @click="decreaseCount(option.value)">
+            <el-icon><Minus /></el-icon>
+          </el-button>
+          <span class="count-text">{{ getCount(option.value) }}</span>
+          <el-button size="small" circle @click="increaseCount(option.value)">
+            <el-icon><Plus /></el-icon>
+          </el-button>
         </div>
       </div>
     </div>
-
-    <template #footer>
-      <el-space>
-        <el-button @click="handleCancel">取 消</el-button>
-        <el-button type="primary" @click="handleConfirm">保 存</el-button>
-      </el-space>
-    </template>
-  </el-dialog>
+  </div>
 </template>
 
 <style scoped>
@@ -203,19 +154,21 @@
     margin-left: 12px;
   }
 
-  .count-control .el-button {
-    width: 24px;
-    height: 24px;
-    min-height: 24px;
+  :deep(.count-control .el-button) {
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
     padding: 0;
-    font-size: 16px;
-    line-height: 1;
   }
 
-  .control-icon {
-    display: inline-block;
-    font-size: 14px;
-    font-weight: bold;
+  :deep(.count-control .el-button.is-circle) {
+    border-radius: 50%;
+  }
+
+  :deep(.count-control .el-icon) {
+    width: 12px;
+    height: 12px;
+    font-size: 12px;
   }
 
   .count-text {

@@ -1,3 +1,5 @@
+import type { FacilityItemProps } from "@/views/house/components/HouseFacility/types";
+
 interface CommunityProps {
   name: string;
   address: string;
@@ -34,7 +36,7 @@ interface HouseItemProps {
   decorationType: string; // 装修类型
   price: string; // 出租价格
   propertyFee: string; // 物业费
-  facilities: FacilityItem[];
+  facilities: FacilityItemProps[];
   images: any[];
   moreInfo: any;
 }
@@ -63,9 +65,4 @@ interface EntireFormProps {
   formInline: EntireFormItemProps;
 }
 
-interface FacilityItem {
-  name: string;
-  count: number;
-}
-
-export type { EntireFormItemProps, EntireFormProps, HouseItemProps, CommunityProps, FacilityItem };
+export type { EntireFormItemProps, EntireFormProps, HouseItemProps, CommunityProps };

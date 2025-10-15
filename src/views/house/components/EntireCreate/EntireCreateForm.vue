@@ -2,16 +2,19 @@
   import { onMounted, reactive } from "vue";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
-  import { EntireFormProps, FacilityItem } from "@/views/house/components/EntireCreate/types";
+  import { EntireFormProps } from "@/views/house/components/EntireCreate/types";
   import { ref } from "vue";
   import { Plus, CircleCheck } from "@element-plus/icons-vue";
   import type { HouseItemProps } from "./types";
   import DeptCascader from "@/components/Business/DeptUserCascader.vue";
   import { getCompanyUserOptions } from "@/api/company";
-  import HouseFacilitiesDialog from "@/views/house/components/HouseFacilitiesDialog.vue";
+  import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
+  import { FacilityItemProps } from "@/views/house/components/HouseFacility/types";
+  import HouseLayoutSelector from "@/views/house/components/HouseLayoutSelector.vue";
 
   // 使用hook中的方法
   const { openEntireEditDialog } = useEntireEdit();
+  const { openFacilityEditDialog } = useFacilityEdit();
 
   const props = withDefaults(defineProps<EntireFormProps>(), {});
 
@@ -19,33 +22,6 @@
 
   // 负责人列表
   const salesmanList = ref([]);
-
-  /**
-   * 房源配置对话框 start
-   */
-  const facilitiesDialogVisible = ref(false);
-  const currentEditingHouseIndex = ref<number>(-1);
-  // 打开房源配置对话框
-  const openFacilitiesDialog = (index: number) => {
-    currentEditingHouseIndex.value = index;
-    facilitiesDialogVisible.value = true;
-  };
-
-  // 确认房源配置
-  const handleFacilitiesConfirm = (facilities: FacilityItem[]) => {
-    if (currentEditingHouseIndex.value >= 0) {
-      houseList.value[currentEditingHouseIndex.value].facilities = facilities;
-    }
-  };
-
-  // 获取房源配置状态文本
-  const getFacilitiesStatusText = (features: any[]) => {
-    return features && features.length > 0 ? "已设置" : "未设置";
-  };
-
-  /**
-   * 房源配置对话框 end
-   */
 
   const handlePoiSelected = (poi: any) => {
     entireForm.community = {
@@ -134,6 +110,26 @@
       houseList.value.splice(index, 1);
     }
   };
+
+  /**
+   * 房源配置对话框 start
+   */
+  const openFacilitiesDialog = (index: number) => {
+    const currentHouse = houseList.value[index];
+
+    openFacilityEditDialog("", currentHouse.facilities, (facilities: FacilityItemProps[]) => {
+      // 回调函数：将返回的数据赋值给对应的房源
+      houseList.value[index].facilities = facilities;
+    });
+  };
+
+  // 获取房源配置状态文本
+  const getFacilitiesStatusText = (features: any[]) => {
+    return features && features.length > 0 ? "已设置" : "未设置";
+  };
+  /**
+   * 房源配置对话框 end
+   */
 </script>
 
 <template>
@@ -367,14 +363,7 @@
       </div>
     </el-form>
   </div>
-  <!-- 房源配置对话框 -->
-  <HouseFacilitiesDialog
-    v-model="facilitiesDialogVisible"
-    :facilities="currentEditingHouseIndex >= 0 ? houseList[currentEditingHouseIndex].facilities : []"
-    @confirm="handleFacilitiesConfirm"
-  />
 </template>
-
 <style scoped>
   .entier-create-container {
     padding: 5px;
