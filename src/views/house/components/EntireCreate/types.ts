@@ -28,6 +28,7 @@ interface HouseItemProps {
   floor: number; // 所在楼层
   totalFloor: number; // 总楼层数
   houseLayout: HouseLayoutProps; // 户型
+  rentalType: number; // 出租类型：1=整租，2=合租
   direction: string; // 朝向
   area: string; // 面积
   decorationType: string; // 装修类型
