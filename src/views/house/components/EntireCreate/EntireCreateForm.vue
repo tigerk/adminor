@@ -2,13 +2,13 @@
   import { onMounted, reactive } from "vue";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
-  import { EntireFormProps } from "@/views/house/components/EntireCreate/types";
+  import { EntireFormProps, FacilityItem } from "@/views/house/components/EntireCreate/types";
   import { ref } from "vue";
   import { Plus, CircleCheck } from "@element-plus/icons-vue";
   import type { HouseItemProps } from "./types";
   import DeptCascader from "@/components/Business/DeptUserCascader.vue";
   import { getCompanyUserOptions } from "@/api/company";
-  import HouseLayoutSelector from "@/views/house/components/HouseLayoutSelector.vue";
+  import HouseFacilitiesDialog from "@/views/house/components/HouseFacilitiesDialog.vue";
 
   // 使用hook中的方法
   const { openEntireEditDialog } = useEntireEdit();
@@ -19,6 +19,33 @@
 
   // 负责人列表
   const salesmanList = ref([]);
+
+  /**
+   * 房源配置对话框 start
+   */
+  const facilitiesDialogVisible = ref(false);
+  const currentEditingHouseIndex = ref<number>(-1);
+  // 打开房源配置对话框
+  const openFacilitiesDialog = (index: number) => {
+    currentEditingHouseIndex.value = index;
+    facilitiesDialogVisible.value = true;
+  };
+
+  // 确认房源配置
+  const handleFacilitiesConfirm = (facilities: FacilityItem[]) => {
+    if (currentEditingHouseIndex.value >= 0) {
+      houseList.value[currentEditingHouseIndex.value].facilities = facilities;
+    }
+  };
+
+  // 获取房源配置状态文本
+  const getFacilitiesStatusText = (features: any[]) => {
+    return features && features.length > 0 ? "已设置" : "未设置";
+  };
+
+  /**
+   * 房源配置对话框 end
+   */
 
   const handlePoiSelected = (poi: any) => {
     entireForm.community = {
@@ -47,7 +74,7 @@
       decorationType: "",
       price: "",
       propertyFee: "",
-      features: [],
+      facilities: [],
       images: [],
       moreInfo: null
     }
@@ -81,7 +108,7 @@
       decorationType: "",
       price: "",
       propertyFee: "",
-      features: [],
+      facilities: [],
       images: [],
       moreInfo: null
     });
@@ -265,11 +292,11 @@
                 </el-col>
                 <el-col :span="8">
                   <el-form-item label="房源配置">
-                    <el-button class="status-btn">
+                    <el-button class="status-btn" :type="house.facilities && house.facilities.length > 0 ? 'success' : 'default'" @click="openFacilitiesDialog(index)">
                       <el-icon>
                         <CircleCheck />
                       </el-icon>
-                      <span>未设置</span>
+                      <span>{{ getFacilitiesStatusText(house.facilities) }}</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
@@ -340,6 +367,12 @@
       </div>
     </el-form>
   </div>
+  <!-- 房源配置对话框 -->
+  <HouseFacilitiesDialog
+    v-model="facilitiesDialogVisible"
+    :facilities="currentEditingHouseIndex >= 0 ? houseList[currentEditingHouseIndex].facilities : []"
+    @confirm="handleFacilitiesConfirm"
+  />
 </template>
 
 <style scoped>

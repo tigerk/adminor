@@ -34,7 +34,7 @@ interface HouseItemProps {
   decorationType: string; // 装修类型
   price: string; // 出租价格
   propertyFee: string; // 物业费
-  features: any[];
+  facilities: FacilityItem[];
   images: any[];
   moreInfo: any;
 }
@@ -63,4 +63,9 @@ interface EntireFormProps {
   formInline: EntireFormItemProps;
 }
 
-export type { EntireFormItemProps, EntireFormProps, HouseItemProps, CommunityProps };
+interface FacilityItem {
+  name: string;
+  count: number;
+}
+
+export type { EntireFormItemProps, EntireFormProps, HouseItemProps, CommunityProps, FacilityItem };
