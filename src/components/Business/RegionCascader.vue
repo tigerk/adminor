@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-  import { defineModel, onMounted, ref } from "vue";
+  import { onMounted, ref } from "vue";
   import { getRegionList } from "@/api/region.ts";
   import { handleTree } from "@/utils/tree.ts";
 
