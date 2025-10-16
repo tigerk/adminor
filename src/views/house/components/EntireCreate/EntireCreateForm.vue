@@ -11,10 +11,12 @@
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
   import { FacilityItemProps } from "@/views/house/components/HouseFacility/types";
   import HouseLayoutSelector from "@/views/house/components/HouseLayoutSelector.vue";
+  import { useHouseTagsEdit } from "@/views/house/components/HouseTags/hook";
 
   // 使用hook中的方法
   const { openEntireEditDialog } = useEntireEdit();
   const { openFacilityEditDialog } = useFacilityEdit();
+  const { openHouseTagsEditDialog } = useHouseTagsEdit();
 
   const props = withDefaults(defineProps<EntireFormProps>(), {});
 
@@ -52,6 +54,7 @@
       propertyFee: "",
       facilities: [],
       images: [],
+      tags: [],
       moreInfo: null
     }
   ]);
@@ -96,6 +99,7 @@
       propertyFee: "",
       facilities: [],
       images: [],
+      tags: [],
       moreInfo: null
     });
   };
@@ -139,6 +143,21 @@
   };
   /**
    * 房源配置对话框 end
+   */
+
+  /**
+   * 房源特色对话框 start
+   */
+  const openHouseTagsDialog = (index: number) => {
+    const currentHouse = houseList.value[index];
+
+    openHouseTagsEditDialog("", currentHouse.tags, (tags: any[]) => {
+      // 回调函数：将返回的数据赋值给对应的房源
+      houseList.value[index].tags = tags;
+    });
+  };
+  /**
+   * 房源特色对话框 end
    */
 </script>
 
@@ -290,11 +309,11 @@
               <el-row :gutter="20">
                 <el-col :span="8">
                   <el-form-item label="房源特色">
-                    <el-button class="status-btn">
+                    <el-button class="status-btn" :type="house.tags && house.tags.length > 0 ? 'success' : 'default'" @click="openHouseTagsDialog(index)">
                       <el-icon>
                         <CircleCheck />
                       </el-icon>
-                      <span>未设置</span>
+                      <span>{{ house.tags && house.tags.length > 0 ? "已设置" : "未设置" }}</span>
                     </el-button>
                   </el-form-item>
                 </el-col>

@@ -38,6 +38,7 @@ interface HouseItemProps {
   propertyFee: string; // 物业费
   facilities: FacilityItemProps[];
   images: any[];
+  tags: any[];
   moreInfo: any;
 }
 
