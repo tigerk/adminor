@@ -12,6 +12,9 @@
   import { FacilityItemProps } from "@/views/house/components/HouseFacility/types";
   import HouseLayoutSelector from "@/views/house/components/HouseLayoutSelector.vue";
   import { useHouseTagsEdit } from "@/views/house/components/HouseTags/hook";
+  import { createEntireFormRules, validateAllHouses } from "./rule";
+  import type { FormInstance } from "element-plus";
+  import { ElMessage } from "element-plus";
 
   // 使用hook中的方法
   const { openEntireEditDialog } = useEntireEdit();
@@ -19,20 +22,27 @@
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
 
   const props = withDefaults(defineProps<EntireFormProps>(), {});
+  const emit = defineEmits(["onSave"]);
 
   const entireForm = reactive(props.formInline);
+
+  // 表单引用
+  const ruleFormRef = ref<FormInstance>();
+
+  // 创建表单验证规则
+  const rules = createEntireFormRules(entireForm);
 
   // 负责人列表
   const salesmanList = ref([]);
 
   const handlePoiSelected = (poi: any) => {
     entireForm.community = {
-      name: poi.name, // poi名称
-      adcode: poi.adcode, // 地区编码
-      cityId: poi.cityId, // 区域ID
-      address: poi.address, // 地址
-      district: poi.district, // 区域
-      location: poi.location // 经纬度
+      name: poi.name,
+      adcode: poi.adcode,
+      cityId: poi.cityId,
+      address: poi.address,
+      district: poi.district,
+      location: poi.location
     };
   };
 
@@ -112,9 +122,7 @@
 
   const copyHouse = (index: number) => {
     const houseToCopy = houseList.value[index];
-    // 深拷贝当前房源数据
     const newHouse = JSON.parse(JSON.stringify(houseToCopy));
-    // 在当前房源后面插入新房源
     houseList.value.splice(index + 1, 0, newHouse);
   };
 
@@ -132,7 +140,6 @@
     const currentHouse = houseList.value[index];
 
     openFacilityEditDialog("", currentHouse.facilities, (facilities: FacilityItemProps[]) => {
-      // 回调函数：将返回的数据赋值给对应的房源
       houseList.value[index].facilities = facilities;
     });
   };
@@ -152,18 +159,49 @@
     const currentHouse = houseList.value[index];
 
     openHouseTagsEditDialog("", currentHouse.tags, (tags: any[]) => {
-      // 回调函数：将返回的数据赋值给对应的房源
       houseList.value[index].tags = tags;
     });
   };
   /**
    * 房源特色对话框 end
    */
+
+  // 验证表单（供父组件调用）
+  const validateForm = async (): Promise<boolean> => {
+    try {
+      // 验证基础表单（小区信息 + 负责人信息）
+      await ruleFormRef.value?.validate();
+
+      // 验证所有房源
+      const { valid, errors } = validateAllHouses(houseList.value);
+
+      if (!valid) {
+        ElMessage.error({
+          message: errors.join("! \n"),
+          duration: 1500
+        });
+
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("表单验证失败", error);
+      return false;
+    }
+  };
+
+  // 暴露给父组件的方法和数据
+  defineExpose({
+    validateForm,
+    entireForm,
+    houseList
+  });
 </script>
 
 <template>
   <div class="entier-create-container">
-    <el-form ref="ruleFormRef" :model="entireForm" label-position="top">
+    <el-form ref="ruleFormRef" :model="entireForm" :rules="rules" label-position="top">
       <div>
         <!-- 项目信息 -->
         <h3 class="pb-4">小区信息</h3>
@@ -174,7 +212,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="3">
-            <el-form-item label="用水" required class="el-form-item">
+            <el-form-item label="用水" prop="water" class="el-form-item">
               <el-select v-model="entireForm.water" placeholder="请选择">
                 <el-option label="民用水" value="residential" />
                 <el-option label="商业用水" value="commercial" />
@@ -182,7 +220,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="3">
-            <el-form-item label="用电" required>
+            <el-form-item label="用电" prop="electricity">
               <el-select v-model="entireForm.electricity" placeholder="请选择">
                 <el-option label="民用电" value="residential" />
                 <el-option label="商业用电" value="commercial" />
@@ -190,7 +228,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="3">
-            <el-form-item label="供暖信息" required>
+            <el-form-item label="供暖信息" prop="heating">
               <el-select v-model="entireForm.heating" placeholder="请选择">
                 <el-option label="独立供暖" value="independent" />
                 <el-option label="集中供暖" value="central" />
@@ -228,32 +266,32 @@
               <!-- 第一行 -->
               <el-row :gutter="20">
                 <el-col :span="4">
-                  <el-form-item label="房源编号" prop="houseCode">
+                  <el-form-item label="房源编号">
                     <el-input v-model="house.houseCode" placeholder="请输入房源编号" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="座/栋" prop="building">
+                  <el-form-item label="座/栋" required>
                     <el-input v-model="house.building" placeholder="请输入座/栋" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="单元" prop="unit">
+                  <el-form-item label="单元">
                     <el-input v-model="house.unit" placeholder="请输入单元" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="房间号" prop="doorNumber">
+                  <el-form-item label="房间号" required>
                     <el-input v-model="house.doorNumber" placeholder="请输入房间号" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="所在楼层" prop="floor">
+                  <el-form-item label="所在楼层" required>
                     <el-input v-model="house.floor" placeholder="请输入楼层" type="number" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="总楼层数" prop="totalFloor">
+                  <el-form-item label="总楼层数" required>
                     <el-input v-model="house.totalFloor" placeholder="请输入总楼层数" type="number" />
                   </el-form-item>
                 </el-col>
@@ -262,40 +300,40 @@
               <!-- 第三行 -->
               <el-row :gutter="20">
                 <el-col :span="4">
-                  <el-form-item label="户型" prop="houseLayout">
+                  <el-form-item label="户型" required>
                     <HouseLayoutSelector v-model="house.houseLayout" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="朝向" prop="direction">
+                  <el-form-item label="朝向" required>
                     <el-select v-model="house.direction" placeholder="请选择朝向" style="width: 100%">
                       <el-option v-for="item in directionOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="面积" prop="area">
+                  <el-form-item label="面积">
                     <el-input v-model="house.area" placeholder="请输入面积">
                       <template #suffix>m²</template>
                     </el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="装修类型" prop="decorationType">
+                  <el-form-item label="装修类型" required>
                     <el-select v-model="house.decorationType" placeholder="请选择装修类型" style="width: 100%">
                       <el-option v-for="item in decorationTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="出租价格" prop="price">
+                  <el-form-item label="出租价格" required>
                     <el-input v-model="house.price" placeholder="请输入价格">
                       <template #suffix>元/月</template>
                     </el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="物业费" prop="propertyFee">
+                  <el-form-item label="物业费">
                     <el-input v-model="house.propertyFee" placeholder="请输入物业费">
                       <template #suffix>元/月</template>
                     </el-input>
@@ -428,7 +466,7 @@
 
   .status-section .remove-btn-wrapper {
     display: flex;
-    justify-content: flex-end; /* 使子元素（即删除按钮）靠右 */
+    justify-content: flex-end;
   }
 
   .status-section .el-form-item {
