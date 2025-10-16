@@ -1,9 +1,8 @@
 import HouseTagsDialog from "./HouseTagsDialog.vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { defineEmits, h, ref } from "vue";
+import { h, ref } from "vue";
 import { message } from "@/utils/message";
-import type { TagsFormProps } from "@/views/house/components/HouseTags/types";
 
 export function useHouseTagsEdit() {
   const tagsFormRef = ref();

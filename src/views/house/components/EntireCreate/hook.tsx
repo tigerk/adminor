@@ -4,7 +4,6 @@ import { addDialog, closeAllDialog, closeDialog } from "@/components/ReDialog/in
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import type { EntireFormItemProps } from "@/views/house/components/EntireCreate/types";
-import { options } from "@/views/table/edit/data";
 
 export function useEntireEdit() {
   const entireForm = reactive({

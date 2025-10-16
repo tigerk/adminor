@@ -7,7 +7,7 @@
   const tags = reactive(props.formInline);
 
   // 存储选中的配置及其数量
-  const selectedTags = reactive<any[]>(tags);
+  const selectedTags = reactive<any[]>([]);
   const tagsOptions = reactive<any[]>([]);
 
   onMounted(() => {
@@ -17,6 +17,10 @@
       resp.data.forEach(item => {
         tagsOptions.push({ label: item.name, value: item.id });
       });
+    });
+
+    tags.forEach(item => {
+      selectedTags.push(item);
     });
   });
 
