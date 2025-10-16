@@ -104,7 +104,7 @@
               background: highlightMap[node.id]?.highlight ? 'var(--el-color-primary-light-7)' : 'transparent'
             }"
           >
-            {{ `${node.label}（${data.dictCode}）` }}
+            {{ `${node.label}` }}
           </ReText>
         </template>
       </el-tree>

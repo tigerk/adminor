@@ -46,3 +46,8 @@ export const switchDictDataStatus = (data?: object) => {
 export const getDictDataByDictCode = (data?: object) => {
   return http.request<Result>("get", baseUrlApi("sys/dict/data/listByDictCode"), { params: data });
 };
+
+/** 删除字典数据项 */
+export const deleteDictData = (data?: object) => {
+  return http.request<Result>("post", baseUrlApi("sys/dict/data/delete"), { data });
+};

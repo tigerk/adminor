@@ -8,7 +8,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
-import { createDictData, getDictData, getDictTree, switchDictDataStatus } from "@/api/sys/dict";
+import { createDictData, deleteDictData, getDictData, getDictTree, switchDictDataStatus } from "@/api/sys/dict";
 
 export function useDict() {
   // 左侧字典树的id
@@ -111,8 +111,10 @@ export function useDict() {
   }
 
   function handleDelete(row) {
-    message(`您删除了字典标签为${row.name}的这条数据`, { type: "success" });
-    onSearch();
+    deleteDictData([row.id]).then(resp => {
+      message(`您删除了字典标签为${row.name}的这条数据`, { type: "success" });
+      onSearch();
+    });
   }
 
   function handleSizeChange(val: number) {
