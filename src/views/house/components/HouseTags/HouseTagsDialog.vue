@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import { onMounted, reactive, ref, watch } from "vue";
-  import { type FacilityFormProps } from "@/views/house/components/HouseFacility/types";
   import { getDictDataByDictCode } from "@/api/sys/dict";
+  import { TagsFormProps } from "@/views/house/components/HouseTags/types";
 
-  const props = withDefaults(defineProps<FacilityFormProps>(), {});
+  const props = withDefaults(defineProps<TagsFormProps>(), {});
   const tags = reactive(props.formInline);
 
   // 存储选中的配置及其数量
@@ -52,7 +52,7 @@
 </script>
 
 <template>
-  <div class="facilities-container">
+  <div class="tags-container">
     <h4 class="section-title">物品配置</h4>
     <div class="tags-grid">
       <div v-for="option in tagsOptions" :key="option.value" class="tags-item">
@@ -65,7 +65,7 @@
 </template>
 
 <style scoped>
-  .facilities-container {
+  .tags-container {
     padding: 10px 0;
   }
 

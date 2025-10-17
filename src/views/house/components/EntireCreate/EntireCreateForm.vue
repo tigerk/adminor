@@ -15,11 +15,13 @@
   import { createEntireFormRules, validateAllHouses } from "./rule";
   import type { FormInstance } from "element-plus";
   import { ElMessage } from "element-plus";
+  import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
 
   // 使用hook中的方法
   const { openEntireEditDialog } = useEntireEdit();
   const { openFacilityEditDialog } = useFacilityEdit();
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
+  const { openHouseImageEditDialog } = useHouseImageEdit();
 
   const props = withDefaults(defineProps<EntireFormProps>(), {});
   const emit = defineEmits(["onSave"]);
@@ -63,7 +65,7 @@
       price: "",
       propertyFee: "",
       facilities: [],
-      images: [],
+      imageList: [],
       tags: [],
       moreInfo: null
     }
@@ -164,6 +166,20 @@
   };
   /**
    * 房源特色对话框 end
+   */
+
+  /**
+   * 房源图片对话框 start
+   */
+  const openImageListDialog = (index: number) => {
+    const currentHouse = houseList.value[index];
+
+    openHouseImageEditDialog("", currentHouse.imageList, (imageList: any[]) => {
+      houseList.value[index].imageList = imageList;
+    });
+  };
+  /**
+   * 房源图片对话框 end
    */
 
   // 验证表单（供父组件调用）
@@ -379,11 +395,11 @@
               <el-row :gutter="20">
                 <el-col :span="8">
                   <el-form-item label="房源图片">
-                    <el-button class="status-btn">
+                    <el-button class="status-btn" :type="house.imageList && house.imageList.length > 0 ? 'success' : 'default'" @click="openImageListDialog(index)">
                       <el-icon>
                         <CircleCheck />
                       </el-icon>
-                      <span>未设置</span>
+                      <span>{{ house.imageList && house.imageList.length > 0 ? "已设置" : "未设置" }}</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
