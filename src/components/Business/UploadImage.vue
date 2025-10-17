@@ -191,7 +191,7 @@
   /** 缩略图拖拽排序 */
   const imgDrop = uid => {
     const CLASSNAME = "el-upload-list";
-    const _curIndex = fileList.value?.findIndex(img => img.uid === uid) ?? -1;
+    const _curIndex = fileList.value?.findIndex(img => img && img.uid === uid) ?? -1;
     if (_curIndex >= 0) {
       getUploadItem()?.[_curIndex]?.classList?.add(`${CLASSNAME}__item-actions`);
     }
@@ -201,16 +201,13 @@
       Sortable.create(wrapper, {
         handle: `.${CLASSNAME}__item`,
         onEnd: ({ newIndex, oldIndex }) => {
-          if (fileList.value && typeof newIndex === "number" && typeof oldIndex === "number") {
-            const oldFile = fileList.value[oldIndex];
-            fileList.value.splice(oldIndex, 1);
-            fileList.value.splice(newIndex, 0, oldFile);
-
-            // fix: https://github.com/SortableJS/Sortable/issues/232
-            // (firefox is ok, but chromium is bad. see https://bugs.chromium.org/p/chromium/issues/detail?id=410328)
-            getUploadItem().forEach(ele => {
-              ele.classList.remove(`${CLASSNAME}__item-actions`);
-            });
+          // 确保 newIndex 和 oldIndex 是有效的数字
+          if (typeof newIndex === "number" && typeof oldIndex === "number" && newIndex !== -1 && oldIndex !== -1) {
+            // 确保 fileList 和其中的项都是有效的
+            if (fileList.value && fileList.value[oldIndex] && fileList.value[oldIndex].uid) {
+              const [removed] = fileList.value.splice(oldIndex, 1);
+              fileList.value.splice(newIndex, 0, removed);
+            }
           }
         }
       });
