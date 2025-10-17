@@ -4,10 +4,9 @@
   import { TagsFormProps } from "@/views/house/components/HouseTags/types";
 
   const props = withDefaults(defineProps<TagsFormProps>(), {});
-  const tags = reactive(props.formInline);
 
   // 存储选中的配置及其数量
-  const selectedTags = reactive<any[]>([]);
+  const selectedTags = ref<any[]>([]);
   const tagsOptions = reactive<any[]>([]);
 
   onMounted(() => {
@@ -19,33 +18,34 @@
       });
     });
 
-    tags.forEach(item => {
-      selectedTags.push(item);
-    });
+    if (props.formInline && props.formInline.length > 0) {
+      // 直接赋值给 ref 的 value
+      selectedTags.value = [...props.formInline];
+    }
   });
 
   // 切换选中状态
   const toggleTag = (value: number) => {
-    if (selectedTags.includes(value)) {
+    if (selectedTags.value.includes(value)) {
       // 找到要删除的值的索引
-      const index = selectedTags.indexOf(value);
+      const index = selectedTags.value.indexOf(value);
 
       // 如果找到了该值，则删除它
       if (index !== -1) {
-        selectedTags.splice(index, 1);
+        selectedTags.value.splice(index, 1);
       }
     } else {
-      selectedTags.push(value);
+      selectedTags.value.push(value);
     }
   };
 
   // 判断是否选中
   const isSelected = (value: number) => {
-    return selectedTags.includes(value);
+    return selectedTags.value.includes(value);
   };
 
   function getRef() {
-    return selectedTags;
+    return selectedTags.value;
   }
 
   defineExpose({ getRef });
