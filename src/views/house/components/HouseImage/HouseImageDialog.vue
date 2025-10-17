@@ -1,51 +1,64 @@
 <script setup lang="ts">
-  import { onMounted, reactive, ref, watch } from "vue";
+  import { onMounted, ref, watch } from "vue";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { ImageFormProps } from "@/views/house/components/HouseImage/types";
 
   const props = withDefaults(defineProps<ImageFormProps>(), {});
-  const images = reactive(props.formInline);
 
-  // 存储选中的配置及其数量
-  const imageList = reactive<any[]>([]);
+  // 改用 ref 而不是 reactive，因为 v-model 需要 ref
+  const imageList = ref<any[]>([]);
 
+  // 获取图片列表的方法
   function getImageList() {
-    return imageList;
+    console.log("当前图片列表:", imageList.value);
+    return imageList.value.map(item => item.url);
   }
 
+  // 初始化时加载已有的图片数据
   onMounted(() => {
-    images.forEach(item => {
-      imageList.push(item);
-    });
+    if (props.formInline && props.formInline.length > 0) {
+      // 直接赋值给 ref 的 value
+      imageList.value = [...props.formInline];
+      console.log("初始化图片列表:", imageList.value);
+    }
   });
 
+  // 监听图片列表变化（可选，用于调试）
+  watch(
+    imageList,
+    newVal => {
+      console.log("图片列表已更新:", newVal);
+    },
+    { deep: true }
+  );
+
+  // 暴露方法给父组件
   defineExpose({ getImageList });
 </script>
 
 <template>
   <div class="image-container">
     <div class="image-grid">
+      <!-- v-model 绑定到 ref -->
       <UploadImage v-model="imageList" :limit="10" />
     </div>
-    <div>
+    <div class="mt-4">
       <p>温馨提示：</p>
-      <p>* 支持图片格式 （ipg、png、jpeg），最多上传24张，每张最大10M；</p>
-      <p>* 支持视频格式（mp4、avi、mov），最多上传1个视频，不可大于50M；</p>
-      <p>* 拖动图片可以进行排序显示；</p>
-      <p>* 默认上传的第一张图为首图，悬浮图片上显示设为封面按钮；</p>
-      <p>*上传图片后，图片下面显示图片标签类型；悬浮图片时右上角出现删除图标</p>
+      <p>* 默认上传的第一张图为首图</p>
+      <p>* 上传图片后，悬浮图片时右上角出现删除图标</p>
+      <p>* 直接拖拽图片可调整顺序</p>
     </div>
+
+    <!-- 调试信息（可选，用于查看当前数据） -->
+    <!-- <div class="mt-4 p-4 bg-gray-100 rounded">
+      <p class="font-bold">当前图片数量: {{ imageList.length }}</p>
+      <pre>{{ JSON.stringify(imageList, null, 2) }}</pre>
+    </div> -->
   </div>
 </template>
 
 <style scoped>
   .image-container {
     padding: 10px 0;
-  }
-
-  .image-grid {
-    display: grid;
-    //grid-template-columns: repeat(6, 1fr);
-    gap: 16px 20px;
   }
 </style>

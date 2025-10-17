@@ -18,7 +18,7 @@ export function useHouseImageEdit() {
         formInline: row ?? null
       },
       top: "10%",
-      width: "1000px",
+      width: "865px",
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
