@@ -177,7 +177,7 @@
 
       if (!valid) {
         ElMessage.error({
-          message: errors.join("! \n"),
+          message: errors.join("! "),
           duration: 1500
         });
 
@@ -271,7 +271,7 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="座/栋" required>
+                  <el-form-item label="座/栋" prop="houseList.building" required>
                     <el-input v-model="house.building" placeholder="请输入座/栋" />
                   </el-form-item>
                 </el-col>
@@ -281,17 +281,17 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="房间号" required>
+                  <el-form-item label="房间号" prop="houseList.doorNumber" required>
                     <el-input v-model="house.doorNumber" placeholder="请输入房间号" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="所在楼层" required>
+                  <el-form-item label="所在楼层" prop="houseList.floor" required>
                     <el-input v-model="house.floor" placeholder="请输入楼层" type="number" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="总楼层数" required>
+                  <el-form-item label="总楼层数" prop="houseList.totalFloor" required>
                     <el-input v-model="house.totalFloor" placeholder="请输入总楼层数" type="number" />
                   </el-form-item>
                 </el-col>
@@ -300,12 +300,12 @@
               <!-- 第三行 -->
               <el-row :gutter="20">
                 <el-col :span="4">
-                  <el-form-item label="户型" required>
+                  <el-form-item label="户型" prop="houseList.houseLayout" required>
                     <HouseLayoutSelector v-model="house.houseLayout" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="朝向" required>
+                  <el-form-item label="朝向" prop="houseList.direction" required>
                     <el-select v-model="house.direction" placeholder="请选择朝向" style="width: 100%">
                       <el-option v-for="item in directionOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
@@ -319,14 +319,14 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="装修类型" required>
+                  <el-form-item label="装修类型" prop="houseList.decorationType" required>
                     <el-select v-model="house.decorationType" placeholder="请选择装修类型" style="width: 100%">
                       <el-option v-for="item in decorationTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="出租价格" required>
+                  <el-form-item label="出租价格" prop="houseList.price" required>
                     <el-input v-model="house.price" placeholder="请输入价格">
                       <template #suffix>元/月</template>
                     </el-input>

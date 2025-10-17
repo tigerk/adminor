@@ -65,8 +65,6 @@ export function useEntireEdit() {
 
                   ElMessage.success("保存成功");
                   closeDialog(options, index);
-                } else {
-                  ElMessage.warning("请完善必填信息");
                 }
               }
             }}

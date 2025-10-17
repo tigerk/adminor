@@ -18,7 +18,22 @@ export const createEntireFormRules = (form: any) => {
     salesmanId: [
       { required: true, message: "负责人为必填项", trigger: "change" },
       { type: "number", message: "请选择负责人", trigger: "change", transform: value => Number(value) }
-    ]
+    ],
+    // 房源表单项的验证规则
+    "houseList.building": [{ required: true, message: "请输入座/栋", trigger: "blur" }],
+    "houseList.doorNumber": [{ required: true, message: "请输入房间号", trigger: "blur" }],
+    "houseList.floor": [
+      { required: true, message: "请输入所在楼层", trigger: "blur" },
+      { type: "number", message: "所在楼层必须是数字", trigger: "blur" }
+    ],
+    "houseList.totalFloor": [
+      { required: true, message: "请输入总楼层数", trigger: "blur" },
+      { type: "number", message: "总楼层数必须是数字", trigger: "blur" }
+    ],
+    "houseList.houseLayout": [{ required: true, message: "请选择户型", trigger: "change" }],
+    "houseList.direction": [{ required: true, message: "请选择朝向", trigger: "change" }],
+    "houseList.decorationType": [{ required: true, message: "请选择装修类型", trigger: "change" }],
+    "houseList.price": [{ required: true, message: "请输入出租价格", trigger: "blur" }]
   });
 };
 
