@@ -110,7 +110,7 @@
       price: "",
       propertyFee: "",
       facilities: [],
-      images: [],
+      imageList: [],
       tags: [],
       moreInfo: null
     });
@@ -189,16 +189,16 @@
       await ruleFormRef.value?.validate();
 
       // 验证所有房源
-      const { valid, errors } = validateAllHouses(houseList.value);
-
-      if (!valid) {
-        ElMessage.error({
-          message: errors.join("! "),
-          duration: 1500
-        });
-
-        return false;
-      }
+      // const { valid, errors } = validateAllHouses(houseList.value);
+      //
+      // if (!valid) {
+      //   ElMessage.error({
+      //     message: errors.join("! "),
+      //     duration: 1500
+      //   });
+      //
+      //   return false;
+      // }
 
       return true;
     } catch (error) {
@@ -287,7 +287,7 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="座/栋" prop="houseList.building" required>
+                  <el-form-item label="座/栋" prop="houseList.[index].building" required>
                     <el-input v-model="house.building" placeholder="请输入座/栋" />
                   </el-form-item>
                 </el-col>
@@ -297,17 +297,17 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="房间号" prop="houseList.doorNumber" required>
+                  <el-form-item label="房间号" prop="houseList.[index].doorNumber" required>
                     <el-input v-model="house.doorNumber" placeholder="请输入房间号" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="所在楼层" prop="houseList.floor" required>
+                  <el-form-item label="所在楼层" prop="houseList.[index].floor" required>
                     <el-input v-model="house.floor" placeholder="请输入楼层" type="number" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="总楼层数" prop="houseList.totalFloor" required>
+                  <el-form-item label="总楼层数" prop="houseList.[index].totalFloor" required>
                     <el-input v-model="house.totalFloor" placeholder="请输入总楼层数" type="number" />
                   </el-form-item>
                 </el-col>

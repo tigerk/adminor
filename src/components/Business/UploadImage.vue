@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import Sortable from "sortablejs";
-  import { ref, computed, watch, nextTick, onMounted } from "vue";
+  import { ref, computed, watch, nextTick, onMounted, getCurrentInstance } from "vue";
   import { message } from "@/utils/message";
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
   import { getKeyList, extractFields } from "@pureadmin/utils";
@@ -22,6 +22,10 @@
       default: 3
     }
   });
+
+  // 生成唯一的组件ID
+  const instance = getCurrentInstance();
+  const componentId = `upload-image-${instance?.uid || Date.now()}`;
 
   const convertUrlsToUploadFiles = (urls: string[]): UploadFile[] => {
     return urls.map((url, index) => {
@@ -90,6 +94,7 @@
 
   const curOpenImgIndex = ref(0);
   const dialogVisible = ref(false);
+  const uploadRef = ref();
 
   const urlList = computed(() => {
     const validFiles = fileList.value.filter(file => file && file.url && file.status === "success");
@@ -236,12 +241,14 @@
     }
 
     nextTick(() => {
-      // 尝试多个可能的选择器
-      let wrapper: HTMLElement | null = document.querySelector(".el-upload-list.el-upload-list--picture-card");
-
-      if (!wrapper) {
-        wrapper = document.querySelector(".el-upload-list");
+      // 使用唯一的组件ID选择器，确保只操作当前组件的元素
+      const componentWrapper = document.getElementById(componentId);
+      if (!componentWrapper) {
+        console.error("未找到组件容器");
+        return;
       }
+
+      const wrapper = componentWrapper.querySelector(".el-upload-list.el-upload-list--picture-card") as HTMLElement;
 
       console.log("找到的容器元素:", wrapper);
 
@@ -254,11 +261,8 @@
           ghostClass: "sortable-ghost",
           chosenClass: "sortable-chosen",
           dragClass: "sortable-drag",
-          // 确保不拖拽上传按钮
           filter: ".el-upload--picture-card",
-          // 可拖拽的元素
           draggable: ".el-upload-list__item",
-          // 设置为 true 强制使用回退模式
           forceFallback: true,
           fallbackClass: "sortable-fallback",
           fallbackOnBody: true,
@@ -294,7 +298,6 @@
           },
 
           onMove: evt => {
-            // 阻止拖拽到上传按钮位置
             return evt.related.className.indexOf("el-upload--picture-card") === -1;
           }
         });
@@ -311,7 +314,6 @@
     () => fileList.value.length,
     (newLength, oldLength) => {
       console.log("文件列表长度变化:", oldLength, "->", newLength);
-      // 延迟初始化，确保 DOM 已更新
       setTimeout(() => {
         initSortable();
       }, 300);
@@ -320,71 +322,74 @@
 
   // 组件挂载后初始化
   onMounted(() => {
-    console.log("组件已挂载");
+    console.log("组件已挂载，组件ID:", componentId);
     initSortable();
   });
 </script>
 
 <template>
-  <el-card shadow="never">
-    <el-upload
-      v-model:file-list="fileList"
-      drag
-      multiple
-      class="pure-upload"
-      list-type="picture-card"
-      accept="image/jpeg,image/png,image/gif"
-      :limit="props.limit"
-      :http-request="customUpload"
-      :on-exceed="onExceed"
-      :before-upload="onBefore"
-      :on-success="onUploadSuccess"
-      :on-error="onUploadError"
-    >
-      <EpPlus class="m-auto mt-4" />
-      <template #file="{ file }">
-        <div v-if="file.status === 'ready' || file.status === 'uploading'" class="mt-[35%]! m-auto">
-          <p class="font-medium">文件上传中</p>
-          <el-progress class="mt-2!" :stroke-width="2" :text-inside="true" :show-text="false" :percentage="file.percentage || 0" />
-        </div>
-        <div v-else class="upload-item-content">
-          <img class="el-upload-list__item-thumbnail select-none" :src="file.url" :alt="file.name" draggable="false" />
-          <span class="el-upload-list__item-actions">
-            <span title="查看" class="action-btn hover:text-primary" @click.stop="handlePictureCardPreview(file)">
-              <IconifyIconOffline :icon="Eye" class="hover:scale-125 duration-100" />
+  <div :id="componentId">
+    <el-card shadow="never">
+      <el-upload
+        ref="uploadRef"
+        v-model:file-list="fileList"
+        drag
+        multiple
+        class="pure-upload"
+        list-type="picture-card"
+        accept="image/jpeg,image/png,image/gif"
+        :limit="props.limit"
+        :http-request="customUpload"
+        :on-exceed="onExceed"
+        :before-upload="onBefore"
+        :on-success="onUploadSuccess"
+        :on-error="onUploadError"
+      >
+        <EpPlus class="m-auto mt-4" />
+        <template #file="{ file }">
+          <div v-if="file.status === 'ready' || file.status === 'uploading'" class="mt-[35%]! m-auto">
+            <p class="font-medium">文件上传中</p>
+            <el-progress class="mt-2!" :stroke-width="2" :text-inside="true" :show-text="false" :percentage="file.percentage || 0" />
+          </div>
+          <div v-else class="upload-item-content">
+            <img class="el-upload-list__item-thumbnail select-none" :src="file.url" :alt="file.name" draggable="false" />
+            <span class="el-upload-list__item-actions">
+              <span title="查看" class="action-btn hover:text-primary" @click.stop="handlePictureCardPreview(file)">
+                <IconifyIconOffline :icon="Eye" class="hover:scale-125 duration-100" />
+              </span>
+              <span title="移除" class="action-btn hover:text-[var(--el-color-danger)]" @click.stop="handleRemove(file)">
+                <IconifyIconOffline :icon="Delete" class="hover:scale-125 duration-100" />
+              </span>
             </span>
-            <span title="移除" class="action-btn hover:text-[var(--el-color-danger)]" @click.stop="handleRemove(file)">
-              <IconifyIconOffline :icon="Delete" class="hover:scale-125 duration-100" />
-            </span>
-          </span>
+          </div>
+        </template>
+      </el-upload>
+
+      <el-image-viewer
+        v-if="dialogVisible"
+        :initial-index="curOpenImgIndex"
+        :url-list="urlList"
+        :zoom-rate="1.2"
+        :max-scale="7"
+        :min-scale="0.2"
+        @close="dialogVisible = false"
+        @switch="index => (curOpenImgIndex = index)"
+      />
+
+      <teleport to="body">
+        <div v-if="fileList[curOpenImgIndex] && dialogVisible" class="img-name">
+          <p class="text-[#fff] dark:text-black">
+            {{ fileList[curOpenImgIndex].name }}
+          </p>
         </div>
-      </template>
-    </el-upload>
+      </teleport>
 
-    <el-image-viewer
-      v-if="dialogVisible"
-      :initial-index="curOpenImgIndex"
-      :url-list="urlList"
-      :zoom-rate="1.2"
-      :max-scale="7"
-      :min-scale="0.2"
-      @close="dialogVisible = false"
-      @switch="index => (curOpenImgIndex = index)"
-    />
-
-    <teleport to="body">
-      <div v-if="fileList[curOpenImgIndex] && dialogVisible" class="img-name">
-        <p class="text-[#fff] dark:text-black">
-          {{ fileList[curOpenImgIndex].name }}
-        </p>
-      </div>
-    </teleport>
-
-    <p class="el-upload__tip">
-      可拖拽上传最多{{ props.limit }}张，单个不超过2MB且格式为jpeg/png/gif的图片
-      <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽图片可调整顺序）</span>
-    </p>
-  </el-card>
+      <p class="el-upload__tip">
+        可拖拽上传最多{{ props.limit }}张，单个不超过2MB且格式为jpeg/png/gif的图片
+        <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽图片可调整顺序）</span>
+      </p>
+    </el-card>
+  </div>
 </template>
 
 <style lang="scss" scoped>
@@ -433,7 +438,6 @@
     justify-content: center;
   }
 
-  // 拖拽相关样式
   :deep(.el-upload-list__item) {
     cursor: grab !important;
     transition: all 0.3s ease;
@@ -470,7 +474,6 @@
     }
   }
 
-  // Sortable.js 拖拽样式
   :deep(.sortable-ghost) {
     opacity: 0.4 !important;
     background: #f0f0f0 !important;
