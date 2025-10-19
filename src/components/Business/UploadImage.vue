@@ -385,6 +385,7 @@
       </teleport>
 
       <p class="el-upload__tip">
+        <span class="text-amber-600 text-base">图片</span>
         可拖拽上传最多{{ props.limit }}张，单个不超过2MB且格式为jpeg/png/gif的图片
         <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽图片可调整顺序）</span>
       </p>

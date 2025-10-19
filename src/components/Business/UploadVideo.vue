@@ -356,6 +356,7 @@
     </el-dialog>
 
     <p class="el-upload__tip">
+      <span class="text-amber-600 text-base">视频</span>
       可拖拽上传最多{{ props.limit }}个，单个不超过{{ props.maxSize }}MB且格式为mp4/webm/ogg/mov/avi的视频
       <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽视频可调整顺序）</span>
     </p>
