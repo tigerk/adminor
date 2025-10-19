@@ -12,7 +12,7 @@
   import { FacilityItemProps } from "@/views/house/components/HouseFacility/types";
   import HouseLayoutSelector from "@/views/house/components/HouseLayoutSelector.vue";
   import { useHouseTagsEdit } from "@/views/house/components/HouseTags/hook";
-  import { createEntireFormRules, validateAllHouses } from "./rule";
+  import { createEntireFormRules } from "./rule";
   import type { FormInstance } from "element-plus";
   import { ElMessage } from "element-plus";
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
@@ -26,7 +26,34 @@
   const props = withDefaults(defineProps<EntireFormProps>(), {});
   const emit = defineEmits(["onSave"]);
 
-  const entireForm = reactive(props.formInline);
+  // 将 entireForm 和 houseList 合并到一个响应式对象中
+  const entireForm = reactive({
+    ...props.formInline,
+    houseList: [
+      {
+        houseCode: "",
+        building: "",
+        unit: "",
+        doorNumber: "",
+        floor: null,
+        totalFloor: null,
+        houseLayout: null,
+        rentalType: 1,
+        direction: "",
+        area: "",
+        decorationType: "",
+        price: "",
+        propertyFee: "",
+        facilities: [],
+        imageList: [],
+        tags: [],
+        moreInfo: null
+      }
+    ]
+  });
+
+  // 使用 entireForm.houseList 替代独立的 houseList
+  const houseList = entireForm.houseList;
 
   // 表单引用
   const ruleFormRef = ref<FormInstance>();
@@ -47,29 +74,6 @@
       location: poi.location
     };
   };
-
-  // 初始化房源列表
-  const houseList = ref<HouseItemProps[]>([
-    {
-      houseCode: "",
-      building: "",
-      unit: "",
-      doorNumber: "",
-      floor: null,
-      totalFloor: null,
-      houseLayout: null,
-      rentalType: 1,
-      direction: "",
-      area: "",
-      decorationType: "",
-      price: "",
-      propertyFee: "",
-      facilities: [],
-      imageList: [],
-      tags: [],
-      moreInfo: null
-    }
-  ]);
 
   // 朝向选项
   const directionOptions = [
@@ -95,7 +99,7 @@
 
   // 添加新房源
   const addNewHouse = () => {
-    houseList.value.push({
+    entireForm.houseList.push({
       houseCode: "",
       building: "",
       unit: "",
@@ -123,15 +127,15 @@
   });
 
   const copyHouse = (index: number) => {
-    const houseToCopy = houseList.value[index];
+    const houseToCopy = entireForm.houseList[index];
     const newHouse = JSON.parse(JSON.stringify(houseToCopy));
-    houseList.value.splice(index + 1, 0, newHouse);
+    entireForm.houseList.splice(index + 1, 0, newHouse);
   };
 
   // 删除房源
   const removeHouse = (index: number) => {
-    if (houseList.value.length > 1) {
-      houseList.value.splice(index, 1);
+    if (entireForm.houseList.length > 1) {
+      entireForm.houseList.splice(index, 1);
     }
   };
 
@@ -139,10 +143,10 @@
    * 房源配置对话框 start
    */
   const openFacilitiesDialog = (index: number) => {
-    const currentHouse = houseList.value[index];
+    const currentHouse = entireForm.houseList[index];
 
     openFacilityEditDialog("", currentHouse.facilities, (facilities: FacilityItemProps[]) => {
-      houseList.value[index].facilities = facilities;
+      entireForm.houseList[index].facilities = facilities;
     });
   };
 
@@ -158,10 +162,10 @@
    * 房源特色对话框 start
    */
   const openHouseTagsDialog = (index: number) => {
-    const currentHouse = houseList.value[index];
+    const currentHouse = entireForm.houseList[index];
 
     openHouseTagsEditDialog("", currentHouse.tags, (tags: any[]) => {
-      houseList.value[index].tags = tags;
+      entireForm.houseList[index].tags = tags;
     });
   };
   /**
@@ -172,10 +176,10 @@
    * 房源图片对话框 start
    */
   const openImageListDialog = (index: number) => {
-    const currentHouse = houseList.value[index];
+    const currentHouse = entireForm.houseList[index];
 
     openHouseImageEditDialog("", currentHouse.imageList, (imageList: any[]) => {
-      houseList.value[index].imageList = imageList;
+      entireForm.houseList[index].imageList = imageList;
     });
   };
   /**
@@ -185,24 +189,12 @@
   // 验证表单（供父组件调用）
   const validateForm = async (): Promise<boolean> => {
     try {
-      // 验证基础表单（小区信息 + 负责人信息）
+      // 验证整个表单（包括小区信息、负责人信息和所有房源）
       await ruleFormRef.value?.validate();
-
-      // 验证所有房源
-      // const { valid, errors } = validateAllHouses(houseList.value);
-      //
-      // if (!valid) {
-      //   ElMessage.error({
-      //     message: errors.join("! "),
-      //     duration: 1500
-      //   });
-      //
-      //   return false;
-      // }
-
       return true;
     } catch (error) {
       console.error("表单验证失败", error);
+      ElMessage.error("请填写完整的表单信息");
       return false;
     }
   };
@@ -211,7 +203,7 @@
   defineExpose({
     validateForm,
     entireForm,
-    houseList
+    houseList: entireForm.houseList
   });
 </script>
 
@@ -270,7 +262,7 @@
             <el-col :span="12">
               <h3 class="pb-4">房源 {{ index + 1 }}</h3>
             </el-col>
-            <!-- 左侧表单区域 -->
+            <!-- 操作按钮 -->
             <el-col :span="12" class="text-right">
               <el-button type="warning" plain @click="copyHouse(index)">复制此房源</el-button>
               <el-button v-if="houseList.length > 1" type="danger" plain class="remove-btn" @click="removeHouse(index)">删除此房源</el-button>
@@ -287,7 +279,7 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="座/栋" prop="houseList.[index].building" required>
+                  <el-form-item label="座/栋" :prop="`houseList.${index}.building`" :rules="[{ required: true, message: '请输入座/栋', trigger: 'blur' }]">
                     <el-input v-model="house.building" placeholder="请输入座/栋" />
                   </el-form-item>
                 </el-col>
@@ -297,31 +289,45 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="房间号" prop="houseList.[index].doorNumber" required>
+                  <el-form-item label="房间号" :prop="`houseList.${index}.doorNumber`" :rules="[{ required: true, message: '请输入房间号', trigger: 'blur' }]">
                     <el-input v-model="house.doorNumber" placeholder="请输入房间号" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="所在楼层" prop="houseList.[index].floor" required>
-                    <el-input v-model="house.floor" placeholder="请输入楼层" type="number" />
+                  <el-form-item
+                    label="所在楼层"
+                    :prop="`houseList.${index}.floor`"
+                    :rules="[
+                      { required: true, message: '请输入所在楼层', trigger: 'blur' },
+                      { type: 'number', message: '所在楼层必须是数字', trigger: 'blur', transform: value => Number(value) }
+                    ]"
+                  >
+                    <el-input v-model.number="house.floor" placeholder="请输入楼层" type="number" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="总楼层数" prop="houseList.[index].totalFloor" required>
-                    <el-input v-model="house.totalFloor" placeholder="请输入总楼层数" type="number" />
+                  <el-form-item
+                    label="总楼层数"
+                    :prop="`houseList.${index}.totalFloor`"
+                    :rules="[
+                      { required: true, message: '请输入总楼层数', trigger: 'blur' },
+                      { type: 'number', message: '总楼层数必须是数字', trigger: 'blur', transform: value => Number(value) }
+                    ]"
+                  >
+                    <el-input v-model.number="house.totalFloor" placeholder="请输入总楼层数" type="number" />
                   </el-form-item>
                 </el-col>
               </el-row>
 
-              <!-- 第三行 -->
+              <!-- 第二行 -->
               <el-row :gutter="20">
                 <el-col :span="4">
-                  <el-form-item label="户型" prop="houseList.houseLayout" required>
+                  <el-form-item label="户型" :prop="`houseList.${index}.houseLayout`" :rules="[{ required: true, message: '请选择户型', trigger: 'change' }]">
                     <HouseLayoutSelector v-model="house.houseLayout" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="朝向" prop="houseList.direction" required>
+                  <el-form-item label="朝向" :prop="`houseList.${index}.direction`" :rules="[{ required: true, message: '请选择朝向', trigger: 'change' }]">
                     <el-select v-model="house.direction" placeholder="请选择朝向" style="width: 100%">
                       <el-option v-for="item in directionOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
@@ -335,14 +341,21 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="装修类型" prop="houseList.decorationType" required>
+                  <el-form-item label="装修类型" :prop="`houseList.${index}.decorationType`" :rules="[{ required: true, message: '请选择装修类型', trigger: 'change' }]">
                     <el-select v-model="house.decorationType" placeholder="请选择装修类型" style="width: 100%">
                       <el-option v-for="item in decorationTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="出租价格" prop="houseList.price" required>
+                  <el-form-item
+                    label="出租价格"
+                    :prop="`houseList.${index}.price`"
+                    :rules="[
+                      { required: true, message: '请输入出租价格', trigger: 'blur' },
+                      { pattern: /^\d+(\.\d{1,2})?$/, message: '请输入有效的价格', trigger: 'blur' }
+                    ]"
+                  >
                     <el-input v-model="house.price" placeholder="请输入价格">
                       <template #suffix>元/月</template>
                     </el-input>
