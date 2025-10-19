@@ -17,7 +17,7 @@ export function useHouseImageEdit() {
       props: {
         formInline: row ?? null
       },
-      top: "10%",
+      top: "5%",
       width: "865px",
       draggable: true,
       fullscreen: deviceDetection(),

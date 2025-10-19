@@ -2,16 +2,24 @@
   import { onMounted, ref, watch } from "vue";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { ImageFormProps } from "@/views/house/components/HouseImage/types";
+  import UploadVideo from "@/components/Business/UploadVideo.vue";
 
   const props = withDefaults(defineProps<ImageFormProps>(), {});
 
   // 改用 ref 而不是 reactive，因为 v-model 需要 ref
   const imageList = ref<any[]>([]);
+  const videoList = ref<any[]>([]);
 
   // 获取图片列表的方法
   function getImageList() {
     console.log("当前图片列表:", imageList.value);
     return imageList.value.map(item => item.url);
+  }
+
+  // 获取图片列表的方法
+  function getVideoList() {
+    console.log("当前图片列表:", imageList.value);
+    return videoList.value.map(item => item.url);
   }
 
   // 初始化时加载已有的图片数据
@@ -33,11 +41,15 @@
   );
 
   // 暴露方法给父组件
-  defineExpose({ getImageList });
+  defineExpose({ getImageList, getVideoList });
 </script>
 
 <template>
   <div class="image-container">
+    <div class="image-grid">
+      <!-- v-model 绑定到 ref -->
+      <UploadVideo v-model="videoList" :limit="1" />
+    </div>
     <div class="image-grid">
       <!-- v-model 绑定到 ref -->
       <UploadImage v-model="imageList" :limit="10" />
@@ -59,6 +71,12 @@
 
 <style scoped>
   .image-container {
-    padding: 10px 0;
+  }
+
+  .section-title {
+    margin: 10px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
   }
 </style>

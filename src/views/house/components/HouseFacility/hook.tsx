@@ -21,7 +21,7 @@ export function useFacilityEdit() {
       props: {
         formInline: row ?? null
       },
-      top: "1%",
+      top: "5%",
       width: "800px",
       draggable: true,
       fullscreen: deviceDetection(),

@@ -3,15 +3,14 @@
   import { ref, computed, watch, nextTick, onMounted } from "vue";
   import { message } from "@/utils/message";
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
-  import { getKeyList, extractFields } from "@pureadmin/utils";
 
   import EpPlus from "~icons/ep/plus?width=30&height=30";
-  import Eye from "~icons/ri/eye-line";
+  import VideoPlay from "~icons/ep/video-play";
   import Delete from "~icons/ri/delete-bin-7-line";
   import { uploadFile } from "@/api/upload";
 
   defineOptions({
-    name: "UploadImage"
+    name: "UploadVideo"
   });
 
   const rawFileList = defineModel<UploadFile[] | string[]>();
@@ -19,29 +18,38 @@
   const props = defineProps({
     limit: {
       type: Number,
-      default: 3
+      default: 1
+    },
+    maxSize: {
+      type: Number,
+      default: 50 // 默认50MB
     }
   });
 
   const convertUrlsToUploadFiles = (urls: string[]): UploadFile[] => {
     return urls.map((url, index) => {
-      const fileName = url.split("/").pop() || `image-${index + 1}`;
-      const fileExtension = fileName.split(".").pop()?.toLowerCase() || "jpeg";
+      const fileName = url.split("/").pop() || `video-${index + 1}`;
+      const fileExtension = fileName.split(".").pop()?.toLowerCase() || "mp4";
 
-      let mimeType = "image/jpeg";
+      let mimeType = "video/mp4";
       switch (fileExtension) {
-        case "png":
-          mimeType = "image/png";
+        case "mp4":
+          mimeType = "video/mp4";
           break;
-        case "gif":
-          mimeType = "image/gif";
+        case "webm":
+          mimeType = "video/webm";
           break;
-        case "jpg":
-        case "jpeg":
-          mimeType = "image/jpeg";
+        case "ogg":
+          mimeType = "video/ogg";
+          break;
+        case "mov":
+          mimeType = "video/quicktime";
+          break;
+        case "avi":
+          mimeType = "video/x-msvideo";
           break;
         default:
-          mimeType = "image/jpeg";
+          mimeType = "video/mp4";
       }
 
       return {
@@ -88,23 +96,19 @@
     { deep: true }
   );
 
-  const curOpenImgIndex = ref(0);
   const dialogVisible = ref(false);
-
-  const urlList = computed(() => {
-    const validFiles = fileList.value.filter(file => file && file.url && file.status === "success");
-    console.log("有效图片列表:", validFiles);
-    return validFiles.map(file => file.url as string);
-  });
+  const currentVideoUrl = ref("");
+  const currentVideoName = ref("");
 
   const onBefore = file => {
-    if (!["image/jpeg", "image/png", "image/gif"].includes(file.type)) {
-      message("只能上传图片");
+    const videoTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo"];
+    if (!videoTypes.includes(file.type)) {
+      message("只能上传mp4/webm/ogg/mov/avi格式的视频");
       return false;
     }
-    const isExceed = file.size / 1024 / 1024 > 2;
+    const isExceed = file.size / 1024 / 1024 > props.maxSize;
     if (isExceed) {
-      message(`单个图片大小不能超过2MB`);
+      message(`单个视频大小不能超过${props.maxSize}MB`);
       return false;
     }
     return true;
@@ -143,27 +147,27 @@
     const fileItem = fileList.value.find(item => item.uid === uploadFile.uid);
 
     if (fileItem && response) {
-      let imageUrl: string | undefined;
+      let videoUrl: string | undefined;
 
       if (typeof response === "string") {
-        imageUrl = response;
+        videoUrl = response;
       } else if (response.url) {
-        imageUrl = response.url;
+        videoUrl = response.url;
       } else if (response.fileUrl) {
-        imageUrl = response.fileUrl;
+        videoUrl = response.fileUrl;
       } else if (response.path) {
-        imageUrl = response.path;
+        videoUrl = response.path;
       } else if (response.data && response.data.url) {
-        imageUrl = response.data.url;
+        videoUrl = response.data.url;
       }
 
-      if (imageUrl) {
-        fileItem.url = imageUrl;
+      if (videoUrl) {
+        fileItem.url = videoUrl;
         fileItem.status = "success";
-        console.log("图片URL设置成功:", imageUrl);
+        console.log("视频URL设置成功:", videoUrl);
       } else {
         console.error("无法从响应中提取URL:", response);
-        message("上传成功但无法获取图片URL", { type: "warning" });
+        message("上传成功但无法获取视频URL", { type: "warning" });
       }
     }
   };
@@ -174,7 +178,7 @@
   };
 
   const onExceed = () => {
-    message(`最多上传${props.limit}张图片，请先删除再上传`);
+    message(`最多上传${props.limit}个视频，请先删除再上传`);
   };
 
   const handleRemove = (file: UploadFile) => {
@@ -186,34 +190,22 @@
     }
   };
 
-  const handlePictureCardPreview = (file: UploadFile) => {
-    console.log("预览文件:", file);
-    console.log("当前文件列表:", fileList.value);
-    console.log("URL列表:", urlList.value);
+  const handleVideoPreview = (file: UploadFile) => {
+    console.log("预览视频:", file);
 
     if (!file.url) {
-      message("图片URL不存在，无法预览", { type: "warning" });
+      message("视频URL不存在，无法预览", { type: "warning" });
       return;
     }
 
     if (file.status !== "success") {
-      message("图片正在上传中，请稍候", { type: "warning" });
+      message("视频正在上传中，请稍候", { type: "warning" });
       return;
     }
 
-    const validFiles = fileList.value.filter(f => f && f.url && f.status === "success");
-    const index = validFiles.findIndex(img => img.uid === file.uid);
-
-    console.log("有效文件列表:", validFiles);
-    console.log("当前文件索引:", index);
-
-    if (index >= 0) {
-      curOpenImgIndex.value = index;
-      dialogVisible.value = true;
-      console.log("打开预览，索引:", index);
-    } else {
-      message("无法找到图片，请重试", { type: "warning" });
-    }
+    currentVideoUrl.value = file.url;
+    currentVideoName.value = file.name;
+    dialogVisible.value = true;
   };
 
   let sortableInstance: Sortable | null = null;
@@ -222,21 +214,18 @@
   const initSortable = () => {
     console.log("初始化拖拽，当前文件数:", fileList.value.length);
 
-    // 销毁之前的实例
     if (sortableInstance) {
       console.log("销毁旧的 Sortable 实例");
       sortableInstance.destroy();
       sortableInstance = null;
     }
 
-    // 只有多个文件时才初始化拖拽
     if (fileList.value.length <= 1) {
       console.log("文件数量不足，跳过拖拽初始化");
       return;
     }
 
     nextTick(() => {
-      // 尝试多个可能的选择器
       let wrapper: HTMLElement | null = document.querySelector(".el-upload-list.el-upload-list--picture-card");
 
       if (!wrapper) {
@@ -247,18 +236,15 @@
 
       if (wrapper) {
         const items = wrapper.querySelectorAll(".el-upload-list__item");
-        console.log("找到的图片项数量:", items.length);
+        console.log("找到的视频项数量:", items.length);
 
         sortableInstance = Sortable.create(wrapper, {
           animation: 200,
           ghostClass: "sortable-ghost",
           chosenClass: "sortable-chosen",
           dragClass: "sortable-drag",
-          // 确保不拖拽上传按钮
           filter: ".el-upload--picture-card",
-          // 可拖拽的元素
           draggable: ".el-upload-list__item",
-          // 设置为 true 强制使用回退模式
           forceFallback: true,
           fallbackClass: "sortable-fallback",
           fallbackOnBody: true,
@@ -294,7 +280,6 @@
           },
 
           onMove: evt => {
-            // 阻止拖拽到上传按钮位置
             return evt.related.className.indexOf("el-upload--picture-card") === -1;
           }
         });
@@ -306,19 +291,16 @@
     });
   };
 
-  // 监听文件列表变化，重新初始化拖拽
   watch(
     () => fileList.value.length,
     (newLength, oldLength) => {
       console.log("文件列表长度变化:", oldLength, "->", newLength);
-      // 延迟初始化，确保 DOM 已更新
       setTimeout(() => {
         initSortable();
       }, 300);
     }
   );
 
-  // 组件挂载后初始化
   onMounted(() => {
     console.log("组件已挂载");
     initSortable();
@@ -333,7 +315,7 @@
       multiple
       class="pure-upload"
       list-type="picture-card"
-      accept="image/jpeg,image/png,image/gif"
+      accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo"
       :limit="props.limit"
       :http-request="customUpload"
       :on-exceed="onExceed"
@@ -344,14 +326,19 @@
       <EpPlus class="m-auto mt-4" />
       <template #file="{ file }">
         <div v-if="file.status === 'ready' || file.status === 'uploading'" class="mt-[35%]! m-auto">
-          <p class="font-medium">文件上传中</p>
+          <p class="font-medium">视频上传中</p>
           <el-progress class="mt-2!" :stroke-width="2" :text-inside="true" :show-text="false" :percentage="file.percentage || 0" />
         </div>
         <div v-else class="upload-item-content">
-          <img class="el-upload-list__item-thumbnail select-none" :src="file.url" :alt="file.name" draggable="false" />
+          <div class="video-thumbnail">
+            <video class="video-preview" :src="file.url" preload="metadata" />
+            <div class="video-overlay">
+              <IconifyIconOffline :icon="VideoPlay" class="play-icon" />
+            </div>
+          </div>
           <span class="el-upload-list__item-actions">
-            <span title="查看" class="action-btn hover:text-primary" @click.stop="handlePictureCardPreview(file)">
-              <IconifyIconOffline :icon="Eye" class="hover:scale-125 duration-100" />
+            <span title="预览" class="action-btn hover:text-primary" @click.stop="handleVideoPreview(file)">
+              <IconifyIconOffline :icon="VideoPlay" class="hover:scale-125 duration-100" />
             </span>
             <span title="移除" class="action-btn hover:text-[var(--el-color-danger)]" @click.stop="handleRemove(file)">
               <IconifyIconOffline :icon="Delete" class="hover:scale-125 duration-100" />
@@ -361,28 +348,16 @@
       </template>
     </el-upload>
 
-    <el-image-viewer
-      v-if="dialogVisible"
-      :initial-index="curOpenImgIndex"
-      :url-list="urlList"
-      :zoom-rate="1.2"
-      :max-scale="7"
-      :min-scale="0.2"
-      @close="dialogVisible = false"
-      @switch="index => (curOpenImgIndex = index)"
-    />
-
-    <teleport to="body">
-      <div v-if="fileList[curOpenImgIndex] && dialogVisible" class="img-name">
-        <p class="text-[#fff] dark:text-black">
-          {{ fileList[curOpenImgIndex].name }}
-        </p>
+    <el-dialog v-model="dialogVisible" title="视频预览" width="800px" :close-on-click-modal="true">
+      <div class="video-dialog-content">
+        <video v-if="currentVideoUrl" :src="currentVideoUrl" controls autoplay class="preview-video">您的浏览器不支持视频播放</video>
+        <p class="video-name">{{ currentVideoName }}</p>
       </div>
-    </teleport>
+    </el-dialog>
 
     <p class="el-upload__tip">
-      可拖拽上传最多{{ props.limit }}张，单个不超过2MB且格式为jpeg/png/gif的图片
-      <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽图片可调整顺序）</span>
+      可拖拽上传最多{{ props.limit }}个，单个不超过{{ props.maxSize }}MB且格式为mp4/webm/ogg/mov/avi的视频
+      <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽视频可调整顺序）</span>
     </p>
   </el-card>
 </template>
@@ -407,22 +382,53 @@
     }
   }
 
-  .img-name {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    z-index: 9999;
-    padding: 5px 23px;
-    background-color: var(--el-text-color-regular);
-    border-radius: 22px;
-    transform: translateX(-50%);
-    pointer-events: none;
-  }
-
   .upload-item-content {
     position: relative;
     width: 100%;
     height: 100%;
+  }
+
+  .video-thumbnail {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .video-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    transition: background 0.3s;
+
+    .play-icon {
+      font-size: 48px;
+      color: #fff;
+      opacity: 0.8;
+      transition: all 0.3s;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.5);
+
+      .play-icon {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+    }
   }
 
   .action-btn {
@@ -433,7 +439,22 @@
     justify-content: center;
   }
 
-  // 拖拽相关样式
+  .video-dialog-content {
+    text-align: center;
+
+    .preview-video {
+      width: 100%;
+      max-height: 500px;
+      background: #000;
+    }
+
+    .video-name {
+      margin-top: 12px;
+      color: var(--el-text-color-regular);
+      font-size: 14px;
+    }
+  }
+
   :deep(.el-upload-list__item) {
     cursor: grab !important;
     transition: all 0.3s ease;
@@ -450,27 +471,6 @@
     }
   }
 
-  .drag-hint {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 4px;
-    padding: 2px 6px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    z-index: 10;
-
-    .drag-icon {
-      color: #fff;
-      font-size: 14px;
-      font-weight: bold;
-      letter-spacing: -2px;
-    }
-  }
-
-  // Sortable.js 拖拽样式
   :deep(.sortable-ghost) {
     opacity: 0.4 !important;
     background: #f0f0f0 !important;
