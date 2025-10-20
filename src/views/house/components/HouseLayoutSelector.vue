@@ -42,9 +42,13 @@
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
-  // 常用户型表格（快捷选择）
-  const quickRows = [2, 3, 4, 5, 6]; // 室的数量
-  const quickCols = [0, 1, 2, 3, 4]; // 厅的数量
+  // 快捷户型选项
+  const quickLayouts = [
+    { bedroom: 1, livingRoom: 1, kitchen: 1, bathroom: 1, label: "1室1厅1厨1卫" },
+    { bedroom: 2, livingRoom: 1, kitchen: 1, bathroom: 1, label: "2室1厅1厨1卫" },
+    { bedroom: 3, livingRoom: 2, kitchen: 1, bathroom: 2, label: "3室2厅1厨2卫" },
+    { bedroom: 4, livingRoom: 2, kitchen: 1, bathroom: 2, label: "4室2厅1厨2卫" }
+  ];
 
   // 自定义输入的数量范围
   const bedroomRange = generateRange(1, 99); // 1-99室
@@ -102,15 +106,22 @@
     calculateDialogPosition();
   };
 
-  // 选择户型（室+厅的组合）
-  const handleLayoutSelect = (bedroom: number, livingRoom: number): void => {
-    tempSelection.value.bedroom = bedroom;
-    tempSelection.value.livingRoom = livingRoom;
+  // 选择快捷户型
+  const handleQuickSelect = (layout: (typeof quickLayouts)[0]): void => {
+    tempSelection.value.bedroom = layout.bedroom;
+    tempSelection.value.livingRoom = layout.livingRoom;
+    tempSelection.value.kitchen = layout.kitchen;
+    tempSelection.value.bathroom = layout.bathroom;
   };
 
-  // 检查是否选中
-  const isLayoutSelected = (bedroom: number, livingRoom: number): boolean => {
-    return tempSelection.value.bedroom === bedroom && tempSelection.value.livingRoom === livingRoom;
+  // 检查快捷选项是否选中
+  const isQuickLayoutSelected = (layout: (typeof quickLayouts)[0]): boolean => {
+    return (
+      tempSelection.value.bedroom === layout.bedroom &&
+      tempSelection.value.livingRoom === layout.livingRoom &&
+      tempSelection.value.kitchen === layout.kitchen &&
+      tempSelection.value.bathroom === layout.bathroom
+    );
   };
 
   // 格式化显示文本
@@ -169,8 +180,19 @@
           <span class="value">{{ formatDisplay }}</span>
         </div>
 
+        <!-- 快捷选项区域 -->
+        <div class="quick-options">
+          <div class="section-title">快捷选择</div>
+          <div class="quick-buttons">
+            <el-button v-for="layout in quickLayouts" :key="layout.label" :type="isQuickLayoutSelected(layout) ? 'primary' : 'default'" @click="handleQuickSelect(layout)">
+              {{ layout.label }}
+            </el-button>
+          </div>
+        </div>
+
         <!-- 自定义输入区域 -->
         <div class="custom-section">
+          <div class="section-title">自定义选择</div>
           <div class="custom-inputs">
             <el-row :gutter="10">
               <el-col :span="6">
@@ -248,7 +270,25 @@
   .current-selection .value {
     font-size: 15px;
     font-weight: 600;
-    color: #409eff;
+  }
+
+  .quick-options {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #ebeef5;
+  }
+
+  .section-title {
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #606266;
+  }
+
+  .quick-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
   .quick-section {
@@ -312,8 +352,8 @@
   }
 
   .custom-section {
-    padding-top: 16px;
-    border-top: 1px solid #ebeef5;
+    padding-top: 0;
+    border-top: none;
   }
 
   .custom-inputs {
