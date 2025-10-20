@@ -6,7 +6,7 @@
   import { ref } from "vue";
   import { Plus, CircleCheck } from "@element-plus/icons-vue";
   import type { HouseItemProps } from "./types";
-  import DeptCascader from "@/components/Business/DeptUserCascader.vue";
+  import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
   import { FacilityItemProps } from "@/views/house/components/HouseFacility/types";
@@ -446,7 +446,7 @@
           <el-row :gutter="20">
             <el-col :span="6">
               <el-form-item label="归属部门" prop="deptId">
-                <DeptCascader v-model="entireForm.deptId" :emit-on-default="true" />
+                <DeptTreeSelect v-model="entireForm.deptId" :emit-on-default="true" />
               </el-form-item>
             </el-col>
             <el-col :span="6">

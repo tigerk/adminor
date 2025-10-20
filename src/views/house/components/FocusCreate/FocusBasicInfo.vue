@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, reactive, computed, watch, onMounted, nextTick } from "vue";
   import { FormProps, FocusFormItemProps, HouseStatusProps, FocusBuildingProps } from "@/views/house/components/FocusCreate/utils/types";
-  import DeptCascader from "@/components/Business/DeptUserCascader.vue";
+  import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { InfoFilled, Plus, Delete } from "@element-plus/icons-vue";
   import { createFocusBasicInfoRules } from "@/views/house/components/FocusCreate/utils/rule";
@@ -545,7 +545,7 @@
         <el-row :gutter="20">
           <el-col :span="6">
             <el-form-item label="归属部门" prop="deptId">
-              <DeptCascader v-model="form.deptId" :emit-on-default="true" @dept-selected="handleDeptSelected" />
+              <DeptTreeSelect v-model="form.deptId" :emit-on-default="true" @dept-selected="handleDeptSelected" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
