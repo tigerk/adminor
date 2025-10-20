@@ -3,7 +3,6 @@
   import { ref, computed, watch, nextTick, onMounted, getCurrentInstance } from "vue";
   import { message } from "@/utils/message";
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
-  import { getKeyList, extractFields } from "@pureadmin/utils";
 
   import EpPlus from "~icons/ep/plus?width=30&height=30";
   import Eye from "~icons/ri/eye-line";

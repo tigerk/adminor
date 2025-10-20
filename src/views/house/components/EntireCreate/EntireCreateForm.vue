@@ -396,11 +396,11 @@
                 </el-col>
                 <el-col :span="8">
                   <el-form-item label="产权信息">
-                    <el-button class="status-btn">
+                    <el-button class="status-btn" disabled>
                       <el-icon>
                         <CircleCheck />
                       </el-icon>
-                      <span>未设置</span>
+                      <span>开发中</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
@@ -418,11 +418,11 @@
                 </el-col>
                 <el-col :span="8">
                   <el-form-item label="更多信息">
-                    <el-button class="status-btn">
+                    <el-button class="status-btn" disabled>
                       <el-icon>
                         <CircleCheck />
                       </el-icon>
-                      <span>未设置</span>
+                      <span>开发中</span>
                     </el-button>
                   </el-form-item>
                 </el-col>

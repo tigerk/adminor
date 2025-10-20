@@ -1,26 +1,29 @@
-<!-- DeptCascader.vue -->
+<!-- DeptTreeSelect.vue -->
 <template>
-  <el-cascader
+  <el-tree-select
     v-model="selectedValue"
     class="w-full"
-    :options="options"
+    :data="options"
     :props="{
       value: 'id',
       label: 'name',
-      emitPath: false,
-      checkStrictly: true
+      children: 'children'
     }"
     :loading="loading"
     clearable
     filterable
+    :filter-node-method="filterNode"
     placeholder="请选择归属部门"
+    check-strictly
+    default-expand-all
+    :render-after-expand="false"
     @change="handleChange"
   >
-    <template #default="{ node, data }">
+    <template #default="{ data }">
       <span>{{ data.name }}</span>
-      <span v-if="!node.isLeaf">({{ data.children.length }})</span>
+      <span v-if="data.children && data.children.length > 0" class="ml-1 text-gray-400">({{ data.children.length }})</span>
     </template>
-  </el-cascader>
+  </el-tree-select>
 </template>
 
 <script setup>
@@ -51,7 +54,7 @@
   });
 
   // 响应式数据
-  const options = ref([]); // 级联选择器的选项数据 (树形结构)
+  const options = ref([]); // 树形选择器的选项数据
   const loading = ref(false); // 加载状态
   const isComponentMounted = ref(false); // 组件是否已挂载
 
@@ -104,7 +107,7 @@
 
   // 处理选择变化
   const handleChange = value => {
-    console.log("级联选择器值变化:", value);
+    console.log("树形选择器值变化:", value);
     // 触发自定义事件
     emit("dept-selected", value);
     // v-model 的值已经通过 computed 自动更新了
@@ -128,5 +131,13 @@
   /* 可以添加组件特定的样式 */
   .w-full {
     width: 100%;
+  }
+
+  .ml-1 {
+    margin-left: 0.25rem;
+  }
+
+  .text-gray-400 {
+    color: #9ca3af;
   }
 </style>
