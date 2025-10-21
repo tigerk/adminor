@@ -10,7 +10,7 @@
   import { getCompanyUserOptions } from "@/api/company";
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
   import { FacilityItemProps } from "@/views/house/components/HouseFacility/types";
-  import HouseLayoutSelector from "@/views/house/components/HouseLayoutSelector.vue";
+  import HouseLayoutSelector from "@/views/house/components/HouseLayout/HouseLayoutSelector.vue";
   import { useHouseTagsEdit } from "@/views/house/components/HouseTags/hook";
   import { createEntireFormRules } from "./rule";
   import type { FormInstance } from "element-plus";

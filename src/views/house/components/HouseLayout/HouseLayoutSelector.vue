@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ArrowDown } from "@element-plus/icons-vue";
-  import { useHouseLayoutEdit } from "@/views/house/components/HouseLayoutDialog/hook";
+  import { useHouseLayoutEdit } from "@/views/house/components/HouseLayout/hook";
 
   interface Props {
     modelValue?: string;
