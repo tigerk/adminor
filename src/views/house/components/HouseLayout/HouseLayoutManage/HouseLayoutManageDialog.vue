@@ -2,12 +2,17 @@
   import { ref, reactive, watch } from "vue";
   import { FormInstance } from "element-plus";
   import HouseLayoutDialog from "@/views/house/components/HouseLayout/HouseLayoutDialog.vue";
+  import HouseTagsDialog from "@/views/house/components/HouseTags/HouseTagsDialog.vue";
+  import HouseFacilityDialog from "@/views/house/components/HouseFacility/HouseFacilityDialog.vue";
+  import type { FacilityItemProps } from "@/views/house/components/FocusCreate/utils/types";
 
   interface HouseLayoutManageFormProps {
     formInline: {
       id: string;
       name: string;
       layout: string; // 格式：2室1厅1厨1卫
+      tags?: number[]; // 房源特色标签
+      facilities?: FacilityItemProps[]; // 房源配置
     };
   }
 
@@ -15,18 +20,24 @@
     formInline: () => ({
       id: "",
       name: "",
-      layout: ""
+      layout: "",
+      tags: () => [],
+      facilities: () => []
     })
   });
 
   const formRef = ref<FormInstance>();
   const layoutDialogRef = ref();
+  const tagsDialogRef = ref();
+  const facilityDialogRef = ref();
 
   // 表单数据
   const formData = reactive({
     id: "",
     name: "",
-    layout: ""
+    layout: "",
+    tags: [] as number[],
+    facilities: [] as FacilityItemProps[]
   });
 
   // 表单验证规则
@@ -46,6 +57,8 @@
         formData.id = newVal.id || "";
         formData.name = newVal.name || "";
         formData.layout = newVal.layout || "";
+        formData.tags = newVal.tags || [];
+        formData.facilities = newVal.facilities || [];
       }
     },
     { immediate: true, deep: true }
@@ -60,10 +73,22 @@
       throw new Error("请选择户型配置");
     }
 
+    // 获取标签和配置数据
+    const selectedTags = tagsDialogRef.value?.getRef() || [];
+    const selectedFacilities = facilityDialogRef.value?.getRef() || {};
+
+    // 将 facilities 对象转换为数组
+    const facilitiesArray: FacilityItemProps[] = Object.entries(selectedFacilities).map(([name, count]) => ({
+      name,
+      count: Number(count)
+    }));
+
     return {
       id: formData.id,
       name: formData.name,
-      layout: layoutStr
+      layout: layoutStr,
+      tags: selectedTags,
+      facilities: facilitiesArray
     };
   };
 
@@ -87,6 +112,12 @@
         <!-- 复用 HouseLayoutDialog 组件 -->
         <HouseLayoutDialog ref="layoutDialogRef" :form-inline="formData.layout" />
       </el-form-item>
+
+      <!-- 房源特色标签 -->
+      <HouseTagsDialog ref="tagsDialogRef" :form-inline="formData.tags" />
+
+      <!-- 房源配置 -->
+      <HouseFacilityDialog ref="facilityDialogRef" :form-inline="formData.facilities" />
     </el-form>
   </div>
 </template>

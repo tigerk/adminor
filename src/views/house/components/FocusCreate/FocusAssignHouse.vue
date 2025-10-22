@@ -439,7 +439,9 @@
         livingRoom: livingRoomMatch ? parseInt(livingRoomMatch[1]) : 1,
         kitchen: kitchenMatch ? parseInt(kitchenMatch[1]) : 1,
         bathroom: bathroomMatch ? parseInt(bathroomMatch[1]) : 1,
-        newly: true
+        newly: true,
+        tags: data.tags, // 新增：保存标签
+        facilities: data.facilities // 新增：保存配置
       };
       form.value.houseLayoutList.push(newHouseLayout);
     });
@@ -461,7 +463,9 @@
           bedroom: bedroomMatch ? parseInt(bedroomMatch[1]) : 1,
           livingRoom: livingRoomMatch ? parseInt(livingRoomMatch[1]) : 1,
           kitchen: kitchenMatch ? parseInt(kitchenMatch[1]) : 1,
-          bathroom: bathroomMatch ? parseInt(bathroomMatch[1]) : 1
+          bathroom: bathroomMatch ? parseInt(bathroomMatch[1]) : 1,
+          tags: data.tags, // 新增：更新标签
+          facilities: data.facilities // 新增：更新配置
         };
       }
     });

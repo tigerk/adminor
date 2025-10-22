@@ -53,7 +53,7 @@
 
 <template>
   <div class="tags-container">
-    <h4 class="section-title">物品配置</h4>
+    <h4 class="section-title">房源特色</h4>
     <div class="tags-grid">
       <div v-for="option in tagsOptions" :key="option.value" class="tags-item">
         <el-checkbox :model-value="isSelected(option.value)" @change="toggleTag(option.value)">

@@ -1,16 +1,34 @@
-// 虽然字段很少 但是抽离出来 后续有扩展字段需求就很方便了
+// src/views/house/components/FocusCreate/utils/types.ts
 
+// 设施配置项
+interface FacilityItemProps {
+  name: string;
+  count: number;
+}
+
+// 房型定义 - 添加 tags 和 facilities 字段
+interface HouseLayoutProps {
+  id: string;
+  layoutName: string;
+  bedroom: number;
+  livingRoom: number;
+  kitchen: number;
+  bathroom: number;
+  newly: boolean;
+  tags?: number[]; // 新增：房源特色标签ID数组
+  facilities?: FacilityItemProps[]; // 新增：房源配置列表
+}
+
+// ... 其他类型定义保持不变
 interface CommunityProps {
   name: string;
   address: string;
   cityId: number;
-  // 行政区域
   adcode: number;
   district: string;
   location: string;
 }
 
-// 表单定义
 interface FocusFormItemProps {
   id: number;
   businessMode: number;
@@ -19,13 +37,9 @@ interface FocusFormItemProps {
   community: CommunityProps;
   address: string;
   buildings: FocusBuildingProps[];
-  // 所有房间
   houseList: HouseStatusProps[];
-  // 部门id
   deptId: number;
-  // 业务员id
   salesmanId: number;
-  // extra info
   storePhone: string;
   water: string;
   electricity: string;
@@ -35,81 +49,44 @@ interface FocusFormItemProps {
   facilities: string[];
   houseDesc: string;
   businessDesc: string;
-  // 项目标签
   tags: string[];
   remark: string;
-  // 项目文件列表
   imageList: any[];
   houseLayoutList: HouseLayoutProps[];
 }
 
-// 表单
 interface FormProps {
   formInline: FocusFormItemProps;
 }
 
-// 房间状态
 interface HouseStatusProps {
   id?: number;
-  // 座栋
   building: string;
-  // 单元
   unit: string;
-  // 游标
   cursor: string;
   houseIndex: number;
-  // 房源号
   doorNumber: string;
-  // 房源禁用状态
   closed: boolean;
-  // 楼层
   floor: number;
-  // 房源类型id
   houseLayoutId: string;
-  // 房源价格
   price: number;
-  // 朝向
   direction: string;
-  // 面积
   area: number;
 }
 
 interface FocusBuildingProps {
-  // 座栋
   building: string;
-  // 单元
   unit: string;
-  // 总楼层
   floorTotal: number;
-  // 每个楼层的房源数量
   houseCountPerFloor: number;
-  // 关闭的楼层列表
   closedFloors: number[];
-  // 关闭的房源
   closedHouses: HouseStatusProps[];
-  // 选择的楼层
   selectedFloor: number;
-  // 房源前缀
   housePrefix: string;
-  // 去掉4
   excludeFour: boolean;
-  // 房源编号长度
   numberLength: number;
-  // 所有楼层的房源状态
   housesStatusOfFloors: Map<number, Map<string, HouseStatusProps>>;
-  // 是否是新增的
   isNew: boolean;
 }
 
-// 接口定义
-interface HouseLayoutProps {
-  id: string;
-  layoutName: string;
-  bedroom: number;
-  livingRoom: number;
-  kitchen: number;
-  bathroom: number;
-  newly: boolean;
-}
-
-export type { FocusFormItemProps, FormProps, HouseStatusProps, FocusBuildingProps, HouseLayoutProps };
+export type { FocusFormItemProps, FormProps, HouseStatusProps, FocusBuildingProps, HouseLayoutProps, FacilityItemProps };

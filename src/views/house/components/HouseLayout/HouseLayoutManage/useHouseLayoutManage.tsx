@@ -3,7 +3,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { message } from "@/utils/message";
 import HouseLayoutManageDialog from "./HouseLayoutManageDialog.vue";
-import type { HouseLayoutProps } from "@/views/house/components/FocusCreate/utils/types";
+import type { HouseLayoutProps, FacilityItemProps } from "@/views/house/components/FocusCreate/utils/types";
 
 export function useHouseLayoutManage() {
   const layoutManageFormRef = ref();
@@ -14,18 +14,26 @@ export function useHouseLayoutManage() {
    * @param row 房型数据
    * @param onConfirm 确认回调函数
    */
-  function openHouseLayoutManageDialog(title: "创建" | "编辑" = "创建", row?: HouseLayoutProps, onConfirm?: (data: { id: string; name: string; layout: string }) => void) {
+  function openHouseLayoutManageDialog(
+    title: "创建" | "编辑" = "创建",
+    row?: HouseLayoutProps,
+    onConfirm?: (data: { id: string; name: string; layout: string; tags: number[]; facilities: FacilityItemProps[] }) => void
+  ) {
     // 将 HouseLayoutProps 转换为表单需要的格式
     const formInline = row
       ? {
           id: row.id,
           name: row.layoutName,
-          layout: `${row.bedroom}室${row.livingRoom}厅${row.kitchen}厨${row.bathroom}卫`
+          layout: `${row.bedroom}室${row.livingRoom}厅${row.kitchen}厨${row.bathroom}卫`,
+          tags: row.tags || [],
+          facilities: row.facilities || []
         }
       : {
           id: "",
           name: "",
-          layout: ""
+          layout: "",
+          tags: [],
+          facilities: []
         };
 
     addDialog({
@@ -33,6 +41,7 @@ export function useHouseLayoutManage() {
       props: {
         formInline
       },
+      top: "1%",
       width: "800px",
       draggable: true,
       fullscreen: deviceDetection(),
