@@ -3,6 +3,7 @@ import { type userType, store, router, resetRouter, routerArrays, storageLocal }
 import { type UserResult, type RefreshTokenResult, getLogin, refreshTokenApi } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
+import { message } from "@/utils/message";
 
 export const useUserStore = defineStore("pure-user", {
   state: (): userType => ({
@@ -84,6 +85,7 @@ export const useUserStore = defineStore("pure-user", {
             resolve(data);
           })
           .catch(error => {
+            message("登录失败，请稍后再试！", { type: "error" });
             reject(error);
           });
       });
