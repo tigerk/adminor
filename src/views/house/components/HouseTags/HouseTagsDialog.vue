@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, reactive, ref, watch } from "vue";
+  import { onMounted, reactive, ref, watch, computed } from "vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
   import { TagsFormProps } from "@/views/house/components/HouseTags/types";
 
@@ -8,6 +8,17 @@
   // 存储选中的配置及其数量
   const selectedTags = ref<any[]>([]);
   const tagsOptions = reactive<any[]>([]);
+
+  // 计算是否全选
+  const isAllSelected = computed(() => {
+    return tagsOptions.length > 0 && selectedTags.value.length === tagsOptions.length;
+  });
+
+  // 计算是否半选
+  const isIndeterminate = computed(() => {
+    const selectedCount = selectedTags.value.length;
+    return selectedCount > 0 && selectedCount < tagsOptions.length;
+  });
 
   onMounted(() => {
     getDictDataByDictCode({
@@ -23,6 +34,17 @@
       selectedTags.value = [...props.formInline];
     }
   });
+
+  // 全选/取消全选
+  const handleSelectAll = (value: boolean) => {
+    if (value) {
+      // 全选：将所有选项的 value 添加到 selectedTags
+      selectedTags.value = tagsOptions.map(option => option.value);
+    } else {
+      // 取消全选：清空 selectedTags
+      selectedTags.value = [];
+    }
+  };
 
   // 切换选中状态
   const toggleTag = (value: number) => {
@@ -53,7 +75,10 @@
 
 <template>
   <div class="tags-container">
-    <h4 class="section-title">房源特色</h4>
+    <div class="header-wrapper">
+      <h4 class="section-title">房源特色</h4>
+      <el-checkbox :model-value="isAllSelected" :indeterminate="isIndeterminate" @change="handleSelectAll">全选</el-checkbox>
+    </div>
     <div class="tags-grid">
       <div v-for="option in tagsOptions" :key="option.value" class="tags-item">
         <el-checkbox :model-value="isSelected(option.value)" @change="toggleTag(option.value)">
@@ -67,10 +92,18 @@
 <style scoped>
   .tags-container {
     padding: 10px 0;
+    margin-bottom: 15px;
+  }
+
+  .header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
   }
 
   .section-title {
-    margin: 0 0 20px;
+    margin: 0;
     font-size: 16px;
     font-weight: 600;
     color: #303133;
