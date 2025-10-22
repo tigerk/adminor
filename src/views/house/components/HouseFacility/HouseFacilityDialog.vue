@@ -85,6 +85,28 @@
     return selectedFacilities[value] || 1;
   };
 
+  // 全选状态
+  const isAllSelected = () => {
+    return facilityOptions.every(option => selectedFacilities.hasOwnProperty(option.value));
+  };
+
+  // 全选/取消全选
+  const toggleSelectAll = () => {
+    if (isAllSelected()) {
+      // 取消全选
+      facilityOptions.forEach(option => {
+        delete selectedFacilities[option.value];
+      });
+    } else {
+      // 全选
+      facilityOptions.forEach(option => {
+        if (!selectedFacilities[option.value]) {
+          selectedFacilities[option.value] = 1;
+        }
+      });
+    }
+  };
+
   function getRef() {
     return selectedFacilities;
   }
@@ -94,7 +116,10 @@
 
 <template>
   <div class="facilities-container">
-    <h4 class="section-title">物品配置</h4>
+    <div class="header-section">
+      <h4 class="section-title">物品配置</h4>
+      <el-checkbox :model-value="isAllSelected()" @change="toggleSelectAll">全选</el-checkbox>
+    </div>
     <div class="facilities-grid">
       <div v-for="option in facilityOptions" :key="option.value" class="facility-item">
         <el-checkbox :model-value="isSelected(option.value)" @change="toggleFacility(option.value)">
@@ -120,8 +145,15 @@
     padding: 10px 0;
   }
 
+  .header-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
   .section-title {
-    margin: 0 0 20px;
+    margin: 0;
     font-size: 16px;
     font-weight: 600;
     color: #303133;
