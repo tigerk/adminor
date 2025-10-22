@@ -9,6 +9,7 @@
   import { getCompanyUserOptions } from "@/api/company";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
   import EpCircleClose from "~icons/ep/circle-close";
+  import { message } from "@/utils/message";
 
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
@@ -78,6 +79,8 @@
 
     // 新楼栋始终需要初始化房源数据
     initAllFloorsForBuilding(newBuilding);
+
+    message("添加了新楼栋", { type: "success" });
   };
 
   // 检查楼栋是否重复
@@ -348,7 +351,9 @@
                     <!-- 新楼栋标记（可选） -->
                     <el-tag v-if="building.isNew" type="success" size="small" style="margin-left: 10px">新增</el-tag>
                   </span>
-                  <el-button type="danger" :icon="Delete" size="small" :disabled="form.buildings.length <= 1" @click="removeBuilding(buildingIndex)">删除</el-button>
+                  <el-button v-if="form.buildings.length >= 1 && !isBuildingEditable(building)" type="danger" :icon="Delete" size="small" @click="removeBuilding(buildingIndex)">
+                    删除
+                  </el-button>
                 </div>
               </template>
 
@@ -356,14 +361,14 @@
               <el-row :gutter="20">
                 <el-col :span="3">
                   <el-form-item label="楼栋" :prop="`buildings.${buildingIndex}.building`" :rules="[{ required: true, message: '楼栋号为必填项', trigger: 'blur' }]">
-                    <el-input v-model="building.building" placeholder="楼栋号" :disabled="isBuildingEditable(building)">
+                    <el-input v-model="building.building" placeholder="楼栋号">
                       <template #append>栋</template>
                     </el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="3">
                   <el-form-item label="单元" :prop="`buildings.${buildingIndex}.unit`">
-                    <el-input v-model="building.unit" placeholder="选填" :disabled="isBuildingEditable(building)">
+                    <el-input v-model="building.unit" placeholder="选填">
                       <template #append>单元</template>
                     </el-input>
                   </el-form-item>
