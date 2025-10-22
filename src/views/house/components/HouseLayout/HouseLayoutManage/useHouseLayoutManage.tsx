@@ -3,7 +3,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { message } from "@/utils/message";
 import HouseLayoutManageDialog from "./HouseLayoutManageDialog.vue";
-import type { HouseLayoutProps, FacilityItemProps } from "@/views/house/components/FocusCreate/utils/types";
+import type { FacilityItemProps, HouseLayoutProps } from "@/types";
 
 export function useHouseLayoutManage() {
   const layoutManageFormRef = ref();

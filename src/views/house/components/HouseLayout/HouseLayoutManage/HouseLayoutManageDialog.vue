@@ -4,15 +4,15 @@
   import HouseLayoutDialog from "@/views/house/components/HouseLayout/HouseLayoutDialog.vue";
   import HouseTagsDialog from "@/views/house/components/HouseTags/HouseTagsDialog.vue";
   import HouseFacilityDialog from "@/views/house/components/HouseFacility/HouseFacilityDialog.vue";
-  import type { FacilityItemProps } from "@/views/house/components/FocusCreate/utils/types";
+  import type { HouseLayoutProps, FacilityItemProps } from "@/types/models";
 
   interface HouseLayoutManageFormProps {
     formInline: {
       id: string;
       name: string;
-      layout: string; // 格式：2室1厅1厨1卫
-      tags?: number[]; // 房源特色标签
-      facilities?: FacilityItemProps[]; // 房源配置
+      layout: string;
+      tags?: number[];
+      facilities?: FacilityItemProps[];
     };
   }
 

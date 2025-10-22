@@ -4,9 +4,10 @@
   import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled, InfoFilled, Lock, Unlock } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
-  import { HouseLayoutProps, HouseStatusProps, FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
+  import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { useHouseLayoutManage } from "@/views/house/components/HouseLayout/HouseLayoutManage/useHouseLayoutManage";
+  import { HouseLayoutProps, FocusHouseStatusProps } from "@/types";
 
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
@@ -65,7 +66,7 @@
     visible: false,
     x: 0,
     y: 0,
-    house: null as HouseStatusProps | null
+    house: null as FocusHouseStatusProps | null
   });
 
   // 批量配置表单
@@ -204,7 +205,7 @@
     return colors[index];
   };
 
-  const getHouseCardClass = (house: HouseStatusProps) => {
+  const getHouseCardClass = (house: FocusHouseStatusProps) => {
     if (selectedHouses.value.includes(house.cursor)) {
       return "border-blue-500 bg-blue-50";
     }
@@ -294,7 +295,7 @@
     }
 
     selectedHouses.value.forEach(cursor => {
-      const updates: Partial<HouseStatusProps> = {};
+      const updates: Partial<FocusHouseStatusProps> = {};
 
       if (batchConfig.houseLayoutId) {
         updates.houseLayoutId = batchConfig.houseLayoutId;
@@ -327,7 +328,7 @@
   };
 
   // 右键菜单相关方法
-  const handleHouseRightClick = (event: MouseEvent, house: HouseStatusProps) => {
+  const handleHouseRightClick = (event: MouseEvent, house: FocusHouseStatusProps) => {
     event.preventDefault();
     contextMenu.visible = true;
     contextMenu.x = event.clientX;
@@ -340,7 +341,7 @@
     contextMenu.house = null;
   };
 
-  const editHouse = (house: HouseStatusProps | null) => {
+  const editHouse = (house: FocusHouseStatusProps | null) => {
     if (!house) return;
 
     isEditingHouse.value = true;
@@ -351,7 +352,7 @@
     hideContextMenu();
   };
 
-  const deleteHouseAction = async (house: HouseStatusProps | null) => {
+  const deleteHouseAction = async (house: FocusHouseStatusProps | null) => {
     if (!house || !currentBuilding.value) return;
 
     try {
@@ -698,7 +699,7 @@
 
     const building = currentBuilding.value;
     const houseCount = building.houseCountPerFloor || 10;
-    const houseStatusMap = new Map<string, HouseStatusProps>();
+    const houseStatusMap = new Map<string, FocusHouseStatusProps>();
 
     for (let i = 1; i <= houseCount; i++) {
       const houseNum = i.toString();
@@ -732,7 +733,7 @@
   };
 
   // 锁房/解锁方法
-  const toggleHouseLock = async (house: HouseStatusProps | null) => {
+  const toggleHouseLock = async (house: FocusHouseStatusProps | null) => {
     if (!house || !currentBuilding.value) return;
 
     if (updateHouseInfo(currentBuilding.value, house.cursor, { closed: !house.closed })) {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, reactive, computed, watch, onMounted, nextTick } from "vue";
-  import { FormProps, FocusFormItemProps, HouseStatusProps, FocusBuildingProps } from "@/views/house/components/FocusCreate/utils/types";
+  import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { InfoFilled, Plus, Delete } from "@element-plus/icons-vue";
@@ -10,6 +10,7 @@
   import PoiSearch from "@/components/Business/PoiSearch.vue";
   import EpCircleClose from "~icons/ep/circle-close";
   import { message } from "@/utils/message";
+  import { FocusBuildingProps, FocusHouseStatusProps } from "@/types";
 
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
@@ -70,7 +71,7 @@
       housePrefix: `A`,
       excludeFour: false,
       numberLength: 3,
-      housesStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>(),
+      housesStatusOfFloors: new Map<number, Map<string, FocusHouseStatusProps>>(),
       isNew: true // 标记为新添加的楼栋
     };
 
@@ -137,7 +138,7 @@
     handleCloseFloor(building);
   };
 
-  const handleHouseClickWrapper = (buildingIndex: number, houseStatus: HouseStatusProps) => {
+  const handleHouseClickWrapper = (buildingIndex: number, houseStatus: FocusHouseStatusProps) => {
     const building = form.value.buildings[buildingIndex];
     handleHouseClick(building, houseStatus);
   };
@@ -209,7 +210,7 @@
           housePrefix: "A",
           excludeFour: false,
           numberLength: 3,
-          housesStatusOfFloors: new Map<number, Map<string, HouseStatusProps>>(),
+          housesStatusOfFloors: new Map<number, Map<string, FocusHouseStatusProps>>(),
           isNew: false // 初始楼栋不是新的
         }
       ];
@@ -230,7 +231,7 @@
       form.value.buildings.forEach(building => {
         // 如果楼栋没有 Map 或 Map 为空，初始化它
         if (!building.housesStatusOfFloors || !(building.housesStatusOfFloors instanceof Map) || building.housesStatusOfFloors.size === 0) {
-          building.housesStatusOfFloors = new Map<number, Map<string, HouseStatusProps>>();
+          building.housesStatusOfFloors = new Map<number, Map<string, FocusHouseStatusProps>>();
           initAllFloorsForBuilding(building);
         }
       });

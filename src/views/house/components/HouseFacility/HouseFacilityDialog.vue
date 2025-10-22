@@ -94,7 +94,7 @@
 
 <template>
   <div class="facilities-container">
-    <h4 class="section-title">房源物品</h4>
+    <h4 class="section-title">物品配置</h4>
     <div class="facilities-grid">
       <div v-for="option in facilityOptions" :key="option.value" class="facility-item">
         <el-checkbox :model-value="isSelected(option.value)" @change="toggleFacility(option.value)">

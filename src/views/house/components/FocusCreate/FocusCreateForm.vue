@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, reactive, watch } from "vue";
-  import { FormProps, HouseStatusProps } from "@/views/house/components/FocusCreate/utils/types";
+  import { FormProps } from "@/views/house/components/FocusCreate/utils/types";
   import FocusAssignHouse from "@/views/house/components/FocusCreate/FocusAssignHouse.vue";
   import FocusExtraInfo from "@/views/house/components/FocusCreate/FocusExtraInfo.vue";
   import FocusBasicInfo from "@/views/house/components/FocusCreate/FocusBasicInfo.vue";

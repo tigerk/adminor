@@ -5,17 +5,16 @@
   import { EntireFormProps } from "@/views/house/components/EntireCreate/types";
   import { ref } from "vue";
   import { Plus, CircleCheck } from "@element-plus/icons-vue";
-  import type { HouseItemProps } from "./types";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
-  import { FacilityItemProps } from "@/views/house/components/HouseFacility/types";
   import HouseLayoutSelector from "@/views/house/components/HouseLayout/HouseLayoutSelector.vue";
   import { useHouseTagsEdit } from "@/views/house/components/HouseTags/hook";
   import { createEntireFormRules } from "./rule";
   import type { FormInstance } from "element-plus";
   import { ElMessage } from "element-plus";
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
+  import { FacilityItemProps } from "@/types";
 
   // 使用hook中的方法
   const { openEntireEditDialog } = useEntireEdit();

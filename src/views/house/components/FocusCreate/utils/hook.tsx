@@ -1,9 +1,10 @@
 // useFocusEdit.ts
 import FocusCreateForm from "../FocusCreateForm.vue";
-import { addDialog, closeAllDialog } from "@/components/ReDialog/index";
+import { addDialog, closeAllDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
-import type { FocusFormItemProps, HouseStatusProps, FocusBuildingProps } from "@/views/house/components/FocusCreate/utils/types";
+import type { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
+import type { FocusBuildingProps, FocusHouseStatusProps } from "@/types";
 
 export function useFocusEdit() {
   const form = reactive({
@@ -23,7 +24,7 @@ export function useFocusEdit() {
 
   // 初始化特定楼层房源列表
   const initHouseListOfFloor = (building: FocusBuildingProps, floor: number, houseCount: number) => {
-    const houseStatusMap = new Map<string, HouseStatusProps>();
+    const houseStatusMap = new Map<string, FocusHouseStatusProps>();
 
     let actualCount = 0;
     let doorIndex = 1;
@@ -68,7 +69,7 @@ export function useFocusEdit() {
 
     // 初始化 Map
     if (!building.housesStatusOfFloors) {
-      building.housesStatusOfFloors = new Map<number, Map<string, HouseStatusProps>>();
+      building.housesStatusOfFloors = new Map<number, Map<string, FocusHouseStatusProps>>();
     } else {
       building.housesStatusOfFloors.clear();
     }
@@ -132,7 +133,7 @@ export function useFocusEdit() {
   };
 
   // 处理房源点击事件（锁定/解锁）
-  const handleHouseClick = (building: FocusBuildingProps, houseStatus: HouseStatusProps) => {
+  const handleHouseClick = (building: FocusBuildingProps, houseStatus: FocusHouseStatusProps) => {
     // 确保 closedHouses 是数组
     if (!Array.isArray(building.closedHouses)) {
       building.closedHouses = [];
@@ -191,7 +192,7 @@ export function useFocusEdit() {
     const floorMap = building.housesStatusOfFloors.get(floor);
     const newIndex = floorMap.size + 1;
 
-    const newHouse: HouseStatusProps = {
+    const newHouse: FocusHouseStatusProps = {
       cursor: `${building.building}-${building.unit || "0"}-${floor}-${newIndex}`,
       houseIndex: newIndex,
       doorNumber: doorNumber,
@@ -210,7 +211,7 @@ export function useFocusEdit() {
   };
 
   // 更新房源信息
-  const updateHouseInfo = (building: FocusBuildingProps, cursor: string, updates: Partial<HouseStatusProps>) => {
+  const updateHouseInfo = (building: FocusBuildingProps, cursor: string, updates: Partial<FocusHouseStatusProps>) => {
     for (const [floor, floorMap] of building.housesStatusOfFloors) {
       console.log("housesStatusOfFloors foreach, key={}, house={}", floor, floorMap);
       for (const [key, house] of floorMap) {
@@ -309,8 +310,8 @@ export function useFocusEdit() {
   };
 
   // 将 buildings 的 Map 结构转换为 houseList 数组
-  const convertBuildingsToHouseList = (buildings: FocusBuildingProps[]): HouseStatusProps[] => {
-    const houseList: HouseStatusProps[] = [];
+  const convertBuildingsToHouseList = (buildings: FocusBuildingProps[]): FocusHouseStatusProps[] => {
+    const houseList: FocusHouseStatusProps[] = [];
 
     buildings.forEach(building => {
       if (building.housesStatusOfFloors) {
@@ -411,7 +412,7 @@ export function useFocusEdit() {
 
         // 获取或创建该楼层的 Map
         if (!building.housesStatusOfFloors.has(floor)) {
-          building.housesStatusOfFloors.set(floor, new Map<string, HouseStatusProps>());
+          building.housesStatusOfFloors.set(floor, new Map<string, FocusHouseStatusProps>());
         }
 
         const floorMap = building.housesStatusOfFloors.get(floor)!;

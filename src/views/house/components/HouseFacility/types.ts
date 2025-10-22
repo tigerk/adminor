@@ -1,11 +1,7 @@
-interface FacilityItemProps {
-  name: string;
-  count: number;
-}
+import type { FacilityItemProps } from "@/types/models";
 
-// 表单
 interface FacilityFormProps {
   formInline: FacilityItemProps[];
 }
 
-export type { FacilityItemProps, FacilityFormProps };
+export type { FacilityFormProps };
