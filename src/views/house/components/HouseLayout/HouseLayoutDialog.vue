@@ -1,16 +1,16 @@
 <script setup lang="ts">
   import { ref, computed } from "vue";
   import { HouseLayoutFormProps } from "./types";
+  import { FacilityItemProps, HouseLayoutProps } from "@/types";
 
   const props = withDefaults(defineProps<HouseLayoutFormProps>(), {});
 
-  const tempSelection = ref({
+  const tempSelection = ref<HouseLayoutProps>({
     bedroom: 0,
     livingRoom: 0,
     kitchen: 0,
     bathroom: 0
   });
-
   // 生成数字数组的辅助函数
   const generateRange = (start: number, end: number): number[] => {
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
@@ -31,8 +31,8 @@
   const bathroomRange = generateRange(0, 30);
 
   // 解析现有的户型字符串
-  const parseLayout = (layout: string): void => {
-    if (!layout) {
+  const parseLayout = (layout: HouseLayoutProps): void => {
+    if (layout == null) {
       tempSelection.value = {
         bedroom: 0,
         livingRoom: 0,
@@ -42,16 +42,11 @@
       return;
     }
 
-    const bedroomMatch = layout.match(/(\d+)室/);
-    const livingRoomMatch = layout.match(/(\d+)厅/);
-    const kitchenMatch = layout.match(/(\d+)厨/);
-    const bathroomMatch = layout.match(/(\d+)卫/);
-
     tempSelection.value = {
-      bedroom: bedroomMatch ? parseInt(bedroomMatch[1]) : 0,
-      livingRoom: livingRoomMatch ? parseInt(livingRoomMatch[1]) : 0,
-      kitchen: kitchenMatch ? parseInt(kitchenMatch[1]) : 0,
-      bathroom: bathroomMatch ? parseInt(bathroomMatch[1]) : 0
+      bedroom: layout.bedroom !== 0 ? layout.bedroom : 0,
+      livingRoom: layout.livingRoom !== 0 ? layout.livingRoom : 0,
+      kitchen: layout.kitchen !== 0 ? layout.kitchen : 0,
+      bathroom: layout.bathroom !== 0 ? layout.bathroom : 0
     };
   };
 
@@ -100,12 +95,22 @@
   };
 
   // 获取选中的户型字符串
-  const getRef = (): string => {
+  const getRef = (): HouseLayoutProps => {
+    let layoutName = "";
     const { bedroom, livingRoom, kitchen, bathroom } = tempSelection.value;
     if (bedroom > 0 || livingRoom > 0 || kitchen > 0 || bathroom > 0) {
-      return `${bedroom}室${livingRoom}厅${kitchen}厨${bathroom}卫`;
+      layoutName = `${bedroom}室${livingRoom}厅${kitchen}厨${bathroom}卫`;
+    } else {
+      return null;
     }
-    return "";
+
+    return {
+      layoutName: layoutName,
+      bedroom: bedroom,
+      livingRoom: livingRoom,
+      kitchen: kitchen,
+      bathroom: bathroom
+    };
   };
 
   defineExpose({ getRef, handleReset });

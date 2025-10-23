@@ -15,9 +15,10 @@
   import { ElMessage } from "element-plus";
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
   import { FacilityItemProps } from "@/types";
+  import Directives from "@/views/able/directives.vue";
+  import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
 
   // 使用hook中的方法
-  const { openEntireEditDialog } = useEntireEdit();
   const { openFacilityEditDialog } = useFacilityEdit();
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
   const { openHouseImageEditDialog } = useHouseImageEdit();
@@ -36,7 +37,15 @@
         doorNumber: "",
         floor: null,
         totalFloor: null,
-        houseLayout: null,
+        houseLayout: {
+          livingRoom: 0,
+          bedroom: 0,
+          bathroom: 0,
+          kitchen: 0,
+          imageList: [],
+          tags: [],
+          facilities: []
+        },
         rentalType: 1,
         direction: "",
         area: "",
@@ -75,26 +84,9 @@
   };
 
   // 朝向选项
-  const directionOptions = [
-    { label: "东", value: "东" },
-    { label: "南", value: "南" },
-    { label: "西", value: "西" },
-    { label: "北", value: "北" },
-    { label: "东南", value: "东南" },
-    { label: "西南", value: "西南" },
-    { label: "东北", value: "东北" },
-    { label: "西北", value: "西北" }
-  ];
+  const directionOptions = DIRECTION_OPTIONS;
 
-  const decorationTypeOptions = [
-    { label: "豪华装", value: "豪华装" },
-    { label: "简装", value: "简装" },
-    { label: "精装", value: "精装" },
-    { label: "毛坯", value: "毛坯" },
-    { label: "清水", value: "清水" },
-    { label: "简约", value: "简约" },
-    { label: "未装修", value: "未装修" }
-  ];
+  const decorationTypeOptions = DECORATION_TYPE_OPTIONS;
 
   // 添加新房源
   const addNewHouse = () => {
@@ -145,7 +137,7 @@
     const currentHouse = entireForm.houseList[index];
 
     openFacilityEditDialog("", currentHouse.facilities, (facilities: FacilityItemProps[]) => {
-      entireForm.houseList[index].facilities = facilities;
+      entireForm.houseList[index].houseLayout.facilities = facilities;
     });
   };
 
@@ -164,7 +156,7 @@
     const currentHouse = entireForm.houseList[index];
 
     openHouseTagsEditDialog("", currentHouse.tags, (tags: any[]) => {
-      entireForm.houseList[index].tags = tags;
+      entireForm.houseList[index].houseLayout.tags = tags;
     });
   };
   /**
@@ -178,7 +170,7 @@
     const currentHouse = entireForm.houseList[index];
 
     openHouseImageEditDialog("", currentHouse.imageList, (imageList: any[]) => {
-      entireForm.houseList[index].imageList = imageList;
+      entireForm.houseList[index].houseLayout.imageList = imageList;
     });
   };
   /**
@@ -221,24 +213,21 @@
           <el-col :span="3">
             <el-form-item label="用水" prop="water" class="el-form-item">
               <el-select v-model="entireForm.water" placeholder="请选择">
-                <el-option label="民用水" value="residential" />
-                <el-option label="商业用水" value="commercial" />
+                <el-option v-for="item in WATER_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="3">
             <el-form-item label="用电" prop="electricity">
               <el-select v-model="entireForm.electricity" placeholder="请选择">
-                <el-option label="民用电" value="residential" />
-                <el-option label="商业用电" value="commercial" />
+                <el-option v-for="item in ELECTRICITY_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="3">
             <el-form-item label="供暖信息" prop="heating">
               <el-select v-model="entireForm.heating" placeholder="请选择">
-                <el-option label="独立供暖" value="independent" />
-                <el-option label="集中供暖" value="central" />
+                <el-option v-for="item in HEATING_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -375,21 +364,25 @@
               <el-row :gutter="20">
                 <el-col :span="8">
                   <el-form-item label="房源特色">
-                    <el-button class="status-btn" :type="house.tags && house.tags.length > 0 ? 'success' : 'default'" @click="openHouseTagsDialog(index)">
+                    <el-button class="status-btn" :type="house.houseLayout.tags && house.houseLayout.tags.length > 0 ? 'success' : 'default'" @click="openHouseTagsDialog(index)">
                       <el-icon>
                         <CircleCheck />
                       </el-icon>
-                      <span>{{ house.tags && house.tags.length > 0 ? "已设置" : "未设置" }}</span>
+                      <span>{{ house.houseLayout.tags && house.houseLayout.tags.length > 0 ? "已设置" : "未设置" }}</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
                   <el-form-item label="房源配置">
-                    <el-button class="status-btn" :type="house.facilities && house.facilities.length > 0 ? 'success' : 'default'" @click="openFacilitiesDialog(index)">
+                    <el-button
+                      class="status-btn"
+                      :type="house.houseLayout.facilities && house.houseLayout.facilities.length > 0 ? 'success' : 'default'"
+                      @click="openFacilitiesDialog(index)"
+                    >
                       <el-icon>
                         <CircleCheck />
                       </el-icon>
-                      <span>{{ getFacilitiesStatusText(house.facilities) }}</span>
+                      <span>{{ getFacilitiesStatusText(house.houseLayout.facilities) }}</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
@@ -407,11 +400,15 @@
               <el-row :gutter="20">
                 <el-col :span="8">
                   <el-form-item label="房源图片">
-                    <el-button class="status-btn" :type="house.imageList && house.imageList.length > 0 ? 'success' : 'default'" @click="openImageListDialog(index)">
+                    <el-button
+                      class="status-btn"
+                      :type="house.houseLayout.imageList && house.houseLayout.imageList.length > 0 ? 'success' : 'default'"
+                      @click="openImageListDialog(index)"
+                    >
                       <el-icon>
                         <CircleCheck />
                       </el-icon>
-                      <span>{{ house.imageList && house.imageList.length > 0 ? "已设置" : "未设置" }}</span>
+                      <span>{{ house.houseLayout.imageList && house.houseLayout.imageList.length > 0 ? "已设置" : "未设置" }}</span>
                     </el-button>
                   </el-form-item>
                 </el-col>

@@ -3,14 +3,15 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, ref } from "vue";
 import { message } from "@/utils/message";
+import type { HouseLayoutProps } from "@/types";
 
 export function useHouseLayoutEdit() {
   const layoutFormRef = ref();
 
   function openHouseLayoutEditDialog(
     title = "选择",
-    row?: string,
-    onConfirm?: (layout: string) => void // 添加回调函数参数
+    row?: HouseLayoutProps,
+    onConfirm?: (layout: HouseLayoutProps) => void // 添加回调函数参数
   ) {
     addDialog({
       title: `${title}户型`,
@@ -27,7 +28,7 @@ export function useHouseLayoutEdit() {
       beforeSure: (done, { options }) => {
         const selectedLayout = layoutFormRef.value.getRef();
 
-        if (!selectedLayout) {
+        if (selectedLayout === null) {
           message("请选择户型", { type: "warning" });
           return;
         }

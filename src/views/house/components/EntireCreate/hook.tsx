@@ -4,7 +4,8 @@ import { addDialog, closeAllDialog, closeDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import type { EntireFormItemProps } from "@/views/house/components/EntireCreate/types";
-import { ElMessage } from "element-plus";
+import { createEntireHouse } from "@/api/house/scatter";
+import { message } from "@/utils/message";
 
 export function useEntireEdit() {
   const entireForm = reactive({
@@ -23,16 +24,12 @@ export function useEntireEdit() {
         formInline: {
           id: row?.id ?? null,
           businessMode: row?.businessMode ?? 1,
-          focusCode: "",
-          focusName: "",
-          address: "string",
           community: null,
           water: "residential",
           electricity: "residential",
           heating: "central",
           hasGas: true,
-          hasElevator: false,
-          facilities: []
+          hasElevator: false
         }
       },
       top: "1%",
@@ -60,11 +57,15 @@ export function useEntireEdit() {
                   console.log("表单数据:", formData);
                   console.log("房源列表:", houseList);
 
-                  // TODO: 调用API保存数据
-                  // await saveEntireHouse({ ...formData, houseList });
-
-                  ElMessage.success("保存成功");
-                  closeDialog(options, index);
+                  // 调用API保存数据
+                  await createEntireHouse({ ...formData, houseList }).then(resp => {
+                    if (resp.code === 0) {
+                      message("保存成功", { type: "success" });
+                      closeDialog(options, index);
+                    } else {
+                      message(resp.message, { type: "error" });
+                    }
+                  });
                 }
               }
             }}

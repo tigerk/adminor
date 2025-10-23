@@ -13,6 +13,6 @@ type Result<T> = {
   data?: T;
 };
 
-export const createScatterHouse = (data?: object) => {
-  return http.request<Result<any>>("post", baseUrlApi("scatter/create"), { data });
+export const createEntireHouse = (data?: object) => {
+  return http.request<Result<any>>("post", baseUrlApi("scatter/entire/create"), { data });
 };

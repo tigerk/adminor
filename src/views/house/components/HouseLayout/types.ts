@@ -1,6 +1,8 @@
 // 表单
+import type { HouseLayoutProps } from "@/types";
+
 interface HouseLayoutFormProps {
-  formInline: string; // 户型字符串，如："2室1厅1厨1卫"
+  formInline: HouseLayoutProps;
 }
 
 export type { HouseLayoutFormProps };

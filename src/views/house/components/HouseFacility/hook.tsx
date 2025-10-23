@@ -3,8 +3,8 @@ import HouseFacilityDialog from "./HouseFacilityDialog.vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { defineEmits, h, ref } from "vue";
-import type { FacilityItemProps } from "@/views/house/components/HouseFacility/types";
 import { message } from "@/utils/message";
+import type { FacilityItemProps } from "@/types";
 
 export function useFacilityEdit() {
   const facilityFormRef = ref();

@@ -5,8 +5,8 @@ import type { CommunityProps } from "@/types";
 
 /** 户型信息 */
 export interface HouseLayoutProps {
-  id: string;
-  layoutName: string;
+  id?: string;
+  layoutName?: string;
   bedroom: number;
   livingRoom: number;
   kitchen: number;
@@ -14,13 +14,17 @@ export interface HouseLayoutProps {
   newly?: boolean;
   tags?: number[];
   facilities?: FacilityItemProps[];
+  imageList?: string[];
+  videoList?: string[];
 }
 
 /** 设施配置项 */
-export interface FacilityItemProps {
+interface FacilityItemProps {
   name: string;
   count: number;
 }
+
+export default FacilityItemProps;
 
 /** 房源状态 */
 export interface FocusHouseStatusProps {
@@ -61,17 +65,14 @@ export interface HouseBasicInfoProps {
   unit: string; // 单元
   doorNumber: string; // 房间号
   floor: number; // 所在楼层
-  totalFloor: number; // 总楼层数
-  houseLayout: HouseLayoutProps | null; // ⚠️ 使用全局类型
+  floorTotal: number; // 总楼层数
+  houseLayout: HouseLayoutProps; // ⚠️ 使用全局类型
   rentalType: number; // 出租类型：1=整租，2=合租
   direction: string; // 朝向
   area: string; // 面积
   decorationType: string; // 装修类型
   price: string; // 出租价格
   propertyFee: string; // 物业费
-  facilities: FacilityItemProps[]; // ⚠️ 使用全局类型
-  imageList: any[];
-  tags: any[];
   moreInfo: any;
 }
 
@@ -106,16 +107,12 @@ export interface FocusFormItemProps {
 export interface EntireFormItemProps {
   id: number;
   businessMode: number;
-  focusCode: string;
-  focusName: string;
-  address: string;
   community: CommunityProps | null;
   water: "commercial" | "residential";
   electricity: "commercial" | "residential";
   heating: "central" | "independent";
   hasGas: boolean;
   hasElevator: boolean;
-  facilities: string[];
   houseList: HouseBasicInfoProps[];
   deptId: number;
   salesmanId: number;

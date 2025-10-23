@@ -13,24 +13,21 @@
           <el-col :span="5">
             <el-form-item label="用水" required class="el-form-item">
               <el-select v-model="formData.water" placeholder="请选择">
-                <el-option label="商业用水" value="commercial" />
-                <el-option label="民用水" value="residential" />
+                <el-option v-for="item in WATER_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="5">
             <el-form-item label="用电" required>
               <el-select v-model="formData.electricity" placeholder="请选择">
-                <el-option label="商业用电" value="commercial" />
-                <el-option label="民用电" value="residential" />
+                <el-option v-for="item in ELECTRICITY_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="5">
             <el-form-item label="供暖信息" required>
               <el-select v-model="formData.heating" placeholder="请选择">
-                <el-option label="集中供暖" value="central" />
-                <el-option label="独立供暖" value="independent" />
+                <el-option v-for="item in HEATING_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -127,6 +124,7 @@
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
   import { createFocusBasicInfoRules } from "@/views/house/components/FocusCreate/utils/rule";
+  import { ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
 
   // 获取 FocusCreateForm 中的form数据，vue3.3+
   const formData = defineModel<FocusFormItemProps>();

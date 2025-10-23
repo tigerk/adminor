@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { reactive, watch } from "vue";
+  import { onMounted, reactive, ref, watch } from "vue";
   import { Plus, Minus } from "@element-plus/icons-vue";
   import { type FacilityFormProps } from "@/views/house/components/HouseFacility/types";
+  import { getDictDataByDictCode } from "@/api/sys/dict";
 
   const props = withDefaults(defineProps<FacilityFormProps>(), {});
   const facilities = reactive(props.formInline);
@@ -23,34 +24,18 @@
     }
   }
 
-  // 配置项列表
-  const facilityOptions = [
-    { label: "空调", value: "空调" },
-    { label: "冰箱", value: "冰箱" },
-    { label: "洗衣机", value: "洗衣机" },
-    { label: "微波炉", value: "微波炉" },
-    { label: "饮水机", value: "饮水机" },
-    { label: "电视", value: "电视" },
-    { label: "电磁炉", value: "电磁炉" },
-    { label: "油烟机", value: "油烟机" },
-    { label: "热水器", value: "热水器" },
-    { label: "燃气灶", value: "燃气灶" },
-    { label: "暖气", value: "暖气" },
-    { label: "座椅", value: "座椅" },
-    { label: "床", value: "床" },
-    { label: "书桌", value: "书桌" },
-    { label: "沙发", value: "沙发" },
-    { label: "衣柜", value: "衣柜" },
-    { label: "床头柜", value: "床头柜" },
-    { label: "灯", value: "灯" },
-    { label: "窗帘", value: "窗帘" },
-    { label: "字画", value: "字画" },
-    { label: "办公桌", value: "办公桌" },
-    { label: "办公椅", value: "办公椅" },
-    { label: "会议桌", value: "会议桌" },
-    { label: "WIFI", value: "WIFI" },
-    { label: "智能门锁", value: "智能门锁" }
-  ];
+  const facilityOptions = ref([]);
+
+  onMounted(() => {
+    getDictDataByDictCode({
+      dictCode: "house_facilities"
+    }).then(res => {
+      facilityOptions.value = res.data.map(item => ({
+        label: item.name,
+        value: item.value
+      }));
+    });
+  });
 
   // 切换选中状态
   const toggleFacility = (value: string) => {
@@ -87,19 +72,19 @@
 
   // 全选状态
   const isAllSelected = () => {
-    return facilityOptions.every(option => selectedFacilities.hasOwnProperty(option.value));
+    return facilityOptions.value.every(option => selectedFacilities.hasOwnProperty(option.value));
   };
 
   // 全选/取消全选
   const toggleSelectAll = () => {
     if (isAllSelected()) {
       // 取消全选
-      facilityOptions.forEach(option => {
+      facilityOptions.value.forEach(option => {
         delete selectedFacilities[option.value];
       });
     } else {
       // 全选
-      facilityOptions.forEach(option => {
+      facilityOptions.value.forEach(option => {
         if (!selectedFacilities[option.value]) {
           selectedFacilities[option.value] = 1;
         }
@@ -128,11 +113,15 @@
 
         <div v-if="isSelected(option.value)" class="count-control">
           <el-button size="small" circle :disabled="getCount(option.value) <= 1" @click="decreaseCount(option.value)">
-            <el-icon><Minus /></el-icon>
+            <el-icon>
+              <Minus />
+            </el-icon>
           </el-button>
           <span class="count-text">{{ getCount(option.value) }}</span>
           <el-button size="small" circle @click="increaseCount(option.value)">
-            <el-icon><Plus /></el-icon>
+            <el-icon>
+              <Plus />
+            </el-icon>
           </el-button>
         </div>
       </div>
@@ -143,6 +132,7 @@
 <style scoped>
   .facilities-container {
     padding: 10px 0;
+    margin-bottom: 15px;
   }
 
   .header-section {

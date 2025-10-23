@@ -4,10 +4,10 @@
   import HouseLayoutDialog from "@/views/house/components/HouseLayout/HouseLayoutDialog.vue";
   import HouseTagsDialog from "@/views/house/components/HouseTags/HouseTagsDialog.vue";
   import HouseFacilityDialog from "@/views/house/components/HouseFacility/HouseFacilityDialog.vue";
-  import type { HouseLayoutProps, FacilityItemProps } from "@/types/models";
+  import type { FacilityItemProps } from "@/types/models";
 
   interface HouseLayoutManageFormProps {
-    formInline: {
+    formInline?: {
       id: string;
       name: string;
       layout: string;
@@ -21,8 +21,8 @@
       id: "",
       name: "",
       layout: "",
-      tags: () => [],
-      facilities: () => []
+      tags: [] as number[],
+      facilities: [] as FacilityItemProps[]
     })
   });
 
