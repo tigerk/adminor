@@ -50,3 +50,17 @@ export const HEATING_TYPE_OPTIONS = [
   { label: "独立供暖", value: "independent" },
   { label: "集中供暖", value: "central" }
 ] as const;
+
+/**
+ * 房间类型选项
+ */
+export const ROOM_TYPE_OPTIONS = [
+  { label: "主卧", value: "1" },
+  { label: "次卧", value: "2" },
+  { label: "隔断", value: "3" },
+  { label: "厅隔", value: "4" },
+  { label: "单间配套", value: "5" },
+  { label: "单间", value: "6" },
+  { label: "双人间", value: "7" },
+  { label: "多人间", value: "8" }
+] as const;

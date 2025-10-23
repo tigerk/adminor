@@ -422,6 +422,11 @@
               </el-row>
             </el-col>
           </el-row>
+          <el-row :gutter="20" class="mb-1">
+            <el-col :span="12">
+              <h4 class="pb-4">子间信息</h4>
+            </el-col>
+          </el-row>
         </div>
 
         <!-- 添加新房源按钮 -->

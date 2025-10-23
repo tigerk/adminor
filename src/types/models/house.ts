@@ -142,3 +142,18 @@ export interface ShareFormItemProps {
   deptId: number;
   salesmanId: number;
 }
+
+export interface ShareRoomFormItemProps {
+  id: number;
+  houseId: number;
+  roomNumber: string; // 房间名称
+  roomType: string;
+  water: "commercial" | "residential";
+  electricity: "commercial" | "residential";
+  heating: "central" | "independent";
+  hasGas: boolean;
+  hasElevator: boolean;
+  houseList: HouseBasicInfoProps[];
+  deptId: number;
+  salesmanId: number;
+}
