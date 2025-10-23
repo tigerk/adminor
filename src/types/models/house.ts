@@ -127,3 +127,18 @@ export interface HouseQueryParams {
   currentPage?: number;
   pageSize?: number;
 }
+
+/** 合租房源表单 */
+export interface ShareFormItemProps {
+  id: number;
+  businessMode: number;
+  community: CommunityProps | null;
+  water: "commercial" | "residential";
+  electricity: "commercial" | "residential";
+  heating: "central" | "independent";
+  hasGas: boolean;
+  hasElevator: boolean;
+  houseList: HouseBasicInfoProps[];
+  deptId: number;
+  salesmanId: number;
+}

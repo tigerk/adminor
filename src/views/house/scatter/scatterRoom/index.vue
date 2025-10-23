@@ -12,12 +12,14 @@
   import AddFill from "~icons/*";
   import EpArrowRightBold from "~icons/ep/arrow-right-bold";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
+  import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 
   defineOptions({
     name: "ScatterRoom"
   });
 
   const { openEntireEditDialog } = useEntireEdit();
+  const { openShareEditDialog } = useShareEdit();
   const {
     queryForm,
     onBack,
@@ -91,7 +93,7 @@
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item @click="openEntireEditDialog()">整租房源</el-dropdown-item>
-              <el-dropdown-item>合租房源</el-dropdown-item>
+              <el-dropdown-item @click="openShareEditDialog()">合租房源</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>

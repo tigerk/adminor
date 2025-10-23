@@ -1,8 +1,6 @@
 <script setup lang="ts">
   import { onMounted, reactive } from "vue";
-  import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
-  import { EntireFormProps } from "@/views/house/components/EntireCreate/types";
   import { ref } from "vue";
   import { Plus, CircleCheck } from "@element-plus/icons-vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
@@ -10,20 +8,21 @@
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
   import HouseLayoutSelector from "@/views/house/components/HouseLayout/HouseLayoutSelector.vue";
   import { useHouseTagsEdit } from "@/views/house/components/HouseTags/hook";
-  import { createEntireFormRules } from "./rule";
+  import { createShareFormRules } from "./rule";
   import type { FormInstance } from "element-plus";
   import { ElMessage } from "element-plus";
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
   import { FacilityItemProps } from "@/types";
   import Directives from "@/views/able/directives.vue";
   import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
+  import { ShareFormProps } from "@/views/house/components/ShareCreate/types";
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
   const { openHouseImageEditDialog } = useHouseImageEdit();
 
-  const props = withDefaults(defineProps<EntireFormProps>(), {});
+  const props = withDefaults(defineProps<ShareFormProps>(), {});
   const emit = defineEmits(["onSave"]);
 
   // 将 entireForm 和 houseList 合并到一个响应式对象中
@@ -67,7 +66,7 @@
   const ruleFormRef = ref<FormInstance>();
 
   // 创建表单验证规则
-  const rules = createEntireFormRules(entireForm);
+  const rules = createShareFormRules(entireForm);
 
   // 负责人列表
   const salesmanList = ref([]);
@@ -371,17 +370,21 @@
             <el-col :span="6">
               <el-row :gutter="20">
                 <el-col :span="8">
-                  <el-form-item label="房源特色">
-                    <el-button class="status-btn" :type="house.houseLayout.tags && house.houseLayout.tags.length > 0 ? 'success' : 'default'" @click="openHouseTagsDialog(index)">
+                  <el-form-item label="公区图片">
+                    <el-button
+                      class="status-btn"
+                      :type="house.houseLayout.imageList && house.houseLayout.imageList.length > 0 ? 'success' : 'default'"
+                      @click="openImageListDialog(index)"
+                    >
                       <el-icon>
                         <CircleCheck />
                       </el-icon>
-                      <span>{{ house.houseLayout.tags && house.houseLayout.tags.length > 0 ? "已设置" : "未设置" }}</span>
+                      <span>{{ house.houseLayout.imageList && house.houseLayout.imageList.length > 0 ? "已设置" : "未设置" }}</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
-                  <el-form-item label="房源配置">
+                  <el-form-item label="公区配置">
                     <el-button
                       class="status-btn"
                       :type="house.houseLayout.facilities && house.houseLayout.facilities.length > 0 ? 'success' : 'default'"
@@ -406,20 +409,6 @@
                 </el-col>
               </el-row>
               <el-row :gutter="20">
-                <el-col :span="8">
-                  <el-form-item label="房源图片">
-                    <el-button
-                      class="status-btn"
-                      :type="house.houseLayout.imageList && house.houseLayout.imageList.length > 0 ? 'success' : 'default'"
-                      @click="openImageListDialog(index)"
-                    >
-                      <el-icon>
-                        <CircleCheck />
-                      </el-icon>
-                      <span>{{ house.houseLayout.imageList && house.houseLayout.imageList.length > 0 ? "已设置" : "未设置" }}</span>
-                    </el-button>
-                  </el-form-item>
-                </el-col>
                 <el-col :span="8">
                   <el-form-item label="更多信息">
                     <el-button class="status-btn" disabled>
