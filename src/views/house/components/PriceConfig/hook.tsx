@@ -15,7 +15,7 @@ export function usePriceConfigEdit() {
         formInline: row ?? {}
       },
       top: "5%",
-      width: "900px",
+      width: "1000px",
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,

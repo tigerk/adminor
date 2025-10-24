@@ -486,13 +486,11 @@
                         </td>
                         <td>
                           <el-form-item label-width="0" class="table-form-item" :prop="`houseList.${index}.roomList.${roomIndex}.price`">
-                            <el-space spacer="|">
+                            <el-space>
                               <el-input v-model="room.price" placeholder="租金" class="table-input">
                                 <template #suffix>元/月</template>
                               </el-input>
-                              <el-icon class="mr-2" @click="openRoomPriceConfigDialog(index, roomIndex)">
-                                <Notebook />
-                              </el-icon>
+                              <div class="mr-1"><el-button size="small" @click="openRoomPriceConfigDialog(index, roomIndex)">配置</el-button></div>
                             </el-space>
                           </el-form-item>
                         </td>
