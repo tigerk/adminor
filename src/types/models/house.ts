@@ -74,6 +74,7 @@ export interface HouseBasicInfoProps {
   price: string; // 出租价格
   propertyFee: string; // 物业费
   moreInfo: any;
+  roomList?: RoomInfoProps[]; // 房间列表
 }
 
 /** 集中式项目表单 */
@@ -143,17 +144,41 @@ export interface ShareFormItemProps {
   salesmanId: number;
 }
 
-export interface ShareRoomFormItemProps {
+export interface RoomInfoProps {
   id: number;
-  houseId: number;
   roomNumber: string; // 房间名称
   roomType: string;
-  water: "commercial" | "residential";
-  electricity: "commercial" | "residential";
-  heating: "central" | "independent";
-  hasGas: boolean;
-  hasElevator: boolean;
-  houseList: HouseBasicInfoProps[];
-  deptId: number;
-  salesmanId: number;
+  direction: string;
+  area: number;
+  price: number;
+  tags?: number[];
+  facilities?: FacilityItemProps[];
+  imageList?: string[];
+  videoList?: string[];
+  priceConfig?: priceConfigProps;
+}
+
+export interface priceConfigProps {
+  otherFees?: OtherFeeProps;
+  pricePlan: PricePlanProps[];
+}
+
+/** 租金费用类型 */
+export interface OtherFeeProps {
+  /** 费用类型（如：装修/维修/房屋维修、随房租付、按固定金额等） */
+  feeType: string;
+  /** 付款方式（如：随房租付、按固定金额等） */
+  paymentMethod: string;
+  /** 金额 */
+  amount: number;
+}
+
+/** 租金方案配置 */
+export interface PricePlanProps {
+  /** 方案类型：月付、2月付、季付、半年付、年付 */
+  planType: string;
+  /** 租金（元/月） */
+  rentAmount: number;
+  /** 折扣百分比（如：100表示100%，95表示95折） */
+  discountPercent: number;
 }

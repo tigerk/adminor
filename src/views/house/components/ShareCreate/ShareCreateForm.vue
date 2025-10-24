@@ -12,16 +12,20 @@
   import type { FormInstance } from "element-plus";
   import { ElMessage } from "element-plus";
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
-  import { FacilityItemProps } from "@/types";
   import Directives from "@/views/able/directives.vue";
   import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS, ROOM_TYPE_OPTIONS } from "@/constants";
   import { ShareFormProps } from "@/views/house/components/ShareCreate/types";
   import EpNotebook from "~icons/ep/notebook";
+  import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
+  import FacilityItemProps from "@types/models/house";
+  import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
   const { openHouseImageEditDialog } = useHouseImageEdit();
+  const { openPriceConfigDialog } = usePriceConfigEdit();
+  const { shareForm, shareFormRef, openShareEditDialog, getDefaultHouseItem, getDefaultRoomItem } = useShareEdit();
 
   const props = withDefaults(defineProps<ShareFormProps>(), {});
   const emit = defineEmits(["onSave"]);
@@ -29,48 +33,7 @@
   // 将 entireForm 和 houseList 合并到一个响应式对象中
   const entireForm = reactive({
     ...props.formInline,
-    houseList: [
-      {
-        houseCode: "",
-        building: "",
-        unit: "",
-        doorNumber: "",
-        floor: null,
-        totalFloor: null,
-        houseLayout: {
-          livingRoom: 0,
-          bedroom: 0,
-          bathroom: 0,
-          kitchen: 0,
-          imageList: [],
-          tags: [],
-          facilities: []
-        },
-        rentalType: 1,
-        direction: "",
-        area: "",
-        decorationType: "",
-        price: "",
-        propertyFee: "",
-        facilities: [],
-        imageList: [],
-        tags: [],
-        moreInfo: null,
-        // 房间信息列表
-        roomList: [
-          {
-            roomNumber: "",
-            roomType: "",
-            direction: "",
-            area: "",
-            price: "",
-            imageList: [],
-            facilities: [],
-            tags: []
-          }
-        ]
-      }
-    ]
+    houseList: [getDefaultHouseItem()]
   });
 
   // 使用 entireForm.houseList 替代独立的 houseList
@@ -106,59 +69,12 @@
 
   // 添加新房源
   const addNewHouse = () => {
-    entireForm.houseList.push({
-      houseCode: "",
-      building: "",
-      unit: "",
-      doorNumber: "",
-      floor: null,
-      totalFloor: null,
-      houseLayout: {
-        livingRoom: 0,
-        bedroom: 0,
-        bathroom: 0,
-        kitchen: 0,
-        imageList: [],
-        tags: [],
-        facilities: []
-      },
-      rentalType: 1,
-      direction: "",
-      area: "",
-      decorationType: "",
-      price: "",
-      propertyFee: "",
-      facilities: [],
-      imageList: [],
-      tags: [],
-      moreInfo: null,
-      roomList: [
-        {
-          roomNumber: "A",
-          roomType: "",
-          direction: "",
-          area: "",
-          price: "",
-          imageList: [],
-          facilities: [],
-          tags: []
-        }
-      ]
-    });
+    entireForm.houseList.push(getDefaultHouseItem());
   };
 
   // 添加新房间
   const addNewRoom = (houseIndex: number) => {
-    entireForm.houseList[houseIndex].roomList.push({
-      roomNumber: "",
-      roomType: "",
-      direction: "",
-      area: "",
-      price: "",
-      imageList: [],
-      facilities: [],
-      tags: []
-    });
+    entireForm.houseList[houseIndex].roomList.push(getDefaultRoomItem());
   };
 
   // 删除房间
@@ -276,6 +192,20 @@
   };
   /**
    * 房间图片对话框 end
+   */
+
+  /**
+   * 租金配置对话框 start
+   */
+  const openRoomPriceConfigDialog = (houseIndex: number, roomIndex: number) => {
+    const currentRoom = entireForm.houseList[houseIndex].roomList[roomIndex];
+
+    openPriceConfigDialog("", currentRoom?.priceConfig || {}, (priceConfig: any) => {
+      entireForm.houseList[houseIndex].roomList[roomIndex].priceConfig = priceConfig;
+    });
+  };
+  /**
+   * 租金配置对话框 end
    */
 
   const submitForm = async () => {
@@ -560,7 +490,9 @@
                               <el-input v-model="room.price" placeholder="租金" class="table-input">
                                 <template #suffix>元/月</template>
                               </el-input>
-                              <el-icon class="mr-2"><Notebook /></el-icon>
+                              <el-icon class="mr-2" @click="openRoomPriceConfigDialog(index, roomIndex)">
+                                <Notebook />
+                              </el-icon>
                             </el-space>
                           </el-form-item>
                         </td>

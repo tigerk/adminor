@@ -3,4 +3,3 @@
 
 export * from "./community";
 export * from "./house";
-export { default as FacilityItemProps } from "./house";

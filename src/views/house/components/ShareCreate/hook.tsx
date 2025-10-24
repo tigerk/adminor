@@ -85,9 +85,58 @@ export function useShareEdit() {
     });
   }
 
+  function getDefaultHouseItem() {
+    const roomList = [getDefaultRoomItem()];
+
+    return {
+      houseCode: "",
+      building: "",
+      unit: "",
+      doorNumber: "",
+      floor: null,
+      totalFloor: null,
+      houseLayout: {
+        livingRoom: 0,
+        bedroom: 0,
+        bathroom: 0,
+        kitchen: 0,
+        imageList: [],
+        tags: [],
+        facilities: []
+      },
+      rentalType: 1,
+      direction: "",
+      area: "",
+      decorationType: "",
+      price: "",
+      propertyFee: "",
+      facilities: [],
+      imageList: [],
+      tags: [],
+      moreInfo: null,
+      roomList: roomList
+    };
+  }
+
+  function getDefaultRoomItem() {
+    return {
+      roomNumber: "",
+      roomType: "",
+      direction: "",
+      area: "",
+      price: "",
+      imageList: [],
+      facilities: [],
+      tags: [],
+      priceConfig: {}
+    };
+  }
+
   return {
     shareForm,
     shareFormRef,
-    openShareEditDialog
+    openShareEditDialog,
+    getDefaultHouseItem,
+    getDefaultRoomItem
   };
 }
