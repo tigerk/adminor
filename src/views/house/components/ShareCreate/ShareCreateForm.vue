@@ -14,7 +14,7 @@
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
   import { FacilityItemProps } from "@/types";
   import Directives from "@/views/able/directives.vue";
-  import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
+  import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS, ROOM_TYPE_OPTIONS } from "@/constants";
   import { ShareFormProps } from "@/views/house/components/ShareCreate/types";
 
   // 使用hook中的方法
@@ -54,7 +54,20 @@
         facilities: [],
         imageList: [],
         tags: [],
-        moreInfo: null
+        moreInfo: null,
+        // 子间信息列表
+        roomList: [
+          {
+            roomNumber: "",
+            roomType: "",
+            direction: "",
+            area: "",
+            price: "",
+            imageList: [],
+            facilities: [],
+            tags: []
+          }
+        ]
       }
     ]
   });
@@ -87,6 +100,9 @@
 
   const decorationTypeOptions = DECORATION_TYPE_OPTIONS;
 
+  // 房间类型选项
+  const roomTypeOptions = ROOM_TYPE_OPTIONS;
+
   // 添加新房源
   const addNewHouse = () => {
     entireForm.houseList.push({
@@ -114,8 +130,43 @@
       facilities: [],
       imageList: [],
       tags: [],
-      moreInfo: null
+      moreInfo: null,
+      roomList: [
+        {
+          roomNumber: "",
+          roomType: "",
+          direction: "",
+          area: "",
+          price: "",
+          imageList: [],
+          facilities: [],
+          tags: []
+        }
+      ]
     });
+  };
+
+  // 添加新子间
+  const addNewRoom = (houseIndex: number) => {
+    entireForm.houseList[houseIndex].roomList.push({
+      roomNumber: "",
+      roomType: "",
+      direction: "",
+      area: "",
+      price: "",
+      imageList: [],
+      facilities: [],
+      tags: []
+    });
+  };
+
+  // 删除子间
+  const removeRoom = (houseIndex: number, roomIndex: number) => {
+    if (entireForm.houseList[houseIndex].roomList.length > 1) {
+      entireForm.houseList[houseIndex].roomList.splice(roomIndex, 1);
+    } else {
+      ElMessage.warning("至少保留一个子间");
+    }
   };
 
   onMounted(() => {
@@ -157,6 +208,20 @@
    */
 
   /**
+   * 子间配置对话框 start
+   */
+  const openRoomFacilitiesDialog = (houseIndex: number, roomIndex: number) => {
+    const currentRoom = entireForm.houseList[houseIndex].roomList[roomIndex];
+
+    openFacilityEditDialog("", currentRoom.facilities, (facilities: FacilityItemProps[]) => {
+      entireForm.houseList[houseIndex].roomList[roomIndex].facilities = facilities;
+    });
+  };
+  /**
+   * 子间配置对话框 end
+   */
+
+  /**
    * 房源特色对话框 start
    */
   const openHouseTagsDialog = (index: number) => {
@@ -171,6 +236,20 @@
    */
 
   /**
+   * 子间特色对话框 start
+   */
+  const openRoomTagsDialog = (houseIndex: number, roomIndex: number) => {
+    const currentRoom = entireForm.houseList[houseIndex].roomList[roomIndex];
+
+    openHouseTagsEditDialog("", currentRoom.tags, (tags: any[]) => {
+      entireForm.houseList[houseIndex].roomList[roomIndex].tags = tags;
+    });
+  };
+  /**
+   * 子间特色对话框 end
+   */
+
+  /**
    * 房源图片对话框 start
    */
   const openImageListDialog = (index: number) => {
@@ -182,6 +261,20 @@
   };
   /**
    * 房源图片对话框 end
+   */
+
+  /**
+   * 子间图片对话框 start
+   */
+  const openRoomImageListDialog = (houseIndex: number, roomIndex: number) => {
+    const currentRoom = entireForm.houseList[houseIndex].roomList[roomIndex];
+
+    openHouseImageEditDialog("", currentRoom.imageList, (imageList: any[]) => {
+      entireForm.houseList[houseIndex].roomList[roomIndex].imageList = imageList;
+    });
+  };
+  /**
+   * 子间图片对话框 end
    */
 
   // 验证表单（供父组件调用）
@@ -249,9 +342,9 @@
             </el-form-item>
           </el-col>
         </el-row>
-      </div>
-      <div class="house-container">
-        <h3 class="pb-4">房源信息</h3>
+
+        <!-- 房源信息 -->
+        <h3 class="py-4">房源信息</h3>
         <div v-for="(house, index) in houseList" :key="index" class="house-form-card">
           <el-row :gutter="20" class="mb-1">
             <el-col :span="12">
@@ -264,12 +357,11 @@
             </el-col>
           </el-row>
           <el-row :gutter="20">
-            <!-- 左侧表单区域 -->
             <el-col :span="18">
               <!-- 第一行 -->
               <el-row :gutter="20">
                 <el-col :span="4">
-                  <el-form-item label="房源编号">
+                  <el-form-item label="房源编号" :prop="`houseList.${index}.houseCode`" :rules="[{ required: true, message: '请输入房源编号', trigger: 'blur' }]">
                     <el-input v-model="house.houseCode" placeholder="请输入房源编号" />
                   </el-form-item>
                 </el-col>
@@ -279,7 +371,7 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="单元">
+                  <el-form-item label="单元" :prop="`houseList.${index}.unit`" :rules="[{ required: true, message: '请输入单元', trigger: 'blur' }]">
                     <el-input v-model="house.unit" placeholder="请输入单元" />
                   </el-form-item>
                 </el-col>
@@ -422,9 +514,117 @@
               </el-row>
             </el-col>
           </el-row>
-          <el-row :gutter="20" class="mb-1">
-            <el-col :span="12">
-              <h4 class="pb-4">子间信息</h4>
+
+          <!-- 子间信息区域 -->
+          <el-row :gutter="20" class="mt-1">
+            <el-col :span="24">
+              <div class="room-section">
+                <el-row :gutter="20" class="mb-1">
+                  <el-col :span="12">
+                    <h4 class="pb-2">子间信息</h4>
+                  </el-col>
+                  <el-col :span="12" style="text-align: right">
+                    <el-button size="small" type="primary" plain @click="addNewRoom(index)">
+                      <el-icon><Plus /></el-icon>
+                      添加子间
+                    </el-button>
+                  </el-col>
+                </el-row>
+                <!-- 子间列表 -->
+                <div v-for="(room, roomIndex) in house.roomList" :key="roomIndex" class="room-form-card">
+                  <el-row :gutter="20">
+                    <el-col :span="3">
+                      <el-form-item
+                        label="房间名称"
+                        :prop="`houseList.${index}.roomList.${roomIndex}.roomNumber`"
+                        :rules="[{ required: true, message: '请输入房间名称', trigger: 'blur' }]"
+                      >
+                        <el-input v-model="room.roomNumber" placeholder="如：A间、主卧" />
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="3">
+                      <el-form-item
+                        label="房间类型"
+                        :prop="`houseList.${index}.roomList.${roomIndex}.roomType`"
+                        :rules="[{ required: true, message: '请选择房间类型', trigger: 'change' }]"
+                      >
+                        <el-select v-model="room.roomType" placeholder="请选择房间类型" style="width: 100%">
+                          <el-option v-for="item in roomTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                        </el-select>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="3">
+                      <el-form-item
+                        label="朝向"
+                        :prop="`houseList.${index}.roomList.${roomIndex}.direction`"
+                        :rules="[{ required: true, message: '请选择朝向', trigger: 'change' }]"
+                      >
+                        <el-select v-model="room.direction" placeholder="请选择朝向" style="width: 100%">
+                          <el-option v-for="item in directionOptions" :key="item.value" :label="item.label" :value="item.value" />
+                        </el-select>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="3">
+                      <el-form-item label="面积">
+                        <el-input v-model="room.area" placeholder="请输入面积">
+                          <template #suffix>m²</template>
+                        </el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="4">
+                      <el-form-item
+                        label="出租价格"
+                        :prop="`houseList.${index}.roomList.${roomIndex}.price`"
+                        :rules="[
+                          { required: true, message: '请输入出租价格', trigger: 'blur' },
+                          { pattern: /^\d+(\.\d{1,2})?$/, message: '请输入有效的价格', trigger: 'blur' }
+                        ]"
+                      >
+                        <el-input v-model="room.price" placeholder="请输入价格">
+                          <template #suffix>元/月</template>
+                        </el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="2">
+                      <el-form-item label="房间图片">
+                        <el-button
+                          class="status-btn"
+                          :type="room.imageList && room.imageList.length > 0 ? 'success' : 'default'"
+                          @click="openRoomImageListDialog(index, roomIndex)"
+                        >
+                          <el-icon><CircleCheck /></el-icon>
+                          <span>{{ room.imageList && room.imageList.length > 0 ? "已设置" : "未设置" }}</span>
+                        </el-button>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="2">
+                      <el-form-item label="房间配置">
+                        <el-button
+                          class="status-btn"
+                          :type="room.facilities && room.facilities.length > 0 ? 'success' : 'default'"
+                          @click="openRoomFacilitiesDialog(index, roomIndex)"
+                        >
+                          <el-icon><CircleCheck /></el-icon>
+                          <span>{{ getFacilitiesStatusText(room.facilities) }}</span>
+                        </el-button>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="2">
+                      <el-form-item label="房间特色">
+                        <el-button class="status-btn" :type="room.tags && room.tags.length > 0 ? 'success' : 'default'" @click="openRoomTagsDialog(index, roomIndex)">
+                          <el-icon><CircleCheck /></el-icon>
+                          <span>{{ room.tags && room.tags.length > 0 ? "已设置" : "未设置" }}</span>
+                        </el-button>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="2" class="text-center">
+                      <el-form-item label="操作">
+                        <el-button type="danger" plain :disabled="house.roomList.length <= 1" @click="removeRoom(index, roomIndex)">删除子间</el-button>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                </div>
+              </div>
             </el-col>
           </el-row>
         </div>
@@ -470,6 +670,17 @@
     margin-bottom: 10px;
     background-color: #fff;
     border: 1px solid #dcdfe6;
+    border-radius: 4px;
+  }
+
+  .room-section {
+  }
+
+  .room-form-card {
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    border: 1px solid #e4e7ed;
     border-radius: 4px;
   }
 
