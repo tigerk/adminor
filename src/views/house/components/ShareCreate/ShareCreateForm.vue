@@ -2,7 +2,7 @@
   import { onMounted, reactive } from "vue";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
   import { ref } from "vue";
-  import { Plus, CircleCheck, Picture, Setting, Star, Delete } from "@element-plus/icons-vue";
+  import { Plus, CircleCheck, Picture, Setting, Notebook, Delete } from "@element-plus/icons-vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
@@ -16,6 +16,7 @@
   import Directives from "@/views/able/directives.vue";
   import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS, ROOM_TYPE_OPTIONS } from "@/constants";
   import { ShareFormProps } from "@/views/house/components/ShareCreate/types";
+  import EpNotebook from "~icons/ep/notebook";
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
@@ -555,9 +556,12 @@
                         </td>
                         <td>
                           <el-form-item label-width="0" class="table-form-item" :prop="`houseList.${index}.roomList.${roomIndex}.price`">
-                            <el-input v-model="room.price" placeholder="租金" class="table-input">
-                              <template #suffix>元/月</template>
-                            </el-input>
+                            <el-space spacer="|">
+                              <el-input v-model="room.price" placeholder="租金" class="table-input">
+                                <template #suffix>元/月</template>
+                              </el-input>
+                              <el-icon class="mr-2"><Notebook /></el-icon>
+                            </el-space>
                           </el-form-item>
                         </td>
                         <td class="text-center">
