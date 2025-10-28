@@ -96,7 +96,36 @@
         其他费用
         <span class="section-subtitle">(租金以外的费用，或用于计费有支付方式)</span>
       </h4>
-
+      <div>
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="费用类型">
+              <el-select v-model="fee.feeType" placeholder="请选择" style="width: 100%">
+                <el-option v-for="item in feeTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="付款方式">
+              <el-select v-model="fee.paymentMethod" placeholder="请选择" style="width: 100%">
+                <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="金额">
+              <el-input v-model.number="fee.amount" placeholder="请输入" type="number">
+                <template #suffix>元/月</template>
+              </el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="2">
+            <el-form-item label="操作">
+              <el-button type="danger" link :disabled="otherFees.length <= 1" @click="removeOtherFee(index)">删除</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </div>
       <div class="fee-list">
         <div v-for="(fee, index) in otherFees" :key="index" class="fee-item">
           <el-row :gutter="20">
