@@ -64,3 +64,11 @@ export const ROOM_TYPE_OPTIONS = [
   { label: "双人间", value: "7" },
   { label: "多人间", value: "8" }
 ] as const;
+
+/**
+ * 房间类型选项
+ */
+export const PAYMENT_METHOD_OPTION = [
+  { label: "按固定金额", value: 1 },
+  { label: "随房租付", value: 2 }
+] as const;

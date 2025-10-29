@@ -2,8 +2,26 @@
   import { onMounted, reactive, ref } from "vue";
   import type { PriceConfigFormProps } from "./types";
   import { OtherFeeProps, PricePlanProps } from "@/types";
+  import { PAYMENT_METHOD_OPTION } from "@/constants";
+  import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
+  import { getDictDataByDictCode } from "@/api/sys/dict";
+
+  const { getDefaultOtherFee } = usePriceConfigEdit();
 
   const props = withDefaults(defineProps<PriceConfigFormProps>(), {});
+
+  const otherFeeTypeOptions = ref([]);
+
+  onMounted(() => {
+    getDictDataByDictCode({
+      dictCode: "cost_other_fee"
+    }).then(res => {
+      otherFeeTypeOptions.value = res.data.map(item => ({
+        label: item.name,
+        value: item.value
+      }));
+    });
+  });
 
   // 其他费用类型选项
   const feeTypeOptions = [
@@ -12,39 +30,21 @@
   ];
 
   // 付款方式选项
-  const paymentMethodOptions = [
-    { label: "随房租付", value: "with_rent" },
-    { label: "按固定金额", value: "fixed_amount" }
-  ];
+  const paymentMethodOptions = PAYMENT_METHOD_OPTION;
 
   // 其他费用列表（基础费用）
-  const otherFees = reactive<OtherFeeProps[]>([
-    {
-      feeType: "maintenance",
-      paymentMethod: "with_rent",
-      amount: 2
-    }
-  ]);
+  // 从后端接口获取
+  const otherFees = reactive<OtherFeeProps[]>([]);
 
   // 租金方案列表
-  const rentPlans = reactive<PricePlanProps[]>([
-    { planType: "月付", rentAmount: 0, discountPercent: 100 },
-    { planType: "2月付", rentAmount: 0, discountPercent: 100 },
-    { planType: "季付", rentAmount: 0, discountPercent: 100 },
-    { planType: "半年付", rentAmount: 0, discountPercent: 100 },
-    { planType: "年付", rentAmount: 0, discountPercent: 100 }
-  ]);
+  const rentPlans = reactive<PricePlanProps[]>([]);
 
   // 当前选中的方案索引
-  const selectedPlanIndex = ref<number>(1); // 默认选中2月付
+  const selectedPlanIndex = ref<number>(); // 默认选中2月付
 
   // 添加其他费用
   const addOtherFee = () => {
-    otherFees.push({
-      feeType: "maintenance",
-      paymentMethod: "with_rent",
-      amount: 0
-    });
+    otherFees.push(getDefaultOtherFee());
   };
 
   // 删除其他费用

@@ -155,30 +155,51 @@ export interface RoomInfoProps {
   facilities?: FacilityItemProps[];
   imageList?: string[];
   videoList?: string[];
-  priceConfig?: priceConfigProps;
+  priceConfig?: PriceConfigProps;
 }
 
-export interface priceConfigProps {
-  otherFees?: OtherFeeProps;
-  pricePlan: PricePlanProps[];
+export interface PriceConfigProps {
+  /** 房间ID */
+  roomId: number;
+  /** 出房价格（单位：元/月） */
+  price: number;
+  /** 底价（单位：元/月） */
+  floorPrice: number;
+  /** 底价方式：1=固定金额，2=按比例 */
+  floorPriceMethod: number;
+  /** 底价录入值（金额或比例，具体由 low_price_method 决定） */
+  floorPriceInput: number;
+  /** 其他费用列表 */
+  otherFees?: OtherFeeProps[];
+  pricePlans: PricePlanProps[];
 }
 
 /** 租金费用类型 */
 export interface OtherFeeProps {
-  /** 费用类型（如：装修/维修/房屋维修、随房租付、按固定金额等） */
-  feeType: string;
+  /** 其他费用类型（如：装修/维修/房屋维修、随房租付、按固定金额等） */
+  dicDataId: number;
+  /** 其他费用名称 */
+  name: string;
   /** 付款方式（如：随房租付、按固定金额等） */
-  paymentMethod: string;
-  /** 金额 */
-  amount: number;
+  paymentMethod: number;
+  /** 价格计算方式 */
+  priceMethod: number;
+  /** 价格输入值 */
+  priceInput: number;
 }
 
 /** 租金方案配置 */
 export interface PricePlanProps {
-  /** 方案类型：月付、2月付、季付、半年付、年付 */
+  /** 房间ID */
+  roomId: number;
+  /** 租金方案名称 */
+  planName: string;
+  /** 租金方案类型（如：长期/短租/节假日） */
   planType: string;
-  /** 租金（元/月） */
-  rentAmount: number;
-  /** 折扣百分比（如：100表示100%，95表示95折） */
-  discountPercent: number;
+  /** 出房价格比例（百分比，如 12.50 表示 12.5%） */
+  priceRatio: number;
+  /** 出房价格（若为固定价格） */
+  price: number;
+  /** 其他费用 */
+  otherFees?: OtherFeeProps[];
 }

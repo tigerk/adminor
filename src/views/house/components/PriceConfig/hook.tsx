@@ -2,13 +2,13 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, ref } from "vue";
 import { message } from "@/utils/message";
-import type { priceConfigProps } from "@/types";
+import type { OtherFeeProps, PriceConfigProps } from "@/types";
 import PriceConfigDialog from "@/views/house/components/PriceConfig/PriceConfigDialog.vue";
 
 export function usePriceConfigEdit() {
   const priceConfigFormRef = ref();
 
-  function openPriceConfigDialog(title = "配置", row?: priceConfigProps, onConfirm?: (data: any) => void) {
+  function openPriceConfigDialog(title = "配置", row?: PriceConfigProps, onConfirm?: (data: any) => void) {
     addDialog({
       title: `${title}租金配置`,
       props: {
@@ -38,8 +38,21 @@ export function usePriceConfigEdit() {
     });
   }
 
+  function getDefaultOtherFee<OtherFeeProps>() {
+    return {
+      dicDataId: null,
+      name: null,
+      paymentMethod: 1,
+      /** 价格计算方式 */
+      priceMethod: 1,
+      /** 价格输入值 */
+      priceInput: null
+    };
+  }
+
   return {
     priceConfigFormRef,
-    openPriceConfigDialog
+    openPriceConfigDialog,
+    getDefaultOtherFee
   };
 }
