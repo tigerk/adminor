@@ -1,10 +1,11 @@
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from "vue";
+  import { computed, onMounted, ref, watch } from "vue";
   import type { PriceConfigFormProps } from "./types";
-  import { OtherFeeProps, PriceConfigProps, PricePlanProps } from "@/types";
+  import { PriceConfigProps, PricePlanProps } from "@/types";
   import { PAYMENT_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
-  import { getDictDataByDictCode } from "@/api/sys/dict";
+  import { getDictDataByParentCode } from "@/api/sys/dict";
+  import { Close, Delete, Plus } from "@element-plus/icons-vue";
 
   const { getDefaultOtherFee } = usePriceConfigEdit();
 
@@ -14,116 +15,103 @@
     ...props.formInline
   });
 
-  const otherFeeTypeOptions = ref([]);
+  // 初始化其他费用列表
+  if (!priceConfig.value.otherFees || priceConfig.value.otherFees.length === 0) {
+    priceConfig.value.otherFees = [getDefaultOtherFee()];
+  }
+
+  // 初始化租金方案列表
+  if (!priceConfig.value.pricePlans) {
+    priceConfig.value.pricePlans = [];
+  }
+
+  const otherFeeTypeOptions = ref<any[]>([]);
+
+  // 转换字典数据为级联选择器格式
+  const transformDictToCascader = (dictData: any[]) => {
+    return dictData.map(dict => ({
+      label: dict.dictName,
+      value: dict.dictCode,
+      children: dict.dictDataList.map(item => ({
+        label: item.name,
+        value: item.id
+      }))
+    }));
+  };
 
   onMounted(() => {
-    /**
-     * {
-     *     "code": 0,
-     *     "message": "请求成功",
-     *     "data": [
-     *         {
-     *             "dictCode": "cost_deposit",
-     *             "dictName": "押金",
-     *             "dictDataList": [
-     *                 {
-     *                     "id": "1983087625104396290",
-     *                     "name": "水电燃押金",
-     *                     "value": "shuidianranyajin",
-     *                     "color": "#6abe39"
-     *                 },
-     *                 {
-     *                     "id": "1983087665550069762",
-     *                     "name": "暖气费押金",
-     *                     "value": "nuanqifeiyajin",
-     *                     "color": "#6abe39"
-     *                 }
-     *             ]
-     *         },
-     *         {
-     *             "dictCode": "cost_earnest_money",
-     *             "dictName": "定金",
-     *             "dictDataList": [
-     *                 {
-     *                     "id": "1983087527930761218",
-     *                     "name": "预付定金",
-     *                     "value": "yufudingjin",
-     *                     "color": "#6abe39"
-     *                 }
-     *             ]
-     *         },
-     *         {
-     *             "dictCode": "cost_maintainance",
-     *             "dictName": "装修/维修",
-     *             "dictDataList": [
-     *                 {
-     *                     "id": "1983087488114233346",
-     *                     "name": "房屋维修",
-     *                     "value": "fangwuweixiu",
-     *                     "color": "#6abe39"
-     *                 }
-     *             ]
-     *         },
-     *         {
-     *             "dictCode": "cost_other_fee",
-     *             "dictName": "其他费用类型",
-     *             "dictDataList": [
-     *                 {
-     *                     "id": "1978699667417067521",
-     *                     "name": "装修/维修/房屋维修",
-     *                     "value": "zhuangxiuweixiufangwuweixiu",
-     *                     "color": "#e84749"
-     *                 }
-     *             ]
-     *         }
-     *     ]
-     * }
-     */
-    getDictDataByDictCode({
+    getDictDataByParentCode({
       dictCode: "fee_type"
     }).then(res => {
-      otherFeeTypeOptions.value = res.data;
+      otherFeeTypeOptions.value = transformDictToCascader(res.data);
     });
   });
-
-  // 其他费用类型选项
-  const feeTypeOptions = [
-    { label: "装修/维修/房屋维修", value: "maintenance" },
-    { label: "其他", value: "other" }
-  ];
 
   // 付款方式选项
   const paymentMethodOptions = PAYMENT_METHOD_OPTIONS;
   const pricePlantOptions = PRICE_PLANT_OPTIONS;
 
-  // 其他费用列表（基础费用）
-  // 从后端接口获取
-  const otherFees = reactive<OtherFeeProps[]>([]);
-
-  // 租金方案列表
-  const pricePlans = reactive<PricePlanProps[]>([]);
-
   // 当前选中的方案索引
-  const selectedPlans = ref([1]); // 默认选中月付
+  const selectedPlans = ref<number[]>([0]); // 默认选中月付
+
+  // 底价方式标签
+  const floorPriceMethodLabel = computed(() => {
+    return priceConfig.value.floorPriceMethod === 1 ? "按固定金额" : "按出租价格";
+  });
+
+  // 底价输入后缀
+  const floorPriceInputSuffix = computed(() => {
+    return priceConfig.value.floorPriceMethod === 1 ? "元/月" : "%";
+  });
 
   // 添加其他费用
   const addOtherFee = () => {
-    otherFees.push(getDefaultOtherFee());
+    priceConfig.value.otherFees.push(getDefaultOtherFee());
   };
 
   // 删除其他费用
   const removeOtherFee = (index: number) => {
-    if (otherFees.length > 1) {
-      otherFees.splice(index, 1);
+    if (priceConfig.value.otherFees.length > 1) {
+      priceConfig.value.otherFees.splice(index, 1);
     }
   };
+
+  // 监听选中的方案变化，动态生成租金方案
+  watch(
+    selectedPlans,
+    newPlans => {
+      const existingPlans = priceConfig.value.pricePlans || [];
+      const newPricePlans: PricePlanProps[] = [];
+
+      newPlans.forEach(planIndex => {
+        // 查找是否已存在该方案
+        const existing = existingPlans.find(p => p.planType === String(pricePlantOptions[planIndex].value));
+
+        if (existing) {
+          newPricePlans.push(existing);
+        } else {
+          // 创建新方案
+          const planOption = pricePlantOptions[planIndex];
+          newPricePlans.push({
+            roomId: priceConfig.value.roomId,
+            planName: planOption.label,
+            planType: String(planOption.value),
+            priceRatio: 100,
+            price: priceConfig.value.price || 0,
+            otherFees: []
+          });
+        }
+      });
+
+      priceConfig.value.pricePlans = newPricePlans;
+    },
+    { immediate: true }
+  );
 
   // 导出数据
   function getRef() {
     return {
-      otherFees: otherFees,
-      pricePlans: pricePlans,
-      selectedPlans: selectedPlans.value
+      priceConfig: priceConfig.value
     };
   }
 
@@ -132,21 +120,56 @@
 
 <template>
   <div class="rent-config-container">
+    <!-- 租金价格和底价配置 -->
+    <div class="section">
+      <el-row :gutter="40">
+        <el-col :span="10">
+          <el-form-item label="租金">
+            <el-input v-model.number="priceConfig.price" placeholder="请输入租金" type="number">
+              <template #append>元/月</template>
+            </el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="14">
+          <el-form-item label="租金底价">
+            <el-input v-model.number="priceConfig.floorPriceInput" placeholder="请输入" type="number">
+              <template #prepend>
+                <el-select v-model="priceConfig.floorPriceMethod" placeholder="请选择" style="width: 140px">
+                  <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </template>
+              <template #append>{{ floorPriceInputSuffix }}</template>
+            </el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </div>
+
+    <!-- 有佣金（暂不实现） -->
+    <!-- 这部分根据需求不生成 -->
+
     <!-- 其他费用配置 -->
     <div class="section">
       <h4 class="section-title">
         其他费用
-        <span class="section-subtitle">(租金以外的费用，或用于计费有支付方式)</span>
+        <span class="section-subtitle">(租金以外的费用，适用于所有支付方式)</span>
       </h4>
       <div class="fee-list">
         <div v-for="(feeItem, index) in priceConfig.otherFees" :key="index" class="fee-item">
-          <el-row :gutter="20">
-            <el-col :span="8">
-              <el-form-item label="费用类型">
-                <el-cascader placeholder="请选择费用类型" :options="otherFeeTypeOptions" filterable />
+          <el-row :gutter="20" align="middle">
+            <el-col :span="5">
+              <el-form-item label="">
+                <el-cascader
+                  v-model="feeItem.dicDataId"
+                  placeholder="请选择费用类型"
+                  :options="otherFeeTypeOptions"
+                  :props="{ expandTrigger: 'hover', value: 'value', label: 'label' }"
+                  filterable
+                  style="width: 100%"
+                />
               </el-form-item>
             </el-col>
-            <el-col :span="8">
+            <el-col :span="6">
               <el-form-item label="付款方式">
                 <el-select v-model="feeItem.paymentMethod" placeholder="请选择" style="width: 100%">
                   <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -155,28 +178,30 @@
             </el-col>
             <el-col :span="6">
               <el-form-item label="金额">
+                <el-select v-model="feeItem.priceMethod" placeholder="请选择" style="width: 100%">
+                  <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item>
                 <el-input v-model.number="feeItem.priceInput" placeholder="请输入" type="number">
-                  <template #suffix>元/月</template>
+                  <template #append>{{ feeItem.priceMethod === 1 ? "元" : "元" }}</template>
                 </el-input>
               </el-form-item>
             </el-col>
-            <el-col :span="2">
-              <el-form-item label="操作">
-                <el-button type="danger" link :disabled="otherFees.length <= 1" @click="removeOtherFee(index)">删除</el-button>
+            <el-col :span="1">
+              <el-form-item>
+                <el-button type="danger" :icon="Delete" link :disabled="priceConfig.otherFees.length <= 1" @click="removeOtherFee(index)" />
               </el-form-item>
             </el-col>
           </el-row>
         </div>
       </div>
-      <el-button type="primary" plain size="small" @click="addOtherFee">+ 添加其他费用</el-button>
-
-      <!-- 共他费用 -->
-      <div class="other-fees-note">
-        <el-icon>
-          <InfoFilled />
-        </el-icon>
-        若有其他费用方案，则按上述推广上架
-      </div>
+      <el-button type="primary" plain size="small" @click="addOtherFee">
+        <el-icon><Plus /></el-icon>
+        其他费用
+      </el-button>
     </div>
 
     <!-- 更多租金方案配置 -->
@@ -189,9 +214,44 @@
         </el-checkbox-group>
       </div>
 
+      <!-- 租金方案表格 -->
+      <div v-if="priceConfig.pricePlans && priceConfig.pricePlans.length > 0" class="plan-table-wrapper">
+        <table class="plan-table">
+          <thead>
+            <tr>
+              <th style="width: 80px">默认</th>
+              <th style="width: 150px">租金方案</th>
+              <th class="text-center">租金(元/月)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(plan, index) in priceConfig.pricePlans" :key="index">
+              <td class="text-center">
+                <el-radio :label="index" value="" />
+              </td>
+              <td class="text-center">
+                <span class="plan-type-text">{{ plan.planName }}</span>
+              </td>
+              <td class="text-center">
+                <el-space style="align-items: center; gap: 8px" class="text-center">
+                  <span>出租价格</span>
+                  <span>X</span>
+                  <el-input-number v-model="plan.priceRatio" :min="0" :max="100" :precision="2" :controls="false">
+                    <template #suffix>%</template>
+                  </el-input-number>
+                  <span style="margin-left: 8px">（ 即：{{ Math.round((priceConfig.price || 0) * (plan.priceRatio / 100)) }} 元/月）</span>
+                </el-space>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <div class="plan-notes">
-        <div class="note-item">1. 若有租入方案，则按"推广"上架上述1默认</div>
-        <div class="note-item">2. 租金方案中的租金，不支持小数，且不低于20,若算后的数为小数时，若计算后会小于1258.99元，则取1258元；若大于1250元，则取1250元。</div>
+        <div class="note-item">1. 若有默认租金方案，则在广推广上架上按默认</div>
+        <div class="note-item">
+          2. 租金方案中的租金，不支持小数，且个位数必须为0。若算后存在小数和个位数，自动取偏小的整数；如"月付"方案的租金按折扣比例后为1258.99元，则取1250元。
+        </div>
       </div>
     </div>
   </div>
@@ -210,7 +270,7 @@
 
   .section-title {
     margin: 0 0 16px 0;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: #303133;
     display: flex;
@@ -235,19 +295,6 @@
     border-radius: 4px;
   }
 
-  .other-fees-note {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 16px;
-    padding: 12px;
-    background: #ecf5ff;
-    border-left: 3px solid #409eff;
-    border-radius: 4px;
-    color: #409eff;
-    font-size: 14px;
-  }
-
   .plan-selection {
     margin-bottom: 20px;
   }
@@ -270,7 +317,7 @@
   }
 
   .plan-table th {
-    padding: 12px;
+    padding: 10px;
     text-align: center;
     font-weight: 600;
     font-size: 14px;
@@ -284,7 +331,7 @@
   }
 
   .plan-table td {
-    padding: 8px 12px;
+    padding: 6px;
     border-bottom: 1px solid #e4e7ed;
     border-right: 1px solid #e4e7ed;
     vertical-align: middle;
@@ -309,19 +356,6 @@
   .plan-type-text {
     font-weight: 500;
     color: #303133;
-  }
-
-  .other-fees-summary {
-    font-size: 13px;
-    color: #606266;
-  }
-
-  .fee-summary-item {
-    margin-bottom: 4px;
-  }
-
-  .fee-summary-item:last-child {
-    margin-bottom: 0;
   }
 
   .plan-notes {
@@ -354,11 +388,7 @@
     gap: 24px;
   }
 
-  :deep(.el-space) {
-    width: 100%;
-  }
-
-  :deep(.el-input-number) {
-    width: 100%;
+  :deep(.el-input-number .el-input__inner) {
+    text-align: left;
   }
 </style>
