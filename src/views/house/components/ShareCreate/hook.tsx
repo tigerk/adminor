@@ -5,7 +5,60 @@ import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { createShareHouse } from "@/api/house/scatter";
 import { message } from "@/utils/message";
-import type { ShareFormItemProps } from "@/types";
+import type { HouseBasicInfoProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomInfoProps, ShareFormItemProps } from "@/types";
+
+function getScatterDefaultHouseItem(): HouseBasicInfoProps {
+  const roomList = [getDefaultRoomItem()];
+  return {
+    houseCode: "",
+    building: "",
+    unit: "",
+    doorNumber: "",
+    floor: null,
+    floorTotal: null,
+    houseLayout: {} as HouseLayoutProps,
+    rentalType: 1,
+    direction: "",
+    area: "",
+    decorationType: "",
+    price: "",
+    propertyFee: "",
+    moreInfo: null,
+    roomList: roomList
+  };
+}
+
+function getDefaultPriceConfigItem(): PriceConfigProps {
+  return {
+    /** 房间ID */
+    roomId: null,
+    /** 出房价格（单位：元/月） */
+    price: null,
+    /** 底价（单位：元/月） */
+    floorPrice: null,
+    /** 底价方式：1=固定金额，2=按比例 */
+    floorPriceMethod: 1,
+    /** 底价录入值（金额或比例，具体由 low_price_method 决定） */
+    floorPriceInput: null,
+    /** 其他费用列表 */
+    otherFees: [] as OtherFeeProps[],
+    pricePlans: [] as PricePlanProps[]
+  };
+}
+
+function getDefaultRoomItem(): RoomInfoProps {
+  return {
+    roomNumber: "",
+    roomType: "",
+    direction: "",
+    area: null,
+    price: null,
+    imageList: [],
+    facilities: [],
+    tags: [],
+    priceConfig: getDefaultPriceConfigItem()
+  };
+}
 
 export function useShareEdit() {
   const shareForm = reactive({
@@ -85,58 +138,12 @@ export function useShareEdit() {
     });
   }
 
-  function getDefaultHouseItem() {
-    const roomList = [getDefaultRoomItem()];
-
-    return {
-      houseCode: "",
-      building: "",
-      unit: "",
-      doorNumber: "",
-      floor: null,
-      totalFloor: null,
-      houseLayout: {
-        livingRoom: 0,
-        bedroom: 0,
-        bathroom: 0,
-        kitchen: 0,
-        imageList: [],
-        tags: [],
-        facilities: []
-      },
-      rentalType: 1,
-      direction: "",
-      area: "",
-      decorationType: "",
-      price: "",
-      propertyFee: "",
-      facilities: [],
-      imageList: [],
-      tags: [],
-      moreInfo: null,
-      roomList: roomList
-    };
-  }
-
-  function getDefaultRoomItem() {
-    return {
-      roomNumber: "",
-      roomType: "",
-      direction: "",
-      area: "",
-      price: "",
-      imageList: [],
-      facilities: [],
-      tags: [],
-      priceConfig: {}
-    };
-  }
-
   return {
     shareForm,
     shareFormRef,
     openShareEditDialog,
-    getDefaultHouseItem,
+    getScatterDefaultHouseItem,
+    getDefaultPriceConfigItem,
     getDefaultRoomItem
   };
 }

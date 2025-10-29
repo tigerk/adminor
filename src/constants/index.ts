@@ -68,7 +68,15 @@ export const ROOM_TYPE_OPTIONS = [
 /**
  * 房间类型选项
  */
-export const PAYMENT_METHOD_OPTION = [
+export const PAYMENT_METHOD_OPTIONS = [
   { label: "按固定金额", value: 1 },
   { label: "随房租付", value: 2 }
+] as const;
+
+export const PRICE_PLANT_OPTIONS = [
+  { label: "月付", value: 1 },
+  { label: "2月付", value: 2 },
+  { label: "季付", value: 3 },
+  { label: "半年付", value: 4 },
+  { label: "年付", value: 5 }
 ] as const;

@@ -19,12 +19,10 @@ export interface HouseLayoutProps {
 }
 
 /** 设施配置项 */
-interface FacilityItemProps {
+export interface FacilityItemProps {
   name: string;
   count: number;
 }
-
-export default FacilityItemProps;
 
 /** 房源状态 */
 export interface FocusHouseStatusProps {
@@ -145,7 +143,7 @@ export interface ShareFormItemProps {
 }
 
 export interface RoomInfoProps {
-  id: number;
+  id?: number;
   roomNumber: string; // 房间名称
   roomType: string;
   direction: string;

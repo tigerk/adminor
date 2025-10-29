@@ -1,8 +1,7 @@
 <script setup lang="ts">
-  import { onMounted, reactive } from "vue";
+  import { onMounted, reactive, ref } from "vue";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
-  import { ref } from "vue";
-  import { Plus, CircleCheck, Picture, Setting, Notebook, Delete } from "@element-plus/icons-vue";
+  import { CircleCheck, Delete, Picture, Plus, Setting } from "@element-plus/icons-vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
@@ -12,20 +11,18 @@
   import type { FormInstance } from "element-plus";
   import { ElMessage } from "element-plus";
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
-  import Directives from "@/views/able/directives.vue";
-  import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS, ROOM_TYPE_OPTIONS } from "@/constants";
+  import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, ROOM_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
   import { ShareFormProps } from "@/views/house/components/ShareCreate/types";
-  import EpNotebook from "~icons/ep/notebook";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
-  import FacilityItemProps from "@types/models/house";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
+  import type { FacilityItemProps } from "@/types";
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
   const { openHouseImageEditDialog } = useHouseImageEdit();
   const { openPriceConfigDialog } = usePriceConfigEdit();
-  const { shareForm, shareFormRef, openShareEditDialog, getDefaultHouseItem, getDefaultRoomItem } = useShareEdit();
+  const { shareForm, shareFormRef, openShareEditDialog, getScatterDefaultHouseItem, getDefaultRoomItem } = useShareEdit();
 
   const props = withDefaults(defineProps<ShareFormProps>(), {});
   const emit = defineEmits(["onSave"]);
@@ -33,7 +30,7 @@
   // 将 entireForm 和 houseList 合并到一个响应式对象中
   const entireForm = reactive({
     ...props.formInline,
-    houseList: [getDefaultHouseItem()]
+    houseList: [getScatterDefaultHouseItem()]
   });
 
   // 使用 entireForm.houseList 替代独立的 houseList
@@ -69,7 +66,7 @@
 
   // 添加新房源
   const addNewHouse = () => {
-    entireForm.houseList.push(getDefaultHouseItem());
+    entireForm.houseList.push(getScatterDefaultHouseItem());
   };
 
   // 添加新房间
@@ -111,7 +108,7 @@
   const openFacilitiesDialog = (index: number) => {
     const currentHouse = entireForm.houseList[index];
 
-    openFacilityEditDialog("", currentHouse.facilities, (facilities: FacilityItemProps[]) => {
+    openFacilityEditDialog("", currentHouse.houseLayout.facilities, (facilities: FacilityItemProps[]) => {
       entireForm.houseList[index].houseLayout.facilities = facilities;
     });
   };
@@ -144,7 +141,7 @@
   const openHouseTagsDialog = (index: number) => {
     const currentHouse = entireForm.houseList[index];
 
-    openHouseTagsEditDialog("", currentHouse.tags, (tags: any[]) => {
+    openHouseTagsEditDialog("", currentHouse.houseLayout.tags, (tags: any[]) => {
       entireForm.houseList[index].houseLayout.tags = tags;
     });
   };
@@ -172,7 +169,7 @@
   const openImageListDialog = (index: number) => {
     const currentHouse = entireForm.houseList[index];
 
-    openHouseImageEditDialog("", currentHouse.imageList, (imageList: any[]) => {
+    openHouseImageEditDialog("", currentHouse.houseLayout.imageList, (imageList: any[]) => {
       entireForm.houseList[index].houseLayout.imageList = imageList;
     });
   };
@@ -200,7 +197,7 @@
   const openRoomPriceConfigDialog = (houseIndex: number, roomIndex: number) => {
     const currentRoom = entireForm.houseList[houseIndex].roomList[roomIndex];
 
-    openPriceConfigDialog("", currentRoom?.priceConfig || {}, (priceConfig: any) => {
+    openPriceConfigDialog("", currentRoom?.priceConfig, (priceConfig: any) => {
       entireForm.houseList[houseIndex].roomList[roomIndex].priceConfig = priceConfig;
     });
   };
@@ -490,7 +487,7 @@
                               <el-input v-model="room.price" placeholder="租金" class="table-input">
                                 <template #suffix>元/月</template>
                               </el-input>
-                              <div class="mr-1"><el-button size="small" @click="openRoomPriceConfigDialog(index, roomIndex)">配置</el-button></div>
+                              <el-icon class="mr-2 text-blue-700 background-bl" @click="openRoomPriceConfigDialog(index, roomIndex)">配置</el-icon>
                             </el-space>
                           </el-form-item>
                         </td>

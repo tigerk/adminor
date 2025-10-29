@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { onMounted, reactive, ref } from "vue";
   import type { PriceConfigFormProps } from "./types";
-  import { OtherFeeProps, PricePlanProps } from "@/types";
-  import { PAYMENT_METHOD_OPTION } from "@/constants";
+  import { OtherFeeProps, PriceConfigProps, PricePlanProps } from "@/types";
+  import { PAYMENT_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { getDictDataByDictCode } from "@/api/sys/dict";
 
@@ -10,16 +10,79 @@
 
   const props = withDefaults(defineProps<PriceConfigFormProps>(), {});
 
+  const priceConfig = ref<PriceConfigProps>({
+    ...props.formInline
+  });
+
   const otherFeeTypeOptions = ref([]);
 
   onMounted(() => {
+    /**
+     * {
+     *     "code": 0,
+     *     "message": "请求成功",
+     *     "data": [
+     *         {
+     *             "dictCode": "cost_deposit",
+     *             "dictName": "押金",
+     *             "dictDataList": [
+     *                 {
+     *                     "id": "1983087625104396290",
+     *                     "name": "水电燃押金",
+     *                     "value": "shuidianranyajin",
+     *                     "color": "#6abe39"
+     *                 },
+     *                 {
+     *                     "id": "1983087665550069762",
+     *                     "name": "暖气费押金",
+     *                     "value": "nuanqifeiyajin",
+     *                     "color": "#6abe39"
+     *                 }
+     *             ]
+     *         },
+     *         {
+     *             "dictCode": "cost_earnest_money",
+     *             "dictName": "定金",
+     *             "dictDataList": [
+     *                 {
+     *                     "id": "1983087527930761218",
+     *                     "name": "预付定金",
+     *                     "value": "yufudingjin",
+     *                     "color": "#6abe39"
+     *                 }
+     *             ]
+     *         },
+     *         {
+     *             "dictCode": "cost_maintainance",
+     *             "dictName": "装修/维修",
+     *             "dictDataList": [
+     *                 {
+     *                     "id": "1983087488114233346",
+     *                     "name": "房屋维修",
+     *                     "value": "fangwuweixiu",
+     *                     "color": "#6abe39"
+     *                 }
+     *             ]
+     *         },
+     *         {
+     *             "dictCode": "cost_other_fee",
+     *             "dictName": "其他费用类型",
+     *             "dictDataList": [
+     *                 {
+     *                     "id": "1978699667417067521",
+     *                     "name": "装修/维修/房屋维修",
+     *                     "value": "zhuangxiuweixiufangwuweixiu",
+     *                     "color": "#e84749"
+     *                 }
+     *             ]
+     *         }
+     *     ]
+     * }
+     */
     getDictDataByDictCode({
-      dictCode: "cost_other_fee"
+      dictCode: "fee_type"
     }).then(res => {
-      otherFeeTypeOptions.value = res.data.map(item => ({
-        label: item.name,
-        value: item.value
-      }));
+      otherFeeTypeOptions.value = res.data;
     });
   });
 
@@ -30,17 +93,18 @@
   ];
 
   // 付款方式选项
-  const paymentMethodOptions = PAYMENT_METHOD_OPTION;
+  const paymentMethodOptions = PAYMENT_METHOD_OPTIONS;
+  const pricePlantOptions = PRICE_PLANT_OPTIONS;
 
   // 其他费用列表（基础费用）
   // 从后端接口获取
   const otherFees = reactive<OtherFeeProps[]>([]);
 
   // 租金方案列表
-  const rentPlans = reactive<PricePlanProps[]>([]);
+  const pricePlans = reactive<PricePlanProps[]>([]);
 
   // 当前选中的方案索引
-  const selectedPlanIndex = ref<number>(); // 默认选中2月付
+  const selectedPlans = ref([1]); // 默认选中月付
 
   // 添加其他费用
   const addOtherFee = () => {
@@ -54,34 +118,12 @@
     }
   };
 
-  // 获取付款方式标签
-  const getPaymentMethodLabel = (value: string) => {
-    const option = paymentMethodOptions.find(opt => opt.value === value);
-    return option ? option.label : "";
-  };
-
-  // 获取费用类型标签
-  const getFeeTypeLabel = (value: string) => {
-    const option = feeTypeOptions.find(opt => opt.value === value);
-    return option ? option.label : "";
-  };
-
-  // 选择租金方案
-  const selectPlan = (index: number) => {
-    selectedPlanIndex.value = index;
-  };
-
-  // 计算实际租金（带折扣）
-  const calculateActualRent = (rentAmount: number, discountPercent: number) => {
-    return Math.round((rentAmount * discountPercent) / 100);
-  };
-
   // 导出数据
   function getRef() {
     return {
       otherFees: otherFees,
-      rentPlans: rentPlans,
-      selectedPlanIndex: selectedPlanIndex.value
+      pricePlans: pricePlans,
+      selectedPlans: selectedPlans.value
     };
   }
 
@@ -96,56 +138,24 @@
         其他费用
         <span class="section-subtitle">(租金以外的费用，或用于计费有支付方式)</span>
       </h4>
-      <div>
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="费用类型">
-              <el-select v-model="fee.feeType" placeholder="请选择" style="width: 100%">
-                <el-option v-for="item in feeTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="付款方式">
-              <el-select v-model="fee.paymentMethod" placeholder="请选择" style="width: 100%">
-                <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="金额">
-              <el-input v-model.number="fee.amount" placeholder="请输入" type="number">
-                <template #suffix>元/月</template>
-              </el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="2">
-            <el-form-item label="操作">
-              <el-button type="danger" link :disabled="otherFees.length <= 1" @click="removeOtherFee(index)">删除</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </div>
       <div class="fee-list">
-        <div v-for="(fee, index) in otherFees" :key="index" class="fee-item">
+        <div v-for="(feeItem, index) in priceConfig.otherFees" :key="index" class="fee-item">
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="费用类型">
-                <el-select v-model="fee.feeType" placeholder="请选择" style="width: 100%">
-                  <el-option v-for="item in feeTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
+                <el-cascader placeholder="请选择费用类型" :options="otherFeeTypeOptions" filterable />
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="付款方式">
-                <el-select v-model="fee.paymentMethod" placeholder="请选择" style="width: 100%">
+                <el-select v-model="feeItem.paymentMethod" placeholder="请选择" style="width: 100%">
                   <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="6">
               <el-form-item label="金额">
-                <el-input v-model.number="fee.amount" placeholder="请输入" type="number">
+                <el-input v-model.number="feeItem.priceInput" placeholder="请输入" type="number">
                   <template #suffix>元/月</template>
                 </el-input>
               </el-form-item>
@@ -158,7 +168,6 @@
           </el-row>
         </div>
       </div>
-
       <el-button type="primary" plain size="small" @click="addOtherFee">+ 添加其他费用</el-button>
 
       <!-- 共他费用 -->
@@ -175,62 +184,9 @@
       <h4 class="section-title">更多租金方案配置</h4>
 
       <div class="plan-selection">
-        <el-checkbox-group v-model="selectedPlanIndex">
-          <el-checkbox v-for="(plan, index) in rentPlans" :key="index" :label="index">{{ plan.planType }}</el-checkbox>
+        <el-checkbox-group v-model="selectedPlans">
+          <el-checkbox v-for="(plan, index) in pricePlantOptions" :key="index" :label="index">{{ plan.label }}</el-checkbox>
         </el-checkbox-group>
-      </div>
-
-      <div class="plan-table-wrapper">
-        <table class="plan-table">
-          <thead>
-            <tr>
-              <th style="width: 10%">默认</th>
-              <th style="width: 20%">租金方案</th>
-              <th style="width: 30%">租金(元/月)</th>
-              <th style="width: 30%">折扣百分比(%)</th>
-              <th style="width: 10%">其他费用</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(plan, index) in rentPlans" :key="index">
-              <td class="text-center">
-                <el-radio v-model="selectedPlanIndex" :label="index" />
-              </td>
-              <td class="text-center">
-                <span class="plan-type-text">{{ plan.planType }}</span>
-              </td>
-              <td>
-                <el-form-item label-width="0">
-                  <el-space spacer="|">
-                    <span>出租价格</span>
-                    <el-icon>
-                      <Close />
-                    </el-icon>
-                    <el-input-number v-model="plan.discountPercent" :min="0" :max="100" :step="1" size="small" style="width: 80px" />
-                    <span>%</span>
-                    <span>= {{ calculateActualRent(plan.rentAmount, plan.discountPercent) }}元/月</span>
-                  </el-space>
-                </el-form-item>
-              </td>
-              <td>
-                <el-form-item label-width="0">
-                  <el-input v-model.number="plan.discountPercent" placeholder="折扣" type="number">
-                    <template #suffix>%</template>
-                  </el-input>
-                </el-form-item>
-              </td>
-              <td class="text-center">
-                <div class="other-fees-summary">
-                  <div v-for="(fee, feeIndex) in otherFees" :key="feeIndex" class="fee-summary-item">
-                    {{ getFeeTypeLabel(fee.feeType) }}:
-                    <span v-if="fee.paymentMethod === 'with_rent'">{{ fee.amount }}元 + 房租*{{ fee.amount }}%</span>
-                    <span v-else>{{ fee.amount }}元</span>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
 
       <div class="plan-notes">

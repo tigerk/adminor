@@ -5,6 +5,18 @@ import { message } from "@/utils/message";
 import type { OtherFeeProps, PriceConfigProps } from "@/types";
 import PriceConfigDialog from "@/views/house/components/PriceConfig/PriceConfigDialog.vue";
 
+function getDefaultOtherFee(): OtherFeeProps {
+  return {
+    dicDataId: null,
+    name: null,
+    paymentMethod: 1,
+    /** 价格计算方式 */
+    priceMethod: 1,
+    /** 价格输入值 */
+    priceInput: null
+  };
+}
+
 export function usePriceConfigEdit() {
   const priceConfigFormRef = ref();
 
@@ -36,18 +48,6 @@ export function usePriceConfigEdit() {
         message("保存成功", { type: "success" });
       }
     });
-  }
-
-  function getDefaultOtherFee<OtherFeeProps>() {
-    return {
-      dicDataId: null,
-      name: null,
-      paymentMethod: 1,
-      /** 价格计算方式 */
-      priceMethod: 1,
-      /** 价格输入值 */
-      priceInput: null
-    };
   }
 
   return {
