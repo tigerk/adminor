@@ -2,7 +2,7 @@
   import { computed, onMounted, ref, watch } from "vue";
   import type { PriceConfigFormProps } from "./types";
   import { PriceConfigProps, PricePlanProps } from "@/types";
-  import { PRICE_METHOD_OPTIONS, PAYMENT_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
+  import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { getDictDataByParentCode } from "@/api/sys/dict";
   import { Delete, Plus } from "@element-plus/icons-vue";
@@ -15,7 +15,7 @@
     ...props.formInline
   });
 
-  // 初始化其他费用列表
+  // 初始化其他费用列表 - 确保每个费用项都有完整的初始值
   if (!priceConfig.value.otherFees || priceConfig.value.otherFees.length === 0) {
     priceConfig.value.otherFees = [getDefaultOtherFee()];
   }
@@ -39,16 +39,20 @@
       dictCode: "fee_type"
     }).then(res => {
       otherFeeTypeOptions.value = transformDictToCascader(res.data);
+      console.log("级联选择器数据:", otherFeeTypeOptions.value);
     });
   });
 
   // 付款方式选项
   const paymentMethodOptions = PAYMENT_METHOD_OPTIONS;
-  const priceMethodoptions = PRICE_METHOD_OPTIONS;
+  const priceMethodOptions = PRICE_METHOD_OPTIONS;
   const pricePlantOptions = PRICE_PLANT_OPTIONS;
 
   // 当前选中的方案索引
-  const selectedPlans = ref<number[]>([]); // 默认选中月付
+  const selectedPlans = ref<number[]>([]);
+
+  // 当前选中的默认方案索引
+  const defaultPlanIndex = ref<number>(0);
 
   // 底价方式标签
   const floorPriceMethodLabel = computed(() => {
@@ -70,21 +74,49 @@
     priceConfig.value.otherFees.splice(index, 1);
   };
 
-  // 监听选中的方案变化，动态生成租金方案
+  // 处理级联选择器变化
+  const handleCascaderChange = (value: any, feeItem: any) => {
+    console.log("级联选择器值改变:", value, feeItem);
+
+    // 在级联选择器数据中查找对应的名称
+    const findLabel = (options: any[], targetValue: any): string | null => {
+      for (const option of options) {
+        if (option.children) {
+          for (const child of option.children) {
+            if (child.value === targetValue) {
+              return child.label;
+            }
+          }
+        }
+      }
+      return null;
+    };
+
+    const label = findLabel(otherFeeTypeOptions.value, value);
+    console.log("找到的标签:", label);
+    feeItem.name = label;
+  };
+
+  // 处理默认方案切换
+  const handleDefaultPlanChange = (index: number) => {
+    priceConfig.value.pricePlans.forEach((plan, i) => {
+      plan.defaultPlan = i === index;
+    });
+  };
+
+  // 监听选中的方案变化
   watch(
     selectedPlans,
     newPlans => {
       const existingPlans = priceConfig.value.pricePlans || [];
       const newPricePlans: PricePlanProps[] = [];
 
-      newPlans.forEach(planIndex => {
-        // 查找是否已存在该方案
+      newPlans.forEach((planIndex, arrayIndex) => {
         const existing = existingPlans.find(p => p.planType === String(pricePlantOptions[planIndex].value));
 
         if (existing) {
           newPricePlans.push(existing);
         } else {
-          // 创建新方案
           const planOption = pricePlantOptions[planIndex];
           newPricePlans.push({
             roomId: priceConfig.value.roomId,
@@ -93,12 +125,20 @@
             priceRatio: 100,
             price: priceConfig.value.price || 0,
             otherFees: [],
-            defaultPlan: planIndex === 0
+            defaultPlan: arrayIndex === 0
           });
         }
       });
 
       priceConfig.value.pricePlans = newPricePlans;
+
+      const defaultIndex = newPricePlans.findIndex(p => p.defaultPlan);
+      if (defaultIndex !== -1) {
+        defaultPlanIndex.value = defaultIndex;
+      } else if (newPricePlans.length > 0) {
+        newPricePlans[0].defaultPlan = true;
+        defaultPlanIndex.value = 0;
+      }
     },
     { immediate: true }
   );
@@ -130,7 +170,7 @@
             <el-input v-model.number="priceConfig.floorPriceInput" :min="0" placeholder="请输入" type="number">
               <template #prepend>
                 <el-select v-model="priceConfig.floorPriceMethod" placeholder="请选择" style="width: 140px">
-                  <el-option v-for="item in priceMethodoptions" :key="item.value" :label="item.label" :value="item.value" />
+                  <el-option v-for="item in priceMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </template>
               <template #append>{{ floorPriceInputSuffix }}</template>
@@ -144,10 +184,9 @@
     <div class="section">
       <h4 class="section-title">
         其他费用
-        <span class="section-subtitle">(租金以外的费用，适用于所有支付方式)</span>
+        <span class="section-subtitle">(租金以外的费用,适用于所有支付方式)</span>
       </h4>
 
-      <!-- 改造为 table 形式 -->
       <div v-if="priceConfig.otherFees" class="fee-table-wrapper">
         <table class="fee-table">
           <thead>
@@ -161,15 +200,26 @@
           <tbody>
             <tr v-for="(feeItem, index) in priceConfig.otherFees" :key="index">
               <td>
+                <!-- 添加调试信息 -->
                 <el-cascader
                   v-model="feeItem.dicDataId"
                   placeholder="请选择费用类型"
                   :options="otherFeeTypeOptions"
-                  :props="{ expandTrigger: 'hover', value: 'value', label: 'label', emitPath: false }"
+                  :props="{
+                    expandTrigger: 'hover',
+                    value: 'value',
+                    label: 'label',
+                    emitPath: false,
+                    checkStrictly: false
+                  }"
                   filterable
                   clearable
                   style="width: 100%"
+                  @change="value => handleCascaderChange(value, feeItem)"
+                  @visible-change="visible => console.log('下拉框显示状态:', visible)"
                 />
+                <!-- 调试显示当前值 -->
+                <div style="font-size: 12px; color: #999; margin-top: 4px">当前值: {{ feeItem.dicDataId }} | 名称: {{ feeItem.name }}</div>
               </td>
               <td>
                 <el-select v-model="feeItem.paymentMethod" placeholder="请选择" style="width: 100%">
@@ -180,7 +230,7 @@
                 <el-input v-model.number="feeItem.priceInput" :min="0" placeholder="请输入" type="number">
                   <template #prepend>
                     <el-select v-model="feeItem.priceMethod" placeholder="请选择" style="width: 140px">
-                      <el-option v-for="item in priceMethodoptions" :key="item.value" :label="item.label" :value="item.value" />
+                      <el-option v-for="item in priceMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                   </template>
                   <template #append>{{ feeItem.priceMethod === 0 ? "元/月" : "%" }}</template>
@@ -211,7 +261,6 @@
         </el-checkbox-group>
       </div>
 
-      <!-- 租金方案表格 -->
       <div v-if="priceConfig.pricePlans && priceConfig.pricePlans.length > 0" class="plan-table-wrapper">
         <table class="plan-table">
           <thead>
@@ -224,7 +273,9 @@
           <tbody>
             <tr v-for="(plan, index) in priceConfig.pricePlans" :key="index">
               <td class="text-center">
-                <el-radio v-model="plan.defaultPlan" value="{{index}}" />
+                <el-radio v-model="defaultPlanIndex" :label="index" @change="handleDefaultPlanChange(index)">
+                  <span style="display: none">默认选项{{ index + 1 }}</span>
+                </el-radio>
               </td>
               <td class="text-center">
                 <span class="plan-type-text">{{ plan.planName }}</span>
@@ -236,7 +287,7 @@
                   <el-input-number v-model="plan.priceRatio" :min="0" :max="100" :precision="2" :controls="false">
                     <template #suffix>%</template>
                   </el-input-number>
-                  <span style="margin-left: 8px">（ 即：{{ Math.round((priceConfig.price || 0) * (plan.priceRatio / 100)) }} 元/月）</span>
+                  <span style="margin-left: 8px">( 即:{{ Math.round((priceConfig.price || 0) * (plan.priceRatio / 100)) }} 元/月)</span>
                 </el-space>
               </td>
             </tr>
@@ -244,15 +295,14 @@
         </table>
       </div>
       <div class="plan-notes">
-        <div class="note-item">
-          租金方案中的租金，不支持小数，且个位数必须为0，若计算后存在小数和个位数，自动取偏小的整数，如”月付"方案的租金按折扣比例后为 1024.99元，则取1024元。
-        </div>
+        <div class="note-item">租金方案中的租金,不支持小数,且个位数必须为0,若计算后存在小数和个位数,自动取偏小的整数,如"月付"方案的租金按折扣比例后为 1024.99元,则取1024元。</div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+  /* 样式保持不变 */
   .rent-config-container {
     margin-top: 8px;
     padding: 0px;
@@ -280,7 +330,6 @@
     color: #909399;
   }
 
-  /* 其他费用表格样式 */
   .fee-table-wrapper {
     border: 1px solid #e4e7ed;
     border-radius: 4px;
