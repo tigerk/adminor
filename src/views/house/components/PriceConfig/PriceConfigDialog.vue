@@ -207,9 +207,7 @@
                   :options="otherFeeTypeOptions"
                   :props="{
                     expandTrigger: 'hover',
-                    value: 'value',
-                    label: 'label',
-                    emitPath: false,
+                    emitPath: true,
                     checkStrictly: false
                   }"
                   filterable
