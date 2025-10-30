@@ -216,10 +216,7 @@
                   clearable
                   style="width: 100%"
                   @change="value => handleCascaderChange(value, feeItem)"
-                  @visible-change="visible => console.log('下拉框显示状态:', visible)"
                 />
-                <!-- 调试显示当前值 -->
-                <div style="font-size: 12px; color: #999; margin-top: 4px">当前值: {{ feeItem.dicDataId }} | 名称: {{ feeItem.name }}</div>
               </td>
               <td>
                 <el-select v-model="feeItem.paymentMethod" placeholder="请选择" style="width: 100%">
