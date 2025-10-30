@@ -9,9 +9,9 @@ function getDefaultOtherFee(): OtherFeeProps {
   return {
     dicDataId: null,
     name: null,
-    paymentMethod: 1,
+    paymentMethod: 0,
     /** 价格计算方式 */
-    priceMethod: 1,
+    priceMethod: 0,
     /** 价格输入值 */
     priceInput: null
   };

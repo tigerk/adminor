@@ -2,10 +2,10 @@
   import { computed, onMounted, ref, watch } from "vue";
   import type { PriceConfigFormProps } from "./types";
   import { PriceConfigProps, PricePlanProps } from "@/types";
-  import { PAYMENT_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
+  import { PRICE_METHOD_OPTIONS, PAYMENT_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { getDictDataByParentCode } from "@/api/sys/dict";
-  import { Close, Delete, Plus } from "@element-plus/icons-vue";
+  import { Delete, Plus } from "@element-plus/icons-vue";
 
   const { getDefaultOtherFee } = usePriceConfigEdit();
 
@@ -49,6 +49,7 @@
 
   // 付款方式选项
   const paymentMethodOptions = PAYMENT_METHOD_OPTIONS;
+  const priceMethodoptions = PRICE_METHOD_OPTIONS;
   const pricePlantOptions = PRICE_PLANT_OPTIONS;
 
   // 当前选中的方案索引
@@ -61,7 +62,7 @@
 
   // 底价输入后缀
   const floorPriceInputSuffix = computed(() => {
-    return priceConfig.value.floorPriceMethod === 1 ? "元/月" : "%";
+    return priceConfig.value.floorPriceMethod === 0 ? "元/月" : "%";
   });
 
   // 添加其他费用
@@ -71,9 +72,7 @@
 
   // 删除其他费用
   const removeOtherFee = (index: number) => {
-    if (priceConfig.value.otherFees.length > 1) {
-      priceConfig.value.otherFees.splice(index, 1);
-    }
+    priceConfig.value.otherFees.splice(index, 1);
   };
 
   // 监听选中的方案变化，动态生成租金方案
@@ -98,7 +97,8 @@
             planType: String(planOption.value),
             priceRatio: 100,
             price: priceConfig.value.price || 0,
-            otherFees: []
+            otherFees: [],
+            defaultPlan: planIndex === 0
           });
         }
       });
@@ -123,19 +123,19 @@
     <!-- 租金价格和底价配置 -->
     <div class="section">
       <el-row :gutter="40">
-        <el-col :span="10">
+        <el-col :span="12">
           <el-form-item label="租金">
-            <el-input v-model.number="priceConfig.price" placeholder="请输入租金" type="number">
+            <el-input v-model.number="priceConfig.price" :min="0" placeholder="请输入租金" type="number">
               <template #append>元/月</template>
             </el-input>
           </el-form-item>
         </el-col>
-        <el-col :span="14">
+        <el-col :span="12">
           <el-form-item label="租金底价">
-            <el-input v-model.number="priceConfig.floorPriceInput" placeholder="请输入" type="number">
+            <el-input v-model.number="priceConfig.floorPriceInput" :min="0" placeholder="请输入" type="number">
               <template #prepend>
                 <el-select v-model="priceConfig.floorPriceMethod" placeholder="请选择" style="width: 140px">
-                  <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  <el-option v-for="item in priceMethodoptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </template>
               <template #append>{{ floorPriceInputSuffix }}</template>
@@ -145,63 +145,65 @@
       </el-row>
     </div>
 
-    <!-- 有佣金（暂不实现） -->
-    <!-- 这部分根据需求不生成 -->
-
     <!-- 其他费用配置 -->
     <div class="section">
       <h4 class="section-title">
         其他费用
         <span class="section-subtitle">(租金以外的费用，适用于所有支付方式)</span>
       </h4>
-      <div class="fee-list">
-        <div v-for="(feeItem, index) in priceConfig.otherFees" :key="index" class="fee-item">
-          <el-row :gutter="20" align="middle">
-            <el-col :span="5">
-              <el-form-item label="">
+
+      <!-- 改造为 table 形式 -->
+      <div v-if="priceConfig.otherFees" class="fee-table-wrapper">
+        <table class="fee-table">
+          <thead>
+            <tr>
+              <th style="width: 200px">费用类型</th>
+              <th style="width: 150px">付款方式</th>
+              <th style="width: 300px">金额</th>
+              <th style="width: 60px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(feeItem, index) in priceConfig.otherFees" :key="index">
+              <td>
                 <el-cascader
                   v-model="feeItem.dicDataId"
                   placeholder="请选择费用类型"
                   :options="otherFeeTypeOptions"
-                  :props="{ expandTrigger: 'hover', value: 'value', label: 'label' }"
+                  :props="{ expandTrigger: 'hover', value: 'value', label: 'label', emitPath: false }"
                   filterable
+                  clearable
                   style="width: 100%"
                 />
-              </el-form-item>
-            </el-col>
-            <el-col :span="6">
-              <el-form-item label="付款方式">
+              </td>
+              <td>
                 <el-select v-model="feeItem.paymentMethod" placeholder="请选择" style="width: 100%">
                   <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="6">
-              <el-form-item label="金额">
-                <el-select v-model="feeItem.priceMethod" placeholder="请选择" style="width: 100%">
-                  <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="4">
-              <el-form-item>
-                <el-input v-model.number="feeItem.priceInput" placeholder="请输入" type="number">
-                  <template #append>{{ feeItem.priceMethod === 1 ? "元" : "元" }}</template>
+              </td>
+              <td>
+                <el-input v-model.number="feeItem.priceInput" :min="0" placeholder="请输入" type="number">
+                  <template #prepend>
+                    <el-select v-model="feeItem.priceMethod" placeholder="请选择" style="width: 140px">
+                      <el-option v-for="item in priceMethodoptions" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                  </template>
+                  <template #append>{{ feeItem.priceMethod === 0 ? "元/月" : "%" }}</template>
                 </el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="1">
-              <el-form-item>
-                <el-button type="danger" :icon="Delete" link :disabled="priceConfig.otherFees.length <= 1" @click="removeOtherFee(index)" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </div>
+              </td>
+              <td class="text-center">
+                <el-button type="danger" :icon="Delete" link @click="removeOtherFee(index)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <el-button type="primary" plain size="small" @click="addOtherFee">
-        <el-icon><Plus /></el-icon>
-        其他费用
-      </el-button>
+      <div class="text-left">
+        <el-button type="primary" plain size="small" style="margin-top: 12px" @click="addOtherFee">
+          <el-icon><Plus /></el-icon>
+          其他费用
+        </el-button>
+      </div>
     </div>
 
     <!-- 更多租金方案配置 -->
@@ -227,7 +229,7 @@
           <tbody>
             <tr v-for="(plan, index) in priceConfig.pricePlans" :key="index">
               <td class="text-center">
-                <el-radio :label="index" value="" />
+                <el-radio value="" v-model="plan.defaultPlan" />
               </td>
               <td class="text-center">
                 <span class="plan-type-text">{{ plan.planName }}</span>
@@ -246,11 +248,9 @@
           </tbody>
         </table>
       </div>
-
       <div class="plan-notes">
-        <div class="note-item">1. 若有默认租金方案，则在广推广上架上按默认</div>
         <div class="note-item">
-          2. 租金方案中的租金，不支持小数，且个位数必须为0。若算后存在小数和个位数，自动取偏小的整数；如"月付"方案的租金按折扣比例后为1258.99元，则取1250元。
+          租金方案中的租金，不支持小数，且个位数必须为0，若计算后存在小数和个位数，自动取偏小的整数，如”月付"方案的租金按折扣比例后为 1024.99元，则取1024元。
         </div>
       </div>
     </div>
@@ -259,17 +259,18 @@
 
 <style scoped>
   .rent-config-container {
-    padding: 20px;
+    margin-top: 8px;
+    padding: 0px;
     max-height: 70vh;
     overflow-y: auto;
   }
 
   .section {
-    margin-bottom: 30px;
+    margin-bottom: 25px;
   }
 
   .section-title {
-    margin: 0 0 16px 0;
+    margin: 0 0 8px 0;
     font-size: 15px;
     font-weight: 600;
     color: #303133;
@@ -284,15 +285,55 @@
     color: #909399;
   }
 
-  .fee-list {
-    margin-bottom: 16px;
+  /* 其他费用表格样式 */
+  .fee-table-wrapper {
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
   }
 
-  .fee-item {
-    margin-bottom: 12px;
-    padding: 12px;
-    background: #f5f7fa;
-    border-radius: 4px;
+  .fee-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+  }
+
+  .fee-table thead {
+    background-color: #f5f7fa;
+  }
+
+  .fee-table th {
+    padding: 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #606266;
+    border-bottom: 1px solid #e4e7ed;
+    border-right: 1px solid #e4e7ed;
+  }
+
+  .fee-table th:last-child {
+    border-right: none;
+  }
+
+  .fee-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e4e7ed;
+    border-right: 1px solid #e4e7ed;
+    vertical-align: middle;
+  }
+
+  .fee-table td:last-child {
+    border-right: none;
+  }
+
+  .fee-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .fee-table tbody tr:hover {
+    background-color: #f5f7fa;
   }
 
   .plan-selection {

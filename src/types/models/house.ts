@@ -200,4 +200,6 @@ export interface PricePlanProps {
   price: number;
   /** 其他费用 */
   otherFees?: OtherFeeProps[];
+  /** 默认方案 */
+  defaultPlan: boolean;
 }

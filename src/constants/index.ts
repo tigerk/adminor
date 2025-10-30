@@ -66,17 +66,30 @@ export const ROOM_TYPE_OPTIONS = [
 ] as const;
 
 /**
- * 房间类型选项
+ * 金额计算方式
+ */
+export const PRICE_METHOD_OPTIONS = [
+  { label: "按固定金额", value: 0 },
+  { label: "按租金比例", value: 1 }
+] as const;
+
+/**
+ * 付款方式
  */
 export const PAYMENT_METHOD_OPTIONS = [
-  { label: "按固定金额", value: 1 },
-  { label: "随房租付", value: 2 }
+  { label: "随房租付", value: 0 },
+  { label: "一次性全支付", value: 1 },
+  { label: "月付", value: 2 },
+  { label: "2月付", value: 3 },
+  { label: "季付", value: 4 },
+  { label: "半年付", value: 5 },
+  { label: "年付", value: 6 }
 ] as const;
 
 export const PRICE_PLANT_OPTIONS = [
-  { label: "月付", value: 1 },
-  { label: "2月付", value: 2 },
-  { label: "季付", value: 3 },
-  { label: "半年付", value: 4 },
-  { label: "年付", value: 5 }
+  { label: "月付", value: 0 },
+  { label: "2月付", value: 1 },
+  { label: "季付", value: 2 },
+  { label: "半年付", value: 3 },
+  { label: "年付", value: 4 }
 ] as const;

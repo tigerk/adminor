@@ -36,8 +36,8 @@ function getDefaultPriceConfigItem(): PriceConfigProps {
     price: null,
     /** 底价（单位：元/月） */
     floorPrice: null,
-    /** 底价方式：1=固定金额，2=按比例 */
-    floorPriceMethod: 1,
+    /** 底价方式：0=固定金额，1=按比例 */
+    floorPriceMethod: 0,
     /** 底价录入值（金额或比例，具体由 low_price_method 决定） */
     floorPriceInput: null,
     /** 其他费用列表 */
