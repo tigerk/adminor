@@ -199,6 +199,7 @@
 
     openPriceConfigDialog("", currentRoom?.priceConfig, (priceConfig: any) => {
       entireForm.houseList[houseIndex].roomList[roomIndex].priceConfig = priceConfig;
+      entireForm.houseList[houseIndex].roomList[roomIndex].price = priceConfig.price;
     });
   };
   /**

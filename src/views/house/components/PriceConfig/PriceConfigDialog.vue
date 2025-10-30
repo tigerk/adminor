@@ -20,11 +20,6 @@
     priceConfig.value.otherFees = [getDefaultOtherFee()];
   }
 
-  // 初始化租金方案列表
-  if (!priceConfig.value.pricePlans) {
-    priceConfig.value.pricePlans = [];
-  }
-
   const otherFeeTypeOptions = ref<any[]>([]);
 
   // 转换字典数据为级联选择器格式
@@ -111,7 +106,7 @@
   // 导出数据
   function getRef() {
     return {
-      priceConfig: priceConfig.value
+      ...priceConfig.value
     };
   }
 
