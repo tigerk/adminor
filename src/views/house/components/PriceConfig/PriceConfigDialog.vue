@@ -48,7 +48,7 @@
   const pricePlantOptions = PRICE_PLANT_OPTIONS;
 
   // 当前选中的方案索引
-  const selectedPlans = ref<number[]>([0]); // 默认选中月付
+  const selectedPlans = ref<number[]>([]); // 默认选中月付
 
   // 底价方式标签
   const floorPriceMethodLabel = computed(() => {
@@ -224,7 +224,7 @@
           <tbody>
             <tr v-for="(plan, index) in priceConfig.pricePlans" :key="index">
               <td class="text-center">
-                <el-radio value="" v-model="plan.defaultPlan" />
+                <el-radio v-model="plan.defaultPlan" value="{{index}}" />
               </td>
               <td class="text-center">
                 <span class="plan-type-text">{{ plan.planName }}</span>
