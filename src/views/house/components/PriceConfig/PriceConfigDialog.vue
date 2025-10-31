@@ -21,6 +21,22 @@
   }
 
   const otherFeeTypeOptions = ref<any[]>([]);
+  const cascaderValues = ref<Record<number, any[]>>({});
+
+  // 初始化级联选择器的值
+  const initCascaderValue = (index: number, dicDataId: number | null) => {
+    if (dicDataId) {
+      // 根据 dicDataId 反向查找完整路径
+      for (const parent of otherFeeTypeOptions.value) {
+        for (const child of parent.children || []) {
+          if (child.value === dicDataId) {
+            cascaderValues.value[index] = [parent.value, child.value];
+            return;
+          }
+        }
+      }
+    }
+  };
 
   // 转换字典数据为级联选择器格式
   const transformDictToCascader = (dictData: any[]) => {
@@ -34,13 +50,11 @@
     }));
   };
 
-  onMounted(() => {
-    getDictDataByParentCode({
-      dictCode: "fee_type"
-    }).then(res => {
-      otherFeeTypeOptions.value = transformDictToCascader(res.data);
-      console.log("级联选择器数据:", otherFeeTypeOptions.value);
-    });
+  getDictDataByParentCode({
+    dictCode: "fee_type"
+  }).then(res => {
+    otherFeeTypeOptions.value = transformDictToCascader(res.data);
+    console.log("级联选择器数据:", otherFeeTypeOptions.value);
   });
 
   // 付款方式选项
@@ -202,18 +216,17 @@
               <td>
                 <!-- 添加调试信息 -->
                 <el-cascader
-                  v-model="feeItem.dicDataId"
+                  v-model="cascaderValues[index]"
                   placeholder="请选择费用类型"
                   :options="otherFeeTypeOptions"
                   :props="{
-                    expandTrigger: 'hover',
                     emitPath: true,
                     checkStrictly: false
                   }"
                   filterable
                   clearable
                   style="width: 100%"
-                  @change="value => handleCascaderChange(value, feeItem)"
+                  @change="value => handleCascaderChange(value, index)"
                 />
               </td>
               <td>
