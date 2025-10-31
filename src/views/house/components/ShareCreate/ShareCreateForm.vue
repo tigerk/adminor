@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { onMounted, reactive, ref } from "vue";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
-  import { CircleCheck, Delete, Picture, Plus, Setting } from "@element-plus/icons-vue";
+  import { CircleCheck, Delete, Picture, Plus, Setting, Notebook } from "@element-plus/icons-vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
@@ -325,7 +325,7 @@
                       { type: 'number', message: '总楼层数必须是数字', trigger: 'blur', transform: value => Number(value) }
                     ]"
                   >
-                    <el-input v-model.number="house.totalFloor" placeholder="请输入总楼层数" type="number" />
+                    <el-input v-model.number="house.floorTotal" placeholder="请输入总楼层数" type="number" />
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -488,7 +488,7 @@
                               <el-input v-model="room.price" placeholder="租金" class="table-input">
                                 <template #suffix>元/月</template>
                               </el-input>
-                              <el-icon class="mr-2 text-blue-700 background-bl" @click="openRoomPriceConfigDialog(index, roomIndex)">配置</el-icon>
+                              <el-icon class="mr-2 text-blue-700 background-bl" @click="openRoomPriceConfigDialog(index, roomIndex)"><Notebook /></el-icon>
                             </el-space>
                           </el-form-item>
                         </td>
