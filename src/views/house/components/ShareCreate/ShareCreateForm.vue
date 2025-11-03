@@ -22,31 +22,31 @@
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
   const { openHouseImageEditDialog } = useHouseImageEdit();
   const { openPriceConfigDialog } = usePriceConfigEdit();
-  const { shareForm, shareFormRef, openShareEditDialog, getScatterDefaultHouseItem, getDefaultRoomItem } = useShareEdit();
+  const { shareFormRef, openShareEditDialog, getScatterDefaultHouseItem, getDefaultRoomItem } = useShareEdit();
 
   const props = withDefaults(defineProps<ShareFormProps>(), {});
   const emit = defineEmits(["onSave"]);
 
   // 将 entireForm 和 houseList 合并到一个响应式对象中
-  const entireForm = reactive({
+  const shareForm = reactive({
     ...props.formInline,
     houseList: [getScatterDefaultHouseItem()]
   });
 
   // 使用 entireForm.houseList 替代独立的 houseList
-  const houseList = entireForm.houseList;
+  const houseList = shareForm.houseList;
 
   // 表单引用
   const ruleFormRef = ref<FormInstance>();
 
   // 创建表单验证规则
-  const rules = createShareFormRules(entireForm);
+  const rules = createShareFormRules(shareForm);
 
   // 负责人列表
   const salesmanList = ref([]);
 
   const handlePoiSelected = (poi: any) => {
-    entireForm.community = {
+    shareForm.community = {
       name: poi.name,
       adcode: poi.adcode,
       cityId: poi.cityId,
@@ -66,18 +66,18 @@
 
   // 添加新房源
   const addNewHouse = () => {
-    entireForm.houseList.push(getScatterDefaultHouseItem());
+    shareForm.houseList.push(getScatterDefaultHouseItem());
   };
 
   // 添加新房间
   const addNewRoom = (houseIndex: number) => {
-    entireForm.houseList[houseIndex].roomList.push(getDefaultRoomItem());
+    shareForm.houseList[houseIndex].roomList.push(getDefaultRoomItem());
   };
 
   // 删除房间
   const removeRoom = (houseIndex: number, roomIndex: number) => {
-    if (entireForm.houseList[houseIndex].roomList.length > 1) {
-      entireForm.houseList[houseIndex].roomList.splice(roomIndex, 1);
+    if (shareForm.houseList[houseIndex].roomList.length > 1) {
+      shareForm.houseList[houseIndex].roomList.splice(roomIndex, 1);
     } else {
       ElMessage.warning("至少保留一个房间");
     }
@@ -90,15 +90,15 @@
   });
 
   const copyHouse = (index: number) => {
-    const houseToCopy = entireForm.houseList[index];
+    const houseToCopy = shareForm.houseList[index];
     const newHouse = JSON.parse(JSON.stringify(houseToCopy));
-    entireForm.houseList.splice(index + 1, 0, newHouse);
+    shareForm.houseList.splice(index + 1, 0, newHouse);
   };
 
   // 删除房源
   const removeHouse = (index: number) => {
-    if (entireForm.houseList.length > 1) {
-      entireForm.houseList.splice(index, 1);
+    if (shareForm.houseList.length > 1) {
+      shareForm.houseList.splice(index, 1);
     }
   };
 
@@ -106,10 +106,10 @@
    * 房源配置对话框 start
    */
   const openFacilitiesDialog = (index: number) => {
-    const currentHouse = entireForm.houseList[index];
+    const currentHouse = shareForm.houseList[index];
 
     openFacilityEditDialog("", currentHouse.houseLayout.facilities, (facilities: FacilityItemProps[]) => {
-      entireForm.houseList[index].houseLayout.facilities = facilities;
+      shareForm.houseList[index].houseLayout.facilities = facilities;
     });
   };
 
@@ -125,10 +125,10 @@
    * 房间配置对话框 start
    */
   const openRoomFacilitiesDialog = (houseIndex: number, roomIndex: number) => {
-    const currentRoom = entireForm.houseList[houseIndex].roomList[roomIndex];
+    const currentRoom = shareForm.houseList[houseIndex].roomList[roomIndex];
 
     openFacilityEditDialog("", currentRoom.facilities, (facilities: FacilityItemProps[]) => {
-      entireForm.houseList[houseIndex].roomList[roomIndex].facilities = facilities;
+      shareForm.houseList[houseIndex].roomList[roomIndex].facilities = facilities;
     });
   };
   /**
@@ -139,10 +139,10 @@
    * 房源特色对话框 start
    */
   const openHouseTagsDialog = (index: number) => {
-    const currentHouse = entireForm.houseList[index];
+    const currentHouse = shareForm.houseList[index];
 
     openHouseTagsEditDialog("", currentHouse.houseLayout.tags, (tags: any[]) => {
-      entireForm.houseList[index].houseLayout.tags = tags;
+      shareForm.houseList[index].houseLayout.tags = tags;
     });
   };
   /**
@@ -153,10 +153,10 @@
    * 房间特色对话框 start
    */
   const openRoomTagsDialog = (houseIndex: number, roomIndex: number) => {
-    const currentRoom = entireForm.houseList[houseIndex].roomList[roomIndex];
+    const currentRoom = shareForm.houseList[houseIndex].roomList[roomIndex];
 
     openHouseTagsEditDialog("", currentRoom.tags, (tags: any[]) => {
-      entireForm.houseList[houseIndex].roomList[roomIndex].tags = tags;
+      shareForm.houseList[houseIndex].roomList[roomIndex].tags = tags;
     });
   };
   /**
@@ -167,10 +167,10 @@
    * 房源图片对话框 start
    */
   const openImageListDialog = (index: number) => {
-    const currentHouse = entireForm.houseList[index];
+    const currentHouse = shareForm.houseList[index];
 
     openHouseImageEditDialog("", currentHouse.houseLayout.imageList, (imageList: any[]) => {
-      entireForm.houseList[index].houseLayout.imageList = imageList;
+      shareForm.houseList[index].houseLayout.imageList = imageList;
     });
   };
   /**
@@ -181,10 +181,10 @@
    * 房间图片对话框 start
    */
   const openRoomImageListDialog = (houseIndex: number, roomIndex: number) => {
-    const currentRoom = entireForm.houseList[houseIndex].roomList[roomIndex];
+    const currentRoom = shareForm.houseList[houseIndex].roomList[roomIndex];
 
     openHouseImageEditDialog("", currentRoom.imageList, (imageList: any[]) => {
-      entireForm.houseList[houseIndex].roomList[roomIndex].imageList = imageList;
+      shareForm.houseList[houseIndex].roomList[roomIndex].imageList = imageList;
     });
   };
   /**
@@ -195,74 +195,81 @@
    * 租金配置对话框 start
    */
   const openRoomPriceConfigDialog = (houseIndex: number, roomIndex: number) => {
-    const currentRoom = entireForm.houseList[houseIndex].roomList[roomIndex];
+    const currentRoom = shareForm.houseList[houseIndex].roomList[roomIndex];
 
     openPriceConfigDialog("", currentRoom?.priceConfig, (priceConfig: any) => {
-      entireForm.houseList[houseIndex].roomList[roomIndex].priceConfig = priceConfig;
-      entireForm.houseList[houseIndex].roomList[roomIndex].price = priceConfig.price;
+      shareForm.houseList[houseIndex].roomList[roomIndex].priceConfig = priceConfig;
+      shareForm.houseList[houseIndex].roomList[roomIndex].price = priceConfig.price;
     });
   };
   /**
    * 租金配置对话框 end
    */
 
-  const submitForm = async () => {
-    if (!ruleFormRef.value) return;
-    await ruleFormRef.value.validate((valid, fields) => {
-      if (valid) {
-        emit("onSave", entireForm);
-      } else {
-        console.log("error submit!", fields);
-      }
-    });
+  const validateForm = async () => {
+    if (!ruleFormRef.value) {
+      return false;
+    }
+
+    try {
+      // 验证整个表单（包括小区信息、负责人信息和所有房源）
+      await ruleFormRef.value?.validate();
+      return true;
+    } catch (error) {
+      console.error("表单验证失败", error);
+      ElMessage.error("请填写完整的表单信息");
+      return false;
+    }
   };
 
+  // 暴露给父组件的方法和数据
   defineExpose({
-    submitForm
+    validateForm,
+    shareForm
   });
 </script>
 
 <template>
   <div class="entier-create-container">
     <div>
-      <el-form ref="ruleFormRef" :model="entireForm" :rules="rules" label-width="100px" label-position="top">
+      <el-form ref="ruleFormRef" :model="shareForm" :rules="rules" label-width="100px" label-position="top">
         <!-- 项目信息 -->
         <h3 class="pb-4">小区信息</h3>
         <el-row :gutter="20">
           <el-col :span="10">
             <el-form-item label="小区地址" prop="community.name">
-              <PoiSearch :cityId="entireForm?.community?.cityId" :name="entireForm?.community?.name" @poi-selected="handlePoiSelected" />
+              <PoiSearch :cityId="shareForm?.community?.cityId" :name="shareForm?.community?.name" @poi-selected="handlePoiSelected" />
             </el-form-item>
           </el-col>
           <el-col :span="3">
             <el-form-item label="用水" prop="water" class="el-form-item">
-              <el-select v-model="entireForm.water" placeholder="请选择">
+              <el-select v-model="shareForm.water" placeholder="请选择">
                 <el-option v-for="item in WATER_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="3">
             <el-form-item label="用电" prop="electricity">
-              <el-select v-model="entireForm.electricity" placeholder="请选择">
+              <el-select v-model="shareForm.electricity" placeholder="请选择">
                 <el-option v-for="item in ELECTRICITY_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="3">
             <el-form-item label="供暖信息" prop="heating">
-              <el-select v-model="entireForm.heating" placeholder="请选择">
+              <el-select v-model="shareForm.heating" placeholder="请选择">
                 <el-option v-for="item in HEATING_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="2">
             <el-form-item label="&nbsp;">
-              <el-checkbox v-model="entireForm.hasGas">有燃气</el-checkbox>
+              <el-checkbox v-model="shareForm.hasGas">有燃气</el-checkbox>
             </el-form-item>
           </el-col>
           <el-col :span="2">
             <el-form-item label="&nbsp;">
-              <el-checkbox v-model="entireForm.hasElevator">有电梯</el-checkbox>
+              <el-checkbox v-model="shareForm.hasElevator">有电梯</el-checkbox>
             </el-form-item>
           </el-col>
         </el-row>
@@ -295,7 +302,7 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="单元" :prop="`houseList.${index}.unit`" :rules="[{ required: true, message: '请输入单元', trigger: 'blur' }]">
+                  <el-form-item label="单元" :prop="`houseList.${index}.unit`">
                     <el-input v-model="house.unit" placeholder="请输入单元" />
                   </el-form-item>
                 </el-col>
@@ -319,7 +326,7 @@
                 <el-col :span="4">
                   <el-form-item
                     label="总楼层数"
-                    :prop="`houseList.${index}.totalFloor`"
+                    :prop="`houseList.${index}.floorTotal`"
                     :rules="[
                       { required: true, message: '请输入总楼层数', trigger: 'blur' },
                       { type: 'number', message: '总楼层数必须是数字', trigger: 'blur', transform: value => Number(value) }
@@ -556,12 +563,12 @@
           <el-row :gutter="20">
             <el-col :span="6">
               <el-form-item label="归属部门" prop="deptId">
-                <DeptTreeSelect v-model="entireForm.deptId" :emit-on-default="true" />
+                <DeptTreeSelect v-model="shareForm.deptId" :emit-on-default="true" />
               </el-form-item>
             </el-col>
             <el-col :span="6">
               <el-form-item label="负责人" prop="salesmanId">
-                <el-select v-model="entireForm.salesmanId" filterable placeholder="请选择负责人" clearable>
+                <el-select v-model="shareForm.salesmanId" filterable placeholder="请选择负责人" clearable>
                   <el-option v-for="item in salesmanList" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>

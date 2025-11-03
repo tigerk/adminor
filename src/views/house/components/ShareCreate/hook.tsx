@@ -5,9 +5,9 @@ import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { createShareHouse } from "@/api/house/scatter";
 import { message } from "@/utils/message";
-import type { HouseBasicInfoProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomInfoProps, ShareFormItemProps } from "@/types";
+import type { HouseInfoProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomInfoProps, ShareFormItemProps } from "@/types";
 
-function getScatterDefaultHouseItem(): HouseBasicInfoProps {
+function getScatterDefaultHouseItem(): HouseInfoProps {
   const roomList = [getDefaultRoomItem()];
   return {
     houseCode: "",
@@ -61,13 +61,6 @@ function getDefaultRoomItem(): RoomInfoProps {
 }
 
 export function useShareEdit() {
-  const shareForm = reactive({
-    name: "",
-    community: null,
-    code: "",
-    status: ""
-  });
-
   const shareFormRef = ref();
 
   function openShareEditDialog(title = "新增", row?: ShareFormItemProps) {
@@ -105,13 +98,11 @@ export function useShareEdit() {
                 if (isValid) {
                   // 验证通过，执行保存逻辑
                   const formData = shareFormRef.value.shareForm;
-                  const houseList = shareFormRef.value.houseList;
 
                   console.log("表单数据:", formData);
-                  console.log("房源列表:", houseList);
 
                   // 调用API保存数据
-                  await createShareHouse({ ...formData, houseList }).then(resp => {
+                  await createShareHouse({ ...formData }).then(resp => {
                     if (resp.code === 0) {
                       message("保存成功", { type: "success" });
                       closeDialog(options, index);
@@ -139,7 +130,6 @@ export function useShareEdit() {
   }
 
   return {
-    shareForm,
     shareFormRef,
     openShareEditDialog,
     getScatterDefaultHouseItem,

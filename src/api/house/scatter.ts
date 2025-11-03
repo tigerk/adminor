@@ -7,5 +7,5 @@ export const createEntireHouse = (data?: object) => {
 };
 
 export const createShareHouse = (data?: object) => {
-  return http.request<ApiResponse<any>>("post", baseUrlApi("scatter/entire/create"), { data });
+  return http.request<ApiResponse<any>>("post", baseUrlApi("scatter/share/create"), { data });
 };

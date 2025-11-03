@@ -57,7 +57,7 @@ export interface FocusBuildingProps {
 }
 
 /** 房源基本信息 */
-export interface HouseBasicInfoProps {
+export interface HouseInfoProps {
   houseCode: string; // 房源编号
   building: string; // 座/栋
   unit: string; // 单元
@@ -112,7 +112,7 @@ export interface EntireFormItemProps {
   heating: "central" | "independent";
   hasGas: boolean;
   hasElevator: boolean;
-  houseList: HouseBasicInfoProps[];
+  houseList: HouseInfoProps[];
   deptId: number;
   salesmanId: number;
 }
@@ -137,7 +137,7 @@ export interface ShareFormItemProps {
   heating: "central" | "independent";
   hasGas: boolean;
   hasElevator: boolean;
-  houseList: HouseBasicInfoProps[];
+  houseList: HouseInfoProps[];
   deptId: number;
   salesmanId: number;
 }
