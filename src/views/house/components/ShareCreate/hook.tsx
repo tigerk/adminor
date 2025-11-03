@@ -8,7 +8,7 @@ import { message } from "@/utils/message";
 import type { HouseInfoProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomInfoProps, ShareFormItemProps } from "@/types";
 
 function getScatterDefaultHouseItem(): HouseInfoProps {
-  const roomList = [getDefaultRoomItem()];
+  const roomList = [getDefaultRoomItem("A"), getDefaultRoomItem("B"), getDefaultRoomItem("C")];
   return {
     houseCode: "",
     building: "",
@@ -53,9 +53,9 @@ function getDefaultPriceConfigItem(): PriceConfigProps {
   };
 }
 
-function getDefaultRoomItem(): RoomInfoProps {
+function getDefaultRoomItem(defaultRoomNumber = ""): RoomInfoProps {
   return {
-    roomNumber: "",
+    roomNumber: defaultRoomNumber,
     roomType: "",
     direction: "",
     area: null,
