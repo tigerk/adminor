@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, onMounted, ref, watch } from "vue";
+  import { computed, ref, watch } from "vue";
   import type { PriceConfigFormProps } from "./types";
   import { PriceConfigProps, PricePlanProps } from "@/types";
   import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
@@ -22,21 +22,6 @@
 
   const otherFeeTypeOptions = ref<any[]>([]);
   const cascaderValues = ref<Record<number, any[]>>({});
-
-  // 初始化级联选择器的值
-  const initCascaderValue = (index: number, dicDataId: number | null) => {
-    if (dicDataId) {
-      // 根据 dicDataId 反向查找完整路径
-      for (const parent of otherFeeTypeOptions.value) {
-        for (const child of parent.children || []) {
-          if (child.value === dicDataId) {
-            cascaderValues.value[index] = [parent.value, child.value];
-            return;
-          }
-        }
-      }
-    }
-  };
 
   // 转换字典数据为级联选择器格式
   const transformDictToCascader = (dictData: any[]) => {
@@ -89,26 +74,26 @@
   };
 
   // 处理级联选择器变化
-  const handleCascaderChange = (value: any, feeItem: any) => {
-    console.log("级联选择器值改变:", value, feeItem);
-
-    // 在级联选择器数据中查找对应的名称
-    const findLabel = (options: any[], targetValue: any): string | null => {
+  const handleCascaderChange = (value: any, index: any) => {
+    debugger;
+    const findOption = (options: any[], targetValue: any): any | null => {
       for (const option of options) {
         if (option.children) {
           for (const child of option.children) {
-            if (child.value === targetValue) {
-              return child.label;
+            if (child.value === targetValue.at(1)) {
+              return child;
             }
           }
         }
       }
-      return null;
     };
 
-    const label = findLabel(otherFeeTypeOptions.value, value);
-    console.log("找到的标签:", label);
-    feeItem.name = label;
+    const selectedOption = findOption(otherFeeTypeOptions.value, value);
+    console.log("找到的标签:", selectedOption);
+    if (selectedOption !== null) {
+      priceConfig.value.otherFees[index].name = selectedOption.label;
+      priceConfig.value.otherFees[index].dicDataId = selectedOption.value;
+    }
   };
 
   // 处理默认方案切换

@@ -54,8 +54,8 @@ export function useEntireEdit() {
                   const formData = entireFormRef.value.entireForm;
                   const houseList = entireFormRef.value.houseList;
 
-                  console.log("表单数据:", formData);
-                  console.log("房源列表:", houseList);
+                  console.log("整租房源的表单数据:", formData);
+                  console.log("整租房源的房源列表:", houseList);
 
                   // 调用API保存数据
                   await createEntireHouse({ ...formData, houseList }).then(resp => {

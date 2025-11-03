@@ -2,7 +2,7 @@
 import ShareCreateForm from "./ShareCreateForm.vue";
 import { addDialog, closeAllDialog, closeDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { h, reactive, ref } from "vue";
+import { h, ref } from "vue";
 import { createShareHouse } from "@/api/house/scatter";
 import { message } from "@/utils/message";
 import type { HouseInfoProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomInfoProps, ShareFormItemProps } from "@/types";
@@ -16,7 +16,14 @@ function getScatterDefaultHouseItem(): HouseInfoProps {
     doorNumber: "",
     floor: null,
     floorTotal: null,
-    houseLayout: {} as HouseLayoutProps,
+    houseLayout: {
+      layoutName: null,
+      bedroom: null,
+      livingRoom: null,
+      kitchen: null,
+      bathroom: null,
+      newly: true
+    } as HouseLayoutProps,
     rentalType: 1,
     direction: "",
     area: "",
@@ -92,14 +99,15 @@ export function useShareEdit() {
           <el-button
             type="primary"
             onClick={async () => {
+              debugger;
               // 调用表单验证
               if (shareFormRef.value) {
                 const isValid = await shareFormRef.value.validateForm();
                 if (isValid) {
                   // 验证通过，执行保存逻辑
                   const formData = shareFormRef.value.shareForm;
-
-                  console.log("表单数据:", formData);
+                  formData.rentalType = 2;
+                  console.log("合租房源的表单数据:", formData);
 
                   // 调用API保存数据
                   await createShareHouse({ ...formData }).then(resp => {
