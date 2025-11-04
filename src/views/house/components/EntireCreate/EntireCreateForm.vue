@@ -270,11 +270,6 @@
               <!-- 第一行 -->
               <el-row :gutter="20">
                 <el-col :span="4">
-                  <el-form-item label="房源编号">
-                    <el-input v-model="house.houseCode" placeholder="请输入房源编号" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="4">
                   <el-form-item label="座/栋" :prop="`houseList.${index}.building`" :rules="[{ required: true, message: '请输入座/栋', trigger: 'blur' }]">
                     <el-input v-model="house.building" placeholder="请输入座/栋" />
                   </el-form-item>
@@ -313,15 +308,15 @@
                     <el-input v-model.number="house.totalFloor" placeholder="请输入总楼层数" type="number" />
                   </el-form-item>
                 </el-col>
-              </el-row>
-
-              <!-- 第二行 -->
-              <el-row :gutter="20">
                 <el-col :span="4">
                   <el-form-item label="户型" :prop="`houseList.${index}.houseLayout`" :rules="[{ required: true, message: '请选择户型', trigger: 'change' }]">
                     <HouseLayoutSelector v-model="house.houseLayout" />
                   </el-form-item>
                 </el-col>
+              </el-row>
+
+              <!-- 第二行 -->
+              <el-row :gutter="20">
                 <el-col :span="4">
                   <el-form-item label="朝向" :prop="`houseList.${index}.direction`" :rules="[{ required: true, message: '请选择朝向', trigger: 'change' }]">
                     <el-select v-model="house.direction" placeholder="请选择朝向" style="width: 100%">
