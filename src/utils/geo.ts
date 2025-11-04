@@ -7,11 +7,11 @@ export const getLocationAndCity = async () => {
         const { latitude, longitude } = position.coords;
 
         const res = await getCityByLocation({ lon: longitude, lat: latitude });
-        debugger;
         if (res.code === 0) {
           if (res.data) {
             console.log("获取到的城市ID:", res.data);
-            localStorage.setItem("currentCityId", res.data);
+            localStorage.setItem("currentCityId", res.data.id);
+            localStorage.setItem("currentCityName", res.data.name);
           }
         }
       },

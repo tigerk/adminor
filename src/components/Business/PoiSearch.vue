@@ -107,8 +107,10 @@
       cityOptions.value = res.data;
 
       const currentCityId = window.localStorage.getItem("currentCityId");
-      if (currentCityId) {
+      const currentCityName = window.localStorage.getItem("currentCityName");
+      if (currentCityId && currentCityName) {
         selectedCityId.value = currentCityId;
+        selectedCityName.value = currentCityName;
       }
 
       loading.value = false;
