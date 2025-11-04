@@ -8,6 +8,7 @@
   import { ChartBar, ChartLine, ChartRound } from "./components/charts";
   import Segmented, { type OptionsType } from "@/components/ReSegmented";
   import { chartData, barChartData, progressData, latestNewsData } from "./data";
+  import { getLocationAndCity } from "@/utils/geo";
 
   defineOptions({
     name: "Welcome"
@@ -24,6 +25,9 @@
       label: "本周"
     }
   ];
+
+  // 获取 cityId 并保存到 localStorage
+  getLocationAndCity();
 </script>
 
 <template>

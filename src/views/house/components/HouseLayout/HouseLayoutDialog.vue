@@ -9,7 +9,8 @@
     bedroom: 0,
     livingRoom: 0,
     kitchen: 0,
-    bathroom: 0
+    bathroom: 0,
+    newly: true
   });
   // 生成数字数组的辅助函数
   const generateRange = (start: number, end: number): number[] => {
@@ -37,16 +38,18 @@
         bedroom: 0,
         livingRoom: 0,
         kitchen: 0,
-        bathroom: 0
+        bathroom: 0,
+        newly: true
       };
       return;
     }
 
     tempSelection.value = {
-      bedroom: layout.bedroom !== 0 ? layout.bedroom : 0,
-      livingRoom: layout.livingRoom !== 0 ? layout.livingRoom : 0,
-      kitchen: layout.kitchen !== 0 ? layout.kitchen : 0,
-      bathroom: layout.bathroom !== 0 ? layout.bathroom : 0
+      bedroom: layout.bedroom ?? 0,
+      livingRoom: layout.livingRoom ?? 0,
+      kitchen: layout.kitchen ?? 0,
+      bathroom: layout.bathroom ?? 0,
+      newly: layout.newly ?? true
     };
   };
 

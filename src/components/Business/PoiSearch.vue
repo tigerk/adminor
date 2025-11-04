@@ -105,6 +105,12 @@
     loading.value = true;
     getRegionCityList().then(res => {
       cityOptions.value = res.data;
+
+      const currentCityId = window.localStorage.getItem("currentCityId");
+      if (currentCityId) {
+        selectedCityId.value = currentCityId;
+      }
+
       loading.value = false;
     });
   }

@@ -16,6 +16,7 @@
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
   import type { FacilityItemProps } from "@/types";
+  import { getLocationAndCity } from "@/utils/geo";
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
