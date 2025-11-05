@@ -1,9 +1,10 @@
 @font-face {
-  font-family: "iconfont"; /* Project id 2208059 */
-  src:
-    url("iconfont.woff2?t=1671895108120") format("woff2"),
-    url("iconfont.woff?t=1671895108120") format("woff"),
-    url("iconfont.ttf?t=1671895108120") format("truetype");
+  font-family: "iconfont"; /* Project id 5058398 */
+  /* Color fonts */
+  src: 
+       url('iconfont.woff2?t=1762357238922') format('woff2'),
+       url('iconfont.woff?t=1762357238922') format('woff'),
+       url('iconfont.ttf?t=1762357238922') format('truetype');
 }
 
 .iconfont {
@@ -14,14 +15,27 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.pure-iconfont-tabs:before {
-  content: "\e63e";
+.icon-fangdongguanli:before {
+  content: "\e604";
 }
 
-.pure-iconfont-logo:before {
-  content: "\e620";
+.icon-hetongqianding:before {
+  content: "\e699";
 }
 
-.pure-iconfont-new:before {
-  content: "\e615";
+.icon-hetongshezhi:before {
+  content: "\e783";
 }
+
+.icon-yudingguanli:before {
+  content: "\e74b";
+}
+
+.icon-zukehetong:before {
+  content: "\e713";
+}
+
+.icon-yuding:before {
+  content: "\e608";
+}
+

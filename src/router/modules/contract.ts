@@ -3,7 +3,7 @@ export default {
   redirect: "/contract/index",
   name: "contract",
   meta: {
-    icon: "ep/set-up",
+    icon: "IF-icon-hetongqianding",
     title: "合同管理",
     rank: 2,
     showLink: true
@@ -15,6 +15,7 @@ export default {
       component: () => import("@/views/contract/tenant/index.vue"),
       meta: {
         title: "租客合同",
+        icon: "IF-icon-zukehetong",
         showParent: true
       }
     },
@@ -23,6 +24,7 @@ export default {
       name: "contractLandlord",
       meta: {
         title: "业主合同",
+        icon: "IF-icon-fangdongguanli",
         showParent: true
       }
     },
@@ -31,6 +33,7 @@ export default {
       name: "contractBooking",
       meta: {
         title: "租客预定",
+        icon: "IF-icon-yuding",
         showParent: true
       }
     },
@@ -39,6 +42,7 @@ export default {
       name: "contractSetup",
       meta: {
         title: "合同设置",
+        icon: "IF-icon-hetongshezhi",
         showParent: true
       }
     }
