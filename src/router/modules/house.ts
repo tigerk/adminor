@@ -2,8 +2,8 @@ export default {
   path: "/house",
   name: "House",
   meta: {
-    icon: "ep/set-up",
     title: "房源管理",
+    icon: "IF-icon-house",
     rank: 1,
     showLink: true
   },
@@ -13,6 +13,7 @@ export default {
       name: "HouseFocus",
       meta: {
         title: "集中式",
+        icon: "IF-icon-focus",
         showParent: true
       },
       children: [
@@ -22,6 +23,7 @@ export default {
           component: () => import("@/views/house/focus/focusRoom/index.vue"),
           meta: {
             title: "房间列表",
+            icon: "IF-icon-focus-rooms",
             showParent: true
           }
         },
@@ -31,6 +33,7 @@ export default {
           component: () => import("@/views/house/focus/focusHouse/index.vue"),
           meta: {
             title: "项目列表",
+            icon: "IF-icon-focus-project",
             showParent: true
           }
         }
@@ -41,6 +44,7 @@ export default {
       name: "HouseScatter",
       meta: {
         title: "整/合租",
+        icon: "IF-icon-scatter",
         showParent: true
       },
       component: () => import("@/views/house/scatter/scatterRoom/index.vue")

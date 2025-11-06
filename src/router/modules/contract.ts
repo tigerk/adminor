@@ -3,7 +3,7 @@ export default {
   redirect: "/contract/index",
   name: "contract",
   meta: {
-    icon: "IF-icon-hetongqianding",
+    icon: "IF-icon-contract",
     title: "合同管理",
     rank: 2,
     showLink: true
@@ -15,34 +15,37 @@ export default {
       component: () => import("@/views/contract/tenant/index.vue"),
       meta: {
         title: "租客合同",
-        icon: "IF-icon-zukehetong",
+        icon: "IF-icon-tenant",
         showParent: true
       }
     },
     {
       path: "/contract/landlord",
       name: "contractLandlord",
+      component: () => import("@/views/contract/landlord/index.vue"),
       meta: {
         title: "业主合同",
-        icon: "IF-icon-fangdongguanli",
+        icon: "IF-icon-lanndlord",
         showParent: true
       }
     },
     {
       path: "/contract/booking",
       name: "contractBooking",
+      component: () => import("@/views/contract/booking/index.vue"),
       meta: {
         title: "租客预定",
-        icon: "IF-icon-yuding",
+        icon: "IF-icon-booking",
         showParent: true
       }
     },
     {
       path: "/contract/setup",
       name: "contractSetup",
+      component: () => import("@/views/contract/settings/index.vue"),
       meta: {
         title: "合同设置",
-        icon: "IF-icon-hetongshezhi",
+        icon: "IF-icon-contract-setting",
         showParent: true
       }
     }

@@ -2,9 +2,9 @@
   font-family: "iconfont"; /* Project id 5058398 */
   /* Color fonts */
   src: 
-       url('iconfont.woff2?t=1762357238922') format('woff2'),
-       url('iconfont.woff?t=1762357238922') format('woff'),
-       url('iconfont.ttf?t=1762357238922') format('truetype');
+       url('iconfont.woff2?t=1762409337058') format('woff2'),
+       url('iconfont.woff?t=1762409337058') format('woff'),
+       url('iconfont.ttf?t=1762409337058') format('truetype');
 }
 
 .iconfont {
@@ -15,27 +15,43 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-fangdongguanli:before {
+.icon-focus-project:before {
+  content: "\e605";
+}
+
+.icon-contract:before {
+  content: "\e632";
+}
+
+.icon-scatter:before {
+  content: "\e63b";
+}
+
+.icon-focus:before {
+  content: "\e625";
+}
+
+.icon-house:before {
+  content: "\e674";
+}
+
+.icon-focus-rooms:before {
+  content: "\e7a4";
+}
+
+.icon-lanndlord:before {
   content: "\e604";
 }
 
-.icon-hetongqianding:before {
-  content: "\e699";
-}
-
-.icon-hetongshezhi:before {
+.icon-contract-setting:before {
   content: "\e783";
 }
 
-.icon-yudingguanli:before {
-  content: "\e74b";
-}
-
-.icon-zukehetong:before {
+.icon-tenant:before {
   content: "\e713";
 }
 
-.icon-yuding:before {
+.icon-booking:before {
   content: "\e608";
 }
 
