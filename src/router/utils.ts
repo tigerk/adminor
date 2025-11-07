@@ -248,29 +248,144 @@ function handleAliveRoute({ name }: ToRouteType, mode?: string) {
   }
 }
 
+/**
+ * 类型守卫：检查是否为字符串类型的组件路径
+ */
+function isStringComponent(component: any): component is string {
+  return typeof component === "string";
+}
+
+/**
+ * 类型守卫：检查是否已经是函数组件
+ */
+function isFunctionComponent(component: any): component is Function {
+  return typeof component === "function";
+}
+
 /** 过滤后端传来的动态路由 重新生成规范路由 */
 function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
   if (!arrRoutes || !arrRoutes.length) return;
   const modulesRoutesKeys = Object.keys(modulesRoutes);
+
   arrRoutes.forEach((v: RouteRecordRaw) => {
     // 将backstage属性加入meta，标识此路由为后端返回路由
     v.meta.backstage = true;
-    // 父级的redirect属性取值：如果子级存在且父级的redirect属性不存在，默认取第一个子级的path；如果子级存在且父级的redirect属性存在，取存在的redirect属性，会覆盖默认值
-    if (v?.children && v.children.length && !v.redirect) v.redirect = v.children[0].path;
-    // 父级的name属性取值：如果子级存在且父级的name属性不存在，默认取第一个子级的name；如果子级存在且父级的name属性存在，取存在的name属性，会覆盖默认值（注意：测试中发现父级的name不能和子级name重复，如果重复会造成重定向无效（跳转404），所以这里给父级的name起名的时候后面会自动加上`Parent`，避免重复）
-    if (v?.children && v.children.length && !v.name) v.name = (v.children[0].name as string) + "Parent";
+
+    // 父级的redirect属性取值
+    if (v?.children && v.children.length && !v.redirect) {
+      v.redirect = v.children[0].path;
+    }
+
+    // 父级的name属性取值
+    if (v?.children && v.children.length && !v.name) {
+      v.name = (v.children[0].name as string) + "Parent";
+    }
+
+    // ========== 核心：判断是否需要加载组件 ==========
+
+    // 情况1：iframe 类型
     if (v.meta?.frameSrc) {
       v.component = IFrame;
-    } else {
-      // 对后端传component组件路径和不传做兼容（如果后端传component组件路径，那么path可以随便写，如果不传，component组件路径会跟path保持一致）
-      const index = v?.component ? modulesRoutesKeys.findIndex(ev => ev.includes(v.component as any)) : modulesRoutesKeys.findIndex(ev => ev.includes(v.path));
-      v.component = modulesRoutes[modulesRoutesKeys[index]];
     }
+    // 情况2：纯目录节点（有子节点且没有 component）
+    else if (v?.children && v.children.length > 0 && !v.component) {
+      // 不设置 component，这样点击时不会加载组件，只展开子菜单
+      console.log(`📁 目录节点（无组件）: ${v.path}`);
+    }
+    // 情况3：叶子节点或明确需要加载组件的节点
+    else if (v.component || !v.children || v.children.length === 0) {
+      // 提取组件路径字符串（兼容 string | RouteComponent）
+      let componentPath = "";
+
+      if (isStringComponent(v.component)) {
+        // 后端返回的字符串路径
+        componentPath = v.component;
+      } else if (isFunctionComponent(v.component)) {
+        // 已经是函数组件，无需处理
+        console.log(`🔧 组件已是函数: ${v.path}`);
+        return; // 跳过此路由
+      } else if (!v.component) {
+        // 使用 path 推断
+        componentPath = v.path;
+      }
+
+      if (componentPath) {
+        const matchedComponent = findMatchingComponent(componentPath, modulesRoutesKeys);
+
+        if (matchedComponent) {
+          v.component = modulesRoutes[matchedComponent];
+          console.log(`✅ 组件加载: ${v.path} -> ${matchedComponent}`);
+        } else {
+          console.warn(`⚠️ 未找到组件: ${v.path}，componentPath: ${componentPath}`);
+        }
+      }
+    }
+
+    // 递归处理子路由
     if (v?.children && v.children.length) {
       addAsyncRoutes(v.children);
     }
   });
+
   return arrRoutes;
+}
+
+/**
+ * 精确查找匹配的组件路径
+ * @param componentOrPath - 组件路径或路由路径
+ * @param availableKeys - 可用的组件模块键列表
+ */
+function findMatchingComponent(componentOrPath: string, availableKeys: string[]): string | null {
+  if (!componentOrPath) return null;
+
+  // 清理路径：移除开头的斜杠
+  const cleanPath = componentOrPath.replace(/^\//, "");
+
+  // 策略1：精确匹配（最优先）
+  const exactMatch = availableKeys.find(key => {
+    const modulePath = extractModulePath(key);
+    return modulePath === cleanPath || modulePath === `${cleanPath}/index` || modulePath.replace(/\/index$/, "") === cleanPath;
+  });
+
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  // 策略2：路径末尾匹配（次优先）
+  const endMatch = availableKeys.find(key => {
+    const modulePath = extractModulePath(key);
+    return key.endsWith(`${cleanPath}.vue`) || key.endsWith(`${cleanPath}.tsx`) || key.endsWith(`${cleanPath}/index.vue`) || key.endsWith(`${cleanPath}/index.tsx`);
+  });
+
+  if (endMatch) {
+    console.warn(`⚠️ 使用末尾匹配: ${cleanPath} -> ${endMatch}`);
+    return endMatch;
+  }
+
+  // 策略3：最短路径匹配（降级方案，谨慎使用）
+  const candidates = availableKeys.filter(key => key.includes(cleanPath.split("/").pop() || ""));
+
+  if (candidates.length === 1) {
+    console.warn(`⚠️ 使用模糊匹配: ${cleanPath} -> ${candidates[0]}`);
+    return candidates[0];
+  }
+
+  if (candidates.length > 1) {
+    console.error(`❌ 多个候选组件匹配 ${cleanPath}:`, candidates);
+  }
+
+  return null;
+}
+
+/**
+ * 从模块完整路径中提取相对路径
+ * @example
+ * "/src/views/system/dict/index.vue" -> "system/dict/index"
+ */
+function extractModulePath(fullPath: string): string {
+  return fullPath
+    .replace(/^\/src\/views\//, "") // 移除前缀
+    .replace(/\.(vue|tsx)$/, ""); // 移除扩展名
 }
 
 /** 获取路由历史模式 https://next.router.vuejs.org/zh/guide/essentials/history-mode.html */
