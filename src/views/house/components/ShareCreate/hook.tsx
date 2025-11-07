@@ -24,7 +24,7 @@ function getScatterDefaultHouseItem(): HouseInfoProps {
       bathroom: null,
       newly: true
     } as HouseLayoutProps,
-    rentalType: 1,
+    rentalType: 2,
     direction: "",
     area: "",
     decorationType: "",
