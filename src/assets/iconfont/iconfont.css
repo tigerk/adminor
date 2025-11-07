@@ -2,9 +2,9 @@
   font-family: "iconfont"; /* Project id 5058398 */
   /* Color fonts */
   src: 
-       url('iconfont.woff2?t=1762409337058') format('woff2'),
-       url('iconfont.woff?t=1762409337058') format('woff'),
-       url('iconfont.ttf?t=1762409337058') format('truetype');
+       url('iconfont.woff2?t=1762484178954') format('woff2'),
+       url('iconfont.woff?t=1762484178954') format('woff'),
+       url('iconfont.ttf?t=1762484178954') format('truetype');
 }
 
 .iconfont {
@@ -13,6 +13,10 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-zhangben:before {
+  content: "\e614";
 }
 
 .icon-focus-project:before {
@@ -39,7 +43,7 @@
   content: "\e7a4";
 }
 
-.icon-lanndlord:before {
+.icon-landlord:before {
   content: "\e604";
 }
 

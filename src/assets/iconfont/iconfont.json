@@ -6,6 +6,13 @@
   "description": "租房Saas",
   "glyphs": [
     {
+      "icon_id": "1249078",
+      "name": "账本",
+      "font_class": "zhangben",
+      "unicode": "e614",
+      "unicode_decimal": 58900
+    },
+    {
       "icon_id": "13192511",
       "name": "项目管理",
       "font_class": "focus-project",
@@ -50,7 +57,7 @@
     {
       "icon_id": "10080877",
       "name": "房东管理",
-      "font_class": "lanndlord",
+      "font_class": "landlord",
       "unicode": "e604",
       "unicode_decimal": 58884
     },

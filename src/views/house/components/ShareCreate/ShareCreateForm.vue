@@ -491,7 +491,9 @@
                               <el-input v-model="room.price" placeholder="租金" class="table-input">
                                 <template #suffix>元/月</template>
                               </el-input>
-                              <el-icon class="mr-2 text-blue-700 background-bl" @click="openRoomPriceConfigDialog(index, roomIndex)"><Notebook /></el-icon>
+                              <el-icon class="mr-2 text-blue-700 background-bl" @click="openRoomPriceConfigDialog(index, roomIndex)">
+                                <FontIcon icon="icon-zhangben" />
+                              </el-icon>
                             </el-space>
                           </el-form-item>
                         </td>
