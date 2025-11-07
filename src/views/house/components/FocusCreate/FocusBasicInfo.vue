@@ -1,9 +1,9 @@
 <script setup lang="ts">
-  import { ref, reactive, computed, watch, onMounted, nextTick } from "vue";
+  import { computed, onMounted, ref } from "vue";
   import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
-  import { InfoFilled, Plus, Delete } from "@element-plus/icons-vue";
+  import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
   import { createFocusBasicInfoRules } from "@/views/house/components/FocusCreate/utils/rule";
   import { ElMessage, ElMessageBox } from "element-plus";
   import { getCompanyUserOptions } from "@/api/company";
@@ -215,12 +215,11 @@
         }
       ];
     } else {
-      // 如果是编辑模式，标记所有已存在的楼栋为非新楼栋
-      if (isEditMode.value) {
+      // 编辑模式下，如果 buildings 有数据但没有 Map 结构，需要从 houseList 恢复
+      if (isEditMode.value && form.value.buildings && form.value.buildings.length > 0) {
         form.value.buildings.forEach(building => {
-          if (building.isNew === undefined) {
-            building.isNew = false; // 已存在的楼栋标记为false
-          }
+          // 标记为已存在的楼栋（非新增）
+          building.isNew = false;
         });
       }
     }

@@ -45,6 +45,7 @@ export function useFocusEdit() {
         houseIndex: doorIndex,
         doorNumber: houseNumber,
         closed: false,
+        locked: false,
         floor: floor,
         building: building.building,
         unit: building.unit,
@@ -200,6 +201,7 @@ export function useFocusEdit() {
       building: building.building,
       unit: building.unit,
       closed: false,
+      locked: false,
       houseLayoutId: undefined,
       price: 0,
       direction: "",
@@ -395,8 +397,7 @@ export function useFocusEdit() {
 
     // 遍历每个 building
     formData.buildings.forEach(building => {
-      // 清空当前的 housesStatusOfFloors
-      // ✅ 现在（安全）
+      // 初始化或清空当前的 housesStatusOfFloors
       if (!building.housesStatusOfFloors) {
         building.housesStatusOfFloors = new Map();
       } else {
@@ -404,9 +405,9 @@ export function useFocusEdit() {
       }
 
       // 筛选出属于当前 building 和 unit 的房源
-      const buildingHouses = formData.houseList.filter(house => house.building === building.building && house.unit === building.unit);
+      const buildingHouses = formData.houseList.filter(house => house.building === building.building && (house.unit === building.unit || (!house.unit && !building.unit)));
 
-      // 按楼层分组
+      // 按楼层分组并处理
       buildingHouses.forEach(house => {
         const floor = house.floor;
 
@@ -417,9 +418,53 @@ export function useFocusEdit() {
 
         const floorMap = building.housesStatusOfFloors.get(floor)!;
 
-        // 将房源添加到该楼层的 Map 中，以门牌号为 key
-        floorMap.set(house.doorNumber, house);
+        // 生成 cursor（如果不存在）
+        if (!house.cursor) {
+          house.cursor = `${building.building}-${building.unit || "0"}-${floor}-${house.id || Date.now()}`;
+        }
+
+        // 计算 houseIndex（从门牌号中提取或使用当前 Map 的大小 + 1）
+        if (!house.houseIndex) {
+          // 尝试从门牌号中提取数字部分作为 houseIndex
+          const match = house.doorNumber.match(/\d+$/);
+          if (match) {
+            house.houseIndex = parseInt(match[0]);
+          } else {
+            house.houseIndex = floorMap.size + 1;
+          }
+        }
+
+        // 生成 Map 的 key（使用 houseIndex 的字符串形式）
+        const houseKey = house.houseIndex.toString();
+
+        // 确保所有必需字段都有默认值
+        const completeHouse: FocusHouseStatusProps = {
+          cursor: house.cursor,
+          houseIndex: house.houseIndex,
+          doorNumber: house.doorNumber,
+          floor: house.floor,
+          building: house.building,
+          unit: house.unit || "",
+          closed: house.closed || false,
+          locked: house.locked || false,
+          houseLayoutId: house.houseLayoutId,
+          price: house.price || 0,
+          direction: house.direction || "",
+          area: house.area || 0,
+          // 如果有 id，也保留它
+          ...(house.id && { id: house.id })
+        };
+
+        // 将房源添加到该楼层的 Map 中
+        floorMap.set(houseKey, completeHouse);
       });
+    });
+
+    // 标记编辑模式下已存在的楼栋
+    formData.buildings.forEach(building => {
+      if (building.housesStatusOfFloors && building.housesStatusOfFloors.size > 0) {
+        building.isNew = false;
+      }
     });
   }
 

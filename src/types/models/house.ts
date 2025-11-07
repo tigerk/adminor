@@ -33,6 +33,7 @@ export interface FocusHouseStatusProps {
   houseIndex: number;
   doorNumber: string;
   closed: boolean;
+  locked: boolean;
   floor: number;
   houseLayoutId?: string;
   price: number;
