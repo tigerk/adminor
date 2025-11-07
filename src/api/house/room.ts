@@ -63,9 +63,13 @@ export type RoomItemDTO = {
   houseCode?: string;
   /** 房源名称 */
   houseName?: string;
+  /** 门牌号 */
+  doorNumber?: string;
+  /** 出租状态 */
+  rentalType?: number;
   /** 来源id */
   modeRefId?: number;
-  /** 房源租赁类型：1、集中式；2、整租、3、合租 */
+  /** 房源租赁类型：1、集中式；2、分散式 */
   leaseMode?: number;
   /** 房型 */
   houseLayout?: HouseLayoutDTO;

@@ -1,5 +1,24 @@
 // src/constants/house.ts
 
+
+/**
+ * 根据值获取租赁类型
+ * @param options 类型选项数组
+ * @param code 类型的值
+ * @returns 对应的类型对象或 undefined
+ */
+export function getOptionByCode(options: any[], code: number) {
+  return options.find(item => item.value === code);
+}
+
+/**
+ * 房屋朝向选项
+ */
+export const RENTAL_TYPE_OPTIONS = [
+  { label: "整租", value: 1 },
+  { label: "合租", value: 2 }
+] as const;
+
 /**
  * 房屋朝向选项
  */

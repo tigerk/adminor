@@ -106,7 +106,6 @@ export function useShareEdit() {
                 if (isValid) {
                   // 验证通过，执行保存逻辑
                   const formData = shareFormRef.value.shareForm;
-                  formData.rentalType = 2;
                   console.log("合租房源的表单数据:", formData);
 
                   // 调用API保存数据

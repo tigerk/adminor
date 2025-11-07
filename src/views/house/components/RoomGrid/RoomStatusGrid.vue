@@ -64,7 +64,7 @@
 
                 <!-- 房间头部信息 -->
                 <div class="room-header-info">
-                  <span class="room-number">{{ room.roomNumber }}</span>
+                  <span class="room-number">{{ room.rentalType === 1 ? room.doorNumber : "" }} {{ room.roomNumber }}</span>
                   <span class="room-separator">-</span>
                   <span class="room-type">{{ getRoomTypeLabel(room) }}</span>
                 </div>
