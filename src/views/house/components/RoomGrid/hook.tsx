@@ -1,6 +1,6 @@
-import { ref, computed, type Ref, type ComputedRef } from "vue";
+import { computed, type ComputedRef, type Ref, ref } from "vue";
 import { ElMessage } from "element-plus";
-import { type RoomItemDTO, type RoomGridItemDTO, type RoomGridDTO, getRoomGrid } from "@/api/house/room";
+import { getRoomGrid, type RoomGridDTO, type RoomGridItemDTO, type RoomItemDTO } from "@/api/house/room";
 import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 
 // ==================== Hook 特有的类型定义 ====================
@@ -458,6 +458,24 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     }
   };
 
+  // 处理下拉菜单操作
+  const handleDropdownAction = (room: RoomItemDTO, command: string) => {
+    switch (command) {
+      case "edit":
+        ElMessage.info(`编辑房间 ${room.roomNumber} 信息`);
+        break;
+      case "lock":
+        ElMessage.warning(`确认锁定房间 ${room.roomNumber}？`);
+        break;
+      case "unlock":
+        ElMessage.success(`房间 ${room.roomNumber} 已解锁`);
+        break;
+      case "salesman":
+        ElMessage.info(`负责人：${room.salesmanName}`);
+        break;
+    }
+  };
+
   return {
     // 响应式数据
     loading,
@@ -481,7 +499,8 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     formatDateRange,
     formatPrice,
     setupLoadMore,
-    cleanupObserver
+    cleanupObserver,
+    handleDropdownAction
   };
 };
 

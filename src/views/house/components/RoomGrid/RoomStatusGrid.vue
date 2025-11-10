@@ -105,27 +105,52 @@
 
                 <!-- 底部操作按钮 -->
                 <div class="room-action-bar">
-                  <el-tooltip content="锁房" placement="top">
-                    <el-icon class="action-icon" :class="{ disabled: room.locked }" @click.stop="handleQuickAction(room, room.locked ? 'unlock' : 'lock')">
-                      <Lock />
-                    </el-icon>
-                  </el-tooltip>
-                  <el-tooltip content="查看" placement="top">
-                    <el-icon class="action-icon" @click.stop="handleQuickAction(room, 'view')">
-                      <View />
-                    </el-icon>
-                  </el-tooltip>
-                  <el-tooltip content="编辑" placement="top">
-                    <el-icon class="action-icon" @click.stop="handleQuickAction(room, 'edit')">
-                      <EditPen />
-                    </el-icon>
-                  </el-tooltip>
-                  <el-tooltip v-if="room.salesmanName" :content="`负责人：${room.salesmanName}`" placement="top">
-                    <el-icon class="action-icon">
-                      <User />
-                    </el-icon>
-                  </el-tooltip>
+                  <!-- 左侧按钮组 -->
+                  <div class="action-left">
+                    <el-button size="small" type="primary" plain @click.stop="handleQuickAction(room, 'reserve')">预约</el-button>
+                    <el-button size="small" type="success" plain @click.stop="handleQuickAction(room, 'contract')">签约</el-button>
+                  </div>
 
+                  <!-- 右侧按钮组 -->
+                  <div class="action-right">
+                    <!-- 操作下拉菜单 -->
+                    <el-dropdown trigger="click" @command="command => handleDropdownAction(room, command)">
+                      <el-button size="small" plain>
+                        操作
+                        <el-icon class="el-icon--right">
+                          <ArrowDown />
+                        </el-icon>
+                      </el-button>
+                      <template #dropdown>
+                        <el-dropdown-menu>
+                          <el-dropdown-item command="edit">
+                            <el-icon><EditPen /></el-icon>
+                            编辑
+                          </el-dropdown-item>
+                          <el-dropdown-item command="lock" :disabled="room.locked">
+                            <el-icon><Lock /></el-icon>
+                            锁房
+                          </el-dropdown-item>
+                          <el-dropdown-item command="unlock" :disabled="!room.locked">
+                            <el-icon><Unlock /></el-icon>
+                            解锁
+                          </el-dropdown-item>
+                          <el-dropdown-item v-if="room.salesmanName" command="salesman" divided>
+                            <el-icon><User /></el-icon>
+                            负责人：{{ room.salesmanName }}
+                          </el-dropdown-item>
+                        </el-dropdown-menu>
+                      </template>
+                    </el-dropdown>
+
+                    <!-- 查看按钮 -->
+                    <el-button size="small" plain @click.stop="handleQuickAction(room, 'view')">
+                      <el-icon><View /></el-icon>
+                      查看
+                    </el-button>
+                  </div>
+
+                  <!-- 欠款标识 -->
                   <div v-if="room.roomStatus === 1 && room.leaseInfo?.daysUntilAvailable" class="action-status">
                     <span class="status-text">欠</span>
                   </div>
@@ -157,9 +182,9 @@
 
 <script setup lang="ts">
   import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-  import { Location, Setting, EditPen, View, Search, Lock, User, OfficeBuilding, Loading } from "@element-plus/icons-vue";
+  import { ArrowDown, EditPen, Loading, Location, Lock, OfficeBuilding, Setting, Unlock, User, View } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
-  import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
+  import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types"; // 获取父组件的查询表单数据
 
   // 获取父组件的查询表单数据
   const queryForm = defineModel<QueryFormItemProps>("modelValue", { default: () => ({}) });
@@ -183,7 +208,8 @@
     formatPrice,
     getRoomCardStyle,
     setupLoadMore,
-    cleanupObserver
+    cleanupObserver,
+    handleDropdownAction
   } = useRoomGrid(queryForm);
 
   // 监听查询条件变化
@@ -553,30 +579,22 @@
 
   .room-action-bar {
     display: flex;
-    gap: 12px;
     align-items: center;
-    padding-top: 6px;
+    justify-content: space-between;
+    padding-top: 8px;
     border-top: 1px solid #ebeef5;
 
-    .action-icon {
-      font-size: 16px;
-      color: #909399;
-      cursor: pointer;
-      transition: all 0.3s;
-
-      &:hover {
-        color: #409eff;
-        transform: scale(1.1);
-      }
-
-      &.disabled {
-        color: #c0c4cc;
-        cursor: not-allowed;
-      }
+    .action-left,
+    .action-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
 
     .action-status {
-      margin-left: auto;
+      position: absolute;
+      top: 8px;
+      right: 8px;
 
       .status-text {
         display: inline-block;
@@ -589,6 +607,17 @@
         text-align: center;
         background: #f56c6c;
         border-radius: 4px;
+      }
+    }
+
+    :deep(.el-button) {
+      padding: 5px 12px;
+      font-size: 13px;
+    }
+
+    :deep(.el-dropdown) {
+      .el-button {
+        padding: 5px 12px;
       }
     }
   }
