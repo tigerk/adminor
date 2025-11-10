@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     <el-row class="bg-bg_color w-full px-4 pb-0 pt-[12px] overflow-auto">
-      <el-col :span="12">
+      <el-col :span="16">
         <div class="grid-content ep-bg-purple w-full" style="align-items: flex-start">
           <el-form-item>
             <el-radio-group v-model="queryForm.roomStatus" @change="onSearch">
@@ -24,14 +24,14 @@
           </el-form-item>
         </div>
       </el-col>
-      <el-col :span="8" class="text-left">
+      <el-col :span="6" class="text-right">
         <el-input v-model="queryForm.keywords" placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签" clearable class="w-full" @keyup.enter="onSearch" @clear="onSearch">
           <template #suffix>
             <IconifyIconOffline :icon="Search" />
           </template>
         </el-input>
       </el-col>
-      <el-col :span="4" class="text-right">
+      <el-col :span="2" class="text-right">
         <el-space>
           <el-button color="#626aef" :dark="true" @click="openDialog()">添加租客</el-button>
         </el-space>
