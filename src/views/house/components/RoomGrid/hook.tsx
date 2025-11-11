@@ -2,6 +2,11 @@ import { computed, type ComputedRef, type Ref, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { getRoomGrid, type RoomGridDTO, type RoomGridItemDTO, type RoomItemDTO } from "@/api/house/room";
 import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
+import { getFocusById } from "@/api/house/focus";
+import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
+import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
+import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
+import { getEntireHouseById, getShareHouseById } from "@/api/house/scatter";
 
 // ==================== Hook 特有的类型定义 ====================
 
@@ -50,6 +55,10 @@ interface ProcessedCompoundGroup {
 // ==================== Hook 定义 ====================
 
 export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
+  const { openFocusEditDialog } = useFocusEdit();
+  const { openEntireEditDialog } = useEntireEdit();
+  const { openShareEditDialog } = useShareEdit();
+
   // 响应式数据
   const loading = ref(false);
   const loadingMore = ref(false);
@@ -312,7 +321,14 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 
   // 管理小区
   const handleManageCompound = (community: ProcessedCompoundGroup) => {
-    ElMessage.info(`管理小区：${community.communityName}`);
+    console.log(`点击项目编辑：${community}`);
+    if (community.modeRefId) {
+      getFocusById({
+        id: community.modeRefId
+      }).then(res => {
+        openFocusEditDialog("更新", res.data);
+      });
+    }
   };
 
   // 获取房间卡片样式类
@@ -463,6 +479,11 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     switch (command) {
       case "edit":
         ElMessage.info(`编辑房间 ${room.roomNumber} 信息`);
+        if (room.leaseMode == 2 && room.rentalType == 1) {
+          editEntireHouse("更新", room);
+        } else if (room.leaseMode == 2 && room.rentalType == 2) {
+          editShareHouse("更新", room);
+        }
         break;
       case "lock":
         ElMessage.warning(`确认锁定房间 ${room.roomNumber}？`);
@@ -475,6 +496,22 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         break;
     }
   };
+
+  function editEntireHouse(title: string, room: RoomItemDTO) {
+    getEntireHouseById({ id: room.houseId }).then(res => {
+      if (res.data) {
+        openEntireEditDialog("更新", res.data);
+      }
+    });
+  }
+
+  function editShareHouse(title: string, room: RoomItemDTO) {
+    getShareHouseById({ id: room.houseId }).then(res => {
+      if (res.data) {
+        openShareEditDialog("更新", res.data);
+      }
+    });
+  }
 
   return {
     // 响应式数据

@@ -104,26 +104,22 @@
                 </div>
 
                 <!-- 底部操作按钮 -->
+                <!-- 底部操作按钮 -->
                 <div class="room-action-bar">
                   <!-- 左侧按钮组 -->
                   <div class="action-left">
-                    <el-button size="small" type="primary" plain @click.stop="handleQuickAction(room, 'reserve')">预约</el-button>
-                    <el-button size="small" type="success" plain @click.stop="handleQuickAction(room, 'contract')">签约</el-button>
+                    <el-button size="small" plain @click.stop="handleQuickAction(room, 'reserve')">预约</el-button>
+                    <el-button size="small" plain @click.stop="handleQuickAction(room, 'contract')">签约</el-button>
                   </div>
 
                   <!-- 右侧按钮组 -->
                   <div class="action-right">
                     <!-- 操作下拉菜单 -->
                     <el-dropdown trigger="click" @command="command => handleDropdownAction(room, command)">
-                      <el-button size="small" plain>
-                        操作
-                        <el-icon class="el-icon--right">
-                          <ArrowDown />
-                        </el-icon>
-                      </el-button>
+                      <el-button size="small" plain>操作</el-button>
                       <template #dropdown>
                         <el-dropdown-menu>
-                          <el-dropdown-item command="edit">
+                          <el-dropdown-item v-if="room.leaseMode == 2" command="edit">
                             <el-icon><EditPen /></el-icon>
                             编辑
                           </el-dropdown-item>
@@ -144,10 +140,7 @@
                     </el-dropdown>
 
                     <!-- 查看按钮 -->
-                    <el-button size="small" plain @click.stop="handleQuickAction(room, 'view')">
-                      <el-icon><View /></el-icon>
-                      查看
-                    </el-button>
+                    <el-button size="small" plain @click.stop="handleQuickAction(room, 'view')">查看</el-button>
                   </div>
 
                   <!-- 欠款标识 -->
@@ -182,7 +175,20 @@
 
 <script setup lang="ts">
   import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-  import { ArrowDown, EditPen, Loading, Location, Lock, OfficeBuilding, Setting, Unlock, User, View } from "@element-plus/icons-vue";
+  import {
+    Location,
+    Setting,
+    EditPen,
+    View,
+    Lock,
+    User,
+    OfficeBuilding,
+    Loading,
+    Calendar,
+    Document,
+    Unlock,
+    MoreFilled // 新增 MoreFilled
+  } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types"; // 获取父组件的查询表单数据
 
@@ -581,20 +587,28 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 6px;
     padding-top: 8px;
+    margin-top: 8px;
     border-top: 1px solid #ebeef5;
 
     .action-left,
     .action-right {
       display: flex;
-      gap: 8px;
+      gap: 6px; // 左右两侧使用相同的间距
       align-items: center;
+    }
+
+    .action-left {
+      flex: 1;
+      min-width: 0; // 允许按钮缩小
     }
 
     .action-status {
       position: absolute;
       top: 8px;
       right: 8px;
+      z-index: 1;
 
       .status-text {
         display: inline-block;
@@ -610,14 +624,62 @@
       }
     }
 
+    // 按钮样式优化
     :deep(.el-button) {
-      padding: 5px 12px;
-      font-size: 13px;
+      margin: 0; // 关键：移除默认 margin
+      padding: 4px 10px;
+      font-size: 12px;
+
+      &.is-small {
+        height: 26px;
+      }
+
+      // 移除连续按钮之间的间距
+      & + .el-button {
+        margin-left: 0;
+      }
+    }
+
+    // 只显示图标的按钮
+    :deep(.action-dropdown-btn),
+    :deep(.action-view-btn) {
+      padding: 4px 8px;
+      min-width: 32px;
+
+      .el-icon {
+        margin: 0;
+      }
     }
 
     :deep(.el-dropdown) {
       .el-button {
-        padding: 5px 12px;
+        padding: 4px 8px;
+      }
+    }
+  }
+
+  // 针对更小的卡片做响应式调整
+  @media (width <= 1200px) {
+    .room-action-bar {
+      :deep(.el-button) {
+        padding: 3px 8px;
+        font-size: 11px;
+      }
+    }
+  }
+
+  @media (width <= 768px) {
+    .room-action-bar {
+      gap: 4px;
+
+      .action-left,
+      .action-right {
+        gap: 4px;
+      }
+
+      :deep(.el-button) {
+        padding: 2px 6px;
+        font-size: 11px;
       }
     }
   }
