@@ -59,6 +59,7 @@ export interface FocusBuildingProps {
 
 /** 房源基本信息 */
 export interface HouseInfoProps {
+  id?: number;
   houseCode: string; // 房源编号
   building: string; // 座/栋
   unit: string; // 单元
@@ -70,9 +71,9 @@ export interface HouseInfoProps {
   direction: string; // 朝向
   area: string; // 面积
   decorationType: string; // 装修类型
-  price: string; // 出租价格
-  propertyFee: string; // 物业费
-  moreInfo: any;
+  price?: number; // 出租价格
+  propertyFee?: number; // 物业费
+  moreInfo?: any;
   roomList?: RoomInfoProps[]; // 房间列表
 }
 
@@ -106,7 +107,7 @@ export interface FocusFormItemProps {
 /** 整租房源表单 */
 export interface EntireFormItemProps {
   id: number;
-  businessMode: number;
+  leaseMode: number;
   community: CommunityProps | null;
   water: "commercial" | "residential";
   electricity: "commercial" | "residential";
@@ -131,7 +132,8 @@ export interface HouseQueryParams {
 /** 合租房源表单 */
 export interface ShareFormItemProps {
   id: number;
-  businessMode: number;
+  businessMode?: number;
+  leaseMode?: number;
   community: CommunityProps | null;
   water: "commercial" | "residential";
   electricity: "commercial" | "residential";
@@ -146,7 +148,7 @@ export interface ShareFormItemProps {
 export interface RoomInfoProps {
   id?: number;
   roomNumber: string; // 房间名称
-  roomType: string;
+  roomType: number;
   direction: string;
   area: number;
   price: number;

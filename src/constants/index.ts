@@ -37,13 +37,13 @@ export const DIRECTION_OPTIONS = [
  * 装修类型选项
  */
 export const DECORATION_TYPE_OPTIONS = [
-  { label: "豪华装", value: "豪华装" },
-  { label: "简装", value: "简装" },
-  { label: "精装", value: "精装" },
-  { label: "毛坯", value: "毛坯" },
-  { label: "清水", value: "清水" },
-  { label: "简约", value: "简约" },
-  { label: "未装修", value: "未装修" }
+  { label: "豪华装", value: 1 },
+  { label: "简装", value: 2 },
+  { label: "精装", value: 3 },
+  { label: "毛坯", value: 4 },
+  { label: "清水", value: 5 },
+  { label: "简约", value: 6 },
+  { label: "未装修", value: 7 }
 ] as const;
 
 /**
@@ -74,14 +74,14 @@ export const HEATING_TYPE_OPTIONS = [
  * 房间类型选项
  */
 export const ROOM_TYPE_OPTIONS = [
-  { label: "主卧", value: "1" },
-  { label: "次卧", value: "2" },
-  { label: "隔断", value: "3" },
-  { label: "厅隔", value: "4" },
-  { label: "单间配套", value: "5" },
-  { label: "单间", value: "6" },
-  { label: "双人间", value: "7" },
-  { label: "多人间", value: "8" }
+  { label: "主卧", value: 1 },
+  { label: "次卧", value: 2 },
+  { label: "隔断", value: 3 },
+  { label: "厅隔", value: 4 },
+  { label: "单间配套", value: 5 },
+  { label: "单间", value: 6 },
+  { label: "双人间", value: 7 },
+  { label: "多人间", value: 8 }
 ] as const;
 
 /**

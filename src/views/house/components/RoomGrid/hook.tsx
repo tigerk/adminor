@@ -7,6 +7,7 @@ import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { getEntireHouseById, getShareHouseById } from "@/api/house/scatter";
+import type { EntireFormItemProps, ScatterHouseResponse, ShareFormItemProps } from "@/types";
 
 // ==================== Hook 特有的类型定义 ====================
 
@@ -478,7 +479,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const handleDropdownAction = (room: RoomItemDTO, command: string) => {
     switch (command) {
       case "edit":
-        ElMessage.info(`编辑房间 ${room.roomNumber} 信息`);
         if (room.leaseMode == 2 && room.rentalType == 1) {
           editEntireHouse("更新", room);
         } else if (room.leaseMode == 2 && room.rentalType == 2) {
@@ -509,16 +509,12 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 
   // 将 ScatterHouseResponse 转换为 EntireFormItemProps
   function convertToEntireFormItemProps(resp: ScatterHouseResponse): EntireFormItemProps {
+    const price = resp.roomList[0]?.price || 0;
+
     return {
       id: resp.id,
-      companyId: resp.companyId,
       leaseMode: resp.leaseMode,
       community: resp.community,
-      houseCode: resp.houseCode,
-      rentalType: resp.rentalType,
-      building: resp.building,
-      unit: resp.unit,
-      doorNumber: resp.doorNumber,
       deptId: resp.deptId,
       salesmanId: resp.salesmanId,
       water: resp.water,
@@ -526,14 +522,25 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       heating: resp.heating,
       hasElevator: resp.hasElevator,
       hasGas: resp.hasGas,
-      houseLayout: resp.houseLayout,
-      locked: resp.locked,
-      closed: resp.closed,
-      floor: resp.floor,
-      floorTotal: resp.floorTotal,
-      direction: resp.direction,
-      area: resp.area,
-      roomList: resp.roomList || [] // 如果 roomList 为空，则初始化为空数组
+      houseList: [
+        {
+          id: resp.id,
+          houseLayout: resp.houseLayout,
+          rentalType: resp.rentalType,
+          decorationType: resp.decorationType,
+          propertyFee: resp.propertyFee,
+          houseCode: resp.houseCode,
+          building: resp.building,
+          unit: resp.unit,
+          doorNumber: resp.doorNumber,
+          floor: resp.floor,
+          floorTotal: resp.floorTotal,
+          direction: resp.direction,
+          area: resp.area,
+          price: price,
+          roomList: resp.roomList || [] // 如果 roomList 为空，则初始化为空数组
+        }
+      ]
     };
   }
 
@@ -543,7 +550,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         return;
       }
 
-      openShareEditDialog("编辑", convertToShareFormItemProps(res.data));
+      const shareFormItemProps = convertToShareFormItemProps(res.data);
+
+      openShareEditDialog("编辑", shareFormItemProps);
     });
   }
 
@@ -551,14 +560,8 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   function convertToShareFormItemProps(resp: ScatterHouseResponse): ShareFormItemProps {
     return {
       id: resp.id,
-      companyId: resp.companyId,
       leaseMode: resp.leaseMode,
       community: resp.community,
-      houseCode: resp.houseCode,
-      rentalType: resp.rentalType,
-      building: resp.building,
-      unit: resp.unit,
-      doorNumber: resp.doorNumber,
       deptId: resp.deptId,
       salesmanId: resp.salesmanId,
       water: resp.water,
@@ -566,14 +569,24 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       heating: resp.heating,
       hasElevator: resp.hasElevator,
       hasGas: resp.hasGas,
-      houseLayout: resp.houseLayout,
-      locked: resp.locked,
-      closed: resp.closed,
-      floor: resp.floor,
-      floorTotal: resp.floorTotal,
-      direction: resp.direction,
-      area: resp.area,
-      roomList: resp.roomList || [] // 如果 roomList 为空，则初始化为空数组
+      houseList: [
+        {
+          id: resp.id,
+          houseLayout: resp.houseLayout,
+          rentalType: resp.rentalType,
+          decorationType: resp.decorationType,
+          propertyFee: resp.propertyFee,
+          houseCode: resp.houseCode,
+          building: resp.building,
+          unit: resp.unit,
+          doorNumber: resp.doorNumber,
+          floor: resp.floor,
+          floorTotal: resp.floorTotal,
+          direction: resp.direction,
+          area: resp.area,
+          roomList: resp.roomList || [] // 如果 roomList 为空，则初始化为空数组
+        }
+      ]
     };
   }
 

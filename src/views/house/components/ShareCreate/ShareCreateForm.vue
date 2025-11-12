@@ -16,7 +16,6 @@
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
   import type { FacilityItemProps } from "@/types";
-  import { getLocationAndCity } from "@/utils/geo";
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
@@ -31,7 +30,7 @@
   // 将 entireForm 和 houseList 合并到一个响应式对象中
   const shareForm = reactive({
     ...props.formInline,
-    houseList: [getScatterDefaultHouseItem()]
+    houseList: props.formInline.houseList ? props.formInline.houseList : [getScatterDefaultHouseItem()]
   });
 
   // 使用 entireForm.houseList 替代独立的 houseList

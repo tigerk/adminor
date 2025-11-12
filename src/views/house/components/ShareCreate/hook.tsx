@@ -28,8 +28,8 @@ function getScatterDefaultHouseItem(): HouseInfoProps {
     direction: "",
     area: "",
     decorationType: "",
-    price: "",
-    propertyFee: "",
+    price: null,
+    propertyFee: null,
     moreInfo: null,
     roomList: roomList
   };
@@ -56,7 +56,7 @@ function getDefaultPriceConfigItem(): PriceConfigProps {
 function getDefaultRoomItem(defaultRoomNumber = ""): RoomInfoProps {
   return {
     roomNumber: defaultRoomNumber,
-    roomType: "",
+    roomType: null,
     direction: "",
     area: null,
     price: null,
@@ -75,14 +75,7 @@ export function useShareEdit() {
       title: `${title}合租房源`,
       props: {
         formInline: {
-          id: row?.id ?? null,
-          businessMode: row?.businessMode ?? 1,
-          community: null,
-          water: "residential",
-          electricity: "residential",
-          heating: "central",
-          hasGas: true,
-          hasElevator: false
+          ...row
         }
       },
       top: "1%",
