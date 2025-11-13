@@ -77,7 +77,6 @@
     <div class="preview-container" v-html="formInline.templateContent" />
     <template #footer>
       <el-button @click="previewVisible = false">关闭</el-button>
-      <el-button type="primary" @click="handleExportPdf">导出PDF</el-button>
     </template>
   </el-dialog>
 </template>
@@ -326,13 +325,6 @@
       return;
     }
     previewVisible.value = true;
-  };
-
-  // 导出PDF（调用后端接口）
-  const handleExportPdf = () => {
-    ElMessage.info("PDF导出功能需要对接后端接口");
-    // TODO: 实现PDF导出功能
-    // previewContractTemplate(formInline.id).then(...)
   };
 
   // 暴露方法给父组件
