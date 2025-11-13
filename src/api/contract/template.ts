@@ -26,3 +26,8 @@ export const deleteContractTemplate = (data?: object) => {
 export const getContractTemplatePdf = (data?: object) => {
   return http.request<any>("post", baseUrlApi("contract/template/preview"), { data }, { responseType: "blob" });
 };
+
+/** 合同模板参数 */
+export const getContractTemplateParams = (data?: object) => {
+  return http.request<any>("post", baseUrlApi("contract/template/params"), { data });
+};

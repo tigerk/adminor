@@ -61,8 +61,8 @@
         </template>
       </pure-table>
     </el-row>
-    <el-dialog v-model="previewVisible" top="10px" title="合同预览" width="80%" height="100vh" :destroy-on-close="true">
-      <iframe title="合同预览" :src="pdfUrl" style="width: 100%; height: 90vh; border: none" />
+    <el-dialog v-model="previewVisible" top="10px" title="合同预览" width="80%" height="100vh" :destroy-on-close="true" align-center :lock-scroll="true">
+      <iframe title="合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
     </el-dialog>
   </div>
 </template>

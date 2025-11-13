@@ -26,7 +26,7 @@
       <el-col :span="15">
         <el-form-item label="" prop="templateContent">
           <div class="editor-container">
-            <Editor v-model="formInline.templateContent" license-key="gpl" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
+            <Editor class="contract-editor" v-model="formInline.templateContent" license-key="gpl" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
           </div>
         </el-form-item>
       </el-col>
@@ -37,7 +37,7 @@
         </el-form-item>
 
         <el-form-item label="合同类型" prop="contractType">
-          <el-select v-model="formInline.contractType" placeholder="请选择合同类型" class="w-full">
+          <el-select v-model="formInline.contractType" placeholder="请选择合同类型" class="w-full" @change="loadContractParams">
             <el-option v-for="item in contractTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -73,7 +73,7 @@
   </el-form>
 
   <!-- 预览对话框 -->
-  <el-dialog v-model="previewVisible" :top="`1%`" title="预览合同模板" width="60%" :close-on-click-modal="false" destroy-on-close>
+  <el-dialog v-model="previewVisible" :top="`1%`" title="预览合同模板" width="60%" :close-on-click-modal="false" destroy-on-close align-center lockScroll>
     <div class="preview-container" v-html="formInline.templateContent" />
     <template #footer>
       <el-button @click="previewVisible = false">关闭</el-button>
@@ -112,6 +112,7 @@
   import "tinymce/plugins/wordcount";
   import { getDeptList } from "@/api/sys/dept";
   import { handleTree } from "@/utils/tree";
+  import { getContractTemplateParams } from "@/api/contract/template";
 
   interface FormProps {
     formInline: ContractTemplateProps;
@@ -154,32 +155,26 @@
   const previewVisible = ref(false);
 
   // 合同参数列表
-  const contractParams = [
-    { key: "合同编号", label: "合同编号" },
-    { key: "业主委托合同编号", label: "业主委托合同编号" },
-    { key: "房屋地址", label: "房屋地址" },
-    { key: "小区/项目名称", label: "小区/项目名称" },
-    { key: "楼栋号", label: "楼栋号" },
-    { key: "单元号", label: "单元号" },
-    { key: "门牌号", label: "门牌号" },
-    { key: "合租字间号", label: "合租字间号" },
-    { key: "签约房源列表", label: "签约房源列表" },
-    { key: "房屋产权编号", label: "房屋产权编号" },
-    { key: "房屋类型", label: "房屋类型" },
-    { key: "产权类型", label: "产权类型" },
-    { key: "房屋总面积", label: "房屋总面积" },
-    { key: "签约面积数", label: "签约面积数" },
-    { key: "租客姓名", label: "租客姓名" },
-    { key: "租客小区", label: "租客小区" },
-    { key: "租客项目名称", label: "租客项目名称" },
-    { key: "租客楼栋号", label: "租客楼栋号" }
-  ];
+  const contractParams = ref([]);
 
   // 过滤参数
   const filteredParams = computed(() => {
-    if (!paramSearch.value) return contractParams;
-    return contractParams.filter(param => param.label.includes(paramSearch.value));
+    if (!paramSearch.value) return contractParams.value;
+    return contractParams.value.filter(param => param.label.includes(paramSearch.value));
   });
+
+  // 加载合同参数
+  async function loadContractParams() {
+    try {
+      const { data } = await getContractTemplateParams({ contractType: formInline.contractType });
+      // 列表返回参数格式：{ key: "参数名称", value: "参数值" } 转成 { label: "参数名称", value: "参数值" }
+      contractParams.value = data?.map(item => ({ key: item.key, label: item.value })) || [];
+      console.log("合同参数加载成功:", contractParams.value);
+    } catch (error) {
+      console.error("加载合同参数失败:", error);
+      ElMessage.error("加载合同参数失败");
+    }
+  }
 
   // 获取部门数据
   async function fetchDeptData() {
@@ -204,6 +199,7 @@
 
   // TinyMCE 编辑器配置
   const editorConfig = {
+    height: "80vh", // 设置编辑器高度为视窗高度的60%
     menubar: false,
 
     // 设置基础路径，避免路径错误
@@ -298,7 +294,7 @@
 
   // 复制参数
   const copyParam = (param: { key: string; label: string }) => {
-    const paramText = `\${${param.key}}`;
+    const paramText = `${param.key}`;
 
     // 复制到剪贴板
     navigator.clipboard
@@ -339,6 +335,7 @@
 
   onMounted(async () => {
     await fetchDeptData();
+    loadContractParams();
   });
 </script>
 
@@ -352,7 +349,7 @@
   }
 
   .params-panel {
-    height: 70vh;
+    height: 82vh;
     padding: 16px;
     overflow: hidden;
     background: #f5f7fa;
@@ -411,6 +408,9 @@
 
   .editor-container {
     width: 100%;
+
+    .contract-editor {
+    }
 
     .editor-toolbar {
       margin-bottom: 12px;

@@ -205,8 +205,10 @@ function useContractSettings() {
           ...row
         }
       },
-      top: "4%",
+      top: "1%",
       width: "88%",
+      lockScroll: true,
+      alignCenter: true,
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
