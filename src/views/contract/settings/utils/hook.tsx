@@ -205,7 +205,7 @@ function useContractSettings() {
           ...row
         }
       },
-      top: "2%",
+      top: "4%",
       width: "88%",
       draggable: true,
       fullscreen: deviceDetection(),
@@ -213,9 +213,10 @@ function useContractSettings() {
       closeOnClickModal: false,
       contentRenderer: () => h(ContractTemplateForm, { ref: formRef, formInline: null }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as ContractTemplateProps;
-        FormRef.validate(valid => {
+        const getFormRuleRef = formRef.value.getRef();
+        const curData = formRef.value.formInline;
+        debugger;
+        getFormRuleRef.validate(valid => {
           if (valid) {
             console.log("保存的curData", curData);
             // 表单规则校验通过

@@ -1,29 +1,6 @@
 <template>
-  <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px">
+  <el-form ref="ruleFormRef" :model="formInline" :rules="rules" class="contract-template-form" label-width="100px" label-position="top">
     <el-row :gutter="20">
-      <el-col :span="4">
-        <el-form-item label="模板名称" prop="templateName" label-position="top">
-          <el-input v-model="formInline.templateName" placeholder="请输入模板名称" clearable />
-        </el-form-item>
-
-        <el-form-item label="合同类型" prop="contractType" label-position="top">
-          <el-select v-model="formInline.contractType" placeholder="请选择合同类型" class="w-full">
-            <el-option v-for="item in contractTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <div class="editor-toolbar">
-          <el-button type="primary" :icon="View" @click="handlePreview">预览模板</el-button>
-        </div>
-      </el-col>
-      <!-- 右侧：表单内容 -->
-      <el-col :span="15">
-        <el-form-item label="" prop="templateContent" label-position="top">
-          <div class="editor-container">
-            <Editor height="700px" v-model="formInline.templateContent" license-key="gpl" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
-          </div>
-        </el-form-item>
-      </el-col>
-      <!-- 左侧：参数信息 -->
       <el-col :span="5">
         <div class="params-panel">
           <div class="panel-header">
@@ -45,11 +22,58 @@
           </div>
         </div>
       </el-col>
+      <!-- 右侧：表单内容 -->
+      <el-col :span="15">
+        <el-form-item label="" prop="templateContent">
+          <div class="editor-container">
+            <Editor v-model="formInline.templateContent" license-key="gpl" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
+          </div>
+        </el-form-item>
+      </el-col>
+      <!-- 左侧：参数信息 -->
+      <el-col :span="4">
+        <el-form-item label="模板名称" prop="templateName">
+          <el-input v-model="formInline.templateName" placeholder="请输入模板名称" clearable />
+        </el-form-item>
+
+        <el-form-item label="合同类型" prop="contractType">
+          <el-select v-model="formInline.contractType" placeholder="请选择合同类型" class="w-full">
+            <el-option v-for="item in contractTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="生效范围" prop="deptIds">
+          <el-tree-select
+            v-model="formInline.deptIds"
+            class="w-full"
+            :data="deptOptions"
+            node-key="id"
+            :props="{
+              label: 'name',
+              children: 'children'
+            }"
+            :loading="deptLoading"
+            clearable
+            filterable
+            check-strictly
+            :filter-node-method="filterDeptNode"
+            placeholder="请选择归属部门"
+            show-checkbox
+            multiple
+            default-expand-all
+            :render-after-expand="false"
+          >
+            <template #default="{ data }">
+              <span>{{ data.name }}</span>
+              <span v-if="data.children && data.children.length > 0" class="ml-1 text-gray-400">({{ data.children.length }})</span>
+            </template>
+          </el-tree-select>
+        </el-form-item>
+      </el-col>
     </el-row>
   </el-form>
 
   <!-- 预览对话框 -->
-  <el-dialog v-model="previewVisible" title="预览合同模板" width="80%" :close-on-click-modal="false" destroy-on-close>
+  <el-dialog v-model="previewVisible" :top="`1%`" title="预览合同模板" width="60%" :close-on-click-modal="false" destroy-on-close>
     <div class="preview-container" v-html="formInline.templateContent" />
     <template #footer>
       <el-button @click="previewVisible = false">关闭</el-button>
@@ -62,13 +86,11 @@
   import { computed, onMounted, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
   import { ElMessage } from "element-plus";
-  import { Search, View } from "@element-plus/icons-vue";
+  import { Search } from "@element-plus/icons-vue";
   import { CONTRACT_TYPE_OPTIONS } from "@/constants";
   import { uploadFile } from "@/api/upload";
   import Editor from "@tinymce/tinymce-vue";
-  import type { ContractTemplateProps } from "@/types";
-
-  // 如果使用本地部署，需要导入这些
+  import type { ContractTemplateProps } from "@/types"; // 如果使用本地部署，需要导入这些
   import "tinymce/tinymce";
   import "tinymce/themes/silver";
   import "tinymce/icons/default";
@@ -89,6 +111,8 @@
   import "tinymce/plugins/table";
   import "tinymce/plugins/help";
   import "tinymce/plugins/wordcount";
+  import { getDeptList } from "@/api/sys/dept";
+  import { handleTree } from "@/utils/tree";
 
   interface FormProps {
     formInline: ContractTemplateProps;
@@ -105,6 +129,7 @@
     contractType: props.formInline?.contractType || 1,
     templateContent: props.formInline?.templateContent || "",
     status: props.formInline?.status ?? 1,
+    deptIds: props.formInline?.deptIds || [],
     ...props.formInline
   });
 
@@ -112,7 +137,8 @@
   const rules = reactive<FormRules>({
     templateName: [{ required: true, message: "请输入模板名称", trigger: "blur" }],
     contractType: [{ required: true, message: "请选择合同类型", trigger: "change" }],
-    templateContent: [{ required: true, message: "请填写合同模板内容", trigger: "blur" }]
+    templateContent: [{ required: true, message: "请填写合同模板内容", trigger: "blur" }],
+    deptIds: [{ required: true, message: "请选择归属部门", trigger: "change", type: "array" }]
   });
 
   // 合同类型选项
@@ -120,6 +146,10 @@
 
   // 参数搜索
   const paramSearch = ref("");
+
+  // 部门相关
+  const deptOptions = ref([]);
+  const deptLoading = ref(false);
 
   // 预览对话框
   const previewVisible = ref(false);
@@ -152,9 +182,29 @@
     return contractParams.filter(param => param.label.includes(paramSearch.value));
   });
 
+  // 获取部门数据
+  async function fetchDeptData() {
+    deptLoading.value = true;
+    try {
+      const { data } = await getDeptList({});
+      deptOptions.value = handleTree(data);
+      console.log("部门数据加载成功:", deptOptions.value);
+    } catch (error) {
+      console.error("获取部门数据失败:", error);
+      ElMessage.error("获取部门数据失败");
+    } finally {
+      deptLoading.value = false;
+    }
+  }
+
+  // 部门节点过滤方法
+  const filterDeptNode = (value: string, data: any) => {
+    if (!value) return true;
+    return data.name.includes(value);
+  };
+
   // TinyMCE 编辑器配置
   const editorConfig = {
-    height: 500,
     menubar: false,
 
     // 设置基础路径，避免路径错误
@@ -185,39 +235,37 @@
       "help",
       "wordcount"
     ],
-    toolbar:
-      "undo redo | formatselect | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | forecolor backcolor | image link table | removeformat | fullscreen preview",
+    toolbar: [
+      "customPreview | undo redo | formatselect fontsize | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify",
+      "bullist numlist outdent indent | forecolor backcolor | image link table | removeformat | code fullscreen"
+    ],
+    toolbar_mode: "wrap",
+    font_size_formats: "12px 14px 16px 18px 20px 24px 28px 32px 36px",
     content_style: `
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-      padding: 20px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-    table td, table th {
-      border: 1px solid #ddd;
-      padding: 8px;
-    }
-  `,
+      body {
+        margin: 0;
+        padding: 4px 8px; /* 可根据需要调整 */
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+        font-size: 14px;
+        line-height: 1.8;
+        color: #333;
+      }
+    `,
     // 图片上传处理
-    images_upload_handler: async (blobInfo, progress) => {
+    images_upload_handler: async (blobInfo: any, progress: any) => {
       return new Promise((resolve, reject) => {
         const formData = new FormData();
         formData.append("file", blobInfo.blob(), blobInfo.filename());
 
         uploadFile(formData, progress)
-          .then(resp => {
+          .then((resp: any) => {
             if (resp.code === 0) {
-              resolve(resp.data); // 返回图片URL
+              resolve(resp.data);
             } else {
               reject(resp.message || "上传失败");
             }
           })
-          .catch(error => {
+          .catch((error: any) => {
             reject("图片上传失败: " + error.message);
           });
       });
@@ -230,9 +278,21 @@
     readonly: false,
 
     // 初始化完成回调
-    setup: editor => {
+    setup: (editor: any) => {
+      // 添加一个自定义按钮
+      editor.ui.registry.addButton("customPreview", {
+        text: "预览",
+        icon: "preview", // TinyMCE 自带的 preview 图标
+        tooltip: "内容预览",
+        onAction: () => {
+          handlePreview();
+        }
+      });
+
       editor.on("init", () => {
         console.log("TinyMCE 初始化完成");
+        const editorContainer = editor.getContainer();
+        editorContainer.style.height = "70vh";
       });
     }
   };
@@ -281,21 +341,26 @@
   };
 
   defineExpose({
-    getRef
+    getRef,
+    formInline
   });
 
-  onMounted(() => {
-    // 初始化时的逻辑
+  onMounted(async () => {
+    await fetchDeptData();
   });
 </script>
 
 <style scoped lang="scss">
+  .contract-template-form {
+    margin-bottom: 11px;
+  }
+
   :deep(.el-form-item__label) {
     font-weight: 500;
   }
 
   .params-panel {
-    height: calc(100vh - 200px);
+    height: 70vh;
     padding: 16px;
     overflow: hidden;
     background: #f5f7fa;
@@ -363,9 +428,9 @@
   }
 
   .preview-container {
-    min-height: 400px;
-    max-height: 70vh;
+    min-height: 77vh;
     padding: 40px;
+    margin-bottom: 10px;
     overflow-y: auto;
     background: #fff;
     border: 1px solid #e4e7ed;

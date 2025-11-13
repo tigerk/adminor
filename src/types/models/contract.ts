@@ -9,5 +9,6 @@ export interface ContractTemplateProps {
   templateName?: string;
   templateContent?: string;
   status?: number;
+  deptIds?: number[];
   remark?: string;
 }
