@@ -5,7 +5,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import ContractTemplateForm from "@/views/contract/settings/form/contractTemplateForm.vue";
-import { createContractTemplate, getContractTemplateList, updateContractTemplateStatus } from "@/api/contract/template";
+import { createContractTemplate, deleteContractTemplate, getContractTemplateList, updateContractTemplateStatus } from "@/api/contract/template";
 import { CONTRACT_TEMPLATE_STATUS_OPTIONS, CONTRACT_TYPE_OPTIONS, getOptionByCode } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
@@ -238,6 +238,18 @@ function useContractSettings() {
       }
     });
   }
+  function handleDeleteTemplate(row: any) {
+    deleteContractTemplate({ id: row.id }).then(resp => {
+      if (resp.code === 0) {
+        message(`您删除了合同模板名称为${row.templateName}的这条数据`, { type: "success" });
+        onContractTemplateSearch();
+      } else {
+        message(resp.message, {
+          type: "error"
+        });
+      }
+    });
+  }
 
   return {
     queryForm,
@@ -257,7 +269,7 @@ function useContractSettings() {
     openContractTemplateDialog,
     onContractTemplateSearch,
     resetForm,
-    handleDelete,
+    handleDeleteTemplate,
     filterMethod,
     transformI18n,
     handleSizeChange,
