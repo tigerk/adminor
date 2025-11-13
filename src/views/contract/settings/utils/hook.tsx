@@ -5,7 +5,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import ContractTemplateForm from "@/views/contract/settings/form/contractTemplateForm.vue";
-import { createContractTemplate, deleteContractTemplate, getContractTemplateList, updateContractTemplateStatus } from "@/api/contract/template";
+import { createContractTemplate, deleteContractTemplate, getContractTemplateList, getContractTemplatePdf, updateContractTemplateStatus } from "@/api/contract/template";
 import { CONTRACT_TEMPLATE_STATUS_OPTIONS, CONTRACT_TYPE_OPTIONS, getOptionByCode } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
@@ -123,7 +123,7 @@ function useContractSettings() {
     {
       label: "操作",
       fixed: "right",
-      minWidth: 80,
+      minWidth: 130,
       slot: "operation"
     }
   ];
@@ -238,6 +238,7 @@ function useContractSettings() {
       }
     });
   }
+
   function handleDeleteTemplate(row: any) {
     deleteContractTemplate({ id: row.id }).then(resp => {
       if (resp.code === 0) {

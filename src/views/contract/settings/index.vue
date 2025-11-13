@@ -51,6 +51,7 @@
         @page-current-change="handleCurrentChange"
       >
         <template #operation="{ row }">
+          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(Printer)" @click="handlePreview(row)">预览</el-button>
           <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(EditPen)" @click="openContractTemplateDialog('修改', row)">修改</el-button>
           <el-popconfirm :title="`是否确认删除这条数据`" @confirm="handleDeleteTemplate(row)">
             <template #reference>
@@ -60,6 +61,9 @@
         </template>
       </pure-table>
     </el-row>
+    <el-dialog v-model="previewVisible" top="20px" title="合同预览" width="80%" height="100vh" :destroy-on-close="true">
+      <iframe title="合同预览" :src="pdfUrl" style="width: 100%; height: 80vh; border: none" />
+    </el-dialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -69,6 +73,10 @@
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Delete from "~icons/ep/delete";
   import EditPen from "~icons/ep/edit-pen";
+  import Printer from "~icons/ep/printer";
+  import { getContractTemplatePdf } from "@/api/contract/template";
+  import { ref, watch } from "vue";
+  import { message } from "@/utils/message";
 
   defineOptions({
     name: "ContractTenant"
@@ -103,6 +111,29 @@
       value: 0
     }
   ];
+
+  const previewVisible = ref(false);
+  const pdfUrl = ref("");
+
+  function handlePreview(row: any) {
+    getContractTemplatePdf({ id: row.id })
+      .then(resp => {
+        const blob = new Blob([resp], { type: "application/pdf" });
+        pdfUrl.value = URL.createObjectURL(blob);
+        previewVisible.value = true;
+      })
+      .catch(error => {
+        message("预览失败", { type: "error" });
+      });
+  }
+
+  // 关闭弹窗时释放 URL
+  watch(previewVisible, newVal => {
+    if (!newVal && pdfUrl.value) {
+      URL.revokeObjectURL(pdfUrl.value);
+      pdfUrl.value = "";
+    }
+  });
 </script>
 
 <style lang="scss" scoped>

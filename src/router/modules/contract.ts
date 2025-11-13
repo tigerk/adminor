@@ -40,8 +40,8 @@ export default {
       }
     },
     {
-      path: "/contract/setup",
-      name: "contractSetup",
+      path: "/contract/settings",
+      name: "contractSettings",
       component: () => import("@/views/contract/settings/index.vue"),
       meta: {
         title: "合同设置",

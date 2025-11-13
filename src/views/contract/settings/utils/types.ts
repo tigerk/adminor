@@ -1,4 +1,4 @@
-import { type ContractTemplateProps } from "@/types";
+import type { ContractTemplateProps } from "@/types";
 
 interface ContractTemplateQueryFormProps {
   templateName: string;

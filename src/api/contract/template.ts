@@ -23,6 +23,6 @@ export const deleteContractTemplate = (data?: object) => {
 };
 
 /** 预览合同模板 */
-export const previewContractTemplate = (data?: object) => {
-  return http.request<any>("post", baseUrlApi("contract/template/preview"), { data });
+export const getContractTemplatePdf = (data?: object) => {
+  return http.request<any>("post", baseUrlApi("contract/template/preview"), { data }, { responseType: "blob" });
 };
