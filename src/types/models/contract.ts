@@ -9,6 +9,5 @@ export interface ContractTemplateProps {
   templateName?: string;
   templateContent?: string;
   status?: number;
-  deptIds?: number[]; // 新增：部门ID数组
   remark?: string;
 }
