@@ -2,7 +2,7 @@ import { message } from "@/utils/message";
 import { transformI18n } from "@/plugins/i18n";
 import type { PaginationProps } from "@pureadmin/table";
 import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
-import { addDialog } from "@/components/ReDialog";
+import { addDialog, closeDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import ContractTemplateForm from "@/views/contract/settings/form/contractTemplateForm.vue";
 import { createContractTemplate, getContractTemplateList, updateContractTemplateStatus } from "@/api/contract/template";
@@ -196,6 +196,7 @@ function useContractSettings() {
     return newTreeList;
   }
 
+  // 在 hook.tsx 中的 openContractTemplateDialog 函数，替换为以下代码：
   function openContractTemplateDialog(title = "新增", row?: ContractTemplateProps) {
     addDialog({
       title: `${title}合同模板`,
@@ -205,36 +206,60 @@ function useContractSettings() {
           ...row
         }
       },
-      top: "2%",
-      width: "88%",
+      top: "3vh",
+      width: "77%",
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
       contentRenderer: () => h(ContractTemplateForm, { ref: formRef, formInline: null }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as ContractTemplateProps;
-        FormRef.validate(valid => {
-          if (valid) {
-            console.log("保存的curData", curData);
-            // 表单规则校验通过
-            createContractTemplate(curData).then(resp => {
-              if (resp.code === 0) {
-                message(`您${title}了合同模板名称为${curData.templateName}的这条数据`, {
-                  type: "success"
-                });
-                done(); // 关闭弹框
-                onContractTemplateSearch(); // 刷新表格数据
-              } else {
-                message(resp.message, {
-                  type: "error"
+      // 自定义底部按钮
+      footerButtons: [
+        {
+          label: "预览",
+          type: "primary",
+          btnClick: ({ dialog: { options, index }, button }) => {
+            // 调用子组件的预览方法
+            if (formRef.value && formRef.value.handlePreview) {
+              formRef.value.handlePreview();
+            }
+          }
+        },
+        {
+          label: "取消",
+          btnClick: ({ dialog: { options, index }, button }) => {
+            console.log(options, index, button);
+            closeDialog(options, index);
+          }
+        },
+        {
+          label: "确定",
+          type: "primary",
+          btnClick: ({ dialog: { options, index }, button }) => {
+            const FormRef = formRef.value.getRef();
+            const curData = options.props.formInline as ContractTemplateProps;
+            FormRef.validate(valid => {
+              if (valid) {
+                console.log("保存的curData", curData);
+                // 表单规则校验通过
+                createContractTemplate(curData).then(resp => {
+                  if (resp.code === 0) {
+                    message(`您${title}了合同模板名称为${curData.templateName}的这条数据`, {
+                      type: "success"
+                    });
+                    closeDialog(options, index); // 关闭当前弹框
+                    onContractTemplateSearch(); // 刷新表格数据
+                  } else {
+                    message(resp.message, {
+                      type: "error"
+                    });
+                  }
                 });
               }
             });
           }
-        });
-      }
+        }
+      ]
     });
   }
 
