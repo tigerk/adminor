@@ -1,11 +1,15 @@
-interface QueryFormItemProps {
-  keywords: string;
-  houseId: number;
-  roomStatus: number;
+import { type ContractTemplateProps } from "@/types";
+
+interface ContractTemplateQueryFormProps {
+  templateName: string;
+  contractType: number;
+  status: number;
+  pageSize: number;
+  currentPage: number;
 }
 
 interface FormProps {
-  formInline: QueryFormItemProps;
+  formInline: ContractTemplateProps;
 }
 
-export type { QueryFormItemProps, FormProps };
+export type { ContractTemplateQueryFormProps, FormProps };

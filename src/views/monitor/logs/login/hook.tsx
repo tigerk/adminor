@@ -6,7 +6,7 @@ import {
   clearAllLoginLogs,
   getLoginLogsList
 } from "@/api/monitor";
-import { usePublicHooks } from "@/views/system/hooks";
+import { usePublicHooks } from "@/utils/publicHooks";
 import type { PaginationProps } from "@pureadmin/table";
 import { type Ref, reactive, ref, onMounted, toRaw } from "vue";
 

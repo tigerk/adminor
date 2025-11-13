@@ -1,6 +1,5 @@
 // src/constants/house.ts
 
-
 /**
  * 根据值获取租赁类型
  * @param options 类型选项数组
@@ -111,4 +110,15 @@ export const PRICE_PLANT_OPTIONS = [
   { label: "季付", value: 2 },
   { label: "半年付", value: 3 },
   { label: "年付", value: 4 }
+] as const;
+
+export const CONTRACT_TYPE_OPTIONS = [
+  { label: "租客合同", value: 1 },
+  { label: "业主合同", value: 2 },
+  { label: "预定合同", value: 3 }
+] as const;
+
+export const CONTRACT_TEMPLATE_STATUS_OPTIONS = [
+  { label: "未启用", value: 0 },
+  { label: "启用中", value: 1 }
 ] as const;

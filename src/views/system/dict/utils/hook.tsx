@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import editForm from "../form/index.vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
-import { usePublicHooks } from "../../hooks";
+import { usePublicHooks } from "../../../../utils/publicHooks";
 import { h, ref, reactive, onMounted } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";

@@ -6,14 +6,14 @@ export interface PaginationParams {
 }
 
 /** 分页响应数据 */
-export interface PaginationResponse<T> {
+export interface PaginationResponse<T = any> {
   list: T[];
   total: number;
   currentPage: number;
   pageSize: number;
 }
 
-/** API 响应包装 */
+/** API 响应包装 code=0 成功 */
 export interface ApiResponse<T = any> {
   code: number;
   message: string;
