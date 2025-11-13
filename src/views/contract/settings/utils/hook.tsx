@@ -205,6 +205,7 @@ function useContractSettings() {
           ...row
         }
       },
+      top: "2%",
       width: "66%",
       draggable: true,
       fullscreen: deviceDetection(),
