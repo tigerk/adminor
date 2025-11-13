@@ -1,8 +1,30 @@
 <template>
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px">
     <el-row :gutter="20">
+      <el-col :span="4">
+        <el-form-item label="模板名称" prop="templateName" label-position="top">
+          <el-input v-model="formInline.templateName" placeholder="请输入模板名称" clearable />
+        </el-form-item>
+
+        <el-form-item label="合同类型" prop="contractType" label-position="top">
+          <el-select v-model="formInline.contractType" placeholder="请选择合同类型" class="w-full">
+            <el-option v-for="item in contractTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <div class="editor-toolbar">
+          <el-button type="primary" :icon="View" @click="handlePreview">预览模板</el-button>
+        </div>
+      </el-col>
+      <!-- 右侧：表单内容 -->
+      <el-col :span="15">
+        <el-form-item label="" prop="templateContent" label-position="top">
+          <div class="editor-container">
+            <Editor height="700px" v-model="formInline.templateContent" license-key="gpl" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
+          </div>
+        </el-form-item>
+      </el-col>
       <!-- 左侧：参数信息 -->
-      <el-col :span="6">
+      <el-col :span="5">
         <div class="params-panel">
           <div class="panel-header">
             <h3>合同参数信息</h3>
@@ -23,32 +45,6 @@
           </div>
         </div>
       </el-col>
-
-      <!-- 右侧：表单内容 -->
-      <el-col :span="18">
-        <el-form-item label="模板名称" prop="templateName">
-          <el-input v-model="formInline.templateName" placeholder="请输入模板名称" clearable />
-        </el-form-item>
-
-        <el-form-item label="合同类型" prop="contractType">
-          <el-select v-model="formInline.contractType" placeholder="请选择合同类型" class="w-full">
-            <el-option v-for="item in contractTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="合同模板" prop="templateContent">
-          <div class="editor-container">
-            <div class="editor-toolbar">
-              <el-button type="primary" :icon="View" @click="handlePreview">预览模板</el-button>
-            </div>
-            <Editor v-model="formInline.templateContent" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
-          </div>
-        </el-form-item>
-
-        <el-form-item label="启用状态" prop="status">
-          <el-switch v-model="formInline.status" :active-value="1" :inactive-value="0" active-text="启用" inactive-text="停用" />
-        </el-form-item>
-      </el-col>
     </el-row>
   </el-form>
 
@@ -63,36 +59,36 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, computed, onMounted } from "vue";
+  import { computed, onMounted, reactive, ref } from "vue";
+  import type { FormInstance, FormRules } from "element-plus";
   import { ElMessage } from "element-plus";
   import { Search, View } from "@element-plus/icons-vue";
   import { CONTRACT_TYPE_OPTIONS } from "@/constants";
   import { uploadFile } from "@/api/upload";
   import Editor from "@tinymce/tinymce-vue";
-  import type { FormInstance, FormRules } from "element-plus";
   import type { ContractTemplateProps } from "@/types";
 
   // 如果使用本地部署，需要导入这些
-  // import "tinymce/tinymce";
-  // import "tinymce/themes/silver";
-  // import "tinymce/icons/default";
-  // import "tinymce/models/dom";
-  // import "tinymce/plugins/advlist";
-  // import "tinymce/plugins/autolink";
-  // import "tinymce/plugins/lists";
-  // import "tinymce/plugins/link";
-  // import "tinymce/plugins/image";
-  // import "tinymce/plugins/charmap";
-  // import "tinymce/plugins/preview";
-  // import "tinymce/plugins/searchreplace";
-  // import "tinymce/plugins/visualblocks";
-  // import "tinymce/plugins/code";
-  // import "tinymce/plugins/fullscreen";
-  // import "tinymce/plugins/insertdatetime";
-  // import "tinymce/plugins/media";
-  // import "tinymce/plugins/table";
-  // import "tinymce/plugins/help";
-  // import "tinymce/plugins/wordcount";
+  import "tinymce/tinymce";
+  import "tinymce/themes/silver";
+  import "tinymce/icons/default";
+  import "tinymce/models/dom";
+  import "tinymce/plugins/advlist";
+  import "tinymce/plugins/autolink";
+  import "tinymce/plugins/lists";
+  import "tinymce/plugins/link";
+  import "tinymce/plugins/image";
+  import "tinymce/plugins/charmap";
+  import "tinymce/plugins/preview";
+  import "tinymce/plugins/searchreplace";
+  import "tinymce/plugins/visualblocks";
+  import "tinymce/plugins/code";
+  import "tinymce/plugins/fullscreen";
+  import "tinymce/plugins/insertdatetime";
+  import "tinymce/plugins/media";
+  import "tinymce/plugins/table";
+  import "tinymce/plugins/help";
+  import "tinymce/plugins/wordcount";
 
   interface FormProps {
     formInline: ContractTemplateProps;
@@ -166,10 +162,9 @@
     suffix: ".min",
 
     // 中文语言配置（如果没有语言包就注释掉）
-    // language: "zh_CN",
+    language: "zh_CN",
 
     // 隐藏升级提示
-    promotion: false,
     branding: false,
 
     plugins: [
@@ -191,10 +186,7 @@
       "wordcount"
     ],
     toolbar:
-      "undo redo | formatselect | bold italic underline strikethrough | \
-    alignleft aligncenter alignright alignjustify | \
-    bullist numlist outdent indent | forecolor backcolor | \
-    image link table | removeformat | fullscreen preview",
+      "undo redo | formatselect | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | forecolor backcolor | image link table | removeformat | fullscreen preview",
     content_style: `
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;

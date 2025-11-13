@@ -206,7 +206,7 @@ function useContractSettings() {
         }
       },
       top: "2%",
-      width: "66%",
+      width: "88%",
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
