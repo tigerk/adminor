@@ -199,7 +199,7 @@
 
   // TinyMCE 编辑器配置
   const editorConfig = {
-    height: "80vh", // 设置编辑器高度为视窗高度的60%
+    height: "82vh", // 改为与 params-panel 一致的 82vh
     menubar: false,
 
     // 设置基础路径，避免路径错误
@@ -286,8 +286,6 @@
 
       editor.on("init", () => {
         console.log("TinyMCE 初始化完成");
-        const editorContainer = editor.getContainer();
-        editorContainer.style.height = "70vh";
       });
     }
   };
@@ -408,9 +406,6 @@
 
   .editor-container {
     width: 100%;
-
-    .contract-editor {
-    }
 
     .editor-toolbar {
       margin-bottom: 12px;
