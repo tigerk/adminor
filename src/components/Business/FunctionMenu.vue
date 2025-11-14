@@ -27,7 +27,7 @@
             </div>
           </el-dropdown-item>
 
-          <!-- 业主合同 -->
+          <!-- 房东合同 -->
           <el-dropdown-item class="menu-item" @click="handleMenuClick('owner-contract')">
             <div class="menu-content">
               <div class="icon-wrapper blue">
@@ -35,7 +35,7 @@
                   <DocumentChecked />
                 </el-icon>
               </div>
-              <span class="menu-text">业主合同</span>
+              <span class="menu-text">房东合同</span>
             </div>
           </el-dropdown-item>
 
@@ -251,7 +251,7 @@
   };
 
   const handleOwnerContract = () => {
-    ElMessage.success("打开业主合同模块");
+    ElMessage.success("打开房东合同模块");
     // 可以在这里调用对应模块的组件
   };
 

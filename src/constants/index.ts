@@ -114,7 +114,7 @@ export const PRICE_PLANT_OPTIONS = [
 
 export const CONTRACT_TYPE_OPTIONS = [
   { label: "租客合同", value: 1 },
-  { label: "业主合同", value: 2 },
+  { label: "房东合同", value: 2 },
   { label: "预定合同", value: 3 }
 ] as const;
 

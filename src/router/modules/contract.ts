@@ -24,7 +24,7 @@ export default {
       name: "contractLandlord",
       component: () => import("@/views/contract/landlord/index.vue"),
       meta: {
-        title: "业主合同",
+        title: "房东合同",
         icon: "IF-icon-landlord",
         showParent: true
       }

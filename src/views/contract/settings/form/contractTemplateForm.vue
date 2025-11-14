@@ -1,84 +1,85 @@
 <template>
-  <el-form ref="ruleFormRef" :model="formInline" :rules="rules" class="contract-template-form" label-width="100px" label-position="top">
-    <el-row :gutter="20">
-      <el-col :span="5">
-        <div class="params-panel">
-          <div class="panel-header">
-            <h3>合同参数信息</h3>
-            <el-text type="info" size="small">参数复制到模板后，即可根据上签约时所填写的信息自动生成相应的信息值并补充</el-text>
-          </div>
+  <div v-loading="contractParamsLoading">
+    <el-form ref="ruleFormRef" :model="formInline" :rules="rules" class="contract-template-form" label-width="100px" label-position="top">
+      <el-row :gutter="20">
+        <el-col :span="5">
+          <div class="params-panel">
+            <div class="panel-header">
+              <h3>合同参数信息</h3>
+              <el-text type="info" size="small">参数复制到模板后，即可根据上签约时所填写的信息自动生成相应的信息值并补充</el-text>
+            </div>
+            <el-input v-model="paramSearch" placeholder="输入合同配置字段信息回车搜索" clearable class="search-input">
+              <template #suffix>
+                <el-icon><Search /></el-icon>
+              </template>
+            </el-input>
 
-          <el-input v-model="paramSearch" placeholder="输入合同配置字段信息回车搜索" clearable class="search-input">
-            <template #suffix>
-              <el-icon><Search /></el-icon>
-            </template>
-          </el-input>
-
-          <div class="params-list">
-            <div v-for="param in filteredParams" :key="param.key" class="param-item" @click="copyParam(param)">
-              <div class="param-label">{{ param.label }}</div>
-              <el-button link type="primary" size="small">复制</el-button>
+            <div class="params-list">
+              <div v-for="param in filteredParams" :key="param.key" class="param-item" @click="copyParam(param)">
+                <div class="param-label">{{ param.label }}</div>
+                <el-button link type="primary" size="small">复制</el-button>
+              </div>
             </div>
           </div>
-        </div>
-      </el-col>
-      <!-- 右侧：表单内容 -->
-      <el-col :span="15">
-        <el-form-item label="" prop="templateContent">
-          <div class="editor-container">
-            <Editor v-model="formInline.templateContent" class="contract-editor" license-key="gpl" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
-          </div>
-        </el-form-item>
-      </el-col>
-      <!-- 左侧：参数信息 -->
-      <el-col :span="4">
-        <el-form-item label="模板名称" prop="templateName">
-          <el-input v-model="formInline.templateName" placeholder="请输入模板名称" clearable />
-        </el-form-item>
+        </el-col>
+        <!-- 右侧：表单内容 -->
+        <el-col :span="15">
+          <el-form-item label="" prop="templateContent">
+            <div class="editor-container">
+              <Editor v-model="formInline.templateContent" class="contract-editor" license-key="gpl" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
+            </div>
+          </el-form-item>
+        </el-col>
+        <!-- 左侧：参数信息 -->
+        <el-col :span="4">
+          <el-form-item label="模板名称" prop="templateName">
+            <el-input v-model="formInline.templateName" placeholder="请输入模板名称" clearable />
+          </el-form-item>
 
-        <el-form-item label="合同类型" prop="contractType">
-          <el-select v-model="formInline.contractType" placeholder="请选择合同类型" class="w-full" @change="loadContractParams">
-            <el-option v-for="item in contractTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="生效部门" prop="deptIds">
-          <el-tree-select
-            v-model="formInline.deptIds"
-            class="w-full"
-            :data="deptOptions"
-            node-key="id"
-            :props="{
-              label: 'name',
-              children: 'children'
-            }"
-            :loading="deptLoading"
-            clearable
-            filterable
-            check-strictly
-            :filter-node-method="filterDeptNode"
-            placeholder="请选择归属部门"
-            show-checkbox
-            multiple
-            default-expand-all
-            :render-after-expand="false"
-          >
-            <template #default="{ data }">
-              <span>{{ data.name }}</span>
-              <span v-if="data.children && data.children.length > 0" class="ml-1 text-gray-400">({{ data.children.length }})</span>
-            </template>
-          </el-tree-select>
-        </el-form-item>
-      </el-col>
-    </el-row>
-  </el-form>
+          <el-form-item label="合同类型" prop="contractType">
+            <el-select v-model="formInline.contractType" placeholder="请选择合同类型" class="w-full" @change="loadContractParams">
+              <el-option v-for="item in contractTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="生效部门" prop="deptIds">
+            <el-tree-select
+              v-model="formInline.deptIds"
+              class="w-full"
+              :data="deptOptions"
+              node-key="id"
+              :props="{
+                label: 'name',
+                children: 'children'
+              }"
+              :loading="deptLoading"
+              clearable
+              filterable
+              check-strictly
+              :filter-node-method="filterDeptNode"
+              placeholder="请选择归属部门"
+              show-checkbox
+              multiple
+              default-expand-all
+              :render-after-expand="false"
+            >
+              <template #default="{ data }">
+                <span>{{ data.name }}</span>
+                <span v-if="data.children && data.children.length > 0" class="ml-1 text-gray-400">({{ data.children.length }})</span>
+              </template>
+            </el-tree-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
 
-  <!-- 预览对话框 -->
-  <el-dialog v-model="previewVisible" :top="`1%`" title="预览合同模板" width="60%" :close-on-click-modal="false" destroy-on-close align-center lockScroll>
-    <div class="preview-container" v-html="formInline.templateContent" />
-    <template #footer>
-      <el-button @click="previewVisible = false">关闭</el-button>
-    </template>
-  </el-dialog>
+    <!-- 预览对话框 -->
+    <el-dialog v-model="previewVisible" :top="`1%`" title="预览合同模板" width="60%" :close-on-click-modal="false" destroy-on-close align-center lockScroll>
+      <div class="preview-container" v-html="formInline.templateContent" />
+      <template #footer>
+        <el-button @click="previewVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -150,6 +151,7 @@
   // 部门相关
   const deptOptions = ref([]);
   const deptLoading = ref(false);
+  const contractParamsLoading = ref(false);
 
   // 预览对话框
   const previewVisible = ref(false);
@@ -165,6 +167,7 @@
 
   // 加载合同参数
   async function loadContractParams() {
+    contractParamsLoading.value = true;
     try {
       const { data } = await getContractTemplateParams({ contractType: formInline.contractType });
       // 列表返回参数格式：{ key: "参数名称", value: "参数值" } 转成 { label: "参数名称", value: "参数值" }
@@ -173,6 +176,8 @@
     } catch (error) {
       console.error("加载合同参数失败:", error);
       ElMessage.error("加载合同参数失败");
+    } finally {
+      contractParamsLoading.value = false;
     }
   }
 
