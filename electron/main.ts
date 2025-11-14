@@ -53,6 +53,8 @@ function createWindow() {
 // 当 Electron 完成初始化时触发
 app.whenReady().then(() => {
   createWindow();
+  // 检查更新
+  autoUpdater.checkForUpdatesAndNotify();
 
   app.on("activate", () => {
     // macOS 点击 dock 图标时重新创建窗口
@@ -67,9 +69,4 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
-});
-
-app.whenReady().then(() => {
-  // 检查更新
-  autoUpdater.checkForUpdatesAndNotify();
 });
