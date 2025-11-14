@@ -61,7 +61,10 @@ function createWindow() {
     console.error("❌ Error loading URL:", err);
   });
 
-  mainWindow.webContents.openDevTools();
+  // 开发环境：打开 DevTools
+  // if (process.env.VITE_DEV_SERVER_URL) {
+    // mainWindow.webContents.openDevTools();
+  // }
 
   mainWindow.webContents.on("did-start-loading", () => {
     console.log("⏳ Started loading...");
