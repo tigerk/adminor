@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, reactive, watch } from "vue";
+  import { ref, watch } from "vue";
   import { FormProps } from "@/views/house/components/FocusCreate/utils/types";
   import FocusAssignHouse from "@/views/house/components/FocusCreate/FocusAssignHouse.vue";
   import FocusExtraInfo from "@/views/house/components/FocusCreate/FocusExtraInfo.vue";
@@ -91,8 +91,8 @@
     return result;
   };
 
-  // 使用深度克隆确保响应式
-  const form = reactive(deepCloneForm(props.formInline));
+  // ✅ 改为 ref 而不是 reactive
+  const form = ref(deepCloneForm(props.formInline));
 
   // 步骤激活状态
   const stepActive = ref(0);
@@ -120,17 +120,12 @@
 
   defineExpose({ getRef });
 
-  // 处理基本信息组件的表单数据更新
-  const handleFormDataUpdate = (newFormData: any) => {
-    Object.assign(form, newFormData);
-  };
-
   // 提交所有数据到后台
   const submitAllData = async () => {
     try {
       const submitData = {
-        ...form,
-        imageList: form.imageList.map((file: any) => file?.url).filter(Boolean)
+        ...form.value,
+        imageList: form.value.imageList.map((file: any) => file?.url).filter(Boolean)
       };
 
       const response = await createFocusHouse(submitData);

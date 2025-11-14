@@ -3,11 +3,18 @@
   "version": "6.1.0",
   "private": true,
   "type": "module",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=4096 vite",
     "serve": "pnpm dev",
     "build": "rimraf dist && NODE_OPTIONS=--max-old-space-size=8192 vite build && generate-version-file",
     "build:staging": "rimraf dist && vite build --mode staging",
+    "electron:dev": "BUILD_TARGET=electron vite",
+    "electron:build": "BUILD_TARGET=electron vite build && electron-builder",
+    "electron:build:win": "BUILD_TARGET=electron vite build && electron-builder --win",
+    "electron:build:mac": "BUILD_TARGET=electron vite build && electron-builder --mac",
+    "electron:build:linux": "BUILD_TARGET=electron vite build && electron-builder --linux",
+    "electron:build:dir": "BUILD_TARGET=electron vite build && electron-builder --dir",
     "report": "rimraf dist && vite build",
     "preview": "vite preview",
     "preview:build": "pnpm build && vite preview",
@@ -18,33 +25,60 @@
     "lint:prettier": "prettier --write  \"src/**/*.{js,ts,json,tsx,css,scss,vue,html,md}\"",
     "lint:stylelint": "stylelint --cache --fix \"**/*.{html,vue,css,scss}\" --cache-location node_modules/.cache/stylelint/",
     "lint": "pnpm lint:eslint && pnpm lint:prettier && pnpm lint:stylelint",
-    "prepare": "husky",
-    "preinstall": "npx only-allow pnpm"
+    "prepare": "command -v husky >/dev/null 2>&1 && husky || echo 'Husky not found, skipping'",
+    "preinstall": "npx only-allow pnpm",
+    "postinstall": "electron-builder install-app-deps"
   },
-  "keywords": [
-    "vue-pure-admin",
-    "element-plus",
-    "tailwindcss",
-    "pure-admin",
-    "typescript",
-    "pinia",
-    "vue3",
-    "vite",
-    "esm"
-  ],
-  "homepage": "https://github.com/pure-admin/vue-pure-admin-max",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/pure-admin/vue-pure-admin-max.git"
-  },
-  "bugs": {
-    "url": "https://github.com/pure-admin/vue-pure-admin-max/issues"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "xiaoxian521",
-    "email": "pureadmin@163.com",
-    "url": "https://github.com/xiaoxian521"
+  "build": {
+    "appId": "com.pureadmin.app",
+    "productName": "PureAdmin",
+    "directories": {
+      "output": "release/${version}"
+    },
+    "files": [
+      "dist",
+      "dist-electron",
+      "!node_modules/**/*",
+      "!src/**/*",
+      "!*.md",
+      "!.git/**/*",
+      "!.vscode/**/*",
+      "!public/mockServer/**/*"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "icon": "build/icons/icon.icns"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "icon": "build/icons/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": true
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "icon": "build/icons"
+    }
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
@@ -74,6 +108,7 @@
     "deep-chat": "^2.2.2",
     "echarts": "^5.6.0",
     "el-table-infinite-scroll": "^3.0.6",
+    "electron-updater": "^6.6.2",
     "element-plus": "^2.10.4",
     "highlight.js": "^11.11.1",
     "intro.js": "^7.2.0",
@@ -142,6 +177,8 @@
     "code-inspector-plugin": "^1.0.3",
     "cssnano": "^7.1.0",
     "dagre": "^0.8.5",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
@@ -170,6 +207,8 @@
     "vite": "^7.0.6",
     "vite-plugin-cdn-import": "^1.0.1",
     "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
     "vite-plugin-fake-server": "^2.2.0",
     "vite-plugin-remove-console": "^2.2.0",
     "vite-plugin-router-warn": "^1.0.0",
