@@ -1,82 +1,83 @@
 import { app, BrowserWindow, shell } from "electron";
 import { join, dirname } from "node:path";
-import { autoUpdater } from "electron-updater";
-import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
-// ES 模块中获取 __dirname 的替代方案
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// 禁用硬件加速(可选)
-// app.disableHardwareAcceleration();
-
-function log(msg) {
-  console.log(`[Electron Main] ${msg}`);
-  try {
-    const logfile = join(app.getPath("userData"), "main.log");
-    fs.appendFileSync(logfile, msg + "\n");
-  } catch (error) {
-    console.error("Failed to write log:", error);
-  }
-}
-
-log("App start...");
+// 🔥 添加：在文件顶部立即打印环境变量
+console.log("=== Electron Main Process Started ===");
+console.log("Environment Variables:");
+console.log("  NODE_ENV:", process.env.NODE_ENV);
+console.log("  VITE_DEV_SERVER_URL:", process.env.VITE_DEV_SERVER_URL);
+console.log("  BUILD_TARGET:", process.env.BUILD_TARGET);
+console.log("  VITE_PORT:", process.env.VITE_PORT);
+console.log("  __dirname:", __dirname);
+console.log("=====================================\n");
 
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
+  console.log("Creating Electron window...");
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    minWidth: 800,
-    minHeight: 600,
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
-      // 🔥 这两条是 Electron 39 + Vite DEV 模式必须加的
-      allowRunningInsecureContent: true,
-      webSecurity: false
+      webSecurity: false,
+      allowRunningInsecureContent: true
     }
   });
 
-  // 在开发模式下，vite-plugin-electron 会自动设置 VITE_DEV_SERVER_URL
-  // 直接使用这个 URL，它包含了正确的端口（即使端口被占用而改变）
+  // 🔥 修改：更明确的 URL 判断逻辑
   let loadURL: string;
+
   if (process.env.VITE_DEV_SERVER_URL) {
     loadURL = process.env.VITE_DEV_SERVER_URL;
-    log(`Dev mode - Using Vite server: ${loadURL}`);
+    console.log("✅ Using VITE_DEV_SERVER_URL:", loadURL);
+  } else if (process.env.NODE_ENV === "development") {
+    const port = process.env.VITE_PORT || "7001";
+    loadURL = `http://localhost:${port}`;
+    console.log("⚠️ VITE_DEV_SERVER_URL not found, using fallback:", loadURL);
   } else {
-    // 生产模式：需要用户自行启动 web 服务
-    loadURL = "http://localhost:7001";
-    log(`Production mode - Loading: ${loadURL}`);
+    loadURL = `file://${join(__dirname, "../dist/index.html")}`;
+    console.log("📦 Production mode, loading file:", loadURL);
   }
 
-  log(`VITE_DEV_SERVER_URL env: ${process.env.VITE_DEV_SERVER_URL}`);
-  log(`Loading URL: ${loadURL}`);
+  console.log("🌐 Final URL to load:", loadURL);
+  console.log("⏳ Loading...\n");
 
-  mainWindow.loadURL(loadURL);
-
-  // 开发模式下打开 DevTools
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.webContents.openDevTools();
-  }
-
-  // 监听加载错误
-  mainWindow.webContents.on("did-fail-load", (event, errorCode, errorDescription, validatedURL) => {
-    log(`Failed to load: ${validatedURL}`);
-    log(`Error: ${errorCode} - ${errorDescription}`);
+  mainWindow.loadURL(loadURL).catch(err => {
+    console.error("❌ Error loading URL:", err);
   });
 
-  // 窗口准备好后显示
+  mainWindow.webContents.openDevTools();
+
+  mainWindow.webContents.on("did-start-loading", () => {
+    console.log("⏳ Started loading...");
+  });
+
+  mainWindow.webContents.on("did-fail-load", (event, errorCode, errorDescription, validatedURL) => {
+    console.error("❌ Failed to load:", validatedURL);
+    console.error("   Error code:", errorCode);
+    console.error("   Description:", errorDescription);
+  });
+
+  mainWindow.webContents.on("did-finish-load", () => {
+    console.log("✅ Page loaded successfully!");
+    console.log("   Current URL:", mainWindow?.webContents.getURL());
+  });
+
   mainWindow.once("ready-to-show", () => {
+    console.log("👁️ Window ready to show");
     mainWindow?.show();
   });
 
-  // 拦截外部链接,用浏览器打开
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith("http")) {
       shell.openExternal(url);
@@ -85,27 +86,26 @@ function createWindow() {
   });
 
   mainWindow.on("closed", () => {
+    console.log("Window closed");
     mainWindow = null;
   });
 }
 
-// 当 Electron 完成初始化时触发
 app.whenReady().then(() => {
+  console.log("🚀 Electron app is ready\n");
   createWindow();
-  // 检查更新
-  autoUpdater.checkForUpdatesAndNotify();
-
-  app.on("activate", () => {
-    // macOS 点击 dock 图标时重新创建窗口
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
 });
 
-// 所有窗口关闭时退出应用 (macOS 除外)
 app.on("window-all-closed", () => {
+  console.log("All windows closed");
   if (process.platform !== "darwin") {
     app.quit();
+  }
+});
+
+app.on("activate", () => {
+  console.log("App activated");
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
   }
 });

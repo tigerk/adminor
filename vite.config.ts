@@ -29,7 +29,13 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       },
       warmup: {
         clientFiles: ["./index.html", "./src/{views,components}/*"]
-      }
+      },
+      // 🔥 添加 watch 配置（针对 Electron）
+      watch: isElectron
+        ? {
+            ignored: ["**/dist-electron/**"]
+          }
+        : undefined
     },
     plugins: [
       ...getPluginsList(VITE_CDN, VITE_COMPRESSION),
@@ -53,6 +59,11 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
                         format: "es"
                       }
                     }
+                  },
+                  // 🔥 添加环境变量定义
+                  define: {
+                    "process.env.NODE_ENV": JSON.stringify(mode),
+                    "process.env.VITE_PORT": JSON.stringify(VITE_PORT)
                   }
                 }
               },
