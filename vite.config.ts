@@ -10,6 +10,7 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
 
   // 判断是否为 Electron 环境
   const isElectron = process.env.BUILD_TARGET === "electron";
+  const isDev = mode === "development";
 
   return {
     base: isElectron ? "./" : VITE_PUBLIC_PATH,
@@ -47,20 +48,23 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
                 // 主进程入口
                 entry: "electron/main.ts",
                 onstart(args) {
-                  // 启动 Electron
-                  args.startup();
+                  if (isDev) {
+                    // 启动 Electron
+                    args.startup();
+                  }
                 },
                 vite: {
                   build: {
                     outDir: "dist-electron",
+                    minify: false,
+                    sourcemap: isDev,
                     rollupOptions: {
-                      external: ["electron"],
+                      external: ["electron", "path", "url", "node:path", "node:url"],
                       output: {
                         format: "es"
                       }
                     }
                   },
-                  // 🔥 添加环境变量定义
                   define: {
                     "process.env.NODE_ENV": JSON.stringify(mode),
                     "process.env.VITE_PORT": JSON.stringify(VITE_PORT)
@@ -71,12 +75,17 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
                 // 预加载脚本
                 entry: "electron/preload.ts",
                 onstart(options) {
-                  options.reload();
+                  if (isDev) {
+                    options.reload();
+                  }
                 },
                 vite: {
                   build: {
                     outDir: "dist-electron",
+                    minify: false,
+                    sourcemap: isDev,
                     rollupOptions: {
+                      external: ["electron"],
                       output: {
                         format: "cjs"
                       }
