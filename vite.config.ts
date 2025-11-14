@@ -102,16 +102,13 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       include,
       exclude
     },
-    build: {
-      target: "es2015",
-      sourcemap: false,
-      chunkSizeWarningLimit: 4000,
-      rollupOptions: isElectron
-        ? {
-            // Electron 模式不打包，留空
-            input: {}
-          }
-        : {
+    build: isElectron
+      ? {} // Skip main build in Electron mode (URL-only)
+      : {
+          target: "es2015",
+          sourcemap: false,
+          chunkSizeWarningLimit: 4000,
+          rollupOptions: {
             input: {
               index: pathResolve("./index.html", import.meta.url)
             },
@@ -121,7 +118,7 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
               assetFileNames: "static/[ext]/[name]-[hash].[ext]"
             }
           }
-    },
+        },
     define: {
       __INTLIFY_PROD_DEVTOOLS__: false,
       __APP_INFO__: JSON.stringify(__APP_INFO__)
