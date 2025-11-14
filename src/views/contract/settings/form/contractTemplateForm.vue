@@ -26,7 +26,7 @@
       <el-col :span="15">
         <el-form-item label="" prop="templateContent">
           <div class="editor-container">
-            <Editor class="contract-editor" v-model="formInline.templateContent" license-key="gpl" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
+            <Editor v-model="formInline.templateContent" class="contract-editor" license-key="gpl" :init="editorConfig" tinymce-script-src="/tinymce/tinymce.min.js" />
           </div>
         </el-form-item>
       </el-col>
@@ -41,7 +41,7 @@
             <el-option v-for="item in contractTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="生效范围" prop="deptIds">
+        <el-form-item label="生效部门" prop="deptIds">
           <el-tree-select
             v-model="formInline.deptIds"
             class="w-full"

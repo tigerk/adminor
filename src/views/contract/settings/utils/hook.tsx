@@ -5,12 +5,15 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import ContractTemplateForm from "@/views/contract/settings/form/contractTemplateForm.vue";
-import { createContractTemplate, deleteContractTemplate, getContractTemplateList, getContractTemplatePdf, updateContractTemplateStatus } from "@/api/contract/template";
+import { createContractTemplate, deleteContractTemplate, getContractTemplateList, updateContractTemplateStatus } from "@/api/contract/template";
 import { CONTRACT_TEMPLATE_STATUS_OPTIONS, CONTRACT_TYPE_OPTIONS, getOptionByCode } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { ContractTemplateQueryFormProps } from "@/views/contract/settings/utils/types";
 import type { ContractTemplateProps } from "@/types";
+import { doc } from "prettier";
+import { handleTree } from "@/utils/tree";
+import { getDeptList } from "@/api/sys/dept";
 
 function useContractSettings() {
   const pagination = reactive<PaginationProps>({
@@ -23,7 +26,7 @@ function useContractSettings() {
   const queryForm = reactive<ContractTemplateQueryFormProps>({
     templateName: "",
     contractType: 1,
-    status: null,
+    status: "",
     pageSize: 15,
     currentPage: 1
   });
@@ -32,13 +35,12 @@ function useContractSettings() {
   const contractTemplateList = ref([]);
   const houseOptions = ref([]);
   const tenantStatusTotal = ref([]);
-  const treeData = ref([]);
+  const deptData = ref([]);
   const isShow = ref(false);
   const loading = ref(true);
   const isLinkage = ref(false);
   const treeSearchValue = ref();
   const tableSize = ref("default");
-  const higherDeptOptions = ref();
   const formRef = ref();
   const switchLoadMap = ref({});
   const { switchStyle } = usePublicHooks();
@@ -86,15 +88,29 @@ function useContractSettings() {
       cellRenderer: renderIndexCell
     },
     {
+      label: "合同类型",
+      prop: "contractType",
+      minWidth: 120,
+      cellRenderer: ({ row }) => <span>{getOptionByCode(mutableContractTypeOptions, row.contractType)?.label}</span>
+    },
+    {
       label: "模板名称",
       prop: "templateName",
       minWidth: 250
     },
     {
-      label: "合同类型",
-      prop: "contractType",
-      minWidth: 120,
-      cellRenderer: ({ row }) => <span>{getOptionByCode(mutableContractTypeOptions, row.contractType)?.label}</span>
+      label: "生效部门",
+      prop: "deptIds",
+      width: 250,
+      cellRenderer: ({ row }) => {
+        const deptIds = row.deptIds || [];
+        return deptIds
+          .map(id => {
+            const dept = deptData.value.find(item => item.id === id);
+            return dept?.name || "";
+          })
+          .join("  |  ");
+      }
     },
     {
       label: "状态",
@@ -123,7 +139,7 @@ function useContractSettings() {
     {
       label: "操作",
       fixed: "right",
-      minWidth: 130,
+      width: 200,
       slot: "operation"
     }
   ];
@@ -182,19 +198,11 @@ function useContractSettings() {
 
   onMounted(async () => {
     onContractTemplateSearch();
-  });
 
-  function formatHigherDeptOptions(treeList) {
-    // 根据返回数据的status字段值判断追加是否禁用disabled字段，返回处理后的树结构，用于上级部门级联选择器的展示（实际开发中也是如此，不可能前端需要的每个字段后端都会返回，这时需要前端自行根据后端返回的某些字段做逻辑处理）
-    if (!treeList || !treeList.length) return;
-    const newTreeList = [];
-    for (let i = 0; i < treeList.length; i++) {
-      treeList[i].disabled = treeList[i].status === 0;
-      formatHigherDeptOptions(treeList[i].children);
-      newTreeList.push(treeList[i]);
-    }
-    return newTreeList;
-  }
+    // 归属部门
+    const { data } = await getDeptList({});
+    deptData.value = data;
+  });
 
   function openContractTemplateDialog(title = "新增", row?: ContractTemplateProps) {
     addDialog({
@@ -265,7 +273,7 @@ function useContractSettings() {
     contractTemplateList,
     houseOptions,
     tenantStatusTotal,
-    treeData,
+    treeData: deptData,
     isLinkage,
     pagination,
     treeSearchValue,

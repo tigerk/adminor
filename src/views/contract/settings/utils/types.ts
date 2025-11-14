@@ -3,7 +3,7 @@ import type { ContractTemplateProps } from "@/types";
 interface ContractTemplateQueryFormProps {
   templateName: string;
   contractType: number;
-  status: number;
+  status: any;
   pageSize: number;
   currentPage: number;
 }
