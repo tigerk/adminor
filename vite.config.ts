@@ -36,34 +36,34 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       // Electron 插件
       ...(isElectron
         ? [
-          electron([
-            {
-              // 主进程入口
-              entry: "electron/main.ts",
-              vite: {
-                build: {
-                  outDir: "dist-electron",
-                  rollupOptions: {
-                    external: ["electron"]
+            electron([
+              {
+                // 主进程入口
+                entry: "electron/main.ts",
+                vite: {
+                  build: {
+                    outDir: "dist-electron",
+                    rollupOptions: {
+                      external: ["electron"]
+                    }
+                  }
+                }
+              },
+              {
+                // 预加载脚本
+                entry: "electron/preload.ts",
+                onstart(options) {
+                  options.reload();
+                },
+                vite: {
+                  build: {
+                    outDir: "dist-electron"
                   }
                 }
               }
-            },
-            {
-              // 预加载脚本
-              entry: "electron/preload.ts",
-              onstart(options) {
-                options.reload();
-              },
-              vite: {
-                build: {
-                  outDir: "dist-electron"
-                }
-              }
-            }
-          ]),
-          electronRenderer()
-        ]
+            ]),
+            electronRenderer()
+          ]
         : [])
     ],
     optimizeDeps: {

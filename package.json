@@ -178,7 +178,7 @@
     "cross-env": "^10.1.0",
     "cssnano": "^7.1.0",
     "dagre": "^0.8.5",
-    "electron": "^33.2.0",
+    "electron": "^39.2.0",
     "electron-builder": "^25.1.8",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
@@ -242,7 +242,8 @@
       "es5-ext",
       "esbuild",
       "typeit",
-      "vue-demi"
+      "vue-demi",
+      "electron"
     ],
     "ignoredBuiltDependencies": [
       "@tailwindcss/oxide",
