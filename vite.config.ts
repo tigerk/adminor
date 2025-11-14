@@ -40,11 +40,18 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
               {
                 // 主进程入口
                 entry: "electron/main.ts",
+                onstart(args) {
+                  // 启动 Electron
+                  args.startup();
+                },
                 vite: {
                   build: {
                     outDir: "dist-electron",
                     rollupOptions: {
-                      external: ["electron"]
+                      external: ["electron"],
+                      output: {
+                        format: "es"
+                      }
                     }
                   }
                 }
@@ -57,7 +64,12 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
                 },
                 vite: {
                   build: {
-                    outDir: "dist-electron"
+                    outDir: "dist-electron",
+                    rollupOptions: {
+                      output: {
+                        format: "cjs"
+                      }
+                    }
                   }
                 }
               }
@@ -74,16 +86,21 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       target: "es2015",
       sourcemap: false,
       chunkSizeWarningLimit: 4000,
-      rollupOptions: {
-        input: {
-          index: pathResolve("./index.html", import.meta.url)
-        },
-        output: {
-          chunkFileNames: "static/js/[name]-[hash].js",
-          entryFileNames: "static/js/[name]-[hash].js",
-          assetFileNames: "static/[ext]/[name]-[hash].[ext]"
-        }
-      }
+      rollupOptions: isElectron
+        ? {
+            // Electron 模式不打包，留空
+            input: {}
+          }
+        : {
+            input: {
+              index: pathResolve("./index.html", import.meta.url)
+            },
+            output: {
+              chunkFileNames: "static/js/[name]-[hash].js",
+              entryFileNames: "static/js/[name]-[hash].js",
+              assetFileNames: "static/[ext]/[name]-[hash].[ext]"
+            }
+          }
     },
     define: {
       __INTLIFY_PROD_DEVTOOLS__: false,

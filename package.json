@@ -9,7 +9,7 @@
     "serve": "pnpm dev",
     "build": "rimraf dist && NODE_OPTIONS=--max-old-space-size=8192 vite build && generate-version-file",
     "build:staging": "rimraf dist && vite build --mode staging",
-    "electron:dev": "cross-env BUILD_TARGET=electron vite",
+    "electron:dev": "cross-env BUILD_TARGET=electron NODE_ENV=development vite",
     "electron:build": "cross-env BUILD_TARGET=electron vite build && electron-builder",
     "electron:build:win": "cross-env BUILD_TARGET=electron vite build && electron-builder --win",
     "electron:build:mac": "cross-env BUILD_TARGET=electron vite build && electron-builder --mac",
@@ -36,8 +36,11 @@
       "output": "release/${version}"
     },
     "files": [
-      "dist",
       "dist-electron",
+      ".env",
+      ".env.development",
+      ".env.production",
+      "!dist/**/*",
       "!node_modules/**/*",
       "!src/**/*",
       "!*.md",
