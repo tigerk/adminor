@@ -4,3 +4,4 @@
 export * from "./community";
 export * from "./house";
 export * from "./contract";
+export * from "./tenant";

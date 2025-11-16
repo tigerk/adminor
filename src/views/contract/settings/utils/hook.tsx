@@ -4,15 +4,16 @@ import type { PaginationProps } from "@pureadmin/table";
 import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { deleteContractTemplate, getContractTemplateList, updateContractTemplateStatus } from "@/api/contract/template";
+import ContractTemplateForm from "@/views/contract/settings/form/contractTemplateForm.vue";
+import { createContractTemplate, deleteContractTemplate, getContractTemplateList, updateContractTemplateStatus } from "@/api/contract/template";
 import { CONTRACT_TEMPLATE_STATUS_OPTIONS, CONTRACT_TYPE_OPTIONS, getOptionByCode } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { ContractTemplateQueryFormProps } from "@/views/contract/settings/utils/types";
-import type { TenantsCreateFormProps } from "@/types";
+import type { ContractTemplateFormProps } from "@/types";
+import { doc } from "prettier";
+import { handleTree } from "@/utils/tree";
 import { getDeptList } from "@/api/sys/dept";
-import { createTenant } from "@/api/contract/tenant";
-import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
 
 function useContractSettings() {
   const pagination = reactive<PaginationProps>({
@@ -203,9 +204,9 @@ function useContractSettings() {
     deptData.value = data;
   });
 
-  function openTenantDialog(title = "添加", row?: TenantsCreateFormProps) {
+  function openContractTemplateDialog(title = "新增", row?: ContractTemplateFormProps) {
     addDialog({
-      title: `${title}租客`,
+      title: `${title}合同模板`,
       props: {
         formInline: {
           title,
@@ -220,7 +221,7 @@ function useContractSettings() {
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(TenantCreateForm, { ref: formRef, formInline: null }),
+      contentRenderer: () => h(ContractTemplateForm, { ref: formRef, formInline: null }),
       beforeSure: (done, { options }) => {
         const getFormRuleRef = formRef.value.getRef();
         const curData = formRef.value.formInline;
@@ -229,9 +230,9 @@ function useContractSettings() {
           if (valid) {
             console.log("保存的curData", curData);
             // 表单规则校验通过
-            createTenant(curData).then(resp => {
+            createContractTemplate(curData).then(resp => {
               if (resp.code === 0) {
-                message(`您${title}了租客名称为${curData.tenantName}的这条数据`, {
+                message(`您${title}了合同模板名称为${curData.templateName}的这条数据`, {
                   type: "success"
                 });
                 done(); // 关闭弹框
@@ -276,7 +277,7 @@ function useContractSettings() {
     isLinkage,
     pagination,
     treeSearchValue,
-    openTenantDialog,
+    openContractTemplateDialog,
     onContractTemplateSearch,
     resetForm,
     handleDeleteTemplate,

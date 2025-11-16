@@ -11,3 +11,23 @@ export const getTenantList = (data?: object) => {
 export const createTenant = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/create"), { data });
 };
+
+/** 更新租客 */
+export const updateTenant = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/update"), { data });
+};
+
+/** 删除租客 */
+export const deleteTenant = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/delete"), { data });
+};
+
+/** 更新租客状态 */
+export const updateTenantStatus = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/status/update"), { data });
+};
+
+/** 获取租客详情 */
+export const getTenantDetail = (data?: object) => {
+  return http.request<ApiResponse>("get", baseUrlApi("contract/tenant/detail"), { params: data });
+};

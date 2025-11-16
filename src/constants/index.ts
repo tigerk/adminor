@@ -122,3 +122,37 @@ export const CONTRACT_TEMPLATE_STATUS_OPTIONS = [
   { label: "未启用", value: 0 },
   { label: "启用中", value: 1 }
 ] as const;
+
+/**
+ * 性别选项：1-男，2-女
+ */
+export const GENDER_OPTIONS = [
+  { label: "男", value: 1 },
+  { label: "女", value: 2 }
+] as const;
+
+/**
+ * 证件类型选项
+ */
+export const ID_TYPE_OPTIONS = [
+  { label: "身份证", value: 0 },
+  { label: "护照", value: 1 },
+  { label: "港澳通行证", value: 2 },
+  { label: "台胞证", value: 3 }
+] as const;
+
+/**
+ * 租客类型选项
+ */
+export const TENANT_TYPE_OPTIONS = [
+  { label: "个人", value: 0 },
+  { label: "企业", value: 1 }
+] as const;
+
+/**
+ * 租客状态选项
+ */
+export const TENANT_STATUS_OPTIONS = [
+  { label: "停用", value: 0 },
+  { label: "启用", value: 1 }
+] as const;
