@@ -12,3 +12,33 @@ export interface ContractTemplateProps {
   deptIds?: string[];
   remark?: string;
 }
+
+export interface TenantProps {
+  id?: string;
+  companyId?: string;
+  name?: string;
+  gender?: string;
+  idType?: number;
+  idNo?: string;
+  phone?: string;
+  tenantType?: number;
+  tenantSource?: number;
+  dealChannel?: number;
+  tags?: string[];
+  remark?: string;
+}
+
+export interface TenantsContractProps {
+  id?: string;
+  companyId?: string;
+  tenantName?: string;
+  tenantPhone?: string;
+  tenantEmail?: string;
+  tenantAddress?: string;
+  tenantRemark?: string;
+}
+
+export interface TenantsCreateFormProps {
+  tenant: TenantProps;
+  contract: ContractTemplateProps;
+}

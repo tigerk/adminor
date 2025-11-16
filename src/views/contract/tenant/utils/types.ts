@@ -1,11 +1,15 @@
-interface QueryFormItemProps {
-  keywords: string;
-  houseId: number;
-  roomStatus: number;
+import type { ContractTemplateProps } from "@/types";
+
+/** 租客查询表单 */
+interface TenantQueryFormProps {
+  tenantName: string;
+  tenantPhone: string;
+  pageSize: number;
+  currentPage: number;
 }
 
 interface FormProps {
-  formInline: QueryFormItemProps;
+  formInline: ContractTemplateProps;
 }
 
-export type { QueryFormItemProps, FormProps };
+export type { TenantQueryFormProps, FormProps };

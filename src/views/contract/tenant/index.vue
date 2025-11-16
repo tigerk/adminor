@@ -1,39 +1,30 @@
 <template>
   <div class="main">
     <el-row class="bg-bg_color w-full px-4 pb-0 pt-[12px] overflow-auto">
-      <el-col :span="16">
+      <el-col :span="12">
         <div class="grid-content ep-bg-purple w-full" style="align-items: flex-start">
           <el-form-item>
-            <el-radio-group v-model="queryForm.roomStatus" @change="onSearch">
-              <el-radio-button
-                v-for="item in tenantStatusTotal"
-                :key="item.roomStatus"
-                :value="item.roomStatus"
-                :class="['room-status-button', `status-${item.roomStatus || 'all'}`]"
-                :style="{
-                  // '--status-color': item.roomStatusColor
-                  // '--status-bg-color': item.roomStatusColor + '5' // 添加透明度
-                }"
-              >
-                <span class="status-content">
-                  <span class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
-                  {{ item.roomStatusName }}（{{ item.total }}）
-                </span>
+            <el-radio-group v-model="queryForm.contractType" @change="onContractTemplateSearch">
+              <el-radio-button v-for="item in contractTypeOptions" :key="item.value" :value="item.value">
+                {{ item.label }}
               </el-radio-button>
             </el-radio-group>
           </el-form-item>
         </div>
       </el-col>
-      <el-col :span="6" class="text-right">
-        <el-input v-model="queryForm.keywords" placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签" clearable class="w-full" @keyup.enter="onSearch" @clear="onSearch">
-          <template #suffix>
-            <IconifyIconOffline :icon="Search" />
-          </template>
-        </el-input>
-      </el-col>
-      <el-col :span="2" class="text-right">
+      <el-col :span="12" class="text-right">
         <el-space>
-          <el-button color="#626aef" :dark="true" @click="openDialog()">添加租客</el-button>
+          <el-radio-group v-model="queryForm.status" @change="onContractTemplateSearch">
+            <el-radio-button v-for="item in statusOptions" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </el-radio-button>
+          </el-radio-group>
+          <el-input v-model="queryForm.templateName" placeholder="模板名称" clearable class="w-full" @keyup.enter="onContractTemplateSearch" @clear="onContractTemplateSearch">
+            <template #suffix>
+              <IconifyIconOffline :icon="Search" />
+            </template>
+          </el-input>
+          <el-button color="#626aef" :dark="true" @click="openTenantDialog()">添加租客</el-button>
         </el-space>
       </el-col>
     </el-row>
@@ -44,12 +35,12 @@
         row-key="id"
         alignWhole="center"
         showOverflowTooltip
-        :size="tableSize as any"
         :loading="loading"
         :loading-config="{ background: 'transparent' }"
         adaptive
         :adaptiveConfig="{ offsetBottom: 108 }"
-        :data="tenantTableList"
+        :data="contractTemplateList"
+        :size="tableSize as any"
         :columns="columns"
         :pagination="pagination"
         :header-cell-style="{
@@ -58,24 +49,91 @@
         }"
         @page-size-change="handleSizeChange"
         @page-current-change="handleCurrentChange"
-      />
+      >
+        <template #operation="{ row }">
+          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(Printer)" @click="handlePreview(row)">预览</el-button>
+          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(EditPen)" @click="openContractTemplateDialog('修改', row)">修改</el-button>
+          <el-popconfirm :title="`是否确认删除这条数据`" @confirm="handleDeleteTemplate(row)">
+            <template #reference>
+              <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(Delete)">删除</el-button>
+            </template>
+          </el-popconfirm>
+        </template>
+      </pure-table>
     </el-row>
+    <el-dialog v-model="previewVisible" top="10px" title="合同预览" width="80%" height="100vh" :destroy-on-close="true" align-center :lock-scroll="true">
+      <iframe title="合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
+    </el-dialog>
   </div>
 </template>
 <script setup lang="ts">
+  import Search from "~icons/ri/search-eye-line";
+  import { CONTRACT_TYPE_OPTIONS } from "@/constants";
+  import useTenant from "@/views/contract/settings/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-
   import Delete from "~icons/ep/delete";
   import EditPen from "~icons/ep/edit-pen";
-  import Search from "~icons/ri/search-eye-line";
-  import { useContractTenant } from "@/views/contract/tenant/utils/hook";
+  import Printer from "~icons/ep/printer";
+  import { getContractTemplatePdf } from "@/api/contract/template";
+  import { ref, watch } from "vue";
+  import { message } from "@/utils/message";
 
   defineOptions({
     name: "ContractTenant"
   });
 
-  const { queryForm, openDialog, tenantStatusTotal, onSearch, tableSize, columns, loading, pagination, tenantTableList, handleSizeChange, handleCurrentChange } =
-    useContractTenant();
+  const {
+    queryForm,
+    openTenantDialog,
+    onContractTemplateSearch,
+    handleDeleteTemplate,
+    tableSize,
+    columns,
+    loading,
+    pagination,
+    contractTemplateList,
+    handleSizeChange,
+    handleCurrentChange
+  } = useTenant();
+
+  const contractTypeOptions = CONTRACT_TYPE_OPTIONS;
+  const statusOptions = [
+    {
+      label: "全部",
+      value: ""
+    },
+    {
+      label: "已启用",
+      value: 1
+    },
+    {
+      label: "未启用",
+      value: 0
+    }
+  ];
+
+  const previewVisible = ref(false);
+  const pdfUrl = ref("");
+
+  function handlePreview(row: any) {
+    getContractTemplatePdf({ id: row.id })
+      .then(resp => {
+        const blob = new Blob([resp], { type: "application/pdf" });
+        pdfUrl.value = URL.createObjectURL(blob);
+        previewVisible.value = true;
+      })
+      .catch(error => {
+        message("预览失败", { type: "error" });
+      });
+  }
+
+  // 关闭弹窗时释放 URL
+  watch(previewVisible, newVal => {
+    if (!newVal && pdfUrl.value) {
+      URL.revokeObjectURL(pdfUrl.value);
+      pdfUrl.value = "";
+    }
+  });
 </script>
 
 <style lang="scss" scoped>
@@ -109,7 +167,6 @@
       transition: all 0.3s ease;
 
       &:hover {
-        //border-color: var(--status-color);
         background-color: var(--status-bg-color);
       }
     }
@@ -149,30 +206,5 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-  }
-
-  /* 特定状态的自定义样式（如果需要） */
-  .status-all {
-    /* 全部状态的特殊样式 */
-  }
-
-  .status-0 {
-    /* 空置状态的特殊样式 */
-  }
-
-  .status-1 {
-    /* 已租状态的特殊样式 */
-  }
-
-  .status-2 {
-    /* 锁房状态的特殊样式 */
-  }
-
-  .status-3 {
-    /* 配置中状态的特殊样式 */
-  }
-
-  .status-4 {
-    /* 下架状态的特殊样式 */
   }
 </style>

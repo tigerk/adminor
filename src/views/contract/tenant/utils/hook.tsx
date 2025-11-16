@@ -1,18 +1,17 @@
 import { message } from "@/utils/message";
 import { transformI18n } from "@/plugins/i18n";
 import type { PaginationProps } from "@pureadmin/table";
-import { reactive, ref, onMounted, toRaw, h } from "vue";
-import router from "@/router";
-import { getRoomList, getRoomTotal } from "@/api/house/room";
-import { getFocusHouseOptions } from "@/api/house/focus";
-import type { FormItemProps } from "@/views/system/user/utils/types";
+import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import createTenant from "@/views/contract/tenant/form/createTenant.vue";
-import { createUser } from "@/api/system";
-import type { HouseLayoutProps } from "@/types";
+import { getOptionByCode } from "@/constants";
+import { usePublicHooks } from "@/utils/publicHooks";
+import type { TenantQueryFormProps } from "@/views/contract/tenant/utils/types";
+import { getDeptList } from "@/api/sys/dept";
+import { getTenantList } from "@/api/contract/tenant";
+import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
 
-export function useContractTenant() {
+function useTenant() {
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 15,
@@ -20,160 +19,122 @@ export function useContractTenant() {
     background: true
   });
 
-  const queryForm = reactive({
-    keywords: "",
-    houseId: null,
-    roomStatus: null,
+  const queryForm = reactive<TenantQueryFormProps>({
+    tenantName: "",
+    tenantPhone: "",
     pageSize: 15,
     currentPage: 1
   });
 
   const curRow = ref();
-  const tenantTableList = ref([]);
+  const contractTemplateList = ref([]);
   const houseOptions = ref([]);
   const tenantStatusTotal = ref([]);
-  const treeData = ref([]);
+  const deptData = ref([]);
   const isShow = ref(false);
   const loading = ref(true);
   const isLinkage = ref(false);
   const treeSearchValue = ref();
-  const displayModeToList = ref(true);
-  const displayModeText = ref("列表模式");
   const tableSize = ref("default");
-  const higherDeptOptions = ref();
   const formRef = ref();
+  const switchLoadMap = ref({});
+  const { switchStyle } = usePublicHooks();
+
+  const mutableContractTypeOptions = [...CONTRACT_TYPE_OPTIONS] as any[];
+
+  // 计算当前页的起始索引
+  const startIndex = computed(() => (pagination.currentPage - 1) * pagination.pageSize + 1);
+  // 渲染序号列
+  const renderIndexCell = ({ index }) => <span>{startIndex.value + index}</span>;
 
   const columns: TableColumnList = [
     {
+      label: "序号",
+      prop: "index",
+      width: 60,
+      cellRenderer: renderIndexCell
+    },
+    {
+      label: "合同类型",
+      prop: "contractType",
+      minWidth: 120,
+      cellRenderer: ({ row }) => <span>{getOptionByCode(mutableContractTypeOptions, row.contractType)?.label}</span>
+    },
+    {
+      label: "模板名称",
+      prop: "templateName",
+      minWidth: 250
+    },
+    {
+      label: "生效部门",
+      prop: "deptIds",
+      width: 250,
+      cellRenderer: ({ row }) => {
+        const deptIds = row.deptIds || [];
+        return deptIds
+          .map(id => {
+            const dept = deptData.value.find(item => item.id === id);
+            return dept?.name || "";
+          })
+          .join("  |  ");
+      }
+    },
+    {
       label: "状态",
-      prop: "roomStatusName",
-      width: 100,
-      cellRenderer: ({ row }) => (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            height: "100%",
-            textAlign: "center"
-          }}
-        >
-          <span
-            class="status-dot"
-            style={{
-              backgroundColor: row.roomStatusColor,
-              display: "inline-block",
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              flexShrink: 0,
-              marginRight: "8px"
-            }}
-          ></span>
-          <span>{row.roomStatusName}</span>
-        </div>
-      )
+      prop: "status",
+      minWidth: 90
     },
     {
-      label: "项目",
-      prop: "houseName",
-      width: 120
-    },
-    {
-      label: "房型 / 门牌号",
-      prop: "houseLayout.layoutName",
-      cellRenderer: ({ row }) => (
-        <span>
-          {row.houseLayout?.layoutName ?? ""} {row.roomNumber}
-        </span>
-      )
-    },
-    {
-      label: "价格(元/月)",
-      prop: "price",
-      width: 120
-    },
-    {
-      label: "户型",
-      cellRenderer: ({ row }) => <span>{formatHouseLayout(row.houseLayout)}</span>
-    },
-    {
-      label: "面积",
-      prop: "area",
-      cellRenderer: ({ row }) => <span>{row.area}㎡</span>
-    },
-    {
-      label: "朝向",
-      prop: "direction"
-    },
-    {
-      label: "负责人",
-      prop: "salesmanName",
-      cellRenderer: ({ row }) => (
-        <span>
-          {row.salesmanName} - {row.salesmanPhone}
-        </span>
-      )
+      label: "创建时间",
+      prop: "createTime",
+      minWidth: 180
     },
     {
       label: "操作",
       fixed: "right",
-      width: 80,
+      width: 200,
       slot: "operation"
     }
   ];
 
   function handleDelete(row: any) {
     message(`您删除了角色名称为${row.name}的这条数据`, { type: "success" });
-    onSearch();
+    onTenantSearch();
   }
 
   function handleSizeChange(val: number) {
     console.log(`${val} items per page`);
     pagination.pageSize = val;
-    onSearch();
+    onTenantSearch();
   }
 
   function handleCurrentChange(val: number) {
     console.log(`current page: ${val}`);
     pagination.currentPage = val;
-    onSearch();
+    onTenantSearch();
   }
 
-  async function onSearch() {
+  function onTenantSearch() {
     loading.value = true;
     queryForm.currentPage = pagination.currentPage;
     queryForm.pageSize = pagination.pageSize;
 
-    const { data } = await getRoomList(toRaw(queryForm));
-    if (data) {
-      tenantTableList.value = data.list;
-      pagination.total = Number(data.total);
-      pagination.pageSize = Number(data.pageSize);
-      pagination.currentPage = Number(data.currentPage);
-    }
-
-    setTimeout(() => {
-      loading.value = false;
-    }, 500);
-
-    getRoomTotal(toRaw(queryForm)).then(res => {
-      tenantStatusTotal.value = res.data.statusList;
-
-      let total = 0;
-      res.data.statusList.forEach(item => {
-        total += item.total;
-      });
-
-      tenantStatusTotal.value.unshift({ roomStatus: "", roomStatusName: "全部", total: total });
+    getTenantList(toRaw(queryForm)).then(resp => {
+      if (resp.code === 0) {
+        contractTemplateList.value = resp.data.list;
+        pagination.total = Number(resp.data.total);
+        pagination.pageSize = Number(resp.data.pageSize);
+        pagination.currentPage = Number(resp.data.currentPage);
+      }
     });
+
+    loading.value = false;
   }
 
   const resetForm = formEl => {
     if (!formEl) return;
     formEl.resetFields();
-    onSearch();
+    onTenantSearch();
   };
 
   /** 高亮当前权限选中行 */
@@ -189,106 +150,66 @@ export function useContractTenant() {
   };
 
   onMounted(async () => {
-    onSearch();
-    onHouseOptions();
+    onTenantSearch();
+
+    // 归属部门
+    const { data } = await getDeptList({});
+    deptData.value = data;
   });
 
-  function onHouseOptions() {
-    getFocusHouseOptions().then(res => {
-      houseOptions.value = res.data;
-    });
-  }
-
-  function onBack() {
-    // 检查是否有历史记录可以返回
-    if (window.history.length <= 1) {
-      // 如果没有历史记录，跳转到默认页面
-      router.push("/"); // 或者其他默认页面
-    } else {
-      router.go(-1);
-    }
-  }
-
-  function formatHouseLayout(layout: HouseLayoutProps): string {
-    if (!layout) return "";
-    const { bedroom, livingRoom, kitchen, bathroom } = layout;
-    return `${bedroom || 0}室${livingRoom || 0}厅${kitchen || 0}厨${bathroom || 0}卫`;
-  }
-
-  function handleDisplayClick() {
-    displayModeToList.value = !displayModeToList.value;
-    displayModeText.value = displayModeToList.value ? "列表模式" : "房态模式";
-  }
-
-  function formatHigherDeptOptions(treeList) {
-    // 根据返回数据的status字段值判断追加是否禁用disabled字段，返回处理后的树结构，用于上级部门级联选择器的展示（实际开发中也是如此，不可能前端需要的每个字段后端都会返回，这时需要前端自行根据后端返回的某些字段做逻辑处理）
-    if (!treeList || !treeList.length) return;
-    const newTreeList = [];
-    for (let i = 0; i < treeList.length; i++) {
-      treeList[i].disabled = treeList[i].status === 0;
-      formatHigherDeptOptions(treeList[i].children);
-      newTreeList.push(treeList[i]);
-    }
-    return newTreeList;
-  }
-
-  function openDialog(title = "新增", row?: FormItemProps) {
+  function openContractTemplateDialog(title = "新增", row?: ContractTemplateProps) {
     addDialog({
-      title: `${title}租客`,
+      title: `${title}合同模板`,
       props: {
         formInline: {
           title,
-          id: row?.id,
-          deptId: row?.dept.id ?? "",
-          higherDeptOptions: formatHigherDeptOptions(higherDeptOptions.value),
-          nickname: row?.nickname ?? "",
-          username: row?.username ?? "",
-          password: row?.password ?? null,
-          phone: row?.phone ?? "",
-          email: row?.email ?? "",
-          gender: row?.gender ?? "",
-          status: row?.status ?? 1,
-          remark: row?.remark ?? ""
+          ...row
         }
       },
-      width: "46%",
+      top: "1%",
+      width: "88%",
+      lockScroll: true,
+      alignCenter: true,
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(createTenant, { ref: formRef, formInline: null }),
+      contentRenderer: () => h(TenantCreateForm, { ref: formRef, formInline: null }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as FormItemProps;
-
-        function chores() {
-          createUser(curData).then(resp => {
-            if (resp.code === 0) {
-              message(`您${title}了租客名称为${curData.username}的这条数据`, {
-                type: "success"
-              });
-              done(); // 关闭弹框
-              onSearch(); // 刷新表格数据
-            } else {
-              message(resp.message, {
-                type: "error"
-              });
-            }
-          });
-        }
-
-        FormRef.validate(valid => {
+        const getFormRuleRef = formRef.value.getRef();
+        const curData = formRef.value.formInline;
+        debugger;
+        getFormRuleRef.validate(valid => {
           if (valid) {
-            console.log("curData", curData);
+            console.log("保存的curData", curData);
             // 表单规则校验通过
-            if (title === "新增") {
-              // 实际开发先调用新增接口，再进行下面操作
-              chores();
-            } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
-            }
+            createContractTemplate(curData).then(resp => {
+              if (resp.code === 0) {
+                message(`您${title}了合同模板名称为${curData.templateName}的这条数据`, {
+                  type: "success"
+                });
+                done(); // 关闭弹框
+                onTenantSearch(); // 刷新表格数据
+              } else {
+                message(resp.message, {
+                  type: "error"
+                });
+              }
+            });
           }
+        });
+      }
+    });
+  }
+
+  function handleDeleteTemplate(row: any) {
+    deleteContractTemplate({ id: row.id }).then(resp => {
+      if (resp.code === 0) {
+        message(`您删除了合同模板名称为${row.templateName}的这条数据`, { type: "success" });
+        onTenantSearch();
+      } else {
+        message(resp.message, {
+          type: "error"
         });
       }
     });
@@ -296,30 +217,28 @@ export function useContractTenant() {
 
   return {
     queryForm,
-    onBack,
     tableSize,
     isShow,
     curRow,
     loading,
     columns,
     rowStyle,
-    tenantTableList,
+    contractTemplateList,
     houseOptions,
     tenantStatusTotal,
-    displayModeToList,
-    displayModeText,
-    handleDisplayClick,
-    treeData,
+    treeData: deptData,
     isLinkage,
     pagination,
     treeSearchValue,
-    openDialog,
-    onSearch,
+    openContractTemplateDialog,
+    onContractTemplateSearch: onTenantSearch,
     resetForm,
-    handleDelete,
+    handleDeleteTemplate,
     filterMethod,
     transformI18n,
     handleSizeChange,
     handleCurrentChange
   };
 }
+
+export default useTenant;
