@@ -43,15 +43,15 @@
             </el-col>
             <el-col :span="5">
               <el-form-item label="租客标签" prop="tags">
-                <CollapsedMultiSelect v-model="formInline.tenant.tags" :options="tenantTagOptions" :max-tags="1" placeholder="租客标签" filterable>
+                <el-select v-model="formInline.tenant.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
                   <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </CollapsedMultiSelect>
+                </el-select>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="20">
             <el-col :span="24">
-              <upload-image :max-count="1" :preview-size="120" :preview-src-list="formInline.tenant.avatar" @change="handleAvatarChange" />
+              <upload-image  v-model="formInline.tenant.avatar" :limit="3" />
             </el-col>
           </el-row>
         </div>
@@ -80,20 +80,15 @@
             </el-col>
             <el-col :span="5">
               <el-form-item label="租客标签" prop="tags">
-                <CollapsedMultiSelect v-model="formInline.tenant.tags" :options="tenantTagOptions" :max-tags="1" placeholder="租客标签" filterable>
+                <el-select v-model="formInline.tenant.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
                   <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </CollapsedMultiSelect>
+                </el-select>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="20">
-            <el-col :span="12">
-              <upload-image :max-count="1" :preview-size="120" :preview-src-list="formInline.tenant.avatar" @change="handleAvatarChange" />
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="注册资金" prop="registeredCapital">
-                <el-input v-model="formInline.tenant.registeredCapital" placeholder="请输入注册资金" clearable maxlength="20" />
-              </el-form-item>
+            <el-col :span="24">
+              <upload-image  v-model="formInline.tenant.avatar" :limit="3" />
             </el-col>
           </el-row>
         </div>
@@ -145,7 +140,6 @@
   import type { TenantsCreateFormProps } from "@/types";
   import { tenantFormRules } from "@/views/contract/tenant/utils/rule";
   import useTenant from "@/views/contract/tenant/utils/hook";
-  import CollapsedMultiSelect from "@/components/Business/CollapsedMultiSelect.vue";
   import UploadImage from "@/components/Business/UploadImage.vue";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions } = useTenant();

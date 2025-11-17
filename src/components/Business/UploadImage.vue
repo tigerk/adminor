@@ -328,67 +328,65 @@
 
 <template>
   <div :id="componentId">
-    <el-card shadow="never">
-      <el-upload
-        ref="uploadRef"
-        v-model:file-list="fileList"
-        drag
-        multiple
-        class="pure-upload"
-        list-type="picture-card"
-        accept="image/jpeg,image/png,image/gif"
-        :limit="props.limit"
-        :http-request="customUpload"
-        :on-exceed="onExceed"
-        :before-upload="onBefore"
-        :on-success="onUploadSuccess"
-        :on-error="onUploadError"
-      >
-        <EpPlus class="m-auto mt-4" />
-        <template #file="{ file }">
-          <div v-if="file.status === 'ready' || file.status === 'uploading'" class="mt-[35%]! m-auto">
-            <p class="font-medium">文件上传中</p>
-            <el-progress class="mt-2!" :stroke-width="2" :text-inside="true" :show-text="false" :percentage="file.percentage || 0" />
-          </div>
-          <div v-else class="upload-item-content">
-            <img class="el-upload-list__item-thumbnail select-none" :src="file.url" :alt="file.name" draggable="false" />
-            <span class="el-upload-list__item-actions">
-              <span title="查看" class="action-btn hover:text-primary" @click.stop="handlePictureCardPreview(file)">
-                <IconifyIconOffline :icon="Eye" class="hover:scale-125 duration-100" />
-              </span>
-              <span title="移除" class="action-btn hover:text-[var(--el-color-danger)]" @click.stop="handleRemove(file)">
-                <IconifyIconOffline :icon="Delete" class="hover:scale-125 duration-100" />
-              </span>
-            </span>
-          </div>
-        </template>
-      </el-upload>
-
-      <el-image-viewer
-        v-if="dialogVisible"
-        :initial-index="curOpenImgIndex"
-        :url-list="urlList"
-        :zoom-rate="1.2"
-        :max-scale="7"
-        :min-scale="0.2"
-        @close="dialogVisible = false"
-        @switch="index => (curOpenImgIndex = index)"
-      />
-
-      <teleport to="body">
-        <div v-if="fileList[curOpenImgIndex] && dialogVisible" class="img-name">
-          <p class="text-[#fff] dark:text-black">
-            {{ fileList[curOpenImgIndex].name }}
-          </p>
+    <el-upload
+      ref="uploadRef"
+      v-model:file-list="fileList"
+      drag
+      multiple
+      class="pure-upload"
+      list-type="picture-card"
+      accept="image/jpeg,image/png,image/gif"
+      :limit="props.limit"
+      :http-request="customUpload"
+      :on-exceed="onExceed"
+      :before-upload="onBefore"
+      :on-success="onUploadSuccess"
+      :on-error="onUploadError"
+    >
+      <EpPlus class="m-auto mt-4" />
+      <template #file="{ file }">
+        <div v-if="file.status === 'ready' || file.status === 'uploading'" class="mt-[35%]! m-auto">
+          <p class="font-medium">文件上传中</p>
+          <el-progress class="mt-2!" :stroke-width="2" :text-inside="true" :show-text="false" :percentage="file.percentage || 0" />
         </div>
-      </teleport>
+        <div v-else class="upload-item-content">
+          <img class="el-upload-list__item-thumbnail select-none" :src="file.url" :alt="file.name" draggable="false" />
+          <span class="el-upload-list__item-actions">
+            <span title="查看" class="action-btn hover:text-primary" @click.stop="handlePictureCardPreview(file)">
+              <IconifyIconOffline :icon="Eye" class="hover:scale-125 duration-100" />
+            </span>
+            <span title="移除" class="action-btn hover:text-[var(--el-color-danger)]" @click.stop="handleRemove(file)">
+              <IconifyIconOffline :icon="Delete" class="hover:scale-125 duration-100" />
+            </span>
+          </span>
+        </div>
+      </template>
+    </el-upload>
 
-      <p class="el-upload__tip">
-        <span class="text-amber-600 text-base">图片</span>
-        可拖拽上传最多{{ props.limit }}张，单个不超过2MB且格式为jpeg/png/gif的图片
-        <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽图片可调整顺序）</span>
-      </p>
-    </el-card>
+    <el-image-viewer
+      v-if="dialogVisible"
+      :initial-index="curOpenImgIndex"
+      :url-list="urlList"
+      :zoom-rate="1.2"
+      :max-scale="7"
+      :min-scale="0.2"
+      @close="dialogVisible = false"
+      @switch="index => (curOpenImgIndex = index)"
+    />
+
+    <teleport to="body">
+      <div v-if="fileList[curOpenImgIndex] && dialogVisible" class="img-name">
+        <p class="text-[#fff] dark:text-black">
+          {{ fileList[curOpenImgIndex].name }}
+        </p>
+      </div>
+    </teleport>
+
+    <p class="el-upload__tip">
+      <span class="text-amber-600 text-base">图片</span>
+      可拖拽上传最多{{ props.limit }}张，单个不超过2MB且格式为jpeg/png/gif的图片
+      <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽图片可调整顺序）</span>
+    </p>
   </div>
 </template>
 
