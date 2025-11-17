@@ -49,16 +49,46 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-row :gutter="20">
+          <el-row :gutter="1" class="mb-4">
             <el-col :span="24">
-              <UploadImage v-model="imageList" :limit="5">
-                <!-- 使用自定义提示 -->
-                <template #tip="{ limit, fileCount }">
-                  <span class="text-red-500">自定义提示asdfasdf：</span>
-                  最多上传 {{ limit }} 张图片，当前已上传 {{ fileCount }} 张
-                  <span v-if="fileCount > 1" class="text-blue-500">（可拖拽排序）</span>
-                </template>
-              </UploadImage>
+              <el-space>
+                <div>
+                  <div class="mb-2">
+                    <span class="font-bold">证件信息</span>
+                  </div>
+                  <el-space>
+                    <UploadImage v-model="idCardFrontList" :limit="1">
+                      <!-- 使用自定义提示 -->
+                      <template #tip="{ limit, fileCount }">
+                        <div class="text-center font-bold text-sm">身份证国徽面</div>
+                      </template>
+                    </UploadImage>
+                    <UploadImage v-model="idCardBackList" :limit="1">
+                      <!-- 使用自定义提示 -->
+                      <template #tip="{ limit, fileCount }">
+                        <div class="text-center font-bold text-sm">身份证人像面</div>
+                      </template>
+                    </UploadImage>
+                    <UploadImage v-model="idCardInHandList" :limit="1">
+                      <!-- 使用自定义提示 -->
+                      <template #tip="{ limit, fileCount }">
+                        <div class="text-center font-bold text-sm">手持身份证照片</div>
+                      </template>
+                    </UploadImage>
+                  </el-space>
+                </div>
+                <div>
+                  <div class="mb-2">
+                    <span class="font-bold">租客证件照片</span>
+                  </div>
+                  <UploadImage v-model="otherImageList" :limit="3">
+                    <!-- 使用自定义提示 -->
+                    <template #tip="{ limit, fileCount }">
+                      <div class="font-bold text-sm">其他照片，最多可上传3张</div>
+                    </template>
+                  </UploadImage>
+                </div>
+              </el-space>
             </el-col>
           </el-row>
         </div>
@@ -186,7 +216,10 @@
   const idTypeOptions = ID_TYPE_OPTIONS;
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
 
-  const imageList = ref([]);
+  const idCardFrontList = ref([]);
+  const idCardBackList = ref([]);
+  const idCardInHandList = ref([]);
+  const otherImageList = ref([]);
 
   // 暴露方法给父组件
   const getRef = () => {
