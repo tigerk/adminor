@@ -714,14 +714,15 @@
         cursor: `${building.building}-${building.unit || "0"}-${floor}-${i}`,
         houseIndex: i,
         doorNumber: doorNumber,
-        closed: false,
         floor: floor,
         building: building.building,
         unit: building.unit,
         houseLayoutId: undefined,
         price: 0,
         direction: "",
-        area: 0
+        area: 0,
+        closed: false,
+        locked: false
       });
     }
 

@@ -28,7 +28,7 @@ const validateIdNo = (rule: any, value: any, callback: any, formInline: any) => 
 export const tenantFormRules = (formInline: any) =>
   reactive<FormRules>({
     name: [
-      { required: true, message: "请输入租客姓名", trigger: "blur" },
+      { required: true, message: "请输入租客姓名或企业名称", trigger: "blur" },
       { min: 2, max: 50, message: "长度在 2 到 50 个字符", trigger: "blur" }
     ],
     tenantType: [{ required: true, message: "请选择租客类型", trigger: "change" }],

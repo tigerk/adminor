@@ -1,93 +1,141 @@
 <template>
-  <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px">
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <el-form-item label="租客姓名" prop="name">
-          <el-input v-model="formInline.tenant.name" placeholder="请输入租客姓名" clearable maxlength="50" show-word-limit />
-        </el-form-item>
-      </el-col>
+  <div class="section-tenant-info">
+    <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
+      <div class="section-header">
+        <el-space spacer=" | ">
+          <el-tooltip content="请选择租客类型" placement="right">
+            <el-segmented v-model="formInline.tenant.tenantType" :options="tenantTypeOptions" />
+          </el-tooltip>
+        </el-space>
+      </div>
+      <div class="mt-4">
+        <div v-if="formInline.tenant.tenantType === 0">
+          <el-row :gutter="20">
+            <el-col :span="4">
+              <el-form-item label="租客姓名" prop="name">
+                <el-input v-model="formInline.tenant.name" placeholder="请输入租客姓名" clearable maxlength="20" show-word-limit />
+              </el-form-item>
+            </el-col>
 
-      <el-col :span="12">
-        <el-form-item label="性别" prop="gender">
-          <el-radio-group v-model="formInline.tenant.gender">
-            <el-radio v-for="item in genderOptions" :key="item.value" :value="item.value">
-              {{ item.label }}
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-col>
-    </el-row>
+            <el-col :span="3">
+              <el-form-item label="性别" prop="gender">
+                <el-segmented v-model="formInline.tenant.gender" :options="genderOptions" />
+              </el-form-item>
+            </el-col>
 
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <el-form-item label="租客类型" prop="tenantType">
-          <el-radio-group v-model="formInline.tenant.tenantType">
-            <el-radio v-for="item in tenantTypeOptions" :key="item.value" :value="item.value">
-              {{ item.label }}
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-col>
+            <el-col :span="4">
+              <el-form-item label="联系电话" prop="phone">
+                <el-input v-model="formInline.tenant.phone" placeholder="请输入联系电话" clearable maxlength="30" />
+              </el-form-item>
+            </el-col>
 
-      <el-col :span="12">
-        <el-form-item label="联系电话" prop="phone">
-          <el-input v-model="formInline.tenant.phone" placeholder="请输入联系电话" clearable maxlength="30" />
-        </el-form-item>
-      </el-col>
-    </el-row>
+            <el-col :span="3">
+              <el-form-item label="证件类型" prop="idType">
+                <el-select v-model="formInline.tenant.idType" placeholder="请选择证件类型" class="w-full">
+                  <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="5">
+              <el-form-item label="证件号码" prop="idNo">
+                <el-input v-model="formInline.tenant.idNo" placeholder="请输入证件号码" clearable maxlength="20" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="5">
+              <el-form-item label="租客标签" prop="tags">
+                <CollapsedMultiSelect v-model="formInline.tenant.tags" :options="tenantTagOptions" :max-tags="1" placeholder="租客标签" filterable>
+                  <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </CollapsedMultiSelect>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="24">
+              <upload-image :max-count="1" :preview-size="120" :preview-src-list="formInline.tenant.avatar" @change="handleAvatarChange" />
+            </el-col>
+          </el-row>
+        </div>
 
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <el-form-item label="证件类型" prop="idType">
-          <el-select v-model="formInline.tenant.idType" placeholder="请选择证件类型" class="w-full">
-            <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
+        <div v-if="formInline.tenant.tenantType === 1">
+          <el-row :gutter="20">
+            <el-col :span="6">
+              <el-form-item label="企业名称" prop="name">
+                <el-input v-model="formInline.tenant.name" placeholder="请输入企业名称" clearable maxlength="20" show-word-limit />
+              </el-form-item>
+            </el-col>
+            <el-col :span="5">
+              <el-form-item label="统一社会信用代码" prop="idNo">
+                <el-input v-model="formInline.tenant.idNo" placeholder="请输入统一社会信用代码" clearable maxlength="20" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="法定代表人" prop="legalRepresentative">
+                <el-input v-model="formInline.tenant.legalRepresentative" placeholder="请输入法定代表人" clearable maxlength="30" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="联系电话" prop="phone">
+                <el-input v-model="formInline.tenant.phone" placeholder="请输入联系电话" clearable maxlength="30" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="5">
+              <el-form-item label="租客标签" prop="tags">
+                <CollapsedMultiSelect v-model="formInline.tenant.tags" :options="tenantTagOptions" :max-tags="1" placeholder="租客标签" filterable>
+                  <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </CollapsedMultiSelect>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <upload-image :max-count="1" :preview-size="120" :preview-src-list="formInline.tenant.avatar" @change="handleAvatarChange" />
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="注册资金" prop="registeredCapital">
+                <el-input v-model="formInline.tenant.registeredCapital" placeholder="请输入注册资金" clearable maxlength="20" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
 
-      <el-col :span="12">
-        <el-form-item label="证件号码" prop="idNo">
-          <el-input v-model="formInline.tenant.idNo" placeholder="请输入证件号码" clearable maxlength="20" />
-        </el-form-item>
-      </el-col>
-    </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="租客来源" prop="tenantSource">
+              <el-select v-model="formInline.tenant.tenantSource" placeholder="请选择租客来源" class="w-full" clearable>
+                <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
 
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <el-form-item label="租客来源" prop="tenantSource">
-          <el-select v-model="formInline.tenant.tenantSource" placeholder="请选择租客来源" class="w-full" clearable>
-            <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
+          <el-col :span="12">
+            <el-form-item label="成交渠道" prop="dealChannel">
+              <el-select v-model="formInline.tenant.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
+                <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-      <el-col :span="12">
-        <el-form-item label="成交渠道" prop="dealChannel">
-          <el-select v-model="formInline.tenant.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
-            <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-    </el-row>
+        <el-row :gutter="20">
+          <el-col :span="24">
+            <el-form-item label="租客标签" prop="tags">
+              <el-select v-model="formInline.tenant.tags" placeholder="请选择租客标签" class="w-full" multiple clearable collapse-tags collapse-tags-tooltip>
+                <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-    <el-row :gutter="20">
-      <el-col :span="24">
-        <el-form-item label="租客标签" prop="tags">
-          <el-select v-model="formInline.tenant.tags" placeholder="请选择租客标签" class="w-full" multiple clearable collapse-tags collapse-tags-tooltip>
-            <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="20">
-      <el-col :span="24">
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="formInline.tenant.remark" type="textarea" :rows="4" placeholder="请输入备注信息" maxlength="500" show-word-limit />
-        </el-form-item>
-      </el-col>
-    </el-row>
-  </el-form>
+        <el-row :gutter="20">
+          <el-col :span="24">
+            <el-form-item label="备注" prop="remark">
+              <el-input v-model="formInline.tenant.remark" type="textarea" :rows="4" placeholder="请输入备注信息" maxlength="500" show-word-limit />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </div>
+    </el-form>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -97,6 +145,8 @@
   import type { TenantsCreateFormProps } from "@/types";
   import { tenantFormRules } from "@/views/contract/tenant/utils/rule";
   import useTenant from "@/views/contract/tenant/utils/hook";
+  import CollapsedMultiSelect from "@/components/Business/CollapsedMultiSelect.vue";
+  import UploadImage from "@/components/Business/UploadImage.vue";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions } = useTenant();
 
