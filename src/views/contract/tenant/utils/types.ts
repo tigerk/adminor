@@ -1,4 +1,4 @@
-import type { ContractTemplateFormProps } from "@/types";
+import type { ContractTemplateFormProps, TenantMateProps } from "@/types";
 
 /** 租客查询表单 */
 interface TenantQueryFormProps {
@@ -8,8 +8,8 @@ interface TenantQueryFormProps {
   currentPage: number;
 }
 
-interface FormProps {
+interface TenantCreateFormProps {
   formInline: ContractTemplateFormProps;
 }
 
-export type { TenantQueryFormProps, FormProps };
+export type { TenantQueryFormProps, TenantCreateFormProps };

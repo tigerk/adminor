@@ -8,9 +8,10 @@ import { createTenant, deleteTenant, getTenantList, updateTenant, updateTenantSt
 import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
-import { TenantProps, TenantQueryFormProps, TenantsCreateFormProps } from "@/types";
+import type { TenantMateProps, TenantProps, TenantQueryFormProps, TenantsCreateFormProps } from "@/types";
 import { getDictDataByDictCode } from "@/api/sys/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
+import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
 
 function useTenant() {
   const pagination = reactive<PaginationProps>({
@@ -317,6 +318,35 @@ function useTenant() {
     });
   }
 
+  const tenantMateFormRef = ref();
+  function openTenantMateDialog(title = "添加", row?: TenantMateProps[]) {
+    addDialog({
+      title: `${title}同住人`,
+      props: {
+        formInline: {
+          tenantSourceOptions: tenantSourceOptions.value,
+          tenantMateList: row || []
+        }
+      },
+      top: "1vh",
+      width: "70vw",
+      // 锁定滚动
+      lockScroll: true,
+      // 居中显示
+      alignCenter: true,
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(TenantMateForm, { ref: tenantMateFormRef, formInline: null }),
+      beforeSure: (done, { options }) => {
+        const FormInstance = tenantMateFormRef.value as any;
+        const getFormRuleRef = FormInstance?.getRef?.();
+        const curData = FormInstance?.formInline;
+      }
+    });
+  }
+
   function handleDeleteTenant(row: TenantProps) {
     deleteTenant({ id: row.id }).then(resp => {
       if (resp.code === 0) {
@@ -347,7 +377,8 @@ function useTenant() {
     resetForm,
     handleDeleteTenant,
     handleSizeChange,
-    handleCurrentChange
+    handleCurrentChange,
+    openTenantMateDialog
   };
 }
 

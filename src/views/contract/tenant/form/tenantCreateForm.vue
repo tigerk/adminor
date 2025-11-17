@@ -1,23 +1,32 @@
 <template>
   <div class="section-tenant-info">
+    <div>选择房源</div>
+
     <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
       <div class="section-header">
-        <el-space spacer=" | ">
-          <el-tooltip content="请选择租客类型" placement="right">
-            <el-segmented v-model="formInline.tenant.tenantType" :options="tenantTypeOptions" />
-          </el-tooltip>
-        </el-space>
+        <el-row :gutter="20">
+          <el-col :span="19">
+            <el-space spacer=" | ">
+              <el-tooltip content="请选择租客类型" placement="right">
+                <el-segmented v-model="formInline.tenant.tenantType" :options="tenantTypeOptions" />
+              </el-tooltip>
+            </el-space>
+          </el-col>
+          <el-col :span="5" class="text-right">
+            <el-button type="primary" :icon="Plus" @click="openTenantMateDialog('添加', formInline.tenant.tenantMateList)">添加同住人</el-button>
+          </el-col>
+        </el-row>
       </div>
       <div class="mt-4">
         <div v-if="formInline.tenant.tenantType === 0">
           <el-row :gutter="20">
-            <el-col :span="4">
-              <el-form-item label="租客姓名" prop="name">
+            <el-col :span="5">
+              <el-form-item label="姓名" prop="name">
                 <el-input v-model="formInline.tenant.name" placeholder="请输入租客姓名" clearable maxlength="20" show-word-limit />
               </el-form-item>
             </el-col>
 
-            <el-col :span="3">
+            <el-col :span="2">
               <el-form-item label="&nbsp;" prop="gender">
                 <el-segmented v-model="formInline.tenant.gender" :options="genderOptions" />
               </el-form-item>
@@ -79,7 +88,7 @@
                 </div>
                 <div>
                   <div class="mb-2">
-                    <span class="font-bold">租客证件照片</span>
+                    <span class="font-bold">其他照片</span>
                   </div>
                   <UploadImage v-model="otherImageList" :limit="3" :width="120" :height="72">
                     <!-- 使用自定义提示 -->
@@ -178,12 +187,14 @@
   import { tenantFormRules } from "@/views/contract/tenant/utils/rule";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/Business/UploadImage.vue";
+  import { Plus } from "@element-plus/icons-vue";
 
-  const { tenantSourceOptions, dealChannelOptions, tenantTagOptions } = useTenant();
+  const { tenantSourceOptions, dealChannelOptions, tenantTagOptions, openTenantMateDialog } = useTenant();
 
   interface FormProps {
     formInline: TenantsCreateFormProps;
   }
+
   const props = defineProps<FormProps>();
 
   // 表单引用
@@ -205,6 +216,7 @@
       remark: props.formInline?.tenant?.remark || "",
       status: props.formInline?.tenant?.status ?? 1
     },
+    tenantMateList: props.formInline?.tenantMateList ?? null,
     contract: null
   });
 
