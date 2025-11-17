@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import Sortable from "sortablejs";
-  import { ref, computed, watch, nextTick, onMounted, getCurrentInstance } from "vue";
+  import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from "vue";
   import { message } from "@/utils/message";
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
 
@@ -324,6 +324,11 @@
     console.log("组件已挂载，组件ID:", componentId);
     initSortable();
   });
+
+  // 在 script setup 中添加
+  const showUploadButton = computed(() => {
+    return fileList.value.length < props.limit;
+  });
 </script>
 
 <template>
@@ -334,6 +339,7 @@
       drag
       multiple
       class="pure-upload"
+      :class="{ hideUploadBtn: !showUploadButton }"
       list-type="picture-card"
       accept="image/jpeg,image/png,image/gif"
       :limit="props.limit"
@@ -382,10 +388,13 @@
       </div>
     </teleport>
 
+    <!-- 修改这里：使用 slot，提供默认内容 -->
     <p class="el-upload__tip">
-      <span class="text-amber-600 text-base">图片</span>
-      可拖拽上传最多{{ props.limit }}张，单个不超过2MB且格式为jpeg/png/gif的图片
-      <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽图片可调整顺序）</span>
+      <slot name="tip" :limit="props.limit" :file-count="fileList.length">
+        <span class="text-amber-600 text-base">图片</span>
+        可拖拽上传最多{{ props.limit }}张，单个不超过2MB且格式为jpeg/png/gif的图片
+        <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽图片可调整顺序）</span>
+      </slot>
     </p>
   </div>
 </template>
@@ -490,5 +499,9 @@
   :deep(.sortable-fallback) {
     opacity: 0.8 !important;
     cursor: grabbing !important;
+  }
+
+  :deep(.hideUploadBtn .el-upload--picture-card) {
+    display: none;
   }
 </style>

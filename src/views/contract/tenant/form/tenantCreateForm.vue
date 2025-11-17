@@ -51,7 +51,14 @@
           </el-row>
           <el-row :gutter="20">
             <el-col :span="24">
-              <upload-image  v-model="formInline.tenant.avatar" :limit="3" />
+              <UploadImage v-model="imageList" :limit="5">
+                <!-- 使用自定义提示 -->
+                <template #tip="{ limit, fileCount }">
+                  <span class="text-red-500">自定义提示asdfasdf：</span>
+                  最多上传 {{ limit }} 张图片，当前已上传 {{ fileCount }} 张
+                  <span v-if="fileCount > 1" class="text-blue-500">（可拖拽排序）</span>
+                </template>
+              </UploadImage>
             </el-col>
           </el-row>
         </div>
@@ -88,7 +95,7 @@
           </el-row>
           <el-row :gutter="20">
             <el-col :span="24">
-              <upload-image  v-model="formInline.tenant.avatar" :limit="3" />
+              <upload-image v-model="formInline.tenant.avatar" :limit="3" />
             </el-col>
           </el-row>
         </div>
@@ -178,6 +185,8 @@
   const genderOptions = GENDER_OPTIONS;
   const idTypeOptions = ID_TYPE_OPTIONS;
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
+
+  const imageList = ref([]);
 
   // 暴露方法给父组件
   const getRef = () => {
