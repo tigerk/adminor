@@ -51,7 +51,7 @@
           </el-row>
           <el-row :gutter="20">
             <el-col :span="24">
-              <upload-image :max-count="1" :preview-size="120" :preview-src-list="formInline.tenant.avatar" @change="handleAvatarChange" />
+              <upload-image v-model="formline.tenant.imageList" :limit="10" item-size="100" />
             </el-col>
           </el-row>
         </div>
