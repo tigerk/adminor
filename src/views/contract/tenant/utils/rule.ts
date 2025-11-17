@@ -6,10 +6,10 @@ import type { FormRules } from "element-plus";
 const validatePhone = (rule: any, value: any, callback: any) => {
   if (!value) {
     callback(new Error("请输入联系电话"));
-  } else if (/^1[3-9]\d{9}$/.test(value)) {
-    callback();
-  } else {
+  } else if (!/^1[3-9]\d{9}$/.test(value)) {
     callback(new Error("请输入正确的手机号码"));
+  } else {
+    callback();
   }
 };
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import Sortable from "sortablejs";
-  import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from "vue";
+  import { ref, computed, watch, nextTick, onMounted, getCurrentInstance } from "vue";
   import { message } from "@/utils/message";
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
 
@@ -19,20 +19,7 @@
     limit: {
       type: Number,
       default: 3
-    },
-    // 新增：图片框尺寸（统一宽高）
-    itemSize: {
-      type: [Number, String],
-      default: 148 // element-plus 默认尺寸
     }
-  });
-
-  // 计算上传项的样式
-  const uploadItemStyle = computed(() => {
-    const size = typeof props.itemSize === "number" ? `${props.itemSize}px` : props.itemSize;
-    return {
-      "--upload-item-size": size
-    };
   });
 
   // 生成唯一的组件ID
@@ -340,7 +327,7 @@
 </script>
 
 <template>
-  <div :id="componentId" :style="uploadItemStyle">
+  <div :id="componentId">
     <el-card shadow="never">
       <el-upload
         ref="uploadRef"
@@ -505,18 +492,5 @@
   :deep(.sortable-fallback) {
     opacity: 0.8 !important;
     cursor: grabbing !important;
-  }
-
-  :deep(.el-upload-list__item),
-  :deep(.el-upload--picture-card) {
-    width: var(--upload-item-size) !important;
-    height: var(--upload-item-size) !important;
-  }
-
-  // 确保图片适应容器
-  :deep(.el-upload-list__item-thumbnail) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
   }
 </style>
