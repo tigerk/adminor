@@ -19,6 +19,14 @@
     limit: {
       type: Number,
       default: 3
+    },
+    width: {
+      type: [Number, String],
+      default: undefined // 不设置默认值，使用 Element Plus 默认大小
+    },
+    height: {
+      type: [Number, String],
+      default: undefined
     }
   });
 
@@ -329,10 +337,25 @@
   const showUploadButton = computed(() => {
     return fileList.value.length < props.limit;
   });
+
+  // 处理尺寸值，支持数字和字符串
+  const uploadBoxStyle = computed(() => {
+    const style: Record<string, string> = {};
+
+    if (props.width !== undefined) {
+      style["--upload-width"] = typeof props.width === "number" ? `${props.width}px` : props.width;
+    }
+
+    if (props.height !== undefined) {
+      style["--upload-height"] = typeof props.height === "number" ? `${props.height}px` : props.height;
+    }
+
+    return style;
+  });
 </script>
 
 <template>
-  <div :id="componentId">
+  <div :id="componentId" :style="uploadBoxStyle">
     <el-upload
       ref="uploadRef"
       v-model:file-list="fileList"
@@ -349,9 +372,11 @@
       :on-success="onUploadSuccess"
       :on-error="onUploadError"
     >
-      <EpPlus class="m-auto mt-4" />
+      <!-- 移除外层 div，直接使用 EpPlus -->
+      <EpPlus />
+
       <template #file="{ file }">
-        <div v-if="file.status === 'ready' || file.status === 'uploading'" class="mt-[35%]! m-auto">
+        <div v-if="file.status === 'ready' || file.status === 'uploading'" class="upload-progress-wrapper">
           <p class="font-medium">文件上传中</p>
           <el-progress class="mt-2!" :stroke-width="2" :text-inside="true" :show-text="false" :percentage="file.percentage || 0" />
         </div>
@@ -388,7 +413,6 @@
       </div>
     </teleport>
 
-    <!-- 修改这里：使用 slot，提供默认内容 -->
     <p class="el-upload__tip">
       <slot name="tip" :limit="props.limit" :file-count="fileList.length">
         <span class="text-amber-600 text-base">图片</span>
@@ -398,11 +422,9 @@
     </p>
   </div>
 </template>
-
 <style lang="scss" scoped>
   :deep(.card-header) {
     display: flex;
-
     .header-right {
       display: flex;
       flex: auto;
@@ -413,10 +435,62 @@
   }
 
   :deep(.pure-upload) {
+    // 修复 el-upload-dragger 导致的间距问题
     .el-upload-dragger {
       background-color: transparent;
       border: none;
+      padding: 0;
+      height: auto;
+      min-height: auto;
     }
+
+    // 自定义上传框尺寸
+    .el-upload--picture-card {
+      width: var(--upload-width, 148px);
+      height: var(--upload-height, 148px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin: 0 8px 8px 0; // 统一外边距
+
+      // 确保图标居中
+      svg {
+        width: 30px;
+        height: 30px;
+        margin: 0;
+      }
+    }
+
+    .el-upload-list__item {
+      width: var(--upload-width, 148px);
+      height: var(--upload-height, 148px);
+      padding: 0;
+      margin: 0 8px 8px 0; // 统一外边距，与上传按钮保持一致
+      border: 1px solid var(--el-border-color);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    // 确保上传列表正常显示，统一布局
+    .el-upload-list--picture-card {
+      display: inline-flex; // 改为 inline-flex
+      flex-wrap: wrap;
+      margin: 0;
+      padding: 0;
+      line-height: 0; // 消除行内元素间隙
+      vertical-align: top; // 顶部对齐
+    }
+  }
+
+  // 上传进度容器 - 居中显示
+  .upload-progress-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    text-align: center;
   }
 
   .img-name {
@@ -435,14 +509,48 @@
     position: relative;
     width: 100%;
     height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    // 修复图片显示问题
+    .el-upload-list__item-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    // 操作按钮悬浮层
+    .el-upload-list__item-actions {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity 0.3s;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
   }
 
   .action-btn {
     cursor: pointer;
-    margin: 0 4px;
+    margin: 0 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    color: #fff;
+    font-size: 20px;
+    transition: all 0.3s;
   }
 
   :deep(.el-upload-list__item) {
@@ -459,25 +567,12 @@
     &:active {
       cursor: grabbing !important;
     }
-  }
 
-  .drag-hint {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 4px;
-    padding: 2px 6px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    z-index: 10;
-
-    .drag-icon {
-      color: #fff;
-      font-size: 14px;
-      font-weight: bold;
-      letter-spacing: -2px;
+    // 确保图片容器填满
+    .el-upload-list__item-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
   }
 
@@ -503,5 +598,30 @@
 
   :deep(.hideUploadBtn .el-upload--picture-card) {
     display: none;
+  }
+
+  // 关键修复：统一提示文字的间距
+  .el-upload__tip {
+    margin-top: 7px !important; // 使用 !important 确保优先级
+    margin-bottom: 0;
+    line-height: 1.5;
+    display: block;
+    clear: both; // 清除浮动影响
+  }
+
+  // 额外修复：确保 el-upload 容器本身没有多余间距
+  :deep(.el-upload) {
+    margin: 0;
+    vertical-align: top;
+  }
+
+  // 修复：统一整个上传区域的布局
+  :deep(.pure-upload) {
+    display: block;
+
+    // 确保上传区域容器没有多余的 margin
+    > .el-upload-list {
+      margin-bottom: 0;
+    }
   }
 </style>

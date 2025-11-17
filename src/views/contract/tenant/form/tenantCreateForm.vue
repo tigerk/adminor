@@ -18,7 +18,7 @@
             </el-col>
 
             <el-col :span="3">
-              <el-form-item label="性别" prop="gender">
+              <el-form-item label="&nbsp;" prop="gender">
                 <el-segmented v-model="formInline.tenant.gender" :options="genderOptions" />
               </el-form-item>
             </el-col>
@@ -51,25 +51,25 @@
           </el-row>
           <el-row :gutter="1" class="mb-4">
             <el-col :span="24">
-              <el-space>
+              <el-space spacer="|">
                 <div>
                   <div class="mb-2">
                     <span class="font-bold">证件信息</span>
                   </div>
                   <el-space>
-                    <UploadImage v-model="idCardFrontList" :limit="1">
+                    <UploadImage v-model="idCardFrontList" :limit="1" :width="120" :height="72">
                       <!-- 使用自定义提示 -->
                       <template #tip="{ limit, fileCount }">
                         <div class="text-center font-bold text-sm">身份证国徽面</div>
                       </template>
                     </UploadImage>
-                    <UploadImage v-model="idCardBackList" :limit="1">
+                    <UploadImage v-model="idCardBackList" :limit="1" :width="120" :height="72">
                       <!-- 使用自定义提示 -->
                       <template #tip="{ limit, fileCount }">
                         <div class="text-center font-bold text-sm">身份证人像面</div>
                       </template>
                     </UploadImage>
-                    <UploadImage v-model="idCardInHandList" :limit="1">
+                    <UploadImage v-model="idCardInHandList" :limit="1" :width="120" :height="72">
                       <!-- 使用自定义提示 -->
                       <template #tip="{ limit, fileCount }">
                         <div class="text-center font-bold text-sm">手持身份证照片</div>
@@ -81,7 +81,7 @@
                   <div class="mb-2">
                     <span class="font-bold">租客证件照片</span>
                   </div>
-                  <UploadImage v-model="otherImageList" :limit="3">
+                  <UploadImage v-model="otherImageList" :limit="3" :width="120" :height="72">
                     <!-- 使用自定义提示 -->
                     <template #tip="{ limit, fileCount }">
                       <div class="font-bold text-sm">其他照片，最多可上传3张</div>
