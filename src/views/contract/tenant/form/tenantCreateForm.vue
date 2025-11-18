@@ -229,9 +229,9 @@
         <el-row :gutter="20">
           <el-col :span="4">
             <el-form-item label="收租日设置" prop="rentDueType">
-                <el-select v-model="formInline.contract.rentDueType" placeholder="请选择">
-                  <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
+              <el-select v-model="formInline.contract.rentDueType" placeholder="请选择">
+                <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
