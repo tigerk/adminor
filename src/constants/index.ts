@@ -171,3 +171,9 @@ export const RENT_DUE_TYPE_OPTIONS = [
   { label: "固定", value: 2 },
   { label: "延后", value: 3 }
 ] as const;
+
+// 首期账单收租日：0=跟随合同起租日，1=跟随合同创建日
+export const FIRST_BILL_DAY_OPTIONS = [
+  { label: "跟随合同起租日", value: 0 },
+  { label: "跟随合同创建日", value: 1 }
+] as const;

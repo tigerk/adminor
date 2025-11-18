@@ -2,7 +2,7 @@
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
     <div class="section-tenant-info">
       <div class="mb-4 house-selector-info">
-        <div class="mb-2"><h3>房源信息</h3></div>
+        <div class="mb-2"><el-text type="warning" size="large" tag="b" class="border-1">房源信息</el-text></div>
         <el-select
           v-model="selectedRooms"
           size="large"
@@ -27,17 +27,18 @@
           <el-col :span="19">
             <el-space spacer=" | ">
               <el-tooltip content="请选择租客类型" placement="right">
-                <el-segmented v-model="formInline.tenant.tenantType" :options="tenantTypeOptions" />
+                <el-segmented v-model="formInline.contract.tenantType" :options="tenantTypeOptions" />
               </el-tooltip>
             </el-space>
           </el-col>
           <el-col :span="5" class="text-right">
-            <el-button type="primary" :icon="Plus" @click="openTenantMateDialog('添加', formInline.tenant.tenantMateList)">添加同住人</el-button>
+            <el-button type="primary" :icon="Plus" @click="openTenantMateDialog('添加', formInline.tenantMateList)">添加同住人</el-button>
           </el-col>
         </el-row>
       </div>
       <div class="mt-4">
-        <div v-if="formInline.tenant.tenantType === 0">
+        <div class="mb-2"><el-text type="warning" size="large" tag="b" class="border-1">租客信息</el-text></div>
+        <div v-if="formInline.contract.tenantType === 0">
           <el-row :gutter="20">
             <el-col :span="5">
               <el-form-item label="姓名" prop="name">
@@ -121,56 +122,51 @@
           </el-row>
         </div>
 
-        <div v-if="formInline.tenant.tenantType === 1">
+        <div v-if="formInline.contract.tenantType === 1">
           <el-row :gutter="20">
             <el-col :span="6">
-              <el-form-item label="企业名称" prop="name">
-                <el-input v-model="formInline.tenant.name" placeholder="请输入企业名称" clearable maxlength="20" show-word-limit />
+              <el-form-item label="企业名称" prop="companyName">
+                <el-input v-model="formInline.tenantCompany.companyName" placeholder="请输入企业名称" clearable maxlength="20" show-word-limit />
               </el-form-item>
             </el-col>
             <el-col :span="5">
-              <el-form-item label="统一社会信用代码" prop="idNo">
-                <el-input v-model="formInline.tenant.idNo" placeholder="请输入统一社会信用代码" clearable maxlength="20" />
+              <el-form-item label="统一社会信用代码" prop="uscc">
+                <el-input v-model="formInline.tenantCompany.uscc" placeholder="请输入统一社会信用代码" clearable maxlength="20" />
               </el-form-item>
             </el-col>
             <el-col :span="4">
-              <el-form-item label="法定代表人" prop="legalRepresentative">
-                <el-input v-model="formInline.tenant.legalRepresentative" placeholder="请输入法定代表人" clearable maxlength="30" />
+              <el-form-item label="法定代表人" prop="legalPerson">
+                <el-input v-model="formInline.tenantCompany.legalPerson" placeholder="请输入法定代表人" clearable maxlength="30" />
               </el-form-item>
             </el-col>
             <el-col :span="4">
-              <el-form-item label="联系电话" prop="phone">
-                <el-input v-model="formInline.tenant.phone" placeholder="请输入联系电话" clearable maxlength="30" />
+              <el-form-item label="联系电话" prop="contactPhone">
+                <el-input v-model="formInline.tenantCompany.contactPhone" placeholder="请输入联系电话" clearable maxlength="30" />
               </el-form-item>
             </el-col>
             <el-col :span="5">
               <el-form-item label="租客标签" prop="tags">
-                <el-select v-model="formInline.tenant.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
+                <el-select v-model="formInline.tenantCompany.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
                   <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row :gutter="20">
-            <el-col :span="24">
-              <upload-image v-model="formInline.tenant.avatar" :limit="3" />
             </el-col>
           </el-row>
         </div>
       </div>
     </div>
     <div class="mb-4 tenant-contract-info">
-      <div class="mb-2"><h3>租约信息</h3></div>
+      <div class="mb-2"><el-text type="warning" size="large" tag="b" class="border-1">租约信息</el-text></div>
       <div>
         <el-row :gutter="20">
-          <el-col :span="4">
+          <el-col :span="3">
             <el-form-item label="签约类型" prop="contractNature">
               <el-select v-model="formInline.contract.contractNature" placeholder="签约类型" class="w-full" clearable>
                 <el-option v-for="item in TENANT_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="7">
+          <el-col :span="5">
             <el-form-item label="合同周期" prop="leaseDate">
               <el-date-picker
                 v-model="leaseDate"
@@ -187,7 +183,7 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="7">
+          <el-col :span="5">
             <el-form-item label="入离日期" prop="leaseDate">
               <el-date-picker
                 v-model="checkDate"
@@ -204,32 +200,26 @@
               />
             </el-form-item>
           </el-col>
-
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="6">
+          <el-col :span="5">
             <el-form-item label="租金信息" prop="rentInfo">
               <div class="rent-info-container">
                 <!-- 押付方式 -->
                 <div class="payment-method">
-                  <span class="label-text">押</span>
                   <el-select v-model="formInline.contract.depositMonths" class="deposit-select" placeholder="押金">
-                    <el-option label="0个月" :value="0" />
-                    <el-option label="1个月" :value="1" />
-                    <el-option label="2个月" :value="2" />
-                    <el-option label="3个月" :value="3" />
+                    <template #prefix>押</template>
+                    <el-option v-for="item in monthsOptions" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
-
-                  <span class="label-text">付</span>
                   <el-select v-model="formInline.contract.paymentMonths" class="payment-select" placeholder="付款">
-                    <el-option label="1个月" :value="1" />
-                    <el-option label="2个月" :value="2" />
-                    <el-option label="3个月" :value="3" />
-                    <el-option label="6个月" :value="6" />
-                    <el-option label="12个月" :value="12" />
+                    <template #prefix>付</template>
+                    <el-option v-for="item in monthsOptions" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
                 </div>
-
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="月租金" prop="rentInfo">
+              <div>
                 <!-- 月租金输入 -->
                 <div class="rent-input">
                   <el-input v-model="formInline.contract.rentalPrice" type="number" placeholder="请输入月租金" class="rent-price-input">
@@ -240,7 +230,6 @@
                   </el-input>
                 </div>
               </div>
-
               <!-- 计算提示 -->
               <div v-if="depositAmount || totalFirstPayment" class="rent-summary w-full">
                 <el-text type="info" size="small">
@@ -252,23 +241,27 @@
               </div>
             </el-form-item>
           </el-col>
-          <el-col :span="4">
-            <el-form-item label="收租日设置" prop="rentDueType">
-              <el-select v-model="formInline.contract.rentDueType" placeholder="请选择">
-                <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="&nbsp;&nbsp;" prop="rentDueType">
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="收租设置" prop="rentDueType">
               <el-input v-model.number="formInline.contract.rentDueDay" :min="0" placeholder="请输入" type="number">
                 <template #prepend>
-                  {{ formInline.contract.rentDueType == 1 ? "提前" : formInline.contract.rentDueType == 2 ? "每月" : "延后" }}
+                  <el-select v-model="formInline.contract.rentDueType" placeholder="请选择" style="width: 130px">
+                    <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
                 </template>
                 <template #append>
-                  {{ formInline.contract.rentDueType == 1 ? "天" : formInline.contract.rentDueType == 2 ? "号收租" : "天" }}
+                  {{ formInline.contract.rentDueType == 2 ? "号收租" : "天" }}
                 </template>
               </el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="5">
+            <el-form-item label="首期账单收租日" prop="firstBillDay">
+              <el-select v-model="formInline.contract.firstBillDay" placeholder="请选择">
+                <el-option v-for="item in FIRST_BILL_DAY_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -278,7 +271,7 @@
       <!-- 其他费用配置 -->
       <OtherFeeSelect v-model="formInline.otherFees" />
     </div>
-    <div class="mb-4">
+    <div class="mb-1">
       <el-row :gutter="20">
         <el-col :span="24">
           <el-form-item label="合同补充说明" prop="formInline.contract.remark">
@@ -287,42 +280,53 @@
         </el-col>
       </el-row>
     </div>
-    <h3 class="py-3">负责人信息</h3>
-    <el-row :gutter="20">
-      <el-col :span="6">
-        <el-form-item label="签约部门" prop="deptId">
-          <DeptTreeSelect v-model="formInline.contract.deptId" :emit-on-default="true" @dept-selected="handleDeptSelected" />
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item label="签约人" prop="salesmanId">
-          <el-select v-model="formInline.contract.salesmanId" filterable placeholder="请选择签约人" clearable>
-            <el-option v-for="item in salesmanList" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item label="成交渠道" prop="dealChannel">
-          <el-select v-model="formInline.contract.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
-            <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item label="租客来源" prop="tenantSource">
-          <el-select v-model="formInline.contract.tenantSource" placeholder="请选择租客来源" class="w-full" multiple clearable collapse-tags collapse-tags-tooltip>
-            <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-    </el-row>
+    <div>
+      <div class="mb-2"><el-text type="warning" size="large" tag="b" class="border-1">负责人信息</el-text></div>
+      <el-row :gutter="20">
+        <el-col :span="6">
+          <el-form-item label="签约部门" prop="deptId">
+            <DeptTreeSelect v-model="formInline.contract.deptId" :emit-on-default="true" @dept-selected="handleDeptSelected" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="签约人" prop="salesmanId">
+            <el-select v-model="formInline.contract.salesmanId" filterable placeholder="请选择签约人" clearable>
+              <el-option v-for="item in salesmanList" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="成交渠道" prop="dealChannel">
+            <el-select v-model="formInline.contract.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
+              <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="租客来源" prop="tenantSource">
+            <el-select v-model="formInline.contract.tenantSource" placeholder="请选择租客来源" class="w-full" multiple clearable collapse-tags collapse-tags-tooltip>
+              <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </div>
   </el-form>
 </template>
 
 <script setup lang="ts">
-  import { computed, reactive, ref } from "vue";
+  import { computed, onMounted, reactive, ref } from "vue";
   import type { FormInstance } from "element-plus";
-  import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, RENT_DUE_TYPE_OPTIONS, RENTAL_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import {
+    FIRST_BILL_DAY_OPTIONS,
+    GENDER_OPTIONS,
+    getOptionByCode,
+    ID_TYPE_OPTIONS,
+    RENT_DUE_TYPE_OPTIONS,
+    RENTAL_TYPE_OPTIONS,
+    TENANT_CONTRACT_NATURE_OPTIONS,
+    TENANT_TYPE_OPTIONS
+  } from "@/constants";
   import type { TenantsCreateFormProps } from "@/types";
   import { tenantFormRules } from "@/views/contract/tenant/utils/rule";
   import useTenant from "@/views/contract/tenant/utils/hook";
@@ -331,6 +335,7 @@
   import { getRoomList } from "@/api/house/room";
   import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
+  import { getCompanyUserOptions } from "@/api/company";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions, openTenantMateDialog } = useTenant();
 
@@ -349,30 +354,46 @@
       id: props.formInline?.tenant?.id,
       name: props.formInline?.tenant?.name || "",
       gender: props.formInline?.tenant?.gender,
-      tenantType: props.formInline?.tenant?.tenantType ?? 0,
       idType: props.formInline?.tenant?.idType ?? 0,
       idNo: props.formInline?.tenant?.idNo || "",
       phone: props.formInline?.tenant?.phone || "",
       tags: props.formInline?.tenant?.tags || [],
       remark: props.formInline?.tenant?.remark || "",
-      status: props.formInline?.tenant?.status ?? 1,
       idCardBackList: props.formInline?.tenant?.idCardBackList || [],
       idCardFrontList: props.formInline?.tenant?.idCardFrontList || [],
       idCardInHandList: props.formInline?.tenant?.idCardInHandList || [],
       otherImageList: props.formInline?.tenant?.otherImageList || []
     },
+    tenantCompany: {
+      id: props.formInline?.tenantCompany?.id,
+      companyName: props.formInline?.tenantCompany?.companyName || "",
+      uscc: props.formInline?.tenantCompany?.uscc || "",
+      legalPerson: props.formInline?.tenantCompany?.legalPerson || "",
+      legalPersonIdType: props.formInline?.tenantCompany?.legalPersonIdType ?? 0,
+      legalPersonIdNo: props.formInline?.tenantCompany?.legalPersonIdNo || "",
+      contactName: props.formInline?.tenantCompany?.contactName || "",
+      contactPhone: props.formInline?.tenantCompany?.contactPhone || "",
+      registeredAddress: props.formInline?.tenantCompany?.registeredAddress || "",
+      businessLicenseUrl: props.formInline?.tenantCompany?.businessLicenseUrl || "",
+      tags: props.formInline?.tenantCompany?.tags || [],
+      remark: props.formInline?.tenantCompany?.remark || ""
+    },
     tenantMateList: props.formInline?.tenantMateList ?? null,
     // 确保 contract 为 null 时不会抛出错误
     contract: props.formInline?.contract || {
+      tenantType: props.formInline?.contract?.tenantType ?? 0,
+      leaseStart: props.formInline?.contract?.leaseStart || null,
+      leaseEnd: props.formInline?.contract?.leaseEnd || null,
       contractNature: props.formInline?.contract?.contractNature ?? 1,
       depositMonths: props.formInline?.contract?.depositMonths || 1,
       paymentMonths: props.formInline?.contract?.paymentMonths || 1,
+      firstBillDay: props.formInline?.contract?.firstBillDay || 0,
       rentalPrice: props.formInline?.contract?.rentalPrice || 0,
-      remark: props.formInline?.contract?.remark || "",
-      deptId: props.formInline?.contract?.deptId || "",
-      salesmanId: props.formInline?.contract?.salesmanId || "",
-      dealChannel: props.formInline?.contract?.dealChannel || "",
-      tenantSource: props.formInline?.contract?.tenantSource || []
+      deptId: props.formInline?.contract?.deptId || null,
+      salesmanId: props.formInline?.contract?.salesmanId || null,
+      dealChannel: props.formInline?.contract?.dealChannel || null,
+      tenantSource: props.formInline?.contract?.tenantSource || null,
+      remark: props.formInline?.contract?.remark || ""
     },
     otherFees: props.formInline?.otherFees || []
   });
@@ -384,9 +405,22 @@
   const selectedRooms = ref<any[]>([]);
 
   // 常量选项
-  const genderOptions = GENDER_OPTIONS;
-  const idTypeOptions = ID_TYPE_OPTIONS;
-  const tenantTypeOptions = TENANT_TYPE_OPTIONS;
+  const genderOptions = [...GENDER_OPTIONS];
+  const idTypeOptions = [...ID_TYPE_OPTIONS];
+  const tenantTypeOptions = [...TENANT_TYPE_OPTIONS];
+
+  // 计算首次支付总额（押金 + 首付）
+  const monthsOptions = computed(() => {
+    const monthsOptions = [];
+    for (let i = 1; i <= 12; i++) {
+      monthsOptions.push({
+        value: i,
+        label: i + "个月"
+      });
+    }
+
+    return monthsOptions;
+  });
 
   // 暴露方法给父组件
   const getRef = () => {
@@ -394,7 +428,7 @@
   };
 
   const formatRoomSelectName = (item: any) => {
-    const rentalTypeName = getOptionByCode(RENTAL_TYPE_OPTIONS, item.rentalType) || "";
+    const rentalTypeName = getOptionByCode([...RENTAL_TYPE_OPTIONS], item.rentalType) || "";
     if (item.rentalType === 1) {
       return "【" + rentalTypeName.label + "】" + item.houseName;
     } else {
@@ -493,11 +527,6 @@
     }
   ];
 
-  defineExpose({
-    getRef,
-    formInline
-  });
-
   // 计算押金金额
   const depositAmount = computed(() => {
     const price = Number(formInline.contract.rentalPrice) || 0;
@@ -512,6 +541,33 @@
     const paymentMonths = formInline.contract.paymentMonths || 0;
     const total = price * (depositMonths + paymentMonths);
     return total > 0 ? total.toFixed(2) : "";
+  });
+
+  function handleDeptSelected(deptId: number) {
+    return;
+    // form.value.deptId = deptId;
+    //
+    // getDeptUserList({
+    //   deptId: deptId
+    // }).then(resp => {
+    //   salesmanList.value = Array.isArray(resp.data) ? resp.data : [];
+    //   const salesmanExists = salesmanList.value.some(salesman => salesman.id === form.value.salesmanId);
+    //   if (!salesmanExists) {
+    //     form.value.salesmanId = null;
+    //   }
+    // });
+  }
+
+  const salesmanList = ref<any[]>([]);
+  onMounted(() => {
+    getCompanyUserOptions().then(resp => {
+      salesmanList.value = resp.data;
+    });
+  });
+
+  defineExpose({
+    getRef,
+    formInline
   });
 </script>
 
