@@ -12,8 +12,8 @@
           :remote-method="handleSearchRoom"
           :loading="searchLoading"
           placeholder="请选择房源"
-          @change="handleRoomChange"
           class="w-full"
+          @change="handleRoomChange"
         >
           <el-option v-for="item in roomOptions" :key="item.value" :label="item.label" :value="item">
             <span style="float: left">{{ item.label }}</span>
@@ -157,7 +157,17 @@
       </div>
     </div>
     <div class="mb-4 tenant-contract-info">
-      <div class="mb-2"><el-text type="warning" size="large" tag="b" class="border-1">租约信息</el-text></div>
+      <div class="mb-4">
+        <el-space spacer="|">
+          <el-text type="warning" size="large" tag="b" class="border-1">租约信息</el-text>
+          <el-select v-model="formInline.contract.contractNature" placeholder="请选择合同模板" size="small" clearable style="width: 200px">
+            <template #prefix>
+              <span class="font-bold text-red-400">租客合同模板</span>
+            </template>
+            <el-option v-for="item in TENANT_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-space>
+      </div>
       <div>
         <el-row :gutter="20">
           <el-col :span="3">
@@ -234,7 +244,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+        <el-row class="mb-4">
           <el-col :span="13">&nbsp;</el-col>
           <el-col :span="11">
             <!-- 计算提示 -->
@@ -399,10 +409,10 @@
 
       firstBillDay: props.formInline?.contract?.firstBillDay || 0,
       rentalPrice: props.formInline?.contract?.rentalPrice || 0,
-      deptId: props.formInline?.contract?.deptId || "",
-      salesmanId: props.formInline?.contract?.salesmanId || BigInt(0),
-      dealChannel: props.formInline?.contract?.dealChannel || 0,
-      tenantSource: props.formInline?.contract?.tenantSource || 0,
+      deptId: props.formInline?.contract?.deptId || null,
+      salesmanId: props.formInline?.contract?.salesmanId || null,
+      dealChannel: props.formInline?.contract?.dealChannel || null,
+      tenantSource: props.formInline?.contract?.tenantSource || null,
       remark: props.formInline?.contract?.remark || ""
     },
     otherFees: props.formInline?.otherFees || []
