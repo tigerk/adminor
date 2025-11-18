@@ -170,7 +170,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
+          <el-col :span="7">
             <el-form-item label="合同周期" prop="leaseDate">
               <el-date-picker
                 v-model="leaseDate"
@@ -187,7 +187,7 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="6">
+          <el-col :span="7">
             <el-form-item label="入离日期" prop="leaseDate">
               <el-date-picker
                 v-model="checkDate"
@@ -204,29 +204,54 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-space>
-              <el-form-item label="月租金" prop="leaseDate">
-                <el-space spacer=" ">
-                  <span>押</span>
-                  <el-select>
-                    <el-option label="1" value="1" />
-                  </el-select>
-                  <span>付</span>
-                  <el-select>
-                    <el-option label="1" value="1" />
-                  </el-select>
-                </el-space>
-              </el-form-item>
-              <el-form-item label="月租金" prop="leaseDate">
-                <el-input v-model="formInline.contract.rentalPrice" style="width: 150px" placeholder="Please input">
-                  <template #append>元/月</template>
-                </el-input>
-              </el-form-item>
-            </el-space>
-          </el-col>
+
         </el-row>
         <el-row :gutter="20">
+          <el-col :span="6">
+            <el-form-item label="租金信息" prop="rentInfo">
+              <div class="rent-info-container">
+                <!-- 押付方式 -->
+                <div class="payment-method">
+                  <span class="label-text">押</span>
+                  <el-select v-model="formInline.contract.depositMonths" class="deposit-select" placeholder="押金">
+                    <el-option label="0个月" :value="0" />
+                    <el-option label="1个月" :value="1" />
+                    <el-option label="2个月" :value="2" />
+                    <el-option label="3个月" :value="3" />
+                  </el-select>
+
+                  <span class="label-text">付</span>
+                  <el-select v-model="formInline.contract.paymentMonths" class="payment-select" placeholder="付款">
+                    <el-option label="1个月" :value="1" />
+                    <el-option label="2个月" :value="2" />
+                    <el-option label="3个月" :value="3" />
+                    <el-option label="6个月" :value="6" />
+                    <el-option label="12个月" :value="12" />
+                  </el-select>
+                </div>
+
+                <!-- 月租金输入 -->
+                <div class="rent-input">
+                  <el-input v-model="formInline.contract.rentalPrice" type="number" placeholder="请输入月租金" class="rent-price-input">
+                    <template #prefix>
+                      <span class="currency-symbol">¥</span>
+                    </template>
+                    <template #append>元/月</template>
+                  </el-input>
+                </div>
+              </div>
+
+              <!-- 计算提示 -->
+              <div v-if="depositAmount || totalFirstPayment" class="rent-summary w-full">
+                <el-text type="info" size="small">
+                  押金：
+                  <span class="amount">¥{{ depositAmount }}</span>
+                  {{ totalFirstPayment ? `，首次支付：` : "" }}
+                  <span v-if="totalFirstPayment" class="amount">¥{{ totalFirstPayment }}</span>
+                </el-text>
+              </div>
+            </el-form-item>
+          </el-col>
           <el-col :span="4">
             <el-form-item label="收租日设置" prop="rentDueType">
               <el-select v-model="formInline.contract.rentDueType" placeholder="请选择">
@@ -246,20 +271,6 @@
               </el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-form-item label="成交渠道" prop="dealChannel">
-              <el-select v-model="formInline.tenant.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
-                <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="租客标签" prop="tags">
-              <el-select v-model="formInline.tenant.tags" placeholder="请选择租客标签" class="w-full" multiple clearable collapse-tags collapse-tags-tooltip>
-                <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
         </el-row>
       </div>
     </div>
@@ -276,11 +287,40 @@
         </el-col>
       </el-row>
     </div>
+    <h3 class="py-3">负责人信息</h3>
+    <el-row :gutter="20">
+      <el-col :span="6">
+        <el-form-item label="签约部门" prop="deptId">
+          <DeptTreeSelect v-model="formInline.contract.deptId" :emit-on-default="true" @dept-selected="handleDeptSelected" />
+        </el-form-item>
+      </el-col>
+      <el-col :span="6">
+        <el-form-item label="签约人" prop="salesmanId">
+          <el-select v-model="formInline.contract.salesmanId" filterable placeholder="请选择签约人" clearable>
+            <el-option v-for="item in salesmanList" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+      </el-col>
+      <el-col :span="6">
+        <el-form-item label="成交渠道" prop="dealChannel">
+          <el-select v-model="formInline.contract.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
+            <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+      </el-col>
+      <el-col :span="6">
+        <el-form-item label="租客来源" prop="tenantSource">
+          <el-select v-model="formInline.contract.tenantSource" placeholder="请选择租客来源" class="w-full" multiple clearable collapse-tags collapse-tags-tooltip>
+            <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+      </el-col>
+    </el-row>
   </el-form>
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref } from "vue";
+  import { computed, reactive, ref } from "vue";
   import type { FormInstance } from "element-plus";
   import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, RENT_DUE_TYPE_OPTIONS, RENTAL_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import type { TenantsCreateFormProps } from "@/types";
@@ -290,6 +330,7 @@
   import { Plus } from "@element-plus/icons-vue";
   import { getRoomList } from "@/api/house/room";
   import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
+  import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions, openTenantMateDialog } = useTenant();
 
@@ -312,8 +353,6 @@
       idType: props.formInline?.tenant?.idType ?? 0,
       idNo: props.formInline?.tenant?.idNo || "",
       phone: props.formInline?.tenant?.phone || "",
-      tenantSource: props.formInline?.tenant?.tenantSource,
-      dealChannel: props.formInline?.tenant?.dealChannel,
       tags: props.formInline?.tenant?.tags || [],
       remark: props.formInline?.tenant?.remark || "",
       status: props.formInline?.tenant?.status ?? 1,
@@ -326,8 +365,14 @@
     // 确保 contract 为 null 时不会抛出错误
     contract: props.formInline?.contract || {
       contractNature: props.formInline?.contract?.contractNature ?? 1,
+      depositMonths: props.formInline?.contract?.depositMonths || 1,
+      paymentMonths: props.formInline?.contract?.paymentMonths || 1,
       rentalPrice: props.formInline?.contract?.rentalPrice || 0,
-      remark: props.formInline?.contract?.remark || ""
+      remark: props.formInline?.contract?.remark || "",
+      deptId: props.formInline?.contract?.deptId || "",
+      salesmanId: props.formInline?.contract?.salesmanId || "",
+      dealChannel: props.formInline?.contract?.dealChannel || "",
+      tenantSource: props.formInline?.contract?.tenantSource || []
     },
     otherFees: props.formInline?.otherFees || []
   });
@@ -452,6 +497,22 @@
     getRef,
     formInline
   });
+
+  // 计算押金金额
+  const depositAmount = computed(() => {
+    const price = Number(formInline.contract.rentalPrice) || 0;
+    const months = formInline.contract.depositMonths || 0;
+    return (price * months).toFixed(2);
+  });
+
+  // 计算首次支付总额（押金 + 首付）
+  const totalFirstPayment = computed(() => {
+    const price = Number(formInline.contract.rentalPrice) || 0;
+    const depositMonths = formInline.contract.depositMonths || 0;
+    const paymentMonths = formInline.contract.paymentMonths || 0;
+    const total = price * (depositMonths + paymentMonths);
+    return total > 0 ? total.toFixed(2) : "";
+  });
 </script>
 
 <style scoped lang="scss">
@@ -460,5 +521,78 @@
 
   :deep(.el-form-item__label) {
     font-weight: 500;
+  }
+
+  .rent-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .payment-method {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .label-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--el-text-color-regular);
+      min-width: 24px;
+    }
+
+    .deposit-select,
+    .payment-select {
+      flex: 1;
+      min-width: 100px;
+
+      :deep(.el-input__inner) {
+        text-align: center;
+      }
+    }
+  }
+
+  .rent-input {
+    width: 100%;
+
+    .rent-price-input {
+      width: 100%;
+
+      :deep(.el-input__inner) {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .currency-symbol {
+        color: var(--el-text-color-regular);
+        font-weight: 500;
+      }
+    }
+  }
+
+  .rent-summary {
+    margin-top: 8px;
+    padding: 5px;
+    background: var(--el-fill-color-light);
+    border-radius: 4px;
+
+    .amount {
+      color: var(--el-color-primary);
+      font-weight: 600;
+      font-size: 14px;
+    }
+  }
+
+  // 响应式设计
+  @media (max-width: 768px) {
+    .payment-method {
+      flex-wrap: wrap;
+
+      .deposit-select,
+      .payment-select {
+        min-width: 80px;
+      }
+    }
   }
 </style>
