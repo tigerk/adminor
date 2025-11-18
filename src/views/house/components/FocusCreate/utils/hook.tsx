@@ -370,6 +370,8 @@ export function useFocusEdit() {
       top: "1%",
       width: "85%",
       draggable: true,
+      lockScroll: true,
+      alignCenter: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,

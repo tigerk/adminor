@@ -80,6 +80,8 @@ export function useShareEdit() {
       },
       top: "1%",
       width: "85%",
+      lockScroll: true,
+      alignCenter: true,
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,

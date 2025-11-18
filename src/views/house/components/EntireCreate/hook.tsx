@@ -23,7 +23,6 @@ export function useEntireEdit() {
       props: {
         formInline: {
           id: row?.id ?? null,
-          businessMode: row?.businessMode ?? 1,
           community: null,
           water: "residential",
           electricity: "residential",
@@ -34,6 +33,8 @@ export function useEntireEdit() {
       },
       top: "1%",
       width: "85%",
+      lockScroll: true,
+      alignCenter: true,
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
