@@ -54,7 +54,7 @@ export interface TenantContractProps {
   originalLeaseStart?: Date; // 初始录入租赁开始时间
   originalLeaseEnd?: Date; // 初始录入租赁结束时间
   leaseDurationDays?: number; // 累计租房天数
-  rentDueType?: number; // 收租类型：1=提前，2=固定，3=延后
+  rentDueType: number; // 收租类型：1=提前，2=固定，3=延后
   rentDueDay?: number; // 固定收租日（1-31，0=当月最后一天）
   rentDueOffsetDays?: number; // 收租偏移天数（提前/延后）
   salesmanId: bigint; // 业务人员ID

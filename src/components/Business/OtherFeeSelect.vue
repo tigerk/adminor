@@ -45,7 +45,7 @@
                       <el-option v-for="item in priceMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                   </template>
-                  <template #append>{{ feeItem.priceMethod === 0 ? "元/月" : "%" }}</template>
+                  <template #append>{{ feeItem.priceMethod === 0 ? "元" : "%" }}</template>
                 </el-input>
               </td>
               <td class="text-center">

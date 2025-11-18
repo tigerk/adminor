@@ -12,6 +12,7 @@
           :remote-method="handleSearchRoom"
           :loading="searchLoading"
           placeholder="请选择房源"
+          @change="handleRoomChange"
           class="w-full"
         >
           <el-option v-for="item in roomOptions" :key="item.value" :label="item.label" :value="item">
@@ -207,11 +208,11 @@
                 <div class="payment-method">
                   <el-select v-model="formInline.contract.depositMonths" class="deposit-select" placeholder="押金">
                     <template #prefix>押</template>
-                    <el-option v-for="item in monthsOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    <el-option v-for="item in depositMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
                   <el-select v-model="formInline.contract.paymentMonths" class="payment-select" placeholder="付款">
                     <template #prefix>付</template>
-                    <el-option v-for="item in monthsOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    <el-option v-for="item in paymentMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
                 </div>
               </div>
@@ -230,22 +231,27 @@
                   </el-input>
                 </div>
               </div>
-              <!-- 计算提示 -->
-              <div v-if="depositAmount || totalFirstPayment" class="rent-summary w-full">
-                <el-text type="info" size="small">
-                  押金：
-                  <span class="amount">¥{{ depositAmount }}</span>
-                  {{ totalFirstPayment ? `，首次支付：` : "" }}
-                  <span v-if="totalFirstPayment" class="amount">¥{{ totalFirstPayment }}</span>
-                </el-text>
-              </div>
             </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="13">&nbsp;</el-col>
+          <el-col :span="11">
+            <!-- 计算提示 -->
+            <div v-if="depositAmount || totalFirstPayment" class="rent-summary">
+              <el-text type="info" size="small">
+                押金：
+                <span class="amount">¥{{ depositAmount }} 元</span>
+                {{ totalFirstPayment ? `，首次支付：` : "" }}
+                <span v-if="totalFirstPayment" class="amount">¥{{ totalFirstPayment }} 元</span>
+              </el-text>
+            </div>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="收租设置" prop="rentDueType">
-              <el-input v-model.number="formInline.contract.rentDueDay" :min="0" placeholder="请输入" type="number">
+              <el-input v-model.number="formInline.contract.rentDueDay" :min="0" placeholder="请输入" type="number" class="text-center rent-due-day-input">
                 <template #prepend>
                   <el-select v-model="formInline.contract.rentDueType" placeholder="请选择" style="width: 130px">
                     <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
@@ -382,17 +388,21 @@
     // 确保 contract 为 null 时不会抛出错误
     contract: props.formInline?.contract || {
       tenantType: props.formInline?.contract?.tenantType ?? 0,
-      leaseStart: props.formInline?.contract?.leaseStart || null,
-      leaseEnd: props.formInline?.contract?.leaseEnd || null,
+      leaseStart: props.formInline?.contract?.leaseStart || new Date(),
+      leaseEnd: props.formInline?.contract?.leaseEnd || new Date(),
       contractNature: props.formInline?.contract?.contractNature ?? 1,
       depositMonths: props.formInline?.contract?.depositMonths || 1,
       paymentMonths: props.formInline?.contract?.paymentMonths || 1,
+      rentDueType: props.formInline?.contract?.rentDueType ?? 1,
+      rentDueDay: props.formInline?.contract?.rentDueDay || 15,
+      rentDueOffsetDays: props.formInline?.contract?.rentDueOffsetDays || 15,
+
       firstBillDay: props.formInline?.contract?.firstBillDay || 0,
       rentalPrice: props.formInline?.contract?.rentalPrice || 0,
-      deptId: props.formInline?.contract?.deptId || null,
-      salesmanId: props.formInline?.contract?.salesmanId || null,
-      dealChannel: props.formInline?.contract?.dealChannel || null,
-      tenantSource: props.formInline?.contract?.tenantSource || null,
+      deptId: props.formInline?.contract?.deptId || "",
+      salesmanId: props.formInline?.contract?.salesmanId || BigInt(0),
+      dealChannel: props.formInline?.contract?.dealChannel || 0,
+      tenantSource: props.formInline?.contract?.tenantSource || 0,
       remark: props.formInline?.contract?.remark || ""
     },
     otherFees: props.formInline?.otherFees || []
@@ -410,17 +420,20 @@
   const tenantTypeOptions = [...TENANT_TYPE_OPTIONS];
 
   // 计算首次支付总额（押金 + 首付）
-  const monthsOptions = computed(() => {
+  function generateMonthsOptions(start, end) {
     const monthsOptions = [];
-    for (let i = 1; i <= 12; i++) {
+    for (let i = start; i <= end; i++) {
       monthsOptions.push({
         value: i,
         label: i + "个月"
       });
     }
-
     return monthsOptions;
-  });
+  }
+
+  // 使用提取的函数生成 depositMonthsOptions 和 paymentMonthsOptions
+  const depositMonthsOptions = computed(() => generateMonthsOptions(0, 12));
+  const paymentMonthsOptions = computed(() => generateMonthsOptions(1, 12));
 
   // 暴露方法给父组件
   const getRef = () => {
@@ -479,6 +492,15 @@
     } else {
       roomOptions.value = [];
     }
+  };
+
+  const handleRoomChange = (values: any[]) => {
+    let rentalPrice = 0;
+    values.forEach(value => {
+      value.extra.price && (rentalPrice += Number(value.extra.price));
+    });
+
+    formInline.contract.rentalPrice = rentalPrice;
   };
 
   const leaseDate = ref<any[]>([]);
@@ -545,17 +567,6 @@
 
   function handleDeptSelected(deptId: number) {
     return;
-    // form.value.deptId = deptId;
-    //
-    // getDeptUserList({
-    //   deptId: deptId
-    // }).then(resp => {
-    //   salesmanList.value = Array.isArray(resp.data) ? resp.data : [];
-    //   const salesmanExists = salesmanList.value.some(salesman => salesman.id === form.value.salesmanId);
-    //   if (!salesmanExists) {
-    //     form.value.salesmanId = null;
-    //   }
-    // });
   }
 
   const salesmanList = ref<any[]>([]);
@@ -628,8 +639,8 @@
   }
 
   .rent-summary {
-    margin-top: 8px;
     padding: 5px;
+    margin-left: 10px;
     background: var(--el-fill-color-light);
     border-radius: 4px;
 
@@ -649,6 +660,12 @@
       .payment-select {
         min-width: 80px;
       }
+    }
+  }
+
+  .rent-due-day-input {
+    :deep(.el-input__inner) {
+      text-align: center;
     }
   }
 </style>
