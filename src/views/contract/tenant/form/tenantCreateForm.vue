@@ -1,8 +1,27 @@
 <template>
-  <div class="section-tenant-info">
-    <div>选择房源</div>
-
-    <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
+  <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
+    <div class="section-tenant-info">
+      <div class="mb-4 house-selector-info">
+        <div class="mb-2"><h3>房源信息</h3></div>
+        <el-select
+          v-model="selectedRooms"
+          size="large"
+          filterable
+          multiple
+          remote
+          :remote-method="handleSearchRoom"
+          :loading="searchLoading"
+          placeholder="请选择房源"
+          class="w-full"
+        >
+          <el-option v-for="item in roomOptions" :key="item.value" :label="item.label" :value="item">
+            <span style="float: left">{{ item.label }}</span>
+            <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">
+              {{ item.description }}
+            </span>
+          </el-option>
+        </el-select>
+      </div>
       <div class="section-header">
         <el-row :gutter="20">
           <el-col :span="19">
@@ -66,21 +85,21 @@
                     <span class="font-bold">证件信息</span>
                   </div>
                   <el-space>
-                    <UploadImage v-model="idCardFrontList" :limit="1" :width="120" :height="72">
+                    <UploadImage v-model="formInline.tenant.idCardFrontList" :limit="1" :width="120" :height="72">
                       <!-- 使用自定义提示 -->
-                      <template #tip="{ limit, fileCount }">
+                      <template #tip="">
                         <div class="text-center font-bold text-sm">身份证国徽面</div>
                       </template>
                     </UploadImage>
-                    <UploadImage v-model="idCardBackList" :limit="1" :width="120" :height="72">
+                    <UploadImage v-model="formInline.tenant.idCardBackList" :limit="1" :width="120" :height="72">
                       <!-- 使用自定义提示 -->
-                      <template #tip="{ limit, fileCount }">
+                      <template #tip="">
                         <div class="text-center font-bold text-sm">身份证人像面</div>
                       </template>
                     </UploadImage>
-                    <UploadImage v-model="idCardInHandList" :limit="1" :width="120" :height="72">
+                    <UploadImage v-model="formInline.tenant.idCardInHandList" :limit="1" :width="120" :height="72">
                       <!-- 使用自定义提示 -->
-                      <template #tip="{ limit, fileCount }">
+                      <template #tip="">
                         <div class="text-center font-bold text-sm">手持身份证照片</div>
                       </template>
                     </UploadImage>
@@ -90,9 +109,9 @@
                   <div class="mb-2">
                     <span class="font-bold">其他照片</span>
                   </div>
-                  <UploadImage v-model="otherImageList" :limit="3" :width="120" :height="72">
+                  <UploadImage v-model="formInline.tenant.otherImageList" :limit="3" :width="120" :height="72">
                     <!-- 使用自定义提示 -->
-                    <template #tip="{ limit, fileCount }">
+                    <template #tip="">
                       <div class="font-bold text-sm">其他照片，最多可上传3张</div>
                     </template>
                   </UploadImage>
@@ -138,27 +157,103 @@
             </el-col>
           </el-row>
         </div>
-
+      </div>
+    </div>
+    <div class="mb-4 tenant-contract-info">
+      <div class="mb-2"><h3>租约信息</h3></div>
+      <div>
         <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="租客来源" prop="tenantSource">
-              <el-select v-model="formInline.tenant.tenantSource" placeholder="请选择租客来源" class="w-full" clearable>
-                <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-col :span="4">
+            <el-form-item label="签约类型" prop="contractNature">
+              <el-select v-model="formInline.contract.contractNature" placeholder="签约类型" class="w-full" clearable>
+                <el-option v-for="item in TENANT_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
-
-          <el-col :span="12">
+          <el-col :span="6">
+            <el-form-item label="合同周期" prop="leaseDate">
+              <el-date-picker
+                v-model="leaseDate"
+                type="daterange"
+                class="w-[240px]!"
+                unlink-panels
+                range-separator="至"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                :shortcuts="leaseDateShortCut"
+                :popper-options="{
+                  placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
+                }"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="入离日期" prop="leaseDate">
+              <el-date-picker
+                v-model="checkDate"
+                type="daterange"
+                class="w-[240px]!"
+                unlink-panels
+                range-separator="至"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                :shortcuts="leaseDateShortCut"
+                :popper-options="{
+                  placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
+                }"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-space>
+              <el-form-item label="月租金" prop="leaseDate">
+                <el-space spacer=" ">
+                  <span>押</span>
+                  <el-select>
+                    <el-option label="1" value="1" />
+                  </el-select>
+                  <span>付</span>
+                  <el-select>
+                    <el-option label="1" value="1" />
+                  </el-select>
+                </el-space>
+              </el-form-item>
+              <el-form-item label="月租金" prop="leaseDate">
+                <el-input v-model="formInline.contract.rentalPrice" style="width: 150px" placeholder="Please input">
+                  <template #append>元/月</template>
+                </el-input>
+              </el-form-item>
+            </el-space>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="4">
+            <el-form-item label="收租日设置" prop="rentDueType">
+                <el-select v-model="formInline.contract.rentDueType" placeholder="请选择">
+                  <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="&nbsp;&nbsp;" prop="rentDueType">
+              <el-input v-model.number="formInline.contract.rentDueDay" :min="0" placeholder="请输入" type="number">
+                <template #prepend>
+                  {{ formInline.contract.rentDueType == 1 ? "提前" : formInline.contract.rentDueType == 2 ? "每月" : "延后" }}
+                </template>
+                <template #append>
+                  {{ formInline.contract.rentDueType == 1 ? "天" : formInline.contract.rentDueType == 2 ? "号收租" : "天" }}
+                </template>
+              </el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
             <el-form-item label="成交渠道" prop="dealChannel">
               <el-select v-model="formInline.tenant.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
                 <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="24">
+          <el-col :span="8">
             <el-form-item label="租客标签" prop="tags">
               <el-select v-model="formInline.tenant.tags" placeholder="请选择租客标签" class="w-full" multiple clearable collapse-tags collapse-tags-tooltip>
                 <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -166,28 +261,35 @@
             </el-form-item>
           </el-col>
         </el-row>
-
-        <el-row :gutter="20">
-          <el-col :span="24">
-            <el-form-item label="备注" prop="remark">
-              <el-input v-model="formInline.tenant.remark" type="textarea" :rows="4" placeholder="请输入备注信息" maxlength="500" show-word-limit />
-            </el-form-item>
-          </el-col>
-        </el-row>
       </div>
-    </el-form>
-  </div>
+    </div>
+    <div>
+      <!-- 其他费用配置 -->
+      <OtherFeeSelect v-model="formInline.otherFees" />
+    </div>
+    <div class="mb-4">
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="合同补充说明" prop="formInline.contract.remark">
+            <el-input v-model="formInline.contract.remark" type="textarea" :rows="4" placeholder="请输入备注信息" maxlength="500" show-word-limit />
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </div>
+  </el-form>
 </template>
 
 <script setup lang="ts">
   import { reactive, ref } from "vue";
   import type { FormInstance } from "element-plus";
-  import { GENDER_OPTIONS, ID_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, RENT_DUE_TYPE_OPTIONS, RENTAL_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import type { TenantsCreateFormProps } from "@/types";
   import { tenantFormRules } from "@/views/contract/tenant/utils/rule";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { Plus } from "@element-plus/icons-vue";
+  import { getRoomList } from "@/api/house/room";
+  import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions, openTenantMateDialog } = useTenant();
 
@@ -214,29 +316,137 @@
       dealChannel: props.formInline?.tenant?.dealChannel,
       tags: props.formInline?.tenant?.tags || [],
       remark: props.formInline?.tenant?.remark || "",
-      status: props.formInline?.tenant?.status ?? 1
+      status: props.formInline?.tenant?.status ?? 1,
+      idCardBackList: props.formInline?.tenant?.idCardBackList || [],
+      idCardFrontList: props.formInline?.tenant?.idCardFrontList || [],
+      idCardInHandList: props.formInline?.tenant?.idCardInHandList || [],
+      otherImageList: props.formInline?.tenant?.otherImageList || []
     },
     tenantMateList: props.formInline?.tenantMateList ?? null,
-    contract: null
+    // 确保 contract 为 null 时不会抛出错误
+    contract: props.formInline?.contract || {
+      contractNature: props.formInline?.contract?.contractNature ?? 1,
+      rentalPrice: props.formInline?.contract?.rentalPrice || 0,
+      remark: props.formInline?.contract?.remark || ""
+    },
+    otherFees: props.formInline?.otherFees || []
   });
 
   // 验证规则
   const rules = tenantFormRules(formInline);
+
+  // 选择的房源 ID 列表
+  const selectedRooms = ref<any[]>([]);
 
   // 常量选项
   const genderOptions = GENDER_OPTIONS;
   const idTypeOptions = ID_TYPE_OPTIONS;
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
 
-  const idCardFrontList = ref([]);
-  const idCardBackList = ref([]);
-  const idCardInHandList = ref([]);
-  const otherImageList = ref([]);
-
   // 暴露方法给父组件
   const getRef = () => {
     return ruleFormRef.value;
   };
+
+  const formatRoomSelectName = (item: any) => {
+    const rentalTypeName = getOptionByCode(RENTAL_TYPE_OPTIONS, item.rentalType) || "";
+    if (item.rentalType === 1) {
+      return "【" + rentalTypeName.label + "】" + item.houseName;
+    } else {
+      return "【" + rentalTypeName.label + "】" + item.houseName + " -【" + item.roomNumber + "】";
+    }
+  };
+
+  // 拼接户型、面积和朝向
+  const formatRoomSelectDescription = (item: any) => {
+    let description = "";
+    if (item.houseLayout) {
+      const { bedroom, livingRoom, kitchen, bathroom } = item.houseLayout;
+      description = `${bedroom || 0}室${livingRoom || 0}厅${kitchen || 0}厨${bathroom || 0}卫 `;
+    }
+    if (item.area) {
+      description += item.area + "m² ";
+    }
+    if (item.direction) {
+      description += item.direction;
+    }
+
+    if (item.price) {
+      description += " ｜ 价格：¥" + item.price + "元/月";
+    }
+
+    return description;
+  };
+
+  const roomOptions = ref<any[]>([]);
+  const searchLoading = ref<boolean>(false);
+  const handleSearchRoom = (query: string) => {
+    if (query) {
+      searchLoading.value = true;
+      getRoomList({
+        keywords: query,
+        page: 1,
+        pageSize: 10
+      }).then(res => {
+        roomOptions.value =
+          res.data?.list.map(item => ({
+            label: formatRoomSelectName(item),
+            value: item.roomId,
+            description: formatRoomSelectDescription(item),
+            extra: item
+          })) || [];
+        searchLoading.value = false;
+      });
+    } else {
+      roomOptions.value = [];
+    }
+  };
+
+  const leaseDate = ref<any[]>([]);
+  const checkDate = ref<any[]>([]);
+
+  const leaseDateShortCut = [
+    {
+      text: "一个月",
+      value: () => {
+        const start = new Date();
+        const end = new Date(start);
+        end.setMonth(end.getMonth() + 1);
+        end.setDate(end.getDate() - 1);
+        return [start, end];
+      }
+    },
+    {
+      text: "三个月",
+      value: () => {
+        const start = new Date();
+        const end = new Date(start);
+        end.setMonth(end.getMonth() + 3);
+        end.setDate(end.getDate() - 1);
+        return [start, end];
+      }
+    },
+    {
+      text: "六个月",
+      value: () => {
+        const start = new Date();
+        const end = new Date(start);
+        end.setMonth(end.getMonth() + 6);
+        end.setDate(end.getDate() - 1);
+        return [start, end];
+      }
+    },
+    {
+      text: "十二个月",
+      value: () => {
+        const start = new Date();
+        const end = new Date(start);
+        end.setMonth(end.getMonth() + 12);
+        end.setDate(end.getDate() - 1);
+        return [start, end];
+      }
+    }
+  ];
 
   defineExpose({
     getRef,
@@ -245,6 +455,9 @@
 </script>
 
 <style scoped lang="scss">
+  .house-selector-info {
+  }
+
   :deep(.el-form-item__label) {
     font-weight: 500;
   }

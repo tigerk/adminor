@@ -156,3 +156,18 @@ export const TENANT_STATUS_OPTIONS = [
   { label: "停用", value: 0 },
   { label: "启用", value: 1 }
 ] as const;
+
+// 签约类型：1=新签，2=续签，3=转租，4=换房
+export const TENANT_CONTRACT_NATURE_OPTIONS = [
+  { label: "新签", value: 1 },
+  { label: "续签", value: 2 },
+  { label: "转租", value: 3 },
+  { label: "换房", value: 4 }
+] as const;
+
+// 收租类型：1=提前，2=固定，3=延后
+export const RENT_DUE_TYPE_OPTIONS = [
+  { label: "提前", value: 1 },
+  { label: "固定", value: 2 },
+  { label: "延后", value: 3 }
+] as const;

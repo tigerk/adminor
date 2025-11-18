@@ -37,7 +37,7 @@ export interface TenantQueryFormProps {
 export interface TenantsCreateFormProps {
   tenant: TenantProps;
   tenantMateList: TenantMateProps[];
-  contract: ContractTemplateFormProps;
+  contract: TenantContractProps;
 }
 
 /** 租客统计 */

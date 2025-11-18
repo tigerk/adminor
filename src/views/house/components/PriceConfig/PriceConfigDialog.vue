@@ -2,10 +2,9 @@
   import { computed, ref, watch } from "vue";
   import type { PriceConfigFormProps } from "./types";
   import { PriceConfigProps, PricePlanProps } from "@/types";
-  import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
+  import { PRICE_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
-  import { getDictDataByParentCode } from "@/api/sys/dict";
-  import { Delete, Plus } from "@element-plus/icons-vue";
+  import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
 
   const { getDefaultOtherFee } = usePriceConfigEdit();
 
@@ -20,30 +19,6 @@
     priceConfig.value.otherFees = [getDefaultOtherFee()];
   }
 
-  const otherFeeTypeOptions = ref<any[]>([]);
-  const cascaderValues = ref<Record<number, any[]>>({});
-
-  // 转换字典数据为级联选择器格式
-  const transformDictToCascader = (dictData: any[]) => {
-    return dictData.map(dict => ({
-      label: dict.dictName,
-      value: dict.dictCode,
-      children: dict.dictDataList.map(item => ({
-        label: item.name,
-        value: item.id
-      }))
-    }));
-  };
-
-  getDictDataByParentCode({
-    dictCode: "fee_type"
-  }).then(res => {
-    otherFeeTypeOptions.value = transformDictToCascader(res.data);
-    console.log("级联选择器数据:", otherFeeTypeOptions.value);
-  });
-
-  // 付款方式选项
-  const paymentMethodOptions = PAYMENT_METHOD_OPTIONS;
   const priceMethodOptions = PRICE_METHOD_OPTIONS;
   const pricePlantOptions = PRICE_PLANT_OPTIONS;
 
@@ -62,39 +37,6 @@
   const floorPriceInputSuffix = computed(() => {
     return priceConfig.value.floorPriceMethod === 0 ? "元/月" : "%";
   });
-
-  // 添加其他费用
-  const addOtherFee = () => {
-    priceConfig.value.otherFees.push(getDefaultOtherFee());
-  };
-
-  // 删除其他费用
-  const removeOtherFee = (index: number) => {
-    priceConfig.value.otherFees.splice(index, 1);
-  };
-
-  // 处理级联选择器变化
-  const handleCascaderChange = (value: any, index: any) => {
-    debugger;
-    const findOption = (options: any[], targetValue: any): any | null => {
-      for (const option of options) {
-        if (option.children) {
-          for (const child of option.children) {
-            if (child.value === targetValue.at(1)) {
-              return child;
-            }
-          }
-        }
-      }
-    };
-
-    const selectedOption = findOption(otherFeeTypeOptions.value, value);
-    console.log("找到的标签:", selectedOption);
-    if (selectedOption !== null) {
-      priceConfig.value.otherFees[index].name = selectedOption.label;
-      priceConfig.value.otherFees[index].dicDataId = selectedOption.value;
-    }
-  };
 
   // 处理默认方案切换
   const handleDefaultPlanChange = (index: number) => {
@@ -180,69 +122,7 @@
     </div>
 
     <!-- 其他费用配置 -->
-    <div class="section">
-      <h4 class="section-title">
-        其他费用
-        <span class="section-subtitle">(租金以外的费用,适用于所有支付方式)</span>
-      </h4>
-
-      <div v-if="priceConfig.otherFees" class="fee-table-wrapper">
-        <table class="fee-table">
-          <thead>
-            <tr>
-              <th style="width: 200px">费用类型</th>
-              <th style="width: 150px">付款方式</th>
-              <th style="width: 300px">金额</th>
-              <th style="width: 60px">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(feeItem, index) in priceConfig.otherFees" :key="index">
-              <td>
-                <!-- 添加调试信息 -->
-                <el-cascader
-                  v-model="cascaderValues[index]"
-                  placeholder="请选择费用类型"
-                  :options="otherFeeTypeOptions"
-                  :props="{
-                    emitPath: true,
-                    checkStrictly: false
-                  }"
-                  filterable
-                  clearable
-                  style="width: 100%"
-                  @change="value => handleCascaderChange(value, index)"
-                />
-              </td>
-              <td>
-                <el-select v-model="feeItem.paymentMethod" placeholder="请选择" style="width: 100%">
-                  <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </td>
-              <td>
-                <el-input v-model.number="feeItem.priceInput" :min="0" placeholder="请输入" type="number">
-                  <template #prepend>
-                    <el-select v-model="feeItem.priceMethod" placeholder="请选择" style="width: 140px">
-                      <el-option v-for="item in priceMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
-                    </el-select>
-                  </template>
-                  <template #append>{{ feeItem.priceMethod === 0 ? "元/月" : "%" }}</template>
-                </el-input>
-              </td>
-              <td class="text-center">
-                <el-button type="danger" :icon="Delete" link @click="removeOtherFee(index)" />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="text-left">
-        <el-button type="primary" plain size="small" style="margin-top: 12px" @click="addOtherFee">
-          <el-icon><Plus /></el-icon>
-          其他费用
-        </el-button>
-      </div>
-    </div>
+    <OtherFeeSelect v-model="priceConfig.otherFees" />
 
     <!-- 更多租金方案配置 -->
     <div class="section mt-6">
@@ -321,56 +201,6 @@
     font-size: 14px;
     font-weight: 400;
     color: #909399;
-  }
-
-  .fee-table-wrapper {
-    border: 1px solid #e4e7ed;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 4px;
-  }
-
-  .fee-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-  }
-
-  .fee-table thead {
-    background-color: #f5f7fa;
-  }
-
-  .fee-table th {
-    padding: 10px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 14px;
-    color: #606266;
-    border-bottom: 1px solid #e4e7ed;
-    border-right: 1px solid #e4e7ed;
-  }
-
-  .fee-table th:last-child {
-    border-right: none;
-  }
-
-  .fee-table td {
-    padding: 8px;
-    border-bottom: 1px solid #e4e7ed;
-    border-right: 1px solid #e4e7ed;
-    vertical-align: middle;
-  }
-
-  .fee-table td:last-child {
-    border-right: none;
-  }
-
-  .fee-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  .fee-table tbody tr:hover {
-    background-color: #f5f7fa;
   }
 
   .plan-selection {
