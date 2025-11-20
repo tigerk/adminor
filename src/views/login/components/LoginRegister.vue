@@ -13,7 +13,7 @@
   import Phone from "~icons/ri/phone-fill";
   import Mail from "~icons/ri/mail-fill";
   import Shield from "~icons/ri/shield-keyhole-line";
-  import { sendSmsCode } from "@/api/user";
+  import { sendSmsCode } from "@/api/login";
 
   const { t } = useI18n();
   const emit = defineEmits<{

@@ -35,10 +35,9 @@
     deviceDetection,
     onSearch,
     resetForm,
-    onbatchDel,
-    openDialog,
+    onBatchDelete,
+    openUserCreateDialog,
     onTreeSelect,
-    handleUpdate,
     handleDelete,
     handleUpload,
     handleReset,
@@ -75,7 +74,7 @@
 
       <PureTableBar title="用户管理（仅演示，操作后不生效）" :columns="columns" @refresh="onSearch">
         <template #buttons>
-          <el-button type="primary" :icon="useRenderIcon(AddFill)" @click="openDialog()">新增用户</el-button>
+          <el-button type="primary" :icon="useRenderIcon(AddFill)" @click="openUserCreateDialog()">新增用户</el-button>
         </template>
         <template v-slot="{ size, dynamicColumns }">
           <div v-if="selectedNum > 0" v-motion-fade class="bg-[var(--el-fill-color-light)] w-full h-[46px] mb-2 pl-4 flex items-center">
@@ -83,7 +82,7 @@
               <span style="font-size: var(--el-font-size-base)" class="text-[rgba(42,46,54,0.5)] dark:text-[rgba(220,220,242,0.5)]">已选 {{ selectedNum }} 项</span>
               <el-button type="primary" text @click="onSelectionCancel">取消选择</el-button>
             </div>
-            <el-popconfirm title="是否确认删除?" @confirm="onbatchDel">
+            <el-popconfirm title="是否确认删除?" @confirm="onBatchDelete">
               <template #reference>
                 <el-button type="danger" text class="mr-1!">批量删除</el-button>
               </template>
@@ -110,14 +109,14 @@
             @page-current-change="handleCurrentChange"
           >
             <template #operation="{ row }">
-              <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(EditPen)" @click="openDialog('修改', row)">修改</el-button>
+              <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(EditPen)" @click="openUserCreateDialog('修改', row)">修改</el-button>
               <el-popconfirm :title="`是否确认删除这条数据`" @confirm="handleDelete(row)">
                 <template #reference>
                   <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(Delete)">删除</el-button>
                 </template>
               </el-popconfirm>
               <el-dropdown>
-                <el-button class="ml-3! mt-[2px]!" link type="primary" :size="size" :icon="useRenderIcon(More)" @click="handleUpdate(row)" />
+                <el-button class="ml-3! mt-[2px]!" link type="primary" :size="size" :icon="useRenderIcon(More)" />
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item>

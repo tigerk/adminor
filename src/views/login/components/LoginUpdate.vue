@@ -11,7 +11,7 @@
   import Lock from "~icons/ri/lock-fill";
   import Phone from "~icons/ri/phone-fill";
   import Shield from "~icons/ri/shield-keyhole-line";
-  import { loginUpdate, sendSmsCode } from "@/api/user";
+  import { loginUpdate, sendSmsCode } from "@/api/login";
 
   const { t } = useI18n();
   const emit = defineEmits<{

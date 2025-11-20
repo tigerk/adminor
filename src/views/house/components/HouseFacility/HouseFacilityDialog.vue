@@ -2,7 +2,7 @@
   import { onMounted, reactive, ref, watch } from "vue";
   import { Plus, Minus } from "@element-plus/icons-vue";
   import { type FacilityFormProps } from "@/views/house/components/HouseFacility/types";
-  import { getDictDataByDictCode } from "@/api/sys/dict";
+  import { getDictDataByDictCode } from "@/api/system/dict";
 
   const props = withDefaults(defineProps<FacilityFormProps>(), {});
   const facilities = reactive(props.formInline);

@@ -17,7 +17,7 @@
   import { ref } from "vue";
 
   import { setToken } from "@/utils/auth";
-  import { switchCompany } from "@/api/user";
+  import { switchCompany } from "@/api/login";
   import { ElMessage } from "element-plus";
 
   import FunctionMenu from "../../../components/Business/FunctionMenu.vue"; // 导入功能菜单组件

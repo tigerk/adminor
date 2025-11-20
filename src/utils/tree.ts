@@ -156,9 +156,7 @@ export const handleTree = (
 
   for (const d of data) {
     const parentId = d[config.parentId];
-    if (childrenListMap[parentId] == null) {
-      childrenListMap[parentId] = [];
-    }
+    childrenListMap[parentId] ??= [];
     nodeIds[d[config.id]] = d;
     childrenListMap[parentId].push(d);
   }

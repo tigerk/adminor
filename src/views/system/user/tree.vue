@@ -45,31 +45,22 @@
   function nodeClick(value) {
     const nodeId = value.$treeNodeId;
 
-    // 如果节点有子节点，不触发选中事件
-    if (value.children && value.children.length > 0) {
-      return;
-    }
-
     highlightMap.value[nodeId] = highlightMap.value[nodeId]?.highlight
-      ? Object.assign({ id: nodeId }, highlightMap.value[nodeId], {
-          highlight: false
-        })
-      : Object.assign({ id: nodeId }, highlightMap.value[nodeId], {
-          highlight: true
-        });
+      ? { id: nodeId, ...highlightMap.value[nodeId], highlight: false }
+      : { id: nodeId, ...highlightMap.value[nodeId], highlight: true };
     Object.values(highlightMap.value).forEach((v: Tree) => {
       if (v.id !== nodeId) {
         v.highlight = false;
       }
     });
-    emit("tree-select", highlightMap.value[nodeId]?.highlight ? Object.assign({ ...value, selected: true }) : Object.assign({ ...value, selected: false }));
+    emit("tree-select", highlightMap.value[nodeId]?.highlight ? { ...value, selected: true } : Object.assign({ ...value, selected: false }));
   }
 
   function toggleRowExpansionAll(status) {
     isExpand.value = status;
     const nodes = (proxy.$refs["treeRef"] as any).store._getAllNodes();
-    for (let i = 0; i < nodes.length; i++) {
-      nodes[i].expanded = status;
+    for (const element of nodes) {
+      element.expanded = status;
     }
   }
 
@@ -109,7 +100,7 @@
                 link
                 type="primary"
                 :icon="useRenderIcon(isExpand ? ExpandIcon : UnExpandIcon)"
-                @click="toggleRowExpansionAll(isExpand ? false : true)"
+                @click="toggleRowExpansionAll(!isExpand)"
               >
                 {{ isExpand ? "折叠全部" : "展开全部" }}
               </el-button>

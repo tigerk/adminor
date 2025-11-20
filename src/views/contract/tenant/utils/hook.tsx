@@ -9,7 +9,7 @@ import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_TYPE_OPTIONS }
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { TenantMateProps, TenantProps, TenantQueryFormProps, TenantsCreateFormProps } from "@/types";
-import { getDictDataByDictCode } from "@/api/sys/dict";
+import { getDictDataByDictCode } from "@/api/system/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
 import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
 

@@ -122,7 +122,7 @@
   import { computed, onMounted, reactive, ref, watch } from "vue";
   import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
   import UploadImage from "@/components/Business/UploadImage.vue";
-  import { getDictDataByDictCode } from "@/api/sys/dict";
+  import { getDictDataByDictCode } from "@/api/system/dict";
   import { createFocusBasicInfoRules } from "@/views/house/components/FocusCreate/utils/rule";
   import { ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
 

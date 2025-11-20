@@ -13,7 +13,7 @@ import type { ContractTemplateQueryFormProps } from "@/views/contract/settings/u
 import type { ContractTemplateFormProps } from "@/types";
 import { doc } from "prettier";
 import { handleTree } from "@/utils/tree";
-import { getDeptList } from "@/api/sys/dept";
+import { getDeptList } from "@/api/system/dept";
 
 function useContractSettings() {
   const pagination = reactive<PaginationProps>({

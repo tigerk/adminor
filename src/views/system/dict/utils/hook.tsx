@@ -8,7 +8,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
-import { createDictData, deleteDictData, getDictData, getDictTree, switchDictDataStatus } from "@/api/sys/dict";
+import { createDictData, deleteDictData, getDictData, getDictTree, switchDictDataStatus } from "@/api/system/dict";
 
 export function useDict() {
   // 左侧字典树的id

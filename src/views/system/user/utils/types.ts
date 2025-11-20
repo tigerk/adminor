@@ -1,11 +1,17 @@
-interface FormItemProps {
-  id?: number;
+interface UserFormItemProps {
   /** 用于判断是`新增`还是`修改` */
   title: string;
+  /** 公司用户id */
+  companyUserId?: number;
+  /** 用户id */
+  userId?: number;
   higherDeptOptions: Record<string, unknown>[];
   deptId?: number;
   nickname: string;
   username: string;
+  realName: string;
+  idType?: number;
+  idNo: string;
   password: string;
   phone: string | number;
   email: string;
@@ -17,8 +23,8 @@ interface FormItemProps {
   };
   remark: string;
 }
-interface FormProps {
-  formInline: FormItemProps;
+interface UserFormProps {
+  formInline: UserFormItemProps;
 }
 
 interface RoleFormItemProps {
@@ -33,4 +39,4 @@ interface RoleFormProps {
   formInline: RoleFormItemProps;
 }
 
-export type { FormItemProps, FormProps, RoleFormItemProps, RoleFormProps };
+export type { UserFormItemProps, UserFormProps, RoleFormItemProps, RoleFormProps };
