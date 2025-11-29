@@ -118,7 +118,7 @@ class PureHttp {
         NProgress.done();
 
         // 检查响应码是否为9999，如果是则跳转到登录页面
-        if (response.data && response.data.code === 9999) {
+        if (response.data?.code === 9999) {
           console.warn("响应码9999，跳转到登录页面");
           // 清除本地存储的token信息
           this.redirectToLogin();
