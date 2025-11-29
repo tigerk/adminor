@@ -19,7 +19,7 @@ import { getAsyncRoutes } from "@/api/routes";
 
 function handRank(routeInfo: any) {
   const { name, path, parentId, meta } = routeInfo;
-  return isAllEmpty(parentId) ? (isAllEmpty(meta?.rank) || (meta?.rank === 0 && name !== "Home" && path !== "/") ? true : false) : false;
+  return isAllEmpty(parentId) ? !!(isAllEmpty(meta?.rank) || (meta?.rank === 0 && name !== "Home" && path !== "/")) : false;
 }
 
 /** 按照路由中meta下的rank等级升序来排序路由 */
@@ -64,12 +64,12 @@ function filterNoPermissionTree(data: RouteComponent[]) {
 function getParentPaths(value: string, routes: RouteRecordRaw[], key = "path") {
   // 深度遍历查找
   function dfs(routes: RouteRecordRaw[], value: string, parents: string[]) {
-    for (let i = 0; i < routes.length; i++) {
-      const item = routes[i];
+    for (const element of routes) {
+      const item = element;
       // 返回父级path
       if (item[key] === value) return parents;
       // children不存在或为空则不递归
-      if (!item.children || !item.children.length) continue;
+      if (!item.children?.length) continue;
       // 往下查找时将当前path入栈
       parents.push(item.path);
 
@@ -90,9 +90,9 @@ function findRouteByPath(path: string, routes: RouteRecordRaw[]) {
   if (res) {
     return isProxy(res) ? toRaw(res) : res;
   } else {
-    for (let i = 0; i < routes.length; i++) {
-      if (routes[i].children instanceof Array && routes[i].children.length > 0) {
-        res = findRouteByPath(path, routes[i].children);
+    for (const element of routes) {
+      if (element.children instanceof Array && element.children.length > 0) {
+        res = findRouteByPath(path, element.children);
         if (res) {
           return isProxy(res) ? toRaw(res) : res;
         }

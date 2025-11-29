@@ -54,8 +54,8 @@
 
   // 登录表单
   const loginForm = reactive({
-    username: "kimi",
-    password: "test0214"
+    username: "13810428094",
+    password: "654321"
   });
 
   // 登录处理
