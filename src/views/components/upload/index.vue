@@ -145,7 +145,7 @@ const onDownload = () => {
       accept="image/jpeg,image/png,image/gif"
       action="https://run.mocky.io/v3/3aa761d7-b0b3-4a03-96b3-6168d4f7467b"
       :limit="3"
-      :headers="{ Authorization: 'eyJhbGciOiJIUzUxMiJ9.admin' }"
+      :headers="{ SaasToken: 'eyJhbGciOiJIUzUxMiJ9.admin' }"
       :on-exceed="onExceed"
       :before-upload="onBefore"
     >

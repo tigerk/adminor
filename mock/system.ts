@@ -1992,7 +1992,7 @@ export default defineFakeRoute([
             Accept: "application/json, text/plain, */*",
             "Accept-Encoding": "gzip, deflate",
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,eo;q=0.7",
-            Authorization: "Bearer eyJhbGciOiJIUzUxMiJ9.admin",
+            SaasToken: "Bearer eyJhbGciOiJIUzUxMiJ9.admin",
             Connection: "keep-alive",
             "Content-Length": 0,
             Cookie:
@@ -2040,7 +2040,7 @@ export default defineFakeRoute([
             Accept: "application/json, text/plain, */*",
             "Accept-Encoding": "gzip, deflate",
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,eo;q=0.7",
-            Authorization: "Bearer eyJhbGciOiJIUzUxMiJ9.admin",
+            SaasToken: "Bearer eyJhbGciOiJIUzUxMiJ9.admin",
             Connection: "keep-alive",
             "Content-Length": 0,
             Cookie:
