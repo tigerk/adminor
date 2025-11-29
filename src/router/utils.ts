@@ -19,17 +19,17 @@ import { getAsyncRoutes } from "@/api/routes";
 
 function handRank(routeInfo: any) {
   const { name, path, parentId, meta } = routeInfo;
-  return isAllEmpty(parentId) ? !!(isAllEmpty(meta?.rank) || (meta?.rank === 0 && name !== "Home" && path !== "/")) : false;
+  return isAllEmpty(parentId) ? !!(isAllEmpty(meta?.sortOrder) || (meta?.sortOrder === 0 && name !== "Home" && path !== "/")) : false;
 }
 
-/** 按照路由中meta下的rank等级升序来排序路由 */
+/** 按照路由中meta下的sortOrder等级升序来排序路由 */
 function ascending(arr: any[]) {
   arr.forEach((v, index) => {
-    // 当rank不存在时，根据顺序自动创建，首页路由永远在第一位
-    if (handRank(v)) v.meta.rank = index + 2;
+    // 当sortOrder不存在时，根据顺序自动创建，首页路由永远在第一位
+    if (handRank(v)) v.meta.sortOrder = index + 2;
   });
-  return arr.sort((a: { meta: { rank: number } }, b: { meta: { rank: number } }) => {
-    return a?.meta.rank - b?.meta.rank;
+  return arr.sort((a: { meta: { sortOrder: number } }, b: { meta: { sortOrder: number } }) => {
+    return a?.meta.sortOrder - b?.meta.sortOrder;
   });
 }
 
@@ -119,9 +119,7 @@ function handleAsyncRoutes(routeList) {
   } else {
     formatFlatteningRoutes(addAsyncRoutes(routeList)).map((v: RouteRecordRaw) => {
       // 防止重复添加路由
-      if (router.options.routes[0].children.findIndex(value => value.path === v.path) !== -1) {
-        return;
-      } else {
+      if (router.options.routes[0].children.findIndex(value => value.path === v.path) === -1) {
         // 切记将路由push到routes后还需要使用addRoute，这样路由才能正常跳转
         router.options.routes[0].children.push(v);
         // 最终路由进行升序
@@ -131,6 +129,8 @@ function handleAsyncRoutes(routeList) {
         // 保持router.options.routes[0].children与path为"/"的children一致，防止数据不一致导致异常
         flattenRouters.children = router.options.routes[0].children;
         router.addRoute(flattenRouters);
+      } else {
+        return;
       }
     });
     usePermissionStoreHook().handleWholeMenus(routeList);
