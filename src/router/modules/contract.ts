@@ -1,6 +1,6 @@
 export default {
   path: "/contract",
-  redirect: "/contract/index",
+  redirect: "/contract",
   name: "contract",
   meta: {
     icon: "IF-icon-contract",
