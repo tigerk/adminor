@@ -7,23 +7,28 @@ import { buildHierarchyTree } from "@/utils/tree";
 import remainingRouter from "./modules/remaining";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
-import { isUrl, openLink, cloneDeep, isAllEmpty, storageLocal } from "@pureadmin/utils";
-import { ascending, getTopMenu, initRouter, isOneOfArray, getHistoryMode, findRouteByPath, handleAliveRoute, formatTwoStageRoutes, formatFlatteningRoutes } from "./utils";
-import { type Router, type RouteRecordRaw, type RouteComponent, createRouter } from "vue-router";
-import { type DataInfo, userKey, removeToken, multipleTabsKey } from "@/utils/auth";
+import { cloneDeep, isAllEmpty, isUrl, openLink, storageLocal } from "@pureadmin/utils";
+import {
+  ascending,
+  findRouteByPath,
+  formatFlatteningRoutes,
+  formatTwoStageRoutes,
+  getHistoryMode,
+  getTopMenu,
+  handleAliveRoute,
+  initRouter,
+  isOneOfArray
+} from "./utils";
+import { createRouter, type RouteComponent, type Router, type RouteRecordRaw } from "vue-router";
+import { type DataInfo, multipleTabsKey, removeToken, userKey } from "@/utils/auth";
 
 /** 自动导入全部静态路由，无需再手动引入！匹配 src/router/modules 目录（任何嵌套级别）中具有 .ts 扩展名的所有文件，除了 remaining.ts 文件
  * 如何匹配所有文件请看：https://github.com/mrmlnc/fast-glob#basic-syntax
  * 如何排除文件请看：https://cn.vitejs.dev/guide/features.html#negative-patterns
  */
-const modules: Record<string, any> = import.meta.glob(
-  ["./modules/**/home.ts",
-    // "./modules/**/house.ts", "./modules/**/contract.ts", "./modules/**/monitor.ts",
-    "!./modules/**/remaining.ts"],
-  {
-    eager: true
-  }
-);
+const modules: Record<string, any> = import.meta.glob(["./modules/**/home.ts", "./modules/**/house.ts", "./modules/**/contract.ts", "!./modules/**/remaining.ts"], {
+  eager: true
+});
 
 /** 原始静态路由（未做任何处理） */
 const routes = [];
@@ -131,7 +136,7 @@ router.beforeEach((to: ToRouteType, _from, next) => {
             const route = findRouteByPath(path, router.options.routes[0].children);
             getTopMenu(true);
             // query、params模式路由传参数的标签页不在此处处理
-            if (route && route.meta?.title) {
+            if (route?.meta?.title) {
               if (isAllEmpty(route.parentId) && route.meta?.backstage) {
                 // 此处为动态顶级路由（目录）
                 const { path, name, meta } = route.children[0];
@@ -156,17 +161,13 @@ router.beforeEach((to: ToRouteType, _from, next) => {
       }
       toCorrectRoute();
     }
+  } else if (to.path === "/login") {
+    next();
+  } else if (whiteList.indexOf(to.path) === -1) {
+    removeToken();
+    next({ path: "/login" });
   } else {
-    if (to.path !== "/login") {
-      if (whiteList.indexOf(to.path) !== -1) {
-        next();
-      } else {
-        removeToken();
-        next({ path: "/login" });
-      }
-    } else {
-      next();
-    }
+    next();
   }
 });
 

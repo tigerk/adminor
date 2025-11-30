@@ -1,7 +1,8 @@
+// src/router/modules/contract.ts
 export default {
   path: "/contract",
   redirect: "/contract/tenant",
-  name: "contract",
+  name: "Contract",
   meta: {
     icon: "IF-icon-contract",
     title: "合同管理",
@@ -11,7 +12,7 @@ export default {
   children: [
     {
       path: "/contract/tenant",
-      name: "contractTenant",
+      name: "ContractTenant",
       component: () => import("@/views/contract/tenant/index.vue"),
       meta: {
         title: "租客合同",
@@ -21,7 +22,7 @@ export default {
     },
     {
       path: "/contract/landlord",
-      name: "contractLandlord",
+      name: "ContractLandlord",
       component: () => import("@/views/contract/landlord/index.vue"),
       meta: {
         title: "房东合同",
@@ -31,7 +32,7 @@ export default {
     },
     {
       path: "/contract/booking",
-      name: "contractBooking",
+      name: "ContractBooking",
       component: () => import("@/views/contract/booking/index.vue"),
       meta: {
         title: "租客预定",
@@ -41,7 +42,7 @@ export default {
     },
     {
       path: "/contract/settings",
-      name: "contractSettings",
+      name: "ContractSettings",
       component: () => import("@/views/contract/settings/index.vue"),
       meta: {
         title: "合同设置",
