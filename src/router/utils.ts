@@ -47,7 +47,7 @@ function filterChildrenTree(data: RouteComponent[]) {
 
 /** 判断两个数组彼此是否存在相同值 */
 function isOneOfArray(a: Array<string>, b: Array<string>) {
-  return Array.isArray(a) && Array.isArray(b) ? (intersection(a, b).length > 0 ? true : false) : true;
+  return Array.isArray(a) && Array.isArray(b) ? intersection(a, b).length > 0 : true;
 }
 
 /** 从localStorage里取出当前登录用户的角色roles，过滤无权限的菜单 */
@@ -262,7 +262,7 @@ function isFunctionComponent(component: any): component is Function {
 
 /** 过滤后端传来的动态路由 重新生成规范路由 */
 function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
-  if (!arrRoutes || !arrRoutes.length) return;
+  if (!arrRoutes?.length) return;
   const modulesRoutesKeys = Object.keys(modulesRoutes);
 
   arrRoutes.forEach((v: RouteRecordRaw) => {
@@ -270,12 +270,12 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
     v.meta.backstage = true;
 
     // 父级的redirect属性取值
-    if (v?.children && v.children.length && !v.redirect) {
+    if (v?.children?.length && !v.redirect) {
       v.redirect = v.children[0].path;
     }
 
     // 父级的name属性取值
-    if (v?.children && v.children.length && !v.name) {
+    if (v?.children?.length && !v.name) {
       v.name = (v.children[0].name as string) + "Parent";
     }
 
