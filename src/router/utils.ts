@@ -320,7 +320,7 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
     }
 
     // 递归处理子路由
-    if (v?.children && v.children.length) {
+    if (v?.children?.length) {
       addAsyncRoutes(v.children);
     }
   });
