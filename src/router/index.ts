@@ -19,7 +19,7 @@ import { type DataInfo, multipleTabsKey, removeToken, userKey } from "@/utils/au
 const modules: Record<string, any> = import.meta.glob(
   [
     "./modules/**/home.ts",
-    // "./modules/**/house.ts",
+    "./modules/**/house.ts",
     "./modules/**/contract.ts",
     "!./modules/**/remaining.ts"
   ],
