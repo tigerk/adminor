@@ -225,7 +225,6 @@ function useContractSettings() {
       beforeSure: (done, { options }) => {
         const getFormRuleRef = formRef.value.getRef();
         const curData = formRef.value.formInline;
-        debugger;
         getFormRuleRef.validate(valid => {
           if (valid) {
             console.log("保存的curData", curData);

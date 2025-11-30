@@ -94,7 +94,6 @@ export function useShareEdit() {
           <el-button
             type="primary"
             onClick={async () => {
-              debugger;
               // 调用表单验证
               if (shareFormRef.value) {
                 const isValid = await shareFormRef.value.validateForm();
