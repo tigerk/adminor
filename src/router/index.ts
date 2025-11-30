@@ -8,17 +8,7 @@ import remainingRouter from "./modules/remaining";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import { cloneDeep, isAllEmpty, isUrl, openLink, storageLocal } from "@pureadmin/utils";
-import {
-  ascending,
-  findRouteByPath,
-  formatFlatteningRoutes,
-  formatTwoStageRoutes,
-  getHistoryMode,
-  getTopMenu,
-  handleAliveRoute,
-  initRouter,
-  isOneOfArray
-} from "./utils";
+import { ascending, findRouteByPath, formatFlatteningRoutes, formatTwoStageRoutes, getHistoryMode, getTopMenu, handleAliveRoute, initRouter, isOneOfArray } from "./utils";
 import { createRouter, type RouteComponent, type Router, type RouteRecordRaw } from "vue-router";
 import { type DataInfo, multipleTabsKey, removeToken, userKey } from "@/utils/auth";
 
@@ -26,9 +16,17 @@ import { type DataInfo, multipleTabsKey, removeToken, userKey } from "@/utils/au
  * 如何匹配所有文件请看：https://github.com/mrmlnc/fast-glob#basic-syntax
  * 如何排除文件请看：https://cn.vitejs.dev/guide/features.html#negative-patterns
  */
-const modules: Record<string, any> = import.meta.glob(["./modules/**/home.ts", "./modules/**/house.ts", "./modules/**/contract.ts", "!./modules/**/remaining.ts"], {
-  eager: true
-});
+const modules: Record<string, any> = import.meta.glob(
+  [
+    "./modules/**/home.ts",
+    // "./modules/**/house.ts",
+    "./modules/**/contract.ts",
+    "!./modules/**/remaining.ts"
+  ],
+  {
+    eager: true
+  }
+);
 
 /** 原始静态路由（未做任何处理） */
 const routes = [];
@@ -60,11 +58,9 @@ export const router: Router = createRouter({
     return new Promise(resolve => {
       if (savedPosition) {
         return savedPosition;
-      } else {
-        if (from.meta.saveSrollTop) {
-          const top: number = document.documentElement.scrollTop || document.body.scrollTop;
-          resolve({ left: 0, top });
-        }
+      } else if (from.meta.saveSrollTop) {
+        const top: number = document.documentElement.scrollTop || document.body.scrollTop;
+        resolve({ left: 0, top });
       }
     });
   }
