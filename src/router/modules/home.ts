@@ -11,7 +11,7 @@ export default {
   meta: {
     icon: "ep/home-filled",
     title: $t("menus.pureHome"),
-    rank: 0
+    sortOrder: 0
   },
   children: [
     {

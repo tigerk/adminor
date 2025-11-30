@@ -6,7 +6,7 @@ export default {
   meta: {
     icon: "IF-icon-contract",
     title: "合同管理",
-    rank: 2,
+    sortOrder: 2,
     showLink: true
   },
   children: [

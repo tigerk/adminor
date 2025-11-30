@@ -4,7 +4,7 @@ export default {
   meta: {
     title: "房源管理",
     icon: "IF-icon-house",
-    rank: 1,
+    sortOrder: 1,
     showLink: true
   },
   children: [

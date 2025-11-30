@@ -8,7 +8,7 @@ export default {
   meta: {
     icon: "ri/artboard-line",
     title: $t("menus.pureBoard"),
-    rank: board
+    sortOrder: board
   },
   children: [
     {
