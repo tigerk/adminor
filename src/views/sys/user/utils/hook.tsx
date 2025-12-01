@@ -171,8 +171,14 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
 
   function handleDelete(row) {
     deleteUser([row.companyUserId]).then(resp => {
-      message(`您删除了用户编号为${row.id}的这条数据`, { type: "success" });
-      onUserSearch().then();
+      if (resp.code === 0) {
+        message(`您删除了用户编号为${row.companyUserId}的这条数据`, { type: "success" });
+        onUserSearch().then();
+      } else {
+        message(resp.message || "删除用户失败", {
+          type: "error"
+        });
+      }
     });
   }
 
