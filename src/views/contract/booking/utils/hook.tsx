@@ -5,7 +5,7 @@ import { reactive, ref, onMounted, toRaw, h } from "vue";
 import router from "@/router";
 import { getRoomList, getRoomTotal } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
-import type { UserFormItemProps } from "@/views/system/user/utils/types";
+import type { UserFormItemProps } from "@/views/sys/user/utils/types";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import createTenant from "@/views/contract/tenant/form/createTenant.vue";

@@ -78,9 +78,9 @@
       <FunctionMenu :style="{ marginLeft: '15px' }" />
 
       <!-- 菜单搜索 -->
-      <LaySearch id="header-search" />
+      <LaySearch v-if="false" id="header-search" />
       <!-- 国际化 -->
-      <el-dropdown id="header-translation" trigger="click">
+      <el-dropdown v-if="false" id="header-translation" trigger="click">
         <GlobalizationIcon class="navbar-bg-hover w-[40px] h-[48px] p-[11px] cursor-pointer outline-hidden" />
         <template #dropdown>
           <el-dropdown-menu class="translation">

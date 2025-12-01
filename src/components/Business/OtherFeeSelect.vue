@@ -70,7 +70,7 @@
   import { Delete, Plus } from "@element-plus/icons-vue";
   import type { OtherFeeProps } from "@/types";
   import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS } from "@/constants";
-  import { getDictDataByParentCode } from "@/api/system/dict";
+  import { getDictDataByParentCode } from "@/api/sys/dict";
 
   interface Props {
     modelValue: OtherFeeProps[];

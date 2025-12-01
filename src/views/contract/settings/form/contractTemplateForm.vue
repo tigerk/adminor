@@ -111,7 +111,7 @@
   import "tinymce/plugins/table";
   import "tinymce/plugins/help";
   import "tinymce/plugins/wordcount";
-  import { getDeptList } from "@/api/system/dept";
+  import { getDeptList } from "@/api/sys/dept";
   import { handleTree } from "@/utils/tree";
   import { getContractTemplateParams } from "@/api/contract/template";
 

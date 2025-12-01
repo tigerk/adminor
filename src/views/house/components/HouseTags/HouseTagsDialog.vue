@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { onMounted, reactive, ref, watch, computed } from "vue";
-  import { getDictDataByDictCode } from "@/api/system/dict";
+  import { getDictDataByDictCode } from "@/api/sys/dict";
   import { TagsFormProps } from "@/views/house/components/HouseTags/types";
 
   const props = withDefaults(defineProps<TagsFormProps>(), {});

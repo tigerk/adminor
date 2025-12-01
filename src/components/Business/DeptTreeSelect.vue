@@ -29,7 +29,7 @@
 <script setup>
   import { onMounted, ref, watch, computed } from "vue";
   import { handleTree } from "@/utils/tree.ts";
-  import { getDeptList } from "@/api/system/dept.js";
+  import { getDeptList } from "@/api/sys/dept.js";
   import { ElMessage } from "element-plus";
 
   // 定义 props - 支持 v-model
