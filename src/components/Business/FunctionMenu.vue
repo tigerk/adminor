@@ -314,20 +314,20 @@
     font-size: 14px;
     font-weight: 500;
     color: white;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #e13c39 0%, #764ba2 100%);
     border: none;
     border-radius: 16px;
     box-shadow: 0 2px 8px rgb(102 126 234 / 30%);
     transition: all 0.3s ease;
 
     &:hover {
-      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+      background: linear-gradient(135deg, #e13c39 0%, #6a4190 100%);
       box-shadow: 0 4px 12px rgb(102 126 234 / 40%);
       transform: translateY(-1px);
     }
 
     &:focus {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #e13c39 0%, #764ba2 100%);
       box-shadow:
         0 2px 8px rgb(102 126 234 / 30%),
         0 0 0 2px rgb(102 126 234 / 20%);
