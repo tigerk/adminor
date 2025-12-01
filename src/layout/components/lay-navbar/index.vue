@@ -19,6 +19,7 @@
   import { setToken } from "@/utils/auth";
   import { switchCompany } from "@/api/login";
   import { ElMessage } from "element-plus";
+  import { ArrowDown } from "@element-plus/icons-vue";
 
   import FunctionMenu from "../../../components/Business/FunctionMenu.vue"; // 导入功能菜单组件
 
@@ -39,6 +40,9 @@
     getCompanyList
   } = useNav();
   const selectedCompanyId = ref<any>(getCurCompanyId);
+  console.log("current login companyId:" + selectedCompanyId.value);
+
+  const currentCompanyName = getCompanyList.value.find(item => item.companyId === selectedCompanyId.value)?.companyName || "";
 
   const { t, locale, translationCh, translationTw, translationEn, translationJa, translationKo } = useTranslationLang();
 
@@ -70,9 +74,19 @@
 
     <div v-if="/vertical|double/.test(layout)" class="vertical-header-right">
       <!-- 菜单搜索 -->
-      <el-select v-model="selectedCompanyId" placeholder="切换公司" clearable class="w-[280px]!" @change="handleCompanyChange">
-        <el-option v-for="item in getCompanyList" :key="item.companyId" :label="item.companyName" :value="item.companyId" />
-      </el-select>
+      <el-dropdown>
+        <el-button type="danger">
+          {{ currentCompanyName }}
+          <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item v-for="item in getCompanyList" :key="item.companyId" :label="item.companyName" :value="item.companyId" @click="handleCompanyChange(item.companyId)">
+              {{ item.companyName }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
 
       <!-- 功能菜单 -->
       <FunctionMenu :style="{ marginLeft: '15px' }" />
