@@ -14,7 +14,7 @@
       principal: "",
       phone: "",
       email: "",
-      sort: 0,
+      sortOrder: 0,
       status: 1,
       remark: ""
     })
@@ -104,7 +104,7 @@
       <re-col :value="12" :xs="24" :sm="24">
         <el-form-item label="排序">
           <el-input-number
-            v-model="newFormInline.sort"
+            v-model="newFormInline.sortOrder"
             class="w-full!"
             :min="0"
             :max="9999"

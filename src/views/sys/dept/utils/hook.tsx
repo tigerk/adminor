@@ -29,7 +29,7 @@ export function useDept() {
     },
     {
       label: "排序",
-      prop: "sort",
+      prop: "sortOrder",
       minWidth: 70
     },
     {
@@ -117,7 +117,7 @@ export function useDept() {
           principal: row?.principal ?? "",
           phone: row?.phone ?? "",
           email: row?.email ?? "",
-          sort: row?.sort ?? 0,
+          sortOrder: row?.sortOrder ?? 0,
           status: row?.status ?? 1,
           remark: row?.remark ?? ""
         }

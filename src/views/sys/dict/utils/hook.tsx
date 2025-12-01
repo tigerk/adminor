@@ -38,9 +38,20 @@ export function useDict() {
       )
     },
     {
+      sortable: true,
+      label: "排序",
+      minWidth: 90,
+      prop: "sortOrder"
+    },
+    {
+      label: "备注",
+      minWidth: 90,
+      prop: "remark"
+    },
+    {
       label: "状态",
       prop: "status",
-      minWidth: 90,
+      width: 120,
       cellRenderer: scope => (
         <el-switch
           size={scope.props.size === "small" ? "small" : "default"}
@@ -57,19 +68,8 @@ export function useDict() {
       )
     },
     {
-      sortable: true,
-      label: "排序",
-      minWidth: 90,
-      prop: "sort"
-    },
-    {
-      label: "备注",
-      minWidth: 90,
-      prop: "remark"
-    },
-    {
       label: "创建时间",
-      minWidth: 90,
+      width: 180,
       prop: "createTime",
       formatter: ({ createTime }) => dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
     },
@@ -171,7 +171,7 @@ export function useDict() {
           name: row?.name ?? "",
           value: row?.value ?? "",
           color: row?.color ?? "#6abe39",
-          sort: row?.sort ?? 1,
+          sort: row?.sortOrder ?? 1,
           status: row?.status ?? 1,
           remark: row?.remark ?? ""
         }

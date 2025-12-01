@@ -6,7 +6,7 @@ interface FormItemProps {
   name: string;
   value: string;
   color: string;
-  sort: number;
+  sortOrder: number;
   status: number;
   remark: string;
 }

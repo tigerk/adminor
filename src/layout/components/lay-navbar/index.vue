@@ -19,7 +19,6 @@
   import { setToken } from "@/utils/auth";
   import { switchCompany } from "@/api/login";
   import { ElMessage } from "element-plus";
-  import { ArrowDown } from "@element-plus/icons-vue";
 
   import FunctionMenu from "../../../components/Business/FunctionMenu.vue"; // 导入功能菜单组件
 
@@ -73,16 +72,23 @@
     <LayNavMix v-if="layout === 'mix'" />
 
     <div v-if="/vertical|double/.test(layout)" class="vertical-header-right">
-      <!-- 菜单搜索 -->
-      <el-dropdown>
-        <el-button type="danger">
-          {{ currentCompanyName }}
-          <el-icon class="el-icon--right"><ArrowDown /></el-icon>
-        </el-button>
+      <!-- 公司切换下拉菜单 -->
+      <el-dropdown trigger="click" split-button class="company-dropdown">
+        {{ currentCompanyName }}
         <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item v-for="item in getCompanyList" :key="item.companyId" :label="item.companyName" :value="item.companyId" @click="handleCompanyChange(item.companyId)">
-              {{ item.companyName }}
+          <el-dropdown-menu class="company-menu">
+            <el-dropdown-item
+              v-for="item in getCompanyList"
+              :key="item.companyId"
+              :class="{ 'is-selected': item.companyId === selectedCompanyId }"
+              @click="handleCompanyChange(item.companyId)"
+            >
+              <div class="company-item">
+                <span class="company-name">{{ item.companyName }}</span>
+                <el-icon v-if="item.companyId === selectedCompanyId" class="check-icon" color="#409EFF">
+                  <Check />
+                </el-icon>
+              </div>
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -225,6 +231,82 @@
       display: inline-flex;
       flex-wrap: wrap;
       min-width: 100%;
+    }
+  }
+
+  .company-dropdown {
+    .company-selector {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 4px;
+      background: #f5f7fa;
+      min-width: 200px;
+
+      .company-title {
+        display: block;
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+      }
+
+      .company-current {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #333;
+
+        .arrow-icon {
+          margin-left: 8px;
+          transition: transform 0.3s;
+        }
+      }
+
+      &:hover {
+        background: #e6f7ff;
+
+        .arrow-icon {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+
+  .company-menu {
+    min-width: 150px;
+
+    ::v-deep(.el-dropdown-menu__item) {
+      padding: 0;
+
+      &.is-selected {
+        background: #e6f7ff;
+        color: #409eff;
+      }
+
+      .company-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 12px 16px;
+
+        .company-name {
+          flex: 1;
+          font-size: 14px;
+        }
+
+        .check-icon {
+          font-size: 16px;
+        }
+
+        .forbidden-btn {
+          font-size: 12px;
+          padding: 2px 8px;
+          height: 24px;
+          border-color: #d9d9d9;
+          color: #666;
+        }
+      }
     }
   }
 </style>

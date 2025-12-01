@@ -6,7 +6,7 @@ interface FormItemProps {
   principal: string;
   phone: string | number;
   email: string;
-  sort: number;
+  sortOrder: number;
   status: number;
   remark: string;
 }

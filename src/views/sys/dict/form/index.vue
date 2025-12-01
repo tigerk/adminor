@@ -11,7 +11,7 @@
       name: "",
       value: "",
       color: "#6abe39",
-      sort: 999,
+      sortOrder: 999,
       status: 1,
       remark: ""
     })
@@ -48,7 +48,7 @@
       </re-col>
       <re-col>
         <el-form-item label="排序">
-          <el-input-number v-model="newFormInline.sort" class="w-full!" :min="1" controls-position="right" placeholder="请输入排序" />
+          <el-input-number v-model="newFormInline.sortOrder" class="w-full!" :min="1" controls-position="right" placeholder="请输入排序" />
         </el-form-item>
       </re-col>
 
