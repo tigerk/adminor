@@ -8,9 +8,9 @@ import { transformI18n } from "@/plugins/i18n";
 import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
-import { getKeyList, deviceDetection } from "@pureadmin/utils";
-import { getRoleList, getRoleMenu, getRoleMenuIds } from "@/api/sys/user";
-import { type Ref, reactive, ref, onMounted, h, toRaw, watch } from "vue";
+import { deviceDetection, getKeyList } from "@pureadmin/utils";
+import { getRoleList, getRoleMenu, getRoleMenuIds, saveRole } from "@/api/sys/user";
+import { h, onMounted, reactive, type Ref, ref, toRaw, watch } from "vue";
 
 export function useRole(treeRef: Ref) {
   const form = reactive({
@@ -129,7 +129,7 @@ export function useRole(treeRef: Ref) {
 
   function handleDelete(row) {
     message(`您删除了角色名称为${row.name}的这条数据`, { type: "success" });
-    onSearch();
+    onRoleSearch();
   }
 
   function handleSizeChange(val: number) {
@@ -144,7 +144,7 @@ export function useRole(treeRef: Ref) {
     console.log("handleSelectionChange", val);
   }
 
-  async function onSearch() {
+  async function onRoleSearch() {
     loading.value = true;
     const { data } = await getRoleList(toRaw(form));
     dataList.value = data.list;
@@ -160,7 +160,7 @@ export function useRole(treeRef: Ref) {
   const resetForm = formEl => {
     if (!formEl) return;
     formEl.resetFields();
-    onSearch();
+    onRoleSearch();
   };
 
   function openDialog(title = "新增", row?: FormItemProps) {
@@ -186,20 +186,23 @@ export function useRole(treeRef: Ref) {
           message(`您${title}了角色名称为${curData.name}的这条数据`, {
             type: "success"
           });
-          done(); // 关闭弹框
-          onSearch(); // 刷新表格数据
+          // 关闭弹框
+          done();
+          // 刷新表格数据
+          onRoleSearch().then();
         }
         FormRef.validate(valid => {
           if (valid) {
             console.log("curData", curData);
-            // 表单规则校验通过
-            if (title === "新增") {
-              // 实际开发先调用新增接口，再进行下面操作
-              chores();
-            } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
-            }
+            saveRole(curData).then(resp => {
+              if (resp.code === 0) {
+                chores();
+              } else {
+                message(resp.message, {
+                  type: "error"
+                });
+              }
+            });
           }
         });
       }
@@ -250,7 +253,7 @@ export function useRole(treeRef: Ref) {
   };
 
   onMounted(async () => {
-    onSearch();
+    onRoleSearch();
     const { data } = await getRoleMenu();
     treeIds.value = getKeyList(data, "id");
     treeData.value = handleTree(data);
@@ -280,7 +283,7 @@ export function useRole(treeRef: Ref) {
     isSelectAll,
     treeSearchValue,
     // buttonClass,
-    onSearch,
+    onSearch: onRoleSearch,
     resetForm,
     openDialog,
     handleMenu,

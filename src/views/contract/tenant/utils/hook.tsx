@@ -297,7 +297,7 @@ function useTenant() {
 
         getFormRuleRef.validate(valid => {
           if (valid) {
-            const apiCall = title === "添加" ? createTenant : updateTenant;
+            const apiCall = row?.tenant?.id === null ? createTenant : updateTenant;
 
             apiCall(curData).then(resp => {
               if (resp.code === 0) {

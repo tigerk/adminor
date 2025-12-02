@@ -1,5 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
+import type { ApiResponse } from "@/types";
 
 type Result = {
   code: number;
@@ -52,6 +53,11 @@ export const getRoleIds = (data?: object) => {
 /** 获取系统管理-角色管理列表 */
 export const getRoleList = (data?: object) => {
   return http.request<ResultTable>("post", "/role", { data });
+};
+
+/** 获取系统管理-角色管理-保存 */
+export const saveRole = (data?: object) => {
+  return http.request<ApiResponse<boolean>>("post", "/role/save", { data });
 };
 
 /** 获取角色管理-权限-菜单权限 */

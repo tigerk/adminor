@@ -41,6 +41,7 @@ export interface TenantContractProps {
   contractNature: number; // 合同性质：1=新签，2=续签，3=转租，4=换房
   companyId?: bigint; // 公司ID
   deptId?: string; // 部门ID
+  roomIds: string[]; // 房间ID列表
   tenantId?: bigint; // 租客ID
   tenantType: number; // 租客类型：1=个人，2=企业
   rentalPrice: number; // 租金价格

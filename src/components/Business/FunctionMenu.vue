@@ -6,7 +6,7 @@
         <el-icon class="mr-1">
           <Plus />
         </el-icon>
-        创建
+        添加
         <el-icon class="ml-1">
           <ArrowDown />
         </el-icon>

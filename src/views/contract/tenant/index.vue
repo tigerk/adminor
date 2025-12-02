@@ -2,7 +2,15 @@
   <div class="main">
     <!-- 搜索栏 -->
     <el-row class="bg-bg_color w-full px-4 pb-3 pt-[12px]">
-      <el-col :span="18">
+      <el-col :span="18" class="text-right">
+        筛选状态
+      </el-col>
+      <el-col :span="6" class="text-right">
+        <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openTenantDialog()">添加租客</el-button>
+      </el-col>
+    </el-row>
+    <el-row class="bg-bg_color w-full px-4 pb-3">
+      <el-col :span="24">
         <el-form :inline="true" :model="queryForm" class="search-form">
           <el-form-item>
             <el-input v-model="queryForm.name" placeholder="租客姓名" clearable class="!w-[180px]" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
@@ -45,10 +53,6 @@
             <el-button :icon="useRenderIcon(Refresh)" @click="resetForm">重置</el-button>
           </el-form-item>
         </el-form>
-      </el-col>
-
-      <el-col :span="6" class="text-right">
-        <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openTenantDialog()">添加租客</el-button>
       </el-col>
     </el-row>
 
