@@ -35,7 +35,7 @@ export const tenantFormRules = (formInline: any) =>
     "tenant.tenantType": [{ required: true, message: "请选择租客类型", trigger: "change" }],
     "tenant.idType": [{ required: true, message: "请选择证件类型", trigger: "change" }],
     "tenant.idNo": [{ required: true, validator: (rule, value, callback) => validateIdNo(rule, value, callback, formInline), trigger: "blur" }],
-    "tenantCompany.contactPhone": [{ required: true, validator: validatePhone, trigger: "blur" }],
+    "tenant.phone": [{ required: true, validator: validatePhone, trigger: "blur" }],
     "contract.deptId": [{ required: true, message: "请选择部门", trigger: "change" }],
     "contract.salesmanId": [{ required: true, message: "请选择业务员", trigger: "change" }],
     "contract.rentDueType": [{ required: true, message: "请选择收租设置", trigger: "change" }]

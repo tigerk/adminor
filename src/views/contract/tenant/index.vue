@@ -2,14 +2,12 @@
   <div class="main">
     <!-- 搜索栏 -->
     <el-row class="bg-bg_color w-full px-4 pb-3 pt-[12px]">
-      <el-col :span="18" class="text-right">
-        筛选状态
-      </el-col>
+      <el-col :span="18" class="text-right">筛选状态</el-col>
       <el-col :span="6" class="text-right">
         <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openTenantDialog()">添加租客</el-button>
       </el-col>
     </el-row>
-    <el-row class="bg-bg_color w-full px-4 pb-3">
+    <el-row class="bg-bg_color w-full px-4">
       <el-col :span="24">
         <el-form :inline="true" :model="queryForm" class="search-form">
           <el-form-item>
@@ -19,7 +17,6 @@
               </template>
             </el-input>
           </el-form-item>
-
           <el-form-item>
             <el-input v-model="queryForm.phone" placeholder="联系电话" clearable class="!w-[180px]" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
               <template #prefix>
@@ -27,7 +24,6 @@
               </template>
             </el-input>
           </el-form-item>
-
           <el-form-item>
             <el-input v-model="queryForm.idNo" placeholder="证件号码" clearable class="!w-[200px]" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
               <template #prefix>
@@ -35,21 +31,18 @@
               </template>
             </el-input>
           </el-form-item>
-
           <el-form-item>
             <el-select v-model="queryForm.tenantType" placeholder="租客类型" clearable class="!w-[140px]" @change="onTenantSearch">
               <el-option v-for="item in tenantTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-
           <el-form-item>
             <el-select v-model="queryForm.status" placeholder="状态" clearable class="!w-[120px]" @change="onTenantSearch">
               <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-
           <el-form-item>
-            <el-button :icon="useRenderIcon(Search)" @click="onTenantSearch">搜索</el-button>
+            <el-button :icon="useRenderIcon(Search)" type="primary" @click="onTenantSearch">搜索</el-button>
             <el-button :icon="useRenderIcon(Refresh)" @click="resetForm">重置</el-button>
           </el-form-item>
         </el-form>
@@ -92,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-  import { TENANT_TYPE_OPTIONS, TENANT_STATUS_OPTIONS } from "@/constants";
+  import { TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Delete from "~icons/ep/delete";
