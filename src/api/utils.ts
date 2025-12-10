@@ -1,1 +1,1 @@
-export const baseUrlApi = (url: string) => `/api/admin/${url}`;
+export const baseUrlApi = (url: string) => `/api/saas/${url}`;
