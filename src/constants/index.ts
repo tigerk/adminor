@@ -165,6 +165,14 @@ export const TENANT_CONTRACT_NATURE_OPTIONS = [
   { label: "换房", value: 4 }
 ] as const;
 
+// 合同状态：0=待签字，1=在租中，2=已退租，3=已作废
+export const TENANT_CONTRACT_SIGN_STATUS_OPTIONS = [
+  { label: "待签字", value: 0 },
+  { label: "在租中", value: 1 },
+  { label: "已退租", value: 2 },
+  { label: "已作废", value: 3 }
+] as const;
+
 // 收租类型：1=提前，2=固定，3=延后
 export const RENT_DUE_TYPE_OPTIONS = [
   { label: "提前", value: 1 },

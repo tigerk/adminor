@@ -5,7 +5,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { createTenant, deleteTenant, getTenantList, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
-import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_CONTRACT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { TenantMateProps, TenantProps, TenantQueryFormProps, TenantsCreateFormProps } from "@/types";
@@ -43,6 +43,7 @@ function useTenant() {
   const { switchStyle } = usePublicHooks();
 
   const mutableTenantTypeOptions = [...TENANT_TYPE_OPTIONS] as any[];
+  const tenantContractSignStatusOptions = [...TENANT_CONTRACT_SIGN_STATUS_OPTIONS] as any[];
   const mutableIdTypeOptions = [...ID_TYPE_OPTIONS] as any[];
   const mutableGenderOptions = [...GENDER_OPTIONS] as any[];
 
@@ -85,37 +86,36 @@ function useTenant() {
       cellRenderer: renderIndexCell
     },
     {
+      label: "状态",
+      prop: "signStatus",
+      width: 120,
+      cellRenderer: ({ row }) => <span>{getOptionByCode(tenantContractSignStatusOptions, row.tenantType)?.label}</span>
+    },
+    {
+      label: "合同周期",
+      prop: "leaseDate",
+      minWidth: 200,
+      cellRenderer: ({ row }) => (
+        <span>
+          {row.leaseStart} - {row.leaseEnd}
+        </span>
+      )
+    },
+    {
       label: "租客姓名",
-      prop: "name",
+      prop: "tenantName",
       minWidth: 120
     },
     {
-      label: "性别",
-      prop: "gender",
-      width: 80,
-      cellRenderer: ({ row }) => <span>{getOptionByCode(mutableGenderOptions, row.gender)?.label || "-"}</span>
+      label: "租客电话",
+      prop: "tenantPhone",
+      minWidth: 120
     },
     {
       label: "租客类型",
       prop: "tenantType",
       width: 100,
       cellRenderer: ({ row }) => <span>{getOptionByCode(mutableTenantTypeOptions, row.tenantType)?.label}</span>
-    },
-    {
-      label: "证件类型",
-      prop: "idType",
-      width: 120,
-      cellRenderer: ({ row }) => <span>{getOptionByCode(mutableIdTypeOptions, row.idType)?.label}</span>
-    },
-    {
-      label: "证件号码",
-      prop: "idNo",
-      minWidth: 180
-    },
-    {
-      label: "联系电话",
-      prop: "phone",
-      minWidth: 130
     },
     {
       label: "租客来源",
