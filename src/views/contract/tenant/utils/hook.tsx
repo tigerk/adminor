@@ -297,7 +297,12 @@ function useTenant() {
 
         getFormRuleRef.validate(valid => {
           if (valid) {
-            const apiCall = row?.tenant?.id === null ? createTenant : updateTenant;
+            const apiCall = curData?.tenant?.id == null ? createTenant : updateTenant;
+
+            curData.contract.leaseStart = curData.contract.leaseDate[0];
+            curData.contract.leaseEnd = curData.contract.leaseDate[1];
+            curData.contract.checkInTime = curData.contract.checkDate[0];
+            curData.contract.checkOutTime = curData.contract.checkDate[1];
 
             apiCall(curData).then(resp => {
               if (resp.code === 0) {

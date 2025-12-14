@@ -37,6 +37,9 @@ export const tenantFormRules = (formInline: any) =>
     "tenant.idNo": [{ required: true, validator: (rule, value, callback) => validateIdNo(rule, value, callback, formInline), trigger: "blur" }],
     "tenant.phone": [{ required: true, validator: validatePhone, trigger: "blur" }],
     "contract.deptId": [{ required: true, message: "请选择部门", trigger: "change" }],
+    "contract.rentalPrice": [{ required: true, message: "请输入月租金", trigger: "blur" }],
+    "contract.leaseDate": [{ required: true, message: "请选择合同周期", trigger: "change" }],
+    "contract.checkDate": [{ required: true, message: "请选择入离日期", trigger: "change" }],
     "contract.salesmanId": [{ required: true, message: "请选择业务员", trigger: "change" }],
     "contract.rentDueType": [{ required: true, message: "请选择收租设置", trigger: "change" }]
   });
@@ -53,6 +56,9 @@ export const tenantCompanyFormRules = (formInline: any) =>
     "tenantCompany.legalPerson": [{ required: true, message: "请输入法定代表人", trigger: "blur" }],
     "tenantCompany.contactPhone": [{ required: true, validator: validatePhone, trigger: "blur" }],
     "contract.deptId": [{ required: true, message: "请选择部门", trigger: "change" }],
+    "contract.rentalPrice": [{ required: true, message: "请输入月租金", trigger: "blur" }],
+    "contract.leaseDate": [{ required: true, message: "请选择合同周期", trigger: "change" }],
+    "contract.checkDate": [{ required: true, message: "请选择入离日期", trigger: "change" }],
     "contract.salesmanId": [{ required: true, message: "请选择业务员", trigger: "change" }],
     "contract.rentDueType": [{ required: true, message: "请选择收租设置", trigger: "change" }]
   });

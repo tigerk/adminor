@@ -180,9 +180,9 @@
             </el-form-item>
           </el-col>
           <el-col :span="5">
-            <el-form-item label="合同周期" prop="leaseDate" required>
+            <el-form-item label="合同周期" prop="contract.leaseDate">
               <el-date-picker
-                v-model="leaseDate"
+                v-model="formInline.contract.leaseDate"
                 type="daterange"
                 class="w-[240px]!"
                 unlink-panels
@@ -197,9 +197,9 @@
             </el-form-item>
           </el-col>
           <el-col :span="5">
-            <el-form-item label="入离日期" prop="checkDate">
+            <el-form-item label="入离日期" prop="contract.checkDate">
               <el-date-picker
-                v-model="checkDate"
+                v-model="formInline.contract.checkDate"
                 type="daterange"
                 class="w-[240px]!"
                 unlink-panels
@@ -231,7 +231,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="月租金" prop="rentInfo" required>
+            <el-form-item label="月租金" prop="contract.rentalPrice" required>
               <div>
                 <!-- 月租金输入 -->
                 <div class="rent-input">
@@ -401,8 +401,12 @@
     contract: props.formInline?.contract || {
       roomIds: props.formInline?.contract?.roomIds || [],
       tenantType: props.formInline?.contract?.tenantType ?? 0,
+      leaseDate: props.formInline?.contract?.leaseDate || [],
       leaseStart: props.formInline?.contract?.leaseStart || new Date(),
       leaseEnd: props.formInline?.contract?.leaseEnd || new Date(),
+      checkDate: props.formInline?.contract?.checkDate || [],
+      checkInTime: props.formInline?.contract?.checkInTime || null, // 实际入住时间
+      checkOutTime: props.formInline?.contract?.checkOutTime || null, // 实际搬离时间
       contractNature: props.formInline?.contract?.contractNature ?? 1,
       depositMonths: props.formInline?.contract?.depositMonths || 1,
       paymentMonths: props.formInline?.contract?.paymentMonths || 1,
@@ -514,11 +518,10 @@
       value.extra.price && (rentalPrice += Number(value.extra.price));
     });
 
+    formInline.contract.roomIds = values.map(item => item.value);
+
     formInline.contract.rentalPrice = rentalPrice;
   };
-
-  const leaseDate = ref<any[]>([]);
-  const checkDate = ref<any[]>([]);
 
   const leaseDateShortCut = [
     {

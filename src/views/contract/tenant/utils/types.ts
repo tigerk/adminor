@@ -1,4 +1,4 @@
-import { TenantsCreateFormProps } from "@/types";
+import type { TenantsCreateFormProps } from "@/types";
 
 /** 租客查询表单 */
 interface TenantQueryFormProps {

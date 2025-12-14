@@ -8,7 +8,7 @@ import { getFocusHouseOptions } from "@/api/house/focus";
 import type { UserFormItemProps } from "@/views/sys/user/utils/types";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import createTenant from "@/views/contract/tenant/form/createTenant.vue";
+import createTenant from "@/views/contract/tenant/form/createTenantForm.vue";
 import { createUser } from "@/api/system";
 import type { HouseLayoutProps } from "@/types";
 
