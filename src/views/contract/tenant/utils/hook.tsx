@@ -218,14 +218,6 @@ function useTenant() {
       });
   }
 
-  const resetForm = formEl => {
-    if (!formEl) {
-      return;
-    }
-    formEl.resetFields();
-    onTenantSearch();
-  };
-
   /** 高亮当前权限选中行 */
   function rowStyle({ row: { id } }) {
     return {
@@ -379,8 +371,27 @@ function useTenant() {
       }
     });
   }
+  const resetQueryForm = (formEl: any) => {
+    // 重置表单验证状态
+    formEl?.value?.resetFields();
+
+    // 手动重置 queryForm 的值到初始状态
+    Object.assign(queryForm, {
+      name: "",
+      phone: "",
+      idNo: "",
+      tenantType: undefined,
+      status: undefined,
+      pageSize: 15,
+      currentPage: 1
+    });
+
+    // 重新搜索
+    onTenantSearch();
+  };
 
   return {
+    resetQueryForm,
     queryForm,
     tableSize,
     curRow,
@@ -395,7 +406,6 @@ function useTenant() {
     pagination,
     openTenantDialog,
     onTenantSearch,
-    resetForm,
     handleDeleteTenant,
     handleSizeChange,
     handleCurrentChange,

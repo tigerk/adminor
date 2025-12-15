@@ -30,7 +30,7 @@
           </el-form-item>
           <el-form-item>
             <el-button :icon="useRenderIcon(Search)" type="primary" @click="onTenantSearch">搜索</el-button>
-            <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(queryFormRef)">重置</el-button>
+            <el-button :icon="useRenderIcon(Refresh)" @click="() => resetQueryForm(queryFormRef)">重置</el-button>
           </el-form-item>
         </el-form>
       </el-col>
@@ -124,13 +124,12 @@
     tenantList,
     handleSizeChange,
     handleCurrentChange,
-    resetForm
+    resetQueryForm
   } = useTenant();
 
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
   const statusOptions = [{ label: "全部", value: undefined }, ...TENANT_CONTRACT_SIGN_STATUS_OPTIONS];
 </script>
-
 <style lang="scss" scoped>
   .search-form {
     :deep(.el-form-item) {
