@@ -3,7 +3,7 @@
 import type { ContractTemplateFormProps, OtherFeeProps } from "@/types";
 
 /** 租客信息 */
-export interface TenantProps {
+export interface TenantPersonalProps {
   id?: number;
   companyId?: number;
   name: string;
@@ -35,8 +35,8 @@ export interface TenantCompanyProps {
   status?: number; // 租客状态：0=停用，1=启用
 }
 
-export interface TenantContractProps {
-  id?: bigint; // 合同ID
+export interface TenantProps {
+  id?: bigint; // 租客 ID
   contractCode?: string; // 合同编号
   contractNature: number; // 合同性质：1=新签，2=续签，3=转租，4=换房
   companyId?: bigint; // 公司ID
@@ -83,10 +83,10 @@ export interface TenantQueryFormProps {
 
 /** 租客创建表单 */
 export interface TenantsCreateFormProps {
-  tenant: TenantProps;
+  tenantPersonal: TenantPersonalProps;
   tenantCompany: TenantCompanyProps;
   tenantMateList: TenantMateProps[];
-  contract: TenantContractProps;
+  tenant: TenantProps;
   otherFees: OtherFeeProps[];
 }
 

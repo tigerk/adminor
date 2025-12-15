@@ -8,7 +8,7 @@ import { createTenant, deleteTenant, getTenantList, getTenantTotal, updateTenant
 import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_CONTRACT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
-import type { TenantMateProps, TenantProps, TenantQueryFormProps, TenantsCreateFormProps } from "@/types";
+import type { TenantMateProps, TenantPersonalProps, TenantQueryFormProps, TenantsCreateFormProps } from "@/types";
 import { getDictDataByDictCode } from "@/api/sys/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
 import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
@@ -359,7 +359,7 @@ function useTenant() {
     });
   }
 
-  function handleDeleteTenant(row: TenantProps) {
+  function handleDeleteTenant(row: TenantPersonalProps) {
     deleteTenant({ id: row.id }).then(resp => {
       if (resp.code === 0) {
         message(`您删除了租客"${row.name}"`, { type: "success" });

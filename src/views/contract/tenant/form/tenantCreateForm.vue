@@ -397,7 +397,7 @@
       remark: props.formInline?.tenantCompany?.remark || ""
     },
     tenantMateList: props.formInline?.tenantMateList ?? null,
-    // 确保 contract 为 null 时不会抛出错误
+    // 确保 tenant 为 null 时不会抛出错误
     contract: props.formInline?.contract || {
       roomIds: props.formInline?.contract?.roomIds || [],
       tenantType: props.formInline?.contract?.tenantType ?? 0,
