@@ -4,7 +4,7 @@ import type { PaginationProps } from "@pureadmin/table";
 import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { createTenant, deleteTenant, getTenantList, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
+import { createTenant, deleteTenant, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
 import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_CONTRACT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
@@ -32,6 +32,8 @@ function useTenant() {
   });
 
   const curRow = ref();
+  // 租客状态统计
+  const tenantStatusTotal = ref([]);
   const tenantList = ref([]);
   const tenantSourceOptions = ref([]);
   const dealChannelOptions = ref([]);
@@ -214,6 +216,17 @@ function useTenant() {
       .finally(() => {
         loading.value = false;
       });
+
+    getTenantTotal(toRaw(queryForm)).then(res => {
+      tenantStatusTotal.value = res.data?.statusList || [];
+
+      let total = 0;
+      res.data.statusList.forEach(item => {
+        total += item.total;
+      });
+
+      tenantStatusTotal.value.unshift({ status: "", statusName: "全部", total: total });
+    });
   }
 
   const resetForm = formEl => {
@@ -372,6 +385,7 @@ function useTenant() {
     loading,
     columns,
     rowStyle,
+    tenantStatusTotal,
     tenantList,
     tenantSourceOptions,
     dealChannelOptions,

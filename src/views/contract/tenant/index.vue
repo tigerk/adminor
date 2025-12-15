@@ -2,12 +2,6 @@
   <div class="main">
     <!-- 搜索栏 -->
     <el-row class="bg-bg_color w-full px-4 pb-3 pt-[12px]">
-      <el-col :span="18" class="text-right">筛选状态</el-col>
-      <el-col :span="6" class="text-right">
-        <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openTenantDialog()">添加租客</el-button>
-      </el-col>
-    </el-row>
-    <el-row class="bg-bg_color w-full px-4">
       <el-col :span="24">
         <el-form :inline="true" :model="queryForm" class="search-form">
           <el-form-item>
@@ -46,6 +40,27 @@
             <el-button :icon="useRenderIcon(Refresh)" @click="resetForm">重置</el-button>
           </el-form-item>
         </el-form>
+      </el-col>
+    </el-row>
+    <el-row class="bg-bg_color w-full px-4">
+      <el-col :span="18">
+        <div class="grid-content ep-bg-purple" style="align-items: flex-start">
+          <el-space>
+            <el-form-item>
+              <el-radio-group v-model="queryForm.status" @change="onTenantSearch">
+                <el-radio-button v-for="item in tenantStatusTotal" :key="item.status" :value="item.status" :class="['tenant-status-button', `status-${item.status || 'all'}`]">
+                  <span class="status-content">
+                    <span class="status-dot" :style="{ backgroundColor: item.statusColor }" />
+                    {{ item.statusName }}（{{ item.total }}）
+                  </span>
+                </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-space>
+        </div>
+      </el-col>
+      <el-col :span="6" class="text-right">
+        <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openTenantDialog()">添加租客</el-button>
       </el-col>
     </el-row>
 
@@ -101,8 +116,21 @@
     name: "ContractTenant"
   });
 
-  const { queryForm, openTenantDialog, onTenantSearch, handleDeleteTenant, tableSize, columns, loading, pagination, tenantList, handleSizeChange, handleCurrentChange, resetForm } =
-    useTenant();
+  const {
+    queryForm,
+    openTenantDialog,
+    onTenantSearch,
+    handleDeleteTenant,
+    tableSize,
+    columns,
+    loading,
+    pagination,
+    tenantStatusTotal,
+    tenantList,
+    handleSizeChange,
+    handleCurrentChange,
+    resetForm
+  } = useTenant();
 
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
   const statusOptions = [{ label: "全部", value: undefined }, ...TENANT_STATUS_OPTIONS];
