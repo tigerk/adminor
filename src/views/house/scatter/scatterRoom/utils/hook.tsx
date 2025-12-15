@@ -17,7 +17,7 @@ export function useScatterRoom() {
 
   const queryForm = reactive({
     keywords: "",
-    modeRefId: null,
+    leaseModeId: null,
     leaseMode: 2, // 整合租
     roomStatus: null,
     pageSize: 15,

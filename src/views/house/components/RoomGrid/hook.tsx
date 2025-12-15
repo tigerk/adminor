@@ -41,7 +41,7 @@ interface ProcessedBuildingUnit {
  * 处理后的小区分组
  */
 interface ProcessedCompoundGroup {
-  modeRefId: number;
+  leaseModeId: number;
   leaseMode: number;
   displayName: string;
   communityId: number;
@@ -80,15 +80,15 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     const compoundOrder: number[] = []; // 记录小区出现的顺序
 
     allRoomGridItems.value.forEach((item: RoomGridItemDTO) => {
-      const modeRefId = item.compoundGroup.modeRefId || 0;
+      const leaseModeId = item.compoundGroup.leaseModeId || 0;
 
-      if (!compoundMap.has(modeRefId)) {
-        compoundOrder.push(modeRefId); // 记录顺序
-        compoundMap.set(modeRefId, {
-          modeRefId: item.compoundGroup.modeRefId ?? 0,
+      if (!compoundMap.has(leaseModeId)) {
+        compoundOrder.push(leaseModeId); // 记录顺序
+        compoundMap.set(leaseModeId, {
+          leaseModeId: item.compoundGroup.leaseModeId ?? 0,
           leaseMode: item.compoundGroup.leaseMode,
           displayName: item.compoundGroup.displayName || "未知小区",
-          communityId: modeRefId,
+          communityId: leaseModeId,
           communityName: item.compoundGroup.communityName || "未知小区",
           communityAddress: item.compoundGroup.communityAddress || "未知地址",
           totalRooms: 0,
@@ -98,7 +98,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         });
       }
 
-      const compound = compoundMap.get(modeRefId)!;
+      const compound = compoundMap.get(leaseModeId)!;
 
       // 查找或创建楼栋单元
       const building = item.buildingGroup.building || "";
@@ -152,8 +152,8 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     const result: ProcessedCompoundGroup[] = [];
 
     // 按照原始顺序处理小区
-    compoundOrder.forEach(modeRefId => {
-      const compound = compoundMap.get(modeRefId)!;
+    compoundOrder.forEach(leaseModeId => {
+      const compound = compoundMap.get(leaseModeId)!;
 
       // 计算小区出租率
       if (compound.totalRooms > 0) {
@@ -323,9 +323,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   // 管理小区
   const handleManageCompound = (community: ProcessedCompoundGroup) => {
     console.log(`点击项目编辑：${community}`);
-    if (community.modeRefId) {
+    if (community.leaseModeId) {
       getFocusById({
-        id: community.modeRefId
+        id: community.leaseModeId
       }).then(res => {
         openFocusEditDialog("更新", res.data);
       });

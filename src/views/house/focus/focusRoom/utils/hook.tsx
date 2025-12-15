@@ -17,7 +17,7 @@ export function userFocusRoom() {
 
   const queryForm = reactive({
     keywords: "",
-    modeRefId: null,
+    leaseModeId: null,
     leaseMode: 1, // 集中式
     roomStatus: null,
     pageSize: 15,

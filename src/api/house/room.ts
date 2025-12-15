@@ -68,7 +68,7 @@ export type RoomItemDTO = {
   /** 出租状态 */
   rentalType?: number;
   /** 来源id */
-  modeRefId?: number;
+  leaseModeId?: number;
   /** 房源租赁类型：1、集中式；2、分散式 */
   leaseMode?: number;
   /** 房型 */
@@ -122,7 +122,7 @@ export type RoomItemDTO = {
  */
 export type CompoundGroup = {
   /** 模式引用ID */
-  modeRefId?: number;
+  leaseModeId?: number;
   /** 租赁模式 */
   leaseMode?: number;
   /** 卡片显示名称 */

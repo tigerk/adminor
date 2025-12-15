@@ -55,9 +55,9 @@
   });
 
   function modifyFocusHouse() {
-    if (queryForm.modeRefId) {
+    if (queryForm.leaseModeId) {
       getFocusById({
-        id: queryForm.modeRefId
+        id: queryForm.leaseModeId
       }).then(res => {
         openEntireEditDialog("更新", res.data);
       });

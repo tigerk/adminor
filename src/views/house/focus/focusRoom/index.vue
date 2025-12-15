@@ -52,9 +52,9 @@
   });
 
   function modifyFocusHouse() {
-    if (queryForm.modeRefId) {
+    if (queryForm.leaseModeId) {
       getFocusById({
-        id: queryForm.modeRefId
+        id: queryForm.leaseModeId
       }).then(res => {
         openFocusEditDialog("更新", res.data);
       });
@@ -113,7 +113,7 @@
       </el-col>
       <el-col :span="12" class="text-right">
         <el-space>
-          <el-select v-model="queryForm.modeRefId" placeholder="项目名称" clearable class="w-[180px]!" @change="onSearch">
+          <el-select v-model="queryForm.leaseModeId" placeholder="项目名称" clearable class="w-[180px]!" @change="onSearch">
             <el-option v-for="item in focusOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
           <el-button type="primary" :icon="useRenderIcon(EditPen)" :loading="loading" @click="modifyFocusHouse" />
