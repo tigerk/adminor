@@ -170,7 +170,7 @@ export const TENANT_CONTRACT_SIGN_STATUS_OPTIONS = [
   { label: "待签字", value: 0 },
   { label: "在租中", value: 1 },
   { label: "已退租", value: 2 },
-  { label: "已作废", value: 3 }
+  { label: "已作废", value: -1 }
 ] as const;
 
 // 收租类型：1=提前，2=固定，3=延后

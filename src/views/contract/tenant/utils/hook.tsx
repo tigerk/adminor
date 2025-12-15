@@ -216,17 +216,6 @@ function useTenant() {
       .finally(() => {
         loading.value = false;
       });
-
-    getTenantTotal(toRaw(queryForm)).then(res => {
-      tenantStatusTotal.value = res.data?.statusList || [];
-
-      let total = 0;
-      res.data.statusList.forEach(item => {
-        total += item.total;
-      });
-
-      tenantStatusTotal.value.unshift({ status: "", statusName: "全部", total: total });
-    });
   }
 
   const resetForm = formEl => {
@@ -280,6 +269,17 @@ function useTenant() {
   onMounted(async () => {
     await loadDictData();
     onTenantSearch();
+
+    getTenantTotal(toRaw(queryForm)).then(res => {
+      tenantStatusTotal.value = res.data?.statusList || [];
+
+      let total = 0;
+      res.data.statusList.forEach(item => {
+        total += item.total;
+      });
+
+      tenantStatusTotal.value.unshift({ status: undefined, statusName: "全部", total: total });
+    });
   });
 
   function openTenantDialog(title = "添加", row?: TenantsCreateFormProps) {

@@ -5,7 +5,7 @@
       <el-col :span="24">
         <el-form :inline="true" :model="queryForm" class="search-form">
           <el-form-item>
-            <el-input v-model="queryForm.name" placeholder="租客姓名" clearable class="!w-[180px]" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
+            <el-input v-model="queryForm.name" placeholder="租客姓名/企业名称" clearable class="!w-[180px]" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
               <template #prefix>
                 <IconifyIconOffline :icon="User" />
               </template>
@@ -15,13 +15,6 @@
             <el-input v-model="queryForm.phone" placeholder="联系电话" clearable class="!w-[180px]" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
               <template #prefix>
                 <IconifyIconOffline :icon="Phone" />
-              </template>
-            </el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-input v-model="queryForm.idNo" placeholder="证件号码" clearable class="!w-[200px]" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
-              <template #prefix>
-                <IconifyIconOffline :icon="IdCard" />
               </template>
             </el-input>
           </el-form-item>
@@ -100,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-  import { TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import { TENANT_CONTRACT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Delete from "~icons/ep/delete";
@@ -133,7 +126,7 @@
   } = useTenant();
 
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
-  const statusOptions = [{ label: "全部", value: undefined }, ...TENANT_STATUS_OPTIONS];
+  const statusOptions = [{ label: "全部", value: undefined }, ...TENANT_CONTRACT_SIGN_STATUS_OPTIONS];
 </script>
 
 <style lang="scss" scoped>
