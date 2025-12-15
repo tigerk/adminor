@@ -3,7 +3,7 @@
     <!-- 搜索栏 -->
     <el-row class="bg-bg_color w-full px-4 pb-3 pt-[12px]">
       <el-col :span="24">
-        <el-form :inline="true" :model="queryForm" class="search-form">
+        <el-form ref="queryFormRef" :inline="true" :model="queryForm" class="search-form">
           <el-form-item>
             <el-input v-model="queryForm.name" placeholder="租客姓名/企业名称" clearable class="!w-[180px]" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
               <template #prefix>
@@ -30,7 +30,7 @@
           </el-form-item>
           <el-form-item>
             <el-button :icon="useRenderIcon(Search)" type="primary" @click="onTenantSearch">搜索</el-button>
-            <el-button :icon="useRenderIcon(Refresh)" @click="resetForm">重置</el-button>
+            <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(queryFormRef)">重置</el-button>
           </el-form-item>
         </el-form>
       </el-col>
@@ -93,7 +93,8 @@
 </template>
 
 <script setup lang="ts">
-  import { TENANT_CONTRACT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import { ref } from "vue";
+  import { TENANT_CONTRACT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Delete from "~icons/ep/delete";
@@ -103,11 +104,12 @@
   import Plus from "~icons/ep/plus";
   import User from "~icons/ep/user";
   import Phone from "~icons/ep/phone";
-  import IdCard from "~icons/ep/postcard";
 
   defineOptions({
     name: "ContractTenant"
   });
+
+  const queryFormRef = ref();
 
   const {
     queryForm,

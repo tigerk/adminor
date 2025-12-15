@@ -5,12 +5,7 @@ import { addDialog } from "@/components/ReDialog";
 import type { PaginationProps } from "@pureadmin/table";
 import { type Ref, reactive, ref, onMounted, toRaw } from "vue";
 import { getKeyList, useCopyToClipboard } from "@pureadmin/utils";
-import {
-  getOperationLogList,
-  getOperationLogDetail,
-  batchDeleteOperationLogs,
-  clearAllOperationLogs
-} from "@/api/monitor";
+import { getOperationLogList, getOperationLogDetail, batchDeleteOperationLogs, clearAllOperationLogs } from "@/api/monitor";
 import Info from "~icons/ri/question-line";
 
 export function useRole(tableRef: Ref) {
@@ -66,9 +61,7 @@ export function useRole(tableRef: Ref) {
       label: "动作",
       prop: "operationType",
       minWidth: 100,
-      cellRenderer: ({ row, props }) => (
-        operationTypeMap[row.operationType]
-      )
+      cellRenderer: ({ row, props }) => operationTypeMap[row.operationType]
     },
     {
       headerRenderer: () => (
@@ -126,11 +119,7 @@ export function useRole(tableRef: Ref) {
       prop: "costTime",
       minWidth: 100,
       cellRenderer: ({ row, props }) => (
-        <el-tag
-          size={props.size}
-          type={row.costTime < 1000 ? "success" : "warning"}
-          effect="plain"
-        >
+        <el-tag size={props.size} type={row.costTime < 1000 ? "success" : "warning"} effect="plain">
           {row.costTime} ms
         </el-tag>
       )
@@ -139,8 +128,7 @@ export function useRole(tableRef: Ref) {
       label: "请求时间",
       prop: "requestTime",
       minWidth: 180,
-      formatter: ({ requestTime }) =>
-        dayjs(requestTime).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ requestTime }) => dayjs(requestTime).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",
@@ -179,9 +167,7 @@ export function useRole(tableRef: Ref) {
   function handleCellDblclick({ url }, { property }) {
     if (property !== "url") return;
     update(url);
-    copied.value
-      ? message(`${url} 已拷贝`, { type: "success" })
-      : message("拷贝失败", { type: "warning" });
+    copied.value ? message(`${url} 已拷贝`, { type: "success" }) : message("拷贝失败", { type: "warning" });
   }
 
   /** 批量删除 */

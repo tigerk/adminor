@@ -219,7 +219,9 @@ function useTenant() {
   }
 
   const resetForm = formEl => {
-    if (!formEl) return;
+    if (!formEl) {
+      return;
+    }
     formEl.resetFields();
     onTenantSearch();
   };
