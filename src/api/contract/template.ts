@@ -31,3 +31,7 @@ export const getContractTemplatePdf = (data?: object) => {
 export const getContractTemplateParams = (data?: object) => {
   return http.request<any>("post", baseUrlApi("contract/template/params"), { data });
 };
+
+export const getMyAvailableContractTemplates = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/template/my/available"), { data });
+};

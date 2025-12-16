@@ -2,7 +2,7 @@
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
     <div class="section-tenant-info">
       <div class="mb-4 house-selector-info">
-        <div class="mb-2"><el-text type="warning" size="large" tag="b">房源信息</el-text></div>
+        <div class="mb-2"><el-text type="primary" size="large" tag="b">房源信息</el-text></div>
         <el-form-item prop="tenant.roomIds">
           <el-select
             v-model="formInline.tenant.roomIds"
@@ -40,7 +40,7 @@
         </el-row>
       </div>
       <div class="mt-4">
-        <div class="mb-2"><el-text type="warning" size="large" tag="b">租客信息</el-text></div>
+        <div class="mb-2"><el-text type="primary" size="large" tag="b">租客信息</el-text></div>
         <div v-if="formInline.tenant.tenantType === 0">
           <el-row :gutter="20">
             <el-col :span="5">
@@ -161,13 +161,7 @@
     <div class="mb-4 tenant-contract-info">
       <div class="mb-4">
         <el-space spacer="|">
-          <el-text type="warning" size="large" tag="b">租约信息</el-text>
-          <el-select v-model="formInline.tenant.contractNature" placeholder="请选择合同模板" size="small" clearable style="width: 200px">
-            <template #prefix>
-              <span class="font-bold text-red-400">租客合同模板</span>
-            </template>
-            <el-option v-for="item in TENANT_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+          <el-text type="primary" size="large" tag="b">租约信息</el-text>
         </el-space>
       </div>
       <div>
@@ -262,10 +256,17 @@
         </el-row>
         <el-row :gutter="20">
           <el-col :span="8">
+            <el-form-item label="合同模板" prop="tenant.contractTemplateId" required>
+              <el-select v-model="formInline.tenant.contractTemplateId" placeholder="请选择合同模板">
+                <el-option v-for="item in contractTemplateList" :key="item.id" :label="item.templateName" :value="item.id" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="5">
             <el-form-item label="收租设置" prop="tenant.rentDueType" required>
               <el-input v-model.number="formInline.tenant.rentDueDay" :min="0" placeholder="请输入" type="number" class="text-center rent-due-day-input">
                 <template #prepend>
-                  <el-select v-model="formInline.tenant.rentDueType" placeholder="请选择" style="width: 130px">
+                  <el-select v-model="formInline.tenant.rentDueType" placeholder="请选择" style="width: 80px">
                     <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
                 </template>
@@ -299,7 +300,7 @@
       </el-row>
     </div>
     <div>
-      <div class="mb-2"><el-text type="warning" size="large" tag="b">负责人信息</el-text></div>
+      <div class="mb-2"><el-text type="primary" size="large" tag="b">负责人信息</el-text></div>
       <el-row :gutter="20">
         <el-col :span="6">
           <el-form-item label="签约部门" prop="tenant.deptId" required>
@@ -354,6 +355,7 @@
   import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
+  import { getMyAvailableContractTemplates } from "@/api/contract/template";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions, openTenantMateDialog } = useTenant();
 
@@ -399,6 +401,7 @@
     tenantMateList: props.formInline?.tenantMateList ?? null,
     // 确保 tenant 为 null 时不会抛出错误
     tenant: props.formInline?.tenant || {
+      contractTemplateId: props.formInline?.tenant?.contractTemplateId || null,
       roomIds: props.formInline?.tenant?.roomIds || [],
       tenantType: props.formInline?.tenant?.tenantType ?? 0,
       leaseDate: props.formInline?.tenant?.leaseDate || [],
@@ -518,8 +521,6 @@
       value.extra.price && (rentalPrice += Number(value.extra.price));
     });
 
-    formInline.tenant.roomIds = values.map(item => item.value);
-
     formInline.tenant.rentalPrice = rentalPrice;
   };
 
@@ -587,10 +588,22 @@
   }
 
   const salesmanList = ref<any[]>([]);
+  const contractTemplateList = ref<any[]>([]);
   onMounted(() => {
+    // 获取所有用户
     getCompanyUserOptions().then(resp => {
       salesmanList.value = resp.data;
     });
+  });
+
+  // 获取租客的可用的合同模板
+  getMyAvailableContractTemplates({
+    contractType: 1
+  }).then(resp => {
+    debugger;
+    if (resp.code == 0) {
+      contractTemplateList.value = resp.data;
+    }
   });
 
   defineExpose({

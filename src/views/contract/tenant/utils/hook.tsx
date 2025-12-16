@@ -298,7 +298,7 @@ function useTenant() {
       closeOnClickModal: false,
       contentRenderer: () => h(TenantCreateForm, { ref: formRef, formInline: null }),
       beforeSure: (done, { options }) => {
-        const FormInstance = formRef.value as any;
+        const FormInstance = formRef.value;
         const getFormRuleRef = FormInstance?.getRef?.();
         const curData = FormInstance?.formInline;
 
@@ -310,6 +310,9 @@ function useTenant() {
             curData.tenant.leaseEnd = curData.tenant.leaseDate[1];
             curData.tenant.checkInTime = curData.tenant.checkDate[0];
             curData.tenant.checkOutTime = curData.tenant.checkDate[1];
+
+            // 处理房间ID数组，将对象转换为ID字符串数组
+            curData.tenant.roomIds = curData.tenant.roomIds.map(item => item.value);
 
             apiCall(curData).then(resp => {
               if (resp.code === 0) {
