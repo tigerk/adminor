@@ -155,6 +155,21 @@
               </el-form-item>
             </el-col>
           </el-row>
+          <el-row :gutter="1" class="mb-4">
+            <el-col :span="24">
+              <div class="mb-2">
+                <span class="font-bold">证件信息</span>
+              </div>
+              <el-space>
+                <UploadImage v-model="formInline.tenantCompany.businessLicenseUrl" :limit="1" :width="120" :height="72">
+                  <!-- 使用自定义提示 -->
+                  <template #tip="">
+                    <div class="text-center font-bold text-sm">营业执照</div>
+                  </template>
+                </UploadImage>
+              </el-space>
+            </el-col>
+          </el-row>
         </div>
       </div>
     </div>
