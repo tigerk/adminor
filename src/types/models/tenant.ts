@@ -29,7 +29,7 @@ export interface TenantCompanyProps {
   contactName: string; // 联系人姓名
   contactPhone: string; // 联系电话
   registeredAddress?: string; // 注册地址
-  businessLicenseUrl?: string; // 营业执照附件
+  businessLicenseUrls?: string[]; // 营业执照附件
   tags?: any; // 租客标签 (JSON 格式)
   remark?: string; // 租客备注
   status?: number; // 租客状态：0=停用，1=启用

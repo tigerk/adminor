@@ -334,7 +334,7 @@ function useTenant() {
   }
 
   const tenantMateFormRef = ref();
-  function openTenantMateDialog(title = "添加", row?: TenantMateProps[]) {
+  function openTenantMateDialog(title = "添加", row?: TenantMateProps[], onConfirm?: (data: TenantMateProps[]) => void) {
     addDialog({
       title: `${title}同住人`,
       props: {
@@ -355,9 +355,41 @@ function useTenant() {
       closeOnClickModal: false,
       contentRenderer: () => h(TenantMateForm, { ref: tenantMateFormRef, formInline: null }),
       beforeSure: (done, { options }) => {
-        const FormInstance = tenantMateFormRef.value as any;
+        const FormInstance = tenantMateFormRef.value;
         const getFormRuleRef = FormInstance?.getRef?.();
-        const curData = FormInstance?.formInline;
+        const formInlines = FormInstance?.formInlines;
+
+        debugger;
+        if (getFormRuleRef) {
+          getFormRuleRef.validate((valid: boolean) => {
+            if (valid) {
+              // 过滤掉空的同住人记录（只有默认值的记录）
+              const validMates = formInlines.filter((mate: TenantMateProps) => {
+                return mate.name && mate.name.trim() !== "";
+              });
+
+              // 调用回调函数将数据返回给父组件
+              if (onConfirm) {
+                onConfirm(validMates);
+              }
+
+              message(`已成功${title}同住人`, { type: "success" });
+              done(); // 关闭弹框
+            } else {
+              message("请完善同住人信息", { type: "error" });
+            }
+          });
+        } else {
+          // 如果没有表单验证，直接返回数据
+          const validMates = formInlines.filter((mate: TenantMateProps) => {
+            return mate.name && mate.name.trim() !== "";
+          });
+
+          if (onConfirm) {
+            onConfirm(validMates);
+          }
+          done();
+        }
       }
     });
   }

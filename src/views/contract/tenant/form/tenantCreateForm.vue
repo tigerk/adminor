@@ -18,7 +18,7 @@
           >
             <el-option v-for="item in roomOptions" :key="item.value" :label="item.label" :value="item">
               <span style="float: left">{{ item.label }}</span>
-              <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">
+              <span style="float: right; color: var(--el-text-color-secondary, #000000); font-size: 13px">
                 {{ item.description }}
               </span>
             </el-option>
@@ -35,7 +35,7 @@
             </el-space>
           </el-col>
           <el-col :span="5" class="text-right">
-            <el-button type="primary" :icon="Plus" @click="openTenantMateDialog('添加', formInline.tenantMateList)">添加同住人</el-button>
+            <el-button type="primary" :icon="Plus" @click="handleAddTenantMate">添加同住人</el-button>
           </el-col>
         </el-row>
       </div>
@@ -161,7 +161,7 @@
                 <span class="font-bold">证件信息</span>
               </div>
               <el-space>
-                <UploadImage v-model="formInline.tenantCompany.businessLicenseUrl" :limit="1" :width="120" :height="72">
+                <UploadImage v-model="formInline.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="72">
                   <!-- 使用自定义提示 -->
                   <template #tip="">
                     <div class="text-center font-bold text-sm">营业执照</div>
@@ -409,7 +409,7 @@
       contactName: props.formInline?.tenantCompany?.contactName || "",
       contactPhone: props.formInline?.tenantCompany?.contactPhone || "",
       registeredAddress: props.formInline?.tenantCompany?.registeredAddress || "",
-      businessLicenseUrl: props.formInline?.tenantCompany?.businessLicenseUrl || "",
+      businessLicenseUrls: props.formInline?.tenantCompany?.businessLicenseUrls || [],
       tags: props.formInline?.tenantCompany?.tags || [],
       remark: props.formInline?.tenantCompany?.remark || ""
     },
@@ -615,11 +615,18 @@
   getMyAvailableContractTemplates({
     contractType: 1
   }).then(resp => {
-    debugger;
     if (resp.code == 0) {
       contractTemplateList.value = resp.data;
     }
   });
+
+  // 修改按钮点击事件
+  const handleAddTenantMate = () => {
+    openTenantMateDialog("添加", formInline.tenantMateList, mates => {
+      // 将返回的同住人数据更新到formInline中
+      formInline.tenantMateList = mates;
+    });
+  };
 
   defineExpose({
     getRef,

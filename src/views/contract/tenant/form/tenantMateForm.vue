@@ -1,6 +1,6 @@
 <template>
   <div class="section-tenant-info">
-    <el-form ref="ruleFormRef" :model="formInlines" :rules="rules" label-width="100px" label-position="top">
+    <el-form ref="ruleFormRef" :model="formInlines" :rules="dynamicRules" label-width="100px" label-position="top">
       <div v-for="(tenant, index) in formInlines" :key="index" class="mb-4">
         <el-card class="mb-4">
           <template #header>
@@ -11,37 +11,37 @@
           </template>
           <el-row :gutter="20">
             <el-col :span="5">
-              <el-form-item label="姓名" prop="name">
+              <el-form-item label="姓名" :prop="`${index}.name`" required>
                 <el-input v-model="tenant.name" placeholder="请输入租客姓名" clearable maxlength="20" show-word-limit />
               </el-form-item>
             </el-col>
 
             <el-col :span="2">
-              <el-form-item label="&nbsp;" prop="gender">
+              <el-form-item label="&nbsp;" :prop="`${index}.gender`">
                 <el-segmented v-model="tenant.gender" :options="genderOptions" />
               </el-form-item>
             </el-col>
 
             <el-col :span="4">
-              <el-form-item label="联系电话" prop="phone">
+              <el-form-item label="联系电话" :prop="`${index}.phone`" required>
                 <el-input v-model="tenant.phone" placeholder="请输入联系电话" clearable maxlength="30" />
               </el-form-item>
             </el-col>
 
             <el-col :span="3">
-              <el-form-item label="证件类型" prop="idType">
+              <el-form-item label="证件类型" :prop="`${index}.idType`" required>
                 <el-select v-model="tenant.idType" placeholder="请选择证件类型" class="w-full">
                   <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="5">
-              <el-form-item label="证件号码" prop="idNo">
+              <el-form-item label="证件号码" :prop="`${index}.idNo`" required>
                 <el-input v-model="tenant.idNo" placeholder="请输入证件号码" clearable maxlength="20" />
               </el-form-item>
             </el-col>
             <el-col :span="5">
-              <el-form-item label="租客标签" prop="tags">
+              <el-form-item label="租客标签" :prop="`${index}.tags`">
                 <el-select v-model="tenant.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
                   <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref } from "vue";
+  import { computed, reactive, ref } from "vue";
   import type { FormInstance } from "element-plus";
   import { GENDER_OPTIONS, ID_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import type { TenantMateProps } from "@/types";
@@ -110,6 +110,21 @@
   import UploadImage from "@/components/Business/UploadImage.vue";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions } = useTenant();
+
+  const baseRules = {
+    name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
+    phone: [{ required: true, message: "请输入联系电话", trigger: "blur" }],
+    idType: [{ required: true, message: "请选择证件类型", trigger: "change" }],
+    idNo: [{ required: true, message: "请输入证件号码", trigger: "blur" }]
+  };
+  // 动态生成校验规则
+  const dynamicRules = computed(() => {
+    const rules: any = {};
+    formInlines.forEach((_, index) => {
+      rules[index] = baseRules;
+    });
+    return rules;
+  });
 
   interface TenantMateFormProps {
     formInline: {
@@ -122,50 +137,38 @@
   // 表单引用
   const ruleFormRef = ref<FormInstance>();
 
+  const defaultMateRow = {
+    id: null,
+    tenantId: null,
+    name: "",
+    gender: null,
+    idType: null,
+    idNo: "",
+    phone: "",
+    tags: [],
+    remark: "",
+    status: 1,
+    idCardFrontList: [],
+    idCardBackList: [],
+    idCardInHandList: [],
+    otherImageList: []
+  };
+
   // 检查 props.formInline.tenantMateList 是否存在且不为空，否则提供一个默认的空数组
-  const initialTenantMateList =
-    props.formInline && props.formInline.tenantMateList.length > 0
-      ? [...props.formInline.tenantMateList]
-      : [
-          {
-            id: "",
-            name: "",
-            gender: "",
-            phone: "",
-            idType: "",
-            idNo: "",
-            tags: [],
-            idCardFrontList: [],
-            idCardBackList: [],
-            idCardInHandList: [],
-            otherImageList: []
-          }
-        ];
+  const initialTenantMateList = props.formInline && props.formInline.tenantMateList.length > 0 ? [...props.formInline.tenantMateList] : [defaultMateRow];
 
   // 创建响应式对象
   // 表单数据
   const formInlines = reactive<TenantMateProps[]>(initialTenantMateList);
 
   // 常量选项
-  const genderOptions = GENDER_OPTIONS;
+  const genderOptions = [...GENDER_OPTIONS];
   const idTypeOptions = ID_TYPE_OPTIONS;
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
 
   // 添加同住人
   const addMate = () => {
-    formInlines.push({
-      id: "",
-      name: "",
-      gender: "",
-      phone: "",
-      idType: "",
-      idNo: "",
-      tags: [],
-      idCardFrontList: [],
-      idCardBackList: [],
-      idCardInHandList: [],
-      otherImageList: []
-    });
+    formInlines.push(defaultMateRow);
   };
 
   // 删除同住人
