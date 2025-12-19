@@ -31,15 +31,15 @@ panel:
   pureCloseSystemSet: 설정 닫기
   pureClearCacheAndToLogin: 캐시 지우고 로그인 페이지로 돌아가기
   pureClearCache: 캐시 지우기
-  pureOverallStyle: 전체 스타일
-  pureOverallStyleLight: 밝은색
-  pureOverallStyleLightTip: 깨끗한 출발, 편안한 작업 인터페이스를 밝히세요
-  pureOverallStyleDark: 어두운색
-  pureOverallStyleDarkTip: 달빛 서곡, 밤의 조용한 우아함에 빠져들다
-  pureOverallStyleSystem: 자동
-  pureOverallStyleSystemTip: 시간과 동기화, 인터페이스가 새벽과 황혼에 자연스럽게 반응합니다.
+  pureThemeMode: 테마 모드
+  pureThemeModeLight: 밝은색
+  pureThemeModeLightTip: 깨끗한 출발, 편안한 작업 인터페이스를 밝히세요
+  pureThemeModeDark: 어두운색
+  pureThemeModeDarkTip: 달빛 서곡, 밤의 조용한 우아함에 빠져들다
+  pureThemeModeSystem: 자동
+  pureThemeModeSystemTip: 시간과 동기화, 인터페이스가 새벽과 황혼에 자연스럽게 반응합니다.
   pureThemeColor: 테마 색상
-  pureLayoutModel: 내비게이션 모드
+  pureMenuLayout: 메뉴 레이아웃
   pureVerticalTip: 좌측 메뉴, 친근하고 익숙함
   pureHorizontalTip: 상단 메뉴, 간결한 개요
   pureMixTip: 혼합 메뉴, 유연하고 다양함
@@ -114,6 +114,7 @@ menus:
   pureTypeit: 타이핑 효과
   pureJsonEditor: JSON 편집기
   pureColorPicker: 색상 선택기
+  pureColorPickerPanel: 색상 선택 패널
   pureDatePicker: 날짜 선택기
   pureDateTimePicker: 날짜 시간 선택기
   pureTimePicker: 시간 선택기

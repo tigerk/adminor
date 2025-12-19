@@ -31,15 +31,15 @@ panel:
   pureCloseSystemSet: 設定を閉じる
   pureClearCacheAndToLogin: キャッシュをクリアしてログインページへ戻る
   pureClearCache: キャッシュをクリア
-  pureOverallStyle: 全体スタイル
-  pureOverallStyleLight: ライトカラー
-  pureOverallStyleLightTip: 新鮮なスタートで、快適な作業環境を照らす
-  pureOverallStyleDark: ダークカラー
-  pureOverallStyleDarkTip: 月光の前奏曲、夜の静けさに浸る
-  pureOverallStyleSystem: 自動
-  pureOverallStyleSystemTip: 時間と共に同期し、朝夕の自然な変化に合わせてインターフェースが変わる
+  pureThemeMode: テーマモード
+  pureThemeModeLight: ライトカラー
+  pureThemeModeLightTip: 新鮮なスタートで、快適な作業環境を照らす
+  pureThemeModeDark: ダークカラー
+  pureThemeModeDarkTip: 月光の前奏曲、夜の静けさに浸る
+  pureThemeModeSystem: 自動
+  pureThemeModeSystemTip: 時間と共に同期し、朝夕の自然な変化に合わせてインターフェースが変わる
   pureThemeColor: テーマカラー
-  pureLayoutModel: ナビゲーションモード
+  pureMenuLayout: メニューレイアウト
   pureVerticalTip: 左側メニュー、親しみやすい
   pureHorizontalTip: トップメニュー、シンプルな概観
   pureMixTip: ミックスメニュー、柔軟で多様
@@ -114,6 +114,7 @@ menus:
   pureTypeit: タイプライター
   pureJsonEditor: JSONエディター
   pureColorPicker: カラーピッカー
+  pureColorPickerPanel: カラーピッカーパネル
   pureDatePicker: 日付セレクター
   pureDateTimePicker: 日時セレクター
   pureTimePicker: 時間セレクター

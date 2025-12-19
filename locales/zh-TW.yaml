@@ -25,21 +25,21 @@ search:
   pureCollect: 收藏
   pureDragSort: （可拖曳排序）
   pureEmpty: 暫無搜尋結果
-  purePlaceholder: 搜尋選單
+  purePlaceholder: 搜尋菜單
 panel:
   pureSystemSet: 系統設定
   pureCloseSystemSet: 關閉設定
   pureClearCacheAndToLogin: 清除緩存並返回登入頁
   pureClearCache: 清除緩存
-  pureOverallStyle: 整體風格
-  pureOverallStyleLight: 淺色
-  pureOverallStyleLightTip: 清新起航，點亮舒適的工作介面
-  pureOverallStyleDark: 深色
-  pureOverallStyleDarkTip: 月光序曲，沉醉於夜的靜謐雅緻
-  pureOverallStyleSystem: 自動
-  pureOverallStyleSystemTip: 同步時光，介面隨晨昏自然呼應
+  pureThemeMode: 主題模式
+  pureThemeModeLight: 淺色
+  pureThemeModeLightTip: 清新起航，點亮舒適的工作介面
+  pureThemeModeDark: 深色
+  pureThemeModeDarkTip: 月光序曲，沉醉於夜的靜謐雅緻
+  pureThemeModeSystem: 自動
+  pureThemeModeSystemTip: 同步時光，介面隨晨昏自然呼應
   pureThemeColor: 主題色
-  pureLayoutModel: 導航模式
+  pureMenuLayout: 菜單佈局
   pureVerticalTip: 左側菜單，親切熟悉
   pureHorizontalTip: 頂部菜單，簡潔概覽
   pureMixTip: 混合菜單，靈活多變
@@ -110,10 +110,11 @@ menus:
   pureSelector: 範圍選擇器
   pureFlowChart: 流程圖
   pureSeamless: 無縫滾動
-  pureContextmenu: 右鍵選單
+  pureContextmenu: 右鍵菜單
   pureTypeit: 打字機
   pureJsonEditor: JSON編輯器
   pureColorPicker: 顏色選擇器
+  pureColorPickerPanel: 顏色選擇器面板
   pureDatePicker: 日期選擇器
   pureDateTimePicker: 日期時間選擇器
   pureTimePicker: 時間選擇器

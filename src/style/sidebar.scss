@@ -35,7 +35,7 @@
 
   .set-icon,
   .fullscreen-icon,
-  .overall-style-icon {
+  .theme-mode-icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -675,8 +675,8 @@
       .globalization,
       /* 全屏 */
       .fullscreen-icon,
-      /* 整体风格 */
-      .overall-style-icon,
+      /* 主题模式 */
+      .theme-mode-icon,
       /* 消息通知 */
       .dropdown-badge,
       /* 用户名 */
@@ -858,8 +858,8 @@ body[layout="vertical"] {
   .globalization,
   /* 全屏 */
   .fullscreen-icon,
-  /* 整体风格 */
-  .overall-style-icon,
+  /* 主题模式 */
+  .theme-mode-icon,
   /* 消息通知 */
   .dropdown-badge,
   /* 用户名 */
@@ -1019,8 +1019,8 @@ body[layout="double"] {
   .globalization,
   /* 全屏 */
   .fullscreen-icon,
-  /* 整体风格 */
-  .overall-style-icon,
+  /* 主题模式 */
+  .theme-mode-icon,
   /* 消息通知 */
   .dropdown-badge,
   /* 用户名 */

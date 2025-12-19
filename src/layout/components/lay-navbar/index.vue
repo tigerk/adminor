@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LaySidebarThemeMode from "../lay-sidebar/components/SidebarThemeMode.vue";
   import { useNav } from "@/layout/hooks/useNav";
   import LaySearch from "../lay-search/index.vue";
   import LayNotice from "../lay-notice/index.vue";
@@ -7,7 +8,6 @@
   import LaySidebarFullScreen from "../lay-sidebar/components/SidebarFullScreen.vue";
   import LaySidebarBreadCrumb from "../lay-sidebar/components/SidebarBreadCrumb.vue";
   import LaySidebarTopCollapse from "../lay-sidebar/components/SidebarTopCollapse.vue";
-  import LaySidebarOverallStyle from "../lay-sidebar/components/SidebarOverallStyle.vue";
 
   import GlobalizationIcon from "@/assets/svg/globalization.svg?component";
   import AccountSettingsIcon from "~icons/ri/user-settings-line";
@@ -139,8 +139,8 @@
       </el-dropdown>
       <!-- 全屏 -->
       <LaySidebarFullScreen id="full-screen" />
-      <!-- 整体风格 -->
-      <LaySidebarOverallStyle id="header-overall" />
+      <!-- 主题模式 -->
+      <LaySidebarThemeMode id="header-theme-mode" />
       <!-- 消息通知 -->
       <LayNotice id="header-notice" />
       <!-- 退出登录 -->

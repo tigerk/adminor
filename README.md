@@ -17,23 +17,23 @@
 
 | **功能**                           | **进度** | 提交记录                                                                                                                                |
 | ---------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 新款菜单导航模式（左侧双栏菜单）   | 已完成   | [添加左侧双栏菜单](https://github.com/xiaoxian521/vue-pure-admin-max/commit/d7c3193fcd847f32d77ce96df3e6a8dd7e10adaa)                   |
+| 新款菜单布局（左侧双栏菜单）       | 已完成   | [添加左侧双栏菜单](https://github.com/xiaoxian521/vue-pure-admin-max/commit/d7c3193fcd847f32d77ce96df3e6a8dd7e10adaa)                   |
 | 悬浮按钮功能                       | 已完成   | [添加悬浮按钮功能](https://github.com/xiaoxian521/vue-pure-admin-max/commit/1448871cba52044ca379ca1affe355231736b6ad)                   |
 | 新增繁體中文、日语、韩语的内置支持 | 已完成   | [新增繁體中文、日语、韩语的内置支持](https://github.com/xiaoxian521/vue-pure-admin-max/commit/c6eadaada65d774d9eb9f0d1108355d83a29c653) |
 | 字典管理                           | 已完成   | [添加字典管理](https://github.com/xiaoxian521/vue-pure-admin-max/commit/d25cc87f5f959a5d7ab84ffd55b37104b4a26923)                       |
 | 多租户管理                         | 已完成   | [添加多租户管理](https://github.com/xiaoxian521/vue-pure-admin-max/commit/2098e330be672222ce4dd1cc0c769b56479cf550)                     |
-| 页头添加整体风格快捷操作按钮       | 已完成   | [页头添加整体风格快捷操作按钮](https://github.com/xiaoxian521/vue-pure-admin-max/commit/a7ea87a1773295970a44726b4231bd3b607c8d01)       |
+| 页头添加主题模式快捷操作按钮       | 已完成   | [页头添加主题模式快捷操作按钮](https://github.com/xiaoxian521/vue-pure-admin-max/commit/a7ea87a1773295970a44726b4231bd3b607c8d01)       |
 | 日历排班功能                       | 已完成   | [添加日历排班](https://github.com/xiaoxian521/vue-pure-admin-max/commit/f741566169ebc5b142ebf5ec67a1be89f08eeec3)                       |
 
 ## 高级功能 `bug` 修复记录
 
 在实际使用中，高级功能难免会出现 `bug`，因此需要进行相应的修复。以下是修复记录
 
-| **高级功能**                     | **修复记录**                                                                                                                                                                                                                                                                                                                                     |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 新款菜单导航模式（左侧双栏菜单） | 1. [修复左侧双栏菜单模式下设置路由`showParent: true`，子集菜单未显示的问题](https://github.com/xiaoxian521/vue-pure-admin-max/commit/bad9474f857157cedaec21a155317921d920b250)<br />2. [修复左侧双栏菜单模式下点击内容区全屏菜单未隐藏的问题](https://github.com/xiaoxian521/vue-pure-admin-max/commit/da6b5ae1c1ee938b26f1f8bb4acbf14000a7021d) |
-| 字典管理                         | [修复字典管理页面左侧的字典树无法更新的问题](https://github.com/xiaoxian521/vue-pure-admin-max/commit/159aa0b9a127bf15c6c48defc7262da8383205ff)                                                                                                                                                                                                  |
-| 页头添加整体风格快捷操作按钮     | [修复页头添加整体风格快捷操作按钮显示问题](https://github.com/xiaoxian521/vue-pure-admin-max/commit/ee4aa50213d6d25e94ece8a8dd92279c5c324640)                                                                                                                                                                                                    |
+| **高级功能**                 | **修复记录**                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 新款菜单布局（左侧双栏菜单） | 1. [修复左侧双栏菜单模式下设置路由`showParent: true`，子集菜单未显示的问题](https://github.com/xiaoxian521/vue-pure-admin-max/commit/bad9474f857157cedaec21a155317921d920b250)<br />2. [修复左侧双栏菜单模式下点击内容区全屏菜单未隐藏的问题](https://github.com/xiaoxian521/vue-pure-admin-max/commit/da6b5ae1c1ee938b26f1f8bb4acbf14000a7021d) |
+| 字典管理                     | [修复字典管理页面左侧的字典树无法更新的问题](https://github.com/xiaoxian521/vue-pure-admin-max/commit/159aa0b9a127bf15c6c48defc7262da8383205ff)                                                                                                                                                                                                  |
+| 页头添加主题模式快捷操作按钮 | [修复页头添加主题模式快捷操作按钮显示问题](https://github.com/xiaoxian521/vue-pure-admin-max/commit/ee4aa50213d6d25e94ece8a8dd92279c5c324640)                                                                                                                                                                                                    |
 
 ## 温馨提示
 

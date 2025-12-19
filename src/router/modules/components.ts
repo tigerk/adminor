@@ -195,6 +195,14 @@ export default {
       }
     },
     {
+      path: "/components/color-picker-panel",
+      name: "ColorPickerPanel",
+      component: () => import("@/views/components/color-picker-panel.vue"),
+      meta: {
+        title: $t("menus.pureColorPickerPanel")
+      }
+    },
+    {
       path: "/components/selector",
       name: "Selector",
       component: () => import("@/views/components/selector.vue"),

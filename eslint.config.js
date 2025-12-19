@@ -66,8 +66,11 @@ export default defineConfig([
       ]
     }
   },
-  ...tseslint.config({
-    extends: [...tseslint.configs.recommended],
+  ...tseslint.configs.recommended.map(config => ({
+    ...config,
+    files: ["**/*.?([cm])ts", "**/*.?([cm])tsx"]
+  })),
+  {
     files: ["**/*.?([cm])ts", "**/*.?([cm])tsx"],
     rules: {
       "@typescript-eslint/no-redeclare": "error",
@@ -91,7 +94,7 @@ export default defineConfig([
       //   }
       // ]
     }
-  }),
+  },
   {
     files: ["**/*.d.ts"],
     rules: {
