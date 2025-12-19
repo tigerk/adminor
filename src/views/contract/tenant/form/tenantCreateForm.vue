@@ -27,15 +27,18 @@
       </div>
       <div class="section-header">
         <el-row :gutter="20">
-          <el-col :span="19">
+          <el-col :span="16">
             <el-space spacer=" | ">
               <el-tooltip content="请选择租客类型" placement="right">
                 <el-segmented v-model="formInline.tenant.tenantType" :options="tenantTypeOptions" />
               </el-tooltip>
             </el-space>
           </el-col>
-          <el-col :span="5" class="text-right">
-            <el-button type="primary" :icon="Plus" @click="handleAddTenantMate">添加同住人</el-button>
+          <el-col :span="8" class="text-right">
+            <el-space spacer=" ">
+              <el-text v-if="formInline.tenantMateList != null">同住人 {{ formInline.tenantMateList.length }} 人</el-text>
+              <el-button type="primary" :icon="Plus" @click="handleAddTenantMate">添加同住人</el-button>
+            </el-space>
           </el-col>
         </el-row>
       </div>

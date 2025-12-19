@@ -6,7 +6,7 @@
           <template #header>
             <div class="card-header">
               <span>同住人 {{ index + 1 }} {{ tenant.name }}</span>
-              <el-button v-if="formInlines.length > 1" size="small" type="primary" @click="removeMate(index)">删除</el-button>
+              <el-button size="small" type="primary" @click="removeMate(index)">删除</el-button>
             </div>
           </template>
           <el-row :gutter="20">
