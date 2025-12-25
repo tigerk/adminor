@@ -113,7 +113,7 @@
   // 获取默认的其他费用对象
   const getDefaultOtherFee = (): OtherFeeProps => {
     return {
-      dicDataId: null,
+      dictDataId: null,
       name: null,
       paymentMethod: 0,
       priceMethod: 0,
@@ -155,7 +155,7 @@
       newFees[index] = {
         ...newFees[index],
         name: selectedOption.label,
-        dicDataId: selectedOption.value
+        dictDataId: selectedOption.value
       };
       emit("update:modelValue", newFees);
     }
@@ -167,10 +167,10 @@
     newValue => {
       if (newValue) {
         newValue.forEach((fee, index) => {
-          if (fee.dicDataId) {
-            // 根据dicDataId找到对应的级联路径
+          if (fee.dictDataId) {
+            // 根据dictDataId找到对应的级联路径
             for (const parent of otherFeeTypeOptions.value) {
-              const child = parent.children?.find((c: any) => c.value === fee.dicDataId);
+              const child = parent.children?.find((c: any) => c.value === fee.dictDataId);
               if (child) {
                 cascaderValues.value[index] = [parent.value, child.value];
                 break;

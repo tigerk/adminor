@@ -178,7 +178,7 @@ export interface PriceConfigProps {
 /** 租金费用类型 */
 export interface OtherFeeProps {
   /** 其他费用类型（如：装修/维修/房屋维修、随房租付、按固定金额等） */
-  dicDataId: string;
+  dictDataId: string;
   /** 其他费用名称 */
   name: string;
   /** 付款方式（如：随房租付、按固定金额等） */

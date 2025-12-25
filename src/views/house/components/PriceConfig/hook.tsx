@@ -7,7 +7,7 @@ import PriceConfigDialog from "@/views/house/components/PriceConfig/PriceConfigD
 
 function getDefaultOtherFee(): OtherFeeProps {
   return {
-    dicDataId: null,
+    dictDataId: null,
     name: null,
     paymentMethod: 0,
     /** 价格计算方式 */
