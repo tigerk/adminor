@@ -45,7 +45,7 @@ export interface TenantProps {
   contractTemplateId: bigint; // 合同模板ID
   tenantId?: bigint; // 租客ID
   tenantType: number; // 租客类型：1=个人，2=企业
-  rentalPrice: number; // 租金价格
+  rentPrice: number; // 租金价格
   depositMonths: number; // 押金月数
   paymentMonths: number; // 支付周期（月）
   firstBillDay: number; // 首期账单收租日：0=跟随合同起租日，1=跟随合同创建日

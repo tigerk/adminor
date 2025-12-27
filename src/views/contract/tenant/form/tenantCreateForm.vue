@@ -243,11 +243,11 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="月租金" prop="tenant.rentalPrice" required>
+            <el-form-item label="月租金" prop="tenant.rentPrice" required>
               <div>
                 <!-- 月租金输入 -->
                 <div class="rent-input">
-                  <el-input v-model="formInline.tenant.rentalPrice" type="number" placeholder="请输入月租金" class="rent-price-input">
+                  <el-input v-model="formInline.tenant.rentPrice" type="number" placeholder="请输入月租金" class="rent-price-input">
                     <template #prefix>
                       <span class="currency-symbol">¥</span>
                     </template>
@@ -435,7 +435,7 @@
       rentDueDay: props.formInline?.tenant?.rentDueDay || 15,
       rentDueOffsetDays: props.formInline?.tenant?.rentDueOffsetDays || 15,
       firstBillDay: props.formInline?.tenant?.firstBillDay || 0,
-      rentalPrice: props.formInline?.tenant?.rentalPrice || 0,
+      rentPrice: props.formInline?.tenant?.rentPrice || 0,
       deptId: props.formInline?.tenant?.deptId || null,
       salesmanId: props.formInline?.tenant?.salesmanId || null,
       dealChannel: props.formInline?.tenant?.dealChannel || null,
@@ -534,12 +534,12 @@
   };
 
   const handleRoomChange = (values: any[]) => {
-    let rentalPrice = 0;
+    let rentPrice = 0;
     values.forEach(value => {
-      value.extra.price && (rentalPrice += Number(value.extra.price));
+      value.extra.price && (rentPrice += Number(value.extra.price));
     });
 
-    formInline.tenant.rentalPrice = rentalPrice;
+    formInline.tenant.rentPrice = rentPrice;
   };
 
   const leaseDateShortCut = [
@@ -587,14 +587,14 @@
 
   // 计算押金金额
   const depositAmount = computed(() => {
-    const price = Number(formInline.tenant.rentalPrice) || 0;
+    const price = Number(formInline.tenant.rentPrice) || 0;
     const months = formInline.tenant.depositMonths || 0;
     return (price * months).toFixed(2);
   });
 
   // 计算首次支付总额（押金 + 首付）
   const totalFirstPayment = computed(() => {
-    const price = Number(formInline.tenant.rentalPrice) || 0;
+    const price = Number(formInline.tenant.rentPrice) || 0;
     const depositMonths = formInline.tenant.depositMonths || 0;
     const paymentMonths = formInline.tenant.paymentMonths || 0;
     const total = price * (depositMonths + paymentMonths);
