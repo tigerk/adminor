@@ -20,6 +20,33 @@
             </el-space>
           </div>
         </el-descriptions-item>
+        <el-descriptions-item>
+          <template #label>
+            <div class="room-label">
+              <el-icon><DataLine /></el-icon>
+              <span>房源统计</span>
+            </div>
+          </template>
+          <div class="room-stats">
+            <div class="stat-item">
+              <span class="stat-label">房间数量：</span>
+              <span class="stat-value">{{ formInline.roomList?.length || 0 }}</span>
+              <span class="stat-unit">间</span>
+            </div>
+            <el-divider direction="vertical" />
+            <div class="stat-item">
+              <span class="stat-label">总建筑面积：</span>
+              <span class="stat-value">{{ getTotalArea() }}</span>
+              <span class="stat-unit">m²</span>
+            </div>
+            <el-divider direction="vertical" />
+            <div class="stat-item">
+              <span class="stat-label">月租金总额：</span>
+              <span class="stat-value primary">¥{{ formInline.rentPrice }}</span>
+              <span class="stat-unit">元/月</span>
+            </div>
+          </div>
+        </el-descriptions-item>
       </el-descriptions>
     </div>
 
