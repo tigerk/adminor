@@ -94,6 +94,47 @@ function useTenant() {
       cellRenderer: ({ row }) => <span>{getOptionByCode(tenantContractSignStatusOptions, row.tenantType)?.label}</span>
     },
     {
+      label: "房间",
+      prop: "roomList",
+      width: 300,
+      showOverflowTooltip: false,
+      cellRenderer: ({ row }) => (
+        <el-tooltip placement="top" effect="dark" popper-class="room-tooltip">
+          {{
+            // 👇 悬浮内容（自定义）
+            content: () => (
+              <el-space wrap>
+                {row.roomList.map(room => (
+                  <el-tag key={room.roomId} type="primary">
+                    {`${room.houseName}-${room.roomNumber}`}
+                  </el-tag>
+                ))}
+              </el-space>
+            ),
+            // 👇 单元格显示内容
+            default: () => (
+              <div>
+                <el-space>
+                  <el-text
+                    truncated
+                    style={{
+                      width: "220px",
+                      display: "inline-block"
+                    }}
+                  >
+                    {row.roomList.map(room => `${room.communityName} ${room.doorNumber} -${room.roomNumber}`).join(" | ")}
+                  </el-text>
+                  <el-tag type="primary" class="mr-1">
+                    共 {row.roomList.length} 间
+                  </el-tag>
+                </el-space>
+              </div>
+            )
+          }}
+        </el-tooltip>
+      )
+    },
+    {
       label: "合同周期",
       prop: "leaseDate",
       minWidth: 200,
@@ -102,6 +143,12 @@ function useTenant() {
           {row.leaseStart} - {row.leaseEnd}
         </span>
       )
+    },
+    {
+      label: "租金（元/月）",
+      prop: "rentPrice",
+      minWidth: 120,
+      cellRenderer: ({ row }) => <span>{row.rentPrice} 元/月</span>
     },
     {
       label: "租客姓名",
@@ -114,67 +161,14 @@ function useTenant() {
       minWidth: 120
     },
     {
-      label: "租客类型",
-      prop: "tenantType",
-      width: 100,
-      cellRenderer: ({ row }) => <span>{getOptionByCode(mutableTenantTypeOptions, row.tenantType)?.label}</span>
+      label: "部门",
+      prop: "deptName",
+      minWidth: 120
     },
     {
-      label: "租客来源",
-      prop: "tenantSource",
-      width: 120,
-      cellRenderer: ({ row }) => {
-        const source = tenantSourceOptions.value.find(item => item.value === row.tenantSource);
-        return <span>{source?.label || "-"}</span>;
-      }
-    },
-    {
-      label: "成交渠道",
-      prop: "dealChannel",
-      width: 120,
-      cellRenderer: ({ row }) => {
-        const channel = dealChannelOptions.value.find(item => item.value === row.dealChannel);
-        return <span>{channel?.label || "-"}</span>;
-      }
-    },
-    {
-      label: "租客标签",
-      prop: "tags",
-      minWidth: 150,
-      cellRenderer: ({ row }) => {
-        if (!row.tags || row.tags.length === 0) return <span>-</span>;
-        return (
-          <div class="flex flex-wrap gap-1">
-            {row.tags.map((tagId, index) => {
-              const tag = tenantTagOptions.value.find(item => item.value === tagId);
-              return tag ? (
-                <el-tag key={index} size="small">
-                  {tag.label}
-                </el-tag>
-              ) : null;
-            })}
-          </div>
-        );
-      }
-    },
-    {
-      label: "状态",
-      prop: "status",
-      width: 100,
-      cellRenderer: scope => (
-        <el-switch
-          size={scope.props.size === "small" ? "small" : "default"}
-          loading={switchLoadMap.value[scope.index]?.loading}
-          v-model={scope.row.status}
-          active-value={1}
-          inactive-value={0}
-          active-text="启用"
-          inactive-text="停用"
-          inline-prompt
-          style={switchStyle.value}
-          onChange={() => onChange(scope as any)}
-        />
-      )
+      label: "签约人",
+      prop: "salesmanName",
+      minWidth: 120
     },
     {
       label: "创建时间",

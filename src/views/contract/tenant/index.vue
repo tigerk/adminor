@@ -63,7 +63,7 @@
         border
         row-key="id"
         alignWhole="center"
-        showOverflowTooltip
+        :show-overflow-tooltip="false"
         :loading="loading"
         :loading-config="{ background: 'transparent' }"
         adaptive
@@ -81,6 +81,7 @@
       >
         <template #operation="{ row }">
           <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(EditPen)" @click="openTenantDialog('修改', row)">修改</el-button>
+
           <el-popconfirm :title="`是否确认删除租客${row.name}?`" @confirm="handleDeleteTenant(row)">
             <template #reference>
               <el-button class="reset-margin" link type="danger" :icon="useRenderIcon(Delete)">删除</el-button>
