@@ -8,10 +8,11 @@ import { createTenant, deleteTenant, getTenantList, getTenantTotal, updateTenant
 import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_CONTRACT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
-import type { TenantMateProps, TenantPersonalProps, TenantQueryFormProps, TenantsCreateFormProps } from "@/types";
+import type { TenantMateProps, TenantPersonalProps, TenantQueryFormProps, TenantRowProps, TenantsCreateFormProps } from "@/types";
 import { getDictDataByDictCode } from "@/api/sys/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
 import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
+import ViewTenantDialog from "@/views/contract/tenant/view/viewTenantDialog.vue";
 
 function useTenant() {
   const pagination = reactive<PaginationProps>({
@@ -178,7 +179,7 @@ function useTenant() {
     {
       label: "操作",
       fixed: "right",
-      width: 160,
+      width: 240,
       slot: "operation"
     }
   ];
@@ -419,6 +420,31 @@ function useTenant() {
     onTenantSearch();
   };
 
+  function openTenantViewDialog(title = "查看", row?: TenantRowProps) {
+    addDialog({
+      title: `${title} ${row.tenantName}`,
+      props: {
+        formInline: {
+          title,
+          tenantSourceOptions: tenantSourceOptions.value,
+          dealChannelOptions: dealChannelOptions.value,
+          tenantTagOptions: tenantTagOptions.value,
+          ...row
+        }
+      },
+      top: "1vh",
+      width: "70vw",
+      lockScroll: true,
+      alignCenter: true,
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(ViewTenantDialog, { ref: formRef, formInline: null }),
+      beforeSure: (done, { options }) => {}
+    });
+  }
+
   return {
     resetQueryForm,
     queryForm,
@@ -434,6 +460,7 @@ function useTenant() {
     tenantTagOptions,
     pagination,
     openTenantDialog,
+    openTenantViewDialog,
     onTenantSearch,
     handleDeleteTenant,
     handleSizeChange,

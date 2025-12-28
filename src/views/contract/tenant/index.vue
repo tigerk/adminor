@@ -80,6 +80,7 @@
         @page-current-change="handleCurrentChange"
       >
         <template #operation="{ row }">
+          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(EditPen)" @click="openTenantViewDialog('查看租客', row)">查看</el-button>
           <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(EditPen)" @click="openTenantDialog('修改', row)">修改</el-button>
 
           <el-popconfirm :title="`是否确认删除租客${row.name}?`" @confirm="handleDeleteTenant(row)">
@@ -115,6 +116,7 @@
   const {
     queryForm,
     openTenantDialog,
+    openTenantViewDialog,
     onTenantSearch,
     handleDeleteTenant,
     tableSize,

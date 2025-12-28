@@ -50,7 +50,7 @@ export type LeaseInfoDTO = {
 /**
  * 房间项数据传输对象
  */
-export type RoomItemDTO = {
+export type RoomItemProps = {
   /** 房间id */
   roomId?: number;
   /** 房源ID */
@@ -180,7 +180,7 @@ export type RoomGridItemDTO = {
   compoundGroup: CompoundGroup;
   buildingGroup: BuildingGroup;
   floorGroup: FloorGroup;
-  rooms: Array<RoomItemDTO>;
+  rooms: Array<RoomItemProps>;
 };
 
 export type RoomGridDTO = {

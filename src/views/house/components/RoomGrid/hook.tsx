@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type Ref, ref } from "vue";
 import { ElMessage } from "element-plus";
-import { getRoomGrid, type RoomGridDTO, type RoomGridItemDTO, type RoomItemDTO } from "@/api/house/room";
+import { getRoomGrid, type RoomGridDTO, type RoomGridItemDTO, type RoomItemProps } from "@/api/house/room";
 import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 import { getFocusById } from "@/api/house/focus";
 import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
@@ -20,7 +20,7 @@ interface ProcessedFloorGroup {
   roomCount: number;
   leasedCount: number;
   occupancyRate: string;
-  rooms: RoomItemDTO[];
+  rooms: RoomItemProps[];
 }
 
 /**
@@ -224,7 +224,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         if (data.roomGridItemList) {
           const processedItems = data.roomGridItemList.map((item: RoomGridItemDTO) => ({
             ...item,
-            rooms: item.rooms.map((room: RoomItemDTO) => ({
+            rooms: item.rooms.map((room: RoomItemProps) => ({
               ...room,
               leaseInfo:
                 room.roomStatus === 1
@@ -297,7 +297,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 处理快速操作
-  const handleQuickAction = (room: RoomItemDTO, action: string) => {
+  const handleQuickAction = (room: RoomItemProps, action: string) => {
     switch (action) {
       case "contract":
         ElMessage.success(`准备为房间 ${room.roomNumber} 签约`);
@@ -333,7 +333,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 获取房间卡片样式类
-  const getRoomCardClass = (room: RoomItemDTO) => {
+  const getRoomCardClass = (room: RoomItemProps) => {
     const classes: string[] = [];
 
     if (room.closed) {
@@ -364,7 +364,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 获取房间卡片动态样式
-  const getRoomCardStyle = (room: RoomItemDTO) => {
+  const getRoomCardStyle = (room: RoomItemProps) => {
     const style: any = {};
 
     if (room.roomStatusColor) {
@@ -381,7 +381,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 获取房型标签
-  const getRoomTypeLabel = (room: RoomItemDTO) => {
+  const getRoomTypeLabel = (room: RoomItemProps) => {
     const layout = room.houseLayout;
     if (!layout) {
       return "未分配";
@@ -476,7 +476,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 处理下拉菜单操作
-  const handleDropdownAction = (room: RoomItemDTO, command: string) => {
+  const handleDropdownAction = (room: RoomItemProps, command: string) => {
     switch (command) {
       case "edit":
         if (room.leaseMode == 2 && room.rentalType == 1) {
@@ -497,7 +497,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     }
   };
 
-  function editEntireHouse(title: string, room: RoomItemDTO) {
+  function editEntireHouse(title: string, room: RoomItemProps) {
     getEntireHouseById({ id: room.houseId }).then(res => {
       if (res.code !== 0) {
         return;
@@ -544,7 +544,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     };
   }
 
-  function editShareHouse(title: string, room: RoomItemDTO) {
+  function editShareHouse(title: string, room: RoomItemProps) {
     getShareHouseById({ id: room.houseId }).then(res => {
       if (res.code !== 0) {
         return;
