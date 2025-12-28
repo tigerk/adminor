@@ -1,724 +1,626 @@
 <template>
-  <div class="section-tenant-info">
-    <div class="mb-4 house-selector-info">
-      <div class="mb-2"><el-text type="primary" size="large" tag="b">房源信息</el-text></div>
-      <el-form-item prop="tenant.roomIds">
-        <el-select
-          v-model="formInline.tenant.roomIds"
-          size="large"
-          filterable
-          multiple
-          remote
-          :remote-method="handleSearchRoom"
-          :loading="searchLoading"
-          placeholder="请选择房源"
-          class="w-full"
-          @change="handleRoomChange"
-        >
-          <el-option v-for="item in roomOptions" :key="item.value" :label="item.label" :value="item">
-            <span style="float: left">{{ item.label }}</span>
-            <span style="float: right; color: var(--el-text-color-secondary, #000000); font-size: 13px">
-              {{ item.description }}
-            </span>
-          </el-option>
-        </el-select>
-      </el-form-item>
-    </div>
-    <div class="section-header">
-      <el-row :gutter="20">
-        <el-col :span="16">
-          <el-space spacer=" | ">
-            <el-tooltip content="请选择租客类型" placement="right">
-              <el-segmented v-model="formInline.tenant.tenantType" :options="tenantTypeOptions" />
-            </el-tooltip>
-          </el-space>
-        </el-col>
-        <el-col :span="8" class="text-right">
-          <el-space spacer=" ">
-            <el-text v-if="formInline.tenantMateList != null">同住人 {{ formInline.tenantMateList.length }} 人</el-text>
-            <el-button type="primary" :icon="Plus" @click="handleAddTenantMate">添加同住人</el-button>
-          </el-space>
-        </el-col>
-      </el-row>
-    </div>
-    <div class="mt-4">
-      <div class="mb-2"><el-text type="primary" size="large" tag="b">租客信息</el-text></div>
-      <div v-if="formInline.tenant.tenantType === 0">
-        <el-row :gutter="20">
-          <el-col :span="5">
-            <el-form-item label="姓名" prop="tenant.name">
-              <el-input v-model="formInline.tenantPersonal.name" placeholder="请输入租客姓名" clearable maxlength="20" show-word-limit />
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="2">
-            <el-form-item label="&nbsp;" prop="gender">
-              <el-segmented v-model="formInline.tenantPersonal.gender" :options="genderOptions" />
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="4">
-            <el-form-item label="联系电话" prop="tenant.phone">
-              <el-input v-model="formInline.tenantPersonal.phone" placeholder="请输入联系电话" clearable maxlength="30" />
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="3">
-            <el-form-item label="证件类型" prop="tenant.idType">
-              <el-select v-model="formInline.tenantPersonal.idType" placeholder="请选择证件类型" class="w-full">
-                <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="5">
-            <el-form-item label="证件号码" prop="tenant.idNo">
-              <el-input v-model="formInline.tenantPersonal.idNo" placeholder="请输入证件号码" clearable maxlength="20" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5">
-            <el-form-item label="租客标签" prop="tags">
-              <el-select v-model="formInline.tenantPersonal.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
-                <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="1" class="mb-4">
-          <el-col :span="24">
-            <el-space spacer="|">
-              <div>
-                <div class="mb-2">
-                  <span class="font-bold">证件信息</span>
-                </div>
-                <el-space>
-                  <UploadImage v-model="formInline.tenantPersonal.idCardFrontList" :limit="1" :width="120" :height="72">
-                    <!-- 使用自定义提示 -->
-                    <template #tip="">
-                      <div class="text-center font-bold text-sm">身份证国徽面</div>
-                    </template>
-                  </UploadImage>
-                  <UploadImage v-model="formInline.tenantPersonal.idCardBackList" :limit="1" :width="120" :height="72">
-                    <!-- 使用自定义提示 -->
-                    <template #tip="">
-                      <div class="text-center font-bold text-sm">身份证人像面</div>
-                    </template>
-                  </UploadImage>
-                  <UploadImage v-model="formInline.tenantPersonal.idCardInHandList" :limit="1" :width="120" :height="72">
-                    <!-- 使用自定义提示 -->
-                    <template #tip="">
-                      <div class="text-center font-bold text-sm">手持身份证照片</div>
-                    </template>
-                  </UploadImage>
-                </el-space>
-              </div>
-              <div>
-                <div class="mb-2">
-                  <span class="font-bold">其他照片</span>
-                </div>
-                <UploadImage v-model="formInline.tenantPersonal.otherImageList" :limit="3" :width="120" :height="72">
-                  <!-- 使用自定义提示 -->
-                  <template #tip="">
-                    <div class="font-bold text-sm">其他照片，最多可上传3张</div>
-                  </template>
-                </UploadImage>
-              </div>
+  <div class="tenant-detail-view">
+    <!-- 房源信息展示 -->
+    <div class="room-info-section">
+      <el-descriptions :column="1" border class="room-descriptions">
+        <el-descriptions-item>
+          <template #label>
+            <div class="room-header">
+              <el-icon class="header-icon"><House /></el-icon>
+              <span class="header-title">房源地址</span>
+            </div>
+          </template>
+          <div class="room-content">
+            <el-space wrap :size="10">
+              <el-tag v-for="room in formInline.roomList" :key="room.roomId" type="primary" size="large" effect="light" class="room-tag">
+                <span class="room-info">{{ room.communityName }} {{ room.doorNumber }}-{{ room.roomNumber }}</span>
+                <el-divider direction="vertical" />
+                <span class="room-area">{{ room.area }}m²</span>
+              </el-tag>
             </el-space>
-          </el-col>
-        </el-row>
-      </div>
-
-      <div v-if="formInline.tenant.tenantType === 1">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="企业名称" prop="tenantCompany.companyName">
-              <el-input v-model="formInline.tenantCompany.companyName" placeholder="请输入企业名称" clearable maxlength="20" show-word-limit />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5">
-            <el-form-item label="统一社会信用代码" prop="tenantCompany.uscc">
-              <el-input v-model="formInline.tenantCompany.uscc" placeholder="请输入统一社会信用代码" clearable maxlength="20" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item label="法定代表人" prop="tenantCompany.legalPerson">
-              <el-input v-model="formInline.tenantCompany.legalPerson" placeholder="请输入法定代表人" clearable maxlength="30" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item label="联系电话" prop="tenantCompany.contactPhone">
-              <el-input v-model="formInline.tenantCompany.contactPhone" placeholder="请输入联系电话" clearable maxlength="30" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5">
-            <el-form-item label="租客标签" prop="tags">
-              <el-select v-model="formInline.tenantCompany.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
-                <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="1" class="mb-4">
-          <el-col :span="24">
-            <div class="mb-2">
-              <span class="font-bold">证件信息</span>
-            </div>
-            <el-space>
-              <UploadImage v-model="formInline.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="72">
-                <!-- 使用自定义提示 -->
-                <template #tip="">
-                  <div class="text-center font-bold text-sm">营业执照</div>
-                </template>
-              </UploadImage>
-            </el-space>
-          </el-col>
-        </el-row>
-      </div>
-    </div>
-  </div>
-  <div class="mb-4 tenant-contract-info">
-    <div class="mb-4">
-      <el-space spacer="|">
-        <el-text type="primary" size="large" tag="b">租约信息</el-text>
-      </el-space>
-    </div>
-    <div>
-      <el-row :gutter="20">
-        <el-col :span="3">
-          <el-form-item label="签约类型" prop="tenant.contractNature">
-            <el-select v-model="formInline.tenant.contractNature" placeholder="签约类型" class="w-full" clearable>
-              <el-option v-for="item in TENANT_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="5">
-          <el-form-item label="合同周期" prop="tenant.leaseDate">
-            <el-date-picker
-              v-model="formInline.tenant.leaseDate"
-              type="daterange"
-              class="w-[240px]!"
-              unlink-panels
-              range-separator="至"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-              :shortcuts="leaseDateShortCut"
-              :popper-options="{
-                placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
-              }"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="5">
-          <el-form-item label="入离日期" prop="tenant.checkDate">
-            <el-date-picker
-              v-model="formInline.tenant.checkDate"
-              type="daterange"
-              class="w-[240px]!"
-              unlink-panels
-              range-separator="至"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-              :shortcuts="leaseDateShortCut"
-              :popper-options="{
-                placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
-              }"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="5">
-          <el-form-item label="租金信息">
-            <div class="rent-info-container">
-              <!-- 押付方式 -->
-              <div class="payment-method">
-                <el-select v-model="formInline.tenant.depositMonths" class="deposit-select" placeholder="押金">
-                  <template #prefix>押</template>
-                  <el-option v-for="item in depositMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-                <el-select v-model="formInline.tenant.paymentMonths" class="payment-select" placeholder="付款">
-                  <template #prefix>付</template>
-                  <el-option v-for="item in paymentMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </div>
-            </div>
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="月租金" prop="tenant.rentPrice" required>
-            <div>
-              <!-- 月租金输入 -->
-              <div class="rent-input">
-                <el-input v-model="formInline.tenant.rentPrice" type="number" placeholder="请输入月租金" class="rent-price-input">
-                  <template #prefix>
-                    <span class="currency-symbol">¥</span>
-                  </template>
-                  <template #append>元/月</template>
-                </el-input>
-              </div>
-            </div>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row class="mb-4">
-        <el-col :span="13">&nbsp;</el-col>
-        <el-col :span="11">
-          <!-- 计算提示 -->
-          <div v-if="depositAmount || totalFirstPayment" class="rent-summary">
-            <el-text type="info" size="small">
-              押金：
-              <span class="amount">¥{{ depositAmount }} 元</span>
-              {{ totalFirstPayment ? `，首次支付：` : "" }}
-              <span v-if="totalFirstPayment" class="amount">¥{{ totalFirstPayment }} 元</span>
-            </el-text>
           </div>
-        </el-col>
-      </el-row>
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="合同模板" prop="tenant.contractTemplateId" required>
-            <el-select v-model="formInline.tenant.contractTemplateId" placeholder="请选择合同模板">
-              <el-option v-for="item in contractTemplateList" :key="item.id" :label="item.templateName" :value="item.id" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="5">
-          <el-form-item label="收租设置" prop="tenant.rentDueType" required>
-            <el-input v-model.number="formInline.tenant.rentDueDay" :min="0" placeholder="请输入" type="number" class="text-center rent-due-day-input">
-              <template #prepend>
-                <el-select v-model="formInline.tenant.rentDueType" placeholder="请选择" style="width: 80px">
-                  <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </template>
-              <template #append>
-                {{ formInline.tenant.rentDueType == 2 ? "号收租" : "天" }}
-              </template>
-            </el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="5">
-          <el-form-item label="首期账单收租日" prop="tenant.firstBillDay">
-            <el-select v-model="formInline.tenant.firstBillDay" placeholder="请选择">
-              <el-option v-for="item in FIRST_BILL_DAY_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
+        </el-descriptions-item>
+      </el-descriptions>
     </div>
-  </div>
-  <div>
-    <!-- 其他费用配置 -->
-    <OtherFeeSelect v-model="formInline.otherFees" />
-  </div>
-  <div class="mb-1">
-    <el-row :gutter="20">
-      <el-col :span="24">
-        <el-form-item label="合同补充说明" prop="formInline.tenant.remark">
-          <el-input v-model="formInline.tenant.remark" type="textarea" :rows="4" placeholder="请输入备注信息" maxlength="500" show-word-limit />
-        </el-form-item>
-      </el-col>
-    </el-row>
-  </div>
-  <div>
-    <div class="mb-2"><el-text type="primary" size="large" tag="b">负责人信息</el-text></div>
-    <el-row :gutter="20">
-      <el-col :span="6">
-        <el-form-item label="签约部门" prop="tenant.deptId" required>
-          <DeptTreeSelect v-model="formInline.tenant.deptId" :emit-on-default="true" @dept-selected="handleDeptSelected" />
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item label="签约人" prop="tenant.salesmanId" required>
-          <el-select v-model="formInline.tenant.salesmanId" filterable placeholder="请选择签约人" clearable>
-            <el-option v-for="item in salesmanList" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item label="成交渠道" prop="tenant.dealChannel">
-          <el-select v-model="formInline.tenant.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
-            <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item label="租客来源" prop="tenant.tenantSource">
-          <el-select v-model="formInline.tenant.tenantSource" placeholder="请选择租客来源" class="w-full" multiple clearable collapse-tags collapse-tags-tooltip>
-            <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-    </el-row>
+
+    <!-- 标签页内容 -->
+    <el-card class="tabs-card" shadow="hover">
+      <el-tabs v-model="activeTab" class="modern-tabs">
+        <!-- 租客信息 Tab -->
+        <el-tab-pane name="tenant">
+          <template #label>
+            <span class="tab-label">
+              <el-icon><User /></el-icon>
+              <span>租客信息</span>
+            </span>
+          </template>
+          <div class="tab-content">
+            <el-descriptions title="房源信息">
+              <el-descriptions-item label="Username">kooriookami</el-descriptions-item>
+              <el-descriptions-item label="Telephone">18100000000</el-descriptions-item>
+              <el-descriptions-item label="Place">Suzhou</el-descriptions-item>
+              <el-descriptions-item label="Remarks">
+                <el-tag size="small">School</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="Address">
+                No.1188, Wuzhong Avenue, Wuzhong District, Suzhou, Jiangsu Province
+              </el-descriptions-item>
+            </el-descriptions>
+
+            <!-- 基本信息 -->
+            <div class="info-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <span class="title-icon"></span>
+                  <span class="title-text">基本信息</span>
+                </div>
+              </div>
+              <el-descriptions :column="3" border class="info-descriptions" size="default">
+                <el-descriptions-item label="租客类型" label-align="right">
+                  <el-tag :type="formInline.tenantType === 0 ? 'success' : 'warning'" size="default">
+                    {{ formInline.tenantType === 0 ? "个人" : "企业" }}
+                  </el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="姓名/企业名称" label-align="right">
+                  <span class="text-value">{{ formInline.tenantName }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="联系电话" label-align="right">
+                  <span class="text-value">{{ formInline.tenantPhone }}</span>
+                </el-descriptions-item>
+
+                <template v-if="formInline.tenantType === 0">
+                  <el-descriptions-item label="性别" label-align="right">
+                    <span class="text-value">{{ formInline.tenantPersonal?.gender === 0 ? "男" : "女" }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="证件类型" label-align="right">
+                    <span class="text-value">{{ getIdTypeName(formInline.tenantPersonal?.idType) }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="证件号码" label-align="right">
+                    <span class="text-value">{{ formInline.tenantPersonal?.idNo }}</span>
+                  </el-descriptions-item>
+                </template>
+
+                <template v-else>
+                  <el-descriptions-item label="统一社会信用代码" label-align="right" :span="2">
+                    <span class="text-value">{{ formInline.tenantCompany?.uscc }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="法定代表人" label-align="right">
+                    <span class="text-value">{{ formInline.tenantCompany?.legalPerson }}</span>
+                  </el-descriptions-item>
+                </template>
+
+                <el-descriptions-item label="签约状态" label-align="right">
+                  <el-tag :type="getStatusType(formInline.signStatus)" size="default">
+                    {{ getStatusName(formInline.signStatus) }}
+                  </el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="签约时间" label-align="right" :span="2">
+                  <span class="text-value">{{ formInline.createTime }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+
+            <!-- 租约信息 -->
+            <div class="info-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <span class="title-icon"></span>
+                  <span class="title-text">租约信息</span>
+                </div>
+              </div>
+              <el-descriptions :column="3" border class="info-descriptions" size="default">
+                <el-descriptions-item label="合同周期" label-align="right" :span="2">
+                  <el-space :size="8">
+                    <el-tag type="info">{{ formInline.leaseStart }}</el-tag>
+                    <span>至</span>
+                    <el-tag type="info">{{ formInline.leaseEnd }}</el-tag>
+                  </el-space>
+                </el-descriptions-item>
+                <el-descriptions-item label="月租金" label-align="right">
+                  <span class="rent-price">¥{{ formInline.rentPrice }}</span>
+                  <span class="rent-unit">元/月</span>
+                </el-descriptions-item>
+
+                <el-descriptions-item label="押付方式" label-align="right">
+                  <span class="text-value">押{{ formInline.depositMonths }}付{{ formInline.paymentMonths }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="收租设置" label-align="right">
+                  <span class="text-value">{{ getRentDueTypeText(formInline.rentDueType, formInline.rentDueDay) }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="签约类型" label-align="right">
+                  <span class="text-value">{{ getContractNatureName(formInline.contractNature) }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+
+            <!-- 负责人信息 -->
+            <div class="info-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <span class="title-icon"></span>
+                  <span class="title-text">负责人信息</span>
+                </div>
+              </div>
+              <el-descriptions :column="3" border class="info-descriptions" size="default">
+                <el-descriptions-item label="签约部门" label-align="right">
+                  <span class="text-value">{{ formInline.deptName }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="签约人" label-align="right">
+                  <span class="text-value">{{ formInline.salesmanName }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="成交渠道" label-align="right">
+                  <span class="text-value">{{ getDealChannelName(formInline.dealChannel) }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+
+            <!-- 同住人信息 -->
+            <div v-if="formInline.tenantMateList && formInline.tenantMateList.length > 0" class="info-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <span class="title-icon"></span>
+                  <span class="title-text">同住人信息</span>
+                  <el-tag type="info" size="small" class="ml-2">{{ formInline.tenantMateList.length }}人</el-tag>
+                </div>
+              </div>
+              <el-table :data="formInline.tenantMateList" border stripe class="mate-table">
+                <el-table-column type="index" label="序号" width="70" align="center" />
+                <el-table-column prop="name" label="姓名" align="center" min-width="120" />
+                <el-table-column prop="gender" label="性别" align="center" width="80">
+                  <template #default="{ row }">
+                    {{ row.gender === 0 ? "男" : "女" }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="phone" label="联系电话" align="center" min-width="140" />
+                <el-table-column prop="idNo" label="证件号码" align="center" min-width="180" />
+              </el-table>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 账单信息 Tab -->
+        <el-tab-pane name="bill">
+          <template #label>
+            <span class="tab-label">
+              <el-icon><Money /></el-icon>
+              <span>账单信息</span>
+            </span>
+          </template>
+          <div class="tab-content">
+            <el-empty description="暂无账单信息" :image-size="180">
+              <el-button type="primary" size="default">生成账单</el-button>
+            </el-empty>
+          </div>
+        </el-tab-pane>
+
+        <!-- 合同信息 Tab -->
+        <el-tab-pane name="contract">
+          <template #label>
+            <span class="tab-label">
+              <el-icon><Document /></el-icon>
+              <span>合同信息</span>
+            </span>
+          </template>
+          <div class="tab-content">
+            <div class="info-section">
+              <el-descriptions :column="2" border class="info-descriptions" size="default">
+                <el-descriptions-item label="合同模板ID" label-align="right">
+                  <span class="text-value">{{ formInline.contractTemplateId || "未设置" }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="合同状态" label-align="right">
+                  <el-tag type="warning">待生成</el-tag>
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+
+            <div class="action-bar">
+              <el-button type="primary" :icon="Document">生成合同</el-button>
+              <el-button type="success" :icon="View">预览合同</el-button>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 其他费用 Tab -->
+        <el-tab-pane name="fees">
+          <template #label>
+            <span class="tab-label">
+              <el-icon><Coin /></el-icon>
+              <span>其他费用</span>
+            </span>
+          </template>
+          <div class="tab-content">
+            <el-table v-if="formInline.otherFees && formInline.otherFees.length > 0" :data="formInline.otherFees" border stripe class="fees-table">
+              <el-table-column type="index" label="序号" width="70" align="center" />
+              <el-table-column prop="feeName" label="费用名称" align="center" min-width="150" />
+              <el-table-column prop="feeAmount" label="费用金额" align="center" min-width="120">
+                <template #default="{ row }">
+                  <span class="fee-amount">¥{{ row.feeAmount }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="feeType" label="计费方式" align="center" min-width="120" />
+              <el-table-column prop="remark" label="备注" align="center" min-width="200" show-overflow-tooltip />
+            </el-table>
+            <el-empty v-else description="暂无其他费用" :image-size="150" />
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, reactive, ref } from "vue";
-  import type { FormInstance } from "element-plus";
-  import {
-    FIRST_BILL_DAY_OPTIONS,
-    GENDER_OPTIONS,
-    getOptionByCode,
-    ID_TYPE_OPTIONS,
-    RENT_DUE_TYPE_OPTIONS,
-    RENTAL_TYPE_OPTIONS,
-    TENANT_CONTRACT_NATURE_OPTIONS,
-    TENANT_TYPE_OPTIONS
-  } from "@/constants";
-  import type { TenantsCreateFormProps } from "@/types";
-  import { tenantCompanyFormRules, tenantFormRules } from "@/views/contract/tenant/utils/rule";
-  import useTenant from "@/views/contract/tenant/utils/hook";
-  import UploadImage from "@/components/Business/UploadImage.vue";
-  import { Plus } from "@element-plus/icons-vue";
-  import { getRoomList } from "@/api/house/room";
-  import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
-  import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
-  import { getCompanyUserOptions } from "@/api/company";
-  import { getMyAvailableContractTemplates } from "@/api/contract/template";
-
-  const { tenantSourceOptions, dealChannelOptions, tenantTagOptions, openTenantMateDialog } = useTenant();
+  import { ref } from "vue";
+  import type { TenantRowProps } from "@/types";
+  import { ID_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_CONTRACT_SIGN_STATUS_OPTIONS } from "@/constants";
+  import { Coin, Document, House, Money, User, View } from "@element-plus/icons-vue";
 
   interface FormProps {
-    formInline: TenantsCreateFormProps;
+    formInline: TenantRowProps;
   }
 
   const props = defineProps<FormProps>();
 
-  // 表单引用
-  const ruleFormRef = ref<FormInstance>();
+  // 当前激活的标签页
+  const activeTab = ref("tenant");
 
-  // 表单数据
-  const formInline = reactive<TenantsCreateFormProps>({
-    tenantPersonal: {
-      id: props.formInline?.tenantPersonal?.id,
-      name: props.formInline?.tenantPersonal?.name || "",
-      gender: props.formInline?.tenantPersonal?.gender,
-      idType: props.formInline?.tenantPersonal?.idType ?? 0,
-      idNo: props.formInline?.tenantPersonal?.idNo || "",
-      phone: props.formInline?.tenantPersonal?.phone || "",
-      tags: props.formInline?.tenantPersonal?.tags || [],
-      remark: props.formInline?.tenantPersonal?.remark || "",
-      idCardBackList: props.formInline?.tenantPersonal?.idCardBackList || [],
-      idCardFrontList: props.formInline?.tenantPersonal?.idCardFrontList || [],
-      idCardInHandList: props.formInline?.tenantPersonal?.idCardInHandList || [],
-      otherImageList: props.formInline?.tenantPersonal?.otherImageList || []
-    },
-    tenantCompany: {
-      id: props.formInline?.tenantCompany?.id,
-      companyName: props.formInline?.tenantCompany?.companyName || "",
-      uscc: props.formInline?.tenantCompany?.uscc || "",
-      legalPerson: props.formInline?.tenantCompany?.legalPerson || "",
-      legalPersonIdType: props.formInline?.tenantCompany?.legalPersonIdType ?? 0,
-      legalPersonIdNo: props.formInline?.tenantCompany?.legalPersonIdNo || "",
-      contactName: props.formInline?.tenantCompany?.contactName || "",
-      contactPhone: props.formInline?.tenantCompany?.contactPhone || "",
-      registeredAddress: props.formInline?.tenantCompany?.registeredAddress || "",
-      businessLicenseUrls: props.formInline?.tenantCompany?.businessLicenseUrls || [],
-      tags: props.formInline?.tenantCompany?.tags || [],
-      remark: props.formInline?.tenantCompany?.remark || ""
-    },
-    tenantMateList: props.formInline?.tenantMateList ?? null,
-    // 确保 tenant 为 null 时不会抛出错误
-    tenant: props.formInline?.tenant || {
-      contractTemplateId: props.formInline?.tenant?.contractTemplateId || null,
-      roomIds: props.formInline?.tenant?.roomIds || [],
-      tenantType: props.formInline?.tenant?.tenantType ?? 0,
-      leaseDate: props.formInline?.tenant?.leaseDate || [],
-      leaseStart: props.formInline?.tenant?.leaseStart || new Date(),
-      leaseEnd: props.formInline?.tenant?.leaseEnd || new Date(),
-      checkDate: props.formInline?.tenant?.checkDate || [],
-      checkInTime: props.formInline?.tenant?.checkInTime || null, // 实际入住时间
-      checkOutTime: props.formInline?.tenant?.checkOutTime || null, // 实际搬离时间
-      contractNature: props.formInline?.tenant?.contractNature ?? 1,
-      depositMonths: props.formInline?.tenant?.depositMonths || 1,
-      paymentMonths: props.formInline?.tenant?.paymentMonths || 1,
-      rentDueType: props.formInline?.tenant?.rentDueType ?? 1,
-      rentDueDay: props.formInline?.tenant?.rentDueDay || 15,
-      rentDueOffsetDays: props.formInline?.tenant?.rentDueOffsetDays || 15,
-      firstBillDay: props.formInline?.tenant?.firstBillDay || 0,
-      rentPrice: props.formInline?.tenant?.rentPrice || 0,
-      deptId: props.formInline?.tenant?.deptId || null,
-      salesmanId: props.formInline?.tenant?.salesmanId || null,
-      dealChannel: props.formInline?.tenant?.dealChannel || null,
-      tenantSource: props.formInline?.tenant?.tenantSource || null,
-      remark: props.formInline?.tenant?.remark || ""
-    },
-    otherFees: props.formInline?.otherFees || []
-  });
-
-  // 验证规则
-  const rules = computed(() => {
-    if (formInline.tenant.tenantType === 0) {
-      return tenantFormRules(formInline);
-    } else {
-      return tenantCompanyFormRules(formInline);
-    }
-  });
-
-  // 选择的房源 ID 列表
-  const selectedRooms = ref<any[]>([]);
-
-  // 常量选项
-  const genderOptions = [...GENDER_OPTIONS];
-  const idTypeOptions = [...ID_TYPE_OPTIONS];
-  const tenantTypeOptions = [...TENANT_TYPE_OPTIONS];
-
-  // 计算首次支付总额（押金 + 首付）
-  function generateMonthsOptions(start, end) {
-    const monthsOptions = [];
-    for (let i = start; i <= end; i++) {
-      monthsOptions.push({
-        value: i,
-        label: i + "个月"
-      });
-    }
-    return monthsOptions;
-  }
-
-  // 使用提取的函数生成 depositMonthsOptions 和 paymentMonthsOptions
-  const depositMonthsOptions = computed(() => generateMonthsOptions(0, 12));
-  const paymentMonthsOptions = computed(() => generateMonthsOptions(1, 12));
-
-  // 暴露方法给父组件
-  const getRef = () => {
-    return ruleFormRef.value;
+  // 计算总面积
+  const getTotalArea = () => {
+    if (!props.formInline.roomList) return 0;
+    return props.formInline.roomList.reduce((sum, room) => sum + (room.area || 0), 0);
   };
 
-  const formatRoomSelectName = (item: any) => {
-    const rentalTypeName = getOptionByCode([...RENTAL_TYPE_OPTIONS], item.rentalType) || "";
-    if (item.rentalType === 1) {
-      return "【" + rentalTypeName.label + "】" + item.houseName;
-    } else {
-      return "【" + rentalTypeName.label + "】" + item.houseName + " -【" + item.roomNumber + "】";
-    }
+  // 获取证件类型名称
+  const getIdTypeName = (idType: number) => {
+    const option = ID_TYPE_OPTIONS.find(item => item.value === idType);
+    return option?.label || "未知";
   };
 
-  // 拼接户型、面积和朝向
-  const formatRoomSelectDescription = (item: any) => {
-    let description = "";
-    if (item.houseLayout) {
-      const { bedroom, livingRoom, kitchen, bathroom } = item.houseLayout;
-      description = `${bedroom || 0}室${livingRoom || 0}厅${kitchen || 0}厨${bathroom || 0}卫 `;
-    }
-    if (item.area) {
-      description += item.area + "m² ";
-    }
-    if (item.direction) {
-      description += item.direction;
-    }
-
-    if (item.price) {
-      description += " ｜ 价格：¥" + item.price + "元/月";
-    }
-
-    return description;
+  // 获取签约状态名称
+  const getStatusName = (status: number) => {
+    const option = TENANT_CONTRACT_SIGN_STATUS_OPTIONS.find(item => item.value === status);
+    return option?.label || "未知";
   };
 
-  const roomOptions = ref<any[]>([]);
-  const searchLoading = ref<boolean>(false);
-  const handleSearchRoom = (query: string) => {
-    searchLoading.value = true;
-    getRoomList({
-      keywords: query,
-      page: 1,
-      pageSize: 10
-    }).then(res => {
-      roomOptions.value =
-        res.data?.list.map(item => ({
-          label: formatRoomSelectName(item),
-          value: item.roomId,
-          description: formatRoomSelectDescription(item),
-          extra: item
-        })) || [];
-      searchLoading.value = false;
-    });
+  // 获取签约状态类型
+  const getStatusType = (status: number) => {
+    const typeMap: Record<number, string> = {
+      0: "info",
+      1: "warning",
+      2: "success",
+      3: "danger"
+    };
+    return typeMap[status] || "info";
   };
 
-  const handleRoomChange = (values: any[]) => {
-    let rentPrice = 0;
-    values.forEach(value => {
-      value.extra.price && (rentPrice += Number(value.extra.price));
-    });
-
-    formInline.tenant.rentPrice = rentPrice;
-  };
-
-  const leaseDateShortCut = [
-    {
-      text: "一个月",
-      value: () => {
-        const start = new Date();
-        const end = new Date(start);
-        end.setMonth(end.getMonth() + 1);
-        end.setDate(end.getDate() - 1);
-        return [start, end];
-      }
-    },
-    {
-      text: "三个月",
-      value: () => {
-        const start = new Date();
-        const end = new Date(start);
-        end.setMonth(end.getMonth() + 3);
-        end.setDate(end.getDate() - 1);
-        return [start, end];
-      }
-    },
-    {
-      text: "六个月",
-      value: () => {
-        const start = new Date();
-        const end = new Date(start);
-        end.setMonth(end.getMonth() + 6);
-        end.setDate(end.getDate() - 1);
-        return [start, end];
-      }
-    },
-    {
-      text: "十二个月",
-      value: () => {
-        const start = new Date();
-        const end = new Date(start);
-        end.setMonth(end.getMonth() + 12);
-        end.setDate(end.getDate() - 1);
-        return [start, end];
-      }
+  // 获取收租设置文本
+  const getRentDueTypeText = (type: number, day: number) => {
+    if (type === 1) {
+      return `提前${day}天收租`;
+    } else if (type === 2) {
+      return `每月${day}号收租`;
     }
-  ];
-
-  // 计算押金金额
-  const depositAmount = computed(() => {
-    const price = Number(formInline.tenant.rentPrice) || 0;
-    const months = formInline.tenant.depositMonths || 0;
-    return (price * months).toFixed(2);
-  });
-
-  // 计算首次支付总额（押金 + 首付）
-  const totalFirstPayment = computed(() => {
-    const price = Number(formInline.tenant.rentPrice) || 0;
-    const depositMonths = formInline.tenant.depositMonths || 0;
-    const paymentMonths = formInline.tenant.paymentMonths || 0;
-    const total = price * (depositMonths + paymentMonths);
-    return total > 0 ? total.toFixed(2) : "";
-  });
-
-  function handleDeptSelected(deptId: number) {
-    return;
-  }
-
-  const salesmanList = ref<any[]>([]);
-  const contractTemplateList = ref<any[]>([]);
-  onMounted(() => {
-    // 获取所有用户
-    getCompanyUserOptions().then(resp => {
-      salesmanList.value = resp.data;
-    });
-  });
-
-  // 获取租客的可用的合同模板
-  getMyAvailableContractTemplates({
-    contractType: 1
-  }).then(resp => {
-    if (resp.code == 0) {
-      contractTemplateList.value = resp.data;
-    }
-  });
-
-  // 修改按钮点击事件
-  const handleAddTenantMate = () => {
-    openTenantMateDialog("添加", formInline.tenantMateList, mates => {
-      // 将返回的同住人数据更新到formInline中
-      formInline.tenantMateList = mates;
-    });
+    return "未设置";
   };
 
-  defineExpose({
-    getRef,
-    formInline
-  });
+  // 获取签约类型名称
+  const getContractNatureName = (nature: number) => {
+    const option = TENANT_CONTRACT_NATURE_OPTIONS.find(item => item.value === nature);
+    return option?.label || "未知";
+  };
+
+  // 获取成交渠道名称
+  const getDealChannelName = (channelId: number) => {
+    return channelId ? `渠道${channelId}` : "未知";
+  };
 </script>
 
 <style scoped lang="scss">
-  .house-selector-info {
-  }
+  .tenant-detail-view {
+    margin-bottom: 20px;
+    //background: #f5f7fa;
 
-  :deep(.el-form-item__label) {
-    font-weight: 500;
-  }
+    // 房源信息展示
+    .room-info-section {
+      margin-bottom: 20px;
+      background: #fff;
+      border-radius: 4px;
+      overflow: hidden;
 
-  .rent-info-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-  }
+      .room-header {
+        display: flex;
+        align-items: center;
 
-  .payment-method {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+        .header-icon {
+          font-size: 16px;
+          color: #000000;
+          margin-right: 10px;
+        }
 
-    .label-text {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--el-text-color-regular);
-      min-width: 24px;
-    }
-
-    .deposit-select,
-    .payment-select {
-      flex: 1;
-      min-width: 100px;
-
-      :deep(.el-input__inner) {
-        text-align: center;
-      }
-    }
-  }
-
-  .rent-input {
-    width: 100%;
-
-    .rent-price-input {
-      width: 100%;
-
-      :deep(.el-input__inner) {
-        font-size: 16px;
-        font-weight: 500;
+        .header-title {
+          font-size: 14px;
+          color: #000000;
+          letter-spacing: 0.5px;
+        }
       }
 
-      .currency-symbol {
-        color: var(--el-text-color-regular);
-        font-weight: 500;
+      .room-content {
+        .room-tag {
+          padding: 10px 16px;
+          font-size: 14px;
+          border: 1px solid #d9ecff;
+          background: #ecf5ff;
+
+          .tag-icon {
+            margin-right: 6px;
+            font-size: 16px;
+          }
+
+          .room-info {
+            font-weight: 500;
+            color: #409eff;
+          }
+
+          .room-area {
+            color: #909399;
+            font-size: 13px;
+            margin-left: 4px;
+          }
+
+          .el-divider {
+            margin: 0 8px;
+          }
+        }
+      }
+
+      .room-stats {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+
+        .stat-item {
+          display: flex;
+          align-items: baseline;
+          gap: 4px;
+
+          .stat-label {
+            color: #606266;
+            font-size: 14px;
+          }
+
+          .stat-value {
+            color: #303133;
+            font-size: 18px;
+            font-weight: 600;
+
+            &.primary {
+              color: #f56c6c;
+            }
+          }
+
+          .stat-unit {
+            color: #909399;
+            font-size: 13px;
+          }
+        }
+
+        .el-divider {
+          height: 20px;
+          margin: 0 12px;
+        }
       }
     }
-  }
 
-  .rent-summary {
-    padding: 5px;
-    margin-left: 10px;
-    background: var(--el-fill-color-light);
-    border-radius: 4px;
+    // 标签页卡片
+    .tabs-card {
+      :deep(.el-card__body) {
+        padding: 0;
+      }
+    }
 
-    .amount {
-      color: var(--el-color-primary);
-      font-weight: 600;
-      font-size: 14px;
+    // 现代化标签页样式（参考截图）
+    :deep(.modern-tabs) {
+      .el-tabs__header {
+        margin: 0;
+        border-bottom: 2px solid #e4e7ed;
+        background: #fff;
+      }
+
+      .el-tabs__nav-wrap {
+        padding: 0 20px;
+      }
+
+      .el-tabs__item {
+        height: 50px;
+        line-height: 50px;
+        padding: 0 24px;
+        font-size: 14px;
+        color: #606266;
+        border: none;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.3s;
+
+        .tab-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .el-icon {
+            font-size: 17px;
+          }
+        }
+
+        &:hover {
+          color: #409eff;
+          background: #f5f7fa;
+        }
+
+        &.is-active {
+          color: #409eff;
+          border-bottom-color: #409eff;
+          font-weight: 500;
+          background: #fff;
+        }
+      }
+
+      .el-tabs__active-bar {
+        display: none;
+      }
+
+      .el-tabs__content {
+        padding: 0;
+      }
+    }
+
+    // Tab 内容区域
+    .tab-content {
+      padding: 24px;
+      min-height: 500px;
+    }
+
+    // 信息区块
+    .info-section {
+      margin-bottom: 28px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-header {
+        margin-bottom: 16px;
+
+        .section-title {
+          display: flex;
+          align-items: center;
+          font-size: 15px;
+          font-weight: 600;
+          color: #303133;
+
+          .title-icon {
+            width: 4px;
+            height: 16px;
+            background: #409eff;
+            border-radius: 2px;
+            margin-right: 10px;
+          }
+
+          .title-text {
+            letter-spacing: 0.5px;
+          }
+        }
+      }
+
+      // 描述列表样式
+      :deep(.info-descriptions) {
+        .el-descriptions__label {
+          width: 140px;
+          font-weight: 500;
+          background: #fafafa;
+          color: #606266;
+          text-align: right;
+          padding-right: 16px;
+        }
+
+        .el-descriptions__content {
+          color: #303133;
+          padding-left: 16px;
+
+          .text-value {
+            color: #303133;
+          }
+
+          .rent-price {
+            color: #f56c6c;
+            font-size: 18px;
+            font-weight: 600;
+          }
+
+          .rent-unit {
+            color: #909399;
+            font-size: 13px;
+            margin-left: 4px;
+          }
+        }
+
+        .el-descriptions__cell {
+          padding: 12px 16px;
+        }
+      }
+
+      // 表格样式
+      .mate-table,
+      .fees-table {
+        :deep(.el-table__header) {
+          th {
+            background: #fafafa;
+            font-weight: 600;
+            color: #303133;
+          }
+        }
+
+        .fee-amount {
+          color: #f56c6c;
+          font-weight: 600;
+          font-size: 15px;
+        }
+      }
+    }
+
+    // 操作按钮区域
+    .action-bar {
+      margin-top: 24px;
+      text-align: center;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 4px;
+
+      .el-button {
+        min-width: 120px;
+      }
+    }
+
+    // 空状态优化
+    :deep(.el-empty) {
+      padding: 60px 0;
+
+      .el-empty__image {
+        width: 180px;
+      }
+
+      .el-empty__description {
+        margin-top: 16px;
+        font-size: 14px;
+        color: #909399;
+      }
     }
   }
 
   // 响应式设计
   @media (max-width: 768px) {
-    .payment-method {
-      flex-wrap: wrap;
+    .tenant-detail-view {
+      padding: 12px;
 
-      .deposit-select,
-      .payment-select {
-        min-width: 80px;
+      .room-info-card {
+        margin-bottom: 12px;
       }
-    }
-  }
 
-  .rent-due-day-input {
-    :deep(.el-input__inner) {
-      text-align: center;
+      .tab-content {
+        padding: 16px;
+      }
+
+      :deep(.modern-tabs) {
+        .el-tabs__item {
+          padding: 0 16px;
+          font-size: 13px;
+        }
+      }
+
+      :deep(.info-descriptions) {
+        .el-descriptions__label {
+          width: 100px;
+        }
+      }
     }
   }
 </style>
