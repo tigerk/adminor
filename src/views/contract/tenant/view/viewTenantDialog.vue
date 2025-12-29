@@ -70,7 +70,7 @@
     </div>
     <div class="tabs-wrapper">
       <div class="tabs-action-container">
-        <el-button type="primary" size="small" :icon="Download" @click="handleDownloadContract">导出合同</el-button>
+        <el-button type="primary" size="small" :icon="Edit" @click="handleDownloadContract">修改租客</el-button>
       </div>
       <!-- 标签页内容 -->
       <el-tabs v-model="activeTab" class="modern-tabs">
@@ -389,7 +389,7 @@
     TENANT_SIGN_STATUS_OPTIONS,
     TENANT_STATUS_OPTIONS
   } from "@/constants";
-  import { Document, Download, House, Money, User } from "@element-plus/icons-vue";
+  import { Document, Download, House, Money, User, Edit } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadTenantContract, generateTenantContract } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
