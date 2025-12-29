@@ -39,7 +39,7 @@ export const getTenantDetail = (data?: object) => {
 
 /** 生成租客合同 */
 export const generateTenantContract = (data?: object) => {
-  return http.request<ApiResponse<Blob>>("post", baseUrlApi("contract/tenant/contract/generate"), { data });
+  return http.request<ApiResponse<string>>("post", baseUrlApi("contract/tenant/contract/generate"), { data });
 };
 
 /** 下载租客合同 */

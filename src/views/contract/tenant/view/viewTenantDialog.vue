@@ -315,7 +315,7 @@
               <div class="action-left">
                 <el-space :size="12">
                   <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
-                  <el-button :icon="Document">重新生成</el-button>
+                  <el-button type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
                 </el-space>
               </div>
               <div class="action-right">
@@ -348,20 +348,20 @@
             </div>
 
             <!-- 合同内容预览区域 -->
-            <div v-if="formInline.tenantContract.contractContent" class="contract-content-section">
+            <div v-if="contractContent" class="contract-content-section">
               <div class="contract-header">
                 <span class="contract-title">合同内容</span>
                 <el-tag type="info" size="small">预览模式</el-tag>
               </div>
               <div class="contract-preview-wrapper">
-                <div class="contract-preview" v-html="formInline.tenantContract.contractContent" />
+                <div class="contract-preview" v-html="contractContent" />
               </div>
             </div>
 
             <!-- 合同内容为空时 -->
             <div v-else class="no-content">
               <el-empty description="合同内容为空" :image-size="120">
-                <el-button type="primary" :icon="Document">生成合同内容</el-button>
+                <el-button type="primary" :icon="Document" @click="handleGenerateContract">生成合同内容</el-button>
               </el-empty>
             </div>
           </div>
@@ -377,20 +377,15 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from "vue";
-  import type { TenantDetailProps } from "@/types";
-  import {
-    getOptionByCode,
-    ID_TYPE_OPTIONS,
-    PAYMENT_METHOD_OPTIONS,
-    PRICE_METHOD_OPTIONS,
-    TENANT_CONTRACT_NATURE_OPTIONS,
-    TENANT_SIGN_STATUS_OPTIONS,
-    TENANT_STATUS_OPTIONS
-  } from "@/constants";
+  import { h, ref } from "vue";
+  import { TenantDetailProps } from "@/types";
+  import { ID_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS } from "@/constants";
   import { Document, Download, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
-  import { downloadTenantContract } from "@/api/contract/tenant";
+  import { downloadTenantContract, generateTenantContract } from "@/api/contract/tenant";
+  import { addDialog } from "@/components/ReDialog";
+  import { deviceDetection } from "@/store/utils";
+  import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
 
   interface FormProps {
     formInline: TenantDetailProps;
@@ -399,6 +394,8 @@
   const tenantStatusOptions = [...TENANT_STATUS_OPTIONS];
 
   const props = defineProps<FormProps>();
+
+  const contractContent = ref(props.formInline.tenantContract?.contractContent || "");
 
   // 当前激活的标签页
   const activeTab = ref("tenant");
@@ -469,6 +466,47 @@
 
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+    });
+  };
+
+  // 重新生成合同
+  const handleGenerateContract = () => {
+    const formRef = ref();
+
+    addDialog({
+      title: `重新生成合同，请选择合同模板`,
+      props: {
+        formInline: {
+          tenantId: props.formInline.tenantContract.tenantId
+        }
+      },
+      top: "8%",
+      width: "400px",
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, tenantId: props.formInline.tenantContract.tenantId }),
+      beforeSure: (done, { options }) => {
+        const selectedTemplate = formRef.value.getSelectedTemplate();
+
+        if (!selectedTemplate) {
+          message("请选择合同模板", { type: "warning" });
+          return;
+        }
+
+        generateTenantContract({
+          tenantId: props.formInline.tenantContract.tenantId,
+          contractTemplateId: selectedTemplate
+        }).then(resp => {
+          if (resp.code == 0) {
+            console.log(resp.data);
+            contractContent.value = resp.data;
+            message("合同生成成功", { type: "success" });
+            done();
+          }
+        });
+      }
     });
   };
 </script>
