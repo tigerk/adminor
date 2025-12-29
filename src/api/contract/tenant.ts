@@ -36,3 +36,13 @@ export const updateTenantStatus = (data?: object) => {
 export const getTenantDetail = (data?: object) => {
   return http.request<ApiResponse<TenantDetailProps>>("post", baseUrlApi("contract/tenant/detail"), { data });
 };
+
+/** 生成租客合同 */
+export const generateTenantContract = (data?: object) => {
+  return http.request<ApiResponse<Blob>>("post", baseUrlApi("contract/tenant/contract/generate"), { data });
+};
+
+/** 下载租客合同 */
+export const downloadTenantContract = (data?: object) => {
+  return http.request<Blob>("post", baseUrlApi("contract/tenant/contract/download"), { data }, { responseType: "blob" });
+};

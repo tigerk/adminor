@@ -13,7 +13,7 @@
               <el-tag v-for="room in formInline.roomList" :key="room.roomId" type="primary" size="large" effect="light" class="room-tag">
                 <span class="room-info">{{ room.communityName }} {{ room.doorNumber }}-{{ room.roomNumber }}</span>
                 <el-divider direction="vertical" />
-                <span class="room-area">{{ room.area }}m²</span>
+                <span class="room-area">{{ room.price ? room.price + "元/月" : "未设置" }}</span>
               </el-tag>
               <el-tag type="primary" size="large" effect="light" class="room-tag">
                 <span class="stat-label">房间数量：共</span>
@@ -157,6 +157,35 @@
                 </el-space>
               </el-descriptions-item>
             </el-descriptions>
+            <div class="info-section">
+              <div class="section-header mt-3">
+                <div class="section-title">
+                  <span class="title-icon" />
+                  <span class="title-text">其他费用</span>
+                </div>
+              </div>
+              <el-table v-if="formInline.otherFees && formInline.otherFees.length > 0" :data="formInline.otherFees" border stripe class="fees-table">
+                <el-table-column type="index" label="序号" width="70" align="center" />
+                <el-table-column prop="name" label="费用名称" align="center" min-width="150" />
+                <el-table-column prop="paymentMethod" label="付款方式" align="center" min-width="120">
+                  <template #default="{ row }">
+                    <span class="payment-method">{{ getOptionByCode([...PAYMENT_METHOD_OPTIONS], row.paymentMethod).label }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="priceMethod" label="计费方式" align="center" min-width="120">
+                  <template #default="{ row }">
+                    <span class="price-method">{{ getOptionByCode([...PRICE_METHOD_OPTIONS], row.priceMethod).label }}</span>
+                  </template>
+                </el-table-column>
+
+                <el-table-column prop="priceInput" label="输入值" align="center" min-width="200" show-overflow-tooltip>
+                  <template #default="{ row }">
+                    <span class="price-method">{{ row.priceInput }}</span>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <el-empty v-else description="暂无其他费用" :image-size="150" />
+            </div>
           </div>
 
           <!-- 负责人信息 -->
@@ -343,39 +372,6 @@
           </el-empty>
         </div>
       </el-tab-pane>
-
-      <!-- 其他费用 Tab -->
-      <el-tab-pane name="fees">
-        <template #label>
-          <el-space class="tab-label">
-            <el-icon><Coin /></el-icon>
-            <span>其他费用</span>
-          </el-space>
-        </template>
-        <div class="tab-content">
-          <el-table v-if="formInline.otherFees && formInline.otherFees.length > 0" :data="formInline.otherFees" border stripe class="fees-table">
-            <el-table-column type="index" label="序号" width="70" align="center" />
-            <el-table-column prop="name" label="费用名称" align="center" min-width="150" />
-            <el-table-column prop="paymentMethod" label="付款方式" align="center" min-width="120">
-              <template #default="{ row }">
-                <span class="payment-method">{{ getOptionByCode([...PAYMENT_METHOD_OPTIONS], row.paymentMethod).label }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="priceMethod" label="计费方式" align="center" min-width="120">
-              <template #default="{ row }">
-                <span class="price-method">{{ getOptionByCode([...PRICE_METHOD_OPTIONS], row.priceMethod).label }}</span>
-              </template>
-            </el-table-column>
-
-            <el-table-column prop="priceInput" label="输入值" align="center" min-width="200" show-overflow-tooltip>
-              <template #default="{ row }">
-                <span class="price-method">{{ row.priceInput }}</span>
-              </template>
-            </el-table-column>
-          </el-table>
-          <el-empty v-else description="暂无其他费用" :image-size="150" />
-        </div>
-      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -383,17 +379,10 @@
 <script setup lang="ts">
   import { ref } from "vue";
   import type { TenantDetailProps } from "@/types";
-  import {
-    getOptionByCode,
-    ID_TYPE_OPTIONS,
-    PAYMENT_METHOD_OPTIONS,
-    PRICE_METHOD_OPTIONS,
-    TENANT_CONTRACT_NATURE_OPTIONS,
-    TENANT_SIGN_STATUS_OPTIONS,
-    TENANT_STATUS_OPTIONS
-  } from "@/constants";
-  import { Coin, Document, Download, House, Money, User } from "@element-plus/icons-vue";
+  import { ID_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS } from "@/constants";
+  import { Document, Download, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
+  import { downloadTenantContract } from "@/api/contract/tenant";
 
   interface FormProps {
     formInline: TenantDetailProps;
@@ -458,6 +447,21 @@
       return;
     }
     // 调用后端接口下载 PDF 合同。
+    downloadTenantContract({
+      tenantId: props.formInline.tenantContract.tenantId
+    }).then(res => {
+      const blob = new Blob([res], { type: "application/pdf" });
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `租客合同_${props.formInline.tenantContract.tenantId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    });
   };
 </script>
 
