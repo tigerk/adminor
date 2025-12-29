@@ -151,10 +151,13 @@ export const TENANT_TYPE_OPTIONS = [
 
 /**
  * 租客状态选项
+ * 租客状态：0=待签字，1=在租中，2=已退租，3=已作废
  */
 export const TENANT_STATUS_OPTIONS = [
-  { label: "停用", value: 0 },
-  { label: "启用", value: 1 }
+  { label: "待签字", value: 0 },
+  { label: "在租中", value: 1 },
+  { label: "已退租", value: 2 },
+  { label: "已作废", value: -1 }
 ] as const;
 
 // 签约类型：1=新签，2=续签，3=转租，4=换房
@@ -166,11 +169,9 @@ export const TENANT_CONTRACT_NATURE_OPTIONS = [
 ] as const;
 
 // 合同状态：0=待签字，1=在租中，2=已退租，3=已作废
-export const TENANT_CONTRACT_SIGN_STATUS_OPTIONS = [
+export const TENANT_SIGN_STATUS_OPTIONS = [
   { label: "待签字", value: 0 },
-  { label: "在租中", value: 1 },
-  { label: "已退租", value: 2 },
-  { label: "已作废", value: -1 }
+  { label: "已签字", value: 1 }
 ] as const;
 
 // 收租类型：1=提前，2=固定，3=延后

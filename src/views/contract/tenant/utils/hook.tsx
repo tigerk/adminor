@@ -5,7 +5,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { createTenant, deleteTenant, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
-import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_CONTRACT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { TenantMateProps, TenantPersonalProps, TenantQueryFormProps, TenantRowProps, TenantsCreateFormProps } from "@/types";
@@ -46,7 +46,7 @@ function useTenant() {
   const { switchStyle } = usePublicHooks();
 
   const mutableTenantTypeOptions = [...TENANT_TYPE_OPTIONS] as any[];
-  const tenantContractSignStatusOptions = [...TENANT_CONTRACT_SIGN_STATUS_OPTIONS] as any[];
+  const tenantContractSignStatusOptions = [...TENANT_SIGN_STATUS_OPTIONS] as any[];
   const mutableIdTypeOptions = [...ID_TYPE_OPTIONS] as any[];
   const mutableGenderOptions = [...GENDER_OPTIONS] as any[];
 
