@@ -201,7 +201,9 @@ export interface TenantDetailProps {
   checkOutStatus?: number; // 租户退租状态：0=未退租、1=正常退、2=换房退、3=违约退、4=作废
   status?: number; // 合同状态：0=未生效，1=生效中，2=已退租，3=已逾期，4=已作废
   tenantSource?: number;
+  tenantSourceName?: string;
   dealChannel?: number;
+  dealChannelName?: string;
   remark?: string; // 合同备注
   createTime?: Date; // 创建时间
 }

@@ -84,7 +84,7 @@
         <div class="tab-content">
           <!-- 基本信息 -->
           <div class="info-section mt-4">
-            <el-descriptions title="基本信息" :column="5" class="info-descriptions" size="default">
+            <el-descriptions title="基本信息" :column="3" class="info-descriptions" size="default">
               <template #title>
                 <el-space>
                   <span>基本信息</span>
@@ -127,12 +127,12 @@
 
           <!-- 租约信息 -->
           <div class="info-section">
-            <el-descriptions title="租约信息" :column="4" class="info-descriptions" size="default">
+            <el-descriptions title="租约信息" :column="3" class="info-descriptions" size="default">
               <el-descriptions-item label="合同周期" label-align="right">
                 <el-space :size="8">
-                  <el-tag type="info">{{ formInline.leaseStart }}</el-tag>
+                  <el-tag type="primary">{{ formInline.leaseStart }}</el-tag>
                   <span>至</span>
-                  <el-tag type="info">{{ formInline.leaseEnd }}</el-tag>
+                  <el-tag type="primary">{{ formInline.leaseEnd }}</el-tag>
                 </el-space>
               </el-descriptions-item>
               <el-descriptions-item label="月租金" label-align="right">
@@ -159,9 +159,11 @@
             </el-descriptions>
           </div>
 
+          <!-- 同住人信息 -->
+
           <!-- 负责人信息 -->
           <div class="info-section">
-            <el-descriptions title="负责人信息" :column="4" class="info-descriptions" size="default">
+            <el-descriptions title="负责人信息" :column="3" class="info-descriptions" size="default">
               <el-descriptions-item label="签约部门" label-align="right">
                 <span class="text-value">{{ formInline.deptName }}</span>
               </el-descriptions-item>
@@ -169,7 +171,7 @@
                 <span class="text-value">{{ formInline.salesmanName }}</span>
               </el-descriptions-item>
               <el-descriptions-item label="成交渠道" label-align="right">
-                <span class="text-value">{{ getDealChannelName(formInline.dealChannel) }}</span>
+                <span class="text-value">{{ formInline.dealChannelName }}</span>
               </el-descriptions-item>
             </el-descriptions>
           </div>
@@ -330,11 +332,6 @@
   const getContractNatureName = (nature: number) => {
     const option = TENANT_CONTRACT_NATURE_OPTIONS.find(item => item.value === nature);
     return option?.label || "未知";
-  };
-
-  // 获取成交渠道名称
-  const getDealChannelName = (channelId: number) => {
-    return channelId ? `渠道${channelId}` : "未知";
   };
 </script>
 
