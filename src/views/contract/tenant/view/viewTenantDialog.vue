@@ -379,7 +379,15 @@
 <script setup lang="ts">
   import { ref } from "vue";
   import type { TenantDetailProps } from "@/types";
-  import { ID_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS } from "@/constants";
+  import {
+    getOptionByCode,
+    ID_TYPE_OPTIONS,
+    PAYMENT_METHOD_OPTIONS,
+    PRICE_METHOD_OPTIONS,
+    TENANT_CONTRACT_NATURE_OPTIONS,
+    TENANT_SIGN_STATUS_OPTIONS,
+    TENANT_STATUS_OPTIONS
+  } from "@/constants";
   import { Document, Download, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadTenantContract } from "@/api/contract/tenant";
