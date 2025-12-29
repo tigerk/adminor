@@ -315,7 +315,7 @@
               <div class="action-left">
                 <el-space :size="12">
                   <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
-                  <el-button type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
+                  <el-button :disabled="formInline.tenantContract.signStatus !== 0" type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
                 </el-space>
               </div>
               <div class="action-right">
@@ -337,11 +337,10 @@
                 </el-space>
               </div>
             </div>
-
             <!-- 合同信息摘要 -->
-            <div v-if="formInline.tenantContract.remark" class="contract-info-summary">
-              <el-descriptions :column="1" border size="default">
-                <el-descriptions-item label="备注" label-align="right">
+            <div v-if="formInline.tenantContract.remark" class="mb-2">
+              <el-descriptions :column="1" size="default">
+                <el-descriptions-item label="合同备注" label-align="right">
                   <span class="text-value">{{ formInline.tenantContract.remark }}</span>
                 </el-descriptions-item>
               </el-descriptions>
@@ -748,7 +747,7 @@
   .contract-section {
     .contract-action-bar {
       margin-bottom: 20px;
-      padding: 8px 10px;
+      padding: 8px 5px;
       background: #f8f9fa;
       border-radius: 4px;
       display: flex;
@@ -781,10 +780,6 @@
           }
         }
       }
-    }
-
-    .contract-info-summary {
-      margin-bottom: 24px;
     }
 
     .contract-content-section {
