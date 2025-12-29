@@ -259,7 +259,7 @@
                 <el-tag v-else type="warning">部分支付</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="remark" label="备注" align="center" min-width="150" show-overflow-tooltip />
+            <el-table-column prop="remark" label="备注" align="center" min-width="250" show-overflow-tooltip />
           </el-table>
           <el-empty v-else description="暂无账单信息" :image-size="180">
             <el-button type="primary" size="default">生成账单</el-button>
@@ -279,21 +279,68 @@
           </el-space>
         </template>
         <div class="tab-content">
-          <div class="info-section">
-            <el-descriptions :column="2" border class="info-descriptions" size="default">
-              <el-descriptions-item label="合同模板ID" label-align="right">
-                <span class="text-value">{{ formInline.contractTemplateId || "未设置" }}</span>
-              </el-descriptions-item>
-              <el-descriptions-item label="合同状态" label-align="right">
-                <el-tag type="warning">待生成</el-tag>
-              </el-descriptions-item>
-            </el-descriptions>
+          <!-- 有合同信息时显示 -->
+          <div v-if="formInline.tenantContract" class="contract-section">
+            <!-- 操作按钮栏 -->
+            <div class="contract-action-bar">
+              <div class="action-left">
+                <el-space :size="12">
+                  <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
+                  <el-button :icon="Document">重新生成</el-button>
+                </el-space>
+              </div>
+              <div class="action-right">
+                <el-space :size="16" alignment="flex-end">
+                  <div class="info-item">
+                    <span class="info-label">合同模板：</span>
+                    <span class="info-value">{{ formInline.tenantContract.contractTemplateName || "未设置" }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">签约状态：</span>
+                    <el-tag :type="formInline.tenantContract.signStatus === 0 ? 'danger' : 'success'" size="small">
+                      {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === formInline.tenantContract.signStatus)?.label || "未知" }}
+                    </el-tag>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">创建时间：</span>
+                    <span class="info-value">{{ formInline.createTime }}</span>
+                  </div>
+                </el-space>
+              </div>
+            </div>
+
+            <!-- 合同信息摘要 -->
+            <div v-if="formInline.tenantContract.remark" class="contract-info-summary">
+              <el-descriptions :column="1" border size="default">
+                <el-descriptions-item label="备注" label-align="right">
+                  <span class="text-value">{{ formInline.tenantContract.remark }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+
+            <!-- 合同内容预览区域 -->
+            <div v-if="formInline.tenantContract.contractContent" class="contract-content-section">
+              <div class="contract-header">
+                <span class="contract-title">合同内容</span>
+                <el-tag type="info" size="small">预览模式</el-tag>
+              </div>
+              <div class="contract-preview-wrapper">
+                <div class="contract-preview" v-html="formInline.tenantContract.contractContent" />
+              </div>
+            </div>
+
+            <!-- 合同内容为空时 -->
+            <div v-else class="no-content">
+              <el-empty description="合同内容为空" :image-size="120">
+                <el-button type="primary" :icon="Document">生成合同内容</el-button>
+              </el-empty>
+            </div>
           </div>
 
-          <div class="action-bar">
+          <!-- 没有合同信息时显示 -->
+          <el-empty v-else description="暂无合同信息" :image-size="150">
             <el-button type="primary" :icon="Document">生成合同</el-button>
-            <el-button type="success" :icon="View">预览合同</el-button>
-          </div>
+          </el-empty>
         </div>
       </el-tab-pane>
 
@@ -308,14 +355,23 @@
         <div class="tab-content">
           <el-table v-if="formInline.otherFees && formInline.otherFees.length > 0" :data="formInline.otherFees" border stripe class="fees-table">
             <el-table-column type="index" label="序号" width="70" align="center" />
-            <el-table-column prop="feeName" label="费用名称" align="center" min-width="150" />
-            <el-table-column prop="feeAmount" label="费用金额" align="center" min-width="120">
+            <el-table-column prop="name" label="费用名称" align="center" min-width="150" />
+            <el-table-column prop="paymentMethod" label="付款方式" align="center" min-width="120">
               <template #default="{ row }">
-                <span class="fee-amount">¥{{ row.feeAmount }}</span>
+                <span class="payment-method">{{ getOptionByCode([...PAYMENT_METHOD_OPTIONS], row.paymentMethod).label }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="feeType" label="计费方式" align="center" min-width="120" />
-            <el-table-column prop="remark" label="备注" align="center" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="priceMethod" label="计费方式" align="center" min-width="120">
+              <template #default="{ row }">
+                <span class="price-method">{{ getOptionByCode([...PRICE_METHOD_OPTIONS], row.priceMethod).label }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="priceInput" label="输入值" align="center" min-width="200" show-overflow-tooltip>
+              <template #default="{ row }">
+                <span class="price-method">{{ row.priceInput }}</span>
+              </template>
+            </el-table-column>
           </el-table>
           <el-empty v-else description="暂无其他费用" :image-size="150" />
         </div>
@@ -327,8 +383,17 @@
 <script setup lang="ts">
   import { ref } from "vue";
   import type { TenantDetailProps } from "@/types";
-  import { ID_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS } from "@/constants";
-  import { Coin, Document, House, Money, User, View } from "@element-plus/icons-vue";
+  import {
+    getOptionByCode,
+    ID_TYPE_OPTIONS,
+    PAYMENT_METHOD_OPTIONS,
+    PRICE_METHOD_OPTIONS,
+    TENANT_CONTRACT_NATURE_OPTIONS,
+    TENANT_SIGN_STATUS_OPTIONS,
+    TENANT_STATUS_OPTIONS
+  } from "@/constants";
+  import { Coin, Document, Download, House, Money, User } from "@element-plus/icons-vue";
+  import { message } from "@/utils/message";
 
   interface FormProps {
     formInline: TenantDetailProps;
@@ -384,6 +449,15 @@
   const getContractNatureName = (nature: number) => {
     const option = TENANT_CONTRACT_NATURE_OPTIONS.find(item => item.value === nature);
     return option?.label || "未知";
+  };
+
+  // 下载合同
+  const handleDownloadContract = () => {
+    if (!props.formInline.tenantContract?.contractContent) {
+      message("合同内容为空，无法下载", { type: "warning" });
+      return;
+    }
+    // 调用后端接口下载 PDF 合同。
   };
 </script>
 
@@ -610,5 +684,160 @@
         }
       }
     }
+  }
+
+  // 合同部分样式
+  .contract-section {
+    .contract-action-bar {
+      margin-bottom: 20px;
+      padding: 8px 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .action-left {
+        flex: 0 0 auto;
+      }
+
+      .action-right {
+        flex: 0 0 auto;
+        text-align: right;
+
+        .info-item {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          font-size: 14px;
+
+          .info-label {
+            color: #909399;
+            margin-right: 8px;
+            font-weight: 500;
+          }
+
+          .info-value {
+            color: #606266;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+
+    .contract-info-summary {
+      margin-bottom: 24px;
+    }
+
+    .contract-content-section {
+      .contract-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e4e7ed;
+
+        .contract-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #303133;
+        }
+      }
+
+      .contract-preview-wrapper {
+        background: #fff;
+        border: 1px solid #e4e7ed;
+        border-radius: 4px;
+        overflow: hidden;
+
+        .contract-preview {
+          overflow-y: auto;
+          padding: 30px;
+          line-height: 1.8;
+
+          /* 自定义滚动条 */
+          &::-webkit-scrollbar {
+            width: 8px;
+          }
+
+          &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+          }
+
+          &::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+
+            &:hover {
+              background: #a8a8a8;
+            }
+          }
+
+          :deep(h1),
+          :deep(h2),
+          :deep(h3),
+          :deep(h4),
+          :deep(h5),
+          :deep(h6) {
+            margin-top: 20px;
+            margin-bottom: 12px;
+            color: #303133;
+            font-weight: 600;
+          }
+
+          :deep(h3) {
+            font-size: 18px;
+            text-align: center;
+          }
+
+          :deep(p) {
+            margin-bottom: 12px;
+            text-indent: 2em;
+            color: #606266;
+          }
+
+          :deep(table) {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+
+            th,
+            td {
+              border: 1px solid #dcdfe6;
+              padding: 8px 12px;
+              text-align: left;
+            }
+
+            th {
+              background: #f5f7fa;
+              font-weight: 600;
+              color: #303133;
+            }
+          }
+
+          :deep(strong) {
+            color: #303133;
+            font-weight: 600;
+          }
+
+          :deep(code) {
+            background: #f5f7fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "Courier New", monospace;
+          }
+        }
+      }
+    }
+
+    .no-content {
+      padding: 40px 0;
+    }
+  }
+
+  .text-value {
+    color: #606266;
   }
 </style>
