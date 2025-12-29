@@ -204,10 +204,64 @@
           <el-space class="tab-label">
             <el-icon><Money /></el-icon>
             <span>账单信息</span>
+            <el-tag type="info" size="default">{{ formInline.tenantBillList?.length || 0 }}条</el-tag>
           </el-space>
         </template>
         <div class="tab-content">
-          <el-empty description="暂无账单信息" :image-size="180">
+          <el-table v-if="formInline.tenantBillList && formInline.tenantBillList.length > 0" :data="formInline.tenantBillList" border stripe class="bill-table">
+            <el-table-column type="index" label="序号" width="70" align="center" />
+            <el-table-column prop="sortOrder" label="期数" align="center" width="80">
+              <template #default="{ row }">第{{ row.sortOrder }}期</template>
+            </el-table-column>
+            <el-table-column prop="dueDate" label="应收日期" align="center" width="110">
+              <template #default="{ row }">{{ row.dueDate?.substring(0, 10) }}</template>
+            </el-table-column>
+            <el-table-column prop="billType" label="账单类型" align="center" width="100">
+              <template #default="{ row }">
+                <el-tag v-if="row.billType === 1" type="success">租金</el-tag>
+                <el-tag v-else-if="row.billType === 2" type="warning">押金</el-tag>
+                <el-tag v-else type="info">其他费用</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="rentPeriodStart" label="账期开始" align="center" width="110">
+              <template #default="{ row }">{{ row.rentPeriodStart?.substring(0, 10) }}</template>
+            </el-table-column>
+            <el-table-column prop="rentPeriodEnd" label="账期结束" align="center" width="110">
+              <template #default="{ row }">{{ row.rentPeriodEnd?.substring(0, 10) }}</template>
+            </el-table-column>
+            <el-table-column prop="rentalAmount" label="租金" align="center" width="100">
+              <template #default="{ row }">
+                <span v-if="row.rentalAmount > 0" class="amount-text">¥{{ row.rentalAmount }}</span>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="depositAmount" label="押金" align="center" width="100">
+              <template #default="{ row }">
+                <span v-if="row.depositAmount > 0" class="amount-text">¥{{ row.depositAmount }}</span>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="otherFeeAmount" label="其他费用" align="center" width="100">
+              <template #default="{ row }">
+                <span v-if="row.otherFeeAmount > 0" class="amount-text">¥{{ row.otherFeeAmount }}</span>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="totalAmount" label="应收总额" align="center" width="120">
+              <template #default="{ row }">
+                <span class="total-amount">¥{{ row.totalAmount }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="payStatus" label="支付状态" align="center" width="100">
+              <template #default="{ row }">
+                <el-tag v-if="row.payStatus === 0" type="danger">未支付</el-tag>
+                <el-tag v-else-if="row.payStatus === 1" type="success">已支付</el-tag>
+                <el-tag v-else type="warning">部分支付</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="remark" label="备注" align="center" min-width="150" show-overflow-tooltip />
+          </el-table>
+          <el-empty v-else description="暂无账单信息" :image-size="180">
             <el-button type="primary" size="default">生成账单</el-button>
           </el-empty>
         </div>

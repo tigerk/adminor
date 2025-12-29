@@ -178,6 +178,7 @@ export interface TenantDetailProps {
   roomList: RoomItemProps[];
   otherFees: OtherFeeProps[];
   tenantContract: TenantContractProps;
+  tenantBillList?: TenantBillListProps[];
   rentPrice: number; // 租金价格
   depositMonths: number; // 押金月数
   paymentMonths: number; // 支付周期（月）
@@ -206,4 +207,49 @@ export interface TenantDetailProps {
   dealChannelName?: string;
   remark?: string; // 合同备注
   createTime?: Date; // 创建时间
+}
+
+export interface TenantBillListProps {
+  /**
+   * {
+   *                 "id": "2005552566663000065",
+   *                 "companyId": "1995379998362611714",
+   *                 "tenantId": "22",
+   *                 "sortOrder": 1,
+   *                 "billType": 1,
+   *                 "rentPeriodStart": "2025-12-17 00:00:00",
+   *                 "rentPeriodEnd": "2026-01-16 00:00:00",
+   *                 "rentalAmount": 43453.00,
+   *                 "depositAmount": 0.00,
+   *                 "otherFeeAmount": 0.00,
+   *                 "totalAmount": 43453.00,
+   *                 "dueDate": "2025-12-02 00:00:00",
+   *                 "payTime": null,
+   *                 "payAmount": null,
+   *                 "payStatus": 0,
+   *                 "payChannel": null,
+   *                 "remark": "第1期，共 1 月",
+   *                 "otherFees": [],
+   *                 "createBy": "1",
+   *                 "createTime": "2025-12-29 16:12:48"
+   *             },
+   */
+  id?: string; // 账单ID
+  companyId?: string; // 公司ID
+  tenantId?: string; // 租客ID
+  sortOrder?: number; // 排序顺序
+  billType?: number; // 账单类型：1=租金，2=押金，3=其他费用
+  rentPeriodStart: Date;
+  rentPeriodEnd: Date;
+  rentalAmount?: number; // 租金金额
+  depositAmount?: number; // 押金金额
+  otherFeeAmount?: number; // 其他费用金额
+  totalAmount?: number; // 总金额
+  dueDate?: Date; // 到期日
+  payTime?: Date; // 支付时间
+  payAmount?: number; // 支付金额
+  payStatus?: number; // 支付状态：0=未支付，1=已支付
+  payChannel?: number; // 支付渠道：1=支付宝，2=微信
+  remark?: string; // 备注
+  otherFees: OtherFeeProps[]; // 其他费用列表
 }
