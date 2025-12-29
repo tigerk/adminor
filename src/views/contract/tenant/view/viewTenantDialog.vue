@@ -159,8 +159,6 @@
             </el-descriptions>
           </div>
 
-          <!-- 同住人信息 -->
-
           <!-- 负责人信息 -->
           <div class="info-section">
             <el-descriptions title="负责人信息" :column="3" class="info-descriptions" size="default">
@@ -177,7 +175,7 @@
           </div>
 
           <!-- 同住人信息 -->
-          <div v-if="formInline.tenantMateList && formInline.tenantMateList.length > 0" class="info-section">
+          <div class="info-section">
             <div class="section-header">
               <div class="section-title">
                 <span class="title-icon" />
