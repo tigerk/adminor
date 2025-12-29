@@ -86,13 +86,15 @@ function useTenant() {
       label: "序号",
       prop: "index",
       width: 60,
+      fixed: "left",
       cellRenderer: renderIndexCell
     },
     {
       label: "状态",
       prop: "signStatus",
       width: 120,
-      cellRenderer: ({ row }) => <span>{getOptionByCode(tenantContractSignStatusOptions, row.tenantType)?.label}</span>
+      fixed: "left",
+      cellRenderer: ({ row }) => <el-tag type="primary">{getOptionByCode(tenantContractSignStatusOptions, row.tenantType)?.label}</el-tag>
     },
     {
       label: "房间",
@@ -125,9 +127,7 @@ function useTenant() {
                   >
                     {row.roomList.map(room => `${room.communityName} ${room.doorNumber} -${room.roomNumber}`).join(" | ")}
                   </el-text>
-                  <el-tag type="primary" class="mr-1">
-                    共 {row.roomList.length} 间
-                  </el-tag>
+                  <el-tag type="info">共 {row.roomList.length} 间</el-tag>
                 </el-space>
               </div>
             )

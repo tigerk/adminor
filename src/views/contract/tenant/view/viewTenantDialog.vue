@@ -68,310 +68,312 @@
         </el-space>
       </div>
     </div>
-    <!-- 标签页内容 -->
-    <el-tabs v-model="activeTab" class="modern-tabs">
-      <!-- 租客信息 Tab -->
-      <el-tab-pane name="tenant">
-        <template #label>
-          <el-space>
-            <el-icon><User /></el-icon>
-            <span>租客信息</span>
-            <el-tag :type="formInline.status === 0 ? 'danger' : 'success'" size="default">
-              {{ tenantStatusOptions.find(item => item.value === formInline.status)?.label || "未知" }}
-            </el-tag>
-          </el-space>
-        </template>
-        <div class="tab-content">
-          <!-- 基本信息 -->
-          <div class="info-section mt-4">
-            <el-descriptions title="基本信息" :column="3" class="info-descriptions" size="default">
-              <template #title>
-                <el-space>
-                  <span>基本信息</span>
-                  <el-tag :type="formInline.tenantType === 0 ? 'success' : 'warning'" size="default">
-                    {{ formInline.tenantType === 0 ? "个人" : "企业" }}
-                  </el-tag>
-                </el-space>
-              </template>
-              <el-descriptions-item label="姓名" label-align="right">
-                <el-space>
-                  <span class="text-value">{{ formInline.tenantName }}</span>
-                  <el-tag type="info" size="small">{{ formInline.tenantPersonal?.gender === 0 ? "男" : "女" }}</el-tag>
-                </el-space>
-              </el-descriptions-item>
-              <el-descriptions-item label="联系电话" label-align="right">
-                <span class="text-value">{{ formInline.tenantPhone }}</span>
-              </el-descriptions-item>
-
-              <template v-if="formInline.tenantType === 0">
-                <el-descriptions-item label="证件类型" label-align="right">
-                  <span class="text-value">{{ getIdTypeName(formInline.tenantPersonal?.idType) }}</span>
-                </el-descriptions-item>
-                <el-descriptions-item label="证件号码" label-align="right">
-                  <span class="text-value">{{ formInline.tenantPersonal?.idNo }}</span>
-                </el-descriptions-item>
-              </template>
-              <template v-else>
-                <el-descriptions-item label="统一社会信用代码" label-align="right" :span="2">
-                  <span class="text-value">{{ formInline.tenantCompany?.uscc }}</span>
-                </el-descriptions-item>
-                <el-descriptions-item label="法定代表人" label-align="right">
-                  <span class="text-value">{{ formInline.tenantCompany?.legalPerson }}</span>
-                </el-descriptions-item>
-              </template>
-              <el-descriptions-item label="签约时间" label-align="right" :span="2">
-                <span class="text-value">{{ formInline.createTime }}</span>
-              </el-descriptions-item>
-            </el-descriptions>
-          </div>
-
-          <!-- 租约信息 -->
-          <div class="info-section">
-            <el-descriptions title="租约信息" :column="3" class="info-descriptions" size="default">
-              <el-descriptions-item label="合同周期" label-align="right">
-                <el-space :size="8">
-                  <el-tag type="primary">{{ formInline.leaseStart }}</el-tag>
-                  <span>至</span>
-                  <el-tag type="primary">{{ formInline.leaseEnd }}</el-tag>
-                </el-space>
-              </el-descriptions-item>
-              <el-descriptions-item label="月租金" label-align="right">
-                <span class="rent-price">¥ {{ formInline.rentPrice }}</span>
-                <span class="rent-unit">元/月</span>
-              </el-descriptions-item>
-
-              <el-descriptions-item label="押付方式" label-align="right">
-                <span class="text-value">押 {{ formInline.depositMonths }} 付 {{ formInline.paymentMonths }}</span>
-              </el-descriptions-item>
-              <el-descriptions-item label="收租设置" label-align="right">
-                <span class="text-value">{{ getRentDueTypeText(formInline.rentDueType, formInline.rentDueDay) }}</span>
-              </el-descriptions-item>
-              <el-descriptions-item label="签约类型" label-align="right">
-                <span class="text-value">{{ getContractNatureName(formInline.contractNature) }}</span>
-              </el-descriptions-item>
-              <el-descriptions-item label="入住时间" label-align="right">
-                <el-space :size="8">
-                  <el-tag type="info">{{ formInline.checkInTime }}</el-tag>
-                  <span>至</span>
-                  <el-tag type="info">{{ formInline.checkOutTime }}</el-tag>
-                </el-space>
-              </el-descriptions-item>
-            </el-descriptions>
-            <div class="info-section">
-              <div class="section-header mt-3">
-                <div class="section-title">
-                  <span class="title-icon" />
-                  <span class="title-text">其他费用</span>
-                </div>
-              </div>
-              <el-table v-if="formInline.otherFees && formInline.otherFees.length > 0" :data="formInline.otherFees" border stripe class="fees-table">
-                <el-table-column type="index" label="序号" width="70" align="center" />
-                <el-table-column prop="name" label="费用名称" align="center" min-width="150" />
-                <el-table-column prop="paymentMethod" label="付款方式" align="center" min-width="120">
-                  <template #default="{ row }">
-                    <span class="payment-method">{{ getOptionByCode([...PAYMENT_METHOD_OPTIONS], row.paymentMethod).label }}</span>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="priceMethod" label="计费方式" align="center" min-width="120">
-                  <template #default="{ row }">
-                    <span class="price-method">{{ getOptionByCode([...PRICE_METHOD_OPTIONS], row.priceMethod).label }}</span>
-                  </template>
-                </el-table-column>
-
-                <el-table-column prop="priceInput" label="输入值" align="center" min-width="200" show-overflow-tooltip>
-                  <template #default="{ row }">
-                    <span class="price-method">{{ row.priceInput }}</span>
-                  </template>
-                </el-table-column>
-              </el-table>
-              <el-empty v-else description="暂无其他费用" :image-size="150" />
-            </div>
-          </div>
-
-          <!-- 负责人信息 -->
-          <div class="info-section">
-            <el-descriptions title="负责人信息" :column="3" class="info-descriptions" size="default">
-              <el-descriptions-item label="签约部门" label-align="right">
-                <span class="text-value">{{ formInline.deptName }}</span>
-              </el-descriptions-item>
-              <el-descriptions-item label="签约人" label-align="right">
-                <span class="text-value">{{ formInline.salesmanName }}</span>
-              </el-descriptions-item>
-              <el-descriptions-item label="成交渠道" label-align="right">
-                <span class="text-value">{{ formInline.dealChannelName }}</span>
-              </el-descriptions-item>
-            </el-descriptions>
-          </div>
-
-          <!-- 同住人信息 -->
-          <div class="info-section">
-            <div class="section-header">
-              <div class="section-title">
-                <span class="title-icon" />
-                <span class="title-text">同住人信息</span>
-                <el-tag type="info" size="small" class="ml-2">{{ formInline.tenantMateList.length }}人</el-tag>
-              </div>
-            </div>
-            <el-table :data="formInline.tenantMateList" border stripe class="mate-table">
-              <el-table-column type="index" label="序号" width="70" align="center" />
-              <el-table-column prop="name" label="姓名" align="center" min-width="120" />
-              <el-table-column prop="gender" label="性别" align="center" width="80">
-                <template #default="{ row }">
-                  {{ row.gender === 0 ? "男" : "女" }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="phone" label="联系电话" align="center" min-width="140" />
-              <el-table-column prop="idNo" label="证件号码" align="center" min-width="180" />
-            </el-table>
-          </div>
-        </div>
-      </el-tab-pane>
-
-      <!-- 账单信息 Tab -->
-      <el-tab-pane name="bill">
-        <template #label>
-          <el-space class="tab-label">
-            <el-icon><Money /></el-icon>
-            <span>账单信息</span>
-            <el-tag type="info" size="default">{{ formInline.tenantBillList?.length || 0 }}条</el-tag>
-          </el-space>
-        </template>
-        <div class="tab-content">
-          <el-table v-if="formInline.tenantBillList && formInline.tenantBillList.length > 0" :data="formInline.tenantBillList" border stripe class="bill-table">
-            <el-table-column type="index" label="序号" width="70" align="center" />
-            <el-table-column prop="sortOrder" label="期数" align="center" width="80">
-              <template #default="{ row }">第{{ row.sortOrder }}期</template>
-            </el-table-column>
-            <el-table-column prop="dueDate" label="应收日期" align="center" width="110">
-              <template #default="{ row }">{{ row.dueDate?.substring(0, 10) }}</template>
-            </el-table-column>
-            <el-table-column prop="billType" label="账单类型" align="center" width="100">
-              <template #default="{ row }">
-                <el-tag v-if="row.billType === 1" type="success">租金</el-tag>
-                <el-tag v-else-if="row.billType === 2" type="warning">押金</el-tag>
-                <el-tag v-else type="info">其他费用</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="rentPeriodStart" label="账期开始" align="center" width="110">
-              <template #default="{ row }">{{ row.rentPeriodStart?.substring(0, 10) }}</template>
-            </el-table-column>
-            <el-table-column prop="rentPeriodEnd" label="账期结束" align="center" width="110">
-              <template #default="{ row }">{{ row.rentPeriodEnd?.substring(0, 10) }}</template>
-            </el-table-column>
-            <el-table-column prop="rentalAmount" label="租金" align="center" width="100">
-              <template #default="{ row }">
-                <span v-if="row.rentalAmount > 0" class="amount-text">¥{{ row.rentalAmount }}</span>
-                <span v-else>-</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="depositAmount" label="押金" align="center" width="100">
-              <template #default="{ row }">
-                <span v-if="row.depositAmount > 0" class="amount-text">¥{{ row.depositAmount }}</span>
-                <span v-else>-</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="otherFeeAmount" label="其他费用" align="center" width="100">
-              <template #default="{ row }">
-                <span v-if="row.otherFeeAmount > 0" class="amount-text">¥{{ row.otherFeeAmount }}</span>
-                <span v-else>-</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="totalAmount" label="应收总额" align="center" width="120">
-              <template #default="{ row }">
-                <span class="total-amount">¥{{ row.totalAmount }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="payStatus" label="支付状态" align="center" width="100">
-              <template #default="{ row }">
-                <el-tag v-if="row.payStatus === 0" type="danger">未支付</el-tag>
-                <el-tag v-else-if="row.payStatus === 1" type="success">已支付</el-tag>
-                <el-tag v-else type="warning">部分支付</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="remark" label="备注" align="center" min-width="250" show-overflow-tooltip />
-          </el-table>
-          <el-empty v-else description="暂无账单信息" :image-size="180">
-            <el-button type="primary" size="default">生成账单</el-button>
-          </el-empty>
-        </div>
-      </el-tab-pane>
-
-      <!-- 合同信息 Tab -->
-      <el-tab-pane name="contract">
-        <template #label>
-          <el-space class="tab-label">
-            <el-icon><Document /></el-icon>
-            <span>合同信息</span>
-            <el-tag :type="formInline.tenantContract?.signStatus === 0 ? 'danger' : 'success'" size="default">
-              {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === formInline?.tenantContract?.signStatus)?.label || "未知" }}
-            </el-tag>
-          </el-space>
-        </template>
-        <div class="tab-content">
-          <!-- 有合同信息时显示 -->
-          <div v-if="formInline.tenantContract" class="contract-section">
-            <!-- 操作按钮栏 -->
-            <div class="contract-action-bar">
-              <div class="action-left">
-                <el-space :size="12">
-                  <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
-                  <el-button :disabled="formInline.tenantContract.signStatus !== 0" type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
-                </el-space>
-              </div>
-              <div class="action-right">
-                <el-space :size="16" alignment="flex-end">
-                  <div class="info-item">
-                    <span class="info-label">合同模板：</span>
-                    <span class="info-value">{{ formInline.tenantContract.contractTemplateName || "未设置" }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">签约状态：</span>
-                    <el-tag :type="formInline.tenantContract.signStatus === 0 ? 'danger' : 'success'" size="small">
-                      {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === formInline.tenantContract.signStatus)?.label || "未知" }}
+    <div class="tabs-wrapper">
+      <div class="tabs-action-container">
+        <el-button type="primary" size="small" :icon="Download" @click="handleDownloadContract">导出合同</el-button>
+      </div>
+      <!-- 标签页内容 -->
+      <el-tabs v-model="activeTab" class="modern-tabs">
+        <!-- 租客信息 Tab -->
+        <el-tab-pane name="tenant">
+          <template #label>
+            <el-space>
+              <el-icon><User /></el-icon>
+              <span>租客信息</span>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <!-- 基本信息 -->
+            <div class="info-section mt-4">
+              <el-descriptions title="基本信息" :column="3" class="info-descriptions" size="default">
+                <template #title>
+                  <el-space>
+                    <span>基本信息</span>
+                    <el-tag :type="formInline.tenantType === 0 ? 'success' : 'warning'" size="default">
+                      {{ formInline.tenantType === 0 ? "个人" : "企业" }}
                     </el-tag>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">创建时间：</span>
-                    <span class="info-value">{{ formInline.createTime }}</span>
-                  </div>
-                </el-space>
-              </div>
-            </div>
-            <!-- 合同信息摘要 -->
-            <div v-if="formInline.tenantContract.remark" class="mb-2">
-              <el-descriptions :column="1" size="default">
-                <el-descriptions-item label="合同备注" label-align="right">
-                  <span class="text-value">{{ formInline.tenantContract.remark }}</span>
+                  </el-space>
+                </template>
+                <el-descriptions-item label="姓名" label-align="right">
+                  <el-space>
+                    <span class="text-value">{{ formInline.tenantName }}</span>
+                    <el-tag type="info" size="small">{{ formInline.tenantPersonal?.gender === 0 ? "男" : "女" }}</el-tag>
+                  </el-space>
+                </el-descriptions-item>
+                <el-descriptions-item label="联系电话" label-align="right">
+                  <span class="text-value">{{ formInline.tenantPhone }}</span>
+                </el-descriptions-item>
+
+                <template v-if="formInline.tenantType === 0">
+                  <el-descriptions-item label="证件类型" label-align="right">
+                    <span class="text-value">{{ getIdTypeName(formInline.tenantPersonal?.idType) }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="证件号码" label-align="right">
+                    <span class="text-value">{{ formInline.tenantPersonal?.idNo }}</span>
+                  </el-descriptions-item>
+                </template>
+                <template v-else>
+                  <el-descriptions-item label="统一社会信用代码" label-align="right" :span="2">
+                    <span class="text-value">{{ formInline.tenantCompany?.uscc }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="法定代表人" label-align="right">
+                    <span class="text-value">{{ formInline.tenantCompany?.legalPerson }}</span>
+                  </el-descriptions-item>
+                </template>
+                <el-descriptions-item label="签约时间" label-align="right" :span="2">
+                  <span class="text-value">{{ formInline.createTime }}</span>
                 </el-descriptions-item>
               </el-descriptions>
             </div>
 
-            <!-- 合同内容预览区域 -->
-            <div v-if="contractContent" class="contract-content-section">
-              <div class="contract-header">
-                <span class="contract-title">合同内容</span>
-                <el-tag type="info" size="small">预览模式</el-tag>
-              </div>
-              <div class="contract-preview-wrapper">
-                <div class="contract-preview" v-html="contractContent" />
+            <!-- 租约信息 -->
+            <div class="info-section">
+              <el-descriptions title="租约信息" :column="3" class="info-descriptions" size="default">
+                <el-descriptions-item label="合同周期" label-align="right">
+                  <el-space :size="8">
+                    <el-tag type="primary">{{ formInline.leaseStart }}</el-tag>
+                    <span>至</span>
+                    <el-tag type="primary">{{ formInline.leaseEnd }}</el-tag>
+                  </el-space>
+                </el-descriptions-item>
+                <el-descriptions-item label="月租金" label-align="right">
+                  <span class="rent-price">¥ {{ formInline.rentPrice }}</span>
+                  <span class="rent-unit">元/月</span>
+                </el-descriptions-item>
+
+                <el-descriptions-item label="押付方式" label-align="right">
+                  <span class="text-value">押 {{ formInline.depositMonths }} 付 {{ formInline.paymentMonths }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="收租设置" label-align="right">
+                  <span class="text-value">{{ getRentDueTypeText(formInline.rentDueType, formInline.rentDueDay) }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="签约类型" label-align="right">
+                  <span class="text-value">{{ getContractNatureName(formInline.contractNature) }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="入住时间" label-align="right">
+                  <el-space :size="8">
+                    <el-tag type="info">{{ formInline.checkInTime }}</el-tag>
+                    <span>至</span>
+                    <el-tag type="info">{{ formInline.checkOutTime }}</el-tag>
+                  </el-space>
+                </el-descriptions-item>
+              </el-descriptions>
+              <div class="info-section">
+                <div class="section-header mt-3">
+                  <div class="section-title">
+                    <span class="title-icon" />
+                    <span class="title-text">其他费用</span>
+                  </div>
+                </div>
+                <el-table v-if="formInline.otherFees && formInline.otherFees.length > 0" :data="formInline.otherFees" border stripe class="fees-table">
+                  <el-table-column type="index" label="序号" width="70" align="center" />
+                  <el-table-column prop="name" label="费用名称" align="center" min-width="150" />
+                  <el-table-column prop="paymentMethod" label="付款方式" align="center" min-width="120">
+                    <template #default="{ row }">
+                      <span class="payment-method">{{ getOptionByCode([...PAYMENT_METHOD_OPTIONS], row.paymentMethod).label }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="priceMethod" label="计费方式" align="center" min-width="120">
+                    <template #default="{ row }">
+                      <span class="price-method">{{ getOptionByCode([...PRICE_METHOD_OPTIONS], row.priceMethod).label }}</span>
+                    </template>
+                  </el-table-column>
+
+                  <el-table-column prop="priceInput" label="输入值" align="center" min-width="200" show-overflow-tooltip>
+                    <template #default="{ row }">
+                      <span class="price-method">{{ row.priceInput }}</span>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <el-empty v-else description="暂无其他费用" :image-size="150" />
               </div>
             </div>
 
-            <!-- 合同内容为空时 -->
-            <div v-else class="no-content">
-              <el-empty description="合同内容为空" :image-size="120">
-                <el-button type="primary" :icon="Document" @click="handleGenerateContract">生成合同内容</el-button>
-              </el-empty>
+            <!-- 负责人信息 -->
+            <div class="info-section">
+              <el-descriptions title="负责人信息" :column="3" class="info-descriptions" size="default">
+                <el-descriptions-item label="签约部门" label-align="right">
+                  <span class="text-value">{{ formInline.deptName }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="签约人" label-align="right">
+                  <span class="text-value">{{ formInline.salesmanName }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="成交渠道" label-align="right">
+                  <span class="text-value">{{ formInline.dealChannelName }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+
+            <!-- 同住人信息 -->
+            <div class="info-section">
+              <div class="section-header">
+                <div class="section-title">
+                  <span class="title-icon" />
+                  <span class="title-text">同住人信息</span>
+                  <el-tag type="info" size="small" class="ml-2">{{ formInline.tenantMateList.length }}人</el-tag>
+                </div>
+              </div>
+              <el-table :data="formInline.tenantMateList" border stripe class="mate-table">
+                <el-table-column type="index" label="序号" width="70" align="center" />
+                <el-table-column prop="name" label="姓名" align="center" min-width="120" />
+                <el-table-column prop="gender" label="性别" align="center" width="80">
+                  <template #default="{ row }">
+                    {{ row.gender === 0 ? "男" : "女" }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="phone" label="联系电话" align="center" min-width="140" />
+                <el-table-column prop="idNo" label="证件号码" align="center" min-width="180" />
+              </el-table>
             </div>
           </div>
+        </el-tab-pane>
 
-          <!-- 没有合同信息时显示 -->
-          <el-empty v-else description="暂无合同信息" :image-size="150">
-            <el-button type="primary" :icon="Document">生成合同</el-button>
-          </el-empty>
-        </div>
-      </el-tab-pane>
-    </el-tabs>
+        <!-- 账单信息 Tab -->
+        <el-tab-pane name="bill">
+          <template #label>
+            <el-space class="tab-label">
+              <el-icon><Money /></el-icon>
+              <span>账单信息</span>
+              <el-tag type="info" size="default">{{ formInline.tenantBillList?.length || 0 }}条</el-tag>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <el-table v-if="formInline.tenantBillList && formInline.tenantBillList.length > 0" :data="formInline.tenantBillList" border stripe class="bill-table">
+              <el-table-column type="index" label="序号" width="70" align="center" />
+              <el-table-column prop="sortOrder" label="期数" align="center" width="80">
+                <template #default="{ row }">第{{ row.sortOrder }}期</template>
+              </el-table-column>
+              <el-table-column prop="dueDate" label="应收日期" align="center" width="110">
+                <template #default="{ row }">{{ row.dueDate?.substring(0, 10) }}</template>
+              </el-table-column>
+              <el-table-column prop="billType" label="账单类型" align="center" width="100">
+                <template #default="{ row }">
+                  <el-tag v-if="row.billType === 1" type="success">租金</el-tag>
+                  <el-tag v-else-if="row.billType === 2" type="warning">押金</el-tag>
+                  <el-tag v-else type="info">其他费用</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="rentPeriodStart" label="账期开始" align="center" width="110">
+                <template #default="{ row }">{{ row.rentPeriodStart?.substring(0, 10) }}</template>
+              </el-table-column>
+              <el-table-column prop="rentPeriodEnd" label="账期结束" align="center" width="110">
+                <template #default="{ row }">{{ row.rentPeriodEnd?.substring(0, 10) }}</template>
+              </el-table-column>
+              <el-table-column prop="rentalAmount" label="租金" align="center" width="100">
+                <template #default="{ row }">
+                  <span v-if="row.rentalAmount > 0" class="amount-text">¥{{ row.rentalAmount }}</span>
+                  <span v-else>-</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="depositAmount" label="押金" align="center" width="100">
+                <template #default="{ row }">
+                  <span v-if="row.depositAmount > 0" class="amount-text">¥{{ row.depositAmount }}</span>
+                  <span v-else>-</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="otherFeeAmount" label="其他费用" align="center" width="100">
+                <template #default="{ row }">
+                  <span v-if="row.otherFeeAmount > 0" class="amount-text">¥{{ row.otherFeeAmount }}</span>
+                  <span v-else>-</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="totalAmount" label="应收总额" align="center" width="120">
+                <template #default="{ row }">
+                  <span class="total-amount">¥{{ row.totalAmount }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="payStatus" label="支付状态" align="center" width="100">
+                <template #default="{ row }">
+                  <el-tag v-if="row.payStatus === 0" type="danger">未支付</el-tag>
+                  <el-tag v-else-if="row.payStatus === 1" type="success">已支付</el-tag>
+                  <el-tag v-else type="warning">部分支付</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="remark" label="备注" align="center" min-width="250" show-overflow-tooltip />
+            </el-table>
+            <el-empty v-else description="暂无账单信息" :image-size="180">
+              <el-button type="primary" size="default">生成账单</el-button>
+            </el-empty>
+          </div>
+        </el-tab-pane>
+
+        <!-- 合同信息 Tab -->
+        <el-tab-pane name="contract">
+          <template #label>
+            <el-space class="tab-label">
+              <el-icon><Document /></el-icon>
+              <span>合同信息</span>
+              <el-tag :type="formInline.tenantContract?.signStatus === 0 ? 'danger' : 'success'" size="default">
+                {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === formInline?.tenantContract?.signStatus)?.label || "未知" }}
+              </el-tag>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <!-- 有合同信息时显示 -->
+            <div v-if="formInline.tenantContract" class="contract-section">
+              <!-- 操作按钮栏 -->
+              <div class="contract-action-bar">
+                <div class="action-left">
+                  <el-space :size="12">
+                    <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
+                    <el-button :disabled="formInline.tenantContract.signStatus !== 0" type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
+                  </el-space>
+                </div>
+                <div class="action-right">
+                  <el-space :size="16" alignment="flex-end">
+                    <div class="info-item">
+                      <span class="info-label">合同模板：</span>
+                      <span class="info-value">{{ formInline.tenantContract.contractTemplateName || "未设置" }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">签约状态：</span>
+                      <el-tag :type="formInline.tenantContract.signStatus === 0 ? 'danger' : 'success'" size="small">
+                        {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === formInline.tenantContract.signStatus)?.label || "未知" }}
+                      </el-tag>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">创建时间：</span>
+                      <span class="info-value">{{ formInline.createTime }}</span>
+                    </div>
+                  </el-space>
+                </div>
+              </div>
+              <!-- 合同信息摘要 -->
+              <div v-if="formInline.tenantContract.remark" class="mb-2">
+                <el-descriptions :column="1" size="default">
+                  <el-descriptions-item label="合同备注" label-align="right">
+                    <span class="text-value">{{ formInline.tenantContract.remark }}</span>
+                  </el-descriptions-item>
+                </el-descriptions>
+              </div>
+
+              <!-- 合同内容预览区域 -->
+              <div v-if="contractContent" class="contract-content-section">
+                <div class="contract-header">
+                  <span class="contract-title">合同内容</span>
+                  <el-tag type="info" size="small">预览模式</el-tag>
+                </div>
+                <div class="contract-preview-wrapper">
+                  <div class="contract-preview" v-html="contractContent" />
+                </div>
+              </div>
+
+              <!-- 合同内容为空时 -->
+              <div v-else class="no-content">
+                <el-empty description="合同内容为空" :image-size="120">
+                  <el-button type="primary" :icon="Document" @click="handleGenerateContract">生成合同内容</el-button>
+                </el-empty>
+              </div>
+            </div>
+
+            <!-- 没有合同信息时显示 -->
+            <el-empty v-else description="暂无合同信息" :image-size="150">
+              <el-button type="primary" :icon="Document">生成合同</el-button>
+            </el-empty>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
   </div>
 </template>
 
@@ -634,10 +636,6 @@
       }
     }
 
-    // 现代化标签页样式（参考截图）
-    :deep(.modern-tabs) {
-    }
-
     // Tab 内容区域
     .tab-content {
       min-height: 500px;
@@ -892,5 +890,34 @@
 
   .text-value {
     color: #606266;
+  }
+
+  .modern-tabs .el-tabs__extra {
+    display: flex;
+    align-items: center;
+  }
+
+  .tabs-wrapper {
+    position: relative; // 必须
+
+    .tabs-action-container {
+      position: absolute;
+      top: 8px; // 距离顶部距离，根据你的 tab 高度微调
+      right: 0; // 靠右对齐
+      z-index: 10; // 确保在 tabs 之上
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+  }
+
+  // 修正 Tab 头部，防止按钮遮挡过长的标签页
+  :deep(.el-tabs__nav-wrap) {
+    padding-right: 180px; // 预留右侧按钮的空间，防止 Tab 太多时被遮挡
+  }
+
+  // 如果你之前在 el-tabs 上写了 modern-tabs 的样式，请保留
+  .modern-tabs {
+    margin-top: 10px;
   }
 </style>

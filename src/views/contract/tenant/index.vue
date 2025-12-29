@@ -80,14 +80,24 @@
         @page-current-change="handleCurrentChange"
       >
         <template #operation="{ row }">
-          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(EditPen)" @click="openTenantViewDialog('查看租客', row)">查看</el-button>
+          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="openTenantViewDialog('查看租客', row)">查看</el-button>
           <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(EditPen)" @click="openTenantDialog('修改', row)">修改</el-button>
-
-          <el-popconfirm :title="`是否确认删除租客${row.name}?`" @confirm="handleDeleteTenant(row)">
-            <template #reference>
-              <el-button class="reset-margin" link type="danger" :icon="useRenderIcon(Delete)">删除</el-button>
+          <el-dropdown>
+            <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>
+                  <el-button link type="primary" :icon="useRenderIcon(Upload)">上传头像</el-button>
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-button link type="primary" :icon="useRenderIcon(Password)">重置密码</el-button>
+                </el-dropdown-item>
+                <el-dropdown-item>
+                  <el-button link type="primary" :icon="useRenderIcon(Role)">分配角色</el-button>
+                </el-dropdown-item>
+              </el-dropdown-menu>
             </template>
-          </el-popconfirm>
+          </el-dropdown>
         </template>
       </pure-table>
     </el-row>
@@ -99,13 +109,17 @@
   import { TENANT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-  import Delete from "~icons/ep/delete";
+  import View from "~icons/ep/view";
   import EditPen from "~icons/ep/edit-pen";
   import Search from "~icons/ri/search-line";
   import Refresh from "~icons/ep/refresh";
   import Plus from "~icons/ep/plus";
   import User from "~icons/ep/user";
   import Phone from "~icons/ep/phone";
+  import Password from "~icons/ri/lock-password-line";
+  import Role from "~icons/ri/admin-line";
+  import More from "~icons/ep/more-filled";
+  import Upload from "~icons/ri/upload-line";
 
   defineOptions({
     name: "ContractTenant"
