@@ -5,7 +5,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { createTenant, deleteTenant, getTenantDetail, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
-import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { TenantMateProps, TenantPersonalProps, TenantQueryFormProps, TenantRowProps, TenantsCreateFormProps } from "@/types";
@@ -45,10 +45,8 @@ function useTenant() {
   const switchLoadMap = ref({});
   const { switchStyle } = usePublicHooks();
 
-  const mutableTenantTypeOptions = [...TENANT_TYPE_OPTIONS] as any[];
   const tenantContractSignStatusOptions = [...TENANT_SIGN_STATUS_OPTIONS] as any[];
-  const mutableIdTypeOptions = [...ID_TYPE_OPTIONS] as any[];
-  const mutableGenderOptions = [...GENDER_OPTIONS] as any[];
+  const mutableTenantStatusOptions = [...TENANT_STATUS_OPTIONS] as any[];
 
   // 计算当前页的起始索引
   const startIndex = computed(() => (pagination.currentPage - 1) * pagination.pageSize + 1);
@@ -92,9 +90,9 @@ function useTenant() {
     {
       label: "状态",
       prop: "signStatus",
-      width: 120,
+      width: 90,
       fixed: "left",
-      cellRenderer: ({ row }) => <el-tag type="primary">{getOptionByCode(tenantContractSignStatusOptions, row.tenantType)?.label}</el-tag>
+      cellRenderer: ({ row }) => <el-tag type="primary">{getOptionByCode(mutableTenantStatusOptions, row.status)?.label}</el-tag>
     },
     {
       label: "房间",
