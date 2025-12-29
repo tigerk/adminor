@@ -448,6 +448,7 @@ function useTenant() {
             fullscreen: deviceDetection(),
             fullscreenIcon: true,
             closeOnClickModal: false,
+            hideFooter: true,
             contentRenderer: () => h(ViewTenantDialog, { ref: formRef, formInline: null }),
             beforeSure: (done, { options }) => {}
           });
