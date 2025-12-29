@@ -88,7 +88,7 @@ export type RoomItemProps = {
   /** 出租价格 */
   price?: string;
   /** 面积 */
-  area?: string;
+  area?: number;
   /** 朝向 */
   direction?: string;
   /** 房间状态 */

@@ -4,7 +4,7 @@ import type { PaginationProps } from "@pureadmin/table";
 import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { createTenant, deleteTenant, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
+import { createTenant, deleteTenant, getTenantDetail, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
 import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
@@ -421,28 +421,49 @@ function useTenant() {
   };
 
   function openTenantViewDialog(title = "查看", row?: TenantRowProps) {
-    addDialog({
-      title: `${title} ${row.tenantName}`,
-      props: {
-        formInline: {
-          title,
-          tenantSourceOptions: tenantSourceOptions.value,
-          dealChannelOptions: dealChannelOptions.value,
-          tenantTagOptions: tenantTagOptions.value,
-          ...row
+    // 设置 loading 状态为 true
+    loading.value = true;
+
+    // 从 API 获取租客详情
+    getTenantDetail({ tenantId: row.id })
+      .then(resp => {
+        loading.value = false;
+
+        if (resp.code === 0) {
+          const tenantDetail = resp.data;
+          // 合并 row 数据和 API 返回的详情数据
+          addDialog({
+            title: `${title} ${row.tenantName}`,
+            props: {
+              formInline: {
+                title,
+                ...tenantDetail
+              }
+            },
+            top: "1vh",
+            width: "70vw",
+            lockScroll: true,
+            alignCenter: true,
+            draggable: true,
+            fullscreen: deviceDetection(),
+            fullscreenIcon: true,
+            closeOnClickModal: false,
+            contentRenderer: () => h(ViewTenantDialog, { ref: formRef, formInline: null }),
+            beforeSure: (done, { options }) => {}
+          });
+        } else {
+          message(resp.message, {
+            type: "error"
+          });
         }
-      },
-      top: "1vh",
-      width: "70vw",
-      lockScroll: true,
-      alignCenter: true,
-      draggable: true,
-      fullscreen: deviceDetection(),
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(ViewTenantDialog, { ref: formRef, formInline: null }),
-      beforeSure: (done, { options }) => {}
-    });
+      })
+      .catch(error => {
+        // 异常情况下也要设置 loading 状态为 false
+        loading.value = false;
+        message("获取租客详情失败", {
+          type: "error"
+        });
+      });
   }
 
   return {

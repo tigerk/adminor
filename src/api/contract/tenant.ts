@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse } from "@/types";
+import type { ApiResponse, PaginationResponse, TenantDetailProps } from "@/types";
 
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
@@ -34,5 +34,5 @@ export const updateTenantStatus = (data?: object) => {
 
 /** 获取租客详情 */
 export const getTenantDetail = (data?: object) => {
-  return http.request<ApiResponse>("get", baseUrlApi("contract/tenant/detail"), { params: data });
+  return http.request<ApiResponse<TenantDetailProps>>("post", baseUrlApi("contract/tenant/detail"), { data });
 };

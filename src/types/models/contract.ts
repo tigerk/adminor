@@ -12,3 +12,13 @@ export interface ContractTemplateFormProps {
   deptIds?: string[];
   remark?: string;
 }
+
+/** 租客合同 */
+export interface TenantContractProps {
+  id?: string;
+  tenantId?: string;
+  contractTemplateId?: string;
+  contractContent?: string;
+  signStatus?: number;
+  remark?: string;
+}
