@@ -5,7 +5,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { createTenant, deleteTenant, getTenantDetail, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
-import { GENDER_OPTIONS, getOptionByCode, ID_TYPE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+import { getOptionByCode, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { TenantMateProps, TenantPersonalProps, TenantQueryFormProps, TenantRowProps, TenantsCreateFormProps } from "@/types";
@@ -436,6 +436,15 @@ function useTenant() {
               formInline: {
                 title,
                 ...tenantDetail
+              },
+              // 传递事件处理器
+              onContractSigned: (tenantId: bigint) => {
+                // 方法2: 只更新当前行数据（更高效）
+                updateTenantRowStatus(tenantId, 1);
+              },
+              onContractUpdated: () => {
+                // 刷新列表
+                onTenantSearch();
               }
             },
             top: "1vh",
@@ -463,6 +472,15 @@ function useTenant() {
           type: "error"
         });
       });
+  }
+
+  // 辅助函数：只更新指定租客的状态（可选，更高效）
+  function updateTenantRowStatus(tenantId: bigint, signStatus: number) {
+    const tenant = tenantList.value.find(t => t.id === tenantId);
+    if (tenant) {
+      // 修改为在租状态
+      tenant.status = signStatus;
+    }
   }
 
   return {

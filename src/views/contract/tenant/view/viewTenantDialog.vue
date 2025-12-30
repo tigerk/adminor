@@ -336,8 +336,8 @@
             <el-space class="tab-label">
               <el-icon><Document /></el-icon>
               <span>合同信息</span>
-              <el-tag :type="formInline.tenantContract?.signStatus === 0 ? 'danger' : 'success'" size="default">
-                {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === formInline?.tenantContract?.signStatus)?.label || "未知" }}
+              <el-tag :type="localFormInline.tenantContract?.signStatus === 0 ? 'danger' : 'success'" size="default">
+                {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === localFormInline?.tenantContract?.signStatus)?.label || "未知" }}
               </el-tag>
             </el-space>
           </template>
@@ -349,7 +349,7 @@
                 <div class="action-left">
                   <el-space :size="12">
                     <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
-                    <el-button :disabled="formInline.tenantContract.signStatus !== 0" type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
+                    <el-button :disabled="localFormInline.tenantContract.signStatus !== 0" type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
                     <el-button type="primary" :icon="Checked" @click="handleSignContract">改为已签约</el-button>
                     <el-button type="primary" :icon="Delete" @click="handleDeleteContract">删除合同</el-button>
                   </el-space>
@@ -362,8 +362,8 @@
                     </div>
                     <div class="info-item">
                       <span class="info-label">签约状态：</span>
-                      <el-tag :type="formInline.tenantContract.signStatus === 0 ? 'danger' : 'success'" size="small">
-                        {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === formInline.tenantContract.signStatus)?.label || "未知" }}
+                      <el-tag :type="localFormInline.tenantContract.signStatus === 0 ? 'danger' : 'success'" size="small">
+                        {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === localFormInline.tenantContract.signStatus)?.label || "未知" }}
                       </el-tag>
                     </div>
                     <div class="info-item">
@@ -413,7 +413,7 @@
 </template>
 
 <script setup lang="ts">
-  import { h, ref } from "vue";
+  import { h, ref, watch } from "vue";
   import { TenantDetailProps } from "@/types";
   import {
     getOptionByCode,
@@ -441,7 +441,25 @@
 
   const props = defineProps<FormProps>();
 
-  const contractContent = ref(props.formInline.tenantContract?.contractContent || "");
+  // 创建本地响应式副本
+  const localFormInline = ref({ ...props.formInline });
+
+  // 监听 props 变化，同步到本地副本
+  watch(
+    () => props.formInline,
+    newVal => {
+      localFormInline.value = { ...newVal };
+    },
+    { deep: true }
+  );
+
+  // 定义 emit 事件
+  const emit = defineEmits<{
+    "contract-signed": [tenantId: bigint]; // 合同签约成功事件
+    "contract-updated": []; // 合同更新事件
+  }>();
+
+  const contractContent = ref(localFormInline.value.tenantContract?.contractContent || "");
 
   // 当前激活的标签页
   const activeTab = ref("tenant");
@@ -559,7 +577,7 @@
   // <el-button type="primary" :icon="Checked" @click="handleSignContract">改为已签约</el-button>
   //   <el-button type="primary" :icon="Delete" @click="handleDeleteContract">删除合同</el-button>
   const handleSignContract = () => {
-    if (props.formInline.tenantContract?.signStatus === 1) {
+    if (localFormInline.value.tenantContract?.signStatus === 1) {
       message("合同已签约，无需重复操作", { type: "warning" });
       return;
     }
@@ -570,7 +588,10 @@
     }).then(resp => {
       if (resp.code == 0) {
         message("合同签约成功", { type: "success" });
-        props.formInline.tenantContract.signStatus = 1;
+        localFormInline.value.tenantContract.signStatus = 1;
+
+        // 通知父组件刷新列表
+        emit("contract-signed", localFormInline.value.id);
       }
     });
   };
