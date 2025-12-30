@@ -46,3 +46,7 @@ export const generateTenantContract = (data?: object) => {
 export const downloadTenantContract = (data?: object) => {
   return http.request<Blob>("post", baseUrlApi("contract/tenant/contract/download"), { data }, { responseType: "blob" });
 };
+
+export const updateTenantContractSignStatus = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/contract/sign/status/update"), { data });
+};

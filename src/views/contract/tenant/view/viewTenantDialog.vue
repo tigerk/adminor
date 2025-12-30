@@ -350,6 +350,8 @@
                   <el-space :size="12">
                     <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
                     <el-button :disabled="formInline.tenantContract.signStatus !== 0" type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
+                    <el-button type="primary" :icon="Checked" @click="handleSignContract">改为已签约</el-button>
+                    <el-button type="primary" :icon="Delete" @click="handleDeleteContract">删除合同</el-button>
                   </el-space>
                 </div>
                 <div class="action-right">
@@ -422,9 +424,9 @@
     TENANT_SIGN_STATUS_OPTIONS,
     TENANT_STATUS_OPTIONS
   } from "@/constants";
-  import { Document, Download, Edit, House, Money, User } from "@element-plus/icons-vue";
+  import { Checked, Delete, Document, Download, Edit, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
-  import { downloadTenantContract, generateTenantContract } from "@/api/contract/tenant";
+  import { downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
@@ -550,6 +552,25 @@
             done();
           }
         });
+      }
+    });
+  };
+
+  // <el-button type="primary" :icon="Checked" @click="handleSignContract">改为已签约</el-button>
+  //   <el-button type="primary" :icon="Delete" @click="handleDeleteContract">删除合同</el-button>
+  const handleSignContract = () => {
+    if (props.formInline.tenantContract?.signStatus === 1) {
+      message("合同已签约，无需重复操作", { type: "warning" });
+      return;
+    }
+
+    updateTenantContractSignStatus({
+      tenantContractId: props.formInline.tenantContract.id,
+      signStatus: 1
+    }).then(resp => {
+      if (resp.code == 0) {
+        message("合同签约成功", { type: "success" });
+        props.formInline.tenantContract.signStatus = 1;
       }
     });
   };
