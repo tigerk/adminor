@@ -238,7 +238,37 @@
             </el-space>
           </template>
           <div class="tab-content">
-            <el-table v-if="formInline.tenantBillList && formInline.tenantBillList.length > 0" :data="formInline.tenantBillList" border stripe class="bill-table">
+            <el-table
+              v-if="formInline.tenantBillList && formInline.tenantBillList.length > 0"
+              :data="formInline.tenantBillList"
+              border
+              stripe
+              class="bill-table"
+              :expand-row-keys="expandedBillRows"
+              row-key="id"
+            >
+              <el-table-column type="expand">
+                <template #default="{ row }">
+                  <div v-if="row.otherFees && row.otherFees.length > 0" class="expanded-content">
+                    <div class="expanded-header m-1">
+                      <el-space>
+                        <span class="header-title">其他费用明细</span>
+                        <el-tag type="info" size="small">共 {{ row.otherFees.length }} 项</el-tag>
+                      </el-space>
+                    </div>
+                    <el-table :data="row.otherFees" border size="small" class="sub-table">
+                      <el-table-column type="index" label="序号" width="60" align="center" />
+                      <el-table-column prop="name" label="费用名称" align="center" min-width="120" />
+                      <el-table-column prop="amount" label="金额" align="center" width="100">
+                        <template #default="{ row: fee }">
+                          <span class="fee-amount">¥{{ fee.amount }}</span>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="remark" label="说明" align="center" min-width="200" show-overflow-tooltip />
+                    </el-table>
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column type="index" label="序号" width="70" align="center" />
               <el-table-column prop="sortOrder" label="期数" align="center" width="80">
                 <template #default="{ row }">第{{ row.sortOrder }}期</template>
@@ -273,7 +303,10 @@
               </el-table-column>
               <el-table-column prop="otherFeeAmount" label="其他费用" align="center" width="100">
                 <template #default="{ row }">
-                  <span v-if="row.otherFeeAmount > 0" class="amount-text">¥{{ row.otherFeeAmount }}</span>
+                  <el-space v-if="row.otherFeeAmount > 0" :size="4">
+                    <span class="amount-text">¥{{ row.otherFeeAmount }}</span>
+                    <el-tag v-if="row.otherFees && row.otherFees.length > 0" type="info" size="small">{{ row.otherFees.length }}项</el-tag>
+                  </el-space>
                   <span v-else>-</span>
                 </template>
               </el-table-column>
@@ -389,7 +422,7 @@
     TENANT_SIGN_STATUS_OPTIONS,
     TENANT_STATUS_OPTIONS
   } from "@/constants";
-  import { Document, Download, House, Money, User, Edit } from "@element-plus/icons-vue";
+  import { Document, Download, Edit, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadTenantContract, generateTenantContract } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
@@ -401,6 +434,8 @@
   }
 
   const tenantStatusOptions = [...TENANT_STATUS_OPTIONS];
+  // 账单详情行展开状态
+  const expandedBillRows = ref<string[]>([]);
 
   const props = defineProps<FormProps>();
 
