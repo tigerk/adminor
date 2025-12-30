@@ -106,7 +106,7 @@
 
 <script setup lang="ts">
   import { ref } from "vue";
-  import { TENANT_SIGN_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import { TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import View from "~icons/ep/view";
@@ -145,7 +145,7 @@
   } = useTenant();
 
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
-  const statusOptions = [{ label: "全部", value: undefined }, ...TENANT_SIGN_STATUS_OPTIONS];
+  const statusOptions = [{ label: "全部", value: undefined }, ...TENANT_STATUS_OPTIONS];
 </script>
 <style lang="scss" scoped>
   .search-form {
