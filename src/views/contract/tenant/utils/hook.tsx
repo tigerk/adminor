@@ -79,6 +79,12 @@ function useTenant() {
       });
   }
 
+  // 根据状态获取颜色
+  const getStatusColor = (status: number) => {
+    const statusInfo = tenantStatusTotal.value.find(item => item.status === status);
+    return statusInfo?.statusColor || "#409eff";
+  };
+
   const columns: TableColumnList = [
     {
       label: "序号",
@@ -89,10 +95,25 @@ function useTenant() {
     },
     {
       label: "状态",
-      prop: "signStatus",
+      prop: "status",
       width: 90,
       fixed: "left",
-      cellRenderer: ({ row }) => <el-tag type="primary">{getOptionByCode(mutableTenantStatusOptions, row.status)?.label}</el-tag>
+      cellRenderer: ({ row }) => {
+        const statusColor = getStatusColor(row.status);
+        const statusLabel = getOptionByCode(mutableTenantStatusOptions, row.status)?.label;
+
+        return (
+          <el-tag
+            style={{
+              borderColor: statusColor,
+              backgroundColor: "#fff",
+              color: statusColor
+            }}
+          >
+            {statusLabel}
+          </el-tag>
+        );
+      }
     },
     {
       label: "房间",
