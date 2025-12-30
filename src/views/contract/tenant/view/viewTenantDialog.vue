@@ -10,14 +10,14 @@
           </div>
           <div class="room-content">
             <el-space wrap :size="10">
-              <el-tag v-for="room in formInline.roomList" :key="room.roomId" type="primary" size="large" effect="light" class="room-tag">
+              <el-tag v-for="room in localFormInline.roomList" :key="room.roomId" type="primary" size="large" effect="light" class="room-tag">
                 <span class="room-info">{{ room.communityName }} {{ room.doorNumber }}-{{ room.roomNumber }}</span>
                 <el-divider direction="vertical" />
                 <span class="room-area">{{ room.price ? room.price + "元/月" : "未设置" }}</span>
               </el-tag>
               <el-tag type="primary" size="large" effect="light" class="room-tag">
                 <span class="stat-label">房间数量：共</span>
-                <span class="stat-value">{{ formInline.roomList?.length || 0 }}</span>
+                <span class="stat-value">{{ localFormInline.roomList?.length || 0 }}</span>
                 <span class="stat-unit">间</span>
               </el-tag>
               <el-tag type="primary" size="large" effect="light" class="room-tag">
@@ -39,27 +39,27 @@
             <div class="room-stats">
               <div class="stat-item">
                 <span class="stat-label">租客：</span>
-                <span class="stat-value">{{ formInline.tenantName }}</span>
+                <span class="stat-value">{{ localFormInline.tenantName }}</span>
               </div>
               <el-divider direction="vertical" />
               <div class="stat-item">
                 <span class="stat-label">月租金总额：</span>
-                <span class="stat-value primary">¥{{ formInline.rentPrice }}</span>
+                <span class="stat-value primary">¥{{ localFormInline.rentPrice }}</span>
                 <span class="stat-unit">元/月</span>
               </div>
               <el-divider direction="vertical" />
               <div class="stat-item">
                 <span class="stat-label">收款方式：</span>
-                <span class="stat-value">押 {{ formInline.depositMonths }} 付 {{ formInline.paymentMonths }}</span>
+                <span class="stat-value">押 {{ localFormInline.depositMonths }} 付 {{ localFormInline.paymentMonths }}</span>
               </div>
               <el-divider direction="vertical" />
               <div class="stat-item">
                 <span class="stat-label">租期：</span>
                 <span class="stat-value">
                   <el-space :size="8">
-                    {{ formInline.leaseStart }}
+                    {{ localFormInline.leaseStart }}
                     <span>至</span>
-                    {{ formInline.leaseEnd }}
+                    {{ localFormInline.leaseEnd }}
                   </el-space>
                 </span>
               </div>
@@ -89,39 +89,39 @@
                 <template #title>
                   <el-space>
                     <span>基本信息</span>
-                    <el-tag :type="formInline.tenantType === 0 ? 'success' : 'warning'" size="default">
-                      {{ formInline.tenantType === 0 ? "个人" : "企业" }}
+                    <el-tag :type="localFormInline.tenantType === 0 ? 'success' : 'warning'" size="default">
+                      {{ localFormInline.tenantType === 0 ? "个人" : "企业" }}
                     </el-tag>
                   </el-space>
                 </template>
                 <el-descriptions-item label="姓名" label-align="right">
                   <el-space>
-                    <span class="text-value">{{ formInline.tenantName }}</span>
-                    <el-tag type="info" size="small">{{ formInline.tenantPersonal?.gender === 0 ? "男" : "女" }}</el-tag>
+                    <span class="text-value">{{ localFormInline.tenantName }}</span>
+                    <el-tag type="info" size="small">{{ localFormInline.tenantPersonal?.gender === 0 ? "男" : "女" }}</el-tag>
                   </el-space>
                 </el-descriptions-item>
                 <el-descriptions-item label="联系电话" label-align="right">
-                  <span class="text-value">{{ formInline.tenantPhone }}</span>
+                  <span class="text-value">{{ localFormInline.tenantPhone }}</span>
                 </el-descriptions-item>
 
-                <template v-if="formInline.tenantType === 0">
+                <template v-if="localFormInline.tenantType === 0">
                   <el-descriptions-item label="证件类型" label-align="right">
-                    <span class="text-value">{{ getIdTypeName(formInline.tenantPersonal?.idType) }}</span>
+                    <span class="text-value">{{ getIdTypeName(localFormInline.tenantPersonal?.idType) }}</span>
                   </el-descriptions-item>
                   <el-descriptions-item label="证件号码" label-align="right">
-                    <span class="text-value">{{ formInline.tenantPersonal?.idNo }}</span>
+                    <span class="text-value">{{ localFormInline.tenantPersonal?.idNo }}</span>
                   </el-descriptions-item>
                 </template>
                 <template v-else>
                   <el-descriptions-item label="统一社会信用代码" label-align="right" :span="2">
-                    <span class="text-value">{{ formInline.tenantCompany?.uscc }}</span>
+                    <span class="text-value">{{ localFormInline.tenantCompany?.uscc }}</span>
                   </el-descriptions-item>
                   <el-descriptions-item label="法定代表人" label-align="right">
-                    <span class="text-value">{{ formInline.tenantCompany?.legalPerson }}</span>
+                    <span class="text-value">{{ localFormInline.tenantCompany?.legalPerson }}</span>
                   </el-descriptions-item>
                 </template>
                 <el-descriptions-item label="签约时间" label-align="right" :span="2">
-                  <span class="text-value">{{ formInline.createTime }}</span>
+                  <span class="text-value">{{ localFormInline.createTime }}</span>
                 </el-descriptions-item>
               </el-descriptions>
             </div>
@@ -131,30 +131,30 @@
               <el-descriptions title="租约信息" :column="3" class="info-descriptions" size="default">
                 <el-descriptions-item label="合同周期" label-align="right">
                   <el-space :size="8">
-                    <el-tag type="primary">{{ formInline.leaseStart }}</el-tag>
+                    <el-tag type="primary">{{ localFormInline.leaseStart }}</el-tag>
                     <span>至</span>
-                    <el-tag type="primary">{{ formInline.leaseEnd }}</el-tag>
+                    <el-tag type="primary">{{ localFormInline.leaseEnd }}</el-tag>
                   </el-space>
                 </el-descriptions-item>
                 <el-descriptions-item label="月租金" label-align="right">
-                  <span class="rent-price">¥ {{ formInline.rentPrice }}</span>
+                  <span class="rent-price">¥ {{ localFormInline.rentPrice }}</span>
                   <span class="rent-unit">元/月</span>
                 </el-descriptions-item>
 
                 <el-descriptions-item label="押付方式" label-align="right">
-                  <span class="text-value">押 {{ formInline.depositMonths }} 付 {{ formInline.paymentMonths }}</span>
+                  <span class="text-value">押 {{ localFormInline.depositMonths }} 付 {{ localFormInline.paymentMonths }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="收租设置" label-align="right">
-                  <span class="text-value">{{ getRentDueTypeText(formInline.rentDueType, formInline.rentDueDay) }}</span>
+                  <span class="text-value">{{ getRentDueTypeText(localFormInline.rentDueType, localFormInline.rentDueDay) }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="签约类型" label-align="right">
-                  <span class="text-value">{{ getContractNatureName(formInline.contractNature) }}</span>
+                  <span class="text-value">{{ getContractNatureName(localFormInline.contractNature) }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="入住时间" label-align="right">
                   <el-space :size="8">
-                    <el-tag type="info">{{ formInline.checkInTime }}</el-tag>
+                    <el-tag type="info">{{ localFormInline.checkInTime }}</el-tag>
                     <span>至</span>
-                    <el-tag type="info">{{ formInline.checkOutTime }}</el-tag>
+                    <el-tag type="info">{{ localFormInline.checkOutTime }}</el-tag>
                   </el-space>
                 </el-descriptions-item>
               </el-descriptions>
@@ -165,7 +165,7 @@
                     <span class="title-text">其他费用</span>
                   </div>
                 </div>
-                <el-table v-if="formInline.otherFees && formInline.otherFees.length > 0" :data="formInline.otherFees" border stripe class="fees-table">
+                <el-table v-if="localFormInline.otherFees && localFormInline.otherFees.length > 0" :data="localFormInline.otherFees" border stripe class="fees-table">
                   <el-table-column type="index" label="序号" width="70" align="center" />
                   <el-table-column prop="name" label="费用名称" align="center" min-width="150" />
                   <el-table-column prop="paymentMethod" label="付款方式" align="center" min-width="120">
@@ -193,13 +193,13 @@
             <div class="info-section">
               <el-descriptions title="负责人信息" :column="3" class="info-descriptions" size="default">
                 <el-descriptions-item label="签约部门" label-align="right">
-                  <span class="text-value">{{ formInline.deptName }}</span>
+                  <span class="text-value">{{ localFormInline.deptName }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="签约人" label-align="right">
-                  <span class="text-value">{{ formInline.salesmanName }}</span>
+                  <span class="text-value">{{ localFormInline.salesmanName }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="成交渠道" label-align="right">
-                  <span class="text-value">{{ formInline.dealChannelName }}</span>
+                  <span class="text-value">{{ localFormInline.dealChannelName }}</span>
                 </el-descriptions-item>
               </el-descriptions>
             </div>
@@ -210,10 +210,10 @@
                 <div class="section-title">
                   <span class="title-icon" />
                   <span class="title-text">同住人信息</span>
-                  <el-tag type="info" size="small" class="ml-2">{{ formInline.tenantMateList.length }}人</el-tag>
+                  <el-tag type="info" size="small" class="ml-2">{{ localFormInline.tenantMateList.length }}人</el-tag>
                 </div>
               </div>
-              <el-table :data="formInline.tenantMateList" border stripe class="mate-table">
+              <el-table :data="localFormInline.tenantMateList" border stripe class="mate-table">
                 <el-table-column type="index" label="序号" width="70" align="center" />
                 <el-table-column prop="name" label="姓名" align="center" min-width="120" />
                 <el-table-column prop="gender" label="性别" align="center" width="80">
@@ -234,13 +234,13 @@
             <el-space class="tab-label">
               <el-icon><Money /></el-icon>
               <span>账单信息</span>
-              <el-tag type="info" size="default">{{ formInline.tenantBillList?.length || 0 }}条</el-tag>
+              <el-tag type="info" size="default">{{ localFormInline.tenantBillList?.length || 0 }}条</el-tag>
             </el-space>
           </template>
           <div class="tab-content">
             <el-table
-              v-if="formInline.tenantBillList && formInline.tenantBillList.length > 0"
-              :data="formInline.tenantBillList"
+              v-if="localFormInline.tenantBillList && localFormInline.tenantBillList.length > 0"
+              :data="localFormInline.tenantBillList"
               border
               stripe
               class="bill-table"
@@ -343,7 +343,7 @@
           </template>
           <div class="tab-content">
             <!-- 有合同信息时显示 -->
-            <div v-if="formInline.tenantContract" class="contract-section">
+            <div v-if="localFormInline.tenantContract" class="contract-section">
               <!-- 操作按钮栏 -->
               <div class="contract-action-bar">
                 <div class="action-left">
@@ -357,7 +357,7 @@
                   <el-space :size="16" alignment="flex-end">
                     <div class="info-item">
                       <span class="info-label">合同模板：</span>
-                      <span class="info-value">{{ formInline.tenantContract.contractTemplateName || "未设置" }}</span>
+                      <span class="info-value">{{ localFormInline.tenantContract.contractTemplateName || "未设置" }}</span>
                     </div>
                     <div class="info-item">
                       <span class="info-label">签约状态：</span>
@@ -367,28 +367,28 @@
                     </div>
                     <div class="info-item">
                       <span class="info-label">创建时间：</span>
-                      <span class="info-value">{{ formInline.createTime }}</span>
+                      <span class="info-value">{{ localFormInline.createTime }}</span>
                     </div>
                   </el-space>
                 </div>
               </div>
               <!-- 合同信息摘要 -->
-              <div v-if="formInline.tenantContract.remark" class="mb-2">
+              <div v-if="localFormInline.tenantContract.remark" class="mb-2">
                 <el-descriptions :column="1" size="default">
                   <el-descriptions-item label="合同备注" label-align="right">
-                    <span class="text-value">{{ formInline.tenantContract.remark }}</span>
+                    <span class="text-value">{{ localFormInline.tenantContract.remark }}</span>
                   </el-descriptions-item>
                 </el-descriptions>
               </div>
 
               <!-- 合同内容预览区域 -->
-              <div v-if="contractContent" class="contract-content-section">
+              <div v-if="localFormInline.tenantContract.contractContent" class="contract-content-section">
                 <div class="contract-header">
                   <span class="contract-title">合同内容</span>
                   <el-tag type="info" size="small">预览模式</el-tag>
                 </div>
                 <div class="contract-preview-wrapper">
-                  <div class="contract-preview" v-html="contractContent" />
+                  <div class="contract-preview" v-html="localFormInline.tenantContract.contractContent" />
                 </div>
               </div>
 
@@ -412,18 +412,10 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, h, ref, watch } from "vue";
+  import { h, ref, watch } from "vue";
   import { TenantDetailProps } from "@/types";
-  import {
-    getOptionByCode,
-    ID_TYPE_OPTIONS,
-    PAYMENT_METHOD_OPTIONS,
-    PRICE_METHOD_OPTIONS,
-    TENANT_CONTRACT_NATURE_OPTIONS,
-    TENANT_SIGN_STATUS_OPTIONS,
-    TENANT_STATUS_OPTIONS
-  } from "@/constants";
-  import { Checked, Delete, Document, Download, Edit, House, Money, User } from "@element-plus/icons-vue";
+  import { getOptionByCode, ID_TYPE_OPTIONS, PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS } from "@/constants";
+  import { Checked, Document, Download, Edit, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { deleteTenantContract, downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
@@ -461,8 +453,6 @@
     "contract-signed": [tenantId: bigint]; // 合同签约成功事件
     "contract-updated": []; // 合同更新事件
   }>();
-
-  const contractContent = ref(localFormInline.value.tenantContract?.contractContent || "");
 
   // 当前激活的标签页
   const activeTab = ref("tenant");
@@ -569,7 +559,7 @@
         }).then(resp => {
           if (resp.code == 0) {
             console.log(resp.data);
-            contractContent.value = resp.data;
+            localFormInline.value.tenantContract = resp.data;
             message("合同生成成功", { type: "success" });
             done();
           }
@@ -578,8 +568,6 @@
     });
   };
 
-  // <el-button type="primary" :icon="Checked" @click="handleSignContract">改为已签约</el-button>
-  //   <el-button type="primary" :icon="Delete" @click="handleDeleteContract">删除合同</el-button>
   const handleSignContract = () => {
     if (localFormInline.value.tenantContract?.signStatus === 1) {
       message("合同已签约，无需重复操作", { type: "warning" });
@@ -587,7 +575,7 @@
     }
 
     updateTenantContractSignStatus({
-      tenantContractId: props.formInline.tenantContract.id,
+      tenantContractId: localFormInline.value.tenantContract.id,
       signStatus: 1
     }).then(resp => {
       if (resp.code == 0) {
@@ -596,6 +584,8 @@
 
         // 通知父组件刷新列表
         emit("contract-signed", localFormInline.value.id);
+      } else {
+        message(resp.message || "合同签约修改失败", { type: "warning" });
       }
     });
   };

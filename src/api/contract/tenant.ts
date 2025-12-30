@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, TenantDetailProps } from "@/types";
+import type { ApiResponse, PaginationResponse, TenantContractProps, TenantDetailProps } from "@/types";
 
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
@@ -39,7 +39,7 @@ export const getTenantDetail = (data?: object) => {
 
 /** 生成租客合同 */
 export const generateTenantContract = (data?: object) => {
-  return http.request<ApiResponse<string>>("post", baseUrlApi("contract/tenant/contract/generate"), { data });
+  return http.request<ApiResponse<TenantContractProps>>("post", baseUrlApi("contract/tenant/contract/generate"), { data });
 };
 
 /** 下载租客合同 */
