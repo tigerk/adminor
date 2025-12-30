@@ -81,19 +81,12 @@
       >
         <template #operation="{ row }">
           <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="openTenantViewDialog('查看租客', row)">查看</el-button>
-          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(EditPen)" @click="openTenantDialog('修改', row)">修改</el-button>
-          <el-dropdown>
+          <el-dropdown :hide-on-click="false">
             <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>
-                  <el-button link type="primary" :icon="useRenderIcon(Upload)">上传头像</el-button>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button link type="primary" :icon="useRenderIcon(Password)">重置密码</el-button>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button link type="primary" :icon="useRenderIcon(Role)">分配角色</el-button>
+                <el-dropdown-item @click="handleConfirmDelete(row)">
+                  <el-button link :icon="useRenderIcon(Delete)">作废</el-button>
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -106,20 +99,21 @@
 
 <script setup lang="ts">
   import { ref } from "vue";
-  import { TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import { TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import View from "~icons/ep/view";
-  import EditPen from "~icons/ep/edit-pen";
   import Search from "~icons/ri/search-line";
   import Refresh from "~icons/ep/refresh";
   import Plus from "~icons/ep/plus";
   import User from "~icons/ep/user";
   import Phone from "~icons/ep/phone";
-  import Password from "~icons/ri/lock-password-line";
-  import Role from "~icons/ri/admin-line";
+  import Delete from "~icons/ep/delete";
   import More from "~icons/ep/more-filled";
-  import Upload from "~icons/ri/upload-line";
+  import { TenantRowProps } from "@/types";
+  import { cancelTenant } from "@/api/contract/tenant";
+  import { message } from "@/utils/message";
+  import { ElMessageBox } from "element-plus";
 
   defineOptions({
     name: "ContractTenant"
@@ -146,6 +140,35 @@
 
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
   const statusOptions = [{ label: "全部", value: undefined }, ...TENANT_STATUS_OPTIONS];
+
+  const handleConfirmDelete = row => {
+    ElMessageBox.confirm("确认作废该租客吗？", "作废", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(() => {
+        handleCancelTenant(row);
+      })
+      .catch(() => {
+        // 取消操作
+      });
+  };
+
+  const handleCancelTenant = (row: TenantRowProps) => {
+    cancelTenant({ tenantId: row.id })
+      .then(resp => {
+        if (resp.code == 0) {
+          message("作废租客成功");
+          row.status = resp.data;
+        } else {
+          message(resp.message || "作废租客失败", { type: "error" });
+        }
+      })
+      .catch(() => {
+        message("作废租客失败", { type: "error" });
+      });
+  };
 </script>
 <style lang="scss" scoped>
   .search-form {

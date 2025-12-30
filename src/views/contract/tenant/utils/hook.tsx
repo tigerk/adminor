@@ -208,7 +208,7 @@ function useTenant() {
     {
       label: "操作",
       fixed: "right",
-      width: 200,
+      width: 130,
       slot: "operation"
     }
   ];

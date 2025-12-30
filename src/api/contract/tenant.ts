@@ -56,3 +56,8 @@ export const updateTenantContractSignStatus = (data?: object) => {
 export const deleteTenantContract = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/contract/delete"), { data });
 };
+
+/** 作废租客 */
+export const cancelTenant = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/cancel"), { data });
+};
