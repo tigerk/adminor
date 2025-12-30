@@ -124,6 +124,31 @@
                   <span class="text-value">{{ localFormInline.createTime }}</span>
                 </el-descriptions-item>
               </el-descriptions>
+              <div class="photo-wall">
+                <div
+                  v-for="(url, index) in [
+                    ...localFormInline.tenantPersonal?.idCardBackList,
+                    ...localFormInline.tenantPersonal?.idCardFrontList,
+                    ...localFormInline.tenantPersonal?.idCardInHandList,
+                    ...localFormInline.tenantPersonal?.otherImageList
+                  ]"
+                  :key="index"
+                  class="photo-item"
+                >
+                  <el-image
+                    style="width: 100px; height: 100px; border-radius: 8px"
+                    :src="url"
+                    :zoom-rate="1.2"
+                    :max-scale="7"
+                    :min-scale="0.2"
+                    :preview-src-list="[url]"
+                    :initial-index="index"
+                    fit="cover"
+                    loading="lazy"
+                    preview-teleported
+                  />
+                </div>
+              </div>
             </div>
 
             <!-- 租约信息 -->
@@ -213,17 +238,42 @@
                   <el-tag type="info" size="small" class="ml-2">{{ localFormInline.tenantMateList.length }}人</el-tag>
                 </div>
               </div>
-              <el-table :data="localFormInline.tenantMateList" border stripe class="mate-table">
-                <el-table-column type="index" label="序号" width="70" align="center" />
-                <el-table-column prop="name" label="姓名" align="center" min-width="120" />
-                <el-table-column prop="gender" label="性别" align="center" width="80">
-                  <template #default="{ row }">
-                    {{ row.gender === 0 ? "男" : "女" }}
-                  </template>
-                </el-table-column>
-                <el-table-column prop="phone" label="联系电话" align="center" min-width="140" />
-                <el-table-column prop="idNo" label="证件号码" align="center" min-width="180" />
-              </el-table>
+              <div v-for="item in localFormInline.tenantMateList" class="mt-3 border-1 p-4" :key="item.id">
+                <el-descriptions  title="" :column="4" class="info-descriptions" size="default">
+                  <el-descriptions-item label="姓名" label-align="right">
+                    <span class="text-value">{{ item.name }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="性别" label-align="right">
+                    <span class="text-value">{{ item.gender === 0 ? "男" : "女" }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="联系电话" label-align="right">
+                    <span class="text-value">{{ item.phone }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="证件号码" label-align="right">
+                    <span class="text-value">{{ item.idNo }}</span>
+                  </el-descriptions-item>
+                </el-descriptions>
+                <div class="photo-wall">
+                  <div
+                    v-for="(url, index) in [...item?.idCardBackList, ...item?.idCardFrontList, ...item?.idCardInHandList, ...item?.otherImageList]"
+                    :key="index"
+                    class="photo-item"
+                  >
+                    <el-image
+                      style="width: 100px; height: 100px; border-radius: 8px"
+                      :src="url"
+                      :zoom-rate="1.2"
+                      :max-scale="7"
+                      :min-scale="0.2"
+                      :preview-src-list="[url]"
+                      :initial-index="index"
+                      fit="cover"
+                      loading="lazy"
+                      preview-teleported
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </el-tab-pane>
@@ -414,14 +464,14 @@
 <script setup lang="ts">
   import { h, ref, watch } from "vue";
   import { TenantDetailProps } from "@/types";
-  import { getOptionByCode, ID_TYPE_OPTIONS, PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS } from "@/constants";
+  import { ID_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS } from "@/constants";
   import { Checked, Document, Download, Edit, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { deleteTenantContract, downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
-  import { useUserStoreHook } from "@/store/modules/user";
+  import { useUserStoreHook } from "@/store/modules/user"; // 检查用户是否有删除合同权限
 
   // 检查用户是否有删除合同权限
   const { permissions } = useUserStoreHook();
@@ -1001,5 +1051,34 @@
   // 如果你之前在 el-tabs 上写了 modern-tabs 的样式，请保留
   .modern-tabs {
     margin-top: 10px;
+  }
+
+  .photo-wall {
+    display: flex;
+    flex-wrap: wrap; /* 自动换行 */
+    gap: 15px; /* 照片间距 */
+    padding: 20px 20px 20px 0;
+  }
+
+  .photo-item {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .photo-item:hover {
+    transform: translateY(-5px); /* 悬停浮起效果 */
+  }
+
+  .image-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background: var(--el-fill-color-light);
+    color: var(--el-text-color-secondary);
   }
 </style>
