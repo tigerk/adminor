@@ -157,4 +157,18 @@
   :deep(.el-dropdown-menu__item i) {
     margin: 0;
   }
+
+  .status-content {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .status-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
 </style>
