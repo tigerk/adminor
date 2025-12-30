@@ -349,9 +349,8 @@
                 <div class="action-left">
                   <el-space :size="12">
                     <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
-                    <el-button :disabled="localFormInline.tenantContract.signStatus !== 0" type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
+                    <el-button type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
                     <el-button type="primary" :icon="Checked" @click="handleSignContract">改为已签约</el-button>
-                    <el-button type="primary" :icon="Delete" @click="handleDeleteContract">删除合同</el-button>
                   </el-space>
                 </div>
                 <div class="action-right">
@@ -413,7 +412,7 @@
 </template>
 
 <script setup lang="ts">
-  import { h, ref, watch } from "vue";
+  import { computed, h, ref, watch } from "vue";
   import { TenantDetailProps } from "@/types";
   import {
     getOptionByCode,
@@ -426,16 +425,20 @@
   } from "@/constants";
   import { Checked, Delete, Document, Download, Edit, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
-  import { downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
+  import { deleteTenantContract, downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
+  import { useUserStoreHook } from "@/store/modules/user";
+
+  // 检查用户是否有删除合同权限
+  const { permissions } = useUserStoreHook();
+  // const hasContractDeletePermission = computed(() => permissions.includes("tenant:contract:delete"));
 
   interface FormProps {
     formInline: TenantDetailProps;
   }
 
-  const tenantStatusOptions = [...TENANT_STATUS_OPTIONS];
   // 账单详情行展开状态
   const expandedBillRows = ref<string[]>([]);
 
@@ -560,7 +563,8 @@
         }
 
         generateTenantContract({
-          tenantId: props.formInline.tenantContract.tenantId,
+          tenantContractId: localFormInline.value.tenantContract.id,
+          tenantId: localFormInline.value.tenantContract.tenantId,
           contractTemplateId: selectedTemplate
         }).then(resp => {
           if (resp.code == 0) {
@@ -592,6 +596,17 @@
 
         // 通知父组件刷新列表
         emit("contract-signed", localFormInline.value.id);
+      }
+    });
+  };
+
+  const handleDeleteContract = () => {
+    deleteTenantContract({
+      tenantContractId: props.formInline.tenantContract.id
+    }).then(resp => {
+      if (resp.code == 0) {
+        message("合同删除成功", { type: "success" });
+        emit("contract-updated");
       }
     });
   };

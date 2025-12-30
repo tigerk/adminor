@@ -4,6 +4,7 @@
       <el-option v-for="template in contractTemplates" :key="template.id" :label="template.templateName" :value="template.id" />
     </el-select>
   </div>
+  <el-text type="danger" class="mt-2">注意：选择合同模板后，合同将根据模板重新生成，并且会重置合同签约状态。</el-text>
 </template>
 
 <script setup lang="ts">

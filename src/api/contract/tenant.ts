@@ -47,6 +47,12 @@ export const downloadTenantContract = (data?: object) => {
   return http.request<Blob>("post", baseUrlApi("contract/tenant/contract/download"), { data }, { responseType: "blob" });
 };
 
+/** 更新租客合同签署状态 */
 export const updateTenantContractSignStatus = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/contract/sign/status/update"), { data });
+};
+
+/** 删除租客合同 */
+export const deleteTenantContract = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/contract/delete"), { data });
 };
