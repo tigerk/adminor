@@ -171,6 +171,16 @@ function useTenant() {
       cellRenderer: ({ row }) => <span>{row.rentPrice} 元/月</span>
     },
     {
+      label: "收款方式",
+      prop: "",
+      minWidth: 120,
+      cellRenderer: ({ row }) => (
+        <span>
+          押 {row.depositMonths} 付 {row.paymentMonths}
+        </span>
+      )
+    },
+    {
       label: "租客姓名",
       prop: "tenantName",
       minWidth: 120
