@@ -13,6 +13,7 @@ import { getDictDataByDictCode } from "@/api/sys/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
 import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
 import ViewTenantDialog from "@/views/contract/tenant/view/viewTenantDialog.vue";
+import { calculateMonthsDifference } from "@/utils/yeah";
 
 function useTenant() {
   const pagination = reactive<PaginationProps>({
@@ -157,11 +158,16 @@ function useTenant() {
     {
       label: "合同周期",
       prop: "leaseDate",
-      minWidth: 200,
+      minWidth: 250,
       cellRenderer: ({ row }) => (
-        <span>
-          {row.leaseStart} - {row.leaseEnd}
-        </span>
+        <el-space spacer={" | "}>
+          <el-text>
+            {row.leaseStart} - {row.leaseEnd}
+          </el-text>
+          <el-text type="primary" size="small">
+            {calculateMonthsDifference(row.leaseStart, row.leaseEnd)} 月
+          </el-text>
+        </el-space>
       )
     },
     {
