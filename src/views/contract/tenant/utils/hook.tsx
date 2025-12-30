@@ -100,7 +100,7 @@ function useTenant() {
       width: 300,
       showOverflowTooltip: false,
       cellRenderer: ({ row }) => (
-        <el-tooltip placement="top" effect="dark" popper-class="room-tooltip">
+        <el-tooltip placement="top" effect="light" popper-class="room-tooltip">
           {{
             // 👇 悬浮内容（自定义）
             content: () => (
