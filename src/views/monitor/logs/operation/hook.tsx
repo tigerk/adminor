@@ -11,7 +11,7 @@ import Info from "~icons/ri/question-line";
 export function useRole(tableRef: Ref) {
   const form = reactive({
     currentPage: 1,
-    pageSize: 10,
+    pageSize: 15,
     title: "",
     requestTime: null
   });
@@ -23,7 +23,7 @@ export function useRole(tableRef: Ref) {
 
   const pagination = reactive<PaginationProps>({
     total: 0,
-    pageSize: 13,
+    pageSize: 15,
     currentPage: 1,
     background: true
   });

@@ -471,6 +471,16 @@
             </el-empty>
           </div>
         </el-tab-pane>
+        <!-- 物业交割单 Tab -->
+        <el-tab-pane name="delivery">
+          <template #label>
+            <el-space>
+              <el-icon><Files /></el-icon>
+              <span>物业交割单</span>
+            </el-space>
+          </template>
+          <div class="tab-content">123123</div>
+        </el-tab-pane>
       </el-tabs>
     </div>
   </div>
@@ -480,7 +490,7 @@
   import { h, ref, watch } from "vue";
   import { TenantDetailProps } from "@/types";
   import { getOptionByCode, ID_TYPE_OPTIONS, PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS } from "@/constants";
-  import { Checked, Document, Download, Edit, House, Money, User } from "@element-plus/icons-vue";
+  import { Checked, Document, Download, Edit, House, Money, User, Files } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { deleteTenantContract, downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";

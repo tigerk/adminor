@@ -20,7 +20,8 @@
   import { switchCompany } from "@/api/login";
   import { ElMessage } from "element-plus";
 
-  import FunctionMenu from "../../../components/Business/FunctionMenu.vue"; // 导入功能菜单组件
+  import FunctionMenu from "../../../components/Business/FunctionMenu.vue";
+  import { message } from "@/utils/message"; // 导入功能菜单组件
 
   const {
     layout,
@@ -54,6 +55,9 @@
       switchCompany({ companyId: companyId }).then(r => {
         if (r.code == 0) {
           setToken(r.data);
+          message("正在切换公司，请稍后...", {
+            duration: 2000
+          });
           window.location.reload();
         } else {
           ElMessage.error(r.message);
