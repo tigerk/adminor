@@ -238,42 +238,47 @@
                   <el-tag type="info" size="small" class="ml-2">{{ localFormInline.tenantMateList.length }}人</el-tag>
                 </div>
               </div>
-              <div v-for="item in localFormInline.tenantMateList" class="mt-3 border-1 p-4" :key="item.id">
-                <el-descriptions  title="" :column="4" class="info-descriptions" size="default">
-                  <el-descriptions-item label="姓名" label-align="right">
-                    <span class="text-value">{{ item.name }}</span>
-                  </el-descriptions-item>
-                  <el-descriptions-item label="性别" label-align="right">
-                    <span class="text-value">{{ item.gender === 0 ? "男" : "女" }}</span>
-                  </el-descriptions-item>
-                  <el-descriptions-item label="联系电话" label-align="right">
-                    <span class="text-value">{{ item.phone }}</span>
-                  </el-descriptions-item>
-                  <el-descriptions-item label="证件号码" label-align="right">
-                    <span class="text-value">{{ item.idNo }}</span>
-                  </el-descriptions-item>
-                </el-descriptions>
-                <div class="photo-wall">
-                  <div
-                    v-for="(url, index) in [...item?.idCardBackList, ...item?.idCardFrontList, ...item?.idCardInHandList, ...item?.otherImageList]"
-                    :key="index"
-                    class="photo-item"
-                  >
-                    <el-image
-                      style="width: 100px; height: 100px; border-radius: 8px"
-                      :src="url"
-                      :zoom-rate="1.2"
-                      :max-scale="7"
-                      :min-scale="0.2"
-                      :preview-src-list="[url]"
-                      :initial-index="index"
-                      fit="cover"
-                      loading="lazy"
-                      preview-teleported
-                    />
-                  </div>
-                </div>
-              </div>
+              <el-table :data="localFormInline.tenantMateList" border class="mate-table" stripe default-expand-all>
+                <el-table-column type="expand">
+                  <template #default="props">
+                    <div class="photo-wall">
+                      <div
+                        v-for="(url, index) in [...props.row?.idCardBackList, ...props.row?.idCardFrontList, ...props.row?.idCardInHandList, ...props.row?.otherImageList]"
+                        :key="index"
+                        class="photo-item"
+                      >
+                        <el-image
+                          style="width: 100px; height: 100px; border-radius: 8px"
+                          :src="url"
+                          :zoom-rate="1.2"
+                          :max-scale="7"
+                          :min-scale="0.2"
+                          :preview-src-list="[url]"
+                          :initial-index="index"
+                          fit="cover"
+                          loading="lazy"
+                          preview-teleported
+                        />
+                      </div>
+                      <el-text
+                        v-if="[...props.row?.idCardBackList, ...props.row?.idCardFrontList, ...props.row?.idCardInHandList, ...props.row?.otherImageList].length === 0"
+                        class="mx-1"
+                      >
+                        没有证件照片
+                      </el-text>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column type="index" label="序号" width="70" align="center" />
+                <el-table-column prop="name" label="姓名" align="center" min-width="120" />
+                <el-table-column prop="gender" label="性别" align="center" width="80">
+                  <template #default="{ row }">
+                    {{ row.gender === 0 ? "男" : "女" }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="phone" label="联系电话" align="center" min-width="140" />
+                <el-table-column prop="idNo" label="证件号码" align="center" min-width="180" />
+              </el-table>
             </div>
           </div>
         </el-tab-pane>
@@ -464,14 +469,14 @@
 <script setup lang="ts">
   import { h, ref, watch } from "vue";
   import { TenantDetailProps } from "@/types";
-  import { ID_TYPE_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS } from "@/constants";
+  import { getOptionByCode, ID_TYPE_OPTIONS, PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS } from "@/constants";
   import { Checked, Document, Download, Edit, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { deleteTenantContract, downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
-  import { useUserStoreHook } from "@/store/modules/user"; // 检查用户是否有删除合同权限
+  import { useUserStoreHook } from "@/store/modules/user";
 
   // 检查用户是否有删除合同权限
   const { permissions } = useUserStoreHook();
@@ -1057,7 +1062,7 @@
     display: flex;
     flex-wrap: wrap; /* 自动换行 */
     gap: 15px; /* 照片间距 */
-    padding: 20px 20px 20px 0;
+    padding: 10px 20px;
   }
 
   .photo-item {
