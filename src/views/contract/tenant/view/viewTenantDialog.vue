@@ -69,9 +69,9 @@
       </div>
     </div>
     <div class="tabs-wrapper">
-      <div class="tabs-action-container">
-        <el-button type="primary" size="small" :icon="Edit" @click="handleDownloadContract">修改租客</el-button>
-      </div>
+      <!--      <div class="tabs-action-container">-->
+      <!--        <el-button type="primary" size="small" :icon="Edit" @click="handleDownloadContract">修改租客</el-button>-->
+      <!--      </div>-->
       <!-- 标签页内容 -->
       <el-tabs v-model="activeTab" class="modern-tabs">
         <!-- 租客信息 Tab -->
@@ -93,6 +93,11 @@
                       {{ localFormInline.tenantType === 0 ? "个人" : "企业" }}
                     </el-tag>
                   </el-space>
+                </template>
+                <template #extra>
+                  <el-tooltip class="box-item" effect="dark" content="修改租客信息，包括姓名、联系电话、证件类型、证件号码等。" placement="top">
+                    <el-button type="primary" size="small" :icon="Edit" @click="handleDownloadContract">修改租客</el-button>
+                  </el-tooltip>
                 </template>
                 <el-descriptions-item label="姓名" label-align="right">
                   <el-space>
@@ -304,6 +309,7 @@
             >
               <el-table-column type="expand">
                 <template #default="{ row }">
+                  <div v-if="row.otherFees && row.otherFees.length === 0" class="text-center">没有其他费用</div>
                   <div v-if="row.otherFees && row.otherFees.length > 0" class="expanded-content">
                     <div class="expanded-header m-1">
                       <el-space>
@@ -405,7 +411,11 @@
                   <el-space :size="12">
                     <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
                     <el-button type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
-                    <el-button type="primary" :icon="Checked" @click="handleSignContract">改为已签约</el-button>
+                    <el-popconfirm title="确认将合同状态改为已签约吗？" @confirm="handleSignContract">
+                      <template #reference>
+                        <el-button type="primary" :icon="Checked">改为已签约</el-button>
+                      </template>
+                    </el-popconfirm>
                   </el-space>
                 </div>
                 <div class="action-right">
@@ -476,7 +486,7 @@
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
-  import { useUserStoreHook } from "@/store/modules/user";
+  import { useUserStoreHook } from "@/store/modules/user"; // 检查用户是否有删除合同权限
 
   // 检查用户是否有删除合同权限
   const { permissions } = useUserStoreHook();
