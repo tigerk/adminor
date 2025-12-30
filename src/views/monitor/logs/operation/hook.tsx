@@ -3,9 +3,9 @@ import Detail from "./detail.vue";
 import { message } from "@/utils/message";
 import { addDialog } from "@/components/ReDialog";
 import type { PaginationProps } from "@pureadmin/table";
-import { type Ref, reactive, ref, onMounted, toRaw } from "vue";
+import { onMounted, reactive, ref, type Ref, toRaw } from "vue";
 import { getKeyList, useCopyToClipboard } from "@pureadmin/utils";
-import { getOperationLogList, getOperationLogDetail, batchDeleteOperationLogs, clearAllOperationLogs } from "@/api/monitor";
+import { batchDeleteOperationLogs, clearAllOperationLogs, getOperationLogDetail, getOperationLogList } from "@/api/monitor";
 import Info from "~icons/ri/question-line";
 
 export function useRole(tableRef: Ref) {
@@ -50,17 +50,20 @@ export function useRole(tableRef: Ref) {
     {
       label: "ID",
       prop: "id",
+      hide: true,
       minWidth: 90
     },
     {
       label: "所属模块",
       prop: "title",
-      minWidth: 100
+      showOverflowTooltip: true,
+      width: 140
     },
     {
       label: "动作",
       prop: "operationType",
-      minWidth: 100,
+      width: 100,
+      showOverflowTooltip: true,
       cellRenderer: ({ row, props }) => operationTypeMap[row.operationType]
     },
     {
@@ -77,32 +80,38 @@ export function useRole(tableRef: Ref) {
         </span>
       ),
       prop: "requestUrl",
-      minWidth: 140
+      showOverflowTooltip: true,
+      width: 240
     },
     {
       label: "请求方法",
       prop: "requestMethod",
-      minWidth: 140
+      showOverflowTooltip: true,
+      width: 140
     },
     {
       label: "IP 地址",
       prop: "ipAddress",
-      minWidth: 100
+      showOverflowTooltip: true,
+      width: 100
     },
     {
       label: "地点",
       prop: "location",
-      minWidth: 140
+      showOverflowTooltip: true,
+      width: 140
     },
     {
       label: "操作系统",
       prop: "os",
-      minWidth: 100
+      showOverflowTooltip: true,
+      width: 140
     },
     {
       label: "浏览器类型",
       prop: "browser",
-      minWidth: 100
+      showOverflowTooltip: true,
+      width: 140
     },
     // {
     //   label: "级别",
@@ -117,7 +126,8 @@ export function useRole(tableRef: Ref) {
     {
       label: "请求耗时",
       prop: "costTime",
-      minWidth: 100,
+      showOverflowTooltip: true,
+      width: 100,
       cellRenderer: ({ row, props }) => (
         <el-tag size={props.size} type={row.costTime < 1000 ? "success" : "warning"} effect="plain">
           {row.costTime} ms
@@ -127,11 +137,13 @@ export function useRole(tableRef: Ref) {
     {
       label: "请求时间",
       prop: "requestTime",
-      minWidth: 180,
+      showOverflowTooltip: true,
+      width: 180,
       formatter: ({ requestTime }) => dayjs(requestTime).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",
+      width: 100,
       fixed: "right",
       slot: "operation"
     }
