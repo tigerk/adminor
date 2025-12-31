@@ -1,7 +1,7 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
 import type { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
-import type { ApiListResponse, ApiResponse } from "@/types/common";
+import type { ApiListResponse, ApiResponse, PaginationResponse } from "@/types/common";
 
 type ResultList = {
   code: number;
@@ -23,4 +23,9 @@ export const getFocusById = (data?: object) => {
 
 export const checkFocusCodeExist = (data?: object) => {
   return http.request<ApiResponse<boolean>>("get", baseUrlApi("focus/code/check"), { params: data });
+};
+
+/** 获取集中式项目列表 */
+export const getFocusList = (data?: object) => {
+  return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("focus/list"), { params: data });
 };

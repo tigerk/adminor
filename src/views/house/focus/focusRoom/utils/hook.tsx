@@ -1,11 +1,11 @@
 import { message } from "@/utils/message";
 import { transformI18n } from "@/plugins/i18n";
 import type { PaginationProps } from "@pureadmin/table";
-import { reactive, ref, onMounted, toRaw } from "vue";
+import { onMounted, reactive, ref, toRaw } from "vue";
 import router from "@/router";
 import { getRoomList, getRoomTotal } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
-import type { HouseLayoutProps } from "@/views/house/components/FocusCreate/utils/types";
+import type { HouseLayoutProps } from "@/types";
 
 export function userFocusRoom() {
   const pagination = reactive<PaginationProps>({
