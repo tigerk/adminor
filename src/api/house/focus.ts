@@ -27,5 +27,5 @@ export const checkFocusCodeExist = (data?: object) => {
 
 /** 获取集中式项目列表 */
 export const getFocusList = (data?: object) => {
-  return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("focus/list"), { params: data });
+  return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("focus/list"), { data });
 };
