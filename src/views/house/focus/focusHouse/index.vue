@@ -252,17 +252,17 @@
 <style scoped lang="scss">
   .focus-house-container {
     height: 100%;
+    margin: 0 !important;
     display: flex;
     flex-direction: column;
-    background: #f5f7fa;
   }
 
   .search-card {
-    margin-bottom: 16px;
+    margin: 16px;
     border-radius: 8px;
 
     :deep(.el-card__body) {
-      padding: 16px;
+      padding: 16px 16px 0 16px;
     }
   }
 
