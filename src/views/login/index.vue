@@ -494,7 +494,7 @@
       }
 
       &.is-focus {
-        border-color: #ef4444;
+        border-color: #3478f6;
       }
     }
 
@@ -527,13 +527,13 @@
     margin-bottom: 24px;
     font-size: 16px;
     font-weight: 600;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: linear-gradient(135deg, #3478f6 0%, #3478f6 100%);
     border: none;
     border-radius: 10px;
     transition: all 0.3s;
 
     &:hover {
-      box-shadow: 0 8px 20px rgb(239 68 68 / 30%);
+      box-shadow: 0 8px 20px rgba(52, 120, 246, 0.3);
       transform: translateY(-2px);
     }
   }

@@ -101,6 +101,7 @@
     if (httpReg.test(routePath) || httpReg.test(props.basePath)) {
       return routePath || props.basePath;
     } else {
+      console.log(props.basePath, routePath);
       return posix.resolve(props.basePath, routePath);
     }
   }
