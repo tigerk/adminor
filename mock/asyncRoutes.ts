@@ -13,7 +13,7 @@ const mockRouter = [
     name: "House",
     redirect: "/house/focus/room",
     component: null,
-    type: 0,
+
     meta: {
       title: "房源管理",
       icon: "ep:house",
@@ -32,13 +32,12 @@ const mockRouter = [
         name: "HouseFocus",
         redirect: null,
         component: null,
-        type: 0,
+
         meta: {
           title: "集中式",
           icon: "ri:building-line",
           showLink: true,
           showParent: false,
-          sortOrder: 1,
           roles: null,
           auths: [""],
           keepAlive: false,
@@ -51,13 +50,12 @@ const mockRouter = [
             name: "HouseFocusRoom",
             redirect: null,
             component: "/house/focus/focusRoom/index",
-            type: 0,
+
             meta: {
               title: "房间列表",
               icon: "ri:door-closed-line",
               showLink: true,
               showParent: true,
-              sortOrder: 1,
               roles: null,
               auths: [""],
               keepAlive: false,
@@ -71,13 +69,12 @@ const mockRouter = [
             name: "HouseFocusHouse",
             redirect: null,
             component: "/house/focus/focusHouse/index",
-            type: 0,
+
             meta: {
               title: "项目列表",
               icon: "ri:profile-line",
               showLink: true,
               showParent: true,
-              sortOrder: 2,
               roles: null,
               auths: [""],
               keepAlive: false,
@@ -93,13 +90,12 @@ const mockRouter = [
         name: "HouseScatter",
         redirect: null,
         component: "house/scatter/scatterRoom/index",
-        type: 0,
+
         meta: {
           title: "整/合租",
           icon: "ri:door-fill",
           showLink: true,
           showParent: true,
-          sortOrder: 2,
           roles: null,
           auths: [""],
           keepAlive: false,
@@ -115,7 +111,7 @@ const mockRouter = [
     name: "Sys",
     redirect: null,
     component: null,
-    type: 0,
+
     meta: {
       title: "menus.pureSysManagement",
       icon: "ri:settings-3-line",
@@ -134,13 +130,12 @@ const mockRouter = [
         name: "SysUser",
         redirect: null,
         component: "sys/user/index",
-        type: 0,
+
         meta: {
           title: "menus.pureUser",
           icon: "ri:admin-line",
           showLink: true,
           showParent: true,
-          sortOrder: 1,
           roles: null,
           auths: [""],
           keepAlive: false,
@@ -154,13 +149,12 @@ const mockRouter = [
         name: "SysRole",
         redirect: null,
         component: "sys/role/index",
-        type: 0,
+
         meta: {
           title: "menus.pureRole",
           icon: "ri:admin-fill",
           showLink: true,
           showParent: true,
-          sortOrder: 1,
           roles: null,
           auths: [""],
           keepAlive: false,
@@ -174,13 +168,12 @@ const mockRouter = [
         name: "SysDept",
         redirect: null,
         component: "sys/dept/index",
-        type: 0,
+
         meta: {
           title: "menus.pureDept",
           icon: "ri:git-branch-line",
           showLink: true,
           showParent: true,
-          sortOrder: 1,
           roles: null,
           auths: [""],
           keepAlive: false,
@@ -194,13 +187,12 @@ const mockRouter = [
         name: "SysDict",
         redirect: null,
         component: "sys/dict/index",
-        type: 0,
+
         meta: {
           title: "menus.dictManagement",
           icon: "ri:book-2-line",
           showLink: true,
           showParent: true,
-          sortOrder: 1,
           roles: null,
           auths: [""],
           keepAlive: false,
@@ -216,7 +208,7 @@ const mockRouter = [
     name: "SysMonitor",
     redirect: null,
     component: null,
-    type: 0,
+
     meta: {
       title: "menus.pureSysMonitor",
       icon: "ep:monitor",
@@ -235,13 +227,12 @@ const mockRouter = [
         name: "OnlineUser",
         redirect: null,
         component: "monitor/online/index",
-        type: 0,
+
         meta: {
           title: "menus.pureOnlineUser",
           icon: "ri:user-voice-line",
           showLink: true,
           showParent: true,
-          sortOrder: 0,
           roles: null,
           auths: [""],
           keepAlive: false,
@@ -255,13 +246,12 @@ const mockRouter = [
         name: "LoginLog",
         redirect: null,
         component: "monitor/logs/login/index",
-        type: 0,
+
         meta: {
           title: "menus.pureLoginLog",
           icon: "ri:window-line",
           showLink: true,
           showParent: true,
-          sortOrder: 1,
           roles: null,
           auths: [""],
           keepAlive: false,
@@ -275,13 +265,12 @@ const mockRouter = [
         name: "OperationLog",
         redirect: null,
         component: "monitor/logs/operation/index",
-        type: 0,
+
         meta: {
           title: "menus.pureOperationLog",
           icon: "ri:history-fill",
           showLink: true,
           showParent: true,
-          sortOrder: 2,
           roles: null,
           auths: [""],
           keepAlive: false,
