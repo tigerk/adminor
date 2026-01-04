@@ -20,26 +20,26 @@ export default {
         showParent: true
       }
     },
-    {
-      path: "/contract/landlord",
-      name: "ContractLandlord",
-      component: () => import("@/views/contract/landlord/index.vue"),
-      meta: {
-        title: "房东合同",
-        icon: "IF-icon-landlord",
-        showParent: true
-      }
-    },
-    {
-      path: "/contract/booking",
-      name: "ContractBooking",
-      component: () => import("@/views/contract/booking/index.vue"),
-      meta: {
-        title: "租客预定",
-        icon: "IF-icon-booking",
-        showParent: true
-      }
-    },
+    // {
+    //   path: "/contract/landlord",
+    //   name: "ContractLandlord",
+    //   component: () => import("@/views/contract/landlord/index.vue"),
+    //   meta: {
+    //     title: "房东合同",
+    //     icon: "IF-icon-landlord",
+    //     showParent: true
+    //   }
+    // },
+    // {
+    //   path: "/contract/booking",
+    //   name: "ContractBooking",
+    //   component: () => import("@/views/contract/booking/index.vue"),
+    //   meta: {
+    //     title: "租客预定",
+    //     icon: "IF-icon-booking",
+    //     showParent: true
+    //   }
+    // },
     {
       path: "/contract/settings",
       name: "ContractSettings",

@@ -4,7 +4,7 @@ export default {
   meta: {
     title: "系统管理",
     icon: "IF-icon-house",
-    sortOrder: 1,
+    sortOrder: 99,
     showLink: true
   },
   children: [
