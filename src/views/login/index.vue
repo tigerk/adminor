@@ -47,8 +47,8 @@
   const { t } = useI18n();
   const { initStorage } = useLayout();
   initStorage();
-  const { dataTheme, overallStyle, dataThemeChange } = useDataThemeChange();
-  dataThemeChange(overallStyle.value);
+  const { dataTheme, themeMode, dataThemeChange } = useDataThemeChange();
+  dataThemeChange(themeMode.value);
   const { title, getLogo } = useNav();
   const { locale, translationCh, translationEn } = useTranslationLang();
 
