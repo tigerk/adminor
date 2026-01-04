@@ -83,23 +83,14 @@ const houseRouter = {
       ]
     },
     {
-      path: "house/scatter",
+      path: "/house/scatter",
       name: "HouseScatter",
-      redirect: null,
-      component: "house/scatter/scatterRoom/index",
-
+      component: "/house/scatter/scatterRoom/index",
       meta: {
         title: "整/合租",
-        icon: "ri:door-fill",
-        showLink: true,
-        showParent: true,
-        roles: null,
-        auths: [""],
-        keepAlive: false,
-        frameSrc: "",
-        frameLoading: true
-      },
-      children: []
+        icon: "IF-icon-scatter",
+        showParent: true
+      }
     }
   ]
 };
@@ -107,23 +98,34 @@ const houseRouter = {
 const sysRouter = {
   path: "/sys",
   name: "Sys",
+  redirect: null,
+  component: null,
+  type: 0,
   meta: {
-    title: "menus.pureSysManagement",
+    title: "系统管理",
     icon: "ri:settings-3-line",
     showLink: true,
-    sortOrder: 98
+    showParent: false,
+    // sortOrder: null,
+    roles: null,
+    auths: [""],
+    keepAlive: false,
+    frameSrc: "",
+    frameLoading: true
   },
   children: [
     {
       path: "/sys/user/index",
       name: "SysUser",
       redirect: null,
-      component: "sys/user/index",
+      component: null,
+      type: 0,
       meta: {
-        title: "menus.pureUser",
+        title: "用户管理",
         icon: "ri:admin-line",
         showLink: true,
         showParent: true,
+        // sortOrder: null,
         roles: null,
         auths: [""],
         keepAlive: false,
@@ -136,13 +138,14 @@ const sysRouter = {
       path: "/sys/role/index",
       name: "SysRole",
       redirect: null,
-      component: "sys/role/index",
-
+      component: null,
+      type: 0,
       meta: {
-        title: "menus.pureRole",
+        title: "角色管理",
         icon: "ri:admin-fill",
         showLink: true,
         showParent: true,
+        // sortOrder: null,
         roles: null,
         auths: [""],
         keepAlive: false,
@@ -155,13 +158,14 @@ const sysRouter = {
       path: "/sys/dept/index",
       name: "SysDept",
       redirect: null,
-      component: "sys/dept/index",
-
+      component: null,
+      type: 0,
       meta: {
-        title: "menus.pureDept",
+        title: "部门管理",
         icon: "ri:git-branch-line",
         showLink: true,
         showParent: true,
+        // sortOrder: null,
         roles: null,
         auths: [""],
         keepAlive: false,
@@ -174,13 +178,14 @@ const sysRouter = {
       path: "/sys/dict/index",
       name: "SysDict",
       redirect: null,
-      component: "sys/dict/index",
-
+      component: null,
+      type: 0,
       meta: {
-        title: "menus.dictManagement",
+        title: "字典管理",
         icon: "ri:book-2-line",
         showLink: true,
         showParent: true,
+        // sortOrder: null,
         roles: null,
         auths: [""],
         keepAlive: false,
@@ -220,6 +225,7 @@ const monitorRouter = {
       meta: {
         title: "menus.pureOnlineUser",
         icon: "ri:user-voice-line",
+        sortOrder: 99,
         showLink: true,
         showParent: true,
         roles: null,
@@ -240,6 +246,7 @@ const monitorRouter = {
         title: "menus.pureLoginLog",
         icon: "ri:window-line",
         showLink: true,
+        sortOrder: 99,
         showParent: true,
         roles: null,
         auths: [""],
@@ -259,6 +266,7 @@ const monitorRouter = {
         title: "menus.pureOperationLog",
         icon: "ri:history-fill",
         showLink: true,
+        sortOrder: 99,
         showParent: true,
         roles: null,
         auths: [""],
@@ -273,7 +281,7 @@ const monitorRouter = {
 
 export default defineFakeRoute([
   {
-    url: "/api/saas/get-async-routes",
+    url: "/saas/get-async-routes",
     method: "get",
     response: () => {
       return {

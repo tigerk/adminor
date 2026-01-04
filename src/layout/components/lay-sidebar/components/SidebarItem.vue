@@ -96,18 +96,13 @@
     return false;
   }
 
-  // 在 SidebarItem.vue 中修改 resolvePath 函数
-  function resolvePath(routePath: string) {
+  function resolvePath(routePath) {
     const httpReg = /^http(s?):\/\//;
     if (httpReg.test(routePath) || httpReg.test(props.basePath)) {
       return routePath || props.basePath;
+    } else {
+      return posix.resolve(props.basePath, routePath);
     }
-
-    // 使用简单的 URL 拼接或逻辑处理替代 posix.resolve
-    // 确保 basePath 和 routePath 之间有斜杠且不重复
-    const base = props.basePath.replace(/\/$/, "");
-    const path = routePath.replace(/^\//, "");
-    return `${base}/${path}`;
   }
 </script>
 

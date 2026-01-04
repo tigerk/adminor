@@ -1,19 +1,19 @@
 <script setup lang="ts">
-  import { PropType } from "vue";
-  import { ListItem } from "../data";
-  import NoticeItem from "./NoticeItem.vue";
-  import { transformI18n } from "@/plugins/i18n";
+import { PropType } from "vue";
+import { ListItem } from "../data";
+import NoticeItem from "./NoticeItem.vue";
+import { transformI18n } from "@/plugins/i18n";
 
-  defineProps({
-    list: {
-      type: Array as PropType<Array<ListItem>>,
-      default: () => []
-    },
-    emptyText: {
-      type: String,
-      default: ""
-    }
-  });
+defineProps({
+  list: {
+    type: Array as PropType<Array<ListItem>>,
+    default: () => []
+  },
+  emptyText: {
+    type: String,
+    default: ""
+  }
+});
 </script>
 
 <template>
