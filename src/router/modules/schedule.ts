@@ -7,7 +7,7 @@ export default {
   meta: {
     icon: "ri/calendar-todo-line",
     title: $t("menus.pureSchedule"),
-    rank: schedule
+    sortOrder: schedule
   },
   children: [
     {

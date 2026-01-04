@@ -1,29 +1,30 @@
-import { createWebHashHistory, createWebHistory, type RouteComponent, type RouteRecordRaw, type RouterHistory } from "vue-router";
+import { type RouterHistory, type RouteRecordRaw, type RouteComponent, createWebHistory, createWebHashHistory } from "vue-router";
 import { router } from "./index";
 import { isProxy, toRaw } from "vue";
 import { useTimeoutFn } from "@vueuse/core";
-import { cloneDeep, intersection, isAllEmpty, isIncludeAllChildren, isString, storageLocal } from "@pureadmin/utils";
+import { isString, cloneDeep, isAllEmpty, intersection, storageLocal, isIncludeAllChildren } from "@pureadmin/utils";
 import { getConfig } from "@/config";
 import { buildHierarchyTree } from "@/utils/tree";
-import { type DataInfo, userKey } from "@/utils/auth";
+import { userKey, type DataInfo } from "@/utils/auth";
 import { type menuType, routerArrays } from "@/layout/types";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
-import { usePermissionStoreHook } from "@/store/modules/permission"; // 动态路由
-import { getAsyncRoutes } from "@/api/routes";
-
+import { usePermissionStoreHook } from "@/store/modules/permission";
 const IFrame = () => import("@/layout/frame.vue");
 // https://cn.vitejs.dev/guide/features.html#glob-import
 const modulesRoutes = import.meta.glob("/src/views/**/*.{vue,tsx}");
 
+// 动态路由
+import { getAsyncRoutes } from "@/api/routes";
+
 function handRank(routeInfo: any) {
   const { name, path, parentId, meta } = routeInfo;
-  return isAllEmpty(parentId) ? !!(isAllEmpty(meta?.sortOrder) || (meta?.sortOrder === 0 && name !== "Home" && path !== "/")) : false;
+  return isAllEmpty(parentId) ? (isAllEmpty(meta?.sortOrder) || (meta?.sortOrder === 0 && name !== "Home" && path !== "/") ? true : false) : false;
 }
 
-/** 按照路由中meta下的sortOrder等级升序来排序路由 */
+/** 按照路由中meta下的rank等级升序来排序路由 */
 function ascending(arr: any[]) {
   arr.forEach((v, index) => {
-    // 当sortOrder不存在时，根据顺序自动创建，首页路由永远在第一位
+    // 当rank不存在时，根据顺序自动创建，首页路由永远在第一位
     if (handRank(v)) v.meta.sortOrder = index + 2;
   });
   return arr.sort((a: { meta: { sortOrder: number } }, b: { meta: { sortOrder: number } }) => {
@@ -47,7 +48,7 @@ function filterChildrenTree(data: RouteComponent[]) {
 
 /** 判断两个数组彼此是否存在相同值 */
 function isOneOfArray(a: Array<string>, b: Array<string>) {
-  return Array.isArray(a) && Array.isArray(b) ? intersection(a, b).length > 0 : true;
+  return Array.isArray(a) && Array.isArray(b) ? (intersection(a, b).length > 0 ? true : false) : true;
 }
 
 /** 从localStorage里取出当前登录用户的角色roles，过滤无权限的菜单 */
@@ -62,12 +63,12 @@ function filterNoPermissionTree(data: RouteComponent[]) {
 function getParentPaths(value: string, routes: RouteRecordRaw[], key = "path") {
   // 深度遍历查找
   function dfs(routes: RouteRecordRaw[], value: string, parents: string[]) {
-    for (const element of routes) {
-      const item = element;
+    for (let i = 0; i < routes.length; i++) {
+      const item = routes[i];
       // 返回父级path
       if (item[key] === value) return parents;
       // children不存在或为空则不递归
-      if (!item.children?.length) continue;
+      if (!item.children || !item.children.length) continue;
       // 往下查找时将当前path入栈
       parents.push(item.path);
 
@@ -88,9 +89,9 @@ function findRouteByPath(path: string, routes: RouteRecordRaw[]) {
   if (res) {
     return isProxy(res) ? toRaw(res) : res;
   } else {
-    for (const element of routes) {
-      if (element.children instanceof Array && element.children.length > 0) {
-        res = findRouteByPath(path, element.children);
+    for (let i = 0; i < routes.length; i++) {
+      if (routes[i].children instanceof Array && routes[i].children.length > 0) {
+        res = findRouteByPath(path, routes[i].children);
         if (res) {
           return isProxy(res) ? toRaw(res) : res;
         }
@@ -122,7 +123,9 @@ function handleAsyncRoutes(routeList) {
   } else {
     formatFlatteningRoutes(addAsyncRoutes(routeList)).map((v: RouteRecordRaw) => {
       // 防止重复添加路由
-      if (router.options.routes[0].children.findIndex(value => value.path === v.path) === -1) {
+      if (router.options.routes[0].children.findIndex(value => value.path === v.path) !== -1) {
+        return;
+      } else {
         // 切记将路由push到routes后还需要使用addRoute，这样路由才能正常跳转
         router.options.routes[0].children.push(v);
         // 最终路由进行升序
@@ -132,8 +135,6 @@ function handleAsyncRoutes(routeList) {
         // 保持router.options.routes[0].children与path为"/"的children一致，防止数据不一致导致异常
         flattenRouters.children = router.options.routes[0].children;
         router.addRoute(flattenRouters);
-      } else {
-        return;
       }
     });
     usePermissionStoreHook().handleWholeMenus(routeList);
@@ -157,17 +158,17 @@ function initRouter() {
       });
     } else {
       return new Promise(resolve => {
-        getAsyncRoutes().then(resp => {
-          handleAsyncRoutes(cloneDeep(resp.data));
-          storageLocal().setItem(key, resp.data);
+        getAsyncRoutes().then(({ data }) => {
+          handleAsyncRoutes(cloneDeep(data));
+          storageLocal().setItem(key, data);
           resolve(router);
         });
       });
     }
   } else {
     return new Promise(resolve => {
-      getAsyncRoutes().then(resp => {
-        handleAsyncRoutes(cloneDeep(resp.data));
+      getAsyncRoutes().then(({ data }) => {
+        handleAsyncRoutes(cloneDeep(data));
         resolve(router);
       });
     });
@@ -251,144 +252,29 @@ function handleAliveRoute({ name }: ToRouteType, mode?: string) {
   }
 }
 
-/**
- * 类型守卫：检查是否为字符串类型的组件路径
- */
-function isStringComponent(component: any): component is string {
-  return typeof component === "string";
-}
-
-/**
- * 类型守卫：检查是否已经是函数组件
- */
-function isFunctionComponent(component: any): component is Function {
-  return typeof component === "function";
-}
-
 /** 过滤后端传来的动态路由 重新生成规范路由 */
 function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
-  if (!arrRoutes?.length) return;
+  if (!arrRoutes || !arrRoutes.length) return;
   const modulesRoutesKeys = Object.keys(modulesRoutes);
-
   arrRoutes.forEach((v: RouteRecordRaw) => {
     // 将backstage属性加入meta，标识此路由为后端返回路由
     v.meta.backstage = true;
-
-    // 父级的redirect属性取值
-    if (v?.children?.length && !v.redirect) {
-      v.redirect = v.children[0].path;
-    }
-
-    // 父级的name属性取值
-    if (v?.children?.length && !v.name) {
-      v.name = (v.children[0].name as string) + "Parent";
-    }
-
-    // ========== 核心：判断是否需要加载组件 ==========
-
-    // 情况1：iframe 类型
+    // 父级的redirect属性取值：如果子级存在且父级的redirect属性不存在，默认取第一个子级的path；如果子级存在且父级的redirect属性存在，取存在的redirect属性，会覆盖默认值
+    if (v?.children && v.children.length && !v.redirect) v.redirect = v.children[0].path;
+    // 父级的name属性取值：如果子级存在且父级的name属性不存在，默认取第一个子级的name；如果子级存在且父级的name属性存在，取存在的name属性，会覆盖默认值（注意：测试中发现父级的name不能和子级name重复，如果重复会造成重定向无效（跳转404），所以这里给父级的name起名的时候后面会自动加上`Parent`，避免重复）
+    if (v?.children && v.children.length && !v.name) v.name = (v.children[0].name as string) + "Parent";
     if (v.meta?.frameSrc) {
       v.component = IFrame;
+    } else {
+      // 对后端传component组件路径和不传做兼容（如果后端传component组件路径，那么path可以随便写，如果不传，component组件路径会跟path保持一致）
+      const index = v?.component ? modulesRoutesKeys.findIndex(ev => ev.includes(v.component as any)) : modulesRoutesKeys.findIndex(ev => ev.includes(v.path));
+      v.component = modulesRoutes[modulesRoutesKeys[index]];
     }
-    // 情况2：纯目录节点（有子节点且没有 component）
-    else if (v?.children && v.children.length > 0 && !v.component) {
-      // 不设置 component，这样点击时不会加载组件，只展开子菜单
-      console.log(`📁 目录节点（无组件）: ${v.path}`);
-    }
-    // 情况3：叶子节点或明确需要加载组件的节点
-    else if (v.component || !v.children || v.children.length === 0) {
-      // 提取组件路径字符串（兼容 string | RouteComponent）
-      let componentPath = "";
-
-      if (isStringComponent(v.component)) {
-        // 后端返回的字符串路径
-        componentPath = v.component;
-      } else if (isFunctionComponent(v.component)) {
-        // 已经是函数组件，无需处理
-        console.log(`🔧 组件已是函数: ${v.path}`);
-        return; // 跳过此路由
-      } else if (!v.component) {
-        // 使用 path 推断
-        componentPath = v.path;
-      }
-
-      if (componentPath) {
-        const matchedComponent = findMatchingComponent(componentPath, modulesRoutesKeys);
-
-        if (matchedComponent) {
-          v.component = modulesRoutes[matchedComponent];
-          console.log(`✅ 组件加载: ${v.path} -> ${matchedComponent}`);
-        } else {
-          console.warn(`⚠️ 未找到组件: ${v.path}，componentPath: ${componentPath}`);
-        }
-      }
-    }
-
-    // 递归处理子路由
-    if (v?.children?.length) {
+    if (v?.children && v.children.length) {
       addAsyncRoutes(v.children);
     }
   });
-
   return arrRoutes;
-}
-
-/**
- * 精确查找匹配的组件路径
- * @param componentOrPath - 组件路径或路由路径
- * @param availableKeys - 可用的组件模块键列表
- */
-function findMatchingComponent(componentOrPath: string, availableKeys: string[]): string | null {
-  if (!componentOrPath) return null;
-
-  // 清理路径：移除开头的斜杠
-  const cleanPath = componentOrPath.replace(/^\//, "");
-
-  // 策略1：精确匹配（最优先）
-  const exactMatch = availableKeys.find(key => {
-    const modulePath = extractModulePath(key);
-    return modulePath === cleanPath || modulePath === `${cleanPath}/index` || modulePath.replace(/\/index$/, "") === cleanPath;
-  });
-
-  if (exactMatch) {
-    return exactMatch;
-  }
-
-  // 策略2：路径末尾匹配（次优先）
-  const endMatch = availableKeys.find(key => {
-    const modulePath = extractModulePath(key);
-    return key.endsWith(`${cleanPath}.vue`) || key.endsWith(`${cleanPath}.tsx`) || key.endsWith(`${cleanPath}/index.vue`) || key.endsWith(`${cleanPath}/index.tsx`);
-  });
-
-  if (endMatch) {
-    console.warn(`⚠️ 使用末尾匹配: ${cleanPath} -> ${endMatch}`);
-    return endMatch;
-  }
-
-  // 策略3：最短路径匹配（降级方案，谨慎使用）
-  const candidates = availableKeys.filter(key => key.includes(cleanPath.split("/").pop() || ""));
-
-  if (candidates.length === 1) {
-    console.warn(`⚠️ 使用模糊匹配: ${cleanPath} -> ${candidates[0]}`);
-    return candidates[0];
-  }
-
-  if (candidates.length > 1) {
-    console.error(`❌ 多个候选组件匹配 ${cleanPath}:`, candidates);
-  }
-
-  return null;
-}
-
-/**
- * 从模块完整路径中提取相对路径
- * @example
- * "/src/views/system/dict/index.vue" -> "system/dict/index"
- */
-function extractModulePath(fullPath: string): string {
-  return fullPath
-    .replace(/^\/src\/views\//, "") // 移除前缀
-    .replace(/\.(vue|tsx)$/, ""); // 移除扩展名
 }
 
 /** 获取路由历史模式 https://next.router.vuejs.org/zh/guide/essentials/history-mode.html */
