@@ -72,5 +72,10 @@ export const getRoleMenu = (data?: object) => {
 
 /** 获取角色管理-权限-菜单权限-根据角色 id 查对应菜单 */
 export const getRoleMenuIds = (data?: object) => {
-  return http.request<Result>("post", "/role-menu-ids", { data });
+  return http.request<Result>("post", baseUrlApi("sys/role/menu-ids"), { data });
+};
+
+/** 角色管理-权限-菜单权限-根据角色 id 分配菜单权限 */
+export const assignRoleMenu = (data?: object) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/role/menu/assign"), { data });
 };

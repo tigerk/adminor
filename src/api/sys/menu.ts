@@ -22,16 +22,7 @@ type ResultTable = {
   };
 };
 
-export const createMenu = (data?: object) => {
-  return http.request<Result>("post", baseUrlApi("sys/menu/create"), { data });
-};
-
 /** 获取系统管理-菜单管理列表 */
 export const getMenuList = (data?: object) => {
   return http.request<Result>("post", baseUrlApi("sys/menu/list"), { data });
-};
-
-/** 删除系统管理-菜单管理 */
-export const deleteMenu = (data?: object) => {
-  return http.request<Result>("post", baseUrlApi("sys/menu/delete/" + data), { });
 };

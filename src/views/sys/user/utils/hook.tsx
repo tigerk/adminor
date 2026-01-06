@@ -55,12 +55,18 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     {
       label: "用户编号",
       prop: "companyUserId",
+      hide: true,
       width: 90
     },
     {
       label: "手机号码",
       prop: "phone",
       minWidth: 90
+    },
+    {
+      label: "用户类型",
+      prop: "userTypeName",
+      width: 120
     },
     {
       label: "真实姓名",
@@ -70,7 +76,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     {
       label: "用户昵称",
       prop: "nickname",
-      minWidth: 130
+      minWidth: 150
     },
     {
       label: "性别",
@@ -85,7 +91,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     {
       label: "部门",
       prop: "dept.name",
-      minWidth: 90
+      minWidth: 150
     },
     {
       label: "状态",

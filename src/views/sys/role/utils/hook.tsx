@@ -9,8 +9,9 @@ import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection, getKeyList } from "@pureadmin/utils";
-import { createRole, deleteRole, getRoleList, getRoleMenu, getRoleMenuIds } from "@/api/sys/user";
+import { assignRoleMenu, createRole, deleteRole, getRoleList, getRoleMenuIds } from "@/api/sys/user";
 import { computed, h, onMounted, reactive, type Ref, ref, toRaw, watch } from "vue";
+import { getMenuList } from "@/api/sys/menu";
 
 export function useRole(treeRef: Ref) {
   const form = reactive({
@@ -243,9 +244,29 @@ export function useRole(treeRef: Ref) {
   function handleSave() {
     const { id, name } = curRow.value;
     // 根据用户 id 调用实际项目中菜单权限修改接口
-    console.log(id, treeRef.value.getCheckedKeys());
-    message(`角色名称为${name}的菜单权限修改成功`, {
-      type: "success"
+    const checkedKeys = treeRef.value.getCheckedKeys();
+
+    console.log(id, checkedKeys);
+    if (checkedKeys.length === 0) {
+      message("请选择给角色分配的菜单权限", {
+        type: "warning"
+      });
+      return;
+    }
+
+    assignRoleMenu({
+      roleId: id,
+      menuIds: checkedKeys
+    }).then(resp => {
+      if (resp.code === 0) {
+        message(`角色名称为${name}的菜单权限修改成功`, {
+          type: "success"
+        });
+      } else {
+        message(resp.message, {
+          type: "error"
+        });
+      }
     });
   }
 
@@ -259,7 +280,7 @@ export function useRole(treeRef: Ref) {
 
   onMounted(async () => {
     onRoleSearch();
-    const { data } = await getRoleMenu();
+    const { data } = await getMenuList();
     treeIds.value = getKeyList(data, "id");
     treeData.value = handleTree(data);
   });
