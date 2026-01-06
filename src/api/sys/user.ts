@@ -51,7 +51,7 @@ export const getCompanyUserRoleIds = (data?: object) => {
 };
 
 /** 系统管理-用户管理-根据userId，为用户分配角色（userId：用户id） */
-export const saveCompanyUserRole = (data?: object) => {
+export const assignCompanyUserRole = (data?: object) => {
   return http.request<Result>("post", baseUrlApi("company/user/role/assign"), { data });
 };
 
@@ -87,4 +87,9 @@ export const assignRoleMenu = (data?: object) => {
 
 export const getUserByRoleId = (data?: object) => {
   return http.request<ApiResponse<Array<any>>>("post", baseUrlApi("sys/role/user/list"), { data });
+};
+
+/** 系统管理-角色管理-用户管理-解绑用户角色 */
+export const unbindRoleCompanyUser = (data?: object) => {
+  return http.request<Result>("post", baseUrlApi("sys/role/user/unbind"), { data });
 };

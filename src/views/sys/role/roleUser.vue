@@ -5,6 +5,7 @@
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Delete from "~icons/ep/delete";
   import { SysUserProps } from "@/types";
+  import { unbindRoleCompanyUser } from "@/api/sys/user";
 
   interface Props {
     visible?: boolean;
@@ -51,7 +52,7 @@
     },
     {
       label: "部门",
-      prop: "deptName",
+      prop: "dept.name",
       minWidth: 150
     },
     {
@@ -104,16 +105,10 @@
     )
       .then(async () => {
         try {
-          // 调用解绑接口，需要根据你的实际接口调整
-          // 假设接口为 unbindRoleUser
-          // const { unbindRoleUser } = await import("@/api/sys/user");
-          // const resp = await unbindRoleUser({
-          //   roleId: props.roleInfo.id,
-          //   userId: row.id
-          // });
-
-          // 模拟接口调用
-          const resp = { code: 0, message: "移除成功" };
+          const resp = await unbindRoleCompanyUser({
+            roleId: props.roleInfo.id,
+            companyUserId: row.companyUserId
+          });
 
           if (resp.code === 0) {
             message(`已将用户 ${row.nickname || row.username} 从角色中移除`, {
@@ -148,7 +143,7 @@
 </script>
 
 <template>
-  <el-drawer v-model="props.visible" :title="`已分配用户 ${roleInfo?.name ? `（${roleInfo.name}）` : ''}`" direction="rtl" size="60%" @close="handleClose">
+  <el-drawer v-model="props.visible" :title="`《${props.roleInfo?.name || ''}》的用户列表`" direction="rtl" size="60%" @close="handleClose">
     <template #default>
       <div class="drawer-content">
         <pure-table
@@ -157,6 +152,7 @@
           table-layout="auto"
           :loading="loading"
           adaptive
+          border
           :adaptiveConfig="{ offsetBottom: 80 }"
           :data="dataList"
           :columns="columns"
@@ -166,11 +162,7 @@
           }"
         >
           <template #operation="{ row, size }">
-            <el-popconfirm :title="`确认将用户 ${row.nickname || row.username} 从该角色中移除吗?`" @confirm="handleUnbind(row)">
-              <template #reference>
-                <el-button class="reset-margin" link type="danger" :size="size" :icon="useRenderIcon(Delete)">移除</el-button>
-              </template>
-            </el-popconfirm>
+            <el-button class="reset-margin" link type="danger" :size="size" :icon="useRenderIcon(Delete)" @click="handleUnbind(row)">移除</el-button>
           </template>
         </pure-table>
       </div>

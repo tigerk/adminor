@@ -13,7 +13,7 @@ import ReCropperPreview from "@/components/ReCropperPreview";
 import type { RoleFormItemProps, UserFormItemProps } from "../utils/types";
 import { deviceDetection, getKeyList, isAllEmpty } from "@pureadmin/utils";
 import { createUser, deleteUser, getSimpleRoleList, getCompanyUserRoleIds, pageUserList, updateUserStatus,
-  saveCompanyUserRole
+  assignCompanyUserRole
 } from "@/api/sys/user";
 import { ElForm, ElFormItem, ElInput, ElMessageBox, ElProgress } from "element-plus";
 import { computed, h, onMounted, reactive, ref, type Ref, toRaw, watch } from "vue";
@@ -410,7 +410,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       contentRenderer: () => h(roleForm),
       beforeSure: (done, { options }) => {
         const curData = options.props.formInline as RoleFormItemProps;
-        saveCompanyUserRole({
+        assignCompanyUserRole({
           companyUserId: row.companyUserId,
           roleIds: curData.ids
         }).then(resp => {
