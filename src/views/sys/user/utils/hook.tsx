@@ -12,7 +12,7 @@ import type { PaginationProps } from "@pureadmin/table";
 import ReCropperPreview from "@/components/ReCropperPreview";
 import type { RoleFormItemProps, UserFormItemProps } from "../utils/types";
 import { deviceDetection, getKeyList, isAllEmpty } from "@pureadmin/utils";
-import { createUser, deleteUser, getAllRoleList, getRoleIds, pageUserList, updateUserStatus } from "@/api/sys/user";
+import { createUser, deleteUser, getSimpleRoleList, getRoleIds, pageUserList, updateUserStatus } from "@/api/sys/user";
 import { ElForm, ElFormItem, ElInput, ElMessageBox, ElProgress } from "element-plus";
 import { computed, h, onMounted, reactive, ref, type Ref, toRaw, watch } from "vue";
 import { getDeptList } from "@/api/sys/dept";
@@ -420,7 +420,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     treeLoading.value = false;
 
     // 角色列表
-    roleOptions.value = (await getAllRoleList()).data;
+    roleOptions.value = (await getSimpleRoleList()).data;
   });
 
   return {

@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import ReCol from "@/components/ReCol";
-import { RoleFormProps } from "../utils/types";
+  import { ref } from "vue";
+  import ReCol from "@/components/ReCol";
+  import { RoleFormProps } from "../utils/types";
 
-const props = withDefaults(defineProps<RoleFormProps>(), {
-  formInline: () => ({
-    username: "",
-    nickname: "",
-    roleOptions: [],
-    ids: []
-  })
-});
+  const props = withDefaults(defineProps<RoleFormProps>(), {
+    formInline: () => ({
+      username: "",
+      nickname: "",
+      roleOptions: [],
+      ids: []
+    })
+  });
 
-const newFormInline = ref(props.formInline);
+  const newFormInline = ref(props.formInline);
 </script>
 
 <template>
@@ -30,19 +30,8 @@ const newFormInline = ref(props.formInline);
       </re-col>
       <re-col>
         <el-form-item label="角色列表" prop="ids">
-          <el-select
-            v-model="newFormInline.ids"
-            placeholder="请选择"
-            class="w-full"
-            clearable
-            multiple
-          >
-            <el-option
-              v-for="(item, index) in newFormInline.roleOptions"
-              :key="index"
-              :value="item.id"
-              :label="item.name"
-            >
+          <el-select v-model="newFormInline.ids" placeholder="请选择" class="w-full" clearable multiple>
+            <el-option v-for="(item, index) in newFormInline.roleOptions" :key="index" :value="item.id" :label="item.name">
               {{ item.name }}
             </el-option>
           </el-select>

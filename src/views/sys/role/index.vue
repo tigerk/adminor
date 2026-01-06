@@ -1,12 +1,11 @@
 <script setup lang="ts">
   import { useRole } from "./utils/hook";
-  import { ref, computed, nextTick, onMounted } from "vue";
+  import { computed, nextTick, onMounted, ref } from "vue";
   import { PureTableBar } from "@/components/RePureTableBar";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-  import { delay, subBefore, deviceDetection, useResizeObserver } from "@pureadmin/utils";
+  import { delay, deviceDetection, subBefore, useResizeObserver } from "@pureadmin/utils";
 
-  // import Database from "~icons/ri/database-2-line";
-  // import More from "~icons/ep/more-filled";
+  import Database from "~icons/ri/database-2-line";
   import Delete from "~icons/ep/delete";
   import EditPen from "~icons/ep/edit-pen";
   import Refresh from "~icons/ep/refresh";
@@ -57,8 +56,7 @@
     isExpandAll,
     isSelectAll,
     treeSearchValue,
-    // buttonClass,
-    onSearch,
+    onRoleSearch,
     resetForm,
     openDialog,
     handleMenu,
@@ -67,7 +65,7 @@
     filterMethod,
     transformI18n,
     onQueryChanged,
-    // handleDatabase,
+    handleDatabase,
     handleSizeChange,
     handleCurrentChange,
     handleSelectionChange
@@ -99,7 +97,7 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="useRenderIcon('ri:search-line')" :loading="loading" @click="onSearch">搜索</el-button>
+        <el-button type="primary" :icon="useRenderIcon('ri:search-line')" :loading="loading" @click="onRoleSearch">搜索</el-button>
         <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">重置</el-button>
       </el-form-item>
     </el-form>
@@ -108,9 +106,9 @@
       <PureTableBar
         :class="[isShow && !deviceDetection() ? 'w-[60vw]!' : 'w-full']"
         style="transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1)"
-        title="角色管理（仅演示，操作后不生效）"
+        title="角色管理"
         :columns="columns"
-        @refresh="onSearch"
+        @refresh="onRoleSearch"
       >
         <template #buttons>
           <el-button type="primary" :icon="useRenderIcon(AddFill)" @click="openDialog()">新增角色</el-button>
@@ -144,44 +142,8 @@
                   <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(Delete)">删除</el-button>
                 </template>
               </el-popconfirm>
-              <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(Menu)" @click="handleMenu(row)">权限</el-button>
-              <!-- <el-dropdown>
-              <el-button
-                class="ml-3 mt-[2px]"
-                link
-                type="primary"
-                :size="size"
-                :icon="useRenderIcon(More)"
-              />
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item>
-                    <el-button
-                      :class="buttonClass"
-                      link
-                      type="primary"
-                      :size="size"
-                      :icon="useRenderIcon(Menu)"
-                      @click="handleMenu"
-                    >
-                      菜单权限
-                    </el-button>
-                  </el-dropdown-item>
-                  <el-dropdown-item>
-                    <el-button
-                      :class="buttonClass"
-                      link
-                      type="primary"
-                      :size="size"
-                      :icon="useRenderIcon(Database)"
-                      @click="handleDatabase"
-                    >
-                      数据权限
-                    </el-button>
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown> -->
+              <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(Menu)" @click="handleMenu(row)">菜单权限</el-button>
+              <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(Database)" @click="handleDatabase">数据权限</el-button>
             </template>
           </pure-table>
         </template>

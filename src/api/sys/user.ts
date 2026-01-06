@@ -41,8 +41,8 @@ export const updateUserStatus = (data?: object) => {
 };
 
 /** 系统管理-用户管理-获取所有角色列表 */
-export const getAllRoleList = () => {
-  return http.request<Result>("get", "/list-all-role");
+export const getSimpleRoleList = () => {
+  return http.request<Result>("post", baseUrlApi("sys/role/list/all"));
 };
 
 /** 系统管理-用户管理-根据userId，获取对应角色id列表（userId：用户id） */
@@ -52,12 +52,17 @@ export const getRoleIds = (data?: object) => {
 
 /** 获取系统管理-角色管理列表 */
 export const getRoleList = (data?: object) => {
-  return http.request<ResultTable>("post", "/role", { data });
+  return http.request<ResultTable>("post", baseUrlApi("sys/role/list"), { data });
 };
 
 /** 获取系统管理-角色管理-保存 */
-export const saveRole = (data?: object) => {
-  return http.request<ApiResponse<boolean>>("post", "/role/save", { data });
+export const createRole = (data?: object) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/role/create"), { data });
+};
+
+/** 获取系统管理-角色管理-删除 */
+export const deleteRole = (data?: object) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/role/delete"), { data });
 };
 
 /** 获取角色管理-权限-菜单权限 */
