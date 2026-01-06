@@ -9,7 +9,7 @@ import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection, getKeyList } from "@pureadmin/utils";
-import { assignRoleMenu, createRole, deleteRole, getRoleList, getRoleMenuIds, getUserByRoleId } from "@/api/sys/user";
+import { assignRoleMenu, createRole, deleteRole, getRoleList, getRoleMenuIds } from "@/api/sys/user";
 import { computed, h, onMounted, reactive, type Ref, ref, toRaw, watch } from "vue";
 import { getMenuList } from "@/api/sys/menu";
 
@@ -297,18 +297,16 @@ export function useRole(treeRef: Ref) {
   /** 数据权限 可自行开发 */
   function handleDatabase() {}
 
+  // 在 useRole 函数中添加以下状态
+  const showUserDrawer = ref(false);
+  const currentRoleInfo = ref<{ id: number | string; name: string } | null>(null);
+
+  // 修改 handleRoleUser 函数
   function handleRoleUser(row?: any) {
     const { id, name } = row;
     if (id) {
-      getUserByRoleId({ id: id }).then(resp => {
-        if (resp.code === 0) {
-          // 显示在右侧的弹框
-        } else {
-          message(resp.message, {
-            type: "error"
-          });
-        }
-      });
+      currentRoleInfo.value = { id, name };
+      showUserDrawer.value = true;
     } else {
       message("请选择角色", {
         type: "error"
@@ -345,6 +343,8 @@ export function useRole(treeRef: Ref) {
     handleSizeChange,
     handleCurrentChange,
     handleSelectionChange,
-    handleRoleUser
+    handleRoleUser,
+    showUserDrawer, // 新增
+    currentRoleInfo // 新增
   };
 }

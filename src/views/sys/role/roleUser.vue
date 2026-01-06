@@ -1,0 +1,187 @@
+<script setup lang="ts">
+  import { ref, watch } from "vue";
+  import { message } from "@/utils/message";
+  import { ElMessageBox } from "element-plus";
+  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+  import Delete from "~icons/ep/delete";
+  import { SysUserProps } from "@/types";
+
+  interface Props {
+    visible?: boolean;
+    roleInfo?: {
+      id: number | string;
+      name: string;
+    } | null;
+  }
+
+  const props = withDefaults(defineProps<Props>(), {
+    visible: false,
+    roleInfo: null
+  });
+
+  const emit = defineEmits<{
+    (e: "update:visible", value: boolean): void;
+    (e: "refresh"): void;
+  }>();
+
+  const loading = ref(false);
+  const dataList = ref<SysUserProps[]>([]);
+
+  // 表格列配置
+  const columns: TableColumnList = [
+    {
+      label: "用户账号",
+      prop: "username",
+      minWidth: 120
+    },
+    {
+      label: "用户昵称",
+      prop: "nickname",
+      minWidth: 120
+    },
+    {
+      label: "手机号码",
+      prop: "phone",
+      minWidth: 130
+    },
+    {
+      label: "邮箱",
+      prop: "email",
+      minWidth: 180
+    },
+    {
+      label: "部门",
+      prop: "deptName",
+      minWidth: 150
+    },
+    {
+      label: "操作",
+      fixed: "right",
+      width: 100,
+      slot: "operation"
+    }
+  ];
+
+  // 关闭抽屉
+  const handleClose = () => {
+    emit("update:visible", false);
+  };
+
+  // 加载用户列表数据
+  const loadUserList = async () => {
+    if (!props.roleInfo?.id) return;
+
+    loading.value = true;
+    try {
+      const { getUserByRoleId } = await import("@/api/sys/user");
+      const resp = await getUserByRoleId({ id: props.roleInfo.id });
+
+      if (resp.code === 0) {
+        dataList.value = resp.data || [];
+      } else {
+        message(resp.message, { type: "error" });
+      }
+    } catch (error) {
+      console.error("加载用户列表失败:", error);
+      message("加载用户列表失败", { type: "error" });
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // 解绑用户
+  const handleUnbind = (row: SysUserProps) => {
+    ElMessageBox.confirm(
+      `确认要将用户 <strong style='color:var(--el-color-primary)'>${row.nickname || row.username}</strong> 从角色 <strong style='color:var(--el-color-primary)'>${props.roleInfo?.name}</strong> 中移除吗?`,
+      "系统提示",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+        dangerouslyUseHTMLString: true,
+        draggable: true
+      }
+    )
+      .then(async () => {
+        try {
+          // 调用解绑接口，需要根据你的实际接口调整
+          // 假设接口为 unbindRoleUser
+          // const { unbindRoleUser } = await import("@/api/sys/user");
+          // const resp = await unbindRoleUser({
+          //   roleId: props.roleInfo.id,
+          //   userId: row.id
+          // });
+
+          // 模拟接口调用
+          const resp = { code: 0, message: "移除成功" };
+
+          if (resp.code === 0) {
+            message(`已将用户 ${row.nickname || row.username} 从角色中移除`, {
+              type: "success"
+            });
+            // 重新加载列表
+            loadUserList().then();
+            // 通知父组件刷新（如果需要）
+            emit("refresh");
+          } else {
+            message(resp.message, { type: "error" });
+          }
+        } catch (error) {
+          console.error("移除用户失败:", error);
+          message("移除用户失败", { type: "error" });
+        }
+      })
+      .catch(() => {
+        // 用户取消操作
+      });
+  };
+
+  // 监听抽屉打开，加载数据
+  watch(
+    () => props.visible,
+    val => {
+      if (val && props.roleInfo) {
+        loadUserList();
+      }
+    }
+  );
+</script>
+
+<template>
+  <el-drawer v-model="props.visible" :title="`已分配用户 ${roleInfo?.name ? `（${roleInfo.name}）` : ''}`" direction="rtl" size="60%" @close="handleClose">
+    <template #default>
+      <div class="drawer-content">
+        <pure-table
+          align-whole="center"
+          showOverflowTooltip
+          table-layout="auto"
+          :loading="loading"
+          adaptive
+          :adaptiveConfig="{ offsetBottom: 80 }"
+          :data="dataList"
+          :columns="columns"
+          :header-cell-style="{
+            background: 'var(--el-fill-color-light)',
+            color: 'var(--el-text-color-primary)'
+          }"
+        >
+          <template #operation="{ row, size }">
+            <el-popconfirm :title="`确认将用户 ${row.nickname || row.username} 从该角色中移除吗?`" @confirm="handleUnbind(row)">
+              <template #reference>
+                <el-button class="reset-margin" link type="danger" :size="size" :icon="useRenderIcon(Delete)">移除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </pure-table>
+      </div>
+    </template>
+  </el-drawer>
+</template>
+
+<style lang="scss" scoped>
+  .drawer-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+</style>

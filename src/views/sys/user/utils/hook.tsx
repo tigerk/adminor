@@ -12,7 +12,9 @@ import type { PaginationProps } from "@pureadmin/table";
 import ReCropperPreview from "@/components/ReCropperPreview";
 import type { RoleFormItemProps, UserFormItemProps } from "../utils/types";
 import { deviceDetection, getKeyList, isAllEmpty } from "@pureadmin/utils";
-import { createUser, deleteUser, getSimpleRoleList, getRoleIds, pageUserList, updateUserStatus } from "@/api/sys/user";
+import { createUser, deleteUser, getSimpleRoleList, getCompanyUserRoleIds, pageUserList, updateUserStatus,
+  saveCompanyUserRole
+} from "@/api/sys/user";
 import { ElForm, ElFormItem, ElInput, ElMessageBox, ElProgress } from "element-plus";
 import { computed, h, onMounted, reactive, ref, type Ref, toRaw, watch } from "vue";
 import { getDeptList } from "@/api/sys/dept";
@@ -389,7 +391,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
   /** 分配角色 */
   async function handleRole(row) {
     // 选中的角色列表
-    const ids = (await getRoleIds({ userId: row.id })).data ?? [];
+    const ids = (await getCompanyUserRoleIds({ companyUserId: row.companyUserId })).data ?? [];
     addDialog({
       title: `分配 ${row.username} 用户的角色`,
       props: {
@@ -408,9 +410,23 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       contentRenderer: () => h(roleForm),
       beforeSure: (done, { options }) => {
         const curData = options.props.formInline as RoleFormItemProps;
-        console.log("curIds", curData.ids);
-        // 根据实际业务使用curData.ids和row里的某些字段去调用修改角色接口即可
-        done(); // 关闭弹框
+        saveCompanyUserRole({
+          companyUserId: row.companyUserId,
+          roleIds: curData.ids
+        }).then(resp => {
+          if (resp.code === 0) {
+            message(resp.message, {
+              type: "success"
+            });
+            // 关闭弹框
+            done();
+            onUserSearch().then();
+          } else {
+            message(resp.message, {
+              type: "error"
+            });
+          }
+        });
       }
     });
   }

@@ -46,8 +46,13 @@ export const getSimpleRoleList = () => {
 };
 
 /** 系统管理-用户管理-根据userId，获取对应角色id列表（userId：用户id） */
-export const getRoleIds = (data?: object) => {
-  return http.request<Result>("post", "/list-role-ids", { data });
+export const getCompanyUserRoleIds = (data?: object) => {
+  return http.request<Result>("post", baseUrlApi("company/user/list-role-ids"), { data });
+};
+
+/** 系统管理-用户管理-根据userId，为用户分配角色（userId：用户id） */
+export const saveCompanyUserRole = (data?: object) => {
+  return http.request<Result>("post", baseUrlApi("company/user/role/assign"), { data });
 };
 
 /** 获取系统管理-角色管理列表 */
@@ -81,5 +86,5 @@ export const assignRoleMenu = (data?: object) => {
 };
 
 export const getUserByRoleId = (data?: object) => {
-  return http.request<Result>("post", baseUrlApi("sys/role/user/list"), { data });
+  return http.request<ApiResponse<Array<any>>>("post", baseUrlApi("sys/role/user/list"), { data });
 };

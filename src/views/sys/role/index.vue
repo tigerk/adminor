@@ -13,6 +13,7 @@
   import AddFill from "~icons/ri/add-circle-line";
   import Close from "~icons/ep/close";
   import Check from "~icons/ep/check";
+  import RoleUser from "@/views/sys/role/roleUser.vue";
 
   defineOptions({
     name: "SystemRole"
@@ -69,7 +70,9 @@
     handleSizeChange,
     handleCurrentChange,
     handleSelectionChange,
-    handleRoleUser
+    handleRoleUser,
+    showUserDrawer, // 新增
+    currentRoleInfo // 新增
   } = useRole(treeRef);
 
   onMounted(() => {
@@ -197,6 +200,7 @@
         </el-tree-v2>
       </div>
     </div>
+    <RoleUser v-model:visible="showUserDrawer" :role-info="currentRoleInfo" @refresh="onRoleSearch" />
   </div>
 </template>
 
