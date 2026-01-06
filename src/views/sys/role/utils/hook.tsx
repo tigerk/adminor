@@ -9,7 +9,7 @@ import { addDialog } from "@/components/ReDialog";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection, getKeyList } from "@pureadmin/utils";
-import { assignRoleMenu, createRole, deleteRole, getRoleList, getRoleMenuIds } from "@/api/sys/user";
+import { assignRoleMenu, createRole, deleteRole, getRoleList, getRoleMenuIds, getUserByRoleId } from "@/api/sys/user";
 import { computed, h, onMounted, reactive, type Ref, ref, toRaw, watch } from "vue";
 import { getMenuList } from "@/api/sys/menu";
 
@@ -47,7 +47,8 @@ export function useRole(treeRef: Ref) {
     {
       label: "角色编号",
       prop: "id",
-      width: 100
+      width: 100,
+      hide: true
     },
     {
       label: "角色名称",
@@ -94,7 +95,7 @@ export function useRole(treeRef: Ref) {
     {
       label: "操作",
       fixed: "right",
-      width: 320,
+      width: 500,
       slot: "operation"
     }
   ];
@@ -296,6 +297,25 @@ export function useRole(treeRef: Ref) {
   /** 数据权限 可自行开发 */
   function handleDatabase() {}
 
+  function handleRoleUser(row?: any) {
+    const { id, name } = row;
+    if (id) {
+      getUserByRoleId({ id: id }).then(resp => {
+        if (resp.code === 0) {
+          // 显示在右侧的弹框
+        } else {
+          message(resp.message, {
+            type: "error"
+          });
+        }
+      });
+    } else {
+      message("请选择角色", {
+        type: "error"
+      });
+    }
+  }
+
   return {
     form,
     isShow,
@@ -324,6 +344,7 @@ export function useRole(treeRef: Ref) {
     handleDatabase,
     handleSizeChange,
     handleCurrentChange,
-    handleSelectionChange
+    handleSelectionChange,
+    handleRoleUser
   };
 }

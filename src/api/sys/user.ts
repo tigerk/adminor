@@ -79,3 +79,7 @@ export const getRoleMenuIds = (data?: object) => {
 export const assignRoleMenu = (data?: object) => {
   return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/role/menu/assign"), { data });
 };
+
+export const getUserByRoleId = (data?: object) => {
+  return http.request<Result>("post", baseUrlApi("sys/role/user/list"), { data });
+};

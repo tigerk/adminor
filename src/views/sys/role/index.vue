@@ -68,7 +68,8 @@
     handleDatabase,
     handleSizeChange,
     handleCurrentChange,
-    handleSelectionChange
+    handleSelectionChange,
+    handleRoleUser
   } = useRole(treeRef);
 
   onMounted(() => {
@@ -136,6 +137,7 @@
             @page-current-change="handleCurrentChange"
           >
             <template #operation="{ row }">
+              <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(Menu)" @click="handleRoleUser(row)">已分配用户</el-button>
               <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(EditPen)" @click="openDialog('修改', row)">修改</el-button>
               <el-popconfirm :title="`是否确认删除角色名称为${row.name}的这条数据`" @confirm="handleDelete(row)">
                 <template #reference>
