@@ -153,7 +153,7 @@
           :loading="loading"
           adaptive
           border
-          :adaptiveConfig="{ offsetBottom: 80 }"
+          :adaptiveConfig="{ offsetBottom: 20 }"
           :data="dataList"
           :columns="columns"
           :header-cell-style="{

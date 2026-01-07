@@ -59,6 +59,11 @@ export function useRole(treeRef: Ref) {
       prop: "code"
     },
     {
+      label: "用户数量",
+      prop: "userCount",
+      width: 80
+    },
+    {
       label: "状态",
       cellRenderer: scope => (
         <el-switch
