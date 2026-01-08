@@ -6,7 +6,7 @@
  * @param code 类型的值
  * @returns 对应的类型对象或 undefined
  */
-export function getOptionByCode(options: any[], code: number) {
+export function getOptionByCode(options: any[], code: any) {
   return options.find(item => item.value === code);
 }
 

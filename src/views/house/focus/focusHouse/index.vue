@@ -4,12 +4,14 @@
   import type { FormInstance } from "element-plus";
   import { ElEmpty, ElImage, ElSkeleton, ElTag } from "element-plus";
   import { IconifyIconOnline } from "@/components/ReIcon";
+  import { Setting } from "@element-plus/icons-vue";
+  import { ELECTRICITY_TYPE_OPTIONS, getOptionByCode, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
 
   defineOptions({
     name: "FocusHouse"
   });
 
-  const { queryForm, loading, focusList, focusOptions, pagination, onFocusHouseSearch, handleSizeChange, handleCurrentChange } = useFocusHouse();
+  const { queryForm, loading, focusList, focusOptions, pagination, onFocusHouseSearch, handleSizeChange, handleCurrentChange, handleEditFocus } = useFocusHouse();
 
   // 表单引用
   const searchFormRef = ref<FormInstance>();
@@ -51,33 +53,24 @@
 
   // 获取设施标签文本
   const getFacilityLabel = (facility: string) => {
-    const facilityMap = {
-      laundry: "洗衣机",
-      airCondition: "空调",
-      oven: "烤箱",
-      kitchen: "厨房",
-      fridge: "冰箱",
-      security24: "24小时安保"
-    };
-    return facilityMap[facility] || facility;
+    return facility;
   };
 
   // 获取水电类型文本
-  const getUtilityLabel = (type: string) => {
-    const utilityMap = {
-      commercial: "商业",
-      residential: "民用"
-    };
-    return utilityMap[type] || type;
+  const getWaterLabel = (type: string) => {
+    const option = getOptionByCode([...WATER_TYPE_OPTIONS], type);
+    return option?.label || type;
+  };
+
+  const getElectricityLabel = (type: string) => {
+    const option = getOptionByCode([...ELECTRICITY_TYPE_OPTIONS], type);
+    return option?.label || type;
   };
 
   // 获取供暖类型文本
   const getHeatingLabel = (type: string) => {
-    const heatingMap = {
-      central: "集中供暖",
-      individual: "自供暖"
-    };
-    return heatingMap[type] || type;
+    const option = getOptionByCode([...HEATING_TYPE_OPTIONS], type);
+    return option?.label || type;
   };
 
   onMounted(() => {
@@ -192,7 +185,7 @@
             <div class="facilities-row">
               <IconifyIconOnline icon="ep:setting" class="facilities-icon" />
               <div class="facilities-tags">
-                <el-tag v-for="facility in item.facilities" :key="facility" size="small" effect="plain">
+                <el-tag v-for="facility in item.facilityNames" :key="facility" size="small" effect="plain">
                   {{ getFacilityLabel(facility) }}
                 </el-tag>
                 <el-tag v-if="!item.facilities || item.facilities.length == 0">暂无设施</el-tag>
@@ -203,11 +196,11 @@
             <div class="utilities-row">
               <div class="utility-item">
                 <IconifyIconOnline icon="ep:water-cup" />
-                <span>水: {{ getUtilityLabel(item.water) }}</span>
+                <span>水: {{ getWaterLabel(item.water) }}</span>
               </div>
               <div class="utility-item">
                 <IconifyIconOnline icon="ep:lightning" />
-                <span>电: {{ getUtilityLabel(item.electricity) }}</span>
+                <span>电: {{ getElectricityLabel(item.electricity) }}</span>
               </div>
               <div class="utility-item">
                 <IconifyIconOnline icon="ep:sunny" />
@@ -225,8 +218,16 @@
 
             <!-- 联系方式 -->
             <div class="contact-row">
-              <IconifyIconOnline icon="ep:phone" class="contact-icon" />
-              <span>{{ item.storePhone }}</span>
+              <div class="contact-info">
+                <IconifyIconOnline icon="ep:phone" class="contact-icon" />
+                <span>{{ item.storePhone }}</span>
+              </div>
+              <el-button link type="primary" @click="handleEditFocus(item.id)">
+                <el-icon>
+                  <Setting />
+                </el-icon>
+                <span>管理项目</span>
+              </el-button>
             </div>
 
             <!-- 更新时间 -->
@@ -464,9 +465,16 @@
   .contact-row {
     display: flex;
     align-items: center;
+    justify-content: space-between; // 添加这行
     margin: 12px 0;
     color: #606266;
     font-size: 14px;
+  }
+
+  // 添加新的样式
+  .contact-info {
+    display: flex;
+    align-items: center;
   }
 
   .contact-icon {

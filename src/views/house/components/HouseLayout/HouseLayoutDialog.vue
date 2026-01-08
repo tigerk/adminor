@@ -97,22 +97,29 @@
     };
   };
 
-  // 获取选中的户型字符串
+  // 获取选中的户型数据
   const getRef = (): HouseLayoutProps => {
-    let layoutName = "";
     const { bedroom, livingRoom, kitchen, bathroom } = tempSelection.value;
-    if (bedroom > 0 || livingRoom > 0 || kitchen > 0 || bathroom > 0) {
-      layoutName = `${bedroom}室${livingRoom}厅${kitchen}厨${bathroom}卫`;
-    } else {
+
+    // 验证：至少有一个房间
+    if (bedroom === 0 && livingRoom === 0 && kitchen === 0 && bathroom === 0) {
       return null;
     }
 
+    const layoutName = `${bedroom}室${livingRoom}厅${kitchen}厨${bathroom}卫`;
+
+    // 返回完整的 HouseLayoutProps 对象
     return {
+      id: props.formInline?.id || undefined,
       layoutName: layoutName,
       bedroom: bedroom,
       livingRoom: livingRoom,
       kitchen: kitchen,
-      bathroom: bathroom
+      bathroom: bathroom,
+      newly: tempSelection.value.newly ?? true,
+      // 保留原有的 tags 和 facilities（如果有）
+      tags: props.formInline?.tags || [],
+      facilities: props.formInline?.facilities || []
     };
   };
 

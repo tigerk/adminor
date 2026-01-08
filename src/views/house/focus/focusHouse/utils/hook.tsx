@@ -1,10 +1,13 @@
 import { message } from "@/utils/message";
 import { transformI18n } from "@/plugins/i18n";
 import { onMounted, reactive, ref, toRaw } from "vue";
-import { getFocusHouseOptions, getFocusList } from "@/api/house/focus";
+import { getFocusById, getFocusHouseOptions, getFocusList } from "@/api/house/focus";
 import type { PaginationProps } from "@pureadmin/table";
+import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 
 export function useFocusHouse() {
+  const { openFocusEditDialog } = useFocusEdit();
+
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 15,
@@ -94,6 +97,17 @@ export function useFocusHouse() {
     });
   }
 
+  // 管理小区
+  const handleEditFocus = (focusId: bigint) => {
+    if (focusId) {
+      getFocusById({
+        id: focusId
+      }).then(res => {
+        openFocusEditDialog("更新", res.data);
+      });
+    }
+  };
+
   return {
     queryForm,
     isShow,
@@ -111,6 +125,7 @@ export function useFocusHouse() {
     filterMethod,
     transformI18n,
     handleSizeChange,
-    handleCurrentChange
+    handleCurrentChange,
+    handleEditFocus
   };
 }

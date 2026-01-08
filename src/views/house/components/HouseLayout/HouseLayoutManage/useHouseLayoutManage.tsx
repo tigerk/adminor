@@ -18,9 +18,9 @@ export function useHouseLayoutManage() {
     // 将 HouseLayoutProps 转换为表单需要的格式
     const formInline = row
       ? {
-          id: row.id,
-          name: row.layoutName,
-          layout: `${row.bedroom}室${row.livingRoom}厅${row.kitchen}厨${row.bathroom}卫`,
+          id: row.id || "",
+          name: row.layoutName || "",
+          layout: row, // 直接传递完整的 HouseLayoutProps 对象
           tags: row.tags || [],
           facilities: row.facilities || []
         }
@@ -50,7 +50,9 @@ export function useHouseLayoutManage() {
         }),
       beforeSure: async done => {
         try {
-          const result = await layoutManageFormRef.value.getRef();
+          const result: HouseLayoutProps = await layoutManageFormRef.value.getRef();
+
+          console.log("房型管理返回结果:", result);
 
           if (onConfirm) {
             onConfirm(result);

@@ -4,13 +4,14 @@
   import HouseLayoutDialog from "@/views/house/components/HouseLayout/HouseLayoutDialog.vue";
   import HouseTagsDialog from "@/views/house/components/HouseTags/HouseTagsDialog.vue";
   import HouseFacilityDialog from "@/views/house/components/HouseFacility/HouseFacilityDialog.vue";
-  import type { FacilityItemProps } from "@/types/models";
+  import type { FacilityItemProps, HouseLayoutProps } from "@/types";
 
+  // 定义 props 接口 - layout 可以是字符串或 HouseLayoutProps 对象
   interface HouseLayoutManageFormProps {
     formInline?: {
-      id: string;
-      name: string;
-      layout: string;
+      id?: string;
+      name?: string;
+      layout?: string | HouseLayoutProps;
       tags?: number[];
       facilities?: FacilityItemProps[];
     };
@@ -21,8 +22,8 @@
       id: "",
       name: "",
       layout: "",
-      tags: [] as number[],
-      facilities: [] as FacilityItemProps[]
+      tags: [],
+      facilities: []
     })
   });
 
@@ -31,13 +32,19 @@
   const tagsDialogRef = ref();
   const facilityDialogRef = ref();
 
-  // 表单数据
-  const formData = reactive({
+  // 表单数据 - 明确类型定义
+  const formData = reactive<{
+    id: string;
+    name: string;
+    layout: string | HouseLayoutProps;
+    tags: number[];
+    facilities: FacilityItemProps[];
+  }>({
     id: "",
     name: "",
     layout: "",
-    tags: [] as number[],
-    facilities: [] as FacilityItemProps[]
+    tags: [],
+    facilities: []
   });
 
   // 表单验证规则
@@ -56,7 +63,17 @@
       if (newVal) {
         formData.id = newVal.id || "";
         formData.name = newVal.name || "";
-        formData.layout = newVal.layout || "";
+
+        // 处理 layout 字段 - 可能是字符串或 HouseLayoutProps 对象
+        if (typeof newVal.layout === "string") {
+          formData.layout = newVal.layout;
+        } else if (newVal.layout && typeof newVal.layout === "object") {
+          // 如果是对象，直接使用
+          formData.layout = newVal.layout;
+        } else {
+          formData.layout = "";
+        }
+
         formData.tags = newVal.tags || [];
         formData.facilities = newVal.facilities || [];
       }
@@ -65,11 +82,11 @@
   );
 
   // 获取表单数据的方法
-  const getRef = async () => {
+  const getRef = async (): Promise<HouseLayoutProps> => {
     await formRef.value?.validate();
 
-    const layoutStr = layoutDialogRef.value?.getRef();
-    if (!layoutStr) {
+    const layoutData = layoutDialogRef.value?.getRef();
+    if (!layoutData) {
       throw new Error("请选择户型配置");
     }
 
@@ -83,13 +100,20 @@
       count: Number(count)
     }));
 
-    return {
-      id: formData.id,
-      name: formData.name,
-      layout: layoutStr,
+    // 返回完整的 HouseLayoutProps 数据
+    const result: HouseLayoutProps = {
+      id: formData.id || layoutData.id,
+      layoutName: formData.name,
+      bedroom: layoutData.bedroom,
+      livingRoom: layoutData.livingRoom,
+      kitchen: layoutData.kitchen,
+      bathroom: layoutData.bathroom,
+      newly: layoutData.newly ?? true,
       tags: selectedTags,
       facilities: facilitiesArray
     };
+
+    return result;
   };
 
   // 重置表单
