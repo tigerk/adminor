@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, watch } from "vue";
+  import { ref, watch, computed } from "vue";
   import { message } from "@/utils/message";
   import { ElMessageBox } from "element-plus";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
@@ -24,6 +24,11 @@
     (e: "update:visible", value: boolean): void;
     (e: "refresh"): void;
   }>();
+
+  const drawerVisible = computed({
+    get: () => props.visible,
+    set: val => emit("update:visible", val)
+  });
 
   const loading = ref(false);
   const dataList = ref<SysUserProps[]>([]);
@@ -62,11 +67,6 @@
       slot: "operation"
     }
   ];
-
-  // 关闭抽屉
-  const handleClose = () => {
-    emit("update:visible", false);
-  };
 
   // 加载用户列表数据
   const loadUserList = async () => {
@@ -143,7 +143,7 @@
 </script>
 
 <template>
-  <el-drawer v-model="props.visible" :title="`《${props.roleInfo?.name || ''}》的用户列表`" direction="rtl" size="60%" @close="handleClose">
+  <el-drawer v-model="drawerVisible" :title="`《${props.roleInfo?.name || ''}》的分配用户列表`" direction="rtl" size="60%">
     <template #default>
       <div class="drawer-content">
         <pure-table

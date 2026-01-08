@@ -14,11 +14,7 @@ export function useHouseLayoutManage() {
    * @param row 房型数据
    * @param onConfirm 确认回调函数
    */
-  function openHouseLayoutManageDialog(
-    title: "创建" | "编辑" = "创建",
-    row?: HouseLayoutProps,
-    onConfirm?: (data: { id: string; name: string; layout: string; tags: number[]; facilities: FacilityItemProps[] }) => void
-  ) {
+  function openHouseLayoutManageDialog(title: "创建" | "编辑" = "创建", row?: HouseLayoutProps, onConfirm?: (data: HouseLayoutProps) => void) {
     // 将 HouseLayoutProps 转换为表单需要的格式
     const formInline = row
       ? {

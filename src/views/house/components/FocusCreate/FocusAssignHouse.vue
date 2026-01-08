@@ -1,13 +1,13 @@
 <script setup lang="ts">
-  import { ref, computed, reactive, onMounted, onUnmounted } from "vue";
+  import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
   import { CheckboxValueType, ElMessage, ElMessageBox } from "element-plus";
-  import { Plus, Edit, Delete, QuestionFilled, CircleCheckFilled, InfoFilled, Lock, Unlock } from "@element-plus/icons-vue";
+  import { CircleCheckFilled, Delete, Edit, InfoFilled, Lock, Plus, QuestionFilled, Unlock } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
   import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { useHouseLayoutManage } from "@/views/house/components/HouseLayout/HouseLayoutManage/useHouseLayoutManage";
-  import { HouseLayoutProps, FocusHouseStatusProps } from "@/types";
+  import { FocusHouseStatusProps, HouseLayoutProps } from "@/types";
 
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
@@ -427,19 +427,13 @@
   // 房型管理 - 使用新的 hook
   const handleCreateHouseLayout = () => {
     openHouseLayoutManageDialog("创建", undefined, data => {
-      // 解析户型字符串
-      const bedroomMatch = data.layout.match(/(\d+)室/);
-      const livingRoomMatch = data.layout.match(/(\d+)厅/);
-      const kitchenMatch = data.layout.match(/(\d+)厨/);
-      const bathroomMatch = data.layout.match(/(\d+)卫/);
-
       const newHouseLayout: HouseLayoutProps = {
         id: Date.now().toString(),
-        layoutName: data.name,
-        bedroom: bedroomMatch ? parseInt(bedroomMatch[1]) : 1,
-        livingRoom: livingRoomMatch ? parseInt(livingRoomMatch[1]) : 1,
-        kitchen: kitchenMatch ? parseInt(kitchenMatch[1]) : 1,
-        bathroom: bathroomMatch ? parseInt(bathroomMatch[1]) : 1,
+        layoutName: data.layoutName,
+        bedroom: data.bedroom,
+        livingRoom: data.livingRoom,
+        kitchen: data.kitchen,
+        bathroom: data.bathroom,
         newly: true,
         tags: data.tags, // 新增：保存标签
         facilities: data.facilities // 新增：保存配置
@@ -452,19 +446,13 @@
     openHouseLayoutManageDialog("编辑", houseLayout, data => {
       const index = form.value.houseLayoutList.findIndex(hl => hl.id === data.id);
       if (index > -1) {
-        // 解析户型字符串
-        const bedroomMatch = data.layout.match(/(\d+)室/);
-        const livingRoomMatch = data.layout.match(/(\d+)厅/);
-        const kitchenMatch = data.layout.match(/(\d+)厨/);
-        const bathroomMatch = data.layout.match(/(\d+)卫/);
-
         form.value.houseLayoutList[index] = {
           ...form.value.houseLayoutList[index],
-          layoutName: data.name,
-          bedroom: bedroomMatch ? parseInt(bedroomMatch[1]) : 1,
-          livingRoom: livingRoomMatch ? parseInt(livingRoomMatch[1]) : 1,
-          kitchen: kitchenMatch ? parseInt(kitchenMatch[1]) : 1,
-          bathroom: bathroomMatch ? parseInt(bathroomMatch[1]) : 1,
+          layoutName: data.layoutName,
+          bedroom: data.bedroom,
+          livingRoom: data.livingRoom,
+          kitchen: data.kitchen,
+          bathroom: data.bathroom,
           tags: data.tags, // 新增：更新标签
           facilities: data.facilities // 新增：更新配置
         };
