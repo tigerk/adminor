@@ -8,6 +8,7 @@
   import Eye from "~icons/ri/eye-line";
   import Delete from "~icons/ri/delete-bin-7-line";
   import { uploadFile } from "@/api/upload";
+  import { isStringArray } from "@/utils/yeah";
 
   defineOptions({
     name: "UploadImage"
@@ -66,10 +67,6 @@
         raw: undefined
       } as UploadFile;
     });
-  };
-
-  const isStringArray = (arr: unknown): arr is string[] => {
-    return Array.isArray(arr) && arr.every(item => typeof item === "string");
   };
 
   const fileList = ref<UploadFile[]>([]);

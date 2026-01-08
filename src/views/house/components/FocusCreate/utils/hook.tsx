@@ -337,7 +337,7 @@ export function useFocusEdit() {
     return houseList;
   };
 
-  function openFocusEditDialog(title = "新增", row?: FocusFormItemProps) {
+  function openFocusEditDialog(title = "新增", row?: FocusFormItemProps, onConfirm?: (data: any) => void) {
     addDialog({
       title: `${title}项目`,
       props: {
@@ -382,6 +382,9 @@ export function useFocusEdit() {
           formInline: null,
           onCreateSuccess: () => {
             closeAllDialog();
+            if (onConfirm) {
+              onConfirm(row);
+            }
           }
         })
     });

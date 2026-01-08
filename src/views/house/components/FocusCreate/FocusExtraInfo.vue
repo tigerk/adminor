@@ -131,20 +131,6 @@
 
   const focusBasicInfoRules = createFocusBasicInfoRules(formData);
 
-  // 初始化操作，没有值时进行默认值处理
-  formData.value.storePhone = formData.value?.storePhone || "";
-  formData.value.water = formData.value?.water || "commercial";
-  formData.value.electricity = formData.value?.electricity || "commercial";
-  formData.value.heating = formData.value?.heating || "central";
-  formData.value.hasGas = formData.value?.hasGas !== undefined ? formData.value.hasGas : true;
-  formData.value.hasElevator = formData.value?.hasElevator !== undefined ? formData.value.hasElevator : true;
-  formData.value.facilities = formData.value?.facilities || [];
-  formData.value.houseDesc = formData.value?.houseDesc || "";
-  formData.value.businessDesc = formData.value?.businessDesc || "";
-  formData.value.tags = formData.value?.tags || [];
-  formData.value.remark = formData.value?.remark || "";
-  formData.value.imageList = formData.value?.imageList || [];
-
   // 定义 emits
   const emit = defineEmits<{
     "step-previous": [];

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, watch } from "vue";
+  import { ref } from "vue";
   import { FormProps } from "@/views/house/components/FocusCreate/utils/types";
   import FocusAssignHouse from "@/views/house/components/FocusCreate/FocusAssignHouse.vue";
   import FocusExtraInfo from "@/views/house/components/FocusCreate/FocusExtraInfo.vue";
@@ -92,7 +92,24 @@
   };
 
   // ✅ 改为 ref 而不是 reactive
-  const form = ref(deepCloneForm(props.formInline));
+  const form = ref(
+    deepCloneForm({
+      ...props.formInline,
+      // ✅ 在这里设置默认值
+      storePhone: props.formInline.storePhone || "",
+      water: props.formInline.water || "commercial",
+      electricity: props.formInline.electricity || "commercial",
+      heating: props.formInline.heating || "central",
+      hasGas: props.formInline.hasGas === undefined ? true : props.formInline.hasGas,
+      hasElevator: props.formInline.hasElevator === undefined ? true : props.formInline.hasElevator,
+      facilities: props.formInline.facilities || [],
+      houseDesc: props.formInline.houseDesc || "",
+      businessDesc: props.formInline.businessDesc || "",
+      tags: props.formInline.tags || [],
+      remark: props.formInline.remark || "",
+      imageList: props.formInline.imageList || []
+    })
+  );
 
   // 步骤激活状态
   const stepActive = ref(0);
@@ -122,11 +139,20 @@
 
   // 提交所有数据到后台
   const submitAllData = async () => {
+    debugger;
     try {
       const submitData = {
-        ...form.value,
-        imageList: form.value.imageList.map((file: any) => file?.url).filter(Boolean)
+        ...form.value
       };
+      // 处理 imageList 字段，图片对象时，提取 url 字段，字符串时，直接添加
+      submitData.imageList = [];
+      form.value.imageList.forEach(item => {
+        if (typeof item === "string") {
+          submitData.imageList.push(item);
+        } else {
+          submitData.imageList.push(item.url || "");
+        }
+      });
 
       const response = await createFocusHouse(submitData);
 

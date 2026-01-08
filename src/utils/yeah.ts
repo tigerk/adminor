@@ -38,3 +38,12 @@ export function calculateMonthsDifference(leaseStart: string, leaseEnd: string):
 
   return Math.abs(monthsDiff); // 返回正数，即使租赁结束日期早于开始日期
 }
+
+/**
+ * 检查数组是否只包含字符串元素
+ * @param arr 要检查的数组
+ * @returns 如果数组只包含字符串元素，则返回true；否则返回false
+ */
+export function isStringArray(arr: unknown): arr is string[] {
+  return Array.isArray(arr) && arr.every(item => typeof item === "string");
+}

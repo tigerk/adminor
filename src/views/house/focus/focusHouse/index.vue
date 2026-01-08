@@ -195,7 +195,7 @@
             <!-- 基础设施 -->
             <div class="utilities-row">
               <div class="utility-item">
-                <IconifyIconOnline icon="ep:water-cup" />
+                <IconifyIconOnline icon="solar:water-broken" />
                 <span>水: {{ getWaterLabel(item.water) }}</span>
               </div>
               <div class="utility-item">
@@ -207,7 +207,7 @@
                 <span>{{ getHeatingLabel(item.heating) }}</span>
               </div>
               <div v-if="item.hasElevator" class="utility-item">
-                <IconifyIconOnline icon="ep:top" />
+                <IconifyIconOnline icon="material-symbols:elevator" />
                 <span>电梯</span>
               </div>
               <div v-if="item.hasGas" class="utility-item">

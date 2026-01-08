@@ -103,7 +103,9 @@ export function useFocusHouse() {
       getFocusById({
         id: focusId
       }).then(res => {
-        openFocusEditDialog("更新", res.data);
+        openFocusEditDialog("更新", res.data, (id: bigint) => {
+          onFocusHouseSearch().then();
+        });
       });
     }
   };
