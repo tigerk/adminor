@@ -1,7 +1,5 @@
 interface QueryFormItemProps {
   keywords: string;
-  houseId: number;
-  roomStatus: number;
 }
 
 interface FormProps {
