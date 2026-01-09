@@ -1,7 +1,7 @@
 // src/types/models/tenant.ts
 
-import { ContractTemplateFormProps, OtherFeeProps, TenantContractProps } from "@/types";
-import { RoomItemProps } from "@/api/house/room";
+import type { ContractTemplateFormProps, OtherFeeProps, TenantContractProps } from "@/types";
+import type { RoomItemProps } from "@/api/house/room";
 
 /** 租客信息 */
 export interface TenantPersonalProps {

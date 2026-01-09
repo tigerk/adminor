@@ -7,7 +7,7 @@ import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { getEntireHouseById, getShareHouseById } from "@/api/house/scatter";
-import type { EntireFormItemProps, ScatterHouseResponse, ShareFormItemProps } from "@/types";
+import type { EntireFormItemProps, ScatterHouseProps, ShareFormItemProps } from "@/types";
 
 // ==================== Hook 特有的类型定义 ====================
 
@@ -508,7 +508,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   }
 
   // 将 ScatterHouseResponse 转换为 EntireFormItemProps
-  function convertToEntireFormItemProps(resp: ScatterHouseResponse): EntireFormItemProps {
+  function convertToEntireFormItemProps(resp: ScatterHouseProps): EntireFormItemProps {
     const price = resp.roomList[0]?.price || 0;
 
     return {
@@ -557,7 +557,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   }
 
   // 将 ScatterHouseResponse 转换为 ShareFormItemProps
-  function convertToShareFormItemProps(resp: ScatterHouseResponse): ShareFormItemProps {
+  function convertToShareFormItemProps(resp: ScatterHouseProps): ShareFormItemProps {
     return {
       id: resp.id,
       leaseMode: resp.leaseMode,
