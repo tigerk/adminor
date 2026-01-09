@@ -52,8 +52,7 @@
     name: [
       { required: true, message: "请输入房型名称", trigger: "blur" },
       { min: 2, max: 20, message: "房型名称长度为2-20个字符", trigger: "blur" }
-    ],
-    layout: [{ required: true, message: "请选择户型配置", trigger: "change" }]
+    ]
   };
 
   // 监听 props 变化并初始化表单
