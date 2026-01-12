@@ -49,7 +49,9 @@ function useBooking() {
 
   // 格式化日期时间
   const formatDateTime = (dateTime: Date) => {
-    if (!dateTime) return "-";
+    if (!dateTime) {
+      return "-";
+    }
     return new Date(dateTime).toLocaleString("zh-CN", {
       year: "numeric",
       month: "2-digit",
@@ -250,7 +252,7 @@ function useBooking() {
         }
       },
       top: "1vh",
-      width: "70vw",
+      width: "55vw",
       lockScroll: true,
       alignCenter: true,
       draggable: true,
@@ -298,7 +300,7 @@ function useBooking() {
               formInline: resp.data
             },
             top: "1vh",
-            width: "70vw",
+            width: "55vw",
             lockScroll: true,
             alignCenter: true,
             draggable: true,

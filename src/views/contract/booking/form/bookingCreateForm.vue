@@ -1,7 +1,7 @@
 <template>
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="120px" label-position="top">
     <!-- 房源信息 -->
-    <div class="section-booking-info mb-4">
+    <div class="section-booking-info mb-2">
       <div class="mb-2">
         <el-text type="primary" size="large" tag="b">房源信息</el-text>
       </div>
@@ -33,22 +33,22 @@
     </div>
 
     <!-- 租客信息 -->
-    <div class="section-tenant-info mb-4">
+    <div class="section-tenant-info mb-2">
       <div class="mb-2">
         <el-text type="primary" size="large" tag="b">租客信息</el-text>
       </div>
       <el-row :gutter="20">
-        <el-col :span="6">
+        <el-col :span="8">
           <el-form-item label="租客类型" prop="tenantType" required>
             <el-segmented v-model="formInline.tenantType" :options="tenantTypeOptions" />
           </el-form-item>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="8">
           <el-form-item label="租客姓名" prop="tenantName" required>
             <el-input v-model="formInline.tenantName" placeholder="请输入租客姓名" clearable />
           </el-form-item>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="8">
           <el-form-item label="联系电话" prop="tenantPhone" required>
             <el-input v-model="formInline.tenantPhone" placeholder="请输入联系电话" clearable />
           </el-form-item>
@@ -57,12 +57,12 @@
     </div>
 
     <!-- 预定信息 -->
-    <div class="section-booking-detail mb-4">
+    <div class="section-booking-detail mb-2">
       <div class="mb-2">
         <el-text type="primary" size="large" tag="b">预定信息</el-text>
       </div>
       <el-row :gutter="20">
-        <el-col :span="6">
+        <el-col :span="8">
           <el-form-item label="预定金额" prop="bookingAmount" required>
             <el-input v-model.number="formInline.bookingAmount" type="number" placeholder="请输入预定金额">
               <template #prefix>¥</template>
@@ -70,7 +70,7 @@
             </el-input>
           </el-form-item>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="8">
           <el-form-item label="到期时间" prop="expiryTime" required>
             <el-date-picker
               v-model="formInline.expiryTime"
@@ -86,7 +86,7 @@
     </div>
 
     <!-- 租期信息 -->
-    <div class="section-lease-info mb-4">
+    <div class="section-lease-info mb-2">
       <div class="mb-2">
         <el-text type="primary" size="large" tag="b">预计租期信息</el-text>
       </div>
@@ -147,7 +147,6 @@
     tenantName: props.formInline?.tenantName || "",
     tenantPhone: props.formInline?.tenantPhone || "",
     bookingAmount: props.formInline?.bookingAmount || null,
-    bookingTime: props.formInline?.bookingTime || new Date(),
     expiryTime: props.formInline?.expiryTime || null,
     expectedLeaseStart: props.formInline?.expectedLeaseStart || null,
     expectedLeaseEnd: props.formInline?.expectedLeaseEnd || null,

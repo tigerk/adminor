@@ -44,12 +44,11 @@ export interface BookingListProps {
 export interface BookingCreateProps {
   id: bigint; // 预定 ID
   roomIds: bigint[]; /** 预定房间 ids */
-  roomList: RoomListProps[];
   tenantType: number; /** 租客类型：0=个人，1=企业 */
   tenantName: string; /** 客户姓名 */
   tenantPhone: string; /** 联系电话 */
   bookingAmount: number; /** 预定金金额 */
-  bookingTime: Date; /** 预定时间 */
+  bookingTime?: Date; /** 预定时间 */
   expiryTime: Date; /** 预定到期时间（超过此时间未签合同可视为违约/过期） */
   expectedLeaseStart: Date; /** 预计租赁开始时间 */
   expectedLeaseEnd: Date; /** 预计租赁结束时间 */
