@@ -1,19 +1,8 @@
 <template>
   <div class="booking-detail-view">
-    <!-- 状态标签 -->
-    <div class="status-banner">
-      <el-tag
-        :type="getStatusType(formInline.bookingStatus)"
-        size="large"
-        effect="dark"
-      >
-        {{ formInline.bookingStatusName }}
-      </el-tag>
-    </div>
-
     <!-- 基本信息 -->
     <div class="info-section">
-      <el-descriptions title="预定信息" :column="2" border>
+      <el-descriptions title="预定信息" :column="3">
         <el-descriptions-item label="预定状态">
           <el-tag :type="getStatusType(formInline.bookingStatus)">
             {{ formInline.bookingStatusName }}
@@ -39,7 +28,7 @@
 
     <!-- 租客信息 -->
     <div class="info-section">
-      <el-descriptions title="租客信息" :column="2" border>
+      <el-descriptions title="租客信息" :column="3">
         <el-descriptions-item label="租客类型">
           <el-tag :type="formInline.tenantType === 0 ? 'success' : 'warning'">
             {{ formInline.tenantType === 0 ? "个人" : "企业" }}
@@ -56,7 +45,7 @@
 
     <!-- 租期信息 -->
     <div class="info-section">
-      <el-descriptions title="预计租期信息" :column="2" border>
+      <el-descriptions title="预计租期信息" :column="3">
         <el-descriptions-item label="租赁开始时间">
           {{ formatDate(formInline.expectedLeaseStart) }}
         </el-descriptions-item>
@@ -78,16 +67,7 @@
         <el-tag type="info" size="small">共 {{ formInline.roomIds?.length || 0 }} 间</el-tag>
       </div>
       <div class="room-tags">
-        <el-tag
-          v-for="(roomId, index) in formInline.roomIds"
-          :key="index"
-          type="primary"
-          size="large"
-          effect="light"
-          class="room-tag"
-        >
-          房间ID: {{ roomId }}
-        </el-tag>
+        <el-tag v-for="(roomId, index) in formInline.roomIds" :key="index" type="primary" size="large" effect="light" class="room-tag">房间ID: {{ roomId }}</el-tag>
       </div>
     </div>
 
@@ -121,137 +101,129 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import type { BookingListProps } from "@/types";
+  import { computed } from "vue";
+  import type { BookingListProps } from "@/types";
 
-interface FormProps {
-  formInline: BookingListProps;
-}
-
-const props = defineProps<FormProps>();
-
-// 判断是否过期
-const isExpired = computed(() => {
-  return new Date(props.formInline.expiryTime) < new Date();
-});
-
-// 格式化日期时间
-const formatDateTime = (dateTime: Date | string) => {
-  if (!dateTime) return "-";
-  return new Date(dateTime).toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  });
-};
-
-// 格式化日期
-const formatDate = (date: Date | string) => {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  });
-};
-
-// 计算租期时长
-const calculateDuration = (start: Date | string, end: Date | string) => {
-  if (!start || !end) return "-";
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const months = Math.floor(days / 30);
-  const remainingDays = days % 30;
-
-  if (months > 0) {
-    return `${months}个月${remainingDays > 0 ? ` ${remainingDays}天` : ""}`;
+  interface FormProps {
+    formInline: BookingListProps;
   }
-  return `${days}天`;
-};
 
-// 获取状态类型
-const getStatusType = (status: number) => {
-  const typeMap: Record<number, string> = {
-    1: "primary",  // 预定中
-    2: "success",  // 已转合同
-    3: "danger",   // 客户违约
-    4: "warning",  // 业主违约
-    5: "info"      // 已取消/过期
+  const props = defineProps<FormProps>();
+
+  // 判断是否过期
+  const isExpired = computed(() => {
+    return new Date(props.formInline.expiryTime) < new Date();
+  });
+
+  // 格式化日期时间
+  const formatDateTime = (dateTime: Date | string) => {
+    if (!dateTime) return "-";
+    return new Date(dateTime).toLocaleString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
   };
-  return typeMap[status] || "info";
-};
+
+  // 格式化日期
+  const formatDate = (date: Date | string) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    });
+  };
+
+  // 计算租期时长
+  const calculateDuration = (start: Date | string, end: Date | string) => {
+    if (!start || !end) return "-";
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const months = Math.floor(days / 30);
+    const remainingDays = days % 30;
+
+    if (months > 0) {
+      return `${months}个月${remainingDays > 0 ? ` ${remainingDays}天` : ""}`;
+    }
+    return `${days}天`;
+  };
+
+  // 获取状态类型
+  const getStatusType = (status: number) => {
+    const typeMap: Record<number, string> = {
+      1: "primary", // 预定中
+      2: "success", // 已转合同
+      3: "danger", // 客户违约
+      4: "warning", // 业主违约
+      5: "info" // 已取消/过期
+    };
+    return typeMap[status] || "info";
+  };
 </script>
 
 <style scoped lang="scss">
-.booking-detail-view {
-  padding: 20px;
+  .booking-detail-view {
+    padding: 20px;
 
-  .status-banner {
-    margin-bottom: 24px;
-    text-align: center;
-    padding: 16px;
-    background: #f5f7fa;
-    border-radius: 4px;
-  }
+    .info-section {
+      margin-bottom: 24px;
 
-  .info-section {
-    margin-bottom: 24px;
+      &:last-child {
+        margin-bottom: 0;
+      }
 
-    &:last-child {
-      margin-bottom: 0;
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e4e7ed;
+
+        .section-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #303133;
+        }
+      }
+
+      .room-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+
+        .room-tag {
+          padding: 10px 16px;
+          font-size: 14px;
+        }
+      }
     }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #e4e7ed;
+    .amount-text {
+      color: #f56c6c;
+      font-weight: 600;
+      font-size: 16px;
+    }
 
-      .section-title {
-        font-size: 16px;
-        font-weight: 600;
+    .expired-text {
+      color: #f56c6c;
+    }
+
+    :deep(.el-descriptions) {
+      .el-descriptions__label {
+        font-weight: 500;
+        color: #606266;
+        background: #fafafa;
+      }
+
+      .el-descriptions__content {
         color: #303133;
       }
     }
-
-    .room-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-
-      .room-tag {
-        padding: 10px 16px;
-        font-size: 14px;
-      }
-    }
   }
-
-  .amount-text {
-    color: #f56c6c;
-    font-weight: 600;
-    font-size: 16px;
-  }
-
-  .expired-text {
-    color: #f56c6c;
-  }
-
-  :deep(.el-descriptions) {
-    .el-descriptions__label {
-      font-weight: 500;
-      color: #606266;
-      background: #fafafa;
-    }
-
-    .el-descriptions__content {
-      color: #303133;
-    }
-  }
-}
 </style>

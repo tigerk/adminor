@@ -35,7 +35,7 @@
               <el-radio-group v-model="queryForm.bookingStatus" @change="onBookingSearch">
                 <el-radio-button v-for="item in bookingStatusTotal" :key="item.status" :value="item.status" :class="['booking-status-button', `status-${item.status || 'all'}`]">
                   <span class="status-content">
-                    <span class="status-dot" :style="{ backgroundColor: item.statusColor }" />
+                    <span class="status-dot" :style="{ backgroundColor: getStatusColor(item.status) }" />
                     {{ item.statusName }}（{{ item.total }}）
                   </span>
                 </el-radio-button>
@@ -72,15 +72,13 @@
         @page-current-change="handleCurrentChange"
       >
         <template #operation="{ row }">
-          <el-button v-if="row.bookingStatus === 1" class="reset-margin" link type="primary" :icon="useRenderIcon(CircleCheck)" @click="handleConvertToTenant(row)">
-            转为租客
-          </el-button>
+          <el-button class="reset-margin" link :icon="useRenderIcon(View)" @click="handleViewBooking(row)">查看详情</el-button>
           <el-dropdown :hide-on-click="false">
             <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="handleViewBooking(row)">
-                  <el-button link :icon="useRenderIcon(View)">查看详情</el-button>
+                <el-dropdown-item v-if="row.bookingStatus === 1" @click="handleConvertToTenant(row)">
+                  <el-button link type="primary" :icon="useRenderIcon(CircleCheck)">转为租客</el-button>
                 </el-dropdown-item>
                 <el-dropdown-item v-if="row.bookingStatus === 1" @click="handleCancelBooking(row)">
                   <el-button link :icon="useRenderIcon(Delete)">取消预定</el-button>
@@ -129,7 +127,8 @@
     bookingList,
     handleSizeChange,
     handleCurrentChange,
-    resetQueryForm
+    resetQueryForm,
+    getStatusColor
   } = useBooking();
 </script>
 

@@ -3,12 +3,13 @@ import type { PaginationProps } from "@pureadmin/table";
 import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { getBookingList, getBookingTotal, createBooking, cancelBooking, getBookingDetail } from "@/api/contract/booking";
-import type { BookingQueryParams, BookingListProps, BookingCancelProps } from "@/types";
+import { cancelBooking, createBooking, getBookingDetail, getBookingList, getBookingTotal } from "@/api/contract/booking";
+import type { BookingCancelProps, BookingListProps, BookingQueryParams } from "@/types";
 import { ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import BookingCreateForm from "../form/bookingCreateForm.vue";
 import BookingDetailDialog from "../view/bookingDetailDialog.vue";
+import { BOOKING_STATUS_COLOR_MAP } from "@/constants";
 
 function useBooking() {
   const router = useRouter();
@@ -43,8 +44,7 @@ function useBooking() {
 
   // 获取状态颜色
   const getStatusColor = (status: number) => {
-    const statusInfo = bookingStatusTotal.value.find(item => item.status === status);
-    return statusInfo?.statusColor || "#409eff";
+    return BOOKING_STATUS_COLOR_MAP[status] || "#909399";
   };
 
   // 格式化日期时间
@@ -70,7 +70,7 @@ function useBooking() {
     {
       label: "状态",
       prop: "bookingStatus",
-      width: 90,
+      width: 100,
       fixed: "left",
       cellRenderer: ({ row }) => {
         const statusColor = getStatusColor(row.bookingStatus);
@@ -397,7 +397,8 @@ function useBooking() {
     handleCurrentChange,
     handleViewBooking,
     handleConvertToTenant,
-    handleCancelBooking
+    handleCancelBooking,
+    getStatusColor
   };
 }
 

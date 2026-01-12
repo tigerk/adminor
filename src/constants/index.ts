@@ -210,18 +210,3 @@ export const BOOKING_STATUS_COLOR_MAP: Record<number, string> = {
   4: "#e6a23c", // 业主违约 - 橙色
   5: "#909399" // 已取消/过期 - 灰色
 };
-
-/**
- * 获取预定状态名称
- */
-export const getBookingStatusName = (status: number): string => {
-  const option = BOOKING_STATUS_OPTIONS.find(item => item.value === status);
-  return option?.label || "未知状态";
-};
-
-/**
- * 获取预定状态颜色
- */
-export const getBookingStatusColor = (status: number): string => {
-  return BOOKING_STATUS_COLOR_MAP[status] || "#909399";
-};
