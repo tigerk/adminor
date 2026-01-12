@@ -18,7 +18,7 @@ export const createBooking = (data?: BookingCreateProps) => {
 };
 
 /** 获取租客详情 */
-export const getBookingDetail = (data?: BookingListProps) => {
+export const getBookingDetail = (data?: object) => {
   return http.request<ApiResponse<BookingListProps>>("post", baseUrlApi("contract/booking/get"), { data });
 };
 

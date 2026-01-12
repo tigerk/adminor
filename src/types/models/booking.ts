@@ -8,12 +8,12 @@ export interface BookingQueryParams {
   pageSize: number; /** 分页大小 */
   tenantName: string; /** 客户姓名 */
   tenantPhone: string; /** 联系电话 */
+  bookingStatus: number; /**  预定状态 */
 }
 
 /** 预定列表项 */
 export interface BookingListProps {
   id: bigint; // 预定 ID
-  bookingCode: string; /** 预定编号 */
   roomIds: bigint[]; /** 预定房间 ids */
   tenantType: number; /** 租客类型：0=个人，1=企业 */
   tenantName: string; /** 客户姓名 */
@@ -39,7 +39,6 @@ export interface BookingListProps {
 /** 预定创建 */
 export interface BookingCreateProps {
   id: bigint; // 预定 ID
-  bookingCode: string; /** 预定编号 */
   roomIds: bigint[]; /** 预定房间 ids */
   tenantType: number; /** 租客类型：0=个人，1=企业 */
   tenantName: string; /** 客户姓名 */

@@ -1,8 +1,18 @@
+import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
-import { reactive } from "vue";
-import type { BookingQueryParams } from "@/types";
+import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
+import { addDialog } from "@/components/ReDialog";
+import { deviceDetection } from "@pureadmin/utils";
+import { getBookingList, getBookingTotal, createBooking, cancelBooking, getBookingDetail } from "@/api/contract/booking";
+import type { BookingQueryParams, BookingListProps, BookingCancelProps } from "@/types";
+import { ElMessageBox } from "element-plus";
+import { useRouter } from "vue-router";
+import BookingCreateForm from "../form/bookingCreateForm.vue";
+import BookingDetailDialog from "../view/bookingDetailDialog.vue";
 
-export function useContractBooking() {
+function useBooking() {
+  const router = useRouter();
+
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 15,
@@ -10,5 +20,352 @@ export function useContractBooking() {
     background: true
   });
 
-  const queryForm = reactive<BookingQueryParams>({});
+  const queryForm = reactive<BookingQueryParams>({
+    tenantName: "",
+    tenantPhone: "",
+    bookingStatus: undefined,
+    pageSize: 15,
+    currentPage: 1
+  });
+
+  const curRow = ref();
+  const bookingStatusTotal = ref([]);
+  const bookingList = ref<BookingListProps[]>([]);
+  const loading = ref(true);
+  const tableSize = ref("default");
+  const formRef = ref();
+
+  // 计算当前页的起始索引
+  const startIndex = computed(() => (pagination.currentPage - 1) * pagination.pageSize + 1);
+
+  // 渲染序号列
+  const renderIndexCell = ({ index }) => <span>{startIndex.value + index}</span>;
+
+  // 获取状态颜色
+  const getStatusColor = (status: number) => {
+    const statusInfo = bookingStatusTotal.value.find(item => item.status === status);
+    return statusInfo?.statusColor || "#409eff";
+  };
+
+  // 格式化日期时间
+  const formatDateTime = (dateTime: Date) => {
+    if (!dateTime) return "-";
+    return new Date(dateTime).toLocaleString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
+
+  const columns: TableColumnList = [
+    {
+      label: "序号",
+      prop: "index",
+      width: 60,
+      fixed: "left",
+      cellRenderer: renderIndexCell
+    },
+    {
+      label: "状态",
+      prop: "bookingStatus",
+      width: 140,
+      fixed: "left",
+      cellRenderer: ({ row }) => {
+        const statusColor = getStatusColor(row.bookingStatus);
+        return (
+          <el-tag
+            style={{
+              borderColor: statusColor,
+              backgroundColor: "#fff",
+              color: statusColor
+            }}
+          >
+            {row.bookingStatusName}
+          </el-tag>
+        );
+      }
+    },
+    {
+      label: "房间信息",
+      prop: "roomIds",
+      width: 120,
+      cellRenderer: ({ row }) => <el-tag type="info">共 {row.roomIds?.length || 0} 间</el-tag>
+    },
+    {
+      label: "租客信息",
+      prop: "tenantName",
+      minWidth: 200,
+      cellRenderer: ({ row }) => (
+        <el-space>
+          <div>{row.tenantName}</div>
+          <el-text type="info" size="small">
+            {row.tenantPhone}
+          </el-text>
+        </el-space>
+      )
+    },
+    {
+      label: "预定金额",
+      prop: "bookingAmount",
+      width: 120,
+      cellRenderer: ({ row }) => <span style={{ color: "#f56c6c", fontWeight: 600 }}>¥{row.bookingAmount}</span>
+    },
+    {
+      label: "意向租金",
+      prop: "expectedRentPrice",
+      width: 120,
+      cellRenderer: ({ row }) => <span>¥{row.expectedRentPrice}/月</span>
+    },
+    {
+      label: "预计租期",
+      prop: "expectedLeaseStart",
+      minWidth: 220,
+      cellRenderer: ({ row }) => (
+        <el-space>
+          <el-text size="small">{formatDateTime(row.expectedLeaseStart)?.split(" ")[0]}</el-text>
+          <span>至</span>
+          <el-text size="small">{formatDateTime(row.expectedLeaseEnd)?.split(" ")[0]}</el-text>
+        </el-space>
+      )
+    },
+    {
+      label: "预定时间",
+      prop: "bookingTime",
+      width: 160,
+      cellRenderer: ({ row }) => formatDateTime(row.bookingTime)
+    },
+    {
+      label: "到期时间",
+      prop: "expiryTime",
+      width: 160,
+      cellRenderer: ({ row }) => <span style={{ color: new Date(row.expiryTime) < new Date() ? "#f56c6c" : "" }}>{formatDateTime(row.expiryTime)}</span>
+    },
+    {
+      label: "操作",
+      fixed: "right",
+      width: 180,
+      slot: "operation"
+    }
+  ];
+
+  function handleSizeChange(val: number) {
+    pagination.pageSize = val;
+    onBookingSearch();
+  }
+
+  function handleCurrentChange(val: number) {
+    pagination.currentPage = val;
+    onBookingSearch();
+  }
+
+  function onBookingSearch() {
+    loading.value = true;
+    queryForm.currentPage = pagination.currentPage;
+    queryForm.pageSize = pagination.pageSize;
+
+    getBookingList(toRaw(queryForm))
+      .then(resp => {
+        if (resp.code === 0) {
+          bookingList.value = resp.data.list;
+          pagination.total = Number(resp.data.total);
+          pagination.pageSize = Number(resp.data.pageSize);
+          pagination.currentPage = Number(resp.data.currentPage);
+        }
+      })
+      .finally(() => {
+        loading.value = false;
+      });
+  }
+
+  function rowStyle({ row: { id } }) {
+    return {
+      cursor: "pointer",
+      background: id === curRow.value?.id ? "var(--el-fill-color-light)" : ""
+    };
+  }
+
+  onMounted(async () => {
+    onBookingSearch();
+
+    getBookingTotal(toRaw(queryForm)).then(res => {
+      bookingStatusTotal.value = res.data?.statusList || [];
+
+      let total = 0;
+      res.data.statusList.forEach(item => {
+        total += item.total;
+      });
+
+      bookingStatusTotal.value.unshift({
+        status: undefined,
+        statusName: "全部",
+        statusColor: "#909399",
+        total: total
+      });
+    });
+  });
+
+  function openBookingDialog(title = "添加", row?: any) {
+    addDialog({
+      title: `${title}预定`,
+      props: {
+        formInline: {
+          title,
+          ...row
+        }
+      },
+      top: "1vh",
+      width: "70vw",
+      lockScroll: true,
+      alignCenter: true,
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(BookingCreateForm, { ref: formRef, formInline: null }),
+      beforeSure: (done, { options }) => {
+        const FormInstance = formRef.value;
+        const getFormRuleRef = FormInstance?.getRef?.();
+        const curData = FormInstance?.formInline;
+
+        getFormRuleRef.validate(valid => {
+          if (valid) {
+            // 处理房间ID数组
+            curData.roomIds = curData.roomIds.map(item => (typeof item === "object" ? item.value : item));
+
+            createBooking(curData).then(resp => {
+              if (resp.code === 0) {
+                message(`预定创建成功`, { type: "success" });
+                done();
+                onBookingSearch();
+              } else {
+                message(resp.message, { type: "error" });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  // 查看预定详情
+  function handleViewBooking(row: BookingListProps) {
+    loading.value = true;
+
+    getBookingDetail({ id: row.id })
+      .then(resp => {
+        loading.value = false;
+
+        if (resp.code === 0) {
+          addDialog({
+            title: `预定详情 - ${row.tenantName}`,
+            props: {
+              formInline: resp.data
+            },
+            top: "1vh",
+            width: "70vw",
+            lockScroll: true,
+            alignCenter: true,
+            draggable: true,
+            fullscreen: deviceDetection(),
+            fullscreenIcon: true,
+            closeOnClickModal: false,
+            hideFooter: true,
+            contentRenderer: () => h(BookingDetailDialog, { formInline: resp.data })
+          });
+        } else {
+          message(resp.message, { type: "error" });
+        }
+      })
+      .catch(() => {
+        loading.value = false;
+        message("获取预定详情失败", { type: "error" });
+      });
+  }
+
+  // 转为租客
+  function handleConvertToTenant(row: BookingListProps) {
+    ElMessageBox.confirm(`确认将预定"${row.tenantName}"转为租客合同吗？`, "转为租客", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    }).then(() => {
+      // 携带预定信息跳转到租客添加页面
+      router.push({
+        path: "/contract/tenant",
+        query: {
+          action: "create",
+          bookingId: row.id.toString(),
+          // 传递预定信息
+          roomIds: JSON.stringify(row.roomIds),
+          tenantName: row.tenantName,
+          tenantPhone: row.tenantPhone,
+          tenantType: row.tenantType.toString(),
+          expectedRentPrice: row.expectedRentPrice.toString(),
+          expectedLeaseStart: row.expectedLeaseStart.toString(),
+          expectedLeaseEnd: row.expectedLeaseEnd.toString()
+        }
+      });
+    });
+  }
+
+  // 取消预定
+  function handleCancelBooking(row: BookingListProps) {
+    ElMessageBox.prompt("请输入取消原因", "取消预定", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      inputPattern: /.+/,
+      inputErrorMessage: "请输入取消原因"
+    }).then(({ value }) => {
+      const params: BookingCancelProps = {
+        id: row.id,
+        updateBy: BigInt(1), // 实际应该从用户信息中获取
+        cancelReason: value
+      };
+
+      cancelBooking(params).then(resp => {
+        if (resp.code === 0) {
+          message("预定已取消", { type: "success" });
+          onBookingSearch();
+        } else {
+          message(resp.message, { type: "error" });
+        }
+      });
+    });
+  }
+
+  const resetQueryForm = (formEl: any) => {
+    formEl?.value?.resetFields();
+    Object.assign(queryForm, {
+      tenantName: "",
+      tenantPhone: "",
+      bookingStatus: undefined,
+      pageSize: 15,
+      currentPage: 1
+    });
+    onBookingSearch();
+  };
+
+  return {
+    resetQueryForm,
+    queryForm,
+    tableSize,
+    curRow,
+    loading,
+    columns,
+    rowStyle,
+    bookingStatusTotal,
+    bookingList,
+    pagination,
+    openBookingDialog,
+    onBookingSearch,
+    handleSizeChange,
+    handleCurrentChange,
+    handleViewBooking,
+    handleConvertToTenant,
+    handleCancelBooking
+  };
 }
+
+export default useBooking;

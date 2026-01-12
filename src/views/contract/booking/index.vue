@@ -1,55 +1,67 @@
 <template>
   <div class="main">
-    <el-row class="bg-bg_color w-full px-4 pb-0 pt-[12px] overflow-auto">
-      <el-col :span="12">
-        <div class="grid-content ep-bg-purple w-full" style="align-items: flex-start">
+    <!-- 搜索栏 -->
+    <el-row class="bg-bg_color w-full px-4 pb-3 pt-[12px]">
+      <el-col :span="24">
+        <el-form ref="queryFormRef" :inline="true" :model="queryForm" class="search-form">
           <el-form-item>
-            <el-radio-group v-model="queryForm.roomStatus" @change="onSearch">
-              <el-radio-button
-                v-for="item in tenantStatusTotal"
-                :key="item.roomStatus"
-                :value="item.roomStatus"
-                :class="['room-status-button', `status-${item.roomStatus || 'all'}`]"
-                :style="{
-                  // '--status-color': item.roomStatusColor
-                  // '--status-bg-color': item.roomStatusColor + '5' // 添加透明度
-                }"
-              >
-                <span class="status-content">
-                  <span class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
-                  {{ item.roomStatusName }}（{{ item.total }}）
-                </span>
-              </el-radio-button>
-            </el-radio-group>
+            <el-input v-model="queryForm.tenantName" placeholder="租客姓名" clearable class="!w-[180px]" @keyup.enter="onBookingSearch" @clear="onBookingSearch">
+              <template #prefix>
+                <IconifyIconOffline :icon="User" />
+              </template>
+            </el-input>
           </el-form-item>
-        </div>
-      </el-col>
-      <el-col :span="8" class="text-left">
-        <el-input v-model="queryForm.keywords" placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签" clearable class="w-full" @keyup.enter="onSearch" @clear="onSearch">
-          <template #suffix>
-            <IconifyIconOffline :icon="Search" />
-          </template>
-        </el-input>
-      </el-col>
-      <el-col :span="4" class="text-right">
-        <el-space>
-          <el-button color="#626aef" :dark="true" @click="openDialog()">添加租客</el-button>
-        </el-space>
+          <el-form-item>
+            <el-input v-model="queryForm.tenantPhone" placeholder="联系电话" clearable class="!w-[180px]" @keyup.enter="onBookingSearch" @clear="onBookingSearch">
+              <template #prefix>
+                <IconifyIconOffline :icon="Phone" />
+              </template>
+            </el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button :icon="useRenderIcon(Search)" type="primary" @click="onBookingSearch">搜索</el-button>
+            <el-button :icon="useRenderIcon(Refresh)" @click="resetQueryForm(queryFormRef)">重置</el-button>
+          </el-form-item>
+        </el-form>
       </el-col>
     </el-row>
-    <!--项目列表-->
+
+    <!-- 状态筛选和操作按钮 -->
+    <el-row class="bg-bg_color w-full px-4">
+      <el-col :span="18">
+        <div class="grid-content ep-bg-purple" style="align-items: flex-start">
+          <el-space>
+            <el-form-item>
+              <el-radio-group v-model="queryForm.bookingStatus" @change="onBookingSearch">
+                <el-radio-button v-for="item in bookingStatusTotal" :key="item.status" :value="item.status" :class="['booking-status-button', `status-${item.status || 'all'}`]">
+                  <span class="status-content">
+                    <span class="status-dot" :style="{ backgroundColor: item.statusColor }" />
+                    {{ item.statusName }}（{{ item.total }}）
+                  </span>
+                </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-space>
+        </div>
+      </el-col>
+      <el-col :span="6" class="text-right">
+        <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openBookingDialog()">添加预定</el-button>
+      </el-col>
+    </el-row>
+
+    <!-- 预定列表 -->
     <el-row class="bg-bg_color w-full px-4 pt-0 overflow-auto">
       <pure-table
         border
         row-key="id"
         alignWhole="center"
-        showOverflowTooltip
-        :size="tableSize as any"
+        :show-overflow-tooltip="false"
         :loading="loading"
         :loading-config="{ background: 'transparent' }"
         adaptive
         :adaptiveConfig="{ offsetBottom: 108 }"
-        :data="tenantTableList"
+        :data="bookingList"
+        :size="tableSize as any"
         :columns="columns"
         :pagination="pagination"
         :header-cell-style="{
@@ -58,83 +70,78 @@
         }"
         @page-size-change="handleSizeChange"
         @page-current-change="handleCurrentChange"
-      />
+      >
+        <template #operation="{ row }">
+          <el-button v-if="row.bookingStatus === 1" class="reset-margin" link type="primary" :icon="useRenderIcon(CircleCheck)" @click="handleConvertToTenant(row)">
+            转为租客
+          </el-button>
+          <el-dropdown :hide-on-click="false">
+            <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="handleViewBooking(row)">
+                  <el-button link :icon="useRenderIcon(View)">查看详情</el-button>
+                </el-dropdown-item>
+                <el-dropdown-item v-if="row.bookingStatus === 1" @click="handleCancelBooking(row)">
+                  <el-button link :icon="useRenderIcon(Delete)">取消预定</el-button>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </template>
+      </pure-table>
     </el-row>
   </div>
 </template>
-<script setup lang="ts">
-  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
+<script setup lang="ts">
+  import { ref } from "vue";
+  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+  import useBooking from "./utils/hook";
+  import Search from "~icons/ri/search-line";
+  import Refresh from "~icons/ep/refresh";
+  import Plus from "~icons/ep/plus";
+  import User from "~icons/ep/user";
+  import Phone from "~icons/ep/phone";
   import Delete from "~icons/ep/delete";
-  import EditPen from "~icons/ep/edit-pen";
-  import Search from "~icons/ri/search-eye-line";
-  import { useContractTenant } from "@/views/contract/tenant/utils/hook";
+  import More from "~icons/ep/more-filled";
+  import View from "~icons/ep/view";
+  import CircleCheck from "~icons/ep/circle-check";
 
   defineOptions({
-    name: "ContractTenant"
+    name: "ContractBooking"
   });
 
-  const { queryForm, openDialog, tenantStatusTotal, onSearch, tableSize, columns, loading, pagination, tenantTableList, handleSizeChange, handleCurrentChange } =
-    useContractTenant();
+  const queryFormRef = ref();
+
+  const {
+    queryForm,
+    openBookingDialog,
+    onBookingSearch,
+    handleViewBooking,
+    handleConvertToTenant,
+    handleCancelBooking,
+    tableSize,
+    columns,
+    loading,
+    pagination,
+    bookingStatusTotal,
+    bookingList,
+    handleSizeChange,
+    handleCurrentChange,
+    resetQueryForm
+  } = useBooking();
 </script>
 
 <style lang="scss" scoped>
-  :deep(.el-dropdown-menu__item i) {
-    margin: 0;
-  }
-
   .search-form {
     :deep(.el-form-item) {
       margin-bottom: 12px;
     }
   }
 
-  .dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    margin-right: 6px;
-    border-radius: 50%;
-  }
-
-  /* 房间状态按钮样式 */
-  .room-status-button {
-    position: relative;
-
-    :deep(.el-radio-button__inner) {
-      position: relative;
-      z-index: 1;
-      color: var(--status-color, #606266);
-      background-color: var(--status-bg-color, transparent);
-      transition: all 0.3s ease;
-
-      &:hover {
-        //border-color: var(--status-color);
-        background-color: var(--status-bg-color);
-      }
-    }
-
-    /* 修复选中状态的左侧边框显示问题 */
-    :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      border-left-color: var(--status-color) !important;
-      box-shadow: none;
-    }
-
-    /* 确保第一个按钮的左边框显示 */
-    &:first-child :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      border-left-color: var(--status-color) !important;
-    }
-
-    /* 确保相邻按钮之间的边框处理 */
-    &:not(:first-child) :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      margin-left: -1px;
-      border-left-color: var(--status-color) !important;
-    }
-
-    /* 当前一个按钮选中时，确保当前按钮的左边框正确显示 */
-    &:not(:first-child) :deep(.el-radio-button__inner) {
-      margin-left: -1px;
-    }
+  :deep(.el-dropdown-menu__item i) {
+    margin: 0;
   }
 
   .status-content {
@@ -151,28 +158,13 @@
     border-radius: 50%;
   }
 
-  /* 特定状态的自定义样式（如果需要） */
-  .status-all {
-    /* 全部状态的特殊样式 */
-  }
+  .booking-status-button {
+    position: relative;
 
-  .status-0 {
-    /* 空置状态的特殊样式 */
-  }
-
-  .status-1 {
-    /* 已租状态的特殊样式 */
-  }
-
-  .status-2 {
-    /* 锁房状态的特殊样式 */
-  }
-
-  .status-3 {
-    /* 配置中状态的特殊样式 */
-  }
-
-  .status-4 {
-    /* 下架状态的特殊样式 */
+    :deep(.el-radio-button__inner) {
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
   }
 </style>
