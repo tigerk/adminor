@@ -2,6 +2,8 @@
  * 预定数据结构定义
  */
 
+import { RoomInfoProps } from "@/types";
+
 /** 预定查询参数 */
 export interface BookingQueryParams {
   currentPage: number; /** 当前页码 */
@@ -40,6 +42,7 @@ export interface BookingListProps {
 export interface BookingCreateProps {
   id: bigint; // 预定 ID
   roomIds: bigint[]; /** 预定房间 ids */
+  roomList: RoomInfoProps[];
   tenantType: number; /** 租客类型：0=个人，1=企业 */
   tenantName: string; /** 客户姓名 */
   tenantPhone: string; /** 联系电话 */

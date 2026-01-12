@@ -70,7 +70,7 @@ function useBooking() {
     {
       label: "状态",
       prop: "bookingStatus",
-      width: 140,
+      width: 90,
       fixed: "left",
       cellRenderer: ({ row }) => {
         const statusColor = getStatusColor(row.bookingStatus);
@@ -88,10 +88,43 @@ function useBooking() {
       }
     },
     {
-      label: "房间信息",
-      prop: "roomIds",
-      width: 120,
-      cellRenderer: ({ row }) => <el-tag type="info">共 {row.roomIds?.length || 0} 间</el-tag>
+      label: "房间",
+      prop: "roomList",
+      width: 300,
+      showOverflowTooltip: false,
+      cellRenderer: ({ row }) => (
+        <el-tooltip placement="top" effect="light" popper-class="room-tooltip">
+          {{
+            // 👇 悬浮内容（自定义）
+            content: () => (
+              <el-space wrap>
+                {row.roomList.map(room => (
+                  <el-tag key={room.roomId} type="primary">
+                    {`${room.houseName}-${room.roomNumber}`}
+                  </el-tag>
+                ))}
+              </el-space>
+            ),
+            // 👇 单元格显示内容
+            default: () => (
+              <div>
+                <el-space>
+                  <el-text
+                    truncated
+                    style={{
+                      width: "220px",
+                      display: "inline-block"
+                    }}
+                  >
+                    {row.roomList.map(room => `${room.communityName} ${room.doorNumber} -${room.roomNumber}`).join(" | ")}
+                  </el-text>
+                  <el-tag type="info">共 {row.roomList.length} 间</el-tag>
+                </el-space>
+              </div>
+            )
+          }}
+        </el-tooltip>
+      )
     },
     {
       label: "租客信息",
