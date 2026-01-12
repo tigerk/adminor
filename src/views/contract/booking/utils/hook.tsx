@@ -354,15 +354,15 @@ function useBooking() {
       inputPattern: /.+/,
       inputErrorMessage: "请输入取消原因"
     }).then(({ value }) => {
+      debugger;
       const params: BookingCancelProps = {
         id: row.id,
-        updateBy: BigInt(1), // 实际应该从用户信息中获取
         cancelReason: value
       };
 
       cancelBooking(params).then(resp => {
         if (resp.code === 0) {
-          message("预定已取消", { type: "success" });
+          message("预定已取消！", { type: "success" });
           onBookingSearch();
         } else {
           message(resp.message, { type: "error" });

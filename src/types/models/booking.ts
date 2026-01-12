@@ -67,7 +67,6 @@ export interface BookingCreateProps {
 
 export interface BookingCancelProps {
   id: bigint; /** 预定 ID */
-  updateBy: bigint; /** 修改人ID */
   cancelReason: string; /** 取消/过期原因备注 */
 }
 
