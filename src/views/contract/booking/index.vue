@@ -72,7 +72,7 @@
         @page-current-change="handleCurrentChange"
       >
         <template #operation="{ row }">
-          <el-button class="reset-margin" link :icon="useRenderIcon(View)" @click="handleViewBooking(row)">查看详情</el-button>
+          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="handleViewBooking(row)">查看</el-button>
           <el-dropdown :hide-on-click="false">
             <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
             <template #dropdown>

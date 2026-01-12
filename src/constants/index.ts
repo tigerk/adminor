@@ -195,8 +195,8 @@ export const FIRST_BILL_DAY_OPTIONS = [
 export const BOOKING_STATUS_OPTIONS = [
   { label: "预定中", value: 1, color: "#409eff" },
   { label: "已转合同", value: 2, color: "#67c23a" },
-  { label: "客户违约（没收定金）", value: 3, color: "#f56c6c" },
-  { label: "业主违约（退还定金）", value: 4, color: "#e6a23c" },
+  { label: "客户违约", value: 3, color: "#f56c6c" },
+  { label: "业主违约", value: 4, color: "#e6a23c" },
   { label: "已取消/过期", value: 5, color: "#909399" }
 ];
 

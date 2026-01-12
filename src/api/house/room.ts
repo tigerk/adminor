@@ -1,5 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
+import type { RoomGridProps, RoomTotal } from "@/types";
 
 export type ResultTable = {
   code: number;
@@ -16,184 +17,10 @@ export type ResultTable = {
   };
 };
 
-export type RoomTotal = {
+export type ResultRoomGridProps = {
   code: number;
   message: string;
-  data?: {
-    statusList: any;
-  };
-};
-
-/**
- * 房型数据
- */
-export type HouseLayoutDTO = {
-  layoutName?: string;
-  bedroom?: number;
-  livingRoom?: number;
-  kitchen?: number;
-  bathroom?: number;
-};
-
-/**
- * 租期信息（前端扩展，后端添加后可移除）
- */
-export type LeaseInfoDTO = {
-  leaseStartDate?: string;
-  leaseEndDate?: string;
-  availableDate?: string;
-  daysUntilAvailable?: number;
-  tenantName?: string;
-  tenantPhone?: string;
-};
-
-/**
- * 房间项数据传输对象
- */
-export type RoomItemProps = {
-  /** 房间id */
-  roomId?: number;
-  /** 房源ID */
-  houseId?: number;
-  /** 小区ID */
-  communityId?: number;
-  /** 小区名称 */
-  communityName?: string;
-  /** 房源编号 */
-  houseCode?: string;
-  /** 房源名称 */
-  houseName?: string;
-  /** 门牌号 */
-  doorNumber?: string;
-  /** 出租状态 */
-  rentalType?: number;
-  /** 来源id */
-  leaseModeId?: number;
-  /** 房源租赁类型：1、集中式；2、分散式 */
-  leaseMode?: number;
-  /** 房型 */
-  houseLayout?: HouseLayoutDTO;
-  /** 部门id */
-  deptId?: number;
-  /** 部门名称 */
-  deptName?: string;
-  /** 房间号 */
-  roomNumber?: string;
-  /** 楼栋号 */
-  building?: string;
-  /** 单元号 */
-  unit?: string;
-  /** 楼层 */
-  floor?: number;
-  /** 出租价格 */
-  price?: string;
-  /** 面积 */
-  area?: number;
-  /** 朝向 */
-  direction?: string;
-  /** 房间状态 */
-  roomStatus?: number;
-  /** 房间状态，参考：RoomStatusEnum */
-  roomStatusName?: string;
-  /** 房间状态颜色，参考：RoomStatusEnum */
-  roomStatusColor?: string;
-  /** 锁定状态 */
-  locked?: boolean;
-  /** 禁用状态：是否已禁用 */
-  closed?: boolean;
-  /** 出租状态 */
-  leased?: boolean;
-  /** 负责人id */
-  salesmanId?: string;
-  /** 负责人姓名 */
-  salesmanName?: string;
-  /** 负责人手机号 */
-  salesmanPhone?: string;
-  /** 租期信息（前端扩展） */
-  leaseInfo?: LeaseInfoDTO;
-  /** 是否有阳台（前端扩展） */
-  balcony?: boolean;
-  /** 房间标签 */
-  roomLabel?: string;
-};
-
-/**
- * 小区分组
- */
-export type CompoundGroup = {
-  /** 模式引用ID */
-  leaseModeId?: number;
-  /** 租赁模式 */
-  leaseMode?: number;
-  /** 卡片显示名称 */
-  displayName?: string;
-  /** 小区id */
-  communityId?: number;
-  /** 小区名称 */
-  communityName?: string;
-  /** 小区地址 */
-  communityAddress?: string;
-  /** 总楼栋数 */
-  buildingCount?: number;
-  /** 总楼层数 */
-  floorCount?: number;
-  /** 房间数量 */
-  roomCount?: number;
-  /** 已出租房间数量 */
-  leasedCount?: number;
-  /** 出租率 */
-  occupancyRate?: string;
-};
-
-/**
- * 楼栋单元分组
- */
-export type BuildingGroup = {
-  /** 楼栋号 */
-  building?: string;
-  /** 单元号 */
-  unit?: string;
-  /** 房间数量 */
-  roomCount?: number;
-  /** 已出租房间数量 */
-  leasedCount?: number;
-  /** 出租率 */
-  occupancyRate?: string;
-};
-
-/**
- * 楼层分组
- */
-export type FloorGroup = {
-  /** 楼层号 */
-  floor?: number;
-  /** 房间数量 */
-  roomCount?: number;
-  /** 出租数量 */
-  leasedCount?: number;
-  /** 出租率 */
-  occupancyRate?: string;
-};
-
-export type RoomGridItemDTO = {
-  /** 区域信息，集中式时，为项目信息，分布式时，为小区信息 */
-  compoundGroup: CompoundGroup;
-  buildingGroup: BuildingGroup;
-  floorGroup: FloorGroup;
-  rooms: Array<RoomItemProps>;
-};
-
-export type RoomGridDTO = {
-  roomGridItemList: Array<RoomGridItemDTO>;
-  currentPage: number;
-  pageSize: number;
-  hasMore: boolean;
-};
-
-export type ResultRoomGrid = {
-  code: number;
-  message: string;
-  data?: RoomGridDTO;
+  data?: RoomGridProps;
 };
 
 export const getRoomList = (data?: object) => {
@@ -205,7 +32,7 @@ export const getRoomList = (data?: object) => {
  * @param data
  */
 export const getRoomGrid = (data?: object) => {
-  return http.request<ResultRoomGrid>("post", baseUrlApi("room/grid"), { data });
+  return http.request<ResultRoomGridProps>("post", baseUrlApi("room/grid"), { data });
 };
 
 export const getRoomTotal = (data?: object) => {

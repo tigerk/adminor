@@ -1,7 +1,6 @@
 // src/types/models/tenant.ts
 
-import type { ContractTemplateFormProps, OtherFeeProps, TenantContractProps } from "@/types";
-import type { RoomItemProps } from "@/api/house/room";
+import type { ContractTemplateFormProps, OtherFeeProps, RoomListProps, TenantContractProps } from "@/types";
 
 /** 租客信息 */
 export interface TenantPersonalProps {
@@ -128,7 +127,7 @@ export interface TenantRowProps {
   tenantPersonal?: TenantPersonalProps;
   tenantCompany?: TenantCompanyProps;
   tenantMateList?: TenantMateProps[];
-  roomList: RoomItemProps[];
+  roomList: RoomListProps[];
   otherFees: OtherFeeProps[];
   contractTemplate: ContractTemplateFormProps;
   rentPrice: number; // 租金价格
@@ -175,7 +174,7 @@ export interface TenantDetailProps {
   tenantPersonal?: TenantPersonalProps;
   tenantCompany?: TenantCompanyProps;
   tenantMateList?: TenantMateProps[];
-  roomList: RoomItemProps[];
+  roomList: RoomListProps[];
   otherFees: OtherFeeProps[];
   tenantContract: TenantContractProps;
   tenantBillList?: TenantBillListProps[];

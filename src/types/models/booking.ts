@@ -2,7 +2,7 @@
  * 预定数据结构定义
  */
 
-import { RoomInfoProps } from "@/types";
+import { RoomInfoProps, RoomListProps } from "@/types";
 
 /** 预定查询参数 */
 export interface BookingQueryParams {
@@ -17,6 +17,7 @@ export interface BookingQueryParams {
 export interface BookingListProps {
   id: bigint; // 预定 ID
   roomIds: bigint[]; /** 预定房间 ids */
+  roomList: RoomListProps[];
   tenantType: number; /** 租客类型：0=个人，1=企业 */
   tenantName: string; /** 客户姓名 */
   tenantPhone: string; /** 联系电话 */
@@ -28,6 +29,7 @@ export interface BookingListProps {
   expectedRentPrice: number; /** 谈定的意向租金 */
   companyId: bigint; /** 公司ID */
   salesmanId: bigint; /** 业务人员ID */
+  salesmanName: string; /** 业务人员ID */
   bookingStatus: number; /** 预定状态：1=预定中，2=已转合同，3=客户违约（没收定金），4=业主违约（退还定金），5=已取消/过期 */
   bookingStatusName: string; /** 预定状态名称 */
   tenantId: bigint; /** 转合同后关联的租客表 ID */
@@ -42,7 +44,7 @@ export interface BookingListProps {
 export interface BookingCreateProps {
   id: bigint; // 预定 ID
   roomIds: bigint[]; /** 预定房间 ids */
-  roomList: RoomInfoProps[];
+  roomList: RoomListProps[];
   tenantType: number; /** 租客类型：0=个人，1=企业 */
   tenantName: string; /** 客户姓名 */
   tenantPhone: string; /** 联系电话 */

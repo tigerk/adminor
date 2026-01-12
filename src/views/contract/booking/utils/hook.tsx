@@ -55,7 +55,8 @@ function useBooking() {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
+      second: "2-digit"
     });
   };
 
@@ -70,7 +71,7 @@ function useBooking() {
     {
       label: "状态",
       prop: "bookingStatus",
-      width: 100,
+      width: 110,
       fixed: "left",
       cellRenderer: ({ row }) => {
         const statusColor = getStatusColor(row.bookingStatus);
@@ -164,21 +165,21 @@ function useBooking() {
       )
     },
     {
-      label: "预定时间",
-      prop: "bookingTime",
-      width: 160,
-      cellRenderer: ({ row }) => formatDateTime(row.bookingTime)
-    },
-    {
       label: "到期时间",
       prop: "expiryTime",
       width: 160,
       cellRenderer: ({ row }) => <span style={{ color: new Date(row.expiryTime) < new Date() ? "#f56c6c" : "" }}>{formatDateTime(row.expiryTime)}</span>
     },
     {
+      label: "预定时间",
+      prop: "bookingTime",
+      width: 160,
+      cellRenderer: ({ row }) => formatDateTime(row.bookingTime)
+    },
+    {
       label: "操作",
       fixed: "right",
-      width: 180,
+      width: 130,
       slot: "operation"
     }
   ];
