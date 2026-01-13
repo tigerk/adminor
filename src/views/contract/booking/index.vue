@@ -77,11 +77,11 @@
             <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-if="row.bookingStatus === 1" @click="handleConvertToTenant(row)">
-                  <el-button link type="primary" :icon="useRenderIcon(CircleCheck)">转为租客</el-button>
+                <el-dropdown-item @click="handleConvertToTenant(row)">
+                  <el-button :disabled="row.bookingStatus !== 1" link type="primary" :icon="useRenderIcon(CircleCheck)">转为租客</el-button>
                 </el-dropdown-item>
-                <el-dropdown-item v-if="row.bookingStatus === 1" @click="handleCancelBooking(row)">
-                  <el-button link :icon="useRenderIcon(Delete)">取消预定</el-button>
+                <el-dropdown-item @click="handleCancelBooking(row)">
+                  <el-button :disabled="row.bookingStatus !== 1" link :icon="useRenderIcon(Delete)">取消预定</el-button>
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
