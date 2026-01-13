@@ -71,13 +71,15 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-text class="mr-4" v-if="selectedRows.length > 0">
-          当前已选
-          <b class="text-primary">{{ selectedRows.length }}</b>
-          个房源
-        </el-text>
-        <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" :disabled="selectedRows.length === 0" @click="submitSelection">确认选择</el-button>
+        <el-space>
+          <el-text v-if="selectedRows.length > 0">
+            当前已选
+            <b class="text-primary">{{ selectedRows.length }}</b>
+            个房源
+          </el-text>
+          <el-button @click="visible = false">取消</el-button>
+          <el-button type="primary" :disabled="selectedRows.length === 0" @click="submitSelection">确认选择</el-button>
+        </el-space>
       </div>
     </template>
   </el-dialog>
@@ -137,13 +139,10 @@
     if (!tableRef.value || !roomList.value.length) return;
 
     roomList.value.forEach(row => {
-      // 统一转为 Number 防止类型不一致导致匹配失败
-      if (persistentIds.value.has(Number(row.roomId))) {
-        // 检查是否已经勾选，避免重复触发导致的闪烁或异常
-        const isAlreadySelected = selectedRows.value.some(sel => Number(sel.roomId) === Number(row.roomId));
-        if (!isAlreadySelected) {
-          tableRef.value.toggleRowSelection(row, true);
-        }
+      const rowId = Number(row.roomId);
+      // 如果当前行的 ID 在持久化集合中，则勾选
+      if (persistentIds.value.has(rowId)) {
+        tableRef.value.toggleRowSelection(row, true);
       }
     });
   };
