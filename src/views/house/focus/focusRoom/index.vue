@@ -1,16 +1,11 @@
 <script setup lang="ts">
   import { nextTick, onMounted, ref } from "vue";
-  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import { delay, subBefore, useResizeObserver } from "@pureadmin/utils";
-
-  import Delete from "~icons/ep/delete";
-  import EditPen from "~icons/ep/edit-pen";
   import Search from "~icons/ri/search-eye-line";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { userFocusRoom } from "@/views/house/focus/focusRoom/utils/hook";
   import { getFocusById } from "@/api/house/focus";
   import RoomStatusGrid from "@/views/house/components/RoomGrid/RoomStatusGrid.vue";
-  import AddFill from "~icons/*";
 
   defineOptions({
     name: "FocusRoom"
@@ -86,7 +81,7 @@
       </el-col>
     </el-row>
     <el-row class="search-form bg-bg_color w-full px-4 overflow-auto">
-      <el-col :span="12">
+      <el-col :span="18">
         <div class="grid-content ep-bg-purple" style="align-items: flex-start">
           <el-space>
             <el-form-item>
@@ -111,25 +106,12 @@
           </el-space>
         </div>
       </el-col>
-      <el-col :span="12" class="text-right">
-        <el-space>
-          <el-select v-model="queryForm.leaseModeId" placeholder="项目名称" clearable class="w-[180px]!" @change="onSearch">
-            <el-option v-for="item in focusOptions" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-          <el-button type="primary" :icon="useRenderIcon(EditPen)" :loading="loading" @click="modifyFocusHouse" />
-          <el-input
-            v-model="queryForm.keywords"
-            placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签"
-            clearable
-            style="width: 400px"
-            @keyup.enter="onSearch"
-            @clear="onSearch"
-          >
-            <template #suffix>
-              <IconifyIconOffline :icon="Search" />
-            </template>
-          </el-input>
-        </el-space>
+      <el-col :span="6" class="text-right">
+        <el-input v-model="queryForm.keywords" placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签" clearable class="w-full" @keyup.enter="onSearch" @clear="onSearch">
+          <template #suffix>
+            <IconifyIconOffline :icon="Search" />
+          </template>
+        </el-input>
       </el-col>
     </el-row>
     <!--项目列表-->

@@ -1,16 +1,10 @@
 <script setup lang="ts">
   import { nextTick, onMounted, ref } from "vue";
   import { delay, subBefore, useResizeObserver } from "@pureadmin/utils";
-
-  import Delete from "~icons/ep/delete";
-  import EditPen from "~icons/ep/edit-pen";
   import Search from "~icons/ri/search-eye-line";
-  import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { useScatterRoom } from "@/views/house/scatter/scatterRoom/utils/hook";
   import { getFocusById } from "@/api/house/focus";
   import RoomStatusGrid from "../../components/RoomGrid/RoomStatusGrid.vue";
-  import AddFill from "~icons/*";
-  import EpArrowRightBold from "~icons/ep/arrow-right-bold";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 
@@ -100,7 +94,7 @@
       </el-col>
     </el-row>
     <el-row class="search-form bg-bg_color w-full px-4 overflow-auto">
-      <el-col :span="12">
+      <el-col :span="18">
         <div class="grid-content ep-bg-purple" style="align-items: flex-start">
           <el-space>
             <el-form-item>
@@ -125,21 +119,12 @@
           </el-space>
         </div>
       </el-col>
-      <el-col :span="12" class="text-right">
-        <el-space>
-          <el-input
-            v-model="queryForm.keywords"
-            placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签"
-            clearable
-            style="width: 400px"
-            @keyup.enter="onSearch"
-            @clear="onSearch"
-          >
-            <template #suffix>
-              <IconifyIconOffline :icon="Search" />
-            </template>
-          </el-input>
-        </el-space>
+      <el-col :span="6" class="text-right">
+        <el-input v-model="queryForm.keywords" placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签" clearable @keyup.enter="onSearch" @clear="onSearch">
+          <template #suffix>
+            <IconifyIconOffline :icon="Search" />
+          </template>
+        </el-input>
       </el-col>
     </el-row>
     <!--项目列表-->
