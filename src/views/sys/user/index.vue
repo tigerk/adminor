@@ -52,7 +52,7 @@
 <template>
   <div :class="['flex', 'justify-between', deviceDetection() && 'flex-wrap']">
     <tree ref="treeRef" :class="['mr-2', deviceDetection() ? 'w-full' : 'min-w-[200px]']" :treeData="treeData" :treeLoading="treeLoading" @tree-select="onTreeSelect" />
-    <div :class="[deviceDetection() ? ['w-full', 'mt-2'] : 'w-[calc(100%-200px)]']">
+    <div :class="[deviceDetection() ? ['w-full'] : 'w-[calc(100%-200px)]']">
       <el-form ref="formRef" :inline="true" :model="form" class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto">
         <el-form-item label="用户名称：" prop="username">
           <el-input v-model="form.username" placeholder="请输入用户名称" clearable class="w-[180px]!" />
@@ -148,9 +148,7 @@
     outline: none;
   }
 
-  .search-form {
-    :deep(.el-form-item) {
-      margin-bottom: 12px;
-    }
+  .main-content {
+    margin: 8px 8px 0 !important;
   }
 </style>

@@ -147,8 +147,8 @@
   }
 
   .tree-scrollbar {
-    height: calc(90vh - 150px);
-    padding: 8px;
+    height: calc(90vh - 98px);
+    padding: 4px;
   }
 
   :deep(.el-tree) {

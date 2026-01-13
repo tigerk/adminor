@@ -162,9 +162,9 @@ export function useRole(treeRef: Ref) {
     loading.value = true;
     const { data } = await getRoleList(toRaw(form));
     dataList.value = data.list;
-    pagination.total = data.total;
-    pagination.pageSize = data.pageSize;
-    pagination.currentPage = data.currentPage;
+    pagination.total = Number(data.total);
+    pagination.pageSize = Number(data.pageSize);
+    pagination.currentPage = Number(data.currentPage);
 
     setTimeout(() => {
       loading.value = false;

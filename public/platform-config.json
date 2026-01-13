@@ -13,7 +13,7 @@
   "Grey": false,
   "Weak": false,
   "HideTabs": false,
-  "HideFooter": true,
+  "HideFooter": false,
   "Stretch": false,
   "SidebarStatus": true,
   "EpThemeColor": "#3478F6",
