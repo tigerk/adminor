@@ -2,29 +2,22 @@
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
     <div class="section-tenant-info">
       <div class="mb-4 house-selector-info">
-        <div class="mb-2"><el-text type="primary" size="large" tag="b">房源信息</el-text></div>
-        <el-form-item prop="tenant.roomIds">
-          <el-select
-            v-model="formInline.tenant.roomIds"
-            size="large"
-            filterable
-            multiple
-            remote
-            :remote-method="handleSearchRoom"
-            :loading="searchLoading"
-            placeholder="请选择房源"
-            class="w-full"
-            @change="handleRoomChange"
-          >
-            <el-option v-for="item in roomOptions" :key="item.value" :label="item.label" :value="item">
-              <span style="float: left">{{ item.label }}</span>
-              <span style="float: right; color: var(--el-text-color-secondary, #000000); font-size: 13px">
-                {{ item.description }}
-              </span>
-            </el-option>
-          </el-select>
-        </el-form-item>
+        <div class="flex justify-between items-center mb-2">
+          <el-text type="primary" size="large" tag="b">房源信息</el-text>
+          <el-button type="primary" link :icon="Plus" @click="roomPickerRef.show()">选择房源</el-button>
+        </div>
+
+        <div v-if="roomSelection.length > 0" class="room-tags-box p-3 border rounded-md">
+          <el-tag v-for="(room, index) in roomSelection" :key="room.value" closable class="m-1" size="large" @close="handleRemoveRoom(index)">
+            {{ room.label }} |
+            <span class="text-orange-500">¥{{ room.extra?.price }}</span>
+          </el-tag>
+        </div>
+        <el-empty v-else description="请点击上方选择房源" :image-size="60" />
+
+        <el-form-item prop="tenant.roomIds" label-width="0" class="!m-0" />
       </div>
+      <RoomPicker ref="roomPickerRef" @confirm="handleRoomConfirmed" />
       <div class="section-header">
         <el-row :gutter="20">
           <el-col :span="16">
@@ -369,11 +362,11 @@
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { Plus } from "@element-plus/icons-vue";
-  import { getRoomList } from "@/api/house/room";
   import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
+  import RoomPicker from "@/components/Business/RoomPicker.vue";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions, openTenantMateDialog } = useTenant();
 
@@ -385,6 +378,8 @@
 
   // 表单引用
   const ruleFormRef = ref<FormInstance>();
+
+  const roomSelection = ref([]);
 
   // 表单数据
   const formInline = reactive<TenantsCreateFormProps>({
@@ -516,35 +511,6 @@
     return description;
   };
 
-  const roomOptions = ref<any[]>([]);
-  const searchLoading = ref<boolean>(false);
-  const handleSearchRoom = (query: string) => {
-    searchLoading.value = true;
-    getRoomList({
-      keywords: query,
-      page: 1,
-      pageSize: 10
-    }).then(res => {
-      roomOptions.value =
-        res.data?.list.map(item => ({
-          label: formatRoomSelectName(item),
-          value: item.roomId,
-          description: formatRoomSelectDescription(item),
-          extra: item
-        })) || [];
-      searchLoading.value = false;
-    });
-  };
-
-  const handleRoomChange = (values: any[]) => {
-    let rentPrice = 0;
-    values.forEach(value => {
-      value.extra.price && (rentPrice += Number(value.extra.price));
-    });
-
-    formInline.tenant.rentPrice = rentPrice;
-  };
-
   const leaseDateShortCut = [
     {
       text: "一个月",
@@ -615,6 +581,20 @@
     getCompanyUserOptions().then(resp => {
       salesmanList.value = resp.data;
     });
+
+    // 如果有默认房源 ID
+    const roomList = formInline.booking.roomList;
+    if (roomList && roomList.length > 0) {
+      const defaultOptions = roomList.map(item => ({
+        label: formatRoomSelectName(item),
+        value: item.roomId, // 注意：这里的 value 要和 v-model 绑定的类型一致
+        description: formatRoomSelectDescription(item),
+        extra: item
+      }));
+
+      // 关键：将默认选项放入 roomOptions 数组，下拉框才能找到 Label
+      roomSelection.value = defaultOptions;
+    }
   });
 
   // 获取租客的可用的合同模板
@@ -634,9 +614,40 @@
     });
   };
 
+  const roomPickerRef = ref();
+
+  // 处理弹窗确认选择
+  const handleRoomConfirmed = (rooms: any[]) => {
+    // 转换成你需要的格式
+    roomSelection.value = rooms.map(item => ({
+      label: formatRoomSelectName(item),
+      value: item.roomId,
+      extra: item
+    }));
+
+    // 触发价格计算
+    calculateTotalRent();
+  };
+
+  // 移除房源
+  const handleRemoveRoom = (index: number) => {
+    roomSelection.value.splice(index, 1);
+    calculateTotalRent();
+  };
+
+  // 统一计算租金
+  const calculateTotalRent = () => {
+    let rentPrice = 0;
+    roomSelection.value.forEach(item => {
+      rentPrice += Number(item.extra?.price || 0);
+    });
+    formInline.tenant.rentPrice = rentPrice;
+  };
+
   defineExpose({
     getRef,
-    formInline
+    formInline,
+    roomSelection
   });
 </script>
 

@@ -84,6 +84,18 @@ export const ROOM_TYPE_OPTIONS = [
 ] as const;
 
 /**
+ * 房间状态选项
+ */
+export const ROOM_STATUS_OPTIONS = [
+  { label: "空置", value: 0 },
+  { label: "已租", value: 1 },
+  { label: "已预定", value: 2 },
+  { label: "配置中", value: 3 },
+  { label: "已关闭", value: 4 },
+  { label: "锁房", value: 5 }
+] as const;
+
+/**
  * 金额计算方式
  */
 export const PRICE_METHOD_OPTIONS = [

@@ -326,7 +326,7 @@ function useTenant() {
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(TenantCreateForm, { ref: formRef, formInline: null }),
+      contentRenderer: () => h(TenantCreateForm, { ref: formRef, formInline: null, roomSelection: null }),
       beforeSure: (done, { options }) => {
         const FormInstance = formRef.value;
         const getFormRuleRef = FormInstance?.getRef?.();
@@ -340,9 +340,7 @@ function useTenant() {
             curData.tenant.leaseEnd = curData.tenant.leaseDate[1];
             curData.tenant.checkInTime = curData.tenant.checkDate[0];
             curData.tenant.checkOutTime = curData.tenant.checkDate[1];
-
-            // 处理房间ID数组，将对象转换为ID字符串数组
-            curData.tenant.roomIds = curData.tenant.roomIds.map(item => item.value);
+            curData.tenant.roomIds = FormInstance.getRef.roomSelection.value.map(item => item.value);
 
             apiCall(curData).then(resp => {
               if (resp.code === 0) {

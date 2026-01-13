@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { RoomGridProps, RoomTotal } from "@/types";
+import type { RoomGridProps, RoomListQueryProps, RoomTotal } from "@/types";
 
 export type ResultTable = {
   code: number;
@@ -23,7 +23,7 @@ export type ResultRoomGridProps = {
   data?: RoomGridProps;
 };
 
-export const getRoomList = (data?: object) => {
+export const getRoomList = (data?: RoomListQueryProps) => {
   return http.request<ResultTable>("post", baseUrlApi("room/list"), { data });
 };
 

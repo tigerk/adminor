@@ -399,3 +399,25 @@ export type RoomGridProps = {
   pageSize: number;
   hasMore: boolean;
 };
+
+export type RoomListQueryProps = {
+  companyId?: bigint;
+  /** 小区ID */
+  communityId?: bigint;
+  /** 房间ID列表 */
+  roomIds?: bigint[];
+  /** 空间查询参数 */
+  spatialQuery?: any[];
+  /** 房源租赁类型：1、集中式；2、整租、3、合租 */
+  leaseMode?: number;
+  /** 模式引用ID */
+  leaseModeId?: bigint;
+  /** 搜索关键字 */
+  keywords?: string;
+  /** 房间状态 */
+  roomStatus?: number;
+  /** 当前页数 */
+  currentPage?: number;
+  /** 每页显示条目个数 */
+  pageSize?: number;
+};

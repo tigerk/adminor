@@ -9,8 +9,8 @@ import type { UserFormItemProps } from "@/views/sys/user/utils/types";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import createTenant from "@/views/contract/tenant/form/createTenantForm.vue";
-import { createUser } from "@/api/system";
 import type { HouseLayoutProps } from "@/types";
+import { createUser } from "@/api/sys/user";
 
 export function useContractTenant() {
   const pagination = reactive<PaginationProps>({
