@@ -388,6 +388,7 @@
 
   // 表单数据
   const formInline = reactive<TenantsCreateFormProps>({
+    booking: props.formInline.booking,
     tenantPersonal: {
       id: props.formInline?.tenantPersonal?.id,
       name: props.formInline?.tenantPersonal?.name || "",
@@ -421,6 +422,8 @@
     tenant: props.formInline?.tenant || {
       contractTemplateId: props.formInline?.tenant?.contractTemplateId || null,
       roomIds: props.formInline?.tenant?.roomIds || [],
+      tenantName: props.formInline?.tenant?.tenantName || "",
+      tenantPhone: props.formInline?.tenant?.tenantPhone || "",
       tenantType: props.formInline?.tenant?.tenantType ?? 0,
       leaseDate: props.formInline?.tenant?.leaseDate || [],
       leaseStart: props.formInline?.tenant?.leaseStart || new Date(),

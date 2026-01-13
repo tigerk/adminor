@@ -4,15 +4,18 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { cancelBooking, createBooking, getBookingDetail, getBookingList, getBookingTotal } from "@/api/contract/booking";
-import type { BookingCancelProps, BookingListProps, BookingQueryParams } from "@/types";
+import type { BookingCancelProps, BookingListProps, BookingQueryParams, TenantCompanyProps, TenantPersonalProps, TenantProps } from "@/types";
 import { ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import BookingCreateForm from "../form/bookingCreateForm.vue";
 import BookingDetailDialog from "../view/bookingDetailDialog.vue";
 import { BOOKING_STATUS_COLOR_MAP } from "@/constants";
+import useTenant from "@/views/contract/tenant/utils/hook";
 
 function useBooking() {
   const router = useRouter();
+
+  const { openTenantDialog } = useTenant();
 
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -327,21 +330,51 @@ function useBooking() {
       cancelButtonText: "取消",
       type: "warning"
     }).then(() => {
-      // 携带预定信息跳转到租客添加页面
-      router.push({
-        path: "/contract/tenant",
-        query: {
-          action: "create",
-          bookingId: row.id.toString(),
-          // 传递预定信息
-          roomIds: JSON.stringify(row.roomIds),
-          tenantName: row.tenantName,
-          tenantPhone: row.tenantPhone,
-          tenantType: row.tenantType.toString(),
-          expectedRentPrice: row.expectedRentPrice.toString(),
-          expectedLeaseStart: row.expectedLeaseStart.toString(),
-          expectedLeaseEnd: row.expectedLeaseEnd.toString()
-        }
+      let tenantPersonal: TenantPersonalProps = undefined;
+      let tenantCompany: TenantCompanyProps = undefined;
+      if (row.tenantType === 0) {
+        tenantPersonal = {
+          name: row.tenantName,
+          phone: row.tenantPhone,
+          idType: undefined,
+          idNo: undefined
+        };
+      } else {
+        tenantCompany = {
+          companyName: row.tenantName,
+          uscc: undefined,
+          legalPerson: row.tenantName,
+          contactName: row.tenantName,
+          contactPhone: row.tenantPhone
+        };
+      }
+
+      const tenant: TenantProps = {
+        tenantName: row.tenantName,
+        tenantPhone: row.tenantPhone,
+        tenantType: row.tenantType,
+        contractNature: undefined,
+        roomIds: row.roomIds,
+        contractTemplateId: undefined,
+        rentPrice: row.expectedRentPrice,
+        leaseDate: [row.expectedLeaseStart, row.expectedLeaseEnd],
+        leaseStart: row.expectedLeaseStart,
+        leaseEnd: row.expectedLeaseEnd,
+        depositMonths: undefined,
+        paymentMonths: undefined,
+        firstBillDay: undefined,
+        checkDate: undefined,
+        rentDueType: undefined,
+        salesmanId: undefined
+      };
+
+      openTenantDialog("添加", {
+        booking: row,
+        tenant: tenant,
+        tenantCompany: tenantCompany,
+        tenantPersonal: tenantPersonal,
+        tenantMateList: [],
+        otherFees: []
       });
     });
   }
