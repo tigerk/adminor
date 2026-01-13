@@ -1,20 +1,29 @@
 <template>
   <el-dialog v-model="visible" title="选择房源" width="55vw" append-to-body :close-on-click-modal="false" :align-center="true" :lock-scroll="true">
-    <el-form :inline="true" :model="queryParams" class="mb-4">
-      <el-form-item label="关键字">
-        <el-input v-model="queryParams.keywords" placeholder="房源名称/房间号" clearable @keyup.enter="handleQuery" />
-      </el-form-item>
-      <el-form-item label="状态">
-        <el-select v-model="queryParams.roomStatus" placeholder="房源状态" clearable>
-          <el-option v-for="item in roomStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :icon="Search" @click="handleQuery">查询</el-button>
-        <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="search-wrapper">
+      <el-form :model="queryParams" label-width="70px">
+        <el-row :gutter="20">
+          <el-col :span="10">
+            <el-form-item label="快速搜索">
+              <el-input v-model="queryParams.keywords" placeholder="房源名称 / 房间号" :prefix-icon="Search" clearable @keyup.enter="handleQuery" />
+            </el-form-item>
+          </el-col>
 
+          <el-col :span="8">
+            <el-form-item label="房源状态">
+              <el-select v-model="queryParams.roomStatus" placeholder="全部状态" clearable class="w-full">
+                <el-option v-for="item in roomStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="6" class="flex justify-end items-start">
+            <el-button type="primary" :icon="Search" @click="handleQuery">查询</el-button>
+            <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
+          </el-col>
+        </el-row>
+      </el-form>
+    </div>
     <el-table ref="tableRef" v-loading="loading" :data="roomList" row-key="roomId" height="550px" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" :reserve-selection="true" />
       <el-table-column label="房源信息" min-width="200">
@@ -60,6 +69,7 @@
   import { getRoomList } from "@/api/house/room";
   import { RoomListQueryProps } from "@/types";
   import { ROOM_STATUS_OPTIONS } from "@/constants";
+  import { message } from "@/utils/message";
 
   const props = defineProps<{
     multiple?: boolean; // 是否允许多选
@@ -101,12 +111,18 @@
 
   const resetQuery = () => {
     queryParams.keywords = "";
-    queryParams.roomStatus = 1;
+    queryParams.roomStatus = 0;
     handleQuery();
   };
 
   const handleSelectionChange = (selection: any[]) => {
     selectedRows.value = selection;
+  };
+
+  // 在 el-table 增加 @row-click
+  const handleRowClick = (row: any) => {
+    // 切换该行的选中状态
+    tableRef.value.toggleRowSelection(row);
   };
 
   const submitSelection = () => {
@@ -123,3 +139,29 @@
 
   defineExpose({ show });
 </script>
+<style scoped lang="scss">
+  .search-wrapper {
+    background-color: var(--el-fill-color-light);
+    padding: 18px 18px 0 18px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid var(--el-border-color-lighter);
+
+    // 让按钮组始终对齐 FormItem 的高度
+    .flex {
+      height: 32px; // 匹配 Element Plus 默认组件高度
+      margin-bottom: 18px;
+    }
+  }
+
+  // 优化表格内的文字排版
+  :deep(.el-table) {
+    .font-bold {
+      color: var(--el-text-color-primary);
+      margin-bottom: 2px;
+    }
+    .text-xs {
+      color: var(--el-text-color-secondary);
+    }
+  }
+</style>
