@@ -29,15 +29,15 @@
           <div class="text-xs">{{ row.area }}m² | {{ row.direction }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="标准租金" width="120">
+      <el-table-column label="租金(元/月)" width="120">
         <template #default="{ row }">
           <span class="text-orange-500 font-bold">¥{{ row.price }}</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" width="100" align="center">
         <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'info'">
-            {{ row.status === 1 ? "空置" : "已租" }}
+          <el-tag>
+            {{ row.roomStatusName }}
           </el-tag>
         </template>
       </el-table-column>
