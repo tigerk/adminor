@@ -17,35 +17,42 @@
             </el-form-item>
           </el-col>
 
-          <el-col :span="6" class="flex justify-end items-start">
+          <el-col :span="6" class="flex justify-end items-start group-buttons">
             <el-button type="primary" :icon="Search" @click="handleQuery">查询</el-button>
             <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
           </el-col>
         </el-row>
       </el-form>
     </div>
-    <el-table ref="tableRef" v-loading="loading" :data="roomList" row-key="roomId" height="550px" @selection-change="handleSelectionChange">
+
+    <el-table ref="tableRef" v-loading="loading" :data="roomList" row-key="roomId" height="500px" @selection-change="handleSelectionChange" @row-click="handleRowClick">
       <el-table-column type="selection" width="55" :reserve-selection="true" />
+
       <el-table-column label="房源信息" min-width="200">
         <template #default="{ row }">
           <div class="font-bold">{{ row.houseName }}</div>
-          <div class="text-xs text-gray-500">{{ row.roomNumber ? "房间号：" + row.roomNumber : "整租" }}</div>
+          <div class="text-xs text-gray-500">
+            {{ row.roomNumber ? "房间号：" + row.roomNumber : "整租房源" }}
+          </div>
         </template>
       </el-table-column>
+
       <el-table-column label="户型/面积" width="150">
         <template #default="{ row }">
           <div>{{ row.houseLayout?.bedroom }}室{{ row.houseLayout?.livingRoom }}厅</div>
           <div class="text-xs">{{ row.area }}m² | {{ row.direction }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="租金(元/月)" width="120">
+
+      <el-table-column label="租金(元/月)" width="130">
         <template #default="{ row }">
           <span class="text-orange-500 font-bold">¥{{ row.price }}</span>
         </template>
       </el-table-column>
+
       <el-table-column label="状态" width="100" align="center">
         <template #default="{ row }">
-          <el-tag>
+          <el-tag :type="row.roomStatus === 0 ? 'success' : 'info'">
             {{ row.roomStatusName }}
           </el-tag>
         </template>
@@ -53,26 +60,38 @@
     </el-table>
 
     <div class="mt-4 flex justify-end">
-      <el-pagination v-model:current-page="queryParams.page" v-model:page-size="queryParams.pageSize" :total="total" layout="total, prev, pager, next" @current-change="getList" />
+      <el-pagination
+        v-model:current-page="queryParams.currentPage"
+        v-model:page-size="queryParams.pageSize"
+        :total="total"
+        layout="total, prev, pager, next"
+        @current-change="getList"
+      />
     </div>
 
     <template #footer>
-      <el-button @click="visible = false">取消</el-button>
-      <el-button type="primary" :disabled="selectedRows.length === 0" @click="submitSelection">确认选择 ({{ selectedRows.length }})</el-button>
+      <div class="dialog-footer">
+        <el-text class="mr-4" v-if="selectedRows.length > 0">
+          当前已选
+          <b class="text-primary">{{ selectedRows.length }}</b>
+          个房源
+        </el-text>
+        <el-button @click="visible = false">取消</el-button>
+        <el-button type="primary" :disabled="selectedRows.length === 0" @click="submitSelection">确认选择</el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref } from "vue";
+  import { nextTick, reactive, ref } from "vue";
   import { Refresh, Search } from "@element-plus/icons-vue";
   import { getRoomList } from "@/api/house/room";
   import { RoomListQueryProps } from "@/types";
   import { ROOM_STATUS_OPTIONS } from "@/constants";
-  import { message } from "@/utils/message";
 
   const props = defineProps<{
-    multiple?: boolean; // 是否允许多选
+    multiple?: boolean;
   }>();
 
   const emit = defineEmits(["confirm"]);
@@ -81,27 +100,52 @@
   const loading = ref(false);
   const roomList = ref([]);
   const total = ref(0);
-  const selectedRows = ref([]);
   const tableRef = ref();
   const roomStatusOptions = [...ROOM_STATUS_OPTIONS];
+
+  // 存储所有已选中的行对象（跨页汇总结果）
+  const selectedRows = ref([]);
+  // 核心：维护一个用于比对回显的 ID 集合
+  const persistentIds = ref<Set<number>>(new Set());
 
   const queryParams = reactive<RoomListQueryProps>({
     currentPage: 1,
     pageSize: 10,
     keywords: "",
-    roomStatus: 0 // 空置房源
+    roomStatus: 0
   });
 
-  // 获取列表数据
+  /** 获取列表数据 */
   const getList = async () => {
     loading.value = true;
     try {
       const res = await getRoomList(queryParams);
-      roomList.value = res.data.list;
-      total.value = res.data.total;
+      roomList.value = res.data.list || [];
+      total.value = res.data.total || 0;
+
+      // 关键：翻页后，必须在 nextTick 显式告诉表格哪些行要勾选
+      nextTick(() => {
+        syncTableSelection();
+      });
     } finally {
       loading.value = false;
     }
+  };
+
+  /** 同步表格勾选状态 */
+  const syncTableSelection = () => {
+    if (!tableRef.value || !roomList.value.length) return;
+
+    roomList.value.forEach(row => {
+      // 统一转为 Number 防止类型不一致导致匹配失败
+      if (persistentIds.value.has(Number(row.roomId))) {
+        // 检查是否已经勾选，避免重复触发导致的闪烁或异常
+        const isAlreadySelected = selectedRows.value.some(sel => Number(sel.roomId) === Number(row.roomId));
+        if (!isAlreadySelected) {
+          tableRef.value.toggleRowSelection(row, true);
+        }
+      }
+    });
   };
 
   const handleQuery = () => {
@@ -115,30 +159,55 @@
     handleQuery();
   };
 
+  /** 勾选回调 */
   const handleSelectionChange = (selection: any[]) => {
     selectedRows.value = selection;
+    // 同步更新持久化 ID 集合
+    // 当用户在表格内手动勾选/取消时，更新 Set 确保翻页回显逻辑正确
+    const currentIds = selection.map(item => Number(item.roomId));
+
+    // 仅在手动操作导致的改变时同步 ID 集合
+    // 这里需要注意：如果 selection 为空且本页确实有数据，说明是本页全取消了
+    persistentIds.value = new Set(currentIds);
   };
 
-  // 在 el-table 增加 @row-click
+  /** 行点击 */
   const handleRowClick = (row: any) => {
-    // 切换该行的选中状态
     tableRef.value.toggleRowSelection(row);
   };
 
+  /** 确认提交 */
   const submitSelection = () => {
     emit("confirm", selectedRows.value);
     visible.value = false;
   };
 
-  // 暴露给父组件的方法
-  const show = (initSelected?: any[]) => {
+  /** * 暴露给父组件的方法
+   * @param initSelection 传入格式必须包含 roomId 字段
+   */
+  const show = (initSelection?: any[]) => {
     visible.value = true;
-    handleQuery();
-    // 如果需要回显已选中的行，可以在这里逻辑处理 tableRef.value.toggleRowSelection
+
+    // 1. 初始化 ID 持久化集合
+    persistentIds.value.clear();
+    if (initSelection && initSelection.length > 0) {
+      initSelection.forEach(item => {
+        const id = item.value || item.roomId; // 兼容您传入的 roomSelection 格式
+        if (id) persistentIds.value.add(Number(id));
+      });
+    }
+
+    // 2. 彻底清除表格上一次打开时的缓存状态
+    nextTick(() => {
+      tableRef.value?.clearSelection();
+      // 3. 执行查询
+      handleQuery();
+    });
   };
 
   defineExpose({ show });
 </script>
+
 <style scoped lang="scss">
   .search-wrapper {
     background-color: var(--el-fill-color-light);
@@ -147,14 +216,12 @@
     margin-bottom: 16px;
     border: 1px solid var(--el-border-color-lighter);
 
-    // 让按钮组始终对齐 FormItem 的高度
-    .flex {
-      height: 32px; // 匹配 Element Plus 默认组件高度
+    .group-buttons {
+      height: 32px;
       margin-bottom: 18px;
     }
   }
 
-  // 优化表格内的文字排版
   :deep(.el-table) {
     .font-bold {
       color: var(--el-text-color-primary);
@@ -163,5 +230,14 @@
     .text-xs {
       color: var(--el-text-color-secondary);
     }
+    .el-table__row {
+      cursor: pointer;
+    }
+  }
+
+  .dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
   }
 </style>
