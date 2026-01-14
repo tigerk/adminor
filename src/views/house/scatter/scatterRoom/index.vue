@@ -3,7 +3,6 @@
   import { delay, subBefore, useResizeObserver } from "@pureadmin/utils";
   import Search from "~icons/ri/search-eye-line";
   import { useScatterRoom } from "@/views/house/scatter/scatterRoom/utils/hook";
-  import { getFocusById } from "@/api/house/focus";
   import RoomStatusGrid from "../../components/RoomGrid/RoomStatusGrid.vue";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
@@ -43,20 +42,10 @@
     useResizeObserver(contentRef, async () => {
       await nextTick();
       delay(60).then(() => {
-        treeHeight.value = parseFloat(subBefore(tableRef.value.getTableDoms().tableWrapper.style.height, "px"));
+        treeHeight.value = Number.parseFloat(subBefore(tableRef.value.getTableDoms().tableWrapper.style.height, "px"));
       });
     });
   });
-
-  function modifyFocusHouse() {
-    if (queryForm.leaseModeId) {
-      getFocusById({
-        id: queryForm.leaseModeId
-      }).then(res => {
-        openEntireEditDialog("更新", res.data);
-      });
-    }
-  }
 
   const statusRadio = ref("all");
 </script>
@@ -104,10 +93,6 @@
                   :key="item.roomStatus"
                   :value="item.roomStatus"
                   :class="['room-status-button', `status-${item.roomStatus || 'all'}`]"
-                  :style="{
-                    // '--status-color': item.roomStatusColor
-                    // '--status-bg-color': item.roomStatusColor + '5' // 添加透明度
-                  }"
                 >
                   <span class="status-content">
                     <span class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
@@ -175,46 +160,6 @@
     height: 8px;
     margin-right: 6px;
     border-radius: 50%;
-  }
-
-  /* 房间状态按钮样式 */
-  .room-status-button {
-    position: relative;
-
-    :deep(.el-radio-button__inner) {
-      position: relative;
-      z-index: 1;
-      color: var(--status-color, #606266);
-      background-color: var(--status-bg-color, transparent);
-      transition: all 0.3s ease;
-
-      &:hover {
-        //border-color: var(--status-color);
-        background-color: var(--status-bg-color);
-      }
-    }
-
-    /* 修复选中状态的左侧边框显示问题 */
-    :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      border-left-color: var(--status-color) !important;
-      box-shadow: none;
-    }
-
-    /* 确保第一个按钮的左边框显示 */
-    &:first-child :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      border-left-color: var(--status-color) !important;
-    }
-
-    /* 确保相邻按钮之间的边框处理 */
-    &:not(:first-child) :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      margin-left: -1px;
-      border-left-color: var(--status-color) !important;
-    }
-
-    /* 当前一个按钮选中时，确保当前按钮的左边框正确显示 */
-    &:not(:first-child) :deep(.el-radio-button__inner) {
-      margin-left: -1px;
-    }
   }
 
   .status-content {

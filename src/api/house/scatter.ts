@@ -11,9 +11,9 @@ export const createShareHouse = (data?: object) => {
 };
 
 export const getEntireHouseById = (data?: object) => {
-  return http.request<ApiResponse<ScatterHouseProps>>("get", baseUrlApi("scatter/get"), { params: data });
+  return http.request<ApiResponse<ScatterHouseProps>>("post", baseUrlApi("scatter/get"), { data });
 };
 
 export const getShareHouseById = (data?: object) => {
-  return http.request<ApiResponse<ScatterHouseProps>>("get", baseUrlApi("scatter/get"), { params: data });
+  return http.request<ApiResponse<ScatterHouseProps>>("post", baseUrlApi("scatter/get"), { data });
 };

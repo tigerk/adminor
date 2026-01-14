@@ -164,46 +164,6 @@
     border-radius: 50%;
   }
 
-  /* 房间状态按钮样式 */
-  .room-status-button {
-    position: relative;
-
-    :deep(.el-radio-button__inner) {
-      position: relative;
-      z-index: 1;
-      color: var(--status-color, #606266);
-      background-color: var(--status-bg-color, transparent);
-      transition: all 0.3s ease;
-
-      &:hover {
-        //border-color: var(--status-color);
-        background-color: var(--status-bg-color);
-      }
-    }
-
-    /* 修复选中状态的左侧边框显示问题 */
-    :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      border-left-color: var(--status-color) !important;
-      box-shadow: none;
-    }
-
-    /* 确保第一个按钮的左边框显示 */
-    &:first-child :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      border-left-color: var(--status-color) !important;
-    }
-
-    /* 确保相邻按钮之间的边框处理 */
-    &:not(:first-child) :deep(.el-radio-button__original:checked + .el-radio-button__inner) {
-      margin-left: -1px;
-      border-left-color: var(--status-color) !important;
-    }
-
-    /* 当前一个按钮选中时，确保当前按钮的左边框正确显示 */
-    &:not(:first-child) :deep(.el-radio-button__inner) {
-      margin-left: -1px;
-    }
-  }
-
   .status-content {
     display: flex;
     gap: 6px;
