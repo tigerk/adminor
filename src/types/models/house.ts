@@ -24,26 +24,6 @@ export interface FacilityItemProps {
   count: number;
 }
 
-/** 房源基本信息 */
-export interface HouseInfoProps {
-  id?: number;
-  houseCode: string; // 房源编号
-  rentalType: number; // 出租类型：1=整租，2=合租
-  building: string; // 座/栋
-  unit: string; // 单元
-  doorNumber: string; // 房间号
-  houseLayout: HouseLayoutProps; // ⚠️ 使用全局类型
-  floor: number; // 所在楼层
-  floorTotal: number; // 总楼层数
-  direction: string; // 朝向
-  area: string; // 面积
-  decorationType: string; // 装修类型
-  price?: number; // 出租价格
-  propertyFee?: number; // 物业费
-  moreInfo?: any;
-  roomList?: RoomDetailProps[]; // 房间列表
-}
-
 /** 房源查询参数 */
 export interface HouseQueryParams {
   keyword?: string;
@@ -56,7 +36,7 @@ export interface HouseQueryParams {
 
 export interface PriceConfigProps {
   /** 房间ID */
-  roomId: number;
+  roomId: bigint;
   /** 出房价格（单位：元/月） */
   price: number;
   /** 底价（单位：元/月） */
@@ -87,7 +67,7 @@ export interface OtherFeeProps {
 /** 租金方案配置 */
 export interface PricePlanProps {
   /** 房间ID */
-  roomId: number;
+  roomId: bigint;
   /** 租金方案名称 */
   planName: string;
   /** 租金方案类型（如：长期/短租/节假日） */

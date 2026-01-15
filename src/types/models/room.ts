@@ -30,11 +30,11 @@ export interface RoomDetailProps {
  */
 export type RoomListProps = {
   /** 房间id */
-  roomId?: number;
+  roomId?: bigint;
   /** 房源ID */
-  houseId?: number;
+  houseId?: bigint;
   /** 小区ID */
-  communityId?: number;
+  communityId?: bigint;
   /** 小区名称 */
   communityName?: string;
   /** 房源编号 */
@@ -46,13 +46,13 @@ export type RoomListProps = {
   /** 出租状态 */
   rentalType?: number;
   /** 来源id */
-  leaseModeId?: number;
+  leaseModeId?: bigint;
   /** 房源租赁类型：1、集中式；2、分散式 */
   leaseMode?: number;
   /** 房型 */
   houseLayout?: HouseLayoutProps;
   /** 部门id */
-  deptId?: number;
+  deptId?: bigint;
   /** 部门名称 */
   deptName?: string;
   /** 房间号 */

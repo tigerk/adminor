@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from "vue";
+  import { computed, onMounted, reactive, ref } from "vue";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
   import { EntireFormProps } from "@/views/house/components/EntireCreate/types";
   import { CircleCheck, Plus } from "@element-plus/icons-vue";
@@ -10,21 +10,78 @@
   import { useHouseTagsEdit } from "@/views/house/components/HouseTags/hook";
   import { createEntireFormRules } from "./rule";
   import type { FormInstance } from "element-plus";
-  import { ElMessage } from "element-plus";
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
-  import { FacilityItemProps } from "@/types";
+  import { FacilityItemProps, type OtherFeeProps, type PriceConfigProps, type PricePlanProps, ScatterHouseProps } from "@/types";
   import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
-  import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
-  import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
+  import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook"; // 使用hook中的方法
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
   const { openHouseImageEditDialog } = useHouseImageEdit();
   const { openPriceConfigDialog } = usePriceConfigEdit();
-  const { getDefaultEntireHouseItem } = useEntireEdit();
 
-  const props = withDefaults(defineProps<EntireFormProps>(), {});
+  function getDefaultPriceConfigItem(): PriceConfigProps {
+    return {
+      /** 房间ID */
+      roomId: null,
+      /** 出房价格（单位：元/月） */
+      price: null,
+      /** 底价（单位：元/月） */
+      floorPrice: null,
+      /** 底价方式：0=固定金额，1=按比例 */
+      floorPriceMethod: 0,
+      /** 底价录入值（金额或比例，具体由 low_price_method 决定） */
+      floorPriceInput: null,
+      /** 其他费用列表 */
+      otherFees: [] as OtherFeeProps[],
+      pricePlans: [] as PricePlanProps[]
+    };
+  }
+
+  const getDefaultEntireHouseItem = (): ScatterHouseProps => {
+    return {
+      houseCode: "",
+      building: "",
+      unit: "",
+      doorNumber: "",
+      floor: null,
+      floorTotal: null,
+      houseLayout: {
+        livingRoom: 0,
+        bedroom: 0,
+        bathroom: 0,
+        kitchen: 0,
+        imageList: [],
+        tags: [],
+        facilities: []
+      },
+      roomList: [
+        {
+          roomNumber: undefined,
+          roomType: null,
+          direction: "",
+          area: null,
+          price: null,
+          imageList: [],
+          facilities: [],
+          tags: [],
+          priceConfig: getDefaultPriceConfigItem()
+        }
+      ],
+      rentalType: 1,
+      direction: "",
+      area: "",
+      decorationType: "",
+      propertyFee: null
+    };
+  };
+
+  const props = withDefaults(defineProps<EntireFormProps>(), {
+    formInline: () => ({
+      houseList: []
+    })
+  });
   const emit = defineEmits(["onSave"]);
 
   // 将 entireForm 和 houseList 合并到一个响应式对象中
@@ -32,8 +89,13 @@
     ...props.formInline
   });
 
+  // 确保 houseList 初始化
+  if (!entireForm.houseList || entireForm.houseList.length === 0) {
+    entireForm.houseList = [getDefaultEntireHouseItem()];
+  }
+
   // 使用 entireForm.houseList 替代独立的 houseList
-  const houseList = entireForm.houseList;
+  const houseList = computed(() => entireForm.houseList);
 
   // 表单引用
   const ruleFormRef = ref<FormInstance>();
@@ -73,7 +135,8 @@
 
   const copyHouse = (index: number) => {
     const houseToCopy = entireForm.houseList[index];
-    const newHouse = structuredClone(houseToCopy);
+    const newHouse = structuredClone(houseToCopy); // 简单且兼容性好的方案
+    newHouse.id = undefined; // 必须清除ID，否则保存会变成更新旧数据
     entireForm.houseList.splice(index + 1, 0, newHouse);
   };
 
@@ -136,9 +199,15 @@
    */
   const openRoomPriceConfigDialog = (houseIndex: number) => {
     const currentHouse = entireForm.houseList[houseIndex];
+
+    // 确保结构完整
+    if (!currentHouse.roomList || currentHouse.roomList.length === 0) {
+      currentHouse.roomList = [{ roomNumber: "", price: undefined, priceConfig: undefined }];
+    }
+
     openPriceConfigDialog("", currentHouse?.roomList[0]?.priceConfig, (priceConfig: any) => {
-      entireForm.houseList[houseIndex]?.roomList[0]?.priceConfig = priceConfig;
-      entireForm.houseList[houseIndex]?.roomList[0]?.price = priceConfig.price;
+      currentHouse.roomList[0].priceConfig = priceConfig;
+      currentHouse.roomList[0].price = priceConfig.price;
     });
   };
   /**
@@ -147,13 +216,12 @@
 
   // 验证表单（供父组件调用）
   const validateForm = async (): Promise<boolean> => {
+    if (!ruleFormRef.value) return false;
     try {
-      // 验证整个表单（包括小区信息、负责人信息和所有房源）
-      await ruleFormRef.value?.validate();
-      return true;
+      return ruleFormRef.value.validate();
     } catch (error) {
-      console.error("表单验证失败", error);
-      ElMessage.error("请填写完整的表单信息");
+      // 定位到具体的校验失败位置
+      console.error("Validation Error:", error);
       return false;
     }
   };
@@ -301,14 +369,14 @@
                 <el-col :span="4">
                   <el-form-item
                     label="出租价格"
-                    :prop="`houseList.${index}.price`"
+                    :prop="`houseList.${index}.roomList[0].price`"
                     :rules="[
                       { required: true, message: '请输入出租价格', trigger: 'blur' },
                       { pattern: /^\d+(\.\d{1,2})?$/, message: '请输入有效的价格', trigger: 'blur' }
                     ]"
                   >
                     <el-space>
-                      <el-input v-model="house.price" placeholder="请输入价格">
+                      <el-input v-model="house.roomList[0].price" placeholder="请输入价格">
                         <template #suffix>元/月</template>
                       </el-input>
                       <el-icon class="mr-2 text-blue-700 background-bl" @click="openRoomPriceConfigDialog(index)">

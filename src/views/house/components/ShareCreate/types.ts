@@ -1,8 +1,8 @@
-import type { ShareFormItemProps } from "@/types";
+import type { ScatterCreateFormProps } from "@/types";
 
 // 表单
 interface ShareFormProps {
-  formInline: ShareFormItemProps;
+  formInline: Partial<ScatterCreateFormProps>;
 }
 
 export type { ShareFormProps };

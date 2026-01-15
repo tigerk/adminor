@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-  import { onMounted, ref, watch, computed } from "vue";
+  import { computed, onMounted, ref, watch } from "vue";
   import { handleTree } from "@/utils/tree.ts";
   import { getDeptList } from "@/api/sys/dept.js";
   import { ElMessage } from "element-plus";
@@ -35,7 +35,7 @@
   // 定义 props - 支持 v-model
   const props = defineProps({
     modelValue: {
-      type: [Number, String, Array],
+      type: [BigInt, String, Array],
       default: null
     },
     // 是否在设置默认值时也触发 dept-selected 事件
@@ -49,7 +49,7 @@
   const emit = defineEmits({
     "update:modelValue": value => true,
     "dept-selected": deptId => {
-      return typeof deptId === "number" || deptId === null || deptId === undefined;
+      return typeof deptId === "bigint" || deptId === null || deptId === undefined;
     }
   });
 

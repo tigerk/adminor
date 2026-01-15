@@ -5,9 +5,9 @@ import { deviceDetection } from "@pureadmin/utils";
 import { h, ref } from "vue";
 import { createShareHouse } from "@/api/house/scatter";
 import { message } from "@/utils/message";
-import type { HouseInfoProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomDetailProps, ShareFormItemProps } from "@/types";
+import type { ScatterHouseProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomDetailProps, ScatterCreateFormProps } from "@/types";
 
-function getScatterDefaultHouseItem(): HouseInfoProps {
+function getScatterDefaultHouseItem(): ScatterHouseProps {
   const roomList = [getDefaultRoomItem("A"), getDefaultRoomItem("B"), getDefaultRoomItem("C")];
   return {
     houseCode: "",
@@ -28,9 +28,7 @@ function getScatterDefaultHouseItem(): HouseInfoProps {
     direction: "",
     area: "",
     decorationType: "",
-    price: null,
     propertyFee: null,
-    moreInfo: null,
     roomList: roomList
   };
 }
@@ -70,7 +68,7 @@ function getDefaultRoomItem(defaultRoomNumber = ""): RoomDetailProps {
 export function useShareEdit() {
   const shareFormRef = ref();
 
-  function openShareEditDialog(title = "新增", row?: ShareFormItemProps) {
+  function openShareEditDialog(title = "新增", row?: ScatterCreateFormProps) {
     addDialog({
       title: `${title}合租房源`,
       props: {

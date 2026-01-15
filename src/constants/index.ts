@@ -99,8 +99,8 @@ export const ROOM_STATUS_OPTIONS = [
  * 金额计算方式
  */
 export const PRICE_METHOD_OPTIONS = [
-  { label: "按固定金额", value: 0 },
-  { label: "按租金比例", value: 1 }
+  { label: "按固定金额", value: 1 },
+  { label: "按租金比例", value: 2 }
 ] as const;
 
 /**

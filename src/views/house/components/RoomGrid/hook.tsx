@@ -6,8 +6,8 @@ import { getFocusById } from "@/api/house/focus";
 import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
-import { getEntireHouseById, getShareHouseById } from "@/api/house/scatter";
-import type { RoomGridItemProps, RoomGridProps, RoomListProps, ScatterCreateProps, ScatterHouseDetailProps, ScatterHouseProps, ShareFormItemProps } from "@/types";
+import { getShareHouseById } from "@/api/house/scatter";
+import type { RoomGridItemProps, RoomGridProps, RoomListProps, ScatterCreateFormProps, ScatterHouseProps } from "@/types";
 
 // ==================== Hook 特有的类型定义 ====================
 
@@ -480,9 +480,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     switch (command) {
       case "edit":
         if (room.leaseMode == 2 && room.rentalType == 1) {
-          editEntireHouse("更新", room);
+          openEntireEditDialog("编辑", { id: room.houseId });
         } else if (room.leaseMode == 2 && room.rentalType == 2) {
-          editShareHouse("更新", room);
+          editShareHouse("编辑", room);
         }
         break;
       case "lock":
@@ -497,50 +497,22 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     }
   };
 
-  function editEntireHouse(title: string, room: RoomListProps) {
-    getEntireHouseById({ id: room.houseId }).then(res => {
-      if (res.code !== 0) {
-        return;
-      }
-
-      openEntireEditDialog("编辑", convertToEntireForm(res.data));
-    });
-  }
-
-  // 将 ScatterHouseResponse 转换为 EntireFormItemProps
-  const convertToEntireForm = (resp: ScatterHouseDetailProps): ScatterCreateProps => {
-    return {
-      leaseMode: resp.leaseMode,
-      rentalType: resp.rentalType,
-      community: resp.community,
-      deptId: resp.deptId,
-      salesmanId: resp.salesmanId,
-      water: resp.water,
-      electricity: resp.electricity,
-      heating: resp.heating,
-      hasElevator: resp.hasElevator,
-      hasGas: resp.hasGas,
-      houseList: [resp]
-    };
-  };
-
   function editShareHouse(title: string, room: RoomListProps) {
     getShareHouseById({ id: room.houseId }).then(res => {
       if (res.code !== 0) {
         return;
       }
-
-      const shareFormItemProps = convertToShareFormItemProps(res.data);
-
-      openShareEditDialog("编辑", shareFormItemProps);
+      const ScatterCreateFormProps = convertToScatterCreateFormProps(res.data);
+      openShareEditDialog(title, ScatterCreateFormProps);
     });
   }
 
-  // 将 ScatterHouseResponse 转换为 ShareFormItemProps
-  function convertToShareFormItemProps(resp: ScatterHouseProps): ShareFormItemProps {
+  // 将 ScatterHouseResponse 转换为 ScatterCreateFormProps
+  const convertToScatterCreateFormProps = (resp: ScatterHouseProps): ScatterCreateFormProps => {
     return {
       id: resp.id,
       leaseMode: resp.leaseMode,
+      rentalType: resp.rentalType,
       community: resp.community,
       deptId: resp.deptId,
       salesmanId: resp.salesmanId,
@@ -568,7 +540,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         }
       ]
     };
-  }
+  };
 
   return {
     // 响应式数据
