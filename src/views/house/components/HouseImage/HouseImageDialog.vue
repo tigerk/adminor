@@ -50,33 +50,17 @@
       <!-- v-model 绑定到 ref -->
       <UploadVideo v-model="videoList" :limit="1" />
     </div>
-    <div class="image-grid">
-      <!-- v-model 绑定到 ref -->
-      <UploadImage v-model="imageList" :limit="10" />
-    </div>
-    <div class="mt-4">
-      <p>温馨提示：</p>
-      <p>* 默认上传的第一张图为首图</p>
-      <p>* 上传图片后，悬浮图片时右上角出现删除图标</p>
-      <p>* 直接拖拽图片可调整顺序</p>
-    </div>
-
-    <!-- 调试信息（可选，用于查看当前数据） -->
-    <!-- <div class="mt-4 p-4 bg-gray-100 rounded">
-      <p class="font-bold">当前图片数量: {{ imageList.length }}</p>
-      <pre>{{ JSON.stringify(imageList, null, 2) }}</pre>
-    </div> -->
+    <el-card shadow="never">
+      <div class="image-grid">
+        <!-- v-model 绑定到 ref -->
+        <UploadImage v-model="imageList" :limit="10" />
+      </div>
+      <div class="mt-4">
+        <p>温馨提示：</p>
+        <p>* 默认上传的第一张图为首图</p>
+        <p>* 上传图片后，悬浮图片时右上角出现删除图标</p>
+        <p>* 直接拖拽图片可调整顺序</p>
+      </div>
+    </el-card>
   </div>
 </template>
-
-<style scoped>
-  .image-container {
-  }
-
-  .section-title {
-    margin: 10px 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #303133;
-  }
-</style>

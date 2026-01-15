@@ -1,8 +1,8 @@
-import type { EntireFormItemProps } from "@/types";
+import type { ScatterCreateProps } from "@/types";
 
 // 表单
 interface EntireFormProps {
-  formInline: EntireFormItemProps;
+  formInline: ScatterCreateProps;
 }
 
-export type { EntireFormItemProps, EntireFormProps };
+export type { EntireFormProps };

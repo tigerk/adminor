@@ -7,7 +7,7 @@ import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { getEntireHouseById, getShareHouseById } from "@/api/house/scatter";
-import type { EntireFormItemProps, RoomGridItemProps, RoomGridProps, RoomInfoProps, RoomListProps, ScatterHouseProps, ShareFormItemProps } from "@/types";
+import type { RoomGridItemProps, RoomGridProps, RoomListProps, ScatterCreateProps, ScatterHouseProps, ShareFormItemProps } from "@/types";
 
 // ==================== Hook 特有的类型定义 ====================
 
@@ -503,17 +503,18 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         return;
       }
 
-      openEntireEditDialog("编辑", convertToEntireFormItemProps(res.data));
+      openEntireEditDialog("编辑", convertToEntireForm(res.data));
     });
   }
 
   // 将 ScatterHouseResponse 转换为 EntireFormItemProps
-  function convertToEntireFormItemProps(resp: ScatterHouseProps): EntireFormItemProps {
-    const price = resp.roomList[0]?.price || 0;
+  const convertToEntireForm = (resp: ScatterHouseProps): ScatterCreateProps => {
+    const price = resp.roomList?.[0]?.price || 0;
+    const priceConfig = resp.roomList?.[0]?.priceConfig;
 
     return {
-      id: resp.id,
       leaseMode: resp.leaseMode,
+      rentalType: resp.rentalType,
       community: resp.community,
       deptId: resp.deptId,
       salesmanId: resp.salesmanId,
@@ -525,8 +526,10 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       houseList: [
         {
           id: resp.id,
-          houseLayout: resp.houseLayout,
+          leaseMode: resp.leaseMode,
           rentalType: resp.rentalType,
+          community: resp.community,
+          houseLayout: resp.houseLayout,
           decorationType: resp.decorationType,
           propertyFee: resp.propertyFee,
           houseCode: resp.houseCode,
@@ -538,11 +541,12 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
           direction: resp.direction,
           area: resp.area,
           price: price,
+          priceConfig: priceConfig,
           roomList: resp.roomList || [] // 如果 roomList 为空，则初始化为空数组
         }
       ]
     };
-  }
+  };
 
   function editShareHouse(title: string, room: RoomListProps) {
     getShareHouseById({ id: room.houseId }).then(res => {

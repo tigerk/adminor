@@ -3,11 +3,38 @@ import EntireCreateForm from "./EntireCreateForm.vue";
 import { addDialog, closeAllDialog, closeDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
-import type { EntireFormItemProps } from "@/views/house/components/EntireCreate/types";
 import { createEntireHouse } from "@/api/house/scatter";
 import { message } from "@/utils/message";
+import type { HouseInfoProps, ScatterCreateProps } from "@/types";
 
 export function useEntireEdit() {
+  const getDefaultEntireHouseItem = (): HouseInfoProps => {
+    return {
+      houseCode: "",
+      building: "",
+      unit: "",
+      doorNumber: "",
+      floor: null,
+      floorTotal: null,
+      houseLayout: {
+        livingRoom: 0,
+        bedroom: 0,
+        bathroom: 0,
+        kitchen: 0,
+        imageList: [],
+        tags: [],
+        facilities: []
+      },
+      rentalType: 1,
+      direction: "",
+      area: "",
+      decorationType: "",
+      price: null,
+      propertyFee: null,
+      moreInfo: null
+    };
+  };
+
   const entireForm = reactive({
     name: "",
     community: null,
@@ -17,18 +44,12 @@ export function useEntireEdit() {
 
   const entireFormRef = ref();
 
-  function openEntireEditDialog(title = "新增", row?: EntireFormItemProps) {
+  function openEntireEditDialog(title = "新增", row?: ScatterCreateProps) {
     addDialog({
       title: `${title} 整租房源`,
       props: {
         formInline: {
-          id: row?.id ?? null,
-          community: null,
-          water: "residential",
-          electricity: "residential",
-          heating: "central",
-          hasGas: true,
-          hasElevator: false
+          ...row
         }
       },
       top: "1%",
@@ -89,6 +110,7 @@ export function useEntireEdit() {
   return {
     entireForm,
     entireFormRef,
-    openEntireEditDialog
+    openEntireEditDialog,
+    getDefaultEntireHouseItem
   };
 }

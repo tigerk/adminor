@@ -5,7 +5,7 @@ import { deviceDetection } from "@pureadmin/utils";
 import { h, ref } from "vue";
 import { createShareHouse } from "@/api/house/scatter";
 import { message } from "@/utils/message";
-import type { HouseInfoProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomInfoProps, ShareFormItemProps } from "@/types";
+import type { HouseInfoProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomDetailProps, ShareFormItemProps } from "@/types";
 
 function getScatterDefaultHouseItem(): HouseInfoProps {
   const roomList = [getDefaultRoomItem("A"), getDefaultRoomItem("B"), getDefaultRoomItem("C")];
@@ -53,7 +53,7 @@ function getDefaultPriceConfigItem(): PriceConfigProps {
   };
 }
 
-function getDefaultRoomItem(defaultRoomNumber = ""): RoomInfoProps {
+function getDefaultRoomItem(defaultRoomNumber = ""): RoomDetailProps {
   return {
     roomNumber: defaultRoomNumber,
     roomType: null,

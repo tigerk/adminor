@@ -5,7 +5,7 @@ import { reactive, ref, onMounted, toRaw } from "vue";
 import router from "@/router";
 import { getRoomList, getRoomTotal } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
-import type { HouseLayoutProps } from "@/views/house/components/FocusCreate/utils/types";
+import { HouseLayoutProps } from "@/types";
 
 export function useScatterRoom() {
   const pagination = reactive<PaginationProps>({

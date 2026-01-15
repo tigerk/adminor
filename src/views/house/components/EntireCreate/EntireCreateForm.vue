@@ -1,10 +1,8 @@
 <script setup lang="ts">
-  import { onMounted, reactive } from "vue";
-  import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
+  import { onMounted, reactive, ref } from "vue";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
   import { EntireFormProps } from "@/views/house/components/EntireCreate/types";
-  import { ref } from "vue";
-  import { Plus, CircleCheck } from "@element-plus/icons-vue";
+  import { CircleCheck, Plus } from "@element-plus/icons-vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
@@ -15,49 +13,23 @@
   import { ElMessage } from "element-plus";
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
   import { FacilityItemProps } from "@/types";
-  import Directives from "@/views/able/directives.vue";
   import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
+  import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
+  import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
   const { openHouseImageEditDialog } = useHouseImageEdit();
+  const { openPriceConfigDialog } = usePriceConfigEdit();
+  const { getDefaultEntireHouseItem } = useEntireEdit();
 
   const props = withDefaults(defineProps<EntireFormProps>(), {});
   const emit = defineEmits(["onSave"]);
 
   // 将 entireForm 和 houseList 合并到一个响应式对象中
   const entireForm = reactive({
-    ...props.formInline,
-    houseList: [
-      {
-        houseCode: "",
-        building: "",
-        unit: "",
-        doorNumber: "",
-        floor: null,
-        totalFloor: null,
-        houseLayout: {
-          livingRoom: 0,
-          bedroom: 0,
-          bathroom: 0,
-          kitchen: 0,
-          imageList: [],
-          tags: [],
-          facilities: []
-        },
-        rentalType: 1,
-        direction: "",
-        area: "",
-        decorationType: "",
-        price: "",
-        propertyFee: "",
-        facilities: [],
-        imageList: [],
-        tags: [],
-        moreInfo: null
-      }
-    ]
+    ...props.formInline
   });
 
   // 使用 entireForm.houseList 替代独立的 houseList
@@ -90,33 +62,7 @@
 
   // 添加新房源
   const addNewHouse = () => {
-    entireForm.houseList.push({
-      houseCode: "",
-      building: "",
-      unit: "",
-      doorNumber: "",
-      floor: null,
-      totalFloor: null,
-      houseLayout: {
-        livingRoom: 0,
-        bedroom: 0,
-        bathroom: 0,
-        kitchen: 0,
-        imageList: [],
-        tags: [],
-        facilities: []
-      },
-      rentalType: 1,
-      direction: "",
-      area: "",
-      decorationType: "",
-      price: "",
-      propertyFee: "",
-      facilities: [],
-      imageList: [],
-      tags: [],
-      moreInfo: null
-    });
+    entireForm.houseList.push(getDefaultEntireHouseItem());
   };
 
   onMounted(() => {
@@ -127,7 +73,7 @@
 
   const copyHouse = (index: number) => {
     const houseToCopy = entireForm.houseList[index];
-    const newHouse = JSON.parse(JSON.stringify(houseToCopy));
+    const newHouse = structuredClone(houseToCopy);
     entireForm.houseList.splice(index + 1, 0, newHouse);
   };
 
@@ -144,7 +90,7 @@
   const openFacilitiesDialog = (index: number) => {
     const currentHouse = entireForm.houseList[index];
 
-    openFacilityEditDialog("", currentHouse.facilities, (facilities: FacilityItemProps[]) => {
+    openFacilityEditDialog("", currentHouse.houseLayout.facilities, (facilities: FacilityItemProps[]) => {
       entireForm.houseList[index].houseLayout.facilities = facilities;
     });
   };
@@ -161,9 +107,9 @@
    * 房源特色对话框 start
    */
   const openHouseTagsDialog = (index: number) => {
-    const currentHouse = entireForm.houseList[index];
+    const currentHouseLayout = entireForm.houseList[index].houseLayout;
 
-    openHouseTagsEditDialog("", currentHouse.tags, (tags: any[]) => {
+    openHouseTagsEditDialog("", currentHouseLayout.tags, (tags: any[]) => {
       entireForm.houseList[index].houseLayout.tags = tags;
     });
   };
@@ -177,12 +123,26 @@
   const openImageListDialog = (index: number) => {
     const currentHouse = entireForm.houseList[index];
 
-    openHouseImageEditDialog("", currentHouse.imageList, (imageList: any[]) => {
+    openHouseImageEditDialog("", currentHouse.houseLayout.imageList, (imageList: any[]) => {
       entireForm.houseList[index].houseLayout.imageList = imageList;
     });
   };
   /**
    * 房源图片对话框 end
+   */
+
+  /**
+   * 租金配置对话框 start
+   */
+  const openRoomPriceConfigDialog = (houseIndex: number) => {
+    const currentHouse = entireForm.houseList[houseIndex];
+    openPriceConfigDialog("", currentHouse?.priceConfig, (priceConfig: any) => {
+      entireForm.houseList[houseIndex].priceConfig = priceConfig;
+      entireForm.houseList[houseIndex].price = priceConfig.price;
+    });
+  };
+  /**
+   * 租金配置对话框 end
    */
 
   // 验证表单（供父组件调用）
@@ -299,13 +259,13 @@
                 <el-col :span="4">
                   <el-form-item
                     label="总楼层数"
-                    :prop="`houseList.${index}.totalFloor`"
+                    :prop="`houseList.${index}.floorTotal`"
                     :rules="[
                       { required: true, message: '请输入总楼层数', trigger: 'blur' },
                       { type: 'number', message: '总楼层数必须是数字', trigger: 'blur', transform: value => Number(value) }
                     ]"
                   >
-                    <el-input v-model.number="house.totalFloor" placeholder="请输入总楼层数" type="number" />
+                    <el-input v-model.number="house.floorTotal" placeholder="请输入总楼层数" type="number" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
@@ -347,9 +307,14 @@
                       { pattern: /^\d+(\.\d{1,2})?$/, message: '请输入有效的价格', trigger: 'blur' }
                     ]"
                   >
-                    <el-input v-model="house.price" placeholder="请输入价格">
-                      <template #suffix>元/月</template>
-                    </el-input>
+                    <el-space>
+                      <el-input v-model="house.price" placeholder="请输入价格">
+                        <template #suffix>元/月</template>
+                      </el-input>
+                      <el-icon class="mr-2 text-blue-700 background-bl" @click="openRoomPriceConfigDialog(index)">
+                        <FontIcon icon="icon-zhangben" />
+                      </el-icon>
+                    </el-space>
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
