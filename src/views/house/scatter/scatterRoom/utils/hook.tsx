@@ -1,7 +1,7 @@
 import { message } from "@/utils/message";
 import { transformI18n } from "@/plugins/i18n";
 import type { PaginationProps } from "@pureadmin/table";
-import { reactive, ref, onMounted, toRaw } from "vue";
+import { onMounted, reactive, ref, toRaw } from "vue";
 import router from "@/router";
 import { getRoomList, getRoomTotal } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
@@ -70,8 +70,18 @@ export function useScatterRoom() {
       )
     },
     {
+      label: "出租方式",
+      prop: "rentalType",
+      width: 100,
+      cellRenderer: ({ row }) => (
+        <span>
+          <el-tag>{row.rentalType == 1 ? "整租" : "合租"}</el-tag>
+        </span>
+      )
+    },
+    {
       label: "小区/项目名称",
-      prop: "propertyName",
+      prop: "communityName",
       width: 150
     },
     {
@@ -91,9 +101,16 @@ export function useScatterRoom() {
       cellRenderer: ({ row }) => <span>{row.houseLayout?.layoutName ?? ""}</span>
     },
     {
-      label: "价格(元/月)",
+      label: "出租价格",
       prop: "price",
-      width: 120
+      width: 120,
+      cellRenderer: ({ row }) => <span>{(row.price ?? 0).toFixed(2)} 元/月</span>
+    },
+    {
+      label: "物业费",
+      prop: "propertyFee",
+      width: 100,
+      cellRenderer: ({ row }) => <span>{(row.propertyFee ?? 0).toFixed(2)} 元/月</span>
     },
     {
       label: "户型",

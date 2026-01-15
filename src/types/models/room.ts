@@ -43,6 +43,8 @@ export type RoomListProps = {
   houseName?: string;
   /** 门牌号 */
   doorNumber?: string;
+  /** 物业费 */
+  propertyFee?: number;
   /** 出租状态 */
   rentalType?: number;
   /** 来源id */

@@ -81,7 +81,7 @@
                 <div class="room-price-info">
                   <span class="price-amount">{{ formatPrice(room.price) }}</span>
                   <span class="price-unit">元/月</span>
-                  <span class="price-extra">（f押1付3）</span>
+                  <span class="price-extra">物业费： {{ formatPrice(room.propertyFee) }}元/月</span>
                 </div>
 
                 <!-- 租期信息 -->
@@ -190,7 +190,8 @@
     MoreFilled // 新增 MoreFilled
   } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
-  import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types"; // 获取父组件的查询表单数据
+  import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
+  import house from "@/router/bak2/house"; // 获取父组件的查询表单数据
 
   // 获取父组件的查询表单数据
   const queryForm = defineModel<QueryFormItemProps>("modelValue", { default: () => ({}) });
