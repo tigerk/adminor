@@ -136,9 +136,9 @@
    */
   const openRoomPriceConfigDialog = (houseIndex: number) => {
     const currentHouse = entireForm.houseList[houseIndex];
-    openPriceConfigDialog("", currentHouse?.priceConfig, (priceConfig: any) => {
-      entireForm.houseList[houseIndex].priceConfig = priceConfig;
-      entireForm.houseList[houseIndex].price = priceConfig.price;
+    openPriceConfigDialog("", currentHouse?.roomList[0]?.priceConfig, (priceConfig: any) => {
+      entireForm.houseList[houseIndex]?.roomList[0]?.priceConfig = priceConfig;
+      entireForm.houseList[houseIndex]?.roomList[0]?.price = priceConfig.price;
     });
   };
   /**

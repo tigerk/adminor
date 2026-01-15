@@ -14,9 +14,9 @@ export type RoomTotal = {
 export interface RoomDetailProps {
   id?: number;
   roomNumber: string; // 房间名称
-  roomType: number;
-  direction: string;
-  area: number;
+  roomType?: number;
+  direction?: string;
+  area?: number;
   price: number;
   facilities?: FacilityItemProps[];
   tags?: string[];

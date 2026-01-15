@@ -31,6 +31,51 @@ export interface ScatterHouseProps<T = any> {
   roomList?: RoomDetailProps[]; // 合租使用：房间列表，每个房间包含房间号、面积、价格等信息
 }
 
+/** 分散式房源详情，通过详情接口获取详细信息 */
+export interface ScatterHouseDetailProps {
+  id: number; // 房源ID
+  houseCode: string; // 房源编号
+  houseName: string; // 小区名称
+  companyId: number; // 公司ID
+  deptId: number; // 部门ID
+  salesmanId: number; // 业务员ID
+  leaseMode: number; // 房源租赁类型：1、集中式；2、整租、3、合租
+  leaseModeId: number; // 来源id，集中式为集中式id，整租、合租为community_id
+  communityId: number; // 小区ID
+  building: string; // 座栋
+  unit: string; // 单元
+  doorNumber: string; // 门牌号，分散式独有
+  houseLayoutId: number; // 户型
+  rentalType: number; // 出租类型：1=整租，2=合租
+  area: string; // 套内面积
+  direction: string; // 朝向
+  decorationType: string; // 装修类型：1=豪华装，2=简装，3=精装，4=毛坯，5=清水，6=简约，7=未装修
+  floor: number; // 楼层
+  floorTotal: number; // 总楼层
+  water: "commercial" | "residential";
+  electricity: "commercial" | "residential";
+  heating: "central" | "independent";
+  hasElevator: boolean; // 是否有电梯
+  hasGas: boolean; // 是否有燃气
+  propertyFee: number; // 物业费，每月
+  heatingFee: number; // 暖气费，每月
+  mgmtFee: number; // 管理费，每月
+  roomCount: number; // 房间数 为0表示未分配房间
+  restRoomCount: number; // 房间余量
+  certificateNo: string; // 权属证明及编号
+  sharedOwner: boolean; // 是否共有产权  0=否 1=是
+  mortgaged: boolean; // 是否抵押  0=否 1=是
+  customerId: number; // 客户Id
+  houseStatus: number; // 房源状态
+  locked: boolean; // 锁定状态：是否锁定
+  closed: boolean; // 禁用状态：是否已禁用
+  houseDesc: string; // 房源描述、项目介绍
+  businessDesc: string; // 商圈介绍、广告语
+  remark: string; // 备注
+  community: CommunityProps; // 住宅小区
+  houseLayout: HouseLayoutProps; // 户型，保存合租房源的公共图片、房源配置、图片等信息
+  roomList: RoomDetailProps[]; // 合租使用：房间列表，每个房间包含房间号、面积、价格等信息
+}
 /** 分散式房源表单 */
 export interface ScatterCreateProps {
   leaseMode: number;

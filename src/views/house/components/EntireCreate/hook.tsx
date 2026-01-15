@@ -25,6 +25,13 @@ export function useEntireEdit() {
         tags: [],
         facilities: []
       },
+      roomList: [
+        {
+          roomNumber: "",
+          price: undefined,
+          priceConfig: undefined
+        }
+      ],
       rentalType: 1,
       direction: "",
       area: "",
