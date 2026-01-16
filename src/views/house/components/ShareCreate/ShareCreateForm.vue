@@ -302,8 +302,8 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
-                  <el-form-item label="房间号" :prop="`houseList.${index}.doorNumber`" :rules="[{ required: true, message: '请输入房间号', trigger: 'blur' }]">
-                    <el-input v-model="house.doorNumber" placeholder="请输入房间号" />
+                  <el-form-item label="门牌号" :prop="`houseList.${index}.doorNumber`" :rules="[{ required: true, message: '请输入门牌号', trigger: 'blur' }]">
+                    <el-input v-model="house.doorNumber" placeholder="请输入门牌号" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">

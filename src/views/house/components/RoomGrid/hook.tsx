@@ -223,27 +223,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         // 临时模拟租期信息（后端添加后删除）
         if (data.roomGridItemList) {
           const processedItems = data.roomGridItemList.map((item: RoomGridItemProps) => ({
-            ...item,
-            rooms: item.rooms.map((room: RoomListProps) => ({
-              ...room,
-              leaseInfo:
-                room.roomStatus === 1
-                  ? {
-                      leaseStartDate: "2025-09-20",
-                      leaseEndDate: "2026-09-19",
-                      availableDate: "2026-09-20",
-                      daysUntilAvailable: Math.floor(Math.random() * 30) + 1,
-                      tenantName: "张三",
-                      tenantPhone: "13800138000"
-                    }
-                  : room.roomStatus === 0
-                    ? {
-                        availableDate: "2025-09-20",
-                        daysUntilAvailable: Math.floor(Math.random() * 30) + 1
-                      }
-                    : undefined,
-              balcony: Math.random() > 0.7
-            }))
+            ...item
           }));
 
           // 追加或替换数据
@@ -416,7 +396,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   // 格式化日期范围
   const formatDateRange = (startDate?: string, endDate?: string) => {
     if (!startDate || !endDate) return "未知";
-    return `${formatDate(startDate)}~${formatDate(endDate)}`;
+    return `${formatDate(startDate)} ~ ${formatDate(endDate)}`;
   };
 
   // 格式化价格

@@ -50,7 +50,7 @@
       <!-- v-model 绑定到 ref -->
       <UploadVideo v-model="videoList" :limit="1" />
     </div>
-    <el-card shadow="never">
+    <el-card shadow="never" class="mb-4">
       <div class="image-grid">
         <!-- v-model 绑定到 ref -->
         <UploadImage v-model="imageList" :limit="10" />

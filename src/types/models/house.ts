@@ -1,8 +1,6 @@
 // ==================== 3. src/types/models/house.ts ====================
 // 房源相关业务模型
 
-import type { RoomDetailProps } from "@/types";
-
 /** 户型信息 */
 export interface HouseLayoutProps {
   id?: string;
@@ -85,12 +83,13 @@ export interface PricePlanProps {
 /**
  * 租期信息（前端扩展，后端添加后可移除）
  */
-export type LeaseInfoDTO = {
-  leaseStartDate?: string;
-  leaseEndDate?: string;
-  availableDate?: string;
-  daysUntilAvailable?: number;
+export type RoomLeaseInfoProps = {
+  leaseStartDate?: string; /**  租期开始日期 */
+  leaseEndDate?: string; /**  租期结束日期 */
+  arrearsDays?: number; /** 欠费天数 */
+  /** 租户姓名 */
   tenantName?: string;
+  /** 租户手机号 */
   tenantPhone?: string;
 };
 

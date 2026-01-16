@@ -59,7 +59,6 @@
                 <!-- 房间状态标签（右上角） -->
                 <div class="room-status-label" :style="{ color: room.roomStatusColor }">
                   {{ room.roomStatusName }}
-                  <span v-if="room.roomStatus === 1 && room.leaseInfo?.daysUntilAvailable" class="status-sub">有欠款</span>
                 </div>
 
                 <!-- 房间头部信息 -->
@@ -86,20 +85,16 @@
 
                 <!-- 租期信息 -->
                 <div class="room-lease-info">
-                  <div v-if="room.roomStatus === 1 && room.leaseInfo">
+                  <div v-if="room.roomStatus === 1 || room.roomStatus === 2">
                     {{ formatDateRange(room.leaseInfo?.leaseStartDate, room.leaseInfo?.leaseEndDate) }}
-                    <span v-if="room.leaseInfo?.daysUntilAvailable" class="lease-status">（欠款{{ room.leaseInfo?.daysUntilAvailable }}天）</span>
                   </div>
-                  <div v-else-if="room.roomStatus === 0 && room.leaseInfo?.availableDate">
+                  <div v-else-if="room.roomStatus === 0 && room?.availableDate">
                     <span class="lease-label">可租日：</span>
-                    {{ formatDate(room.leaseInfo?.availableDate) }}
-                    <span class="lease-days">空 {{ room.leaseInfo?.daysUntilAvailable || 0 }} 天</span>
+                    {{ formatDate(room?.availableDate) }}
+                    <span class="lease-days">空 {{ getDaysDifference(room?.vacancyStartTime) }} 天</span>
                   </div>
                   <div v-else-if="!room.price || room.price === '0'">
                     <span class="lease-label">暂未定价</span>
-                  </div>
-                  <div v-else>
-                    <span class="lease-label">立即可租</span>
                   </div>
                 </div>
 
@@ -141,11 +136,6 @@
 
                     <!-- 查看按钮 -->
                     <el-button size="small" plain @click.stop="handleQuickAction(room, 'view')">查看</el-button>
-                  </div>
-
-                  <!-- 欠款标识 -->
-                  <div v-if="room.roomStatus === 1 && room.leaseInfo?.daysUntilAvailable" class="action-status">
-                    <span class="status-text">欠</span>
                   </div>
                 </div>
               </div>
@@ -191,7 +181,8 @@
   } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
-  import house from "@/router/bak2/house"; // 获取父组件的查询表单数据
+  import house from "@/router/bak2/house";
+  import { getDaysDifference } from "@/utils/date"; // 获取父组件的查询表单数据
 
   // 获取父组件的查询表单数据
   const queryForm = defineModel<QueryFormItemProps>("modelValue", { default: () => ({}) });
