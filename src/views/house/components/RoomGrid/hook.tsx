@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type Ref, ref } from "vue";
-import { ElMessage } from "element-plus";
-import { getRoomGrid } from "@/api/house/room";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { getRoomGrid, lockRoom } from "@/api/house/room";
 import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 import { getFocusById } from "@/api/house/focus";
 import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
@@ -466,7 +466,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         }
         break;
       case "lock":
-        ElMessage.warning(`确认锁定房间 ${room.roomNumber}？`);
+        handleLockRoom(room);
         break;
       case "unlock":
         ElMessage.success(`房间 ${room.roomNumber} 已解锁`);
@@ -520,6 +520,25 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         }
       ]
     };
+  };
+
+  const handleLockRoom = (room: RoomListProps) => {
+    ElMessageBox.confirm(`确认锁定 ${room.houseName}-房间 ${room.roomNumber}？`, "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    }).then(() => {
+      // 确认锁定房间
+      lockRoom({ roomId: room.roomId }).then(res => {
+        if (res.code === 0) {
+          ElMessage.success(`房间 ${room.roomNumber} 已锁定`);
+          // 刷新当前房间状态
+          room.roomStatus = 5;
+        } else {
+          ElMessage.error(`锁定房间 ${room.roomNumber} 失败：${res.message}`);
+        }
+      });
+    });
   };
 
   return {

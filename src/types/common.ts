@@ -1,6 +1,5 @@
 // 通用基础类型
 
-
 /** 分页请求参数 */
 export interface PaginationParams {
   currentPage: number; /** 当前页码 */

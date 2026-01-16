@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { RoomGridProps, RoomListQueryProps, RoomTotal } from "@/types";
+import type { ApiResponse, PaginationResponse, RoomGridProps, RoomListQueryProps, RoomTotal } from "@/types";
 
 export type ResultTable = {
   code: number;
@@ -24,7 +24,7 @@ export type ResultRoomGridProps = {
 };
 
 export const getRoomList = (data?: RoomListQueryProps) => {
-  return http.request<ResultTable>("post", baseUrlApi("room/list"), { data });
+  return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("room/list"), { data });
 };
 
 /**
@@ -37,4 +37,12 @@ export const getRoomGrid = (data?: object) => {
 
 export const getRoomTotal = (data?: object) => {
   return http.request<RoomTotal>("post", baseUrlApi("room/total"), { data });
+};
+
+/**
+ * 锁定房间
+ * @param data
+ */
+export const lockRoom = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("room/lock"), { data });
 };
