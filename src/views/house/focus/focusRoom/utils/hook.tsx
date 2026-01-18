@@ -16,6 +16,7 @@ export function userFocusRoom() {
   });
 
   const queryForm = reactive({
+    houseId: null,
     keywords: "",
     leaseModeId: null,
     leaseMode: 1, // 集中式

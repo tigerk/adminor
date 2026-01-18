@@ -46,3 +46,15 @@ export const getRoomTotal = (data?: object) => {
 export const lockRoom = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("room/lock"), { data });
 };
+
+export const unlockRoom = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("room/unlock"), { data });
+};
+
+export const closeRoom = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("room/close"), { data });
+};
+
+export const openRoom = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("room/open"), { data });
+};

@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type Ref, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { getRoomGrid, lockRoom } from "@/api/house/room";
+import { closeRoom, getRoomGrid, lockRoom, openRoom, unlockRoom } from "@/api/house/room";
 import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 import { getFocusById } from "@/api/house/focus";
 import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
@@ -457,6 +457,30 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 
   // 处理下拉菜单操作
   const handleDropdownAction = (room: RoomListProps, command: string) => {
+    function handleCloseRoom(room: RoomListProps) {
+      closeRoom({ roomId: room.roomId }).then(res => {
+        if (res.code === 0) {
+          ElMessage.success("已关闭");
+          // 刷新当前房间数据
+          room.roomStatus = res.data;
+        } else {
+          ElMessage.error(res.message || "关闭失败");
+        }
+      });
+    }
+
+    function handleOpenRoom(room: RoomListProps) {
+      openRoom({ roomId: room.roomId }).then(res => {
+        if (res.code === 0) {
+          ElMessage.success("已成功");
+          // 刷新当前房间数据
+          room.roomStatus = res.data;
+        } else {
+          ElMessage.error(res.message || "打开失败");
+        }
+      });
+    }
+
     switch (command) {
       case "edit":
         if (room.leaseMode == 2 && room.rentalType == 1) {
@@ -469,7 +493,13 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         handleLockRoom(room);
         break;
       case "unlock":
-        ElMessage.success(`房间 ${room.roomNumber} 已解锁`);
+        handleUnlockRoom(room);
+        break;
+      case "close":
+        handleCloseRoom(room);
+        break;
+      case "open":
+        handleOpenRoom(room);
         break;
       case "salesman":
         ElMessage.info(`负责人：${room.salesmanName}`);
@@ -533,9 +563,28 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         if (res.code === 0) {
           ElMessage.success(`房间 ${room.roomNumber} 已锁定`);
           // 刷新当前房间状态
-          room.roomStatus = 5;
+          room.roomStatus = res.data || 0;
         } else {
           ElMessage.error(`锁定房间 ${room.roomNumber} 失败：${res.message}`);
+        }
+      });
+    });
+  };
+
+  const handleUnlockRoom = (room: RoomListProps) => {
+    ElMessageBox.confirm(`确认解锁 ${room.houseName}-房间 ${room.roomNumber}？`, "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    }).then(() => {
+      // 确认解锁房间
+      unlockRoom({ roomId: room.roomId }).then(res => {
+        if (res.code === 0) {
+          ElMessage.success(`房间 ${room.roomNumber} 已解锁`);
+          // 刷新当前房间状态
+          room.roomStatus = res.data || 0;
+        } else {
+          ElMessage.error(`解锁房间 ${room.roomNumber} 失败：${res.message}`);
         }
       });
     });

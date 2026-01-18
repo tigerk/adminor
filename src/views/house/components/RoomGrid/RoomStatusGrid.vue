@@ -55,7 +55,7 @@
 
             <!-- 房间网格 -->
             <div class="room-grid">
-              <div v-for="room in floor.rooms" :key="room.roomId" class="room-card" :class="getRoomCardClass(room)" :style="getRoomCardStyle(room)">
+              <div v-for="room in floor.rooms" :key="room.roomId.toString()" class="room-card" :class="getRoomCardClass(room)" :style="getRoomCardStyle(room)">
                 <!-- 房间状态标签（右上角） -->
                 <div class="room-status-label" :style="{ color: room.roomStatusColor }">
                   {{ room.roomStatusName }}
@@ -96,6 +96,9 @@
                   <div v-else-if="!room.price || room.price === '0'">
                     <span class="lease-label">暂未定价</span>
                   </div>
+                  <div v-else>
+                    <span class="lease-label">&nbsp;</span>
+                  </div>
                 </div>
 
                 <!-- 底部操作按钮 -->
@@ -125,6 +128,14 @@
                           <el-dropdown-item command="unlock" :disabled="!room.locked">
                             <el-icon><Unlock /></el-icon>
                             解锁
+                          </el-dropdown-item>
+                          <el-dropdown-item command="close" :disabled="room.closed">
+                            <el-icon><CloseBold /></el-icon>
+                            关闭
+                          </el-dropdown-item>
+                          <el-dropdown-item command="open" :disabled="!room.closed">
+                            <el-icon><Open /></el-icon>
+                            开启
                           </el-dropdown-item>
                           <el-dropdown-item v-if="room.salesmanName" command="salesman" divided>
                             <el-icon><User /></el-icon>
@@ -165,23 +176,9 @@
 
 <script setup lang="ts">
   import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-  import {
-    Location,
-    Setting,
-    EditPen,
-    View,
-    Lock,
-    User,
-    OfficeBuilding,
-    Loading,
-    Calendar,
-    Document,
-    Unlock,
-    MoreFilled // 新增 MoreFilled
-  } from "@element-plus/icons-vue";
+  import { EditPen, Loading, Location, Lock, OfficeBuilding, Setting, CloseBold, Open, Unlock, User } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
-  import house from "@/router/bak2/house";
   import { getDaysDifference } from "@/utils/date"; // 获取父组件的查询表单数据
 
   // 获取父组件的查询表单数据
@@ -322,8 +319,6 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px;
-    //color: #fff;
-    //background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
     .property-header-left {
       display: flex;
@@ -554,8 +549,7 @@
   }
 
   .room-lease-info {
-    padding: 6px 0;
-    margin-bottom: 6px;
+    padding: 8px 0;
     font-size: 12px;
     color: #909399;
     border-top: 1px dashed #ebeef5;
@@ -581,7 +575,6 @@
     justify-content: space-between;
     gap: 6px;
     padding-top: 8px;
-    margin-top: 8px;
     border-top: 1px solid #ebeef5;
 
     .action-left,
