@@ -363,8 +363,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 
       // 根据状态设置背景渐变
       const colorHex = room.roomStatusColor;
-      // 将颜色转换为更淡的背景色
-      style.background = `linear-gradient(135deg, ${hexToRgba(colorHex, 0.05)} 0%, #fff 100%)`;
     }
 
     return style;

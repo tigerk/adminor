@@ -18,7 +18,7 @@
               共
               <strong>{{ community.totalRooms }}</strong>
               套， 出租率
-              <strong class="text-green-500">{{ community.occupancyRate }}%</strong>
+              <strong class="occupancy-rate">{{ community.occupancyRate }}%</strong>
             </span>
             <el-button v-if="community.leaseMode == 1" link type="primary" @click="handleManageCompound(community)">
               <el-icon>
@@ -101,7 +101,6 @@
                   </div>
                 </div>
 
-                <!-- 底部操作按钮 -->
                 <!-- 底部操作按钮 -->
                 <div class="room-action-bar">
                   <!-- 左侧按钮组 -->
@@ -243,7 +242,379 @@
 </script>
 
 <style lang="scss" scoped>
-  // 响应式设计
+  // ==================== 主题相关变量 ====================
+  .room-status-grid {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--el-bg-color);
+  }
+
+  .room-grid-container {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background: var(--el-fill-color-lighter);
+    transition: background-color 0.3s;
+
+    &.full-height {
+      height: 100%;
+    }
+  }
+
+  // ==================== 小区分组样式 ====================
+  .property-group {
+    margin-bottom: 24px;
+    overflow: hidden;
+    background: var(--el-bg-color);
+    border-radius: 8px;
+    box-shadow: var(--el-box-shadow-light);
+    transition: all 0.3s;
+  }
+
+  // 小区头部
+  .property-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background-color: var(--el-fill-color-blank);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    transition: all 0.3s;
+
+    .property-header-left {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+
+      .el-icon {
+        color: var(--el-color-primary);
+      }
+
+      .property-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+        transition: color 0.3s;
+      }
+
+      .property-address {
+        font-size: 14px;
+        color: var(--el-text-color-regular);
+        transition: color 0.3s;
+      }
+    }
+
+    .property-stats {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+
+      .stat-item {
+        font-size: 14px;
+        color: var(--el-text-color-regular);
+        transition: color 0.3s;
+
+        strong {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+          transition: color 0.3s;
+
+          // 出租率使用成功色
+          &.occupancy-rate {
+            color: var(--el-color-success);
+          }
+        }
+      }
+    }
+  }
+
+  // ==================== 楼栋单元样式 ====================
+  .building-unit-group {
+    &:not(:last-child) {
+      border-bottom: 3px solid var(--el-border-color-light);
+    }
+  }
+
+  .building-unit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--el-fill-color-light);
+    border-bottom: 2px solid var(--el-border-color-lighter);
+    transition: all 0.3s;
+
+    .building-unit-info {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+
+      .el-icon {
+        font-size: 20px;
+        color: var(--el-color-primary);
+      }
+
+      .building-unit-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+        transition: color 0.3s;
+      }
+
+      .building-unit-stats {
+        font-size: 14px;
+        font-weight: normal;
+        color: var(--el-text-color-regular);
+        transition: color 0.3s;
+      }
+    }
+  }
+
+  // ==================== 楼层样式 ====================
+  .floor-group {
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--el-border-color-lighter);
+    }
+  }
+
+  .floor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--el-fill-color-lighter);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    transition: all 0.3s;
+
+    .floor-info {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      padding-left: 5px;
+
+      .floor-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--el-text-color-regular);
+        transition: color 0.3s;
+      }
+
+      .floor-count {
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+        transition: color 0.3s;
+      }
+    }
+  }
+
+  // ==================== 房间网格 ====================
+  .room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    padding: 20px;
+    background-color: var(--el-fill-color-blank);
+    transition: background-color 0.3s;
+  }
+
+  // ==================== 房间卡片 ====================
+  .room-card {
+    position: relative;
+    min-height: 140px;
+    padding: 12px;
+    background: var(--el-bg-color);
+    border: 2px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: var(--el-box-shadow);
+      transform: translateY(-2px);
+      border-color: var(--el-border-color);
+    }
+
+    &.room-disabled {
+      opacity: 0.6;
+      filter: grayscale(30%);
+    }
+  }
+
+  // 深色模式下的房间卡片增强
+  .dark .room-card {
+    background: var(--el-fill-color-dark);
+    border-color: var(--el-border-color-darker);
+
+    &:hover {
+      background: var(--el-fill-color);
+      border-color: var(--el-border-color-dark);
+    }
+  }
+
+  // 房间状态标签
+  .room-status-label {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  // 房间头部信息
+  .room-header-info {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 8px;
+    font-weight: 600;
+
+    .room-number,
+    .room-type {
+      font-size: 16px;
+      color: var(--el-text-color-primary);
+      transition: color 0.3s;
+    }
+
+    .room-separator {
+      margin: 0 6px;
+      color: var(--el-text-color-placeholder);
+      transition: color 0.3s;
+    }
+  }
+
+  // 房间基础信息
+  .room-basic-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+    transition: color 0.3s;
+
+    .info-separator {
+      margin: 0 4px;
+      color: var(--el-border-color);
+      transition: color 0.3s;
+    }
+
+    .info-tag {
+      margin-left: 6px;
+      color: var(--el-color-primary);
+    }
+  }
+
+  // 价格信息
+  .room-price-info {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 8px;
+
+    .price-amount {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+      transition: color 0.3s;
+    }
+
+    .price-unit {
+      margin-left: 2px;
+      font-size: 12px;
+      color: var(--el-text-color-regular);
+      transition: color 0.3s;
+    }
+
+    .price-extra {
+      margin-left: 4px;
+      font-size: 11px;
+      color: var(--el-text-color-secondary);
+      transition: color 0.3s;
+    }
+  }
+
+  // 租期信息
+  .room-lease-info {
+    padding: 8px 0;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    border-top: 1px dashed var(--el-border-color-lighter);
+    transition: all 0.3s;
+
+    .lease-label {
+      color: var(--el-text-color-regular);
+      transition: color 0.3s;
+    }
+
+    .lease-days {
+      margin-left: 8px;
+      color: var(--el-color-danger);
+    }
+  }
+
+  // ==================== 操作按钮栏 ====================
+  .room-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--el-border-color-lighter);
+    transition: border-color 0.3s;
+
+    .action-left,
+    .action-right {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .action-left {
+      flex: 1;
+      min-width: 0;
+    }
+
+    :deep(.el-button) {
+      margin: 0;
+      padding: 4px 10px;
+      font-size: 12px;
+
+      &.is-small {
+        height: 26px;
+      }
+
+      & + .el-button {
+        margin-left: 0;
+      }
+    }
+
+    :deep(.el-dropdown) {
+      .el-button {
+        padding: 4px 8px;
+      }
+    }
+  }
+
+  // ==================== 加载状态 ====================
+  .loading-wrapper,
+  .loading-more,
+  .no-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-size: 14px;
+    color: var(--el-text-color-secondary);
+    background-color: var(--el-fill-color-blank);
+    transition: all 0.3s;
+
+    .el-icon {
+      margin-right: 8px;
+    }
+  }
+
+  // ==================== 响应式设计 ====================
   @media (width <= 1400px) {
     .room-grid {
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -254,6 +625,13 @@
     .room-grid {
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 12px;
+    }
+
+    .room-action-bar {
+      :deep(.el-button) {
+        padding: 3px 8px;
+        font-size: 11px;
+      }
     }
   }
 
@@ -280,379 +658,7 @@
       min-height: 140px;
       padding: 10px;
     }
-  }
 
-  @media (width <= 480px) {
-    .room-grid {
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    }
-  }
-
-  .room-status-grid {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  .room-grid-container {
-    flex: 1;
-    padding: 16px;
-    overflow-y: auto;
-    background: #f5f7fa;
-
-    &.full-height {
-      height: 100%;
-    }
-  }
-
-  .property-group {
-    margin-bottom: 24px;
-    overflow: hidden;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px 0 rgb(0 0 0 / 5%);
-  }
-
-  .property-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px;
-
-    .property-header-left {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-
-      .property-title {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 600;
-      }
-
-      .property-address {
-        font-size: 14px;
-        opacity: 0.9;
-      }
-    }
-
-    .property-stats {
-      display: flex;
-      gap: 24px;
-      align-items: center;
-
-      .stat-item {
-        font-size: 14px;
-
-        strong {
-          font-size: 16px;
-          font-weight: 600;
-        }
-      }
-
-      .el-button {
-        //color: #fff;
-
-        &:hover {
-          background: rgb(255 255 255 / 10%);
-        }
-      }
-    }
-  }
-
-  // 楼栋单元分组样式
-  .building-unit-group {
-    &:not(:last-child) {
-      border-bottom: 3px solid #e4e7ed;
-    }
-  }
-
-  // 楼栋单元头部
-  .building-unit-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #f0f2f5 0%, #fafbfc 100%);
-    border-bottom: 2px solid #ebeef5;
-
-    .building-unit-info {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-
-      .el-icon {
-        font-size: 20px;
-        color: #409eff;
-      }
-
-      .building-unit-title {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 600;
-        color: #303133;
-      }
-
-      .building-unit-stats {
-        font-size: 14px;
-        font-weight: normal;
-        color: #606266;
-      }
-    }
-  }
-
-  .floor-group {
-    &:not(:last-child) {
-      border-bottom: 1px solid #f0f0f0;
-    }
-  }
-
-  .floor-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    background: #fafbfc;
-    border-bottom: 1px solid #ebeef5;
-
-    .floor-info {
-      display: flex;
-      gap: 8px;
-      align-items: baseline;
-      padding-left: 5px; // 缩进以显示层级
-
-      .floor-title {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 500;
-        color: #606266;
-      }
-
-      .floor-count {
-        font-size: 13px;
-        color: #909399;
-      }
-    }
-  }
-
-  .room-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 12px;
-    padding: 20px;
-  }
-
-  .room-card {
-    position: relative;
-    min-height: 140px;
-    padding: 12px;
-    background: #fff;
-    border: 2px solid transparent;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-
-    &:hover {
-      box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
-      transform: translateY(-2px);
-    }
-
-    &.room-disabled {
-      opacity: 0.6;
-      filter: grayscale(30%);
-    }
-  }
-
-  .room-status-label {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    font-size: 13px;
-    font-weight: 500;
-
-    .status-sub {
-      margin-left: 4px;
-      font-size: 11px;
-      opacity: 0.8;
-    }
-  }
-
-  .room-header-info {
-    display: flex;
-    align-items: baseline;
-    margin-bottom: 8px;
-    font-weight: 600;
-
-    .room-number {
-      font-size: 16px;
-      color: #303133;
-    }
-
-    .room-separator {
-      margin: 0 6px;
-      color: #909399;
-    }
-
-    .room-type {
-      font-size: 16px;
-      color: #303133;
-    }
-  }
-
-  .room-basic-info {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    font-size: 13px;
-    color: #606266;
-
-    .info-separator {
-      margin: 0 4px;
-      color: #dcdfe6;
-    }
-
-    .info-tag {
-      margin-left: 6px;
-      color: #409eff;
-    }
-  }
-
-  .room-price-info {
-    display: flex;
-    align-items: baseline;
-    margin-bottom: 8px;
-
-    .price-amount {
-      font-size: 16px;
-      font-weight: 600;
-      color: #303133;
-    }
-
-    .price-unit {
-      margin-left: 2px;
-      font-size: 12px;
-      color: #606266;
-    }
-
-    .price-extra {
-      margin-left: 4px;
-      font-size: 11px;
-      color: #909399;
-    }
-
-    .price-search {
-      margin-left: auto;
-      font-size: 16px;
-      color: #409eff;
-      cursor: pointer;
-    }
-  }
-
-  .room-lease-info {
-    padding: 8px 0;
-    font-size: 12px;
-    color: #909399;
-    border-top: 1px dashed #ebeef5;
-
-    .lease-label {
-      color: #606266;
-    }
-
-    .lease-days {
-      margin-left: 8px;
-      color: #f56c6c;
-    }
-
-    .lease-status {
-      margin-left: 4px;
-      color: #e6a23c;
-    }
-  }
-
-  .room-action-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    padding-top: 8px;
-    border-top: 1px solid #ebeef5;
-
-    .action-left,
-    .action-right {
-      display: flex;
-      gap: 6px; // 左右两侧使用相同的间距
-      align-items: center;
-    }
-
-    .action-left {
-      flex: 1;
-      min-width: 0; // 允许按钮缩小
-    }
-
-    .action-status {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      z-index: 1;
-
-      .status-text {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        line-height: 20px;
-        color: #fff;
-        text-align: center;
-        background: #f56c6c;
-        border-radius: 4px;
-      }
-    }
-
-    // 按钮样式优化
-    :deep(.el-button) {
-      margin: 0; // 关键：移除默认 margin
-      padding: 4px 10px;
-      font-size: 12px;
-
-      &.is-small {
-        height: 26px;
-      }
-
-      // 移除连续按钮之间的间距
-      & + .el-button {
-        margin-left: 0;
-      }
-    }
-
-    // 只显示图标的按钮
-    :deep(.action-dropdown-btn),
-    :deep(.action-view-btn) {
-      padding: 4px 8px;
-      min-width: 32px;
-
-      .el-icon {
-        margin: 0;
-      }
-    }
-
-    :deep(.el-dropdown) {
-      .el-button {
-        padding: 4px 8px;
-      }
-    }
-  }
-
-  // 针对更小的卡片做响应式调整
-  @media (width <= 1200px) {
-    .room-action-bar {
-      :deep(.el-button) {
-        padding: 3px 8px;
-        font-size: 11px;
-      }
-    }
-  }
-
-  @media (width <= 768px) {
     .room-action-bar {
       gap: 4px;
 
@@ -668,18 +674,9 @@
     }
   }
 
-  .loading-wrapper,
-  .loading-more,
-  .no-more {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    font-size: 14px;
-    color: #999;
-
-    .el-icon {
-      margin-right: 8px;
+  @media (width <= 480px) {
+    .room-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
   }
 </style>
