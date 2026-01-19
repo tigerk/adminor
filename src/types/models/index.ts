@@ -10,3 +10,4 @@ export * from "./contract";
 export * from "./tenant";
 export * from "./sys";
 export * from "./booking";
+export * from "./delivery";
