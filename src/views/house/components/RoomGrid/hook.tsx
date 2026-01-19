@@ -484,9 +484,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     function handleCloseRoom(room: RoomListProps) {
       closeRoom({ roomId: room.roomId }).then(res => {
         if (res.code === 0) {
-          ElMessage.success("已关闭");
+          ElMessage.success(`已关闭房间 ${room.roomNumber}`);
           // 刷新当前房间数据
-          room.roomStatus = res.data;
+          resetAndReload();
         } else {
           ElMessage.error(res.message || "关闭失败");
         }
@@ -496,9 +496,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     function handleOpenRoom(room: RoomListProps) {
       openRoom({ roomId: room.roomId }).then(res => {
         if (res.code === 0) {
-          ElMessage.success("已成功");
+          ElMessage.success(`已开启房间 ${room.roomNumber}`);
           // 刷新当前房间数据
-          room.roomStatus = res.data;
+          resetAndReload();
         } else {
           ElMessage.error(res.message || "打开失败");
         }
@@ -508,7 +508,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     switch (command) {
       case "edit":
         if (room.leaseMode == 2 && room.rentalType == 1) {
-          openEntireEditDialog("编辑", { id: room.houseId });
+          openEntireEditDialog("编辑", { id: room.houseId }).then(() => {
+            resetAndReload();
+          });
         } else if (room.leaseMode == 2 && room.rentalType == 2) {
           editShareHouse("编辑", room);
         }
@@ -537,7 +539,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         return;
       }
       const ScatterCreateFormProps = convertToScatterCreateFormProps(res.data);
-      openShareEditDialog(title, ScatterCreateFormProps);
+      openShareEditDialog(title, ScatterCreateFormProps).then(() => {
+        resetAndReload();
+      });
     });
   }
 
@@ -587,7 +591,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         if (res.code === 0) {
           ElMessage.success(`房间 ${room.roomNumber} 已锁定`);
           // 刷新当前房间状态
-          room.roomStatus = res.data || 0;
+          resetAndReload();
         } else {
           ElMessage.error(`锁定房间 ${room.roomNumber} 失败：${res.message}`);
         }
@@ -606,7 +610,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         if (res.code === 0) {
           ElMessage.success(`房间 ${room.roomNumber} 已解锁`);
           // 刷新当前房间状态
-          room.roomStatus = res.data || 0;
+          resetAndReload();
         } else {
           ElMessage.error(`解锁房间 ${room.roomNumber} 失败：${res.message}`);
         }

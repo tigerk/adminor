@@ -6,12 +6,14 @@
   import { IconifyIconOnline } from "@/components/ReIcon";
   import { Setting } from "@element-plus/icons-vue";
   import { ELECTRICITY_TYPE_OPTIONS, getOptionByCode, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
+  import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 
   defineOptions({
     name: "FocusHouse"
   });
 
   const { queryForm, loading, focusList, focusOptions, pagination, onFocusHouseSearch, handleSizeChange, handleCurrentChange, handleEditFocus } = useFocusHouse();
+  const { openFocusEditDialog } = useFocusEdit();
 
   // 表单引用
   const searchFormRef = ref<FormInstance>();
@@ -82,26 +84,32 @@
   <div class="focus-house-container">
     <!-- 搜索栏 -->
     <el-card class="search-card" shadow="never">
-      <el-form ref="searchFormRef" :model="queryForm" inline>
-        <el-form-item label="关键词" prop="keywords">
-          <el-input v-model="queryForm.keywords" placeholder="请输入项目名称或编号" clearable style="width: 200px" @keyup.enter="handleSearch" />
-        </el-form-item>
-        <el-form-item label="项目" prop="leaseModeId">
-          <el-select v-model="queryForm.leaseModeId" placeholder="请选择项目" clearable style="width: 200px">
-            <el-option v-for="item in focusOptions" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <IconifyIconOnline icon="ep:search" class="mr-1" />
-            搜索
-          </el-button>
-          <el-button @click="handleReset">
-            <IconifyIconOnline icon="ep:refresh" class="mr-1" />
-            重置
-          </el-button>
-        </el-form-item>
-      </el-form>
+      <div class="search-header-flex">
+        <el-form ref="searchFormRef" :model="queryForm" inline>
+          <el-form-item label="关键词" prop="keywords">
+            <el-input v-model="queryForm.keywords" placeholder="请输入项目名称或编号" clearable style="width: 200px" @keyup.enter="handleSearch" />
+          </el-form-item>
+          <el-form-item label="项目" prop="leaseModeId">
+            <el-select v-model="queryForm.leaseModeId" placeholder="请选择项目" clearable style="width: 200px">
+              <el-option v-for="item in focusOptions" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handleSearch">
+              <IconifyIconOnline icon="ep:search" class="mr-1" />
+              搜索
+            </el-button>
+            <el-button @click="handleReset">
+              <IconifyIconOnline icon="ep:refresh" class="mr-1" />
+              重置
+            </el-button>
+          </el-form-item>
+        </el-form>
+
+        <div class="action-buttons">
+          <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()" @created-focus-house="onFocusHouseSearch">添加房源</el-button>
+        </div>
+      </div>
     </el-card>
 
     <!-- 卡片列表 -->
@@ -251,6 +259,17 @@
 </template>
 
 <style scoped lang="scss">
+  .search-header-flex {
+    display: flex;
+    justify-content: space-between; // 拉开左右距离
+    align-items: flex-start; // 顶部对齐
+    flex-wrap: wrap; // 屏幕过窄时自动换行
+  }
+
+  .action-buttons {
+    margin-bottom: 18px; // 保持与 el-form-item 的默认间距一致
+  }
+
   .focus-house-container {
     height: 100%;
     margin: 0 !important;

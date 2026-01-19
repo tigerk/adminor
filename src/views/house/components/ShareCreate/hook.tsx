@@ -68,7 +68,7 @@ function getDefaultRoomItem(defaultRoomNumber = ""): RoomDetailProps {
 export function useShareEdit() {
   const shareFormRef = ref();
 
-  function openShareEditDialog(title = "新增", row?: ScatterCreateFormProps) {
+  async function openShareEditDialog(title = "新增", row?: ScatterCreateFormProps) {
     addDialog({
       title: `${title}合租房源`,
       props: {
