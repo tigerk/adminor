@@ -5,7 +5,7 @@
       <div class="mb-4 house-selector-info">
         <div class="flex justify-between items-center mb-2">
           <el-text type="primary" size="large" tag="b">房源信息</el-text>
-          <el-button type="primary" link :icon="Plus" @click="roomPickerRef.show()">选择房源</el-button>
+          <el-button type="primary" link :icon="Plus" @click="roomPickerRef.show(roomSelection)">选择房源</el-button>
         </div>
 
         <div v-if="roomSelection.length > 0" class="room-tags-box p-3 border rounded-md">

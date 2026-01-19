@@ -245,7 +245,7 @@ function useBooking() {
     });
   });
 
-  function openBookingDialog(title = "添加", row?: any) {
+  function openBookingDialog(title = "添加", row?: any, onSuccess?: (data: any) => void) {
     addDialog({
       title: `${title}预定`,
       props: {
@@ -276,6 +276,7 @@ function useBooking() {
             createBooking(curData).then(resp => {
               if (resp.code === 0) {
                 message(`预定创建成功`, { type: "success" });
+                onSuccess?.(resp.data);
                 done();
                 onBookingSearch();
               } else {
@@ -387,7 +388,6 @@ function useBooking() {
       inputPattern: /.+/,
       inputErrorMessage: "请输入取消原因"
     }).then(({ value }) => {
-      debugger;
       const params: BookingCancelProps = {
         id: row.id,
         cancelReason: value

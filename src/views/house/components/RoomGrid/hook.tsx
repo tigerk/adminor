@@ -7,9 +7,10 @@ import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { getShareHouseById } from "@/api/house/scatter";
-import { RoomGridItemProps, RoomGridProps, RoomListProps, ScatterCreateFormProps, ScatterHouseProps } from "@/types";
+import type { RoomGridItemProps, RoomGridProps, RoomListProps, ScatterCreateFormProps, ScatterHouseProps } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
-import useTenant from "@/views/contract/tenant/utils/hook"; // ==================== Hook 特有的类型定义 ====================
+import useTenant from "@/views/contract/tenant/utils/hook";
+import { ROOM_STATUS_ENUM } from "@/constants"; // ==================== Hook 特有的类型定义 ====================
 
 // ==================== Hook 特有的类型定义 ====================
 
@@ -284,25 +285,40 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const handleQuickAction = (room: RoomListProps, action: string) => {
     switch (action) {
       case "booking":
-        openBookingDialog("添加", {
-          roomIds: [room.roomId],
-          roomList: [room]
-        });
-        ElMessage.success(`添加房间 ${room.roomNumber} 的预定`);
-        break;
-      case "tenant":
-        openTenantDialog("添加", {
-          // 借用 booking 来初始化 租客选择的房间。
-          booking: {
+        openBookingDialog(
+          "添加",
+          {
             roomIds: [room.roomId],
             roomList: [room]
           },
-          tenant: undefined,
-          tenantPersonal: undefined,
-          tenantCompany: undefined,
-          tenantMateList: undefined,
-          otherFees: undefined
-        });
+          bookingId => {
+            room.roomStatus = ROOM_STATUS_ENUM.BOOKED.code;
+            room.roomStatusName = ROOM_STATUS_ENUM.BOOKED.name;
+            room.roomStatusColor = ROOM_STATUS_ENUM.BOOKED.color;
+          }
+        );
+        break;
+      case "tenant":
+        openTenantDialog(
+          "添加",
+          {
+            // 借用 booking 来初始化 租客选择的房间。
+            booking: {
+              roomIds: [room.roomId],
+              roomList: [room]
+            },
+            tenant: undefined,
+            tenantPersonal: undefined,
+            tenantCompany: undefined,
+            tenantMateList: undefined,
+            otherFees: undefined
+          },
+          tenantId => {
+            room.roomStatus = ROOM_STATUS_ENUM.LEASED.code;
+            room.roomStatusName = ROOM_STATUS_ENUM.LEASED.name;
+            room.roomStatusColor = ROOM_STATUS_ENUM.LEASED.color;
+          }
+        );
         ElMessage.success(`准备为房间 ${room.roomNumber} 签约`);
         break;
       default:
