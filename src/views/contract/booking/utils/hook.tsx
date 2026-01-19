@@ -255,7 +255,7 @@ function useBooking() {
         }
       },
       top: "1vh",
-      width: "55vw",
+      width: "50vw",
       lockScroll: true,
       alignCenter: true,
       draggable: true,
@@ -271,7 +271,7 @@ function useBooking() {
         getFormRuleRef.validate(valid => {
           if (valid) {
             // 处理房间ID数组
-            curData.roomIds = curData.roomIds.map(item => (typeof item === "object" ? item.value : item));
+            curData.roomIds = FormInstance.roomSelection.map(item => item.value);
 
             createBooking(curData).then(resp => {
               if (resp.code === 0) {

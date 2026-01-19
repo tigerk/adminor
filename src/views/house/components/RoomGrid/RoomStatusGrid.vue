@@ -106,10 +106,9 @@
                 <div class="room-action-bar">
                   <!-- 左侧按钮组 -->
                   <div class="action-left">
-                    <el-button size="small" plain @click.stop="handleQuickAction(room, 'reserve')">预约</el-button>
-                    <el-button size="small" plain @click.stop="handleQuickAction(room, 'contract')">签约</el-button>
+                    <el-button size="small" plain :disabled="room.roomStatus !== 0" @click.stop="handleQuickAction(room, 'booking')">预约</el-button>
+                    <el-button size="small" plain :disabled="room.roomStatus !== 0" @click.stop="handleQuickAction(room, 'tenant')">签约</el-button>
                   </div>
-
                   <!-- 右侧按钮组 -->
                   <div class="action-right">
                     <!-- 操作下拉菜单 -->
@@ -176,7 +175,7 @@
 
 <script setup lang="ts">
   import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-  import { EditPen, Loading, Location, Lock, OfficeBuilding, Setting, CloseBold, Open, Unlock, User } from "@element-plus/icons-vue";
+  import { CloseBold, EditPen, Loading, Location, Lock, OfficeBuilding, Open, Setting, Unlock, User } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
   import { getDaysDifference } from "@/utils/date"; // 获取父组件的查询表单数据

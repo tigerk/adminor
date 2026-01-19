@@ -2,34 +2,23 @@
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="120px" label-position="top">
     <!-- 房源信息 -->
     <div class="section-booking-info mb-2">
-      <div class="mb-2">
-        <el-text type="primary" size="large" tag="b">房源信息</el-text>
+      <div class="mb-4 house-selector-info">
+        <div class="flex justify-between items-center mb-2">
+          <el-text type="primary" size="large" tag="b">房源信息</el-text>
+          <el-button type="primary" link :icon="Plus" @click="roomPickerRef.show()">选择房源</el-button>
+        </div>
+
+        <div v-if="roomSelection.length > 0" class="room-tags-box p-3 border rounded-md">
+          <el-tag v-for="(room, index) in roomSelection" :key="room.value" closable class="m-1" size="large" @close="handleRemoveRoom(index)">
+            {{ room.label }} |
+            <span class="text-orange-500">¥{{ room.extra?.price }}</span>
+          </el-tag>
+        </div>
+        <el-empty v-else description="请点击上方选择房源" :image-size="60" />
+
+        <el-form-item prop="roomIds" label-width="0" class="!m-0" />
       </div>
-      <el-row :gutter="20">
-        <el-col :span="24">
-          <el-form-item label="选择房间" prop="roomIds" required>
-            <el-select
-              v-model="formInline.roomIds"
-              size="large"
-              filterable
-              multiple
-              remote
-              :remote-method="handleSearchRoom"
-              :loading="searchLoading"
-              placeholder="请选择房间"
-              class="w-full"
-              @change="handleRoomChange"
-            >
-              <el-option v-for="item in roomOptions" :key="item.value" :label="item.label" :value="item">
-                <span style="float: left">{{ item.label }}</span>
-                <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">
-                  {{ item.description }}
-                </span>
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
+      <RoomPicker ref="roomPickerRef" @confirm="handleRoomConfirmed" />
     </div>
 
     <!-- 租客信息 -->
@@ -126,11 +115,12 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref, onMounted } from "vue";
+  import { onMounted, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
   import type { BookingCreateProps } from "@/types";
-  import { RENTAL_TYPE_OPTIONS, TENANT_TYPE_OPTIONS, getOptionByCode } from "@/constants";
-  import { getRoomList } from "@/api/house/room";
+  import { getOptionByCode, RENTAL_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import RoomPicker from "@/components/Business/RoomPicker.vue";
+  import { Plus } from "@element-plus/icons-vue";
 
   interface FormProps {
     formInline: BookingCreateProps;
@@ -139,10 +129,13 @@
   const props = defineProps<FormProps>();
 
   const ruleFormRef = ref<FormInstance>();
+  const roomPickerRef = ref();
+  const roomSelection = ref([]);
 
   const formInline = reactive<BookingCreateProps>({
     id: props.formInline?.id || null,
     roomIds: props.formInline?.roomIds || [],
+    roomList: props.formInline?.roomList || [],
     tenantType: props.formInline?.tenantType ?? 0,
     tenantName: props.formInline?.tenantName || "",
     tenantPhone: props.formInline?.tenantPhone || "",
@@ -189,10 +182,6 @@
 
   const tenantTypeOptions = [...TENANT_TYPE_OPTIONS];
 
-  // 房源搜索相关
-  const roomOptions = ref<any[]>([]);
-  const searchLoading = ref<boolean>(false);
-
   const formatRoomSelectName = (item: any) => {
     const rentalTypeName = getOptionByCode([...RENTAL_TYPE_OPTIONS], item.rentalType) || "";
     if (item.rentalType === 1) {
@@ -202,48 +191,30 @@
     }
   };
 
-  const formatRoomSelectDescription = (item: any) => {
-    let description = "";
-    if (item.houseLayout) {
-      const { bedroom, livingRoom, kitchen, bathroom } = item.houseLayout;
-      description = `${bedroom || 0}室${livingRoom || 0}厅${kitchen || 0}厨${bathroom || 0}卫 `;
-    }
-    if (item.area) {
-      description += item.area + "m² ";
-    }
-    if (item.direction) {
-      description += item.direction;
-    }
-    if (item.price) {
-      description += " ｜ 价格：¥" + item.price + "元/月";
-    }
-    return description;
+  // 处理弹窗确认选择
+  const handleRoomConfirmed = (rooms: any[]) => {
+    // 转换成需要的格式
+    roomSelection.value = rooms.map(item => ({
+      label: formatRoomSelectName(item),
+      value: item.roomId,
+      extra: item
+    }));
+
+    // 触发价格计算
+    calculateTotalRent();
   };
 
-  const handleSearchRoom = (query: string) => {
-    searchLoading.value = true;
-    getRoomList({
-      keywords: query,
-      page: 1,
-      pageSize: 10
-    }).then(res => {
-      roomOptions.value =
-        res.data?.list.map(item => ({
-          label: formatRoomSelectName(item),
-          value: item.roomId,
-          description: formatRoomSelectDescription(item),
-          extra: item
-        })) || [];
-      searchLoading.value = false;
-    });
+  // 移除房源
+  const handleRemoveRoom = (index: number) => {
+    roomSelection.value.splice(index, 1);
+    calculateTotalRent();
   };
 
-  const handleRoomChange = (values: any[]) => {
+  // 统一计算租金
+  const calculateTotalRent = () => {
     let totalPrice = 0;
-    values.forEach(value => {
-      if (value.extra?.price) {
-        totalPrice += Number(value.extra.price);
-      }
+    roomSelection.value.forEach(item => {
+      totalPrice += Number(item.extra?.price || 0);
     });
     // 自动设置意向租金为房间价格总和
     if (totalPrice > 0 && !formInline.expectedRentPrice) {
@@ -257,13 +228,19 @@
 
   defineExpose({
     getRef,
-    formInline
+    formInline,
+    roomSelection
   });
 
   onMounted(() => {
-    // 如果有初始房间ID，加载房间信息
-    if (formInline.roomIds && formInline.roomIds.length > 0) {
-      handleSearchRoom("");
+    // 如果有初始房间列表，加载房间信息
+    if (props.formInline?.roomList && props.formInline.roomList.length > 0) {
+      const defaultOptions = props.formInline.roomList.map(item => ({
+        label: formatRoomSelectName(item),
+        value: item.roomId,
+        extra: item
+      }));
+      roomSelection.value = defaultOptions;
     }
   });
 </script>
