@@ -1,3 +1,5 @@
+// src/types/delivery.ts
+
 /**
  * 交割单数据结构定义
  */
@@ -16,6 +18,12 @@ export interface DeliveryProps {
   remarks?: string;
   /** 交割单明细 */
   items?: DeliveryItemProps[];
+  /** 房间信息（用于展示） */
+  roomInfo?: {
+    houseName?: string;
+    roomNumber?: string;
+    communityName?: string;
+  };
 }
 
 /** 交割单项目信息 */
@@ -46,4 +54,17 @@ export interface DeliveryCreateFormProps {
   remarks?: string;
   /** 交割单明细 */
   items: DeliveryItemProps[];
+  /** 房间设施信息 */
+  facilities?: any[];
+  /** 图片列表 */
+  imageList?: string[];
+}
+
+/** 交割单查询参数 */
+export interface DeliveryQueryProps {
+  subjectType?: string;
+  subjectTypeId?: bigint;
+  roomId?: bigint;
+  handoverType?: string;
+  status?: number;
 }

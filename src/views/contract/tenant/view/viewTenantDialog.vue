@@ -10,7 +10,7 @@
           </div>
           <div class="room-content">
             <el-space wrap :size="10">
-              <el-tag v-for="room in localFormInline.roomList" :key="room.roomId" type="primary" size="large" effect="light" class="room-tag">
+              <el-tag v-for="room in localFormInline.roomList" :key="room.roomId.toString()" type="primary" size="large" effect="light" class="room-tag">
                 <span class="room-info">{{ room.communityName }} {{ room.doorNumber }}-{{ room.roomNumber }}</span>
                 <el-divider direction="vertical" />
                 <span class="room-area">{{ room.price ? room.price + "元/月" : "未设置" }}</span>
@@ -477,9 +477,66 @@
             <el-space>
               <el-icon><Files /></el-icon>
               <span>物业交割单</span>
+              <el-tag type="info" size="default">{{ deliveryList.length }}间</el-tag>
             </el-space>
           </template>
-          <div class="tab-content">123123</div>
+          <div class="tab-content">
+            <div v-if="deliveryList.length > 0" class="delivery-grid">
+              <el-card v-for="delivery in deliveryList" :key="delivery.roomId" class="delivery-card" shadow="hover">
+                <template #header>
+                  <div class="card-header">
+                    <div class="room-info">
+                      <el-icon class="room-icon"><House /></el-icon>
+                      <span class="room-name">
+                        {{ delivery.roomInfo?.communityName }}
+                        {{ delivery.roomInfo?.houseName }}-{{ delivery.roomInfo?.roomNumber }}
+                      </span>
+                    </div>
+                    <el-tag :type="delivery.status === 1 ? 'success' : 'info'" size="small">
+                      {{ delivery.status === 1 ? "已完成" : "待填写" }}
+                    </el-tag>
+                  </div>
+                </template>
+
+                <div class="delivery-content">
+                  <div v-if="delivery.id" class="delivery-info">
+                    <el-descriptions :column="2" size="small">
+                      <el-descriptions-item label="交割类型">
+                        <el-tag :type="delivery.handoverType === 'check_in' ? 'success' : 'warning'" size="small">
+                          {{ delivery.handoverType === "check_in" ? "入住交割" : "退租交割" }}
+                        </el-tag>
+                      </el-descriptions-item>
+                      <el-descriptions-item label="交割日期">
+                        {{ delivery.handoverDate }}
+                      </el-descriptions-item>
+                      <el-descriptions-item label="验收人">
+                        {{ delivery.inspectorName }}
+                      </el-descriptions-item>
+                      <el-descriptions-item label="物品数量">{{ delivery.items?.length || 0 }} 项</el-descriptions-item>
+                    </el-descriptions>
+
+                    <div v-if="delivery.remarks" class="delivery-remarks">
+                      <el-text type="info" size="small">备注：{{ delivery.remarks }}</el-text>
+                    </div>
+                  </div>
+
+                  <div v-else class="no-delivery">
+                    <el-empty description="暂未创建交割单" :image-size="80" />
+                  </div>
+                </div>
+
+                <template #footer>
+                  <div class="card-footer">
+                    <el-button v-if="delivery.id" type="primary" link :icon="View" @click="handleViewDelivery(delivery)">查看详情</el-button>
+                    <el-button v-if="delivery.id" type="primary" link :icon="Edit" @click="handleEditDelivery(delivery)">编辑</el-button>
+                    <el-button v-if="!delivery.id" type="primary" :icon="Plus" @click="openCreateDeliveryDialog(delivery.roomId)">创建交割单</el-button>
+                  </div>
+                </template>
+              </el-card>
+            </div>
+
+            <el-empty v-else description="暂无房间信息" :image-size="150" />
+          </div>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -487,16 +544,17 @@
 </template>
 
 <script setup lang="ts">
-  import { h, ref, watch } from "vue";
+  import { h, onMounted, ref, watch } from "vue";
   import { TenantDetailProps } from "@/types";
   import { getOptionByCode, ID_TYPE_OPTIONS, PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS } from "@/constants";
-  import { Checked, Document, Download, Edit, House, Money, User, Files } from "@element-plus/icons-vue";
+  import { Checked, Document, Download, Edit, Files, House, Money, Plus, User, View } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { deleteTenantContract, downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
-  import { useUserStoreHook } from "@/store/modules/user"; // 检查用户是否有删除合同权限
+  import { useUserStoreHook } from "@/store/modules/user";
+  import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue"; // 检查用户是否有删除合同权限
 
   // 检查用户是否有删除合同权限
   const { permissions } = useUserStoreHook();
@@ -675,6 +733,178 @@
       }
     });
   };
+
+  // 交割单列表
+  const deliveryList = ref([]);
+  const deliveryFormRef = ref();
+
+  // 初始化交割单列表
+  const initDeliveryList = () => {
+    if (!localFormInline.value.roomList) return;
+
+    // 为每个房间创建交割单记录（如果已有交割单则显示，否则显示待创建状态）
+    deliveryList.value = localFormInline.value.roomList.map(room => ({
+      roomId: room.roomId,
+      roomInfo: {
+        communityName: room.communityName,
+        houseName: room.houseName,
+        roomNumber: room.roomNumber
+      },
+      id: null, // 实际应从后端获取
+      status: 0,
+      handoverType: null,
+      handoverDate: null,
+      inspectorName: null,
+      items: [],
+      remarks: null
+    }));
+
+    // 实际项目中应该调用API获取交割单列表
+    // getDeliveryList({
+    //   subjectType: 'tenant',
+    //   subjectTypeId: localFormInline.value.id
+    // }).then(resp => {
+    //   if (resp.code === 0) {
+    //     // 合并交割单数据
+    //     deliveryList.value = deliveryList.value.map(item => {
+    //       const delivery = resp.data.find(d => d.roomId === item.roomId);
+    //       return delivery ? { ...item, ...delivery } : item;
+    //     });
+    //   }
+    // });
+  };
+
+  // 创建交割单
+  const openCreateDeliveryDialog = (roomId: bigint) => {
+    const room = localFormInline.value.roomList.find(r => r.roomId === roomId);
+
+    addDialog({
+      title: `创建交割单 - ${room?.houseName}-${room?.roomNumber}`,
+      props: {
+        formInline: {
+          subjectType: "tenant",
+          subjectTypeId: localFormInline.value.id,
+          roomId: roomId,
+          handoverType: "check_in",
+          items: [],
+          facilities: room?.facilities || [], // 房间设施数据
+          imageList: []
+        }
+      },
+      top: "2vh",
+      width: "80vw",
+      lockScroll: true,
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () =>
+        h(DeliveryCreateForm, {
+          ref: deliveryFormRef,
+          formInline: null
+        }),
+      beforeSure: (done, { options }) => {
+        const FormInstance = deliveryFormRef.value;
+        const formRuleRef = FormInstance?.getRef?.();
+        const formData = FormInstance?.getFormData?.();
+
+        formRuleRef.validate(valid => {
+          if (valid) {
+            // 调用API创建交割单
+            // createDelivery(formData).then(resp => {
+            //   if (resp.code === 0) {
+            //     message('交割单创建成功', { type: 'success' });
+            //     initDeliveryList(); // 刷新列表
+            //     done();
+            //   }
+            // });
+
+            // 临时代码，实际应调用API
+            message("交割单创建成功", { type: "success" });
+            initDeliveryList();
+            done();
+          }
+        });
+      }
+    });
+  };
+
+  // 编辑交割单
+  const handleEditDelivery = (delivery: any) => {
+    const room = localFormInline.value.roomList.find(r => r.roomId === delivery.roomId);
+
+    addDialog({
+      title: `编辑交割单 - ${room?.houseName}-${room?.roomNumber}`,
+      props: {
+        formInline: {
+          ...delivery,
+          facilities: room?.facilities || []
+        }
+      },
+      top: "2vh",
+      width: "80vw",
+      lockScroll: true,
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () =>
+        h(DeliveryCreateForm, {
+          ref: deliveryFormRef,
+          formInline: null
+        }),
+      beforeSure: (done, { options }) => {
+        const FormInstance = deliveryFormRef.value;
+        const formRuleRef = FormInstance?.getRef?.();
+        const formData = FormInstance?.getFormData?.();
+
+        formRuleRef.validate(valid => {
+          if (valid) {
+            // updateDelivery(formData).then(resp => {
+            //   if (resp.code === 0) {
+            //     message('交割单更新成功', { type: 'success' });
+            //     initDeliveryList();
+            //     done();
+            //   }
+            // });
+
+            message("交割单更新成功", { type: "success" });
+            initDeliveryList();
+            done();
+          }
+        });
+      }
+    });
+  };
+
+  // 查看交割单详情
+  const handleViewDelivery = (delivery: any) => {
+    const room = localFormInline.value.roomList.find(r => r.roomId === delivery.roomId);
+
+    addDialog({
+      title: `查看交割单 - ${room?.houseName}-${room?.roomNumber}`,
+      props: {
+        formInline: delivery
+      },
+      top: "2vh",
+      width: "80vw",
+      lockScroll: true,
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      hideFooter: true, // 查看模式不显示底部按钮
+      contentRenderer: () =>
+        h(DeliveryCreateForm, {
+          ref: deliveryFormRef,
+          formInline: null
+        })
+    });
+  };
+
+  onMounted(() => {
+    initDeliveryList();
+  });
 </script>
 
 <style scoped lang="scss">
