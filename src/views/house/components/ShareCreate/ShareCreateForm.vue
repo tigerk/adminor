@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { onMounted, reactive, ref } from "vue";
   import PoiSearch from "@/components/Business/PoiSearch.vue";
-  import { CircleCheck, Delete, Picture, Plus, Setting, Notebook } from "@element-plus/icons-vue";
+  import { CircleCheck, Delete, Picture, Plus, Setting } from "@element-plus/icons-vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
@@ -578,68 +578,105 @@
 </template>
 
 <style scoped>
+  /* 基础容器样式 - 支持深色模式 */
   .entier-create-container {
     padding: 5px;
+    background-color: var(--el-bg-color);
+    color: var(--el-text-color-primary);
   }
 
+  /* 标题样式 - 支持深色模式 */
+  .section-title {
+    color: var(--el-text-color-primary);
+    transition: color 0.3s;
+  }
+
+  /* 房源卡片 - 支持深色模式 */
   .house-form-card {
     padding: 10px;
     margin-bottom: 10px;
-    background-color: #fff;
-    border: 1px solid #dcdfe6;
+    background-color: var(--el-fill-color-blank);
+    border: 1px solid var(--el-border-color);
     border-radius: 4px;
+    transition: all 0.3s;
   }
 
+  /* 深色模式下的房源卡片增强 */
+  .dark .house-form-card {
+    background-color: var(--el-fill-color-light);
+    border-color: var(--el-border-color-darker);
+  }
+
+  /* 房间信息区域 */
   .share-room-section {
+    margin-top: 10px;
   }
 
-  /* 表格包装器 - 只针对房间信息表格 */
+  /* 表格包装器 - 支持深色模式 */
   .share-room-section .room-table-wrapper {
-    border: 1px solid #e4e7ed;
+    border: 1px solid var(--el-border-color);
     border-radius: 4px;
     overflow: hidden;
+    background-color: var(--el-fill-color-blank);
+    transition: all 0.3s;
   }
 
-  /* 表格基础样式 - 只针对房间信息表格 */
+  /* 深色模式下的表格包装器 */
+  .dark .share-room-section .room-table-wrapper {
+    background-color: var(--el-bg-color);
+    border-color: var(--el-border-color-darker);
+  }
+
+  /* 表格基础样式 - 支持深色模式 */
   .share-room-section .room-table {
     width: 100%;
     border-collapse: collapse;
     border-spacing: 0;
-    background-color: #fff;
+    background-color: var(--el-fill-color-blank);
     table-layout: fixed;
+    transition: background-color 0.3s;
   }
 
-  /* 表头样式 - 只针对房间信息表格 */
+  /* 表头样式 - 支持深色模式 */
   .share-room-section .room-table thead {
-    background-color: #f5f7fa;
+    background-color: var(--el-fill-color-light);
+    transition: background-color 0.3s;
   }
 
-  /* 表头样式 - 只针对房间信息表格 */
+  /* 深色模式下的表头 */
+  .dark .share-room-section .room-table thead {
+    background-color: var(--el-fill-color-dark);
+  }
+
+  /* 表头单元格 - 支持深色模式 */
   .share-room-section .room-table th {
     padding: 8px;
     text-align: center;
     font-weight: 600;
     font-size: 14px;
-    color: #606266;
-    border-bottom: 1px solid #e4e7ed;
-    border-right: 1px solid #e4e7ed;
+    color: var(--el-text-color-primary);
+    border-bottom: 1px solid var(--el-border-color);
+    border-right: 1px solid var(--el-border-color);
     line-height: 1.5;
     height: 32px;
     vertical-align: middle;
+    transition: all 0.3s;
   }
 
   .share-room-section .room-table th:last-child {
     border-right: none;
   }
 
-  /* 表体单元格样式 - 只针对房间信息表格 */
+  /* 表体单元格 - 支持深色模式 */
   .share-room-section .room-table td {
     padding: 0;
-    border-bottom: 1px solid #e4e7ed;
-    border-right: 1px solid #e4e7ed;
+    border-bottom: 1px solid var(--el-border-color);
+    border-right: 1px solid var(--el-border-color);
     vertical-align: middle;
     position: relative;
     height: 32px;
+    background-color: var(--el-fill-color-blank);
+    transition: all 0.3s;
   }
 
   .share-room-section .room-table td:last-child {
@@ -651,9 +688,22 @@
     border-bottom: none;
   }
 
-  /* 表格行悬停效果 - 只针对房间信息表格 */
+  /* 表格行悬停效果 - 支持深色模式 */
   .share-room-section .room-table tbody tr:hover {
-    background-color: #f5f7fa;
+    background-color: var(--el-fill-color-light);
+  }
+
+  .dark .share-room-section .room-table tbody tr:hover {
+    background-color: var(--el-fill-color);
+  }
+
+  /* 表格行悬停时单元格背景 */
+  .share-room-section .room-table tbody tr:hover td {
+    background-color: var(--el-fill-color-light);
+  }
+
+  .dark .share-room-section .room-table tbody tr:hover td {
+    background-color: var(--el-fill-color);
   }
 
   /* 文本居中 */
@@ -661,7 +711,7 @@
     text-align: center;
   }
 
-  /* 表单项样式 - 完全移除所有边距和边框 - 只针对房间信息表格 */
+  /* 表单项样式 */
   .share-room-section .table-form-item {
     margin: 0 !important;
     width: 100%;
@@ -685,14 +735,14 @@
     z-index: 10;
   }
 
-  /* 输入框和下拉框基础样式 - 只针对房间信息表格 */
+  /* 输入框和下拉框基础样式 */
   .share-room-section .table-input,
   .share-room-section .table-select {
     width: 100%;
     display: block;
   }
 
-  /* 输入框样式 - 完全填充单元格 - 只针对房间信息表格 */
+  /* 输入框样式 - 支持深色模式 */
   :deep(.share-room-section .table-input .el-input__wrapper) {
     box-shadow: none !important;
     border: none !important;
@@ -704,7 +754,7 @@
     box-sizing: border-box;
   }
 
-  /* 下拉框样式 - 完全填充单元格 - 只针对房间信息表格 */
+  /* 下拉框样式 - 支持深色模式 */
   :deep(.share-room-section .table-select .el-select__wrapper) {
     box-shadow: none !important;
     border: none !important;
@@ -719,145 +769,111 @@
     box-sizing: border-box;
   }
 
-  /* 下拉框内部元素布局 - 只针对房间信息表格 */
-  :deep(.share-room-section .table-select .el-select__selection) {
-    display: flex;
-    align-items: center;
-    flex: 1;
-  }
-
-  :deep(.share-room-section .table-select .el-select__selected-item) {
-    padding: 0;
-    line-height: normal;
-    flex: 1;
-  }
-
-  :deep(.share-room-section .table-select .el-select__placeholder) {
-    padding: 0;
-    font-size: 13px;
-    text-align: center;
-  }
-
-  :deep(.share-room-section .table-select .el-select__suffix) {
-    display: flex;
-    align-items: center;
-    margin-left: 8px;
-  }
-
-  :deep(.share-room-section .table-select .el-select__caret) {
-    color: #909399;
-  }
-
-  /* 下拉框悬停效果 - 只针对房间信息表格 */
-  :deep(.share-room-section .table-select .el-select__wrapper:hover) {
-    background-color: rgba(64, 158, 255, 0.05);
-  }
-
-  /* 输入框聚焦效果 - 只针对房间信息表格 */
+  /* 输入框聚焦效果 - 支持深色模式 */
   :deep(.share-room-section .table-input .el-input__wrapper.is-focus) {
-    background-color: #fff;
+    background-color: var(--el-fill-color-blank);
   }
 
-  /* 下拉框聚焦/展开效果 - 只针对房间信息表格 */
+  .dark :deep(.share-room-section .table-input .el-input__wrapper.is-focus) {
+    background-color: var(--el-bg-color);
+  }
+
+  /* 下拉框聚焦效果 */
   :deep(.share-room-section .table-select.is-focused .el-select__wrapper) {
-    background-color: #fff;
+    background-color: var(--el-fill-color-blank);
   }
 
-  /* 输入框内部元素 - 只针对房间信息表格 */
+  .dark :deep(.share-room-section .table-select.is-focused .el-select__wrapper) {
+    background-color: var(--el-bg-color);
+  }
+
+  /* 输入框内部元素 - 支持深色模式 */
   :deep(.share-room-section .table-input .el-input__inner) {
     padding: 0;
     font-size: 14px;
-    color: #606266;
+    color: var(--el-text-color-primary);
     height: auto;
     line-height: normal;
     text-align: center;
+    transition: color 0.3s;
   }
 
-  /* 下拉框选中值样式 - 只针对房间信息表格 */
+  /* 下拉框选中值样式 */
   :deep(.share-room-section .table-select .el-select__selected-item .el-select__tags-text) {
     font-size: 14px;
-    color: #606266;
+    color: var(--el-text-color-primary);
     text-align: center;
+    transition: color 0.3s;
   }
 
-  /* 输入框后缀 - 只针对房间信息表格 */
+  /* 输入框后缀 */
   :deep(.share-room-section .table-input .el-input__suffix) {
     display: flex;
     align-items: center;
-    color: #909399;
+    color: var(--el-text-color-secondary);
     font-size: 13px;
+    transition: color 0.3s;
   }
 
-  :deep(.share-room-section .table-input .el-input__suffix-inner) {
-    display: inline-flex;
-  }
-
-  /* Placeholder 样式 - 只针对房间信息表格 */
+  /* Placeholder 样式 */
   :deep(.share-room-section .table-input .el-input__inner::placeholder) {
-    color: #c0c4cc;
+    color: var(--el-text-color-placeholder);
     font-size: 13px;
   }
 
-  /* 验证错误状态 - 只针对房间信息表格 */
+  /* 验证错误状态 - 保持 Element Plus 默认的错误颜色 */
   :deep(.share-room-section .table-form-item.is-error .el-input__wrapper),
   :deep(.share-room-section .table-form-item.is-error .el-select__wrapper) {
-    background-color: #fef0f0 !important;
+    background-color: var(--el-color-error-light-9) !important;
   }
 
   :deep(.share-room-section .table-form-item.is-error .el-input__wrapper.is-focus),
   :deep(.share-room-section .table-form-item.is-error .el-select.is-focused .el-select__wrapper) {
-    box-shadow: inset 0 0 0 1px #f56c6c !important;
+    box-shadow: inset 0 0 0 1px var(--el-color-error) !important;
   }
 
-  /* 链接按钮样式 - 只针对房间信息表格 */
+  /* 链接按钮样式 - 支持深色模式 */
   :deep(.share-room-section .table-form-item .el-button--primary.is-link) {
-    color: #409eff;
+    color: var(--el-color-primary);
     font-size: 13px;
     padding: 0;
   }
 
   :deep(.share-room-section .table-form-item .el-button.is-link) {
-    color: #606266;
+    color: var(--el-text-color-primary);
     font-size: 13px;
     padding: 0;
+    transition: color 0.3s;
   }
 
   :deep(.share-room-section .table-form-item .el-button.is-link:hover) {
-    color: #409eff;
+    color: var(--el-color-primary);
   }
 
-  :deep(.share-room-section .table-form-item .el-button--danger.is-link) {
-    color: #f56c6c;
-    padding: 0;
+  /* 添加按钮包装器 */
+  .add-button-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
   }
 
-  :deep(.share-room-section .table-form-item .el-button--danger.is-link:hover) {
-    color: #f78989;
+  .add-button-wrapper .el-button {
+    min-width: 200px;
   }
 
-  :deep(.share-room-section .table-form-item .el-button.is-disabled) {
-    color: #c0c4cc;
-  }
-
-  /* 按钮图标样式 - 只针对房间信息表格 */
-  :deep(.share-room-section .table-form-item .el-button .el-icon) {
-    margin-right: 4px;
-  }
-
-  /* 禁用状态 - 只针对房间信息表格 */
+  /* 禁用状态 */
   :deep(.share-room-section .table-input.is-disabled .el-input__wrapper),
   :deep(.share-room-section .table-select.is-disabled .el-select__wrapper) {
-    background-color: #f5f7fa;
+    background-color: var(--el-fill-color-light);
     cursor: not-allowed;
   }
 
-  /* 下拉面板样式调整 */
-  :deep(.el-select-dropdown) {
-    border: 1px solid #e4e7ed;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  .dark :deep(.share-room-section .table-input.is-disabled .el-input__wrapper),
+  .dark :deep(.share-room-section .table-select.is-disabled .el-select__wrapper) {
+    background-color: var(--el-fill-color-dark);
   }
 
-  /* 响应式调整 - 只针对房间信息表格 */
+  /* 响应式调整 */
   @media screen and (max-width: 1600px) {
     .share-room-section .room-table th,
     :deep(.share-room-section .table-input .el-input__wrapper),
@@ -878,15 +894,5 @@
       padding: 4px 6px;
       font-size: 12px;
     }
-  }
-
-  .add-button-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
-  }
-
-  .add-button-wrapper .el-button {
-    min-width: 200px;
   }
 </style>
