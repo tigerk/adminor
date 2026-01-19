@@ -25,6 +25,8 @@
   import Eye from "~icons/ri/eye-line";
   import EyeOff from "~icons/ri/eye-off-line";
   import Shield from "~icons/ri/shield-keyhole-line";
+  import dayIcon from "@/assets/svg/day.svg?component";
+  import darkIcon from "@/assets/svg/dark.svg?component";
 
   defineOptions({
     name: "Login"
@@ -158,6 +160,8 @@
           <img :src="getLogo()" alt="logo" />
           <span class="logo-title">{{ title }}</span>
         </div>
+        <!-- 主题 -->
+        <el-switch v-model="dataTheme" inline-prompt :active-icon="dayIcon" :inactive-icon="darkIcon" @change="dataThemeChange" />
       </div>
 
       <!-- 表单容器 -->
