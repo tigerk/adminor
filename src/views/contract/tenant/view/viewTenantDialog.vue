@@ -920,7 +920,7 @@
     // 房源信息展示
     .room-info-section {
       margin-bottom: 20px;
-      background: #fff;
+      background: var(--el-bg-color); // 支持主题切换
       border-radius: 4px;
       overflow: hidden;
 
@@ -931,13 +931,13 @@
 
         .header-icon {
           font-size: 16px;
-          color: #000000;
+          color: var(--el-text-color-primary); // 支持主题切换
           margin-right: 10px;
         }
 
         .header-title {
           font-size: 14px;
-          color: #000000;
+          color: var(--el-text-color-primary); // 支持主题切换
           letter-spacing: 0.5px;
         }
       }
@@ -946,8 +946,8 @@
         .room-tag {
           padding: 10px 16px;
           font-size: 14px;
-          border: 1px solid #d9ecff;
-          background: #ecf5ff;
+          border: 1px solid var(--el-color-primary-light-7); // 支持主题切换
+          background: var(--el-color-primary-light-9); // 支持主题切换
 
           .tag-icon {
             margin-right: 6px;
@@ -956,11 +956,11 @@
 
           .room-info {
             font-weight: 500;
-            color: #409eff;
+            color: var(--el-color-primary); // 支持主题切换
           }
 
           .room-area {
-            color: #909399;
+            color: var(--el-text-color-secondary); // 支持主题切换
             font-size: 13px;
             margin-left: 4px;
           }
@@ -983,22 +983,22 @@
           gap: 4px;
 
           .stat-label {
-            color: #606266;
+            color: var(--el-text-color-regular); // 支持主题切换
             font-size: 14px;
           }
 
           .stat-value {
-            color: #303133;
+            color: var(--el-text-color-primary); // 支持主题切换
             font-size: 18px;
             font-weight: 600;
 
             &.primary {
-              color: #f56c6c;
+              color: #f56c6c; // 保持原来的红色
             }
           }
 
           .stat-unit {
-            color: #909399;
+            color: var(--el-text-color-secondary); // 支持主题切换
             font-size: 13px;
           }
         }
@@ -1044,7 +1044,7 @@
           align-items: center;
           font-size: 15px;
           font-weight: 600;
-          color: #303133;
+          color: var(--el-text-color-primary); // 支持主题切换
 
           .title-text {
             letter-spacing: 0.5px;
@@ -1057,14 +1057,14 @@
       .fees-table {
         :deep(.el-table__header) {
           th {
-            background: #fafafa;
+            background: var(--el-fill-color-light); // 支持主题切换
             font-weight: 600;
-            color: #303133;
+            color: var(--el-text-color-primary); // 支持主题切换
           }
         }
 
         .fee-amount {
-          color: #f56c6c;
+          color: #f56c6c; // 保持原来的红色
           font-weight: 600;
           font-size: 15px;
         }
@@ -1076,7 +1076,7 @@
       margin-top: 24px;
       text-align: center;
       padding: 20px;
-      background: #fafafa;
+      background: var(--el-fill-color-light); // 支持主题切换
       border-radius: 4px;
 
       .el-button {
@@ -1095,7 +1095,7 @@
       .el-empty__description {
         margin-top: 16px;
         font-size: 14px;
-        color: #909399;
+        color: var(--el-text-color-secondary); // 支持主题切换
       }
     }
   }
@@ -1133,7 +1133,7 @@
     .contract-action-bar {
       margin-bottom: 20px;
       padding: 8px 5px;
-      background: #f8f9fa;
+      background: var(--el-fill-color-light); // 支持主题切换
       border-radius: 4px;
       display: flex;
       justify-content: space-between;
@@ -1154,13 +1154,13 @@
           font-size: 14px;
 
           .info-label {
-            color: #909399;
+            color: var(--el-text-color-secondary); // 支持主题切换
             margin-right: 8px;
             font-weight: 500;
           }
 
           .info-value {
-            color: #606266;
+            color: var(--el-text-color-regular); // 支持主题切换
             font-weight: 600;
           }
         }
@@ -1174,18 +1174,18 @@
         align-items: center;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 2px solid #e4e7ed;
+        border-bottom: 2px solid var(--el-border-color); // 支持主题切换
 
         .contract-title {
           font-size: 16px;
           font-weight: 600;
-          color: #303133;
+          color: var(--el-text-color-primary); // 支持主题切换
         }
       }
 
       .contract-preview-wrapper {
-        background: #fff;
-        border: 1px solid #e4e7ed;
+        background: var(--el-bg-color); // 支持主题切换
+        border: 1px solid var(--el-border-color); // 支持主题切换
         border-radius: 4px;
         overflow: hidden;
 
@@ -1200,16 +1200,16 @@
           }
 
           &::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: var(--el-fill-color-light); // 支持主题切换
             border-radius: 4px;
           }
 
           &::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
+            background: var(--el-text-color-disabled); // 支持主题切换
             border-radius: 4px;
 
             &:hover {
-              background: #a8a8a8;
+              background: var(--el-text-color-secondary); // 支持主题切换
             }
           }
 
@@ -1221,7 +1221,7 @@
           :deep(h6) {
             margin-top: 20px;
             margin-bottom: 12px;
-            color: #303133;
+            color: var(--el-text-color-primary); // 支持主题切换
             font-weight: 600;
           }
 
@@ -1233,7 +1233,7 @@
           :deep(p) {
             margin-bottom: 12px;
             text-indent: 2em;
-            color: #606266;
+            color: var(--el-text-color-regular); // 支持主题切换
           }
 
           :deep(table) {
@@ -1243,25 +1243,25 @@
 
             th,
             td {
-              border: 1px solid #dcdfe6;
+              border: 1px solid var(--el-border-color); // 支持主题切换
               padding: 8px 12px;
               text-align: left;
             }
 
             th {
-              background: #f5f7fa;
+              background: var(--el-fill-color-light); // 支持主题切换
               font-weight: 600;
-              color: #303133;
+              color: var(--el-text-color-primary); // 支持主题切换
             }
           }
 
           :deep(strong) {
-            color: #303133;
+            color: var(--el-text-color-primary); // 支持主题切换
             font-weight: 600;
           }
 
           :deep(code) {
-            background: #f5f7fa;
+            background: var(--el-fill-color-light); // 支持主题切换
             padding: 2px 6px;
             border-radius: 3px;
             font-family: "Courier New", monospace;
@@ -1276,7 +1276,7 @@
   }
 
   .text-value {
-    color: #606266;
+    color: var(--el-text-color-regular); // 支持主题切换
   }
 
   .modern-tabs .el-tabs__extra {
@@ -1285,33 +1285,31 @@
   }
 
   .tabs-wrapper {
-    position: relative; // 必须
+    position: relative;
 
     .tabs-action-container {
       position: absolute;
-      top: 8px; // 距离顶部距离，根据你的 tab 高度微调
-      right: 0; // 靠右对齐
-      z-index: 10; // 确保在 tabs 之上
+      top: 8px;
+      right: 0;
+      z-index: 10;
       display: flex;
       gap: 8px;
       align-items: center;
     }
   }
 
-  // 修正 Tab 头部，防止按钮遮挡过长的标签页
   :deep(.el-tabs__nav-wrap) {
-    padding-right: 180px; // 预留右侧按钮的空间，防止 Tab 太多时被遮挡
+    padding-right: 180px;
   }
 
-  // 如果你之前在 el-tabs 上写了 modern-tabs 的样式，请保留
   .modern-tabs {
     margin-top: 10px;
   }
 
   .photo-wall {
     display: flex;
-    flex-wrap: wrap; /* 自动换行 */
-    gap: 15px; /* 照片间距 */
+    flex-wrap: wrap;
+    gap: 15px;
     padding: 10px 20px;
   }
 
@@ -1324,7 +1322,14 @@
   }
 
   .photo-item:hover {
-    transform: translateY(-5px); /* 悬停浮起效果 */
+    transform: translateY(-5px);
+  }
+
+  // 深色模式下特殊处理阴影
+  html.dark {
+    .photo-item {
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+    }
   }
 
   .image-slot {
