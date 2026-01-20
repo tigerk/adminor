@@ -13,7 +13,8 @@
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
   import { FacilityItemProps, type OtherFeeProps, type PriceConfigProps, type PricePlanProps, ScatterHouseProps } from "@/types";
   import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
-  import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook"; // 使用hook中的方法
+  import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
+  import { message } from "@/utils/message"; // 使用hook中的方法
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
@@ -135,9 +136,15 @@
 
   const copyHouse = (index: number) => {
     const houseToCopy = entireForm.houseList[index];
-    const newHouse = structuredClone(houseToCopy); // 简单且兼容性好的方案
-    newHouse.id = undefined; // 必须清除ID，否则保存会变成更新旧数据
-    entireForm.houseList.splice(index + 1, 0, newHouse);
+    try {
+      // 使用 JSON 深拷贝,会自动过滤掉函数、undefined 等无法序列化的值
+      const newHouse = JSON.parse(JSON.stringify(houseToCopy));
+      newHouse.id = undefined; // 清除ID
+      entireForm.houseList.splice(index + 1, 0, newHouse);
+    } catch (error) {
+      console.error("复制房源失败:", error);
+      message("复制房源失败,请重试", { type: "error" });
+    }
   };
 
   // 删除房源
@@ -502,8 +509,8 @@
   .house-form-card {
     padding: 10px;
     margin-bottom: 10px;
-    background-color: #fff;
-    border: 1px solid #dcdfe6;
+    background-color: var(--el-bg-color); /* 使用 Element Plus 的 CSS 变量 */
+    border: 1px solid var(--el-border-color);
     border-radius: 4px;
   }
 
