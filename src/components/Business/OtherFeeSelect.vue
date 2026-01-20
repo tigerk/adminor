@@ -194,7 +194,7 @@
       margin: 0 0 8px 0;
       font-size: 15px;
       font-weight: 600;
-      color: #303133;
+      color: var(--el-text-color-primary);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -203,24 +203,25 @@
     .section-subtitle {
       font-size: 14px;
       font-weight: 400;
-      color: #909399;
+      color: var(--el-text-color-secondary);
     }
 
     .fee-table-wrapper {
-      border: 1px solid #e4e7ed;
+      border: 1px solid var(--el-border-color);
       border-radius: 4px;
       overflow: hidden;
       margin-bottom: 4px;
+      background-color: var(--el-bg-color);
     }
 
     .fee-table {
       width: 100%;
       border-collapse: collapse;
-      background-color: #fff;
+      background-color: var(--el-bg-color);
     }
 
     .fee-table thead {
-      background-color: #f5f7fa;
+      background-color: var(--el-fill-color-light);
     }
 
     .fee-table th {
@@ -228,9 +229,9 @@
       text-align: center;
       font-weight: 600;
       font-size: 14px;
-      color: #606266;
-      border-bottom: 1px solid #e4e7ed;
-      border-right: 1px solid #e4e7ed;
+      color: var(--el-text-color-regular);
+      border-bottom: 1px solid var(--el-border-color);
+      border-right: 1px solid var(--el-border-color);
     }
 
     .fee-table th:last-child {
@@ -239,8 +240,8 @@
 
     .fee-table td {
       padding: 8px;
-      border-bottom: 1px solid #e4e7ed;
-      border-right: 1px solid #e4e7ed;
+      border-bottom: 1px solid var(--el-border-color);
+      border-right: 1px solid var(--el-border-color);
       vertical-align: middle;
     }
 
@@ -253,7 +254,7 @@
     }
 
     .fee-table tbody tr:hover {
-      background-color: #f5f7fa;
+      background-color: var(--el-fill-color-lighter);
     }
 
     .text-center {

@@ -96,7 +96,7 @@
                 </template>
                 <template #extra>
                   <el-tooltip class="box-item" effect="dark" content="修改租客信息，包括姓名、联系电话、证件类型、证件号码等。" placement="top">
-                    <el-button type="primary" size="small" :icon="Edit" @click="handleDownloadContract">修改租客</el-button>
+                    <el-button type="primary" size="small" :icon="Edit" @click="editTenant(localFormInline)">修改租客</el-button>
                   </el-tooltip>
                 </template>
                 <el-descriptions-item label="姓名" label-align="right">
@@ -554,7 +554,10 @@
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
   import { useUserStoreHook } from "@/store/modules/user";
-  import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue"; // 检查用户是否有删除合同权限
+  import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue";
+  import useTenant from "@/views/contract/tenant/utils/hook"; // 检查用户是否有删除合同权限
+
+  const { openTenantDialog } = useTenant();
 
   // 检查用户是否有删除合同权限
   const { permissions } = useUserStoreHook();
@@ -902,6 +905,13 @@
     });
   };
 
+  const editTenant = (row: TenantDetailProps) => {
+    openTenantDialog("修改", row);
+  };
+
+  /**
+   * 初始化交割单列表
+   */
   onMounted(() => {
     initDeliveryList();
   });
