@@ -19,7 +19,16 @@
           <tbody>
             <tr v-for="(feeItem, index) in modelValue" :key="index">
               <td>
+                <!-- dictDataId="0" 时只读显示 -->
+                <template v-if="feeItem.dictDataId === '0'">
+                  <el-space class="readonly-text">
+                    <IconifyIconOnline icon="ep:lock" class="accent-green-400" />
+                    <el-text type="info">{{ feeItem.name }}</el-text>
+                    <el-text type="info">（定金不可编辑）</el-text>
+                  </el-space>
+                </template>
                 <el-cascader
+                  v-else
                   v-model="cascaderValues[index]"
                   placeholder="请选择费用类型"
                   :options="otherFeeTypeOptions"
@@ -34,14 +43,14 @@
                 />
               </td>
               <td>
-                <el-select v-model="feeItem.paymentMethod" placeholder="请选择" style="width: 100%">
+                <el-select v-model="feeItem.paymentMethod" placeholder="请选择" style="width: 100%" :disabled="feeItem.dictDataId === '0'">
                   <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </td>
               <td>
-                <el-input v-model.number="feeItem.priceInput" :min="0" placeholder="请输入" type="number">
+                <el-input v-model.number="feeItem.priceInput" :min="0" placeholder="请输入" type="number" :disabled="feeItem.dictDataId === '0'">
                   <template #prepend>
-                    <el-select v-model="feeItem.priceMethod" placeholder="请选择" style="width: 140px">
+                    <el-select v-model="feeItem.priceMethod" placeholder="请选择" style="width: 140px" :disabled="feeItem.dictDataId === '0'">
                       <el-option v-for="item in priceMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                   </template>
@@ -49,7 +58,9 @@
                 </el-input>
               </td>
               <td class="text-center">
-                <el-button type="danger" :icon="Delete" link @click="removeOtherFee(index)" />
+                <!-- dictDataId="0" 时不显示删除按钮 -->
+                <el-button v-if="feeItem.dictDataId !== '0'" type="danger" :icon="Delete" link @click="removeOtherFee(index)" />
+                <span v-else class="readonly-placeholder">-</span>
               </td>
             </tr>
           </tbody>
@@ -87,11 +98,9 @@
   const otherFeeTypeOptions = ref<any[]>([]);
   const cascaderValues = ref<Record<number, any[]>>({});
 
-  // 付款方式选项
   const paymentMethodOptions = PAYMENT_METHOD_OPTIONS;
   const priceMethodOptions = PRICE_METHOD_OPTIONS;
 
-  // 转换字典数据为级联选择器格式
   const transformDictToCascader = (dictData: any[]) => {
     return dictData.map(dict => ({
       label: dict.dictName,
@@ -103,38 +112,33 @@
     }));
   };
 
-  // 加载费用类型选项
   getDictDataByParentCode({
     dictCode: "fee_type"
   }).then(res => {
     otherFeeTypeOptions.value = transformDictToCascader(res.data);
   });
 
-  // 获取默认的其他费用对象
   const getDefaultOtherFee = (): OtherFeeProps => {
     return {
       dictDataId: null,
       name: null,
       paymentMethod: 0,
-      priceMethod: 1, // 按固定金额
+      priceMethod: 1,
       priceInput: null
     };
   };
 
-  // 添加其他费用
   const addOtherFee = () => {
     const newFees = [...props.modelValue, getDefaultOtherFee()];
     emit("update:modelValue", newFees);
   };
 
-  // 删除其他费用
   const removeOtherFee = (index: number) => {
     const newFees = [...props.modelValue];
     newFees.splice(index, 1);
     emit("update:modelValue", newFees);
   };
 
-  // 处理级联选择器变化
   const handleCascaderChange = (value: any, index: number) => {
     const findOption = (options: any[], targetValue: any): any | null => {
       for (const option of options) {
@@ -161,14 +165,13 @@
     }
   };
 
-  // 初始化级联选择器的值
   watch(
     () => props.modelValue,
     newValue => {
       if (newValue) {
         newValue.forEach((fee, index) => {
-          if (fee.dictDataId) {
-            // 根据dictDataId找到对应的级联路径
+          // dictDataId="0" 的项不需要初始化级联选择器值
+          if (fee.dictDataId && fee.dictDataId !== "0") {
             for (const parent of otherFeeTypeOptions.value) {
               const child = parent.children?.find((c: any) => c.value === fee.dictDataId);
               if (child) {
@@ -263,6 +266,16 @@
 
     .text-left {
       text-align: left;
+    }
+
+    .readonly-text {
+      padding: 0 11px;
+      color: var(--el-text-color-regular);
+      line-height: 32px;
+    }
+
+    .readonly-placeholder {
+      color: var(--el-text-color-placeholder);
     }
   }
 </style>
