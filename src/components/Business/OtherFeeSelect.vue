@@ -24,7 +24,7 @@
                   <el-space class="readonly-text">
                     <IconifyIconOnline icon="ep:lock" class="accent-green-400" />
                     <el-text type="info">{{ feeItem.name }}</el-text>
-                    <el-text type="info">（定金不可编辑）</el-text>
+                    <el-text type="info">（不可编辑）</el-text>
                   </el-space>
                 </template>
                 <el-cascader
@@ -54,7 +54,7 @@
                       <el-option v-for="item in priceMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                   </template>
-                  <template #append>{{ feeItem.priceMethod === 0 ? "元" : "%" }}</template>
+                  <template #append>{{ feeItem.priceMethod === 1 ? "元" : "%" }}</template>
                 </el-input>
               </td>
               <td class="text-center">
