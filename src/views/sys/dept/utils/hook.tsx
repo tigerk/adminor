@@ -5,9 +5,9 @@ import { message } from "@/utils/message";
 import { createDept, deleteDept, getDeptList } from "@/api/sys/dept";
 import { usePublicHooks } from "../../../../utils/publicHooks";
 import { addDialog } from "@/components/ReDialog";
-import { reactive, ref, onMounted, h } from "vue";
+import { h, onMounted, reactive, ref } from "vue";
 import type { FormItemProps } from "../utils/types";
-import { cloneDeep, isAllEmpty, deviceDetection } from "@pureadmin/utils";
+import { cloneDeep, deviceDetection, isAllEmpty } from "@pureadmin/utils";
 
 export function useDept() {
   const form = reactive({
@@ -28,6 +28,12 @@ export function useDept() {
       align: "left"
     },
     {
+      label: "是否门店",
+      prop: "isStore",
+      width: 180,
+      formatter: ({ isStore }) => <el-tag style={tagStyle.value(isStore ? 1 : 0)}>{isStore ? "是" : "否"}</el-tag>
+    },
+    {
       label: "排序",
       prop: "sortOrder",
       minWidth: 70
@@ -46,8 +52,7 @@ export function useDept() {
       label: "创建时间",
       minWidth: 200,
       prop: "createTime",
-      formatter: ({ createTime }) =>
-        dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ createTime }) => dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "备注",
@@ -95,12 +100,12 @@ export function useDept() {
     // 根据返回数据的status字段值判断追加是否禁用disabled字段，
     // 返回处理后的树结构，用于上级部门级联选择器的展示（实际开发中也是如此，不可能前端需要的每个字段后端都会返回，
     // 这时需要前端自行根据后端返回的某些字段做逻辑处理）
-    if (!treeList || !treeList.length) return;
+    if (!treeList?.length) return;
     const newTreeList = [];
-    for (let i = 0; i < treeList.length; i++) {
-      treeList[i].disabled = treeList[i].status === 0 ? true : false;
-      formatHigherDeptOptions(treeList[i].children);
-      newTreeList.push(treeList[i]);
+    for (const element of treeList) {
+      element.disabled = element.status === 0 ? true : false;
+      formatHigherDeptOptions(element.children);
+      newTreeList.push(element);
     }
     return newTreeList;
   }
@@ -119,7 +124,8 @@ export function useDept() {
           email: row?.email ?? "",
           sortOrder: row?.sortOrder ?? 0,
           status: row?.status ?? 1,
-          remark: row?.remark ?? ""
+          remark: row?.remark ?? "",
+          isStore: row?.isStore ?? false
         }
       },
       width: "40%",
@@ -151,14 +157,7 @@ export function useDept() {
         FormRef.validate(valid => {
           if (valid) {
             console.log("curData", curData);
-            // 表单规则校验通过
-            if (title === "新增") {
-              // 实际开发先调用新增接口，再进行下面操作
-              chores();
-            } else {
-              // 实际开发先调用修改接口，再进行下面操作
-              chores();
-            }
+            chores();
           }
         });
       }

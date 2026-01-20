@@ -9,6 +9,7 @@ interface FormItemProps {
   sortOrder: number;
   status: number;
   remark: string;
+  isStore: boolean;
 }
 interface FormProps {
   formInline: FormItemProps;
