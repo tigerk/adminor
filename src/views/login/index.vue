@@ -144,7 +144,7 @@
 </script>
 
 <template>
-  <div class="login-wrapper">
+  <div :class="['login-wrapper', dataTheme ? 'dark' : '']">
     <!-- 左侧区域 -->
     <div class="left-section">
       <!-- 背景装饰 -->
@@ -368,6 +368,7 @@
     height: 100vh;
     overflow-y: auto;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    transition: background 0.3s ease;
   }
 
   /* 背景装饰 */
@@ -384,6 +385,7 @@
     background: white;
     border-radius: 50%;
     opacity: 0.1;
+    transition: background 0.3s ease;
   }
 
   .circle-1 {
@@ -429,18 +431,20 @@
     }
   }
 
-  .logo {
-    width: 36px;
-    height: 36px;
-  }
-
   .logo-title {
     font-size: 20px;
     font-weight: 600;
     color: #333;
+    transition: color 0.3s ease;
   }
 
-  /* 表单容器 */
+  .theme-toggle {
+    :deep(.el-switch) {
+      --el-switch-on-color: #409eff;
+      --el-switch-off-color: #dcdfe6;
+    }
+  }
+
   .form-container {
     position: relative;
     z-index: 10;
@@ -451,7 +455,6 @@
     padding: 40px;
   }
 
-  /* 表单区域 */
   .form-section {
     width: 100%;
     max-width: 420px;
@@ -462,6 +465,7 @@
     background: white;
     border-radius: 20px;
     box-shadow: 0 10px 40px rgb(0 0 0 / 8%);
+    transition: all 0.3s ease;
   }
 
   .form-header {
@@ -474,11 +478,13 @@
     font-size: 28px;
     font-weight: 700;
     color: #1a1a1a;
+    transition: color 0.3s ease;
   }
 
   .form-subtitle {
     font-size: 14px;
     color: #666;
+    transition: color 0.3s ease;
   }
 
   .auth-form {
@@ -552,7 +558,6 @@
     }
   }
 
-  /* 右侧展示区域 - 固定600px宽度，独立区域 */
   .display-section {
     position: relative;
     display: flex;
@@ -564,6 +569,7 @@
     padding: 40px;
     overflow-y: auto;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    transition: background 0.3s ease;
   }
 
   .display-content {
@@ -587,9 +593,9 @@
     font-size: 16px;
     line-height: 1.6;
     color: #666;
+    transition: color 0.3s ease;
   }
 
-  /* 底部 - 只在左侧显示 */
   .footer {
     position: relative;
     z-index: 10;
@@ -601,10 +607,10 @@
       margin: 0;
       font-size: 14px;
       color: #666;
+      transition: color 0.3s ease;
     }
   }
 
-  /* 图形验证码样式 */
   .image-verify-container {
     display: flex;
     flex-direction: column;
@@ -627,10 +633,14 @@
     text-align: center;
   }
 
-  /* 深色模式适配 */
-  :global(.dark) {
+  /* Dark mode styles */
+  .login-wrapper.dark {
     .left-section {
       background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    }
+
+    .circle {
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .logo-title {
@@ -651,6 +661,10 @@
     }
 
     .auth-form {
+      :deep(.el-form-item__label) {
+        color: #f0f0f0;
+      }
+
       :deep(.el-input__wrapper) {
         background: #2a2a2a;
         border-color: #3a3a3a;
@@ -658,19 +672,49 @@
         &:hover {
           border-color: #4a4a4a;
         }
+
+        &.is-focus {
+          border-color: #409eff;
+        }
       }
 
       :deep(.el-input__inner) {
         color: #f0f0f0;
+
+        &::placeholder {
+          color: #666;
+        }
+      }
+
+      :deep(.el-input__prefix) {
+        color: #999;
+      }
+
+      :deep(.el-input__suffix) {
+        color: #999;
+      }
+    }
+
+    .form-actions {
+      .el-button {
+        color: #409eff;
+      }
+    }
+
+    .switch-page {
+      color: #999;
+
+      .el-button {
+        color: #409eff;
       }
     }
 
     .display-section {
-      background: linear-gradient(135deg, #2a1a1a 0%, #3a2020 100%);
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
     }
 
     .display-description {
-      color: #999;
+      color: #aaa;
     }
 
     .footer p {

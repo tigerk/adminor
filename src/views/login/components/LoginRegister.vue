@@ -1,17 +1,15 @@
 <script setup lang="ts">
   import { useI18n } from "vue-i18n";
-  import { ref, reactive, onBeforeUnmount } from "vue";
+  import { onBeforeUnmount, reactive, ref } from "vue";
   import Motion from "../utils/motion";
   import { message } from "@/utils/message";
   import { updateRules } from "../utils/rule";
   import type { FormInstance } from "element-plus";
   import { useVerifyCode } from "../utils/verifyCode";
   import { $t, transformI18n } from "@/plugins/i18n";
-  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Lock from "~icons/ri/lock-fill";
   import User from "~icons/ri/user-3-fill";
   import Phone from "~icons/ri/phone-fill";
-  import Mail from "~icons/ri/mail-fill";
   import Shield from "~icons/ri/shield-keyhole-line";
   import { sendSmsCode } from "@/api/login";
 
@@ -194,11 +192,13 @@
     font-size: 28px;
     font-weight: 700;
     color: #1a1a1a;
+    transition: color 0.3s ease;
   }
 
   .form-subtitle {
     font-size: 14px;
     color: #666;
+    transition: color 0.3s ease;
   }
 
   .auth-form {
@@ -269,15 +269,23 @@
     font-size: 14px;
     color: #666;
     text-align: center;
+    transition: color 0.3s ease;
 
     .el-button {
       font-size: 14px;
     }
   }
 
-  :global(.dark) {
-    .form-title {
-      color: #f0f0f0;
+  /* Dark mode support - using :global to target parent dark class */
+  .login-wrapper.dark {
+    .form-header {
+      .form-title {
+        color: #f0f0f0 !important;
+      }
+
+      .form-subtitle {
+        color: #999 !important;
+      }
     }
 
     .form-subtitle {
@@ -285,6 +293,10 @@
     }
 
     .auth-form {
+      :deep(.el-form-item__label) {
+        color: #f0f0f0;
+      }
+
       :deep(.el-input__wrapper) {
         background: #2a2a2a;
         border-color: #3a3a3a;
@@ -292,10 +304,58 @@
         &:hover {
           border-color: #4a4a4a;
         }
+
+        &.is-focus {
+          border-color: #409eff;
+        }
       }
 
       :deep(.el-input__inner) {
         color: #f0f0f0;
+
+        &::placeholder {
+          color: #666;
+        }
+      }
+
+      :deep(.el-input__prefix),
+      :deep(.el-input__suffix) {
+        color: #999;
+      }
+    }
+
+    .verify-code-wrapper {
+      .verify-btn {
+        background: #2a2a2a;
+        border-color: #3a3a3a;
+        color: #f0f0f0;
+
+        &:hover:not(:disabled) {
+          background: #333;
+          border-color: #4a4a4a;
+        }
+
+        &:disabled {
+          background: #1e1e1e;
+          border-color: #2a2a2a;
+          color: #666;
+        }
+      }
+    }
+
+    .switch-page {
+      color: #999;
+
+      span {
+        color: #999;
+      }
+
+      .el-button {
+        color: #409eff;
+
+        &:hover {
+          color: #66b1ff;
+        }
       }
     }
   }
