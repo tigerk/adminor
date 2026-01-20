@@ -36,58 +36,61 @@
           </el-form>
         </div>
 
-        <el-table
-          ref="tableRef"
-          v-loading="loading"
-          :data="roomList"
-          row-key="roomId"
-          height="500px"
-          border
-          show-header
-          @selection-change="handleSelectionChange"
-          @row-click="handleRowClick"
-        >
-          <el-table-column type="selection" width="45" :reserve-selection="true" />
-          <el-table-column label="房源信息" min-width="180">
-            <template #default="{ row }">
-              <el-space>
-                <el-tag size="small">{{ getOptionByCode([...RENTAL_TYPE_OPTIONS], row.rentalType).label }}</el-tag>
-                <div class="font-bold">
-                  {{ row.houseName }}
-                </div>
-                <div class="text-xs text-gray-500">
-                  {{ row.roomNumber || "整租房源" }}
-                </div>
-              </el-space>
+        <div class="table-wrapper">
+          <el-table
+            ref="tableRef"
+            v-loading="loading"
+            :data="roomList"
+            row-key="roomId"
+            border
+            show-header
+            style="width: 100%"
+            @selection-change="handleSelectionChange"
+            @row-click="handleRowClick"
+          >
+            <el-table-column type="selection" width="45" :reserve-selection="true" />
+            <el-table-column label="房源信息" min-width="180">
+              <template #default="{ row }">
+                <el-space :size="2">
+                  <div>
+                    <el-tag size="small">{{ getOptionByCode([...RENTAL_TYPE_OPTIONS], row.rentalType).label }}</el-tag>
+                    <span class="font-bold ml-2">{{ row.houseName }}</span>
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ row.roomNumber || "整租房源" }}
+                  </div>
+                </el-space>
+              </template>
+            </el-table-column>
+            <el-table-column label="房态" width="100" align="center">
+              <template #default="{ row }">
+                <el-tag>{{ getOptionByCode([...ROOM_STATUS_OPTIONS], row.roomStatus).label }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="户型/面积" width="140">
+              <template #default="{ row }">
+                <div class="text-xs">{{ row.houseLayout?.bedroom }}室{{ row.houseLayout?.livingRoom }}厅</div>
+                <div class="text-xs text-gray-400">{{ row.area }}m² | {{ row.direction }}</div>
+              </template>
+            </el-table-column>
+            <el-table-column label="租金(元/月)" width="100">
+              <template #default="{ row }">
+                <span class="text-orange-500 font-bold">¥{{ row.price }}</span>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
 
-            </template>
-          </el-table-column>
-          <el-table-column label="房态" width="100" align="center">
-            <template #default="{ row }">
-              <el-tag>{{ getOptionByCode([...ROOM_STATUS_OPTIONS], row.roomStatus).label }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="户型/面积" width="140">
-            <template #default="{ row }">
-              <div class="text-xs">{{ row.houseLayout?.bedroom }}室{{ row.houseLayout?.livingRoom }}厅</div>
-              <div class="text-xs text-gray-400">{{ row.area }}m² | {{ row.direction }}</div>
-            </template>
-          </el-table-column>
-          <el-table-column label="租金(元/月)" width="100">
-            <template #default="{ row }">
-              <span class="text-orange-500 font-bold">¥{{ row.price }}</span>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <div class="mt-4 flex justify-end">
+        <div class="pagination-wrapper">
           <el-pagination
             v-model:current-page="queryParams.currentPage"
             v-model:page-size="queryParams.pageSize"
             :total="total"
-            small
-            layout="total, prev, pager, next"
-            @current-change="getList"
+            :page-sizes="[5, 10, 20, 30, 50]"
+            background
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handlePageChange"
           />
         </div>
       </div>
@@ -95,8 +98,8 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" :disabled="selectedRows.length === 0" @click="submitSelection">确认选择</el-button>
+        <el-button @click="handleClose">取消</el-button>
+        <el-button type="primary" :disabled="selectedRows.length === 0" @click="submitSelection">确认选择 ({{ selectedRows.length }})</el-button>
       </div>
     </template>
   </el-dialog>
@@ -124,67 +127,139 @@
     roomStatus: 0
   });
 
+  // 获取列表数据
   const getList = async () => {
     loading.value = true;
     try {
       const res = await getRoomList(queryParams);
+
+      // 关键修复：将字符串类型转换为数字类型
       roomList.value = res.data.list || [];
-      total.value = res.data.total || 0;
+      total.value = Number(res.data.total) || 0;
+
+      // 数据加载完成后，恢复当前页的选中状态
+      await nextTick();
+      restoreSelection();
+    } catch (error) {
+      console.error("获取房源列表失败:", error);
     } finally {
       loading.value = false;
     }
   };
 
+  // 恢复当前页面的选中状态
+  const restoreSelection = () => {
+    if (selectedRows.value.length === 0) return;
+
+    roomList.value.forEach(row => {
+      const isSelected = selectedRows.value.some(selected => selected.roomId === row.roomId);
+      if (isSelected) {
+        nextTick(() => {
+          tableRef.value?.toggleRowSelection(row, true);
+        });
+      }
+    });
+  };
+
+  // 处理选择变化
   const handleSelectionChange = (selection: any[]) => {
-    selectedRows.value = selection;
+    const currentPageIds = roomList.value.map(item => item.roomId);
+
+    // 移除当前页中未选中的项
+    selectedRows.value = selectedRows.value.filter(item => !currentPageIds.includes(item.roomId));
+
+    // 添加当前页新选中的项
+    selection.forEach(item => {
+      if (!selectedRows.value.some(row => row.roomId === item.roomId)) {
+        selectedRows.value.push(item);
+      }
+    });
   };
 
+  // 移除单个选中项
   const handleRemoveTag = (row: any) => {
-    tableRef.value?.toggleRowSelection(row, false);
+    const index = selectedRows.value.findIndex(item => item.roomId === row.roomId);
+    if (index > -1) {
+      selectedRows.value.splice(index, 1);
+    }
+
+    const currentRow = roomList.value.find(item => item.roomId === row.roomId);
+    if (currentRow) {
+      tableRef.value?.toggleRowSelection(currentRow, false);
+    }
   };
 
+  // 清空所有选择
   const clearAllSelection = () => {
+    selectedRows.value = [];
     tableRef.value?.clearSelection();
   };
 
+  // 点击行切换选中状态
   const handleRowClick = (row: any) => {
-    tableRef.value.toggleRowSelection(row);
+    tableRef.value?.toggleRowSelection(row);
   };
 
+  // 查询
   const handleQuery = () => {
     queryParams.currentPage = 1;
     getList();
   };
 
+  // 重置查询
   const resetQuery = () => {
     queryParams.keywords = "";
     queryParams.roomStatus = 0;
-    handleQuery();
+    queryParams.currentPage = 1;
+    getList();
   };
 
+  // 处理页码变化
+  const handlePageChange = (page: number) => {
+    queryParams.currentPage = page;
+    getList();
+  };
+
+  // 处理每页条数变化
+  const handleSizeChange = (size: number) => {
+    queryParams.pageSize = size;
+    queryParams.currentPage = 1;
+    getList();
+  };
+
+  // 提交选择
   const submitSelection = () => {
     emit("confirm", selectedRows.value);
     visible.value = false;
   };
 
+  // 关闭对话框
+  const handleClose = () => {
+    visible.value = false;
+  };
+
+  // 显示对话框
   const show = (initSelection?: any[]) => {
     visible.value = true;
+
+    queryParams.currentPage = 1;
+    queryParams.pageSize = 10;
+    queryParams.keywords = "";
+    queryParams.roomStatus = 0;
+
     nextTick(async () => {
+      selectedRows.value = [];
       tableRef.value?.clearSelection();
+
       if (initSelection && initSelection.length > 0) {
-        // 这里的 mapping 需要对应您在 tenantCreateForm 传入的结构
         const recoveryRows = initSelection.map(item => ({
           ...item.extra,
           roomId: item.value || item.roomId
         }));
-        recoveryRows.forEach(row => {
-          tableRef.value?.toggleRowSelection(row, true);
-        });
         selectedRows.value = recoveryRows;
-      } else {
-        selectedRows.value = [];
       }
-      handleQuery();
+
+      await getList();
     });
   };
 
@@ -195,14 +270,15 @@
   .room-picker-container {
     display: flex;
     gap: 20px;
+    min-height: 600px;
 
     .selected-side {
       width: 320px;
+      flex-shrink: 0;
       border-right: 1px solid var(--el-border-color-lighter);
       display: flex;
       flex-direction: column;
       padding-right: 15px;
-      height: 550px;
 
       .side-header {
         display: flex;
@@ -210,12 +286,30 @@
         align-items: center;
         padding-bottom: 10px;
         margin-bottom: 10px;
-        border-bottom: 1px solid var(--el-border-color-light);
       }
 
       .selected-list {
         flex: 1;
         overflow-y: auto;
+        max-height: 600px;
+
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: var(--el-fill-color-light);
+          border-radius: 3px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: var(--el-border-color);
+          border-radius: 3px;
+
+          &:hover {
+            background: var(--el-border-color-dark);
+          }
+        }
 
         .selected-item {
           display: flex;
@@ -237,16 +331,20 @@
           .item-info {
             flex: 1;
             overflow: hidden;
+
             .item-name {
               font-size: 13px;
               font-weight: bold;
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
+              color: var(--el-text-color-primary);
             }
+
             .item-sub {
               font-size: 11px;
               color: var(--el-text-color-secondary);
+              margin-top: 2px;
             }
           }
 
@@ -255,6 +353,8 @@
             font-size: 14px;
             color: var(--el-text-color-placeholder);
             margin-left: 8px;
+            transition: color 0.3s;
+            flex-shrink: 0;
           }
         }
       }
@@ -264,14 +364,43 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      min-width: 0;
 
       .search-wrapper {
-        margin-bottom: 15px;
+        margin-bottom: 10px;
+        flex-shrink: 0;
+
+        :deep(.el-form) {
+          margin-bottom: 0;
+        }
+
         :deep(.el-form-item) {
           margin-bottom: 0;
         }
       }
+
+      .table-wrapper {
+        flex: 1;
+        overflow: hidden;
+
+        :deep(.el-table) {
+          height: 550px !important;
+        }
+      }
+
+      .pagination-wrapper {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: flex-end;
+        padding: 10px 0;
+        border-top: 1px solid var(--el-border-color-lighter);
+      }
     }
+  }
+
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
   }
 </style>
