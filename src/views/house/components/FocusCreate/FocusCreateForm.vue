@@ -7,6 +7,7 @@
   import { ElMessage } from "element-plus";
   import { createFocusHouse } from "@/api/house/focus";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
+  import { convertImage2string } from "@/utils/image";
 
   const props = withDefaults(defineProps<FormProps>(), {
     formInline: () => ({
@@ -145,14 +146,7 @@
         ...form.value
       };
       // 处理 imageList 字段，图片对象时，提取 url 字段，字符串时，直接添加
-      submitData.imageList = [];
-      form.value.imageList.forEach(item => {
-        if (typeof item === "string") {
-          submitData.imageList.push(item);
-        } else {
-          submitData.imageList.push(item.url || "");
-        }
-      });
+      submitData.imageList = convertImage2string(form.value.imageList);
 
       const response = await createFocusHouse(submitData);
 

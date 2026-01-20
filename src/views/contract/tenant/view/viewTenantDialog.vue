@@ -200,12 +200,12 @@
                   <el-table-column prop="name" label="费用名称" align="center" min-width="150" />
                   <el-table-column prop="paymentMethod" label="付款方式" align="center" min-width="120">
                     <template #default="{ row }">
-                      <span class="payment-method">{{ getOptionByCode([...PAYMENT_METHOD_OPTIONS], row.paymentMethod).label }}</span>
+                      <span class="payment-method">{{ getOptionByCode([...PAYMENT_METHOD_OPTIONS], row.paymentMethod)?.label }}</span>
                     </template>
                   </el-table-column>
                   <el-table-column prop="priceMethod" label="计费方式" align="center" min-width="120">
                     <template #default="{ row }">
-                      <span class="price-method">{{ getOptionByCode([...PRICE_METHOD_OPTIONS], row.priceMethod).label }}</span>
+                      <span class="price-method">{{ getOptionByCode([...PRICE_METHOD_OPTIONS], row.priceMethod)?.label }}</span>
                     </template>
                   </el-table-column>
 

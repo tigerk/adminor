@@ -19,7 +19,7 @@
   const props = defineProps({
     limit: {
       type: Number,
-      default: 3
+      default: 1
     },
     width: {
       type: [Number, String],

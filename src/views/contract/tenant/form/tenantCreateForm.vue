@@ -179,7 +179,7 @@
         <el-row :gutter="20">
           <el-col :span="3">
             <el-form-item label="签约类型" prop="tenant.contractNature">
-              <el-select v-model="formInline.tenant.contractNature" placeholder="签约类型" class="w-full" clearable>
+              <el-select v-model="formInline.tenant.contractNature" default-first-option placeholder="签约类型" class="w-full" clearable>
                 <el-option v-for="item in TENANT_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -194,6 +194,8 @@
                 range-separator="至"
                 start-placeholder="开始时间"
                 end-placeholder="结束时间"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 :shortcuts="leaseDateShortCut"
                 :popper-options="{
                   placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
@@ -211,6 +213,8 @@
                 range-separator="至"
                 start-placeholder="开始时间"
                 end-placeholder="结束时间"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 :shortcuts="leaseDateShortCut"
                 :popper-options="{
                   placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
@@ -275,9 +279,9 @@
           </el-col>
           <el-col :span="5">
             <el-form-item label="收租设置" prop="tenant.rentDueType" required>
-              <el-input v-model.number="formInline.tenant.rentDueDay" :min="0" placeholder="请输入" type="number" class="text-center rent-due-day-input">
+              <el-input v-model.number="formInline.tenant.rentDueDay" :min="0" placeholder="" type="number" class="text-center rent-due-day-input">
                 <template #prepend>
-                  <el-select v-model="formInline.tenant.rentDueType" placeholder="请选择" style="width: 80px">
+                  <el-select v-model="formInline.tenant.rentDueType" placeholder="选择" style="width: 80px">
                     <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
                 </template>
@@ -334,7 +338,7 @@
         </el-col>
         <el-col :span="6">
           <el-form-item label="租客来源" prop="tenant.tenantSource">
-            <el-select v-model="formInline.tenant.tenantSource" placeholder="请选择租客来源" class="w-full" multiple clearable collapse-tags collapse-tags-tooltip>
+            <el-select v-model="formInline.tenant.tenantSource" placeholder="请选择租客来源" class="w-full" clearable collapse-tags collapse-tags-tooltip>
               <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
@@ -451,9 +455,6 @@
       return tenantCompanyFormRules(formInline);
     }
   });
-
-  // 选择的房源 ID 列表
-  const selectedRooms = ref<any[]>([]);
 
   // 常量选项
   const genderOptions = [...GENDER_OPTIONS];

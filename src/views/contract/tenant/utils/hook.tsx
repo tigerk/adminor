@@ -14,6 +14,7 @@ import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue"
 import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
 import ViewTenantDialog from "@/views/contract/tenant/view/viewTenantDialog.vue";
 import { calculateMonthsDifference } from "@/utils/yeah";
+import { convertImage2string } from "@/utils/image";
 
 function useTenant() {
   const pagination = reactive<PaginationProps>({
@@ -328,6 +329,7 @@ function useTenant() {
       closeOnClickModal: false,
       contentRenderer: () => h(TenantCreateForm, { ref: formRef, formInline: null, roomSelection: null }),
       beforeSure: (done, { options }) => {
+        // 获取defineExpose的Instance
         const FormInstance = formRef.value;
         const getFormRuleRef = FormInstance?.getRef?.();
         const curData = FormInstance?.formInline;
@@ -336,15 +338,21 @@ function useTenant() {
           if (valid) {
             const apiCall = curData?.tenant?.id == null ? createTenant : updateTenant;
 
+            // 处理 imageList 字段，图片对象时，提取 url 字段，字符串时，直接添加
+            curData.tenantPersonal.idCardBackList = convertImage2string(curData.tenantPersonal.idCardBackList);
+            curData.tenantPersonal.idCardFrontList = convertImage2string(curData.tenantPersonal.idCardFrontList);
+            curData.tenantPersonal.idCardInHandList = convertImage2string(curData.tenantPersonal.idCardInHandList);
+            curData.tenantPersonal.otherImageList = convertImage2string(curData.tenantPersonal.otherImageList);
+
             curData.tenant.leaseStart = curData.tenant.leaseDate[0];
             curData.tenant.leaseEnd = curData.tenant.leaseDate[1];
             curData.tenant.checkInTime = curData.tenant.checkDate[0];
             curData.tenant.checkOutTime = curData.tenant.checkDate[1];
-            curData.tenant.roomIds = FormInstance.getRef.roomSelection.value.map(item => item.value);
+            curData.tenant.roomIds = FormInstance.roomSelection.map(item => item.value);
 
             apiCall(curData).then(resp => {
               if (resp.code === 0) {
-                message(`您${title}了租客"${curData.name}"`, {
+                message(`您${title}了租客"${curData.tenant.tenantName}"`, {
                   type: "success"
                 });
                 onSuccess?.(resp.data);
