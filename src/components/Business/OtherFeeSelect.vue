@@ -116,7 +116,7 @@
       dictDataId: null,
       name: null,
       paymentMethod: 0,
-      priceMethod: 0,
+      priceMethod: 1, // 按固定金额
       priceInput: null
     };
   };
