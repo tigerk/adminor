@@ -108,7 +108,7 @@ function useTenant() {
           <el-tag
             style={{
               borderColor: statusColor,
-              backgroundColor: "#fff",
+              backgroundColor: "var(--el-bg-color)", // 跟随主题的背景色
               color: statusColor
             }}
           >
