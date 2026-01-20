@@ -584,7 +584,7 @@
     });
 
     // 如果有默认房源 ID
-    const roomList = formInline.booking.roomList;
+    const roomList = formInline.booking?.roomList;
     if (roomList && roomList.length > 0) {
       const defaultOptions = roomList.map(item => ({
         label: formatRoomSelectName(item),

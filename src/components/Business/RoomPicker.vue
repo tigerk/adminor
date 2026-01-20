@@ -64,7 +64,7 @@
           </el-table-column>
           <el-table-column label="房态" width="100" align="center">
             <template #default="{ row }">
-              <el-tag size="small">{{ getOptionByCode([...ROOM_STATUS_OPTIONS], row.roomStatus).label }}</el-tag>
+              <el-tag>{{ getOptionByCode([...ROOM_STATUS_OPTIONS], row.roomStatus).label }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="户型/面积" width="140">
