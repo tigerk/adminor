@@ -166,7 +166,7 @@ export interface TenantDetailProps {
   companyId?: bigint; // 公司ID
   deptId?: string; // 部门ID
   deptName?: string; // 部门名称
-  roomIds: string[]; // 房间ID列表
+  roomIds: bigint[]; // 房间ID列表
   contractTemplateId: bigint; // 合同模板ID
   tenantId?: bigint; // 租客ID
   tenantType: number; // 租客类型：1=个人，2=企业

@@ -545,7 +545,7 @@
 
 <script setup lang="ts">
   import { h, onMounted, ref, watch } from "vue";
-  import { TenantDetailProps } from "@/types";
+  import { TenantDetailProps, TenantsCreateFormProps } from "@/types";
   import { getOptionByCode, ID_TYPE_OPTIONS, PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS } from "@/constants";
   import { Checked, Document, Download, Edit, Files, House, Money, Plus, User, View } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
@@ -906,7 +906,29 @@
   };
 
   const editTenant = (row: TenantDetailProps) => {
-    openTenantDialog("修改", row);
+    /**
+     *   booking?: BookingListProps;
+     *   tenantPersonal: TenantPersonalProps;
+     *   tenantCompany: TenantCompanyProps;
+     *   tenantMateList: TenantMateProps[];
+     *   tenant: TenantProps;
+     *   otherFees: OtherFeeProps[];
+     */
+    const tenantCreateFormInline: TenantsCreateFormProps = {
+      tenant: {
+        ...row
+      },
+      tenantPersonal: {
+        ...row.tenantPersonal
+      },
+      tenantCompany: {
+        ...row.tenantCompany
+      },
+      tenantMateList: row.tenantMateList,
+      otherFees: row.otherFees
+    };
+
+    openTenantDialog("修改", tenantCreateFormInline);
   };
 
   /**
