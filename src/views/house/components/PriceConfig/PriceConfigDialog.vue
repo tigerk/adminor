@@ -35,7 +35,7 @@
 
   // 底价输入后缀
   const floorPriceInputSuffix = computed(() => {
-    return priceConfig.value.floorPriceMethod === 0 ? "元/月" : "%";
+    return priceConfig.value.floorPriceMethod === 1 ? "元/月" : "%";
   });
 
   // 处理默认方案切换

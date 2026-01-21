@@ -11,7 +11,7 @@ function getDefaultOtherFee(): OtherFeeProps {
     name: null,
     paymentMethod: 0,
     /** 价格计算方式 */
-    priceMethod: 0,
+    priceMethod: 1,
     /** 价格输入值 */
     priceInput: null
   };

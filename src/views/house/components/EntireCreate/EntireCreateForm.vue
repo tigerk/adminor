@@ -140,6 +140,12 @@
       // 使用 JSON 深拷贝,会自动过滤掉函数、undefined 等无法序列化的值
       const newHouse = JSON.parse(JSON.stringify(houseToCopy));
       newHouse.id = undefined; // 清除ID
+      // 清空房间ID
+      newHouse?.roomList?.forEach(room => (room.id = undefined)); // 清除ID
+      // 清空房型ID，清空前要进行判断，否则报错
+      if (newHouse.houseLayout) {
+        newHouse.houseLayout.id = undefined;
+      }
       entireForm.houseList.splice(index + 1, 0, newHouse);
     } catch (error) {
       console.error("复制房源失败:", error);
@@ -205,11 +211,17 @@
    * 租金配置对话框 start
    */
   const openRoomPriceConfigDialog = (houseIndex: number) => {
+    debugger;
     const currentHouse = entireForm.houseList[houseIndex];
 
     // 确保结构完整
     if (!currentHouse.roomList || currentHouse.roomList.length === 0) {
-      currentHouse.roomList = [{ roomNumber: "", price: undefined, priceConfig: undefined }];
+      currentHouse.roomList = [{ roomNumber: "", price: undefined, priceConfig: getDefaultPriceConfigItem() }];
+    }
+
+    // 如果填写了 price，则更新到 priceConfig.price
+    if (currentHouse.roomList[0]?.price) {
+      currentHouse.roomList[0].priceConfig.price = currentHouse.roomList[0].price;
     }
 
     openPriceConfigDialog("", currentHouse?.roomList[0]?.priceConfig, (priceConfig: any) => {
