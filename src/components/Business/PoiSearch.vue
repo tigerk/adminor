@@ -147,7 +147,7 @@
 
   .path {
     animation: loading-dash 1.5s ease-in-out infinite;
-    stroke: #409eff;
+    stroke: var(--el-color-primary);
     stroke-linecap: round;
     stroke-dasharray: 90, 150;
     stroke-dashoffset: 0;
@@ -175,18 +175,19 @@
     }
   }
 
+  /* 使用 CSS 变量适配深色主题 */
   .custom-item {
     padding: 12px 16px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--el-border-color-lighter);
     cursor: pointer;
     transition: background-color 0.2s ease;
   }
 
   .custom-item:hover {
-    background-color: #f5f7fa;
+    background-color: var(--el-fill-color-light);
   }
 
   .custom-item:last-child {
@@ -196,30 +197,34 @@
   .item-title {
     font-size: 16px;
     font-weight: 500;
-    color: #303133;
+    color: var(--el-text-color-primary);
     line-height: 22px;
   }
 
   .item-address {
     font-size: 13px;
-    color: #909399;
+    color: var(--el-text-color-secondary);
     line-height: 18px;
     display: flex;
     align-items: center;
     gap: 4px;
   }
 
-  /* 新增的地址显示区域样式 */
   .selected-address-simple {
     margin-top: 8px;
     padding: 2px 12px;
-    background: #f0f9ff;
-    border-left: 3px solid #409eff;
+    background: var(--el-color-primary-light-9);
+    border-left: 3px solid var(--el-color-primary);
     border-radius: 4px;
   }
 
   .address-text {
     font-size: 14px;
-    color: #303133;
+    color: var(--el-text-color-primary);
+  }
+
+  /* 深色模式特殊处理 */
+  html.dark .selected-address-simple {
+    background: var(--el-color-primary-dark-2);
   }
 </style>

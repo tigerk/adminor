@@ -299,7 +299,7 @@
           </template>
           <!-- 当前账单 -->
           <!-- 方案6: 简洁商务风格 - 支持主题切换 -->
-          <div class="mb-3">
+          <div class="mb-3 tab-content">
             <div class="section-header-wrapper">
               <div class="flex items-center justify-between px-4 py-2.5 section-header-content">
                 <div class="flex items-center gap-3">
@@ -319,7 +319,7 @@
           </div>
 
           <!-- 历史无效账单 -->
-          <div>
+          <div v-if="localFormInline.tenantInvalidBillList?.length > 0">
             <div class="section-header-wrapper">
               <div class="flex items-center justify-between px-4 py-2.5 section-header-content">
                 <div class="flex items-center gap-3">
