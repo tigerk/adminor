@@ -1,4 +1,7 @@
 <template>
+  <div v-if="props.isEdit" class="mb-3">
+    <el-alert title="！！！修改租金、合同起止时间、费用项等等时，会重新生成账单、并且使用最新信息重新生成合同，请谨慎修改！" type="error" />
+  </div>
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
     <div class="section-tenant-info">
       <!-- 房源选择区域 - 编辑模式完全禁用 -->
@@ -40,7 +43,6 @@
 
         <el-form-item prop="tenant.roomIds" label-width="0" class="!m-0" />
       </div>
-
       <!-- 房源选择器 - 仅在非编辑模式下显示 -->
       <RoomPicker v-if="!props.isEdit" ref="roomPickerRef" @confirm="handleRoomConfirmed" />
       <div class="section-header">

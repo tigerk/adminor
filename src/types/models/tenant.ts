@@ -181,6 +181,7 @@ export interface TenantDetailProps {
   otherFees: OtherFeeProps[];
   tenantContract: TenantContractProps;
   tenantBillList?: TenantBillListProps[];
+  tenantInvalidBillList?: TenantBillListProps[];
   rentPrice: number; // 租金价格
   depositMonths: number; // 押金月数
   paymentMonths: number; // 支付周期（月）

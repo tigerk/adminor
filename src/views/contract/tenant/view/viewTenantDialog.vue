@@ -69,9 +69,9 @@
       </div>
     </div>
     <div class="tabs-wrapper">
-      <!--      <div class="tabs-action-container">-->
-      <!--        <el-button type="primary" size="small" :icon="Edit" @click="handleDownloadContract">修改租客</el-button>-->
-      <!--      </div>-->
+      <div class="tabs-action-container">
+        <el-button type="primary" size="small" :icon="Edit" @click="handleDownloadContract">修改租客</el-button>
+      </div>
       <!-- 标签页内容 -->
       <el-tabs v-model="activeTab" class="modern-tabs">
         <!-- 租客信息 Tab -->
@@ -297,97 +297,40 @@
               <el-tag type="info" size="default">{{ localFormInline.tenantBillList?.length || 0 }}条</el-tag>
             </el-space>
           </template>
-          <div class="tab-content">
-            <el-table
-              v-if="localFormInline.tenantBillList && localFormInline.tenantBillList.length > 0"
-              :data="localFormInline.tenantBillList"
-              border
-              stripe
-              class="bill-table"
-              :expand-row-keys="expandedBillRows"
-              row-key="id"
-            >
-              <el-table-column type="expand">
-                <template #default="{ row }">
-                  <div v-if="row.otherFees && row.otherFees.length === 0" class="text-center">没有其他费用</div>
-                  <div v-if="row.otherFees && row.otherFees.length > 0" class="expanded-content">
-                    <div class="expanded-header m-1">
-                      <el-space>
-                        <span class="header-title">其他费用明细</span>
-                        <el-tag type="info" size="small">共 {{ row.otherFees.length }} 项</el-tag>
-                      </el-space>
-                    </div>
-                    <el-table :data="row.otherFees" border size="small" class="sub-table">
-                      <el-table-column type="index" label="序号" width="60" align="center" />
-                      <el-table-column prop="name" label="费用名称" align="center" min-width="120" />
-                      <el-table-column prop="amount" label="金额" align="center" width="100">
-                        <template #default="{ row: fee }">
-                          <span class="fee-amount">¥{{ fee.amount }}</span>
-                        </template>
-                      </el-table-column>
-                      <el-table-column prop="remark" label="说明" align="center" min-width="200" show-overflow-tooltip />
-                    </el-table>
+          <!-- 当前账单 -->
+          <!-- 方案6: 简洁商务风格 - 支持主题切换 -->
+          <div class="mb-3">
+            <div class="section-header-wrapper">
+              <div class="flex items-center justify-between px-4 py-2.5 section-header-content">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold section-title">当前账单</span>
+                  <div class="flex items-center gap-1.5 px-2 py-1 count-badge">
+                    <span class="text-xs font-medium">{{ localFormInline.tenantBillList?.length || 0 }}条</span>
                   </div>
-                </template>
-              </el-table-column>
-              <el-table-column type="index" label="序号" width="70" align="center" />
-              <el-table-column prop="sortOrder" label="期数" align="center" width="80">
-                <template #default="{ row }">第{{ row.sortOrder }}期</template>
-              </el-table-column>
-              <el-table-column prop="dueDate" label="应收日期" align="center" width="110">
-                <template #default="{ row }">{{ row.dueDate?.substring(0, 10) }}</template>
-              </el-table-column>
-              <el-table-column prop="billType" label="账单类型" align="center" width="100">
-                <template #default="{ row }">
-                  <el-tag v-if="row.billType === 1" type="success">租金</el-tag>
-                  <el-tag v-else-if="row.billType === 2" type="warning">押金</el-tag>
-                  <el-tag v-else type="info">其他费用</el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column prop="rentPeriodStart" label="账期开始" align="center" width="110">
-                <template #default="{ row }">{{ row.rentPeriodStart?.substring(0, 10) }}</template>
-              </el-table-column>
-              <el-table-column prop="rentPeriodEnd" label="账期结束" align="center" width="110">
-                <template #default="{ row }">{{ row.rentPeriodEnd?.substring(0, 10) }}</template>
-              </el-table-column>
-              <el-table-column prop="rentalAmount" label="租金" align="center" width="100">
-                <template #default="{ row }">
-                  <span v-if="row.rentalAmount > 0" class="amount-text">¥{{ row.rentalAmount }}</span>
-                  <span v-else>-</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="depositAmount" label="押金" align="center" width="100">
-                <template #default="{ row }">
-                  <span v-if="row.depositAmount > 0" class="amount-text">¥{{ row.depositAmount }}</span>
-                  <span v-else>-</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="otherFeeAmount" label="其他费用" align="center" width="100">
-                <template #default="{ row }">
-                  <el-space v-if="row.otherFeeAmount > 0" :size="4">
-                    <span class="amount-text">¥{{ row.otherFeeAmount }}</span>
-                    <el-tag v-if="row.otherFees && row.otherFees.length > 0" type="info" size="small">{{ row.otherFees.length }}项</el-tag>
-                  </el-space>
-                  <span v-else>-</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="totalAmount" label="应收总额" align="center" width="120">
-                <template #default="{ row }">
-                  <span class="total-amount">¥{{ row.totalAmount }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="payStatus" label="支付状态" align="center" width="100">
-                <template #default="{ row }">
-                  <el-tag v-if="row.payStatus === 0" type="danger">未支付</el-tag>
-                  <el-tag v-else-if="row.payStatus === 1" type="success">已支付</el-tag>
-                  <el-tag v-else type="warning">部分支付</el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column prop="remark" label="备注" align="center" min-width="250" show-overflow-tooltip />
-            </el-table>
-            <el-empty v-else description="暂无账单信息" :image-size="180">
-              <el-button type="primary" size="default">生成账单</el-button>
-            </el-empty>
+                </div>
+              </div>
+            </div>
+
+            <BillTable :bill-list="localFormInline.tenantBillList" :expanded-rows="expandedBillRows" empty-text="暂无当前账单">
+              <template #empty>
+                <el-button type="primary" size="default">生成账单</el-button>
+              </template>
+            </BillTable>
+          </div>
+
+          <!-- 历史无效账单 -->
+          <div>
+            <div class="section-header-wrapper">
+              <div class="flex items-center justify-between px-4 py-2.5 section-header-content">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold section-title">历史无效账单</span>
+                  <div class="flex items-center gap-1.5 px-2 py-1 count-badge">
+                    <span class="text-xs font-medium">{{ localFormInline.tenantInvalidBillList?.length || 0 }}条</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <BillTable :bill-list="localFormInline.tenantInvalidBillList" :expanded-rows="expandedBillRows" empty-text="暂无历史无效账单" />
           </div>
         </el-tab-pane>
 
@@ -563,7 +506,8 @@
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
   import { useUserStoreHook } from "@/store/modules/user";
   import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue";
-  import useTenant from "@/views/contract/tenant/utils/hook"; // 检查用户是否有删除合同权限
+  import useTenant from "@/views/contract/tenant/utils/hook";
+  import BillTable from "@/views/contract/tenant/view/BillTable.vue";
 
   const { openTenantDialog } = useTenant();
 
@@ -1391,5 +1335,51 @@
     height: 100%;
     background: var(--el-fill-color-light);
     color: var(--el-text-color-secondary);
+  }
+
+  // 区块标题样式 - 支持主题切换
+  .section-header-wrapper {
+    margin-bottom: 0; // 去掉底部间距，让表格紧贴
+
+    .section-header-content {
+      background: var(--el-fill-color-light); // 使用 Element Plus 的背景色变量
+      border-radius: 8px 8px 0 0; // 上圆角，下方与表格连接
+      border-bottom: 2px solid var(--el-color-primary); // 使用主题色
+      transition: all 0.3s ease;
+
+      .section-title {
+        color: var(--el-text-color-primary); // 使用文本主色
+      }
+
+      .count-badge {
+        background: var(--el-bg-color); // 使用背景色
+        border: 1px solid var(--el-border-color); // 使用边框色
+        border-radius: 6px;
+        transition: all 0.3s ease;
+
+        .el-icon {
+          color: var(--el-text-color-secondary); // 图标颜色
+        }
+
+        span {
+          color: var(--el-text-color-regular); // 文字颜色
+        }
+
+        &:hover {
+          background: var(--el-fill-color-light);
+          border-color: var(--el-color-primary-light-7);
+        }
+      }
+    }
+  }
+
+  // 深色模式下的特殊优化（可选）
+  html.dark {
+    .section-header-wrapper {
+      .section-header-content {
+        // 深色模式下可以添加微妙的阴影
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+    }
   }
 </style>
