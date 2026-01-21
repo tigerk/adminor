@@ -916,7 +916,8 @@
      */
     const tenantCreateFormInline: TenantsCreateFormProps = {
       tenant: {
-        ...row
+        ...row,
+        contractTemplateId: row.tenantContract?.contractTemplateId
       },
       tenantPersonal: {
         ...row.tenantPersonal
@@ -929,7 +930,7 @@
       isEdit: true
     };
 
-    openTenantDialog("修改", tenantCreateFormInline);
+    openTenantDialog("修改租客 " + row.tenantName, tenantCreateFormInline);
   };
 
   /**

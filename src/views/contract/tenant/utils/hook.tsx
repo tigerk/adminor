@@ -307,9 +307,9 @@ function useTenant() {
     });
   });
 
-  function openTenantDialog(title = "添加", row?: TenantsCreateFormProps, onSuccess?: (tenantId: bigint) => void) {
+  function openTenantDialog(title = "添加租客", row?: TenantsCreateFormProps, onSuccess?: (tenantId: bigint) => void) {
     addDialog({
-      title: `${title}租客`,
+      title: `${title}`,
       props: {
         formInline: {
           title,
