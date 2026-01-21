@@ -96,7 +96,7 @@
                 </template>
                 <template #extra>
                   <el-tooltip class="box-item" effect="dark" content="修改租客信息，包括姓名、联系电话、证件类型、证件号码等。" placement="top">
-                    <el-button type="primary" size="small" :icon="Edit" @click="editTenant(localFormInline)">修改租客</el-button>
+                    <el-button type="primary" size="small" :icon="Edit" :disabled="!allowEdit(localFormInline.status)" @click="editTenant(localFormInline)">修改租客</el-button>
                   </el-tooltip>
                 </template>
                 <el-descriptions-item label="姓名" label-align="right">
@@ -546,7 +546,15 @@
 <script setup lang="ts">
   import { h, onMounted, ref, watch } from "vue";
   import { TenantDetailProps, TenantsCreateFormProps } from "@/types";
-  import { getOptionByCode, ID_TYPE_OPTIONS, PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS, TENANT_CONTRACT_NATURE_OPTIONS, TENANT_SIGN_STATUS_OPTIONS } from "@/constants";
+  import {
+    getOptionByCode,
+    ID_TYPE_OPTIONS,
+    PAYMENT_METHOD_OPTIONS,
+    PRICE_METHOD_OPTIONS,
+    TENANT_CONTRACT_NATURE_OPTIONS,
+    TENANT_SIGN_STATUS_OPTIONS,
+    TENANT_STATUS_ENUM
+  } from "@/constants";
   import { Checked, Document, Download, Edit, Files, House, Money, Plus, User, View } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { deleteTenantContract, downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
@@ -905,7 +913,16 @@
     });
   };
 
+  const allowEdit = status => {
+    return !(status === TENANT_STATUS_ENUM.TERMINATED.code || status === TENANT_STATUS_ENUM.CANCELLED.code);
+  };
+
   const editTenant = (row: TenantDetailProps) => {
+    if (!allowEdit(row.status)) {
+      message("已退租或作废租客不能修改", { type: "warning" });
+      return;
+    }
+
     /**
      *   booking?: BookingListProps;
      *   tenantPersonal: TenantPersonalProps;

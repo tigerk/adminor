@@ -234,6 +234,30 @@ export const FIRST_BILL_DAY_OPTIONS = [
   { label: "跟随合同创建日", value: 1 }
 ] as const;
 
+/* 租客状态枚举 */
+export const TENANT_STATUS_ENUM = {
+  TO_SIGN: {
+    code: 0,
+    name: "待签字",
+    color: "#FF2800"
+  },
+  EFFECTIVE: {
+    code: 1,
+    name: "在租中",
+    color: "#52C41A"
+  },
+  TERMINATED: {
+    code: 2,
+    name: "已退租",
+    color: "#EAA212"
+  },
+  CANCELLED: {
+    code: -1,
+    name: "已作废",
+    color: "#DBDBDB"
+  }
+} as const;
+
 /**
  * 预定状态选项
  * 1=预定中，2=已转合同，3=客户违约（没收定金），4=业主违约（退还定金），5=已取消/过期
