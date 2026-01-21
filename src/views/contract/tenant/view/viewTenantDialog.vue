@@ -925,7 +925,8 @@
         ...row.tenantCompany
       },
       tenantMateList: row.tenantMateList,
-      otherFees: row.otherFees
+      otherFees: row.otherFees,
+      isEdit: true
     };
 
     openTenantDialog("修改", tenantCreateFormInline);

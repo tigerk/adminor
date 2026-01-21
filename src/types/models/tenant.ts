@@ -42,6 +42,7 @@ export interface TenantProps {
   companyId?: bigint; // 公司ID
   deptId?: string; // 部门ID
   roomIds: bigint[]; // 房间ID列表
+  roomList?: RoomListProps[]; // 房间列表
   contractTemplateId: bigint; // 合同模板ID
   tenantId?: bigint; // 租客ID
   tenantType: number; // 租客类型：1=个人，2=企业
@@ -51,10 +52,10 @@ export interface TenantProps {
   depositMonths: number; // 押金月数
   paymentMonths: number; // 支付周期（月）
   firstBillDay: number; // 首期账单收租日：0=跟随合同起租日，1=跟随合同创建日
-  leaseDate: Date[]; // 合同周期：[开始时间, 结束时间]
+  leaseDate?: Date[]; // 合同周期：[开始时间, 结束时间]
   leaseStart: Date; // 租赁开始时间
   leaseEnd: Date; // 租赁结束时间
-  checkDate: Date[]; // 入住时间：[开始时间, 结束时间]
+  checkDate?: Date[]; // 入住时间：[开始时间, 结束时间]
   checkInTime?: Date; // 实际入住时间
   checkOutTime?: Date; // 实际搬离时间
   originalLeaseStart?: Date; // 初始录入租赁开始时间
@@ -92,6 +93,7 @@ export interface TenantsCreateFormProps {
   tenantMateList: TenantMateProps[];
   tenant: TenantProps;
   otherFees: OtherFeeProps[];
+  isEdit?: boolean; // 是否为编辑模式
 }
 
 /** 租客同住人信息 */

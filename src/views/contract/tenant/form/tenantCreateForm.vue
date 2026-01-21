@@ -1,23 +1,48 @@
 <template>
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
     <div class="section-tenant-info">
-      <div class="mb-4 house-selector-info">
+      <!-- 房源选择区域 - 编辑模式完全禁用 -->
+      <div class="mb-4 house-selector-info" :class="{ 'edit-mode': props.isEdit }">
         <div class="flex justify-between items-center mb-2">
           <el-text type="primary" size="large" tag="b">房源信息</el-text>
-          <el-button type="primary" link :icon="Plus" @click="roomPickerRef.show(roomSelection)">选择房源</el-button>
+
+          <!-- 编辑模式：显示提示标签 -->
+          <el-tag v-if="props.isEdit" type="info" size="small" effect="plain">
+            <el-space>
+              <el-icon class="mr-1"><Lock /></el-icon>
+              编辑模式下不可修改房源
+            </el-space>
+          </el-tag>
+
+          <!-- 新增模式：显示选择按钮 -->
+          <el-button v-else type="primary" link :icon="Plus" @click="roomPickerRef.show(roomSelection)">选择房源</el-button>
         </div>
 
-        <div v-if="roomSelection.length > 0" class="room-tags-box p-3 border rounded-md">
-          <el-tag v-for="(room, index) in roomSelection" :key="room.value" closable class="m-1" size="large" @close="handleRemoveRoom(index)">
+        <!-- 房源标签展示区域 -->
+        <div v-if="roomSelection.length > 0" class="room-tags-box p-3 border rounded-md" :class="{ 'disabled-box': props.isEdit }">
+          <el-tag
+            v-for="(room, index) in roomSelection"
+            :key="room.value"
+            :closable="!props.isEdit"
+            :disable-transitions="props.isEdit"
+            class="m-1"
+            size="large"
+            :class="{ 'disabled-tag': props.isEdit }"
+            @close="handleRemoveRoom(index)"
+          >
             {{ room.label }} |
             <span class="text-orange-500">¥{{ room.extra?.price }}</span>
           </el-tag>
         </div>
-        <el-empty v-else description="请点击上方选择房源" :image-size="60" />
+
+        <!-- 空状态 -->
+        <el-empty v-else :description="props.isEdit ? '暂无房源信息' : '请点击上方选择房源'" :image-size="60" />
 
         <el-form-item prop="tenant.roomIds" label-width="0" class="!m-0" />
       </div>
-      <RoomPicker ref="roomPickerRef" @confirm="handleRoomConfirmed" />
+
+      <!-- 房源选择器 - 仅在非编辑模式下显示 -->
+      <RoomPicker v-if="!props.isEdit" ref="roomPickerRef" @confirm="handleRoomConfirmed" />
       <div class="section-header">
         <el-row :gutter="20">
           <el-col :span="16">
@@ -195,7 +220,7 @@
                 start-placeholder="开始时间"
                 end-placeholder="结束时间"
                 format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD HH:mm:ss"
+                value-format="YYYY-MM-DD"
                 :shortcuts="leaseDateShortCut"
                 :popper-options="{
                   placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
@@ -214,7 +239,7 @@
                 start-placeholder="开始时间"
                 end-placeholder="结束时间"
                 format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD HH:mm:ss"
+                value-format="YYYY-MM-DD"
                 :shortcuts="leaseDateShortCut"
                 :popper-options="{
                   placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
@@ -365,7 +390,7 @@
   import { tenantCompanyFormRules, tenantFormRules } from "@/views/contract/tenant/utils/rule";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/Business/UploadImage.vue";
-  import { Plus } from "@element-plus/icons-vue";
+  import { Lock, Plus } from "@element-plus/icons-vue";
   import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
@@ -376,6 +401,7 @@
 
   interface FormProps {
     formInline: TenantsCreateFormProps;
+    isEdit?: boolean; // 新增：标识是否为编辑模式
   }
 
   const props = defineProps<FormProps>();
@@ -385,9 +411,9 @@
 
   const roomSelection = ref([]);
 
-  // 表单数据
+  // 表单数据 - 确保正确初始化
   const formInline = reactive<TenantsCreateFormProps>({
-    booking: props.formInline.booking,
+    booking: props.formInline?.booking || null,
     tenantPersonal: {
       id: props.formInline?.tenantPersonal?.id,
       name: props.formInline?.tenantPersonal?.name || "",
@@ -417,19 +443,16 @@
       remark: props.formInline?.tenantCompany?.remark || ""
     },
     tenantMateList: props.formInline?.tenantMateList ?? null,
-    // 确保 tenant 为 null 时不会抛出错误
     tenant: props.formInline?.tenant || {
       contractTemplateId: props.formInline?.tenant?.contractTemplateId || null,
       roomIds: props.formInline?.tenant?.roomIds || [],
       tenantName: props.formInline?.tenant?.tenantName || "",
       tenantPhone: props.formInline?.tenant?.tenantPhone || "",
       tenantType: props.formInline?.tenant?.tenantType ?? 0,
-      leaseDate: props.formInline?.tenant?.leaseDate || [],
       leaseStart: props.formInline?.tenant?.leaseStart || new Date(),
       leaseEnd: props.formInline?.tenant?.leaseEnd || new Date(),
-      checkDate: props.formInline?.tenant?.checkDate || [],
-      checkInTime: props.formInline?.tenant?.checkInTime || null, // 实际入住时间
-      checkOutTime: props.formInline?.tenant?.checkOutTime || null, // 实际搬离时间
+      checkInTime: props.formInline?.tenant?.checkInTime || null,
+      checkOutTime: props.formInline?.tenant?.checkOutTime || null,
       contractNature: props.formInline?.tenant?.contractNature ?? 1,
       depositMonths: props.formInline?.tenant?.depositMonths || 1,
       paymentMonths: props.formInline?.tenant?.paymentMonths || 1,
@@ -447,6 +470,70 @@
     otherFees: props.formInline?.otherFees || []
   });
 
+  const salesmanList = ref<any[]>([]);
+  const contractTemplateList = ref<any[]>([]);
+
+  // 常量选项
+  const genderOptions = [...GENDER_OPTIONS];
+  const idTypeOptions = [...ID_TYPE_OPTIONS];
+  const tenantTypeOptions = [...TENANT_TYPE_OPTIONS];
+
+  // 初始化 roomSelection
+  const initRoomSelection = () => {
+    let roomList = [];
+
+    // 优先从 formInline 中获取 roomList（编辑模式）
+    if (props.formInline?.tenant.roomList && props.formInline.tenant?.roomList.length > 0) {
+      roomList = props.formInline?.tenant.roomList;
+    }
+    // 其次从 booking 中获取（新建模式）
+    else if (props.formInline?.booking?.roomList && props.formInline.booking.roomList.length > 0) {
+      roomList = props.formInline.booking.roomList;
+    }
+
+    if (roomList.length > 0) {
+      roomSelection.value = roomList.map(item => ({
+        label: formatRoomSelectName(item),
+        value: item.roomId,
+        description: formatRoomSelectDescription(item),
+        extra: item
+      }));
+    }
+  };
+
+  // 组件挂载时执行
+  onMounted(() => {
+    // 初始化房源选择
+    initRoomSelection();
+
+    // 初始化日期范围
+    if (props.formInline?.tenant) {
+      const { leaseStart, leaseEnd, checkInTime, checkOutTime } = props.formInline.tenant;
+
+      if (leaseStart && leaseEnd) {
+        formInline.tenant.leaseDate = [leaseStart, leaseEnd];
+      }
+
+      if (checkInTime && checkOutTime) {
+        formInline.tenant.checkDate = [checkInTime, checkOutTime];
+      }
+    }
+
+    // 获取所有用户
+    getCompanyUserOptions().then(resp => {
+      salesmanList.value = resp.data;
+    });
+
+    // 获取租客的可用的合同模板
+    getMyAvailableContractTemplates({
+      contractType: 1
+    }).then(resp => {
+      if (resp.code == 0) {
+        contractTemplateList.value = resp.data;
+      }
+    });
+  });
+
   // 验证规则
   const rules = computed(() => {
     if (formInline.tenant.tenantType === 0) {
@@ -455,11 +542,6 @@
       return tenantCompanyFormRules(formInline);
     }
   });
-
-  // 常量选项
-  const genderOptions = [...GENDER_OPTIONS];
-  const idTypeOptions = [...ID_TYPE_OPTIONS];
-  const tenantTypeOptions = [...TENANT_TYPE_OPTIONS];
 
   // 计算首次支付总额（押金 + 首付）
   function generateMonthsOptions(start, end) {
@@ -575,38 +657,6 @@
     return;
   }
 
-  const salesmanList = ref<any[]>([]);
-  const contractTemplateList = ref<any[]>([]);
-  onMounted(() => {
-    // 获取所有用户
-    getCompanyUserOptions().then(resp => {
-      salesmanList.value = resp.data;
-    });
-
-    // 如果有默认房源 ID
-    const roomList = formInline.booking?.roomList;
-    if (roomList && roomList.length > 0) {
-      const defaultOptions = roomList.map(item => ({
-        label: formatRoomSelectName(item),
-        value: item.roomId, // 注意：这里的 value 要和 v-model 绑定的类型一致
-        description: formatRoomSelectDescription(item),
-        extra: item
-      }));
-
-      // 关键：将默认选项放入 roomOptions 数组，下拉框才能找到 Label
-      roomSelection.value = defaultOptions;
-    }
-  });
-
-  // 获取租客的可用的合同模板
-  getMyAvailableContractTemplates({
-    contractType: 1
-  }).then(resp => {
-    if (resp.code == 0) {
-      contractTemplateList.value = resp.data;
-    }
-  });
-
   // 修改按钮点击事件
   const handleAddTenantMate = () => {
     openTenantMateDialog("添加", formInline.tenantMateList, mates => {
@@ -632,6 +682,11 @@
 
   // 移除房源
   const handleRemoveRoom = (index: number) => {
+    // 编辑模式下不允许删除
+    if (props.isEdit) {
+      return;
+    }
+
     roomSelection.value.splice(index, 1);
     calculateTotalRent();
   };
@@ -654,6 +709,34 @@
 
 <style scoped lang="scss">
   .house-selector-info {
+    position: relative;
+
+    // 编辑模式样式
+    &.edit-mode {
+      .room-tags-box {
+        background-color: var(--el-fill-color-lighter);
+        border-color: var(--el-border-color-lighter);
+        position: relative;
+
+        // 改为 all 完全阻止所有鼠标事件
+        &.disabled-box::after {
+          pointer-events: all; // 拦截所有鼠标事件
+          cursor: not-allowed;
+        }
+
+        .el-tag {
+          &.disabled-tag {
+            cursor: not-allowed;
+            opacity: 0.8;
+
+            // 禁用状态下的悬停效果
+            &:hover {
+              opacity: 0.8;
+            }
+          }
+        }
+      }
+    }
   }
 
   :deep(.el-form-item__label) {
@@ -736,6 +819,15 @@
   .rent-due-day-input {
     :deep(.el-input__inner) {
       text-align: center;
+    }
+  }
+
+  // 深色模式适配
+  html.dark {
+    .house-selector-info.edit-mode {
+      .room-tags-box.disabled-box::after {
+        background-color: rgba(0, 0, 0, 0.2);
+      }
     }
   }
 </style>

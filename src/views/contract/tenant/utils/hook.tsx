@@ -317,7 +317,8 @@ function useTenant() {
           dealChannelOptions: dealChannelOptions.value,
           tenantTagOptions: tenantTagOptions.value,
           ...row
-        }
+        },
+        isEdit: row?.isEdit || false
       },
       top: "1vh",
       width: "70vw",
