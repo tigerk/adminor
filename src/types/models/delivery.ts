@@ -32,18 +32,17 @@ export interface DeliveryProps {
 export interface DeliveryItemProps {
   id?: bigint; /** 交割单项目ID */
   deliveryId?: bigint; /** 交割单ID */
-  category?: string; /** 项目分类 */
+  itemCategory?: string; /** 项目分类: UTILITY-水电气, FACILITY-设施 */
   itemCode?: string; /** 物品编码 */
   itemName: string; /** 物品名称 */
-  itemCategory?: string; /** 物品分类 */
   itemUnit?: string; /** 物品单位 */
-  valueType?: string; /** 值类型 */
   preValue?: string; /** 前值 */
   currentValue: string; /** 当前值 */
-  unit: string; /** 单位 */
+  unit: string; /** 单位(如: 度、m³、元、个) */
   damaged?: boolean; /** 是否损坏 */
   remark?: string; /** 备注 */
   sortOrder?: number; /** 排序序号 */
+  isCustom?: boolean; /** 是否自定义项目 */
 }
 
 /** 交割单创建表单数据结构定义 */

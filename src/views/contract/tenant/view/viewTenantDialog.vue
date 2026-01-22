@@ -68,6 +68,7 @@
         </el-space>
       </div>
     </div>
+
     <div class="tabs-wrapper">
       <!-- 标签页内容 -->
       <el-tabs v-model="activeTab" class="modern-tabs">
@@ -294,8 +295,6 @@
               <el-tag type="info" size="default">{{ localFormInline.tenantBillList?.length || 0 }}条</el-tag>
             </el-space>
           </template>
-          <!-- 当前账单 -->
-          <!-- 方案6: 简洁商务风格 - 支持主题切换 -->
           <div class="mb-3 tab-content">
             <div class="section-header-wrapper">
               <div class="flex items-center justify-between px-4 py-2.5 section-header-content">
@@ -411,71 +410,18 @@
             </el-empty>
           </div>
         </el-tab-pane>
-        <!-- 物业交割单 Tab -->
+
+        <!-- 物业交割单 Tab - 使用独立组件 -->
         <el-tab-pane name="delivery">
           <template #label>
             <el-space>
               <el-icon><Files /></el-icon>
               <span>物业交割单</span>
-              <el-tag type="info" size="default">{{ deliveryList.length }}间</el-tag>
+              <el-tag type="info" size="default">{{ localFormInline.roomList?.length || 0 }}间</el-tag>
             </el-space>
           </template>
           <div class="tab-content">
-            <div v-if="deliveryList.length > 0" class="delivery-grid">
-              <el-card v-for="delivery in deliveryList" :key="delivery.roomId" class="delivery-card" shadow="hover">
-                <template #header>
-                  <div class="card-header">
-                    <div class="room-info">
-                      <el-icon class="room-icon"><House /></el-icon>
-                      <span class="room-name">
-                        {{ delivery.roomInfo?.communityName }}
-                        {{ delivery.roomInfo?.houseName }}-{{ delivery.roomInfo?.roomNumber }}
-                      </span>
-                    </div>
-                    <el-tag :type="delivery.status === 1 ? 'success' : 'info'" size="small">
-                      {{ delivery.status === 1 ? "已完成" : "待填写" }}
-                    </el-tag>
-                  </div>
-                </template>
-
-                <div class="delivery-content">
-                  <div v-if="delivery.id" class="delivery-info">
-                    <el-descriptions :column="2" size="small">
-                      <el-descriptions-item label="交割类型">
-                        <el-tag :type="delivery.handoverType === 'check_in' ? 'success' : 'warning'" size="small">
-                          {{ delivery.handoverType === "check_in" ? "入住交割" : "退租交割" }}
-                        </el-tag>
-                      </el-descriptions-item>
-                      <el-descriptions-item label="交割日期">
-                        {{ delivery.handoverDate }}
-                      </el-descriptions-item>
-                      <el-descriptions-item label="验收人">
-                        {{ delivery.inspectorName }}
-                      </el-descriptions-item>
-                      <el-descriptions-item label="物品数量">{{ delivery.items?.length || 0 }} 项</el-descriptions-item>
-                    </el-descriptions>
-
-                    <div v-if="delivery.remarks" class="delivery-remarks">
-                      <el-text type="info" size="small">备注：{{ delivery.remarks }}</el-text>
-                    </div>
-                  </div>
-
-                  <div v-else class="no-delivery">
-                    <el-empty description="暂未创建交割单" :image-size="80" />
-                  </div>
-                </div>
-
-                <template #footer>
-                  <div class="card-footer">
-                    <el-button v-if="delivery.id" type="primary" link :icon="View" @click="handleViewDelivery(delivery)">查看详情</el-button>
-                    <el-button v-if="delivery.id" type="primary" link :icon="Edit" @click="handleEditDelivery(delivery)">编辑</el-button>
-                    <el-button v-if="!delivery.id" type="primary" :icon="Plus" @click="openCreateDeliveryDialog(localFormInline.tenantId, delivery.roomId)">创建交割单</el-button>
-                  </div>
-                </template>
-              </el-card>
-            </div>
-
-            <el-empty v-else description="暂无房间信息" :image-size="150" />
+            <DeliveryTab :room-list="localFormInline.roomList" :tenant-id="localFormInline.tenantId" />
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -484,7 +430,7 @@
 </template>
 
 <script setup lang="ts">
-  import { h, onMounted, ref, watch } from "vue";
+  import { h, ref, watch } from "vue";
   import { TenantDetailProps, TenantsCreateFormProps } from "@/types";
   import {
     getOptionByCode,
@@ -495,37 +441,26 @@
     TENANT_SIGN_STATUS_OPTIONS,
     TENANT_STATUS_ENUM
   } from "@/constants";
-  import { Checked, Document, Download, Edit, Files, House, Money, Plus, User, View } from "@element-plus/icons-vue";
+  import { Checked, Document, Download, Edit, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
-  import { deleteTenantContract, downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
+  import { downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
-  import { useUserStoreHook } from "@/store/modules/user";
-  import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import BillTable from "@/views/contract/tenant/view/BillTable.vue";
-  import { tenant } from "@/router/enums";
+  import DeliveryTab from "@/views/contract/tenant/view/DeliveryTab.vue";
 
   const { openTenantDialog } = useTenant();
-
-  // 检查用户是否有删除合同权限
-  const { permissions } = useUserStoreHook();
-  // const hasContractDeletePermission = computed(() => permissions.includes("tenant:contract:delete"));
 
   interface FormProps {
     formInline: TenantDetailProps;
   }
 
-  // 账单详情行展开状态
   const expandedBillRows = ref<string[]>([]);
-
   const props = defineProps<FormProps>();
-
-  // 创建本地响应式副本
   const localFormInline = ref({ ...props.formInline });
 
-  // 监听 props 变化，同步到本地副本
   watch(
     () => props.formInline,
     newVal => {
@@ -534,85 +469,54 @@
     { deep: true }
   );
 
-  // 定义 emit 事件
   const emit = defineEmits<{
-    "contract-signed": [tenantId: bigint]; // 合同签约成功事件
-    "contract-updated": []; // 合同更新事件
+    "contract-signed": [tenantId: bigint];
+    "contract-updated": [];
   }>();
 
-  // 当前激活的标签页
   const activeTab = ref("tenant");
 
-  // 计算总面积
   const getTotalArea = () => {
     if (!props.formInline.roomList) return 0;
     return props.formInline.roomList.reduce((sum, room) => sum + (room.area || 0), 0);
   };
 
-  // 获取证件类型名称
   const getIdTypeName = (idType: number) => {
     const option = ID_TYPE_OPTIONS.find(item => item.value === idType);
     return option?.label || "未知";
   };
 
-  // 获取签约状态名称
-  const getStatusName = (status: number) => {
-    const option = TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === status);
-    return option?.label || "未知";
-  };
-
-  // 获取签约状态类型
-  const getStatusType = (status: number) => {
-    const typeMap: Record<number, string> = {
-      0: "info",
-      1: "warning",
-      2: "success",
-      3: "danger"
-    };
-    return typeMap[status] || "info";
-  };
-
-  // 获取收租设置文本
   const getRentDueTypeText = (type: number, day: number) => {
-    if (type === 1) {
-      return `提前${day}天收租`;
-    } else if (type === 2) {
-      return `每月${day}号收租`;
-    }
+    if (type === 1) return `提前${day}天收租`;
+    else if (type === 2) return `每月${day}号收租`;
     return "未设置";
   };
 
-  // 获取签约类型名称
   const getContractNatureName = (nature: number) => {
     const option = TENANT_CONTRACT_NATURE_OPTIONS.find(item => item.value === nature);
     return option?.label || "未知";
   };
 
-  // 下载合同
   const handleDownloadContract = () => {
     if (!props.formInline.tenantContract?.contractContent) {
       message("合同内容为空，无法下载", { type: "warning" });
       return;
     }
-    // 调用后端接口下载 PDF 合同。
     downloadTenantContract({
       tenantId: props.formInline.tenantContract.tenantId
     }).then(res => {
       const blob = new Blob([res], { type: "application/pdf" });
-
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `租客合同_${props.formInline.tenantContract.tenantId}.pdf`;
       document.body.appendChild(a);
       a.click();
-
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     });
   };
 
-  // 重新生成合同
   const handleGenerateContract = () => {
     const formRef = ref();
 
@@ -632,19 +536,16 @@
       contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, tenantId: props.formInline.tenantContract.tenantId }),
       beforeSure: (done, { options }) => {
         const selectedTemplate = formRef.value.getSelectedTemplate();
-
         if (!selectedTemplate) {
           message("请选择合同模板", { type: "warning" });
           return;
         }
-
         generateTenantContract({
           tenantContractId: localFormInline.value.tenantContract.id,
           tenantId: localFormInline.value.tenantContract.tenantId,
           contractTemplateId: selectedTemplate
         }).then(resp => {
           if (resp.code == 0) {
-            console.log(resp.data);
             localFormInline.value.tenantContract = resp.data;
             message("合同生成成功", { type: "success" });
             done();
@@ -659,7 +560,6 @@
       message("合同已签约，无需重复操作", { type: "warning" });
       return;
     }
-
     updateTenantContractSignStatus({
       tenantContractId: localFormInline.value.tenantContract.id,
       signStatus: 1
@@ -667,191 +567,10 @@
       if (resp.code == 0) {
         message("合同签约成功", { type: "success" });
         localFormInline.value.tenantContract.signStatus = 1;
-
-        // 通知父组件刷新列表
         emit("contract-signed", localFormInline.value.id);
       } else {
         message(resp.message || "合同签约修改失败", { type: "warning" });
       }
-    });
-  };
-
-  const handleDeleteContract = () => {
-    deleteTenantContract({
-      tenantContractId: props.formInline.tenantContract.id
-    }).then(resp => {
-      if (resp.code == 0) {
-        message("合同删除成功", { type: "success" });
-        emit("contract-updated");
-      }
-    });
-  };
-
-  // 交割单列表
-  const deliveryList = ref([]);
-  const deliveryFormRef = ref();
-
-  // 初始化交割单列表
-  const initDeliveryList = () => {
-    if (!localFormInline.value.roomList) return;
-
-    // 为每个房间创建交割单记录（如果已有交割单则显示，否则显示待创建状态）
-    deliveryList.value = localFormInline.value.roomList.map(room => ({
-      roomId: room.roomId,
-      roomInfo: {
-        communityName: room.communityName,
-        houseName: room.houseName,
-        roomNumber: room.roomNumber
-      },
-      id: null, // 实际应从后端获取
-      status: 0,
-      handoverType: null,
-      handoverDate: null,
-      inspectorName: null,
-      items: [],
-      remarks: null
-    }));
-
-    // 实际项目中应该调用API获取交割单列表
-    // getDeliveryList({
-    //   subjectType: 'tenant',
-    //   subjectTypeId: localFormInline.value.id
-    // }).then(resp => {
-    //   if (resp.code === 0) {
-    //     // 合并交割单数据
-    //     deliveryList.value = deliveryList.value.map(item => {
-    //       const delivery = resp.data.find(d => d.roomId === item.roomId);
-    //       return delivery ? { ...item, ...delivery } : item;
-    //     });
-    //   }
-    // });
-  };
-
-  // 创建交割单
-  const openCreateDeliveryDialog = (tenantId: bigint, roomId: bigint) => {
-    const room = localFormInline.value.roomList.find(r => r.roomId === roomId);
-
-    addDialog({
-      title: `创建交割单 - ${room?.houseName}-${room?.roomNumber}`,
-      props: {
-        formInline: {
-          subjectType: "tenant",
-          subjectTypeId: tenantId,
-          roomId: roomId,
-          handoverType: "check_in",
-          items: [],
-          facilities: room?.facilities || [], // 房间设施数据
-          imageList: []
-        }
-      },
-      top: "2vh",
-      width: "80vw",
-      lockScroll: true,
-      draggable: true,
-      fullscreen: deviceDetection(),
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () =>
-        h(DeliveryCreateForm, {
-          ref: deliveryFormRef,
-          formInline: null
-        }),
-      beforeSure: (done, { options }) => {
-        const FormInstance = deliveryFormRef.value;
-        const formRuleRef = FormInstance?.getRef?.();
-        const formData = FormInstance?.getFormData?.();
-
-        formRuleRef.validate(valid => {
-          if (valid) {
-            // 调用API创建交割单
-            // createDelivery(formData).then(resp => {
-            //   if (resp.code === 0) {
-            //     message('交割单创建成功', { type: 'success' });
-            //     initDeliveryList(); // 刷新列表
-            //     done();
-            //   }
-            // });
-
-            // 临时代码，实际应调用API
-            message("交割单创建成功", { type: "success" });
-            initDeliveryList();
-            done();
-          }
-        });
-      }
-    });
-  };
-
-  // 编辑交割单
-  const handleEditDelivery = (delivery: any) => {
-    const room = localFormInline.value.roomList.find(r => r.roomId === delivery.roomId);
-
-    addDialog({
-      title: `编辑交割单 - ${room?.houseName}-${room?.roomNumber}`,
-      props: {
-        formInline: {
-          ...delivery,
-          facilities: room?.facilities || []
-        }
-      },
-      top: "2vh",
-      width: "80vw",
-      lockScroll: true,
-      draggable: true,
-      fullscreen: deviceDetection(),
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () =>
-        h(DeliveryCreateForm, {
-          ref: deliveryFormRef,
-          formInline: null
-        }),
-      beforeSure: (done, { options }) => {
-        const FormInstance = deliveryFormRef.value;
-        const formRuleRef = FormInstance?.getRef?.();
-        const formData = FormInstance?.getFormData?.();
-
-        formRuleRef.validate(valid => {
-          if (valid) {
-            // updateDelivery(formData).then(resp => {
-            //   if (resp.code === 0) {
-            //     message('交割单更新成功', { type: 'success' });
-            //     initDeliveryList();
-            //     done();
-            //   }
-            // });
-
-            message("交割单更新成功", { type: "success" });
-            initDeliveryList();
-            done();
-          }
-        });
-      }
-    });
-  };
-
-  // 查看交割单详情
-  const handleViewDelivery = (delivery: any) => {
-    const room = localFormInline.value.roomList.find(r => r.roomId === delivery.roomId);
-
-    addDialog({
-      title: `查看交割单 - ${room?.houseName}-${room?.roomNumber}`,
-      props: {
-        formInline: delivery
-      },
-      top: "2vh",
-      width: "80vw",
-      lockScroll: true,
-      draggable: true,
-      fullscreen: deviceDetection(),
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      hideFooter: true, // 查看模式不显示底部按钮
-      contentRenderer: () =>
-        h(DeliveryCreateForm, {
-          ref: deliveryFormRef,
-          formInline: null
-        })
     });
   };
 
@@ -864,40 +583,19 @@
       message("已退租或作废租客不能修改", { type: "warning" });
       return;
     }
-
-    /**
-     *   booking?: BookingListProps;
-     *   tenantPersonal: TenantPersonalProps;
-     *   tenantCompany: TenantCompanyProps;
-     *   tenantMateList: TenantMateProps[];
-     *   tenant: TenantProps;
-     *   otherFees: OtherFeeProps[];
-     */
     const tenantCreateFormInline: TenantsCreateFormProps = {
       tenant: {
         ...row,
         contractTemplateId: row.tenantContract?.contractTemplateId
       },
-      tenantPersonal: {
-        ...row.tenantPersonal
-      },
-      tenantCompany: {
-        ...row.tenantCompany
-      },
+      tenantPersonal: { ...row.tenantPersonal },
+      tenantCompany: { ...row.tenantCompany },
       tenantMateList: row.tenantMateList,
       otherFees: row.otherFees,
       isEdit: true
     };
-
     openTenantDialog("修改租客 " + row.tenantName, tenantCreateFormInline);
   };
-
-  /**
-   * 初始化交割单列表
-   */
-  onMounted(() => {
-    initDeliveryList();
-  });
 </script>
 
 <style scoped lang="scss">

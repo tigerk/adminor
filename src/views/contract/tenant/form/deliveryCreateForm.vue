@@ -50,9 +50,9 @@
               <el-switch v-model="row.damaged" :active-value="1" :inactive-value="0" active-color="#f56c6c" inactive-color="#67c23a" />
             </template>
           </el-table-column>
-          <el-table-column prop="remarks" label="备注" min-width="200">
+          <el-table-column prop="remark" label="备注" min-width="200">
             <template #default="{ row }">
-              <el-input v-model="row.remarks" type="textarea" :rows="1" placeholder="请输入备注" size="small" />
+              <el-input v-model="row.remark" type="textarea" :rows="1" placeholder="请输入备注" size="small" />
             </template>
           </el-table-column>
         </el-table>
@@ -122,8 +122,8 @@
 
       <!-- 备注说明 -->
       <div class="form-section">
-        <el-form-item label="备注说明" prop="remarks">
-          <el-input v-model="formData.remarks" type="textarea" :rows="4" placeholder="请输入备注说明" maxlength="500" show-word-limit />
+        <el-form-item label="备注说明" prop="remark">
+          <el-input v-model="formData.remark" type="textarea" :rows="4" placeholder="请输入备注说明" maxlength="500" show-word-limit />
         </el-form-item>
       </div>
     </el-form>
@@ -161,7 +161,7 @@
     status: props.formInline?.status ?? 0,
     handoverDate: props.formInline?.handoverDate || new Date(),
     inspectorId: props.formInline?.inspectorId,
-    remarks: props.formInline?.remarks || "",
+    remark: props.formInline?.remark || "",
     items: props.formInline?.items || [],
     imageList: props.formInline?.imageList || []
   });
@@ -190,7 +190,7 @@
         itemUnit: "个",
         currentValue: facility.count || "1",
         damaged: 0,
-        remarks: "",
+        remark: "",
         sortOrder: index + 1
       }));
     }
@@ -227,7 +227,7 @@
             itemUnit: meter.unit,
             currentValue: meter.value,
             damaged: 0,
-            remarks: "",
+            remark: "",
             sortOrder: formData.items.length + 1
           });
         }
