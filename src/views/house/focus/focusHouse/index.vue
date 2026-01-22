@@ -134,12 +134,12 @@
             <el-image v-if="item.imageList && item.imageList.length > 0" :src="item.imageList[0]" fit="cover" style="width: 100%; height: 100%">
               <template #error>
                 <div class="image-error">
-                  <IconifyIconOnline icon="ep:picture" :style="{ fontSize: '48px', color: '#ccc' }" />
+                  <IconifyIconOnline icon="ep:picture" :style="{ fontSize: '48px' }" class="image-error-icon" />
                 </div>
               </template>
             </el-image>
             <div v-else class="image-placeholder">
-              <IconifyIconOnline icon="ep:picture" :style="{ fontSize: '48px', color: '#ccc' }" />
+              <IconifyIconOnline icon="ep:picture" :style="{ fontSize: '48px' }" class="image-placeholder-icon" />
             </div>
 
             <!-- 出租率标签 -->
@@ -183,7 +183,7 @@
 
             <!-- 标签 -->
             <div class="tags-row">
-              <el-tag v-if="!item.tags || item.tags.length == 0">暂无标签</el-tag>
+              <el-tag v-if="!item.tags || item.tags.length == 0" class="empty-tag">暂无标签</el-tag>
               <el-tag v-for="tag in item.tags" :key="tag" size="small" type="primary" effect="plain">
                 {{ tag }}
               </el-tag>
@@ -196,7 +196,7 @@
                 <el-tag v-for="facility in item.facilityNames" :key="facility" size="small" effect="plain">
                   {{ getFacilityLabel(facility) }}
                 </el-tag>
-                <el-tag v-if="!item.facilities || item.facilities.length == 0">暂无设施</el-tag>
+                <el-tag v-if="!item.facilities || item.facilities.length == 0" class="empty-tag">暂无设施</el-tag>
               </div>
             </div>
 
@@ -261,13 +261,13 @@
 <style scoped lang="scss">
   .search-header-flex {
     display: flex;
-    justify-content: space-between; // 拉开左右距离
-    align-items: flex-start; // 顶部对齐
-    flex-wrap: wrap; // 屏幕过窄时自动换行
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
 
   .action-buttons {
-    margin-bottom: 18px; // 保持与 el-form-item 的默认间距一致
+    margin-bottom: 18px;
   }
 
   .focus-house-container {
@@ -328,7 +328,7 @@
     position: relative;
     width: 100%;
     height: 200px;
-    background: #f5f7fa;
+    background: var(--el-fill-color-lighter);
   }
 
   .image-placeholder,
@@ -338,19 +338,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f5f7fa;
+    background: var(--el-fill-color-lighter);
+  }
+
+  .image-placeholder-icon,
+  .image-error-icon {
+    color: var(--el-text-color-placeholder);
   }
 
   .occupancy-badge {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 500;
+    backdrop-filter: blur(4px);
   }
 
   .card-content {
@@ -368,7 +374,7 @@
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: #303133;
+    color: var(--el-text-color-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -377,7 +383,7 @@
 
   .card-code {
     font-size: 12px;
-    color: #909399;
+    color: var(--el-text-color-secondary);
     margin-left: 8px;
   }
 
@@ -385,13 +391,13 @@
     display: flex;
     align-items: center;
     margin-bottom: 8px;
-    color: #606266;
+    color: var(--el-text-color-regular);
     font-size: 14px;
   }
 
   .info-icon {
     margin-right: 6px;
-    color: #409eff;
+    color: var(--el-color-primary);
     font-size: 16px;
   }
 
@@ -406,7 +412,7 @@
     justify-content: space-around;
     padding: 12px 0;
     margin: 12px 0;
-    background: #f5f7fa;
+    background: var(--el-fill-color-light);
     border-radius: 6px;
   }
 
@@ -418,14 +424,14 @@
 
   .stat-label {
     font-size: 12px;
-    color: #909399;
+    color: var(--el-text-color-secondary);
     margin-bottom: 4px;
   }
 
   .stat-value {
     font-size: 20px;
     font-weight: 600;
-    color: #409eff;
+    color: var(--el-color-primary);
   }
 
   .tags-row {
@@ -435,19 +441,26 @@
     margin: 12px 0;
   }
 
+  .empty-tag {
+    background: var(--el-fill-color);
+    color: var(--el-text-color-secondary);
+    border-color: var(--el-border-color-lighter);
+  }
+
   .facilities-row {
     display: flex;
     align-items: flex-start;
     margin: 12px 0;
     padding: 8px;
-    background: #f0f9ff;
+    background: var(--el-color-primary-light-9);
     border-radius: 6px;
+    border: 1px solid var(--el-color-primary-light-8);
   }
 
   .facilities-icon {
     margin-right: 8px;
     margin-top: 2px;
-    color: #409eff;
+    color: var(--el-color-primary);
     font-size: 16px;
   }
 
@@ -464,8 +477,9 @@
     gap: 12px;
     margin: 12px 0;
     padding: 8px;
-    background: #fef0f0;
+    background: var(--el-color-danger-light-9);
     border-radius: 6px;
+    border: 1px solid var(--el-color-danger-light-8);
   }
 
   .utility-item {
@@ -473,24 +487,23 @@
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    color: #606266;
+    color: var(--el-text-color-regular);
 
     .iconify {
       font-size: 14px;
-      color: #f56c6c;
+      color: var(--el-color-danger);
     }
   }
 
   .contact-row {
     display: flex;
     align-items: center;
-    justify-content: space-between; // 添加这行
+    justify-content: space-between;
     margin: 12px 0;
-    color: #606266;
+    color: var(--el-text-color-regular);
     font-size: 14px;
   }
 
-  // 添加新的样式
   .contact-info {
     display: flex;
     align-items: center;
@@ -498,13 +511,13 @@
 
   .contact-icon {
     margin-right: 6px;
-    color: #67c23a;
+    color: var(--el-color-success);
     font-size: 16px;
   }
 
   .update-time {
     font-size: 12px;
-    color: #c0c4cc;
+    color: var(--el-text-color-placeholder);
     text-align: right;
     margin-top: 8px;
   }
@@ -515,7 +528,7 @@
     justify-content: center;
     align-items: center;
     padding: 20px;
-    color: #909399;
+    color: var(--el-text-color-secondary);
     font-size: 14px;
     gap: 8px;
   }
