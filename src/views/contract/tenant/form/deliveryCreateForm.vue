@@ -11,8 +11,7 @@
           <el-col :span="8">
             <el-form-item label="交割类型" prop="handoverType">
               <el-select v-model="formData.handoverType" placeholder="请选择交割类型" class="w-full" disabled>
-                <el-option label="入住交割" value="check_in" />
-                <el-option label="退租交割" value="check_out" />
+                <el-option v-for="type in DELIVERY_TYPE_OPTIONS" :key="type.value" :label="type.label" :value="type.value" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -166,6 +165,7 @@
   import { getCompanyUserOptions } from "@/api/company";
   import { IconifyIconOnline } from "@/components/ReIcon";
   import { getDictDataByDictCode } from "@/api/sys/dict";
+  import { DELIVERY_ITEM_CATEGORY, DELIVERY_TYPE_OPTIONS } from "@/constants";
 
   interface FormProps {
     formInline: DeliveryCreateFormProps;

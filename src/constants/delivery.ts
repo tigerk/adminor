@@ -34,8 +34,8 @@ export const DELIVERY_STATUS_ENUM = {
  * 交割类型选项
  */
 export const DELIVERY_TYPE_OPTIONS = [
-  { label: "入住交割", value: "check_in" },
-  { label: "退租交割", value: "check_out" }
+  { label: "入住交割", value: "CHECK_IN" },
+  { label: "退租交割", value: "CHECK_OUT" }
 ] as const;
 
 /**

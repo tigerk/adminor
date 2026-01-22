@@ -21,8 +21,8 @@
           <div v-if="delivery.id" class="delivery-info">
             <el-descriptions :column="2" size="small">
               <el-descriptions-item label="交割类型">
-                <el-tag :type="delivery.handoverType === 'check_in' ? 'success' : 'warning'" size="small">
-                  {{ delivery.handoverType === "check_in" ? "入住交割" : "退租交割" }}
+                <el-tag :type="delivery.handoverType === 'CHECK_IN' ? 'success' : 'warning'" size="small">
+                  {{ getOptionByCode([...DELIVERY_TYPE_OPTIONS], delivery.handoverType)?.label }}
                 </el-tag>
               </el-descriptions-item>
               <el-descriptions-item label="交割日期">
@@ -66,8 +66,9 @@
   import { deviceDetection } from "@/store/utils";
   import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue";
   import type { DeliveryProps, RoomListProps } from "@/types";
-  import { createDelivery, getDeliveryList } from "@/api/delivery";
+  import { createDelivery, getDeliveryList, updateDelivery } from "@/api/delivery";
   import { convertImage2string } from "@/utils/image";
+  import { DELIVERY_TYPE_OPTIONS, getOptionByCode } from "@/constants";
 
   interface DeliveryTabProps {
     roomList: RoomListProps[];
@@ -191,7 +192,6 @@
 
         formRuleRef.validate((valid: boolean) => {
           if (valid) {
-            debugger;
             formData.imageList = convertImage2string(formData.imageList || []);
 
             createDelivery(formData).then(resp => {
@@ -254,22 +254,17 @@
 
         formRuleRef.validate((valid: boolean) => {
           if (valid) {
+            formData.imageList = convertImage2string(formData.imageList || []);
             // TODO: 调用API更新交割单
-            // updateDelivery(formData).then(resp => {
-            //   if (resp.code === 0) {
-            //     message('交割单更新成功', { type: 'success' });
-            //     initDeliveryList();
-            //     done();
-            //   } else {
-            //     message(resp.message || '更新失败', { type: 'error' });
-            //   }
-            // });
-
-            // 临时代码，模拟更新成功
-            console.log("更新交割单数据:", formData);
-            message("交割单更新成功", { type: "success" });
-            initDeliveryList();
-            done();
+            updateDelivery(formData).then(resp => {
+              if (resp.code === 0) {
+                message("交割单更新成功", { type: "success" });
+                initDeliveryList();
+                done();
+              } else {
+                message(resp.message || "更新失败", { type: "error" });
+              }
+            });
           } else {
             message("请完善必填信息", { type: "warning" });
           }
