@@ -4,6 +4,8 @@
  * 交割单数据结构定义
  */
 
+import type { FacilityItemProps } from "@/types";
+
 /** 交割单信息 */
 export interface DeliveryProps {
   id?: bigint;
@@ -31,13 +33,16 @@ export interface DeliveryItemProps {
   id?: bigint;
   deliveryId?: bigint;
   category?: string;
-  itemId?: bigint;
+  itemCode?: string;
   itemName: string;
+  itemCategory?: string;
   itemUnit?: string;
+  valueType?: string;
   preValue?: string;
   currentValue: string;
-  damaged?: number;
-  remarks?: string;
+  unit: string;
+  damaged?: boolean;
+  remark?: string;
   sortOrder?: number;
 }
 
@@ -51,11 +56,11 @@ export interface DeliveryCreateFormProps {
   status?: number;
   handoverDate?: Date;
   inspectorId?: bigint;
-  remarks?: string;
+  remark?: string;
   /** 交割单明细 */
   items: DeliveryItemProps[];
   /** 房间设施信息 */
-  facilities?: any[];
+  facilities?: FacilityItemProps[];
   /** 图片列表 */
   imageList?: string[];
 }

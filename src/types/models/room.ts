@@ -1,7 +1,7 @@
 // ==================== 3. src/types/models/house.ts ====================
 // 房间相关业务模型
 
-import type { BuildingGroupProps, CompoundGroupProps, FacilityItemProps, FloorGroupProps, HouseLayoutProps, RoomLeaseInfoProps, PriceConfigProps } from "@/types";
+import type { BuildingGroupProps, CompoundGroupProps, FacilityItemProps, FloorGroupProps, HouseLayoutProps, PriceConfigProps, RoomLeaseInfoProps } from "@/types";
 
 export type RoomTotal = {
   code: number;
@@ -67,6 +67,14 @@ export type RoomListProps = {
   floor?: number;
   /** 出租价格 */
   price?: string;
+  /** 设施 */
+  facilities?: FacilityItemProps[];
+  /** 标签 */
+  tags?: string[];
+  /** 图片列表 */
+  imageList?: string[];
+  /** 视频列表 */
+  videoList?: string[];
   /** 可出租日期 */
   availableDate?: string;
   /** 空置开始时间 */

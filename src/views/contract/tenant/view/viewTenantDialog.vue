@@ -69,9 +69,6 @@
       </div>
     </div>
     <div class="tabs-wrapper">
-      <div class="tabs-action-container">
-        <el-button type="primary" size="small" :icon="Edit" @click="handleDownloadContract">修改租客</el-button>
-      </div>
       <!-- 标签页内容 -->
       <el-tabs v-model="activeTab" class="modern-tabs">
         <!-- 租客信息 Tab -->
@@ -472,7 +469,7 @@
                   <div class="card-footer">
                     <el-button v-if="delivery.id" type="primary" link :icon="View" @click="handleViewDelivery(delivery)">查看详情</el-button>
                     <el-button v-if="delivery.id" type="primary" link :icon="Edit" @click="handleEditDelivery(delivery)">编辑</el-button>
-                    <el-button v-if="!delivery.id" type="primary" :icon="Plus" @click="openCreateDeliveryDialog(delivery.roomId)">创建交割单</el-button>
+                    <el-button v-if="!delivery.id" type="primary" :icon="Plus" @click="openCreateDeliveryDialog(localFormInline.tenantId, delivery.roomId)">创建交割单</el-button>
                   </div>
                 </template>
               </el-card>
@@ -508,6 +505,7 @@
   import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import BillTable from "@/views/contract/tenant/view/BillTable.vue";
+  import { tenant } from "@/router/enums";
 
   const { openTenantDialog } = useTenant();
 
@@ -730,7 +728,7 @@
   };
 
   // 创建交割单
-  const openCreateDeliveryDialog = (roomId: bigint) => {
+  const openCreateDeliveryDialog = (tenantId: bigint, roomId: bigint) => {
     const room = localFormInline.value.roomList.find(r => r.roomId === roomId);
 
     addDialog({
@@ -738,7 +736,7 @@
       props: {
         formInline: {
           subjectType: "tenant",
-          subjectTypeId: localFormInline.value.id,
+          subjectTypeId: tenantId,
           roomId: roomId,
           handoverType: "check_in",
           items: [],
