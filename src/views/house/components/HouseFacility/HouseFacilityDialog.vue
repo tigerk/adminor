@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from "vue";
-  import { Minus, Plus } from "@element-plus/icons-vue";
+  import { onMounted, reactive, ref, watch } from "vue";
+  import { Plus, Minus } from "@element-plus/icons-vue";
   import { type FacilityFormProps } from "@/views/house/components/HouseFacility/types";
   import { getDictDataByDictCode } from "@/api/sys/dict";
 
@@ -106,7 +106,7 @@
       <el-checkbox :model-value="isAllSelected()" @change="toggleSelectAll">全选</el-checkbox>
     </div>
     <div class="facilities-grid">
-      <div v-for="option in facilityOptions" :key="option.value" class="facility-item" :class="{ 'is-selected': isSelected(option.value) }">
+      <div v-for="option in facilityOptions" :key="option.value" class="facility-item">
         <el-checkbox :model-value="isSelected(option.value)" @change="toggleFacility(option.value)">
           {{ option.label }}
         </el-checkbox>
@@ -140,15 +140,13 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--el-border-color-lighter);
   }
 
   .section-title {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: var(--el-text-color-primary);
+    color: #303133;
   }
 
   .facilities-grid {
@@ -157,93 +155,32 @@
     gap: 16px 20px;
   }
 
-  @media (max-width: 1200px) {
-    .facilities-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 768px) {
-    .facilities-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
   .facility-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
-    background: var(--el-fill-color-light);
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 6px;
-    transition: all 0.3s ease;
+    padding: 8px 12px;
+    background: #f5f7fa;
+    border-radius: 4px;
+    transition: background-color 0.3s;
   }
 
   .facility-item:hover {
-    background: var(--el-fill-color);
-    border-color: var(--el-border-color);
-    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.06);
-  }
-
-  .facility-item.is-selected {
-    background: var(--el-color-primary-light-9);
-    border-color: var(--el-color-primary-light-5);
-  }
-
-  .facility-item.is-selected:hover {
-    background: var(--el-color-primary-light-8);
-    border-color: var(--el-color-primary-light-3);
-  }
-
-  /* 暗色主题额外适配 */
-  html.dark .facility-item {
-    background: var(--el-fill-color-dark);
-    border-color: var(--el-border-color);
-  }
-
-  html.dark .facility-item:hover {
-    background: var(--el-fill-color);
-    border-color: var(--el-border-color-light);
-    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.3);
-  }
-
-  html.dark .facility-item.is-selected {
-    background: rgba(var(--el-color-primary-rgb), 0.15);
-    border-color: var(--el-color-primary-light-5);
-  }
-
-  html.dark .facility-item.is-selected:hover {
-    background: rgba(var(--el-color-primary-rgb), 0.25);
-    border-color: var(--el-color-primary-light-3);
+    background: #ecf5ff;
   }
 
   .count-control {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     margin-left: 12px;
   }
 
   :deep(.count-control .el-button) {
-    width: 24px;
-    height: 24px;
-    min-height: 24px;
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
     padding: 0;
-    background: var(--el-fill-color);
-    border-color: var(--el-border-color);
-  }
-
-  :deep(.count-control .el-button:hover) {
-    background: var(--el-color-primary-light-9);
-    border-color: var(--el-color-primary);
-    color: var(--el-color-primary);
-  }
-
-  :deep(.count-control .el-button.is-disabled) {
-    background: var(--el-fill-color-lighter);
-    border-color: var(--el-border-color-lighter);
-    color: var(--el-text-color-disabled);
   }
 
   :deep(.count-control .el-button.is-circle) {
@@ -257,11 +194,17 @@
   }
 
   .count-text {
-    min-width: 24px;
+    min-width: 20px;
     font-size: 14px;
     font-weight: 500;
-    color: var(--el-text-color-regular);
+    color: #303133;
     text-align: center;
+  }
+
+  .dialog-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
   }
 
   :deep(.el-checkbox) {
@@ -271,10 +214,5 @@
   :deep(.el-checkbox__label) {
     padding-left: 8px;
     font-size: 14px;
-    color: var(--el-text-color-regular);
-  }
-
-  :deep(.el-checkbox__input.is-checked + .el-checkbox__label) {
-    color: var(--el-color-primary);
   }
 </style>
