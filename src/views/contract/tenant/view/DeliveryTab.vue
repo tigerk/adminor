@@ -95,12 +95,12 @@
   // 获取状态文本
   const getStatusText = (status?: number) => {
     switch (status) {
-      case 0:
-        return "待填写";
+      case -1:
+        return "作废";
       case 1:
-        return "已完成";
+        return "已填写";
       case 2:
-        return "待审核";
+        return "已签署";
       default:
         return "待填写";
     }
