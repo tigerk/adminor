@@ -235,21 +235,26 @@
       "help",
       "wordcount"
     ],
+    // 1. 确保 toolbar 包含 'blocks' (即 header 切换) 和 'fontsize'
     toolbar: [
-      "customPreview | undo redo | formatselect fontsize | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify",
-      "bullist numlist outdent indent | forecolor backcolor | image link table | removeformat | code fullscreen"
+      "customPreview | undo redo | blocks fontsize | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify",
+      "bullist numlist outdent indent | forecolor backcolor | table | removeformat | fullscreen"
     ],
     toolbar_mode: "wrap",
     font_size_formats: "12px 14px 16px 18px 20px 24px 28px 32px 36px",
+    // 3. 自定义 Block 菜单里的标题选项 (Header 切换)
+    block_formats: "正文=p; 标题1=h1; 标题2=h2; 标题3=h3; 标题4=h4; 标题5=h5; 标题6=h6;",
+    // 4. 重点：确保内容区域能够响应字体大小（尤其是预览时）
     content_style: `
       body {
         margin: 0;
-        padding: 4px 8px; /* 可根据需要调整 */
+        padding: 4px 8px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
         font-size: 14px;
         line-height: 1.8;
         color: #333;
       }
+      h1, h2, h3, h4, h5, h6 { margin-top: 0.5em; margin-bottom: 0.5em; }
     `,
     // 图片上传处理
     images_upload_handler: async (blobInfo: any, progress: any) => {
@@ -343,6 +348,11 @@
 </script>
 
 <style scoped lang="scss">
+  :deep(.tox-tinymce-aux) {
+    /* 强制提升 TinyMCE 弹出层的层级 */
+    z-index: 9999 !important;
+  }
+
   .contract-template-form {
     margin-bottom: 11px;
   }
@@ -460,5 +470,17 @@
     &:hover {
       background: #c0c4cc;
     }
+  }
+</style>
+<style lang="scss">
+  /* 这里的样式会作用于全局，确保能抓取到 body 下的 TinyMCE 弹出层 */
+  .tox-tinymce-aux {
+    z-index: 9999 !important;
+  }
+
+  /* 如果下拉菜单还是被遮挡，可以尝试强制提升它的所有容器 */
+  .tox-editor-container,
+  .tox-silver-sink {
+    z-index: 9999 !important;
   }
 </style>
