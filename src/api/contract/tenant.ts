@@ -61,3 +61,8 @@ export const deleteTenantContract = (data?: object) => {
 export const cancelTenant = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/cancel"), { data });
 };
+
+/** 租客合同预览 */
+export const previewTenantContract = (data?: object) => {
+  return http.request<Blob>("post", baseUrlApi("contract/tenant/contract/preview"), { data }, { responseType: "blob" });
+};

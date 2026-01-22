@@ -81,6 +81,7 @@
       >
         <template #operation="{ row }">
           <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="openTenantViewDialog('查看租客', row)">查看</el-button>
+          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(Printer)" @click="handlePreview(row)">预览合同</el-button>
           <el-dropdown :hide-on-click="false">
             <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
             <template #dropdown>
@@ -95,14 +96,18 @@
       </pure-table>
     </el-row>
   </div>
+  <el-dialog v-model="previewVisible" top="10px" title="租客合同预览" width="80%" height="100vh" :destroy-on-close="true" align-center :lock-scroll="true">
+    <iframe title="租客合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-  import { ref } from "vue";
+  import { ref, watch } from "vue";
   import { TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import View from "~icons/ep/view";
+  import Printer from "~icons/ep/printer";
   import Search from "~icons/ri/search-line";
   import Refresh from "~icons/ep/refresh";
   import Plus from "~icons/ep/plus";
@@ -111,9 +116,10 @@
   import Delete from "~icons/ep/delete";
   import More from "~icons/ep/more-filled";
   import { TenantRowProps } from "@/types";
-  import { cancelTenant } from "@/api/contract/tenant";
+  import { cancelTenant, previewTenantContract } from "@/api/contract/tenant";
   import { message } from "@/utils/message";
   import { ElMessageBox } from "element-plus";
+  import { hideLoading, showLoading } from "@/utils/yeah";
 
   defineOptions({
     name: "ContractTenant"
@@ -169,6 +175,29 @@
         message("作废租客失败", { type: "error" });
       });
   };
+  const previewVisible = ref(false);
+  const pdfUrl = ref("");
+  function handlePreview(row: any) {
+    showLoading();
+    previewTenantContract({ tenantId: row.id })
+      .then(resp => {
+        const blob = new Blob([resp], { type: "application/pdf" });
+        pdfUrl.value = URL.createObjectURL(blob);
+        previewVisible.value = true;
+        hideLoading();
+      })
+      .catch(error => {
+        message("预览失败", { type: "error" });
+        hideLoading();
+      });
+  }
+  // 关闭弹窗时释放 URL
+  watch(previewVisible, newVal => {
+    if (!newVal && pdfUrl.value) {
+      URL.revokeObjectURL(pdfUrl.value);
+      pdfUrl.value = "";
+    }
+  });
 </script>
 <style lang="scss" scoped>
   .search-form {
