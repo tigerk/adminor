@@ -7,7 +7,7 @@
   import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { useHouseLayoutManage } from "@/views/house/components/HouseLayout/HouseLayoutManage/useHouseLayoutManage";
-  import { FocusHouseStatusProps, HouseLayoutProps } from "@/types";
+  import { FocusHouseStatusProps, HouseLayoutProps } from "@/types"; // 获取 FocusCreateForm 中的form数据
 
   // 获取 FocusCreateForm 中的form数据
   const form = defineModel<FocusFormItemProps>();
@@ -205,30 +205,31 @@
     return colors[index];
   };
 
+  // 修改后的方法 - 返回预定义的 CSS 类名
   const getHouseCardClass = (house: FocusHouseStatusProps) => {
     if (selectedHouses.value.includes(house.cursor)) {
-      return "border-blue-500 bg-blue-50";
+      return "house-card-selected";
     }
     if (house.houseLayoutId) {
-      return "border-green-300 bg-white hover:bg-green-50";
+      return "house-card-assigned";
     }
-    return "border-gray-200 bg-white hover:bg-gray-50";
+    return "house-card-unassigned";
   };
 
   const getFloorBorderClass = (floor: number) => {
     if (isFloorDisabled(floor)) {
-      return "border-gray-300";
+      return "floor-border-disabled";
     }
 
     const floorHouses = getHousesByFloor(floor);
     const selectedFloorHouses = floorHouses.filter(house => selectedHouses.value.includes(house.cursor));
 
     if (selectedFloorHouses.length === floorHouses.length && floorHouses.length > 0) {
-      return "border-blue-500 bg-blue-50";
+      return "floor-border-all-selected";
     } else if (selectedFloorHouses.length > 0) {
-      return "border-blue-300 bg-blue-25";
+      return "floor-border-partial-selected";
     }
-    return "border-gray-300";
+    return "floor-border-default";
   };
 
   const getFloorChecked = (floor: number) => {
@@ -356,7 +357,7 @@
     if (!house || !currentBuilding.value) return;
 
     try {
-      await ElMessageBox.confirm(`确定要删除房源 ${house.doorNumber} 吗？`, "警告", {
+      ElMessageBox.confirm(`确定要删除房源 ${house.doorNumber} 吗？`, "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
@@ -481,7 +482,7 @@
     }
 
     try {
-      await ElMessageBox.confirm("确定要删除这个房型吗？", "警告", {
+      ElMessageBox.confirm("确定要删除这个房型吗？", "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
@@ -595,7 +596,7 @@
 
     if (index > -1) {
       try {
-        await ElMessageBox.confirm(`确定要启用第 ${floor} 层吗？该楼层的所有房源将恢复可用状态。`, "启用楼层", {
+        ElMessageBox.confirm(`确定要启用第 ${floor} 层吗？该楼层的所有房源将恢复可用状态。`, "启用楼层", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -609,7 +610,7 @@
     } else {
       try {
         const floorHouses = getHousesByFloor(floor);
-        await ElMessageBox.confirm(`确定要禁用第 ${floor} 层吗？该楼层的 ${floorHouses.length} 个房源将被禁用。`, "禁用楼层", {
+        ElMessageBox.confirm(`确定要禁用第 ${floor} 层吗？该楼层的 ${floorHouses.length} 个房源将被禁用。`, "禁用楼层", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -763,12 +764,12 @@
   <el-row :gutter="20" class="flex items-center justify-end p-1">
     <el-col :span="12">
       <el-space>
-        <el-text size="large" class="font-bold italic">项目名称： {{ projectName }}</el-text>
+        <el-text class="font-bold">项目名称： {{ projectName }}</el-text>
       </el-space>
     </el-col>
     <el-col :span="12" class="text-right">
       <el-space>
-        <el-text size="large" class="font-bold">总房数： {{ totalHouses }} 间</el-text>
+        <el-text class="font-bold">总房数： {{ totalHouses }} 间</el-text>
         <el-tag type="danger">剩余 {{ unassignedHouses }} 间未分配</el-tag>
         <el-tag type="success">启用 {{ enabledHouses }} 间</el-tag>
         <el-tag type="info">锁房 {{ disabledHouses }} 间</el-tag>
@@ -781,28 +782,28 @@
       <div class="house-floor-management p-1" style="height: 70vh">
         <div class="flex space-x-6 h-full">
           <!-- 左侧房型管理 -->
-          <div class="w-60 rounded-lg shadow p-4 h-fit" style="display: flex; flex-direction: column; max-height: 65vh">
-            <div class="flex justify-between items-center mb-1">
-              <h2 class="text-lg font-semibold text-gray-800">房型名称</h2>
-              <el-tooltip content="创建房型" placement="top">
-                <el-icon class="text-gray-400 cursor-help">
+          <div class="w-60 rounded-lg shadow p-4 h-fit" style="background-color: var(--el-bg-color); border: 1px solid var(--el-border-color-lighter)">
+            <div class="flex justify-between items-center mb-3">
+              <el-text size="large" class="font-bold" style="color: var(--el-text-color-primary)">房型名称</el-text>
+              <el-tooltip content="创建/修改房型后，在右侧选择房间可以分配房型" placement="top">
+                <el-icon style="color: var(--el-text-color-placeholder); cursor: help">
                   <QuestionFilled />
                 </el-icon>
               </el-tooltip>
             </div>
 
             <!-- 房型列表 -->
-            <div class="space-y-2 mb-4 overflow-y-auto flex-1" style="max-height: calc(65vh - 120px)">
+            <div class="space-y-2 mb-4 overflow-y-auto" style="max-height: calc(65vh - 120px)">
               <div
                 v-for="houseLayout in form.houseLayoutList"
                 :key="houseLayout.id"
-                class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                :class="{ 'bg-blue-50 border-blue-300': selectedHouseLayoutId === houseLayout.id }"
+                class="layout-item"
+                :class="{ 'layout-item-active': selectedHouseLayoutId === houseLayout.id }"
                 @click="selectedHouseLayoutId = houseLayout.id"
               >
                 <div>
-                  <div class="font-medium text-gray-900">{{ houseLayout.layoutName }}</div>
-                  <div class="text-xs text-gray-500">{{ houseLayout.bedroom }}室{{ houseLayout.livingRoom }}厅{{ houseLayout.kitchen }}厨{{ houseLayout.bathroom }}卫</div>
+                  <div class="layout-name">{{ houseLayout.layoutName }}</div>
+                  <div class="layout-desc">{{ houseLayout.bedroom }}室{{ houseLayout.livingRoom }}厅{{ houseLayout.kitchen }}厨{{ houseLayout.bathroom }}卫</div>
                 </div>
                 <div class="flex space-x-1">
                   <el-button size="small" type="primary" text @click.stop="editHouseLayout(houseLayout)">
@@ -820,21 +821,18 @@
             </div>
 
             <!-- 创建房型 -->
-            <div
-              class="border-2 border-dashed border-gray-300 rounded-lg p-1 text-center hover:border-blue-300 cursor-pointer transition-colors flex-shrink-0"
-              @click="handleCreateHouseLayout"
-            >
+            <div class="create-layout-btn" @click="handleCreateHouseLayout">
               <el-space>
                 <IconifyIconOffline :icon="AntDesignPlusCircleOutlined" />
-                <div class="text-sm text-gray-600">创建房型</div>
+                <div class="create-layout-text">创建房型</div>
               </el-space>
             </div>
           </div>
 
           <!-- 右侧房源信息 -->
-          <div class="flex-1 rounded-lg shadow-sm p-3 h-full overflow-hidden flex flex-col">
+          <div class="house-panel">
             <!-- 楼栋切换区域 -->
-            <div class="mb-4 pb-2 border-b border-gray-100">
+            <div class="building-selector">
               <div class="flex justify-between" style="align-items: center; min-height: 40px; padding: 4px 0">
                 <div class="flex flex-wrap gap-2" style="align-items: center">
                   <el-button
@@ -860,7 +858,7 @@
                         <el-form-item label="楼层号">
                           <el-input-number v-model="newFloorNumber" :min="1" :max="99" placeholder="请输入楼层号" style="width: 100%" />
                         </el-form-item>
-                        <div class="text-gray-500 text-xs mb-3">将按照当前楼栋配置创建：每层 {{ currentBuilding?.houseCountPerFloor || 0 }} 间房源</div>
+                        <div class="popover-tip">将按照当前楼栋配置创建：每层 {{ currentBuilding?.houseCountPerFloor || 0 }} 间房源</div>
                         <div class="text-right">
                           <el-button size="small" @click="showAddFloorPopover = false">取消</el-button>
                           <el-button type="primary" size="small" @click="confirmAddFloor">确定</el-button>
@@ -879,10 +877,10 @@
             </div>
 
             <!-- 按楼层显示房源 -->
-            <div class="flex-1 overflow-y-auto space-y-3" style="max-height: calc(100% - 180px)">
+            <div class="floors-container">
               <div v-for="floor in currentBuildingFloors" :key="floor" class="floor-section">
-                <div class="flex justify-between items-center mb-1">
-                  <h4 class="text-md font-medium" :class="{ 'text-gray-400': isFloorDisabled(floor), 'text-gray-700': !isFloorDisabled(floor) }">
+                <div class="floor-header">
+                  <h4 class="floor-title" :class="{ 'floor-title-disabled': isFloorDisabled(floor) }">
                     {{ floor }}F
                     <el-tag v-if="isFloorDisabled(floor)" type="info" size="small" class="ml-2">已禁用</el-tag>
                   </h4>
@@ -929,21 +927,21 @@
                   </div>
                 </div>
 
-                <div class="border-2 rounded-lg p-4 transition-all relative" :class="getFloorBorderClass(floor)">
+                <div class="floor-content" :class="getFloorBorderClass(floor)">
                   <!-- 禁用遮罩层 -->
-                  <div v-if="isFloorDisabled(floor)" class="absolute inset-0 bg-gray-900 bg-opacity-50 rounded-lg z-10 flex items-center justify-center">
-                    <div class="bg-white px-4 py-2 rounded-lg shadow-lg">
-                      <el-icon class="text-gray-600 mr-2">
+                  <div v-if="isFloorDisabled(floor)" class="floor-disabled-mask">
+                    <div class="floor-disabled-badge">
+                      <el-icon class="mr-2">
                         <Lock />
                       </el-icon>
-                      <span class="text-gray-600 font-medium">楼层已禁用</span>
+                      <span class="font-medium">楼层已禁用</span>
                     </div>
                   </div>
                   <div class="grid grid-cols-6 gap-3">
                     <div
                       v-for="house in getHousesByFloor(floor)"
                       :key="house.cursor"
-                      class="relative border rounded-lg p-2 transition-all"
+                      class="house-card"
                       :class="[
                         getHouseCardClass(house),
                         {
@@ -956,12 +954,7 @@
                       @contextmenu.prevent="!isFloorDisabled(floor) && handleHouseRightClick($event, house)"
                     >
                       <!-- 房源信息标签 -->
-                      <div
-                        v-if="house.houseLayoutId && !isFloorDisabled(floor)"
-                        class="absolute -top-2 -right-1 bg-red-300 text-white text-xs px-1 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center border border-white shadow z-10"
-                      >
-                        {{ house.price }}元 {{ house.area }}m²
-                      </div>
+                      <div v-if="house.houseLayoutId && !isFloorDisabled(floor)" class="house-info-badge">{{ house.price }}元 {{ house.area }}m²</div>
 
                       <!-- 选中图标 -->
                       <div class="absolute top-1 right-1">
@@ -973,7 +966,7 @@
                       <div class="text-center">
                         <el-space width="auto">
                           <IconifyIconOffline v-if="house.closed || isFloorDisabled(floor)" :icon="AntDesignLockFilled" />
-                          <span class="font-medium text-sm" :class="{ 'text-gray-400 line-through': house.closed || isFloorDisabled(floor) }">
+                          <span class="house-number" :class="{ 'house-number-disabled': house.closed || isFloorDisabled(floor) }">
                             {{ house.doorNumber }}
                           </span>
                           <el-tag v-if="house.houseLayoutId && !isFloorDisabled(floor)" :type="getHouseLayoutTagType(house.houseLayoutId)" size="small" class="text-xs px-1">
@@ -984,13 +977,8 @@
                     </div>
 
                     <!-- 添加房源按钮 -->
-                    <div
-                      v-if="!isFloorDisabled(floor)"
-                      class="border-2 border-dashed border-gray-300 rounded-lg p-2 flex items-center justify-center hover:border-blue-300 cursor-pointer transition-colors"
-                      style="min-width: 120px"
-                      @click="addHouse(floor)"
-                    >
-                      <el-icon class="text-gray-400">
+                    <div v-if="!isFloorDisabled(floor)" class="add-house-btn" style="min-width: 120px" @click="addHouse(floor)">
+                      <el-icon class="add-house-icon">
                         <Plus />
                       </el-icon>
                     </div>
@@ -1000,9 +988,9 @@
             </div>
 
             <!-- 批量配置区域 -->
-            <div class="mt-4 border-2 border-b-gray-300 rounded-lg p-2 bg-blue-25 flex-shrink-0">
+            <div class="batch-config-panel">
               <div class="mb-3">
-                <span class="text-red-700 font-medium">对「{{ getSelectedHouseNumbers() }}」房源进行统一配置</span>
+                <span class="batch-config-title">对「{{ getSelectedHouseNumbers() }}」房源进行统一配置</span>
               </div>
 
               <div class="grid grid-cols-12 gap-3 mb-3">
@@ -1051,31 +1039,22 @@
         </div>
 
         <!-- 右键菜单 -->
-        <div
-          v-show="contextMenu.visible"
-          :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
-          class="fixed z-50 bg-white border border-gray-200 rounded-lg shadow py-1 min-w-24"
-          @click="hideContextMenu"
-        >
-          <div class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center" @click="editHouse(contextMenu.house)">
+        <div v-show="contextMenu.visible" :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }" class="context-menu" @click="hideContextMenu">
+          <div class="context-menu-item" @click="editHouse(contextMenu.house)">
             <el-icon class="mr-2">
               <Edit />
             </el-icon>
             修改
           </div>
           <!-- 锁房/解锁选项 -->
-          <div
-            class="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex items-center"
-            :class="contextMenu.house?.closed ? 'text-green-600' : 'text-orange-400'"
-            @click="toggleHouseLock(contextMenu.house)"
-          >
+          <div class="context-menu-item" :class="contextMenu.house?.closed ? 'context-menu-item-unlock' : 'context-menu-item-lock'" @click="toggleHouseLock(contextMenu.house)">
             <el-icon class="mr-2">
               <Unlock v-if="contextMenu.house?.closed" />
               <Lock v-else />
             </el-icon>
             {{ contextMenu.house?.closed ? "解锁" : "锁房" }}
           </div>
-          <div class="px-3 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer flex items-center" @click="deleteHouseAction(contextMenu.house)">
+          <div class="context-menu-item context-menu-item-delete" @click="deleteHouseAction(contextMenu.house)">
             <el-icon class="mr-2">
               <Delete />
             </el-icon>
@@ -1114,59 +1093,329 @@
 </template>
 
 <style scoped>
-  .house-floor-management {
-    /* 样式保持不变 */
+  /* ==================== 主题变量适配 ==================== */
+
+  /* 房源卡片状态类 */
+  .house-card-selected {
+    border-color: var(--el-color-primary) !important;
+    background-color: var(--el-color-primary-light-9) !important;
   }
 
-  .building-selector h2 {
+  .house-card-assigned {
+    border-color: var(--el-color-success-light-5);
+    background-color: var(--el-bg-color);
+  }
+
+  .house-card-assigned:hover {
+    background-color: var(--el-color-success-light-9);
+  }
+
+  .house-card-unassigned {
+    border-color: var(--el-border-color);
+    background-color: var(--el-bg-color);
+  }
+
+  .house-card-unassigned:hover {
+    background-color: var(--el-fill-color-light);
+  }
+
+  /* 楼层边框状态类 */
+  .floor-border-disabled {
+    border-color: var(--el-border-color);
+  }
+
+  .floor-border-all-selected {
+    border-color: var(--el-color-primary);
+    background-color: var(--el-color-primary-light-9);
+  }
+
+  .floor-border-partial-selected {
+    border-color: var(--el-color-primary-light-5);
+    background-color: var(--el-color-primary-light-9);
+  }
+
+  .floor-border-default {
+    border-color: var(--el-border-color);
+  }
+
+  /* 房型列表项 */
+  .layout-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--el-bg-color);
+  }
+
+  .layout-item:hover {
+    background-color: var(--el-fill-color-light);
+  }
+
+  .layout-item-active {
+    background-color: var(--el-color-primary-light-9);
+    border-color: var(--el-color-primary-light-5);
+  }
+
+  .layout-name {
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+  }
+
+  .layout-desc {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  /* 创建房型按钮 */
+  .create-layout-btn {
+    border: 2px dashed var(--el-border-color);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--el-bg-color);
+  }
+
+  .create-layout-btn:hover {
+    border-color: var(--el-color-primary);
+  }
+
+  .create-layout-text {
+    font-size: 14px;
+    color: var(--el-text-color-regular);
+  }
+
+  /* 右侧房源面板 */
+  .house-panel {
+    flex: 1;
+    border-radius: 8px;
+    box-shadow: var(--el-box-shadow-lighter);
+    padding: 12px;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--el-bg-color);
+  }
+
+  /* 楼栋切换区域 */
+  .building-selector {
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+
+  /* Popover 提示文本 */
+  .popover-tip {
+    color: var(--el-text-color-secondary);
+    font-size: 12px;
     margin-bottom: 12px;
   }
 
-  .building-selector .el-button {
-    margin-right: 8px;
+  /* 楼层容器 */
+  .floors-container {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(100% - 180px);
+  }
+
+  .floor-section {
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .floor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 8px;
   }
 
-  .floor-checkbox :deep(.el-checkbox__label) {
+  .floor-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+  }
+
+  .floor-title-disabled {
+    color: var(--el-text-color-placeholder);
+  }
+
+  /* 楼层内容区域 */
+  .floor-content {
+    border: 2px solid var(--el-border-color);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    background-color: var(--el-bg-color);
+  }
+
+  /* 禁用遮罩 */
+  .floor-disabled-mask {
+    position: absolute;
+    inset: 0;
+    background-color: var(--el-overlay-color-lighter);
+    border-radius: 8px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .floor-disabled-badge {
+    background-color: var(--el-bg-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: var(--el-box-shadow);
+    color: var(--el-text-color-regular);
+    display: flex;
+    align-items: center;
+  }
+
+  /* 房源卡片 */
+  .house-card {
+    position: relative;
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    padding: 8px;
+    transition: all 0.3s ease;
+    background-color: var(--el-bg-color);
+  }
+
+  .house-card:hover {
+    box-shadow: var(--el-box-shadow-light);
+  }
+
+  /* 房源信息标签 */
+  .house-info-badge {
+    position: absolute;
+    top: -8px;
+    right: -4px;
+    background-color: var(--el-color-danger-light-3);
+    color: var(--el-color-white);
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 9999px;
+    min-width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--el-bg-color);
+    box-shadow: var(--el-box-shadow-light);
+    z-index: 10;
+  }
+
+  .house-number {
+    font-weight: 500;
     font-size: 14px;
+    color: var(--el-text-color-primary);
+  }
+
+  .house-number-disabled {
+    color: var(--el-text-color-placeholder);
+    text-decoration: line-through;
+  }
+
+  /* 添加房源按钮 */
+  .add-house-btn {
+    border: 2px dashed var(--el-border-color);
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--el-bg-color);
+  }
+
+  .add-house-btn:hover {
+    border-color: var(--el-color-primary);
+  }
+
+  .add-house-icon {
+    color: var(--el-text-color-placeholder);
+  }
+
+  /* 批量配置面板 */
+  .batch-config-panel {
+    margin-top: 16px;
+    border: 2px solid var(--el-border-color-light);
+    border-radius: 8px;
+    padding: 8px;
+    background-color: var(--el-color-primary-light-9);
+    flex-shrink: 0;
+  }
+
+  .batch-config-title {
+    color: var(--el-color-danger);
     font-weight: 500;
   }
 
+  /* 右键菜单 */
+  .context-menu {
+    position: fixed;
+    z-index: 50;
+    background-color: var(--el-bg-color-overlay);
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    box-shadow: var(--el-box-shadow);
+    padding: 4px 0;
+    min-width: 96px;
+    backdrop-filter: blur(10px);
+  }
+
+  .context-menu-item {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: var(--el-text-color-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s ease;
+  }
+
+  .context-menu-item:hover {
+    background-color: var(--el-fill-color-light);
+  }
+
+  .context-menu-item-unlock {
+    color: var(--el-color-success);
+  }
+
+  .context-menu-item-lock {
+    color: var(--el-color-warning);
+  }
+
+  .context-menu-item-delete {
+    color: var(--el-color-danger);
+  }
+
+  /* 楼层复选框 */
+  .floor-checkbox :deep(.el-checkbox__label) {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+  }
+
+  /* Input Number 居中 */
   :deep(.el-input-number .el-input__inner) {
     text-align: center;
   }
 
-  .bg-blue-25 {
-    background-color: rgb(59 130 246 / 10%);
-  }
-
-  .closed-house {
-    color: #c0c4cc !important;
-    text-decoration: line-through;
-    opacity: 0.6;
-  }
-
-  .floor-section {
-    transition: all 0.3s ease;
-  }
-
+  /* 其他工具类 */
   .relative {
     position: relative;
   }
 
   .absolute {
     position: absolute;
-  }
-
-  .inset-0 {
-    inset: 0;
-  }
-
-  .z-10 {
-    z-index: 10;
-  }
-
-  .bg-opacity-50 {
-    background-color: rgb(17 24 39 / 50%);
   }
 </style>
