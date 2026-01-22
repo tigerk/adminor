@@ -211,7 +211,6 @@
    * 租金配置对话框 start
    */
   const openRoomPriceConfigDialog = (houseIndex: number) => {
-    debugger;
     const currentHouse = entireForm.houseList[houseIndex];
 
     // 确保结构完整

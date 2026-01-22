@@ -397,7 +397,6 @@ function useTenant() {
         const getFormRuleRef = FormInstance?.getRef?.();
         const formInlines = FormInstance?.formInlines;
 
-        debugger;
         if (getFormRuleRef) {
           getFormRuleRef.validate((valid: boolean) => {
             if (valid) {

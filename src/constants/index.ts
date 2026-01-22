@@ -1,5 +1,7 @@
 // src/constants/house.ts
 
+export * from "./delivery";
+
 /**
  * 根据值获取租赁类型
  * @param options 类型选项数组

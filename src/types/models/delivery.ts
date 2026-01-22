@@ -14,7 +14,7 @@ export interface DeliveryProps {
   roomId?: bigint; /** 房间ID */
   handoverType?: string; /** 交割类型 */
   status?: number; /** 状态 */
-  handoverDate?: Date; /** 交割日期 */
+  handoverDate?: Date | string; /** 交割日期 */
   inspectorId?: bigint; /** 操作员/管家ID */
   inspectorName?: string; /** 操作员/管家姓名 */
   remark?: string; /** 备注 */
@@ -35,10 +35,9 @@ export interface DeliveryItemProps {
   itemCategory?: string; /** 项目分类: UTILITY-水电气, FACILITY-设施 */
   itemCode?: string; /** 物品编码 */
   itemName: string; /** 物品名称 */
-  itemUnit?: string; /** 物品单位 */
+  itemUnit?: string; /** 单位(如: 度、m³、元、个) */
   preValue?: string; /** 前值 */
   currentValue: string; /** 当前值 */
-  unit: string; /** 单位(如: 度、m³、元、个) */
   damaged?: boolean; /** 是否损坏 */
   remark?: string; /** 备注 */
   sortOrder?: number; /** 排序序号 */
@@ -53,7 +52,7 @@ export interface DeliveryCreateFormProps {
   roomId?: bigint; /** 房间ID */
   handoverType?: string; /** 交割类型 */
   status?: number; /** 状态 */
-  handoverDate?: Date; /** 交割日期 */
+  handoverDate?: Date | string; /** 交割日期 */
   inspectorId?: bigint; /** 操作员/管家ID */
   remark?: string; /** 备注 */
   /** 交割单明细 */

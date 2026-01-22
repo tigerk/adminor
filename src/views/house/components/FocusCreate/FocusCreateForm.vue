@@ -140,7 +140,6 @@
 
   // 提交所有数据到后台
   const submitAllData = async () => {
-    debugger;
     try {
       const submitData = {
         ...form.value

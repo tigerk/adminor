@@ -11,8 +11,8 @@
                 {{ delivery.roomInfo?.houseName }}-{{ delivery.roomInfo?.roomNumber }}
               </span>
             </div>
-            <el-tag :type="delivery.status === 1 ? 'success' : 'info'" size="small">
-              {{ delivery.status === 1 ? "已完成" : "待填写" }}
+            <el-tag :type="getStatusTagType(delivery.status)" size="small">
+              {{ getStatusText(delivery.status) }}
             </el-tag>
           </div>
         </template>
@@ -35,7 +35,7 @@
             </el-descriptions>
 
             <div v-if="delivery.remark" class="delivery-remark">
-              <el-text type="info" size="small">备注：{{ delivery.remark }}</el-text>
+              <el-text type="info" size="small">备注:{{ delivery.remark }}</el-text>
             </div>
           </div>
 
@@ -66,16 +66,45 @@
   import { deviceDetection } from "@/store/utils";
   import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue";
   import type { DeliveryProps, RoomListProps } from "@/types";
+  import { createDelivery, getDeliveryList } from "@/api/delivery";
+  import { convertImage2string } from "@/utils/image";
 
   interface DeliveryTabProps {
     roomList: RoomListProps[];
-    tenantId: bigint;
+    subjectTypeId: bigint;
   }
 
   const props = defineProps<DeliveryTabProps>();
-
   const deliveryList = ref<DeliveryProps[]>([]);
   const deliveryFormRef = ref();
+
+  // 获取状态标签类型
+  const getStatusTagType = (status?: number) => {
+    switch (status) {
+      case 0:
+        return "info"; // 待填写
+      case 1:
+        return "success"; // 已完成
+      case 2:
+        return "warning"; // 待审核
+      default:
+        return "info";
+    }
+  };
+
+  // 获取状态文本
+  const getStatusText = (status?: number) => {
+    switch (status) {
+      case 0:
+        return "待填写";
+      case 1:
+        return "已完成";
+      case 2:
+        return "待审核";
+      default:
+        return "待填写";
+    }
+  };
 
   // 初始化交割单列表
   const initDeliveryList = () => {
@@ -99,39 +128,46 @@
     }));
 
     // TODO: 实际项目中应该调用API获取交割单列表
-    // getDeliveryList({
-    //   subjectType: 'tenant',
-    //   subjectTypeId: props.tenantId
-    // }).then(resp => {
-    //   if (resp.code === 0) {
-    //     // 合并交割单数据
-    //     deliveryList.value = deliveryList.value.map(item => {
-    //       const delivery = resp.data.find(d => d.roomId === item.roomId);
-    //       return delivery ? { ...item, ...delivery } : item;
-    //     });
-    //   }
-    // });
+    getDeliveryList({
+      subjectType: "tenant",
+      subjectTypeId: props.subjectTypeId
+    }).then(resp => {
+      if (resp.code === 0) {
+        // 合并交割单数据
+        deliveryList.value = deliveryList.value.map(item => {
+          const delivery = resp.data.find(d => d.roomId === item.roomId);
+          return delivery ? { ...item, ...delivery } : item;
+        });
+      }
+    });
   };
 
   // 创建交割单
   const handleCreateDelivery = (roomId: bigint) => {
     const room = props.roomList.find(r => r.roomId === roomId);
 
+    if (!room) {
+      message("房间信息不存在", { type: "error" });
+      return;
+    }
+
     addDialog({
-      title: `创建交割单 - ${room?.houseName}-${room?.roomNumber}`,
+      title: `创建交割单 - ${room.houseName}-${room.roomNumber}`,
       props: {
         formInline: {
           subjectType: "tenant",
-          subjectTypeId: props.tenantId,
+          subjectTypeId: props.subjectTypeId,
           roomId: roomId,
           handoverType: "check_in",
+          status: 0,
           items: [],
-          facilities: room?.facilities || [],
+          facilities: room.facilities || [],
           imageList: []
-        }
+        },
+        isViewMode: false
       },
       top: "2vh",
-      width: "50vw",
+      width: "60vw",
       lockScroll: true,
       draggable: true,
       fullscreen: deviceDetection(),
@@ -140,28 +176,35 @@
       contentRenderer: () =>
         h(DeliveryCreateForm, {
           ref: deliveryFormRef,
-          formInline: null
+          formInline: null,
+          isViewMode: false
         }),
       beforeSure: (done, { options }) => {
         const FormInstance = deliveryFormRef.value;
         const formRuleRef = FormInstance?.getRef?.();
         const formData = FormInstance?.getFormData?.();
 
-        formRuleRef.validate(valid => {
-          if (valid) {
-            // TODO: 调用API创建交割单
-            // createDelivery(formData).then(resp => {
-            //   if (resp.code === 0) {
-            //     message('交割单创建成功', { type: 'success' });
-            //     initDeliveryList();
-            //     done();
-            //   }
-            // });
+        if (!formRuleRef) {
+          message("表单引用获取失败", { type: "error" });
+          return;
+        }
 
-            // 临时代码，实际应调用API
-            message("交割单创建成功", { type: "success" });
-            initDeliveryList();
-            done();
+        formRuleRef.validate((valid: boolean) => {
+          if (valid) {
+            debugger;
+            formData.imageList = convertImage2string(formData.imageList || []);
+
+            createDelivery(formData).then(resp => {
+              if (resp.code === 0) {
+                message("交割单创建成功", { type: "success" });
+                initDeliveryList();
+                done();
+              } else {
+                message(resp.message || "创建失败", { type: "error" });
+              }
+            });
+          } else {
+            message("请完善必填信息", { type: "warning" });
           }
         });
       }
@@ -172,16 +215,22 @@
   const handleEditDelivery = (delivery: DeliveryProps) => {
     const room = props.roomList.find(r => r.roomId === delivery.roomId);
 
+    if (!room) {
+      message("房间信息不存在", { type: "error" });
+      return;
+    }
+
     addDialog({
-      title: `编辑交割单 - ${room?.houseName}-${room?.roomNumber}`,
+      title: `编辑交割单 - ${room.houseName}-${room.roomNumber}`,
       props: {
         formInline: {
           ...delivery,
-          facilities: room?.facilities || []
-        }
+          facilities: room.facilities || []
+        },
+        isViewMode: false
       },
       top: "2vh",
-      width: "80vw",
+      width: "60vw",
       lockScroll: true,
       draggable: true,
       fullscreen: deviceDetection(),
@@ -190,14 +239,20 @@
       contentRenderer: () =>
         h(DeliveryCreateForm, {
           ref: deliveryFormRef,
-          formInline: null
+          formInline: null,
+          isViewMode: false
         }),
       beforeSure: (done, { options }) => {
         const FormInstance = deliveryFormRef.value;
         const formRuleRef = FormInstance?.getRef?.();
         const formData = FormInstance?.getFormData?.();
 
-        formRuleRef.validate(valid => {
+        if (!formRuleRef) {
+          message("表单引用获取失败", { type: "error" });
+          return;
+        }
+
+        formRuleRef.validate((valid: boolean) => {
           if (valid) {
             // TODO: 调用API更新交割单
             // updateDelivery(formData).then(resp => {
@@ -205,12 +260,18 @@
             //     message('交割单更新成功', { type: 'success' });
             //     initDeliveryList();
             //     done();
+            //   } else {
+            //     message(resp.message || '更新失败', { type: 'error' });
             //   }
             // });
 
+            // 临时代码，模拟更新成功
+            console.log("更新交割单数据:", formData);
             message("交割单更新成功", { type: "success" });
             initDeliveryList();
             done();
+          } else {
+            message("请完善必填信息", { type: "warning" });
           }
         });
       }
@@ -221,13 +282,22 @@
   const handleViewDelivery = (delivery: DeliveryProps) => {
     const room = props.roomList.find(r => r.roomId === delivery.roomId);
 
+    if (!room) {
+      message("房间信息不存在", { type: "error" });
+      return;
+    }
+
     addDialog({
-      title: `查看交割单 - ${room?.houseName}-${room?.roomNumber}`,
+      title: `查看交割单 - ${room.houseName}-${room.roomNumber}`,
       props: {
-        formInline: delivery
+        formInline: {
+          ...delivery,
+          facilities: room.facilities || []
+        },
+        isViewMode: true
       },
       top: "2vh",
-      width: "80vw",
+      width: "60vw",
       lockScroll: true,
       draggable: true,
       fullscreen: deviceDetection(),
@@ -237,7 +307,8 @@
       contentRenderer: () =>
         h(DeliveryCreateForm, {
           ref: deliveryFormRef,
-          formInline: null
+          formInline: null,
+          isViewMode: true
         })
     });
   };
@@ -319,7 +390,6 @@
       }
     }
 
-    // 响应式设计
     @media (max-width: 768px) {
       .delivery-grid {
         grid-template-columns: 1fr;
@@ -327,7 +397,6 @@
     }
   }
 
-  // 深色模式适配
   html.dark {
     .delivery-card {
       &:hover {

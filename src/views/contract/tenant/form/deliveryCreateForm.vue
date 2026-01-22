@@ -18,44 +18,17 @@
           </el-col>
           <el-col :span="8">
             <el-form-item label="交割日期" prop="handoverDate">
-              <el-date-picker v-model="formData.handoverDate" type="date" placeholder="选择交割日期" class="w-full" value-format="YYYY-MM-DD" />
+              <el-date-picker v-model="formData.handoverDate" type="date" placeholder="选择交割日期" class="w-full" value-format="YYYY-MM-DD" :disabled="isViewMode" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="验收人" prop="inspectorId">
-              <el-select v-model="formData.inspectorId" placeholder="请选择验收人" class="w-full" filterable>
+              <el-select v-model="formData.inspectorId" placeholder="请选择验收人" class="w-full" filterable :disabled="isViewMode">
                 <el-option v-for="user in inspectorList" :key="user.id" :label="user.name" :value="user.id" />
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
-      </div>
-
-      <!-- 房间设施清单 -->
-      <div class="form-section">
-        <div class="section-title">
-          <el-icon><Grid /></el-icon>
-          <span>房间设施清单</span>
-        </div>
-        <el-table :data="formData.items" border stripe class="facilities-table">
-          <el-table-column type="index" label="序号" width="60" align="center" />
-          <el-table-column prop="itemName" label="物品名称" min-width="150" align="center" />
-          <el-table-column prop="currentValue" label="数量" width="120" align="center">
-            <template #default="{ row }">
-              <el-input v-model="row.currentValue" placeholder="请输入" size="small" />
-            </template>
-          </el-table-column>
-          <el-table-column prop="damaged" label="是否损坏" width="100" align="center">
-            <template #default="{ row }">
-              <el-switch v-model="row.damaged" :active-value="1" :inactive-value="0" active-color="#f56c6c" inactive-color="#67c23a" />
-            </template>
-          </el-table-column>
-          <el-table-column prop="remark" label="备注" min-width="200">
-            <template #default="{ row }">
-              <el-input v-model="row.remark" type="textarea" :rows="1" placeholder="请输入备注" size="small" />
-            </template>
-          </el-table-column>
-        </el-table>
       </div>
 
       <!-- 水电燃气读数 -->
@@ -73,7 +46,7 @@
                   <span>水表读数</span>
                 </div>
               </template>
-              <el-input v-model="meterReadings.water" placeholder="请输入水表读数" type="number" size="large">
+              <el-input v-model="meterReadings.water" placeholder="请输入水表读数" type="number" size="large" :disabled="isViewMode" @input="updateMeterReading('water', $event)">
                 <template #append>m³</template>
               </el-input>
             </el-card>
@@ -86,7 +59,14 @@
                   <span>电表读数</span>
                 </div>
               </template>
-              <el-input v-model="meterReadings.electricity" placeholder="请输入电表读数" type="number" size="large">
+              <el-input
+                v-model="meterReadings.electricity"
+                placeholder="请输入电表读数"
+                type="number"
+                size="large"
+                :disabled="isViewMode"
+                @input="updateMeterReading('electricity', $event)"
+              >
                 <template #append>kWh</template>
               </el-input>
             </el-card>
@@ -99,12 +79,59 @@
                   <span>燃气表读数</span>
                 </div>
               </template>
-              <el-input v-model="meterReadings.gas" placeholder="请输入燃气表读数" type="number" size="large">
+              <el-input v-model="meterReadings.gas" placeholder="请输入燃气表读数" type="number" size="large" :disabled="isViewMode" @input="updateMeterReading('gas', $event)">
                 <template #append>m³</template>
               </el-input>
             </el-card>
           </el-col>
         </el-row>
+      </div>
+
+      <!-- 房间设施清单 -->
+      <div class="form-section">
+        <div class="section-title">
+          <el-icon><Grid /></el-icon>
+          <span>房间设施清单</span>
+          <el-button v-if="!isViewMode" type="primary" link size="small" :icon="Plus" class="ml-2" @click="addCustomItem">添加自定义项</el-button>
+        </div>
+        <el-table :data="facilityItemsFiltered" border stripe class="facilities-table">
+          <el-table-column type="index" label="序号" width="60" align="center" />
+
+          <el-table-column prop="itemName" label="物品名称" min-width="150" align="center">
+            <template #default="{ row }">
+              <el-input v-if="row.isCustom && !isViewMode" v-model="row.itemName" placeholder="请输入物品名称" size="small" />
+              <span v-else>{{ row.itemName }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="currentValue" label="数量" width="220" align="center">
+            <template #default="{ row }">
+              <el-input-number v-model="row.currentValue" :min="0" :max="100" :disabled="isViewMode">
+                <template #suffix>
+                  <span>个</span>
+                </template>
+              </el-input-number>
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="damaged" label="是否损坏" width="100" align="center">
+            <template #default="{ row }">
+              <el-switch v-model="row.damaged" :active-value="true" :inactive-value="false" active-color="#f56c6c" inactive-color="#67c23a" :disabled="isViewMode" />
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="remark" label="备注" min-width="200">
+            <template #default="{ row }">
+              <el-input v-model="row.remark" placeholder="请输入备注" :disabled="isViewMode" />
+            </template>
+          </el-table-column>
+
+          <el-table-column v-if="!isViewMode" label="操作" width="80" align="center" fixed="right">
+            <template #default="{ row, $index }">
+              <el-button v-if="row.isCustom" type="danger" link :icon="Delete" size="small" @click="removeFacilityItem($index)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
 
       <!-- 现场照片 -->
@@ -113,7 +140,7 @@
           <el-icon><Picture /></el-icon>
           <span>现场照片</span>
         </div>
-        <UploadImage v-model="formData.imageList" :limit="9" :width="120" :height="120">
+        <UploadImage v-model="formData.imageList" :limit="9" :width="120" :height="120" :disabled="isViewMode">
           <template #tip>
             <div class="upload-tip">最多可上传9张现场照片</div>
           </template>
@@ -123,7 +150,7 @@
       <!-- 备注说明 -->
       <div class="form-section">
         <el-form-item label="备注说明" prop="remark">
-          <el-input v-model="formData.remark" type="textarea" :rows="4" placeholder="请输入备注说明" maxlength="500" show-word-limit />
+          <el-input v-model="formData.remark" type="textarea" :rows="4" placeholder="请输入备注说明" maxlength="500" show-word-limit :disabled="isViewMode" />
         </el-form-item>
       </div>
     </el-form>
@@ -131,10 +158,10 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from "vue";
+  import { computed, onMounted, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
-  import type { DeliveryCreateFormProps } from "@/types";
-  import { DataLine, Grid, InfoFilled, Lightning, Picture } from "@element-plus/icons-vue";
+  import type { DeliveryCreateFormProps, DeliveryItemProps, FacilityItemProps } from "@/types";
+  import { DataLine, Delete, Grid, InfoFilled, Lightning, Picture, Plus } from "@element-plus/icons-vue";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { IconifyIconOnline } from "@/components/ReIcon";
@@ -142,14 +169,16 @@
 
   interface FormProps {
     formInline: DeliveryCreateFormProps;
+    isViewMode?: boolean; // 是否为查看模式
   }
 
-  const props = defineProps<FormProps>();
+  const props = withDefaults(defineProps<FormProps>(), {
+    isViewMode: false
+  });
 
   const formRef = ref<FormInstance>();
   const inspectorList = ref<any[]>([]);
-  // 当前的物品配置
-  const facilityOptions = ref([]);
+  const facilityOptions = ref<Array<{ label: string; value: string }>>([]);
 
   // 表单数据
   const formData = reactive<DeliveryCreateFormProps>({
@@ -159,18 +188,29 @@
     roomId: props.formInline?.roomId,
     handoverType: props.formInline?.handoverType || "check_in",
     status: props.formInline?.status ?? 0,
-    handoverDate: props.formInline?.handoverDate || new Date(),
+    handoverDate: props.formInline?.handoverDate || new Date().toISOString().split("T")[0],
     inspectorId: props.formInline?.inspectorId,
     remark: props.formInline?.remark || "",
-    items: props.formInline?.items || [],
+    items: [],
     imageList: props.formInline?.imageList || []
   });
 
-  // 水电燃气读数
+  // 水电燃气读数（用于界面展示和编辑）
   const meterReadings = reactive({
-    water: 0,
-    electricity: 0,
-    gas: 0
+    water: "0",
+    electricity: "0",
+    gas: "0"
+  });
+
+  // 设施项目列表（包含水电燃气和房间设施）
+  const facilityItems = ref<DeliveryItemProps[]>([]);
+
+  // 过滤后的设施列表（仅用于表格显示，不包含水电燃气）
+  const facilityItemsFiltered = computed(() => {
+    return facilityItems.value.filter(item => {
+      // 排除水电燃气项
+      return item.itemName !== "水表读数" && item.itemName !== "电表读数" && item.itemName !== "燃气表读数";
+    });
   });
 
   // 表单验证规则
@@ -182,84 +222,193 @@
 
   // 初始化表单数据
   const initFormData = () => {
-    // 如果有房间设施数据，转换为交割单项目
-    if (props.formInline?.facilities && props.formInline.facilities.length > 0) {
-      formData.items = props.formInline.facilities.map((facility, index) => ({
-        itemCode: facility.name,
-        itemName: facilityOptions.value.find(opt => opt.value === facility.name)?.label || facility.name,
-        itemUnit: "个",
-        currentValue: facility.count || "1",
-        damaged: 0,
-        remark: "",
+    // 如果是编辑模式（有id且有items），从items回显数据
+    if (props.formInline?.id && props.formInline?.items && props.formInline.items.length > 0) {
+      // 回显已有的交割单数据
+      facilityItems.value = props.formInline.items.map((item, index) => ({
+        ...item,
+        damaged: item.damaged || false,
         sortOrder: index + 1
       }));
+
+      // 提取水电燃气读数
+      extractMeterReadings();
+    } else {
+      // 新建模式：从房间设施初始化
+      initFacilitiesFromRoom();
+    }
+  };
+
+  // 从房间设施初始化物品列表
+  const initFacilitiesFromRoom = () => {
+    const items: DeliveryItemProps[] = [];
+    let sortOrder = 1;
+
+    // 1. 添加水电燃气项（固定项）
+    items.push(
+      {
+        itemCategory: "UTILITY",
+        itemName: "水表读数",
+        itemUnit: "m³",
+        currentValue: "0",
+        damaged: false,
+        remark: "",
+        sortOrder: sortOrder++,
+        isCustom: false
+      },
+      {
+        itemCategory: "UTILITY",
+        itemName: "电表读数",
+        itemUnit: "kWh",
+        currentValue: "0",
+        damaged: false,
+        remark: "",
+        sortOrder: sortOrder++,
+        isCustom: false
+      },
+      {
+        itemCategory: "UTILITY",
+        itemName: "燃气表读数",
+        itemUnit: "m³",
+        currentValue: "0",
+        damaged: false,
+        remark: "",
+        sortOrder: sortOrder++,
+        isCustom: false
+      }
+    );
+
+    // 2. 从房间设施添加设施项
+    if (props.formInline?.facilities && props.formInline.facilities.length > 0) {
+      props.formInline.facilities.forEach((facility: FacilityItemProps) => {
+        const facilityOption = facilityOptions.value.find(opt => opt.value === facility.name);
+
+        items.push({
+          itemCategory: "FACILITY",
+          itemCode: facility.name,
+          itemName: facilityOption?.label || facility.name,
+          itemUnit: "个",
+          currentValue: String(facility.count || 0),
+          damaged: false,
+          remark: "",
+          sortOrder: sortOrder++,
+          isCustom: false
+        });
+      });
     }
 
-    // 从已有的items中提取水电燃气读数
-    formData.items.forEach(item => {
+    facilityItems.value = items;
+  };
+
+  // 从items中提取水电燃气读数到meterReadings
+  const extractMeterReadings = () => {
+    facilityItems.value.forEach(item => {
       if (item.itemName === "水表读数") {
-        meterReadings.water = item.currentValue;
+        meterReadings.water = item.currentValue || "0";
       } else if (item.itemName === "电表读数") {
-        meterReadings.electricity = item.currentValue;
+        meterReadings.electricity = item.currentValue || "0";
       } else if (item.itemName === "燃气表读数") {
-        meterReadings.gas = item.currentValue;
+        meterReadings.gas = item.currentValue || "0";
       }
     });
   };
 
-  // 保存时合并水电燃气数据到items
-  const mergeMetersToItems = () => {
-    const meters = [
-      { name: "水表读数", value: meterReadings.water, unit: "m³", category: "水电燃气" },
-      { name: "电表读数", value: meterReadings.electricity, unit: "kWh", category: "水电燃气" },
-      { name: "燃气表读数", value: meterReadings.gas, unit: "m³", category: "水电燃气" }
-    ];
+  // 更新水电燃气读数到items
+  const updateMeterReading = (type: "water" | "electricity" | "gas", value: string) => {
+    const meterNameMap = {
+      water: "水表读数",
+      electricity: "电表读数",
+      gas: "燃气表读数"
+    };
 
-    meters.forEach(meter => {
-      if (meter.value) {
-        const existingIndex = formData.items.findIndex(item => item.itemName === meter.name);
-        if (existingIndex > -1) {
-          formData.items[existingIndex].currentValue = meter.value;
-        } else {
-          formData.items.push({
-            itemName: meter.name,
-            category: meter.category,
-            itemUnit: meter.unit,
-            currentValue: meter.value,
-            damaged: 0,
-            remark: "",
-            sortOrder: formData.items.length + 1
-          });
-        }
-      }
+    const meterName = meterNameMap[type];
+    const item = facilityItems.value.find(item => item.itemName === meterName);
+
+    if (item) {
+      item.currentValue = value || "0";
+    }
+  };
+
+  // 添加自定义项
+  const addCustomItem = () => {
+    facilityItems.value.push({
+      itemCategory: "FACILITY",
+      itemName: "",
+      itemUnit: "个",
+      currentValue: "0",
+      damaged: false,
+      remark: "",
+      sortOrder: facilityItems.value.length + 1,
+      isCustom: true
+    });
+  };
+
+  // 删除设施项
+  const removeFacilityItem = (index: number) => {
+    facilityItems.value.splice(index, 1);
+    // 重新排序
+    facilityItems.value.forEach((item, idx) => {
+      item.sortOrder = idx + 1;
     });
   };
 
   // 获取表单引用
   const getRef = () => formRef.value;
 
-  // 获取表单数据
-  const getFormData = () => {
-    mergeMetersToItems();
-    return formData;
+  // 获取表单数据（提交时调用）
+  const getFormData = (): DeliveryCreateFormProps => {
+    // 更新 formData.items 为当前的 facilityItems
+    formData.items = facilityItems.value.map(item => ({
+      id: item.id,
+      deliveryId: item.deliveryId,
+      itemCategory: item.itemCategory,
+      itemCode: item.itemCode,
+      itemName: item.itemName,
+      itemUnit: item.itemUnit,
+      currentValue: item.currentValue,
+      damaged: item.damaged,
+      remark: item.remark,
+      sortOrder: item.sortOrder,
+      isCustom: item.isCustom
+    }));
+
+    return {
+      id: formData.id,
+      subjectType: formData.subjectType,
+      subjectTypeId: formData.subjectTypeId,
+      roomId: formData.roomId,
+      handoverType: formData.handoverType,
+      status: formData.status,
+      handoverDate: formData.handoverDate,
+      inspectorId: formData.inspectorId,
+      remark: formData.remark,
+      items: formData.items,
+      imageList: formData.imageList
+    };
   };
 
-  onMounted(() => {
-    getDictDataByDictCode({
-      dictCode: "house_facilities"
-    }).then(res => {
+  onMounted(async () => {
+    // 加载设施字典
+    try {
+      const res = await getDictDataByDictCode({ dictCode: "house_facilities" });
       facilityOptions.value = res.data.map(item => ({
         label: item.name,
         value: item.value
       }));
-    });
+    } catch (error) {
+      console.error("加载设施字典失败:", error);
+    }
 
+    // 初始化表单数据
     initFormData();
 
     // 获取验收人列表
-    getCompanyUserOptions().then(resp => {
+    try {
+      const resp = await getCompanyUserOptions();
       inspectorList.value = resp.data;
-    });
+    } catch (error) {
+      console.error("获取验收人列表失败:", error);
+    }
   });
 
   defineExpose({
@@ -315,8 +464,10 @@
       background-color: var(--el-bg-color);
       border-color: var(--el-border-color-light);
 
-      :deep(.el-table__header-wrapper) {
-        background-color: var(--el-fill-color-light);
+      :deep(.el-table__header) {
+        th {
+          background-color: var(--el-fill-color-light);
+        }
       }
 
       :deep(.el-table__row) {
@@ -451,14 +602,12 @@
       transition: color 0.3s ease;
     }
 
-    // 表单标签样式优化
     :deep(.el-form-item__label) {
       color: var(--el-text-color-regular);
       font-weight: 500;
       transition: color 0.3s ease;
     }
 
-    // 输入框样式统一
     :deep(.el-input__inner),
     :deep(.el-textarea__inner),
     :deep(.el-select .el-input__inner) {
@@ -480,14 +629,12 @@
       }
     }
 
-    // 字数统计样式
     :deep(.el-input__count) {
       background-color: transparent;
       color: var(--el-text-color-secondary);
     }
   }
 
-  // 深色模式特殊优化
   html.dark {
     .delivery-form-container {
       .form-section {

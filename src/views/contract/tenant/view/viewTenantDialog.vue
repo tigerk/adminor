@@ -421,7 +421,7 @@
             </el-space>
           </template>
           <div class="tab-content">
-            <DeliveryTab :room-list="localFormInline.roomList" :tenant-id="localFormInline.tenantId" />
+            <DeliveryTab :room-list="localFormInline.roomList" :subject-type-id="localFormInline.id" />
           </div>
         </el-tab-pane>
       </el-tabs>
