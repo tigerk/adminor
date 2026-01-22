@@ -805,17 +805,19 @@
                   <div class="layout-name">{{ houseLayout.layoutName }}</div>
                   <div class="layout-desc">{{ houseLayout.bedroom }}室{{ houseLayout.livingRoom }}厅{{ houseLayout.kitchen }}厨{{ houseLayout.bathroom }}卫</div>
                 </div>
-                <div class="flex space-x-1">
-                  <el-button size="small" type="primary" text @click.stop="editHouseLayout(houseLayout)">
-                    <el-icon>
-                      <Edit />
-                    </el-icon>
-                  </el-button>
-                  <el-button size="small" type="danger" text @click.stop="deleteHouseLayout(houseLayout.id)">
-                    <el-icon>
-                      <Delete />
-                    </el-icon>
-                  </el-button>
+                <div class="flex justify-end">
+                  <el-space>
+                    <el-button size="small" type="primary" text @click.stop="editHouseLayout(houseLayout)">
+                      <el-icon>
+                        <Edit />
+                      </el-icon>
+                    </el-button>
+                    <el-button size="small" type="danger" text @click.stop="deleteHouseLayout(houseLayout.id)">
+                      <el-icon>
+                        <Delete />
+                      </el-icon>
+                    </el-button>
+                  </el-space>
                 </div>
               </div>
             </div>

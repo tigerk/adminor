@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { onMounted, reactive, ref, watch } from "vue";
-  import { Plus, Minus } from "@element-plus/icons-vue";
+  import { onMounted, reactive, ref } from "vue";
+  import { Minus, Plus } from "@element-plus/icons-vue";
   import { type FacilityFormProps } from "@/views/house/components/HouseFacility/types";
   import { getDictDataByDictCode } from "@/api/sys/dict";
 
@@ -146,7 +146,7 @@
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: #303133;
+    color: var(--el-text-color-primary);
   }
 
   .facilities-grid {
@@ -160,13 +160,13 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background: #f5f7fa;
+    background: var(--el-fill-color-light);
     border-radius: 4px;
     transition: background-color 0.3s;
   }
 
   .facility-item:hover {
-    background: #ecf5ff;
+    background: var(--el-fill-color);
   }
 
   .count-control {
@@ -197,7 +197,7 @@
     min-width: 20px;
     font-size: 14px;
     font-weight: 500;
-    color: #303133;
+    color: var(--el-text-color-primary);
     text-align: center;
   }
 
