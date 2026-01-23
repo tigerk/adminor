@@ -7,6 +7,7 @@
   import uploadLine from "~icons/ri/upload-line";
   import { getUserProfile, updateUserProfile } from "@/api/login";
   import { uploadFile } from "@/api/upload";
+  import { useUserStoreHook } from "@/store/modules/user";
 
   defineOptions({
     name: "Profile"
@@ -87,6 +88,9 @@
         loading.value = true;
         updateUserProfile(userInfos).then(res => {
           if (res.code === 0) {
+            // 更新本地的 登录信息
+            useUserStoreHook().SET_AVATAR(userInfos.avatar);
+            useUserStoreHook().SET_NICKNAME(userInfos.nickname);
             message("更新信息成功", { type: "success" });
           } else {
             message("更新信息失败", { type: "error" });
