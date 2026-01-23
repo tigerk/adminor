@@ -59,7 +59,7 @@
         <div class="item-content">
           <div class="item-icon">
             <el-icon :size="32">
-              <i :class="item.icon" />
+              <IconifyIconOnline :icon="item.icon" />
             </el-icon>
           </div>
           <div class="item-info">
@@ -69,14 +69,14 @@
             </div>
             <p class="info-description">{{ item.description }}</p>
             <p class="info-value">
-              <el-icon><i class="ri-checkbox-circle-line" /></el-icon>
+              <el-icon><IconifyIconOnline icon="ri-checkbox-circle-line" /></el-icon>
               {{ item.value }}
             </p>
           </div>
           <div class="item-action">
             <el-button type="primary" link @click="handleClick(item)">
               {{ item.action }}
-              <el-icon class="ml-1"><i class="ri-arrow-right-s-line" /></el-icon>
+              <el-icon class="ml-1"><IconifyIconOnline icon="ri-arrow-right-s-line" /></el-icon>
             </el-button>
           </div>
         </div>

@@ -89,7 +89,7 @@
     <!-- 通知设置 -->
     <div class="settings-section">
       <div class="section-header">
-        <el-icon class="section-icon"><i class="ri-notification-3-line" /></el-icon>
+        <el-icon class="section-icon"><IconifyIconOnline icon="ri-notification-3-line" /></el-icon>
         <div>
           <h4>通知设置</h4>
           <p>管理您接收的通知类型</p>
@@ -100,7 +100,7 @@
           <div class="item-content">
             <div class="item-left">
               <div class="item-icon">
-                <el-icon><i :class="item.icon" /></el-icon>
+                <el-icon><IconifyIconOnline :icon="item.icon" /></el-icon>
               </div>
               <div class="item-info">
                 <h5>{{ item.title }}</h5>
@@ -126,7 +126,7 @@
     <!-- 显示设置 -->
     <div class="settings-section">
       <div class="section-header">
-        <el-icon class="section-icon"><i class="ri-brush-line" /></el-icon>
+        <el-icon class="section-icon"><IconifyIconOnline icon="ri-brush-line" /></el-icon>
         <div>
           <h4>显示设置</h4>
           <p>自定义界面显示方式</p>
@@ -137,7 +137,7 @@
           <div class="item-content">
             <div class="item-left">
               <div class="item-icon">
-                <el-icon><i :class="item.icon" /></el-icon>
+                <el-icon><IconifyIconOnline :icon="item.icon" /></el-icon>
               </div>
               <div class="item-info">
                 <h5>{{ item.title }}</h5>
@@ -163,7 +163,7 @@
     <!-- 隐私设置 -->
     <div class="settings-section">
       <div class="section-header">
-        <el-icon class="section-icon"><i class="ri-shield-check-line" /></el-icon>
+        <el-icon class="section-icon"><IconifyIconOnline icon="ri-shield-check-line" /></el-icon>
         <div>
           <h4>隐私设置</h4>
           <p>控制您的隐私和数据使用</p>
@@ -174,7 +174,7 @@
           <div class="item-content">
             <div class="item-left">
               <div class="item-icon">
-                <el-icon><i :class="item.icon" /></el-icon>
+                <el-icon><IconifyIconOnline :icon="item.icon" /></el-icon>
               </div>
               <div class="item-info">
                 <h5>{{ item.title }}</h5>

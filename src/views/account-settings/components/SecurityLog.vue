@@ -34,10 +34,10 @@
       prop: "ip",
       minWidth: 140,
       cellRenderer: ({ row }) => (
-        <div class="log-ip">
-          <i class="ri-global-line icon-style"></i>
+        <el-space>
+          <IconifyIconOnline icon="ri-global-line" />
           <span>{row.ip}</span>
-        </div>
+        </el-space>
       )
     },
     {
@@ -45,10 +45,10 @@
       prop: "address",
       minWidth: 160,
       cellRenderer: ({ row }) => (
-        <div class="log-address">
-          <i class="ri-map-pin-line icon-style"></i>
+        <el-space>
+          <IconifyIconOnline icon="ri-map-pin-line" />
           <span>{row.address || "未知"}</span>
-        </div>
+        </el-space>
       )
     },
     {
@@ -56,16 +56,12 @@
       prop: "system",
       minWidth: 180,
       cellRenderer: ({ row }) => (
-        <div class="device-info">
-          <div class="device-item">
-            <i class="ri-computer-line icon-style"></i>
-            <span>{row.system || "未知"}</span>
-          </div>
-          <div class="device-item">
-            <i class="ri-window-line icon-style"></i>
-            <span>{row.browser || "未知"}</span>
-          </div>
-        </div>
+        <el-space>
+          <IconifyIconOnline icon="ri-computer-line" />
+          <span>{row.system || "未知"}</span>
+          <IconifyIconOnline icon="ri-window-line" />
+          <span>{row.browser || "未知"}</span>
+        </el-space>
       )
     },
     {
@@ -73,10 +69,10 @@
       prop: "operatingTime",
       minWidth: 180,
       cellRenderer: ({ row }) => (
-        <div class="log-time">
-          <i class="ri-time-line icon-style"></i>
+        <el-space>
+          <IconifyIconOnline icon="ri-time-line" />
           <span>{dayjs(row.operatingTime).format("YYYY-MM-DD HH:mm:ss")}</span>
-        </div>
+        </el-space>
       )
     }
   ];
@@ -129,7 +125,7 @@
     <el-card class="security-tip-card" shadow="hover">
       <div class="tip-content">
         <div class="tip-icon">
-          <el-icon><i class="ri-shield-check-line" /></el-icon>
+          <el-icon><IconifyIconOnline icon="ri-shield-check-line" /></el-icon>
         </div>
         <div class="tip-info">
           <h4>安全提醒</h4>
@@ -289,34 +285,6 @@
       font-size: 14px;
       color: var(--el-text-color-primary);
       font-weight: 500;
-    }
-  }
-
-  .icon-style {
-    font-size: 14px;
-    color: var(--el-text-color-secondary);
-    margin-right: 6px;
-  }
-
-  .log-ip,
-  .log-address,
-  .log-time {
-    display: flex;
-    align-items: center;
-    font-size: 13px;
-    color: var(--el-text-color-regular);
-  }
-
-  .device-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-
-    .device-item {
-      display: flex;
-      align-items: center;
-      font-size: 13px;
-      color: var(--el-text-color-regular);
     }
   }
 </style>

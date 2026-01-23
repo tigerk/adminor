@@ -113,7 +113,7 @@
         <template #header>
           <div class="card-header">
             <div class="card-title">
-              <el-icon class="title-icon"><i class="ri-user-line" /></el-icon>
+              <el-icon class="title-icon"><IconifyIconOnline icon="ri-user-line" /></el-icon>
               <span>个人头像</span>
             </div>
           </div>
@@ -121,15 +121,15 @@
         <div class="avatar-content">
           <div class="avatar-wrapper">
             <el-avatar :size="100" :src="userInfos.avatar" class="user-avatar">
-              <i class="ri-user-3-fill avatar-placeholder" />
+              <IconifyIconOnline icon="ri-user-3-fill avatar-placeholder" />
             </el-avatar>
             <div class="avatar-overlay">
-              <i class="ri-camera-line" />
+              <IconifyIconOnline icon="ri-camera-line" />
             </div>
           </div>
           <div class="avatar-actions">
             <p class="avatar-tip">
-              <el-icon><i class="ri-information-line" /></el-icon>
+              <el-icon><IconifyIconOnline icon="ri-information-line" /></el-icon>
               支持 JPG、PNG 格式，建议尺寸 200x200，大小不超过 2MB
             </p>
             <el-upload ref="uploadRef" accept="image/*" action="#" :limit="1" :auto-upload="false" :show-file-list="false" :on-change="onChange">
@@ -147,7 +147,7 @@
         <template #header>
           <div class="card-header">
             <div class="card-title">
-              <el-icon class="title-icon"><i class="ri-information-line" /></el-icon>
+              <el-icon class="title-icon"><IconifyIconOnline icon="ri-information-line" /></el-icon>
               <span>基本信息</span>
             </div>
           </div>
@@ -157,16 +157,18 @@
             <el-form-item label="昵称" prop="nickname">
               <el-input v-model="userInfos.nickname" placeholder="请输入昵称" clearable>
                 <template #prefix>
-                  <el-icon><i class="ri-user-smile-line" /></el-icon>
+                  <el-icon><IconifyIconOnline icon="ri-user-smile-line" /></el-icon>
                 </template>
               </el-input>
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row :gutter="24">
           <el-col :xs="24" :sm="24" :md="12">
             <el-form-item label="手机号">
               <el-input v-model="userInfos.phone" readonly class="readonly-input">
                 <template #prefix>
-                  <el-icon><i class="ri-phone-line" /></el-icon>
+                  <el-icon><IconifyIconOnline icon="ri-phone-line" /></el-icon>
                 </template>
                 <template #suffix>
                   <el-tag size="small" type="info" effect="plain">只读</el-tag>
@@ -174,11 +176,11 @@
               </el-input>
             </el-form-item>
           </el-col>
-          <el-col :xs="24" :sm="24" :md="24">
+          <el-col :xs="24" :sm="24" :md="12">
             <el-form-item label="邮箱">
               <el-input v-model="userInfos.email" readonly class="readonly-input">
                 <template #prefix>
-                  <el-icon><i class="ri-mail-line" /></el-icon>
+                  <el-icon><IconifyIconOnline icon="ri-mail-line" /></el-icon>
                 </template>
                 <template #suffix>
                   <el-tag size="small" type="info" effect="plain">只读</el-tag>
@@ -194,7 +196,7 @@
         <template #header>
           <div class="card-header">
             <div class="card-title">
-              <el-icon class="title-icon"><i class="ri-file-text-line" /></el-icon>
+              <el-icon class="title-icon"><IconifyIconOnline icon="ri-file-text-line" /></el-icon>
               <span>个人简介</span>
             </div>
           </div>
@@ -215,23 +217,23 @@
       <!-- 操作按钮 -->
       <div class="action-buttons">
         <el-button size="large" @click="onReset(userInfoFormRef)">
-          <el-icon><i class="ri-refresh-line" /></el-icon>
+          <el-icon><IconifyIconOnline icon="ri-refresh-line" /></el-icon>
           <span>重置</span>
         </el-button>
         <el-button type="primary" size="large" :loading="loading" @click="onSubmit(userInfoFormRef)">
-          <el-icon v-if="!loading"><i class="ri-save-line" /></el-icon>
+          <el-icon v-if="!loading"><IconifyIconOnline icon="ri-save-line" /></el-icon>
           <span>保存更改</span>
         </el-button>
       </div>
     </el-form>
 
     <!-- 头像裁剪弹窗 -->
-    <el-dialog v-model="isShow" width="600px" title="编辑头像" destroy-on-close :close-on-click-modal="false" :before-close="handleClose" :fullscreen="deviceDetection()">
+    <el-dialog v-model="isShow" width="40%" title="编辑头像" destroy-on-close :close-on-click-modal="false" :before-close="handleClose" :fullscreen="deviceDetection()">
       <ReCropperPreview ref="cropRef" :imgSrc="imgSrc" @cropper="onCropper" />
       <template #footer>
         <el-button @click="handleClose">取消</el-button>
         <el-button type="primary" @click="handleSubmitImage">
-          <el-icon><i class="ri-check-line" /></el-icon>
+          <el-icon><IconifyIconOnline icon="ri-check-line" /></el-icon>
           <span>确定</span>
         </el-button>
       </template>
@@ -332,7 +334,7 @@
             margin: 0 0 16px 0;
             line-height: 1.6;
 
-            .el-icon {
+            .iconify-icon {
               font-size: 16px;
               color: var(--el-color-info);
             }
