@@ -34,14 +34,32 @@ export const useUserStore = defineStore("pure-user", {
     /** 存储头像 */
     SET_AVATAR(avatar: string) {
       this.avatar = avatar;
+      // 【关键】同步更新本地缓存，否则刷新页面会变回旧的
+      const userItem = storageLocal().getItem<DataInfo<number>>(userKey);
+      if (userItem) {
+        userItem.avatar = avatar;
+        storageLocal().setItem(userKey, userItem);
+      }
     },
     /** 存储用户名 */
     SET_USERNAME(username: string) {
       this.username = username;
+      // 【关键】同步更新本地缓存
+      const userItem = storageLocal().getItem<DataInfo<number>>(userKey);
+      if (userItem) {
+        userItem.username = username;
+        storageLocal().setItem(userKey, userItem);
+      }
     },
     /** 存储昵称 */
     SET_NICKNAME(nickname: string) {
       this.nickname = nickname;
+      // 【关键】同步更新本地缓存
+      const userItem = storageLocal().getItem<DataInfo<number>>(userKey);
+      if (userItem) {
+        userItem.nickname = nickname;
+        storageLocal().setItem(userKey, userItem);
+      }
     },
     /** 存储角色 */
     SET_ROLES(roles: Array<string>) {

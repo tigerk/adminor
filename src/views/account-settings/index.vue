@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { useRouter } from "vue-router";
-  import { onBeforeMount, ref } from "vue";
+  import { computed, onBeforeMount, ref } from "vue";
   import { ReText } from "@/components/ReText";
   import Profile from "./components/Profile.vue";
   import Preferences from "./components/Preferences.vue";
@@ -10,7 +10,7 @@
   import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 
   import leftLine from "~icons/ri/arrow-left-s-line";
-  import { getUserProfile } from "@/api/login";
+  import { useUserStoreHook } from "@/store/modules/user";
 
   defineOptions({
     name: "AccountSettings"
@@ -21,12 +21,6 @@
 
   onBeforeMount(() => {
     useDataThemeChange().dataThemeChange($storage.layout?.themeMode);
-  });
-
-  const userInfo = ref({
-    avatar: "",
-    username: "",
-    nickname: ""
   });
 
   const panes = [
@@ -63,9 +57,10 @@
   const activeTab = ref("profile");
   const isMobile = deviceDetection();
 
-  getUserProfile().then(res => {
-    userInfo.value = res.data;
-  });
+  // 直接映射 Store 里的值，具有响应性
+  const userAvatar = computed(() => useUserStoreHook().avatar);
+  const userNickname = computed(() => useUserStoreHook().nickname);
+  const userUsername = computed(() => useUserStoreHook().username);
 </script>
 
 <template>
@@ -84,12 +79,12 @@
         </div>
       </div>
       <div class="header-right">
-        <el-avatar :size="48" :src="userInfo.avatar">
+        <el-avatar :size="48" :src="userAvatar">
           <i class="ri-user-3-line" />
         </el-avatar>
         <div class="user-info">
-          <ReText class="username">{{ userInfo.nickname }}</ReText>
-          <ReText class="user-account" type="info">{{ userInfo.username }}</ReText>
+          <ReText class="username">{{ userNickname }}</ReText>
+          <ReText class="user-account" type="info">{{ userUsername }}</ReText>
         </div>
       </div>
     </div>
