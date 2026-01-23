@@ -3,6 +3,7 @@
   import { getMineLogs } from "@/api/login";
   import { onMounted, reactive, ref } from "vue";
   import type { PaginationProps } from "@pureadmin/table";
+  import { Refresh } from "@element-plus/icons-vue";
 
   defineOptions({
     name: "SecurityLog"
@@ -117,7 +118,7 @@
         <p class="description">查看您的账户登录和操作记录，保障账户安全</p>
       </div>
       <div class="header-right">
-        <el-button :icon="'ri-refresh-line'" :loading="loading" @click="onSearch">刷新</el-button>
+        <el-button :icon="Refresh" :loading="loading" @click="onSearch">刷新</el-button>
       </div>
     </div>
 

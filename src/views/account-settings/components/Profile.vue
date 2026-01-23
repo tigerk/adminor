@@ -5,7 +5,7 @@
   import ReCropperPreview from "@/components/ReCropperPreview";
   import { createFormData, deviceDetection } from "@pureadmin/utils";
   import uploadLine from "~icons/ri/upload-line";
-  import { getUserProfile } from "@/api/login";
+  import { getUserProfile, updateUserProfile } from "@/api/login";
   import { uploadFile } from "@/api/upload";
 
   defineOptions({
@@ -85,11 +85,15 @@
     await formEl.validate(valid => {
       if (valid) {
         loading.value = true;
-        // TODO: 调用更新接口
-        setTimeout(() => {
+        updateUserProfile(userInfos).then(res => {
+          if (res.code === 0) {
+            message("更新信息成功", { type: "success" });
+          } else {
+            message("更新信息失败", { type: "error" });
+          }
+
           loading.value = false;
-          message("更新信息成功", { type: "success" });
-        }, 500);
+        });
       }
     });
   };

@@ -82,7 +82,12 @@ export const loginUpdate = (data?: object) => {
 
 /** 获取当前账户的个人信息 */
 export const getUserProfile = (data?: object) => {
-  return http.request<ApiResponse>("post", baseUrlApi("login/profile"), { data });
+  return http.request<ApiResponse>("post", baseUrlApi("login/profile/get"), { data });
+};
+
+/** 更新当前账户的个人信息 */
+export const updateUserProfile = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("login/profile/update"), { data });
 };
 
 /** 账户设置-个人安全日志 */
