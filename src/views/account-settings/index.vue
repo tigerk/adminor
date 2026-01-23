@@ -8,13 +8,12 @@
   import { deviceDetection, useGlobal } from "@pureadmin/utils";
   import AccountManagement from "./components/AccountManagement.vue";
   import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
-  import LaySidebarTopCollapse from "@/layout/components/lay-sidebar/components/SidebarTopCollapse.vue";
 
   import leftLine from "~icons/ri/arrow-left-s-line";
   import ProfileIcon from "~icons/ri/user-3-line";
   import PreferencesIcon from "~icons/ri/settings-3-line";
-  import SecurityLogIcon from "~icons/ri/window-line";
-  import AccountManagementIcon from "~icons/ri/profile-line";
+  import SecurityLogIcon from "~icons/ri/shield-check-line";
+  import AccountManagementIcon from "~icons/ri/lock-password-line";
   import { getUserProfile } from "@/api/login";
 
   defineOptions({
@@ -22,8 +21,8 @@
   });
 
   const router = useRouter();
-  const isOpen = ref(!deviceDetection());
   const { $storage } = useGlobal<GlobalPropertiesApi>();
+
   onBeforeMount(() => {
     useDataThemeChange().dataThemeChange($storage.layout?.themeMode);
   });
@@ -33,12 +32,19 @@
     username: "",
     nickname: ""
   });
+
   const panes = [
     {
       key: "profile",
       label: "个人信息",
       icon: ProfileIcon,
       component: Profile
+    },
+    {
+      key: "accountManagement",
+      label: "账户管理",
+      icon: AccountManagementIcon,
+      component: AccountManagement
     },
     {
       key: "preferences",
@@ -51,15 +57,10 @@
       label: "安全日志",
       icon: SecurityLogIcon,
       component: SecurityLog
-    },
-    {
-      key: "accountManagement",
-      label: "账户管理",
-      icon: AccountManagementIcon,
-      component: AccountManagement
     }
   ];
-  const witchPane = ref("profile");
+
+  const activeTab = ref("profile");
 
   getUserProfile().then(res => {
     userInfo.value = res.data;
@@ -67,108 +68,223 @@
 </script>
 
 <template>
-  <el-container class="h-full">
-    <el-aside
-      v-if="isOpen"
-      class="pure-account-settings overflow-hidden px-2 dark:bg-(--el-bg-color)! border-r-[1px] border-[var(--pure-border-color)]"
-      :width="deviceDetection() ? '180px' : '240px'"
-    >
-      <el-menu :default-active="witchPane" class="pure-account-settings-menu">
-        <div
-          class="h-[50px]! text-[var(--pure-theme-menu-text)] cursor-pointer text-sm transition-all duration-300 ease-in-out hover:scale-105 will-change-transform transform-gpu origin-center hover:text-base! hover:text-[var(--pure-theme-menu-title-hover)]!"
-          @click="router.go(-1)"
-        >
-          <div class="h-full flex items-center px-[var(--el-menu-base-level-padding)]">
-            <IconifyIconOffline :icon="leftLine" />
-            <span class="ml-2">返回</span>
-          </div>
+  <div class="account-settings-wrapper">
+    <!-- 页面头部 -->
+    <div class="settings-header">
+      <div class="header-left">
+        <el-button text class="back-button" @click="router.go(-1)">
+          <IconifyIconOffline :icon="leftLine" class="back-icon" />
+          <span>返回</span>
+        </el-button>
+        <div class="header-divider" />
+        <div class="header-title">
+          <h2>账户设置</h2>
+          <p class="subtitle">管理您的账户信息与偏好设置</p>
         </div>
-        <div class="flex items-center ml-8 mt-4 mb-4">
-          <el-avatar :size="48" :src="userInfo.avatar" />
-          <div class="ml-4 flex flex-col max-w-[130px]">
-            <ReText class="font-bold self-baseline!">
-              {{ userInfo.nickname }}
-            </ReText>
-            <ReText class="self-baseline!" type="info">
-              {{ userInfo.username }}
-            </ReText>
-          </div>
+      </div>
+      <div class="header-right">
+        <el-avatar :size="48" :src="userInfo.avatar">
+          <IconifyIconOffline :icon="ProfileIcon" />
+        </el-avatar>
+        <div class="user-info">
+          <ReText class="username">{{ userInfo.nickname }}</ReText>
+          <ReText class="user-account" type="info">{{ userInfo.username }}</ReText>
         </div>
-        <el-menu-item
-          v-for="item in panes"
-          :key="item.key"
-          :index="item.key"
-          @click="
-            () => {
-              witchPane = item.key;
-              if (deviceDetection()) {
-                isOpen = !isOpen;
-              }
-            }
-          "
-        >
-          <div class="flex items-center z-10">
-            <el-icon><IconifyIconOffline :icon="item.icon" /></el-icon>
-            <span>{{ item.label }}</span>
+      </div>
+    </div>
+
+    <!-- Tab 导航和内容区域 -->
+    <div class="settings-content">
+      <el-tabs v-model="activeTab" class="settings-tabs" :stretch="deviceDetection()">
+        <el-tab-pane v-for="pane in panes" :key="pane.key" :name="pane.key">
+          <template #label>
+            <div class="tab-label">
+              <el-icon><IconifyIconOffline :icon="pane.icon" /></el-icon>
+              <span>{{ pane.label }}</span>
+            </div>
+          </template>
+          <div class="tab-content">
+            <component :is="pane.component" />
           </div>
-        </el-menu-item>
-      </el-menu>
-    </el-aside>
-    <el-main>
-      <LaySidebarTopCollapse v-if="deviceDetection()" class="px-0" :is-active="isOpen" @toggleClick="isOpen = !isOpen" />
-      <component :is="panes.find(item => item.key === witchPane).component" :class="[!deviceDetection() && 'ml-[120px]']" />
-    </el-main>
-  </el-container>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+  </div>
 </template>
 
-<style lang="scss">
-  .pure-account-settings {
-    background: var(--pure-theme-menu-bg) !important;
-  }
+<style lang="scss" scoped>
+  .account-settings-wrapper {
+    min-height: 100vh;
+    background-color: var(--el-bg-color-page);
+    padding: 20px;
 
-  .pure-account-settings-menu {
-    background-color: transparent;
-    border: none;
+    @media (max-width: 768px) {
+      padding: 12px;
+    }
 
-    .el-menu-item {
-      height: 48px !important;
-      color: var(--pure-theme-menu-text);
-      background-color: transparent !important;
-      transition: color 0.2s;
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 20px 24px;
+      background: var(--el-bg-color);
+      border-radius: 12px;
+      box-shadow: var(--el-box-shadow-light);
 
-      &:hover {
-        color: var(--pure-theme-menu-title-hover) !important;
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
       }
 
-      &.is-active {
-        color: #fff !important;
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
 
-        &:hover {
-          color: #fff !important;
+        @media (max-width: 768px) {
+          width: 100%;
+          flex-direction: column;
+          align-items: flex-start;
         }
 
-        &::before {
-          position: absolute;
-          inset: 0 8px;
-          clear: both;
-          margin: 4px 0;
-          content: "";
-          background: var(--el-color-primary);
-          border-radius: 3px;
+        .back-button {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 14px;
+          color: var(--el-text-color-regular);
+          transition: all 0.3s;
+
+          &:hover {
+            color: var(--el-color-primary);
+            transform: translateX(-2px);
+          }
+
+          .back-icon {
+            font-size: 18px;
+          }
+        }
+
+        .header-divider {
+          width: 1px;
+          height: 32px;
+          background: var(--el-border-color);
+
+          @media (max-width: 768px) {
+            display: none;
+          }
+        }
+
+        .header-title {
+          h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--el-text-color-primary);
+            line-height: 1.2;
+          }
+
+          .subtitle {
+            margin: 4px 0 0 0;
+            font-size: 13px;
+            color: var(--el-text-color-secondary);
+          }
+        }
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        @media (max-width: 768px) {
+          width: 100%;
+          padding-top: 12px;
+          border-top: 1px solid var(--el-border-color-lighter);
+        }
+
+        .user-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          .username {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--el-text-color-primary);
+          }
+
+          .user-account {
+            font-size: 12px;
+            color: var(--el-text-color-secondary);
+          }
         }
       }
     }
-  }
-</style>
 
-<style lang="scss" scoped>
-  body[layout] {
-    .el-menu--vertical .is-active {
-      color: #fff !important;
-      transition: color 0.2s;
+    .settings-content {
+      background: var(--el-bg-color);
+      border-radius: 12px;
+      box-shadow: var(--el-box-shadow-light);
+      overflow: hidden;
 
-      &:hover {
-        color: #fff !important;
+      .settings-tabs {
+        :deep(.el-tabs__header) {
+          margin: 0;
+          border-bottom: 1px solid var(--el-border-color-lighter);
+          background: var(--el-bg-color);
+        }
+
+        :deep(.el-tabs__nav-wrap) {
+          padding: 0 24px;
+
+          @media (max-width: 768px) {
+            padding: 0 12px;
+          }
+        }
+
+        :deep(.el-tabs__item) {
+          height: 56px;
+          line-height: 56px;
+          font-size: 14px;
+          color: var(--el-text-color-regular);
+          transition: all 0.3s;
+
+          &:hover {
+            color: var(--el-color-primary);
+          }
+
+          &.is-active {
+            color: var(--el-color-primary);
+            font-weight: 500;
+          }
+        }
+
+        :deep(.el-tabs__active-bar) {
+          height: 3px;
+          background: var(--el-color-primary);
+        }
+
+        .tab-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .el-icon {
+            font-size: 16px;
+          }
+        }
+
+        .tab-content {
+          padding: 32px 24px;
+          min-height: 500px;
+
+          @media (max-width: 768px) {
+            padding: 20px 12px;
+          }
+        }
       }
     }
   }

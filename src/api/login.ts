@@ -55,7 +55,7 @@ export type UserInfoProps = {
   /** 联系电话 */
   phone: string;
   /** 简介 */
-  description: string;
+  remark: string;
 };
 
 /** 登录 */
