@@ -1,12 +1,12 @@
 <script setup lang="ts">
   import { reactive, ref } from "vue";
-  import { formUpload } from "@/api/mock";
   import { message } from "@/utils/message";
   import type { FormInstance, FormRules } from "element-plus";
   import ReCropperPreview from "@/components/ReCropperPreview";
   import { createFormData, deviceDetection } from "@pureadmin/utils";
   import uploadLine from "~icons/ri/upload-line";
   import { getUserProfile, UserInfoProps } from "@/api/login";
+  import { uploadFile } from "@/api/upload";
 
   defineOptions({
     name: "Profile"
@@ -61,9 +61,9 @@
     const formData = createFormData({
       files: new File([cropperBlob.value], "avatar")
     });
-    formUpload(formData)
-      .then(({ success, data }) => {
-        if (success) {
+    uploadFile(formData)
+      .then(({ code, data }) => {
+        if (code === 0) {
           message("更新头像成功", { type: "success" });
           handleClose();
         } else {
