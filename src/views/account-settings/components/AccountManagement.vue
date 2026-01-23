@@ -26,7 +26,7 @@
     },
     {
       icon: "ri-phone-line",
-      title: "手机号码",
+      title: "登录手机号码",
       description: "用于登录验证和重要通知",
       value: "已绑定手机：158****6789",
       action: "更换手机",

@@ -8,6 +8,7 @@
   import { getUserProfile, updateUserProfile } from "@/api/login";
   import { uploadFile } from "@/api/upload";
   import { useUserStoreHook } from "@/store/modules/user";
+  import { GENDER_OPTIONS } from "@/constants";
 
   defineOptions({
     name: "Profile"
@@ -32,8 +33,8 @@
   const userInfos = reactive<UserInfoProps>({
     avatar: "",
     nickname: "",
-    email: "",
-    phone: "",
+    gender: "",
+    birthday: "",
     remark: ""
   });
 
@@ -186,30 +187,23 @@
               </el-input>
             </el-form-item>
           </el-col>
-        </el-row>
-        <el-row :gutter="24">
           <el-col :xs="24" :sm="24" :md="12">
-            <el-form-item label="手机号">
-              <el-input v-model="userInfos.phone" readonly class="readonly-input">
-                <template #prefix>
-                  <el-icon><IconifyIconOnline icon="ri-phone-line" /></el-icon>
-                </template>
-                <template #suffix>
-                  <el-tag size="small" type="info" effect="plain">只读</el-tag>
-                </template>
-              </el-input>
+            <el-form-item label="性别" prop="gender">
+              <el-select v-model="userInfos.gender" placeholder="请选择性别">
+                <el-option v-for="item in GENDER_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="24" :md="12">
-            <el-form-item label="邮箱">
-              <el-input v-model="userInfos.email" readonly class="readonly-input">
-                <template #prefix>
-                  <el-icon><IconifyIconOnline icon="ri-mail-line" /></el-icon>
-                </template>
-                <template #suffix>
-                  <el-tag size="small" type="info" effect="plain">只读</el-tag>
-                </template>
-              </el-input>
+            <el-form-item label="生日" prop="birthday">
+              <el-date-picker
+                v-model="userInfos.birthday"
+                type="date"
+                placeholder="请选择日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                :default-value="new Date(2010, 9, 1)"
+              />
             </el-form-item>
           </el-col>
         </el-row>
