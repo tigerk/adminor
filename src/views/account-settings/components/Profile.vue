@@ -40,7 +40,23 @@
   const rules = reactive<FormRules<UserInfoProps>>({
     nickname: [
       { required: true, message: "昵称必填", trigger: "blur" },
-      { min: 2, max: 20, message: "昵称长度在 2 到 20 个字符", trigger: "blur" }
+      {
+        min: 2,
+        max: 20,
+        message: "昵称长度在 2 到 20 个字符",
+        trigger: "blur"
+      },
+      {
+        validator: (rule, value, callback) => {
+          const regex = /^[a-zA-Z0-9\u4e00-\u9fa5\p{Emoji}]*$/u; // 使用 \p{Emoji} 匹配 emoji
+          if (regex.test(value)) {
+            callback();
+          } else {
+            callback(new Error("昵称不能包含特殊字符"));
+          }
+        },
+        trigger: "blur"
+      }
     ],
     remark: [{ max: 250, message: "简介不能超过 250 个字符", trigger: "blur" }]
   });
@@ -163,7 +179,7 @@
         <el-row :gutter="24">
           <el-col :xs="24" :sm="24" :md="12">
             <el-form-item label="昵称" prop="nickname">
-              <el-input v-model="userInfos.nickname" placeholder="请输入昵称" clearable>
+              <el-input v-model="userInfos.nickname" placeholder="允许字母、数字、汉字和常见的emoji" clearable>
                 <template #prefix>
                   <el-icon><IconifyIconOnline icon="ri-user-smile-line" /></el-icon>
                 </template>
