@@ -14,17 +14,12 @@
       button: "修改"
     },
     {
-      title: "密保手机",
+      title: "手机号",
       illustrate: "已经绑定手机：158****6789",
       button: "修改"
     },
     {
-      title: "密保问题",
-      illustrate: "未设置密保问题，密保问题可有效保护账户安全",
-      button: "修改"
-    },
-    {
-      title: "备用邮箱",
+      title: "邮箱",
       illustrate: "已绑定邮箱：pure***@163.com",
       button: "修改"
     }
