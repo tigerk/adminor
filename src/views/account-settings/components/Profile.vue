@@ -2,11 +2,11 @@
   import { reactive, ref } from "vue";
   import { formUpload } from "@/api/mock";
   import { message } from "@/utils/message";
-  import { type UserInfo, getMine } from "@/api/user";
   import type { FormInstance, FormRules } from "element-plus";
   import ReCropperPreview from "@/components/ReCropperPreview";
   import { createFormData, deviceDetection } from "@pureadmin/utils";
   import uploadLine from "~icons/ri/upload-line";
+  import { getUserProfile, UserInfoProps } from "@/api/login";
 
   defineOptions({
     name: "Profile"
@@ -27,7 +27,7 @@
     description: ""
   });
 
-  const rules = reactive<FormRules<UserInfo>>({
+  const rules = reactive<FormRules<UserInfoProps>>({
     nickname: [{ required: true, message: "昵称必填", trigger: "blur" }]
   });
 
@@ -87,7 +87,7 @@
     });
   };
 
-  getMine().then(res => {
+  getUserProfile().then(res => {
     Object.assign(userInfos, res.data);
   });
 </script>
