@@ -10,8 +10,8 @@
    * 表单 Props
    */
   export interface ApprovalFormProps {
-    formInline: ApprovalFormItemProps;
-    bizTypeOptions: Array<{ label: string; value: string }>;
+    formInline?: ApprovalFormItemProps;
+    bizTypeOptions?: Array<{ label: string; value: string }>;
   }
 
   const props = withDefaults(defineProps<ApprovalFormProps>(), {

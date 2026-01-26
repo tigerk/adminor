@@ -95,7 +95,7 @@ export function useApprovalFlow() {
 
   async function loadBizTypeOptions() {
     const { data } = await getBizTypeOptions();
-    bizTypeOptions.value = data || [];
+    bizTypeOptions.value = data.map(item => ({ label: item.name, value: item.code }));
   }
 
   function resetQueryForm() {

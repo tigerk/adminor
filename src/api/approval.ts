@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse } from "@/types";
+import { ApiListResponse, ApiResponse, CodeNameProps } from "@/types";
 
 /** 审批流程相关 API */
 
@@ -31,7 +31,7 @@ export const toggleApprovalFlowStatus = (flowId: number) => {
 
 // 获取业务类型选项
 export const getBizTypeOptions = () => {
-  return http.request<ApiResponse>("post", baseUrlApi("approval/flow/biz-types"));
+  return http.request<ApiListResponse<CodeNameProps>>("post", baseUrlApi("approval/flow/biz-types"));
 };
 
 /** 审批操作相关 API */

@@ -34,3 +34,9 @@ export interface OptionItem<T = string | number> {
   value: T; /** 值 */
   disabled?: boolean; /** 是否禁用 */
 }
+
+/** enum 常用key-value 类型（用于下拉框等） */
+export interface CodeNameProps {
+  code: string; /** 代码 */
+  name: string; /** 名称 */
+}
