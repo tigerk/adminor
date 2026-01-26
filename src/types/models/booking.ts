@@ -2,7 +2,7 @@
  * 预定数据结构定义
  */
 
-import { RoomDetailProps, RoomListProps } from "@/types";
+import type { RoomListProps } from "@/types";
 
 /** 预定查询参数 */
 export interface BookingQueryParams {
