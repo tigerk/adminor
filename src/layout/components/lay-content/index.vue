@@ -3,9 +3,9 @@
   import LayFrame from "../lay-frame/index.vue";
   import LayFooter from "../lay-footer/index.vue";
   import { useTags } from "@/layout/hooks/useTag";
-  import { useGlobal, isNumber } from "@pureadmin/utils";
+  import { isNumber, useGlobal } from "@pureadmin/utils";
   import BackTopIcon from "@/assets/svg/back_top.svg?component";
-  import { h, computed, Transition, defineComponent } from "vue";
+  import { computed, defineComponent, h, Transition } from "vue";
   import { usePermissionStoreHook } from "@/store/modules/permission";
 
   const props = defineProps({
@@ -77,7 +77,11 @@
           appear: true
         },
         {
-          default: () => [this.$slots.default()]
+          default: () => {
+            const slot = this.$slots.default();
+            // 🔴 Safari 需要确保返回单一元素
+            return slot && slot.length > 0 ? slot[0] : null;
+          }
         }
       );
     }
@@ -111,20 +115,24 @@
               </el-backtop>
               <div class="grow">
                 <transitionMain :route="route">
-                  <keep-alive v-if="isKeepAlive" :include="usePermissionStoreHook().cachePageList">
-                    <component :is="Comp" :key="fullPath" :frameInfo="frameInfo" class="main-content" />
-                  </keep-alive>
-                  <component :is="Comp" v-else :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                  <div :key="fullPath" class="page-container">
+                    <keep-alive v-if="isKeepAlive" :include="usePermissionStoreHook().cachePageList">
+                      <component :is="Comp" :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                    </keep-alive>
+                    <component :is="Comp" v-else :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                  </div>
                 </transitionMain>
               </div>
               <LayFooter v-if="!hideFooter" />
             </el-scrollbar>
             <div v-else class="grow">
               <transitionMain :route="route">
-                <keep-alive v-if="isKeepAlive" :include="usePermissionStoreHook().cachePageList">
-                  <component :is="Comp" :key="fullPath" :frameInfo="frameInfo" class="main-content" />
-                </keep-alive>
-                <component :is="Comp" v-else :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                <div :key="fullPath" class="page-container">
+                  <keep-alive v-if="isKeepAlive" :include="usePermissionStoreHook().cachePageList">
+                    <component :is="Comp" :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                  </keep-alive>
+                  <component :is="Comp" v-else :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                </div>
               </transitionMain>
             </div>
           </template>
@@ -154,5 +162,11 @@
 
   .main-content {
     margin: 8px;
+  }
+
+  /* 🆕 添加容器样式 */
+  .page-container {
+    width: 100%;
+    min-height: 100%;
   }
 </style>
