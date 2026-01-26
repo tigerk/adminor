@@ -113,7 +113,7 @@
 </script>
 
 <template>
-  <el-form ref="ruleFormRef" :model="newFormInline" :rules="formRules" label-width="100px">
+  <el-form ref="ruleFormRef" :model="newFormInline" :rules="formRules" label-position="top">
     <el-form-item label="流程名称" prop="flowName">
       <el-input v-model="newFormInline.flowName" placeholder="请输入流程名称" clearable />
     </el-form-item>

@@ -1,19 +1,25 @@
 import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { message } from "@/utils/message";
-import { getApprovalFlowList, saveApprovalFlow, deleteApprovalFlow, toggleApprovalFlowStatus, getBizTypeOptions } from "@/api/approval";
-import { usePublicHooks } from "@/utils/publicHooks";
+import { deleteApprovalFlow, getApprovalFlowList, getBizTypeOptions, saveApprovalFlow, toggleApprovalFlowStatus } from "@/api/approval";
 import { addDialog } from "@/components/ReDialog";
-import { h, onMounted, ref } from "vue";
+import { h, onMounted, reactive, ref } from "vue";
 import { cloneDeep, deviceDetection } from "@pureadmin/utils";
+import { ElMessageBox } from "element-plus";
 import type { ApprovalFormItemProps } from "@/types";
 
 export function useApprovalFlow() {
   const formRef = ref();
   const dataList = ref([]);
   const loading = ref(true);
-  const bizTypeOptions = ref([]);
-  const { tagStyle } = usePublicHooks();
+  const bizTypeOptions = ref<Array<{ label: string; value: string }>>([]);
+  const tableSize = ref("default");
+
+  const queryForm = reactive({
+    flowName: "",
+    bizType: "",
+    enabled: undefined as boolean | undefined
+  });
 
   const columns: TableColumnList = [
     {
@@ -30,13 +36,15 @@ export function useApprovalFlow() {
     {
       label: "审批节点",
       prop: "nodes",
-      minWidth: 280,
+      minWidth: 300,
       cellRenderer: ({ row }) => (
         <div class="node-flow">
           {row.nodes?.map((node, index) => (
             <>
-              <span class="node-item">{node.nodeName}</span>
-              {index < row.nodes.length - 1 && <span class="node-arrow">→</span>}
+              <el-tag size="small" type="info">
+                {node.nodeName}
+              </el-tag>
+              {index < row.nodes.length - 1 && <span class="node-arrow mx-1">→</span>}
             </>
           ))}
         </div>
@@ -57,7 +65,7 @@ export function useApprovalFlow() {
     {
       label: "操作",
       fixed: "right",
-      width: 160,
+      width: 140,
       slot: "operation"
     }
   ];
@@ -66,7 +74,20 @@ export function useApprovalFlow() {
     loading.value = true;
     try {
       const { data } = await getApprovalFlowList();
-      dataList.value = data || [];
+      let list = data || [];
+
+      // 前端过滤
+      if (queryForm.flowName) {
+        list = list.filter(item => item.flowName?.includes(queryForm.flowName));
+      }
+      if (queryForm.bizType) {
+        list = list.filter(item => item.bizType === queryForm.bizType);
+      }
+      if (queryForm.enabled !== undefined) {
+        list = list.filter(item => item.enabled === queryForm.enabled);
+      }
+
+      dataList.value = list;
     } finally {
       loading.value = false;
     }
@@ -75,6 +96,13 @@ export function useApprovalFlow() {
   async function loadBizTypeOptions() {
     const { data } = await getBizTypeOptions();
     bizTypeOptions.value = data || [];
+  }
+
+  function resetQueryForm() {
+    queryForm.flowName = "";
+    queryForm.bizType = "";
+    queryForm.enabled = undefined;
+    onSearch();
   }
 
   function openDialog(title = "新增", row?: ApprovalFormItemProps) {
@@ -138,13 +166,21 @@ export function useApprovalFlow() {
     });
   }
 
-  function handleDelete(row: ApprovalFormItemProps) {
-    deleteApprovalFlow(row.id).then(resp => {
-      if (resp.code === 0) {
-        message("删除成功", { type: "success" });
-        onSearch();
-      }
-    });
+  function handleConfirmDelete(row: ApprovalFormItemProps) {
+    ElMessageBox.confirm(`确认删除流程「${row.flowName}」吗？`, "删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(() => {
+        deleteApprovalFlow(row.id).then(resp => {
+          if (resp.code === 0) {
+            message("删除成功", { type: "success" });
+            onSearch();
+          }
+        });
+      })
+      .catch(() => {});
   }
 
   function handleToggleStatus(row: ApprovalFormItemProps) {
@@ -163,12 +199,16 @@ export function useApprovalFlow() {
   });
 
   return {
+    queryForm,
     loading,
     columns,
     dataList,
+    tableSize,
+    bizTypeOptions,
     onSearch,
+    resetQueryForm,
     openDialog,
-    handleDelete,
+    handleConfirmDelete,
     handleToggleStatus
   };
 }

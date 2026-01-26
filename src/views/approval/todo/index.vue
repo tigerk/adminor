@@ -1,9 +1,104 @@
+<template>
+  <div class="main">
+    <!-- 搜索栏 -->
+    <el-row class="bg-bg_color w-full px-4 pb-3 pt-[12px]">
+      <el-col :span="24">
+        <el-form ref="queryFormRef" :inline="true" :model="queryForm" class="search-form">
+          <el-form-item>
+            <el-input v-model="queryForm.keyword" placeholder="标题/单号" clearable class="!w-[180px]" @keyup.enter="onSearch" @clear="onSearch">
+              <template #prefix>
+                <IconifyIconOffline :icon="Search" />
+              </template>
+            </el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-select v-model="queryForm.bizType" placeholder="业务类型" clearable class="!w-[160px]" @change="onSearch">
+              <el-option v-for="item in bizTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+          <el-form-item v-if="activeTab !== 'todo'">
+            <el-select v-model="queryForm.status" placeholder="状态" clearable class="!w-[120px]" @change="onSearch">
+              <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button :icon="useRenderIcon(SearchIcon)" type="primary" @click="onSearch">搜索</el-button>
+            <el-button :icon="useRenderIcon(Refresh)" @click="resetQueryForm">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-col>
+    </el-row>
+
+    <!-- Tab 状态栏 -->
+    <el-row class="bg-bg_color w-full px-4">
+      <el-col :span="24">
+        <div class="grid-content ep-bg-purple" style="align-items: flex-start">
+          <el-space>
+            <el-form-item>
+              <el-radio-group v-model="activeTab" @change="handleTabChange">
+                <el-radio-button value="todo" :class="['approval-status-button']">
+                  <span class="status-content">
+                    <span class="status-dot" style="background-color: #e6a23c" />
+                    我的待办（{{ todoCount }}）
+                  </span>
+                </el-radio-button>
+                <el-radio-button value="done" :class="['approval-status-button']">
+                  <span class="status-content">
+                    <span class="status-dot" style="background-color: #67c23a" />
+                    我的已办
+                  </span>
+                </el-radio-button>
+                <el-radio-button value="apply" :class="['approval-status-button']">
+                  <span class="status-content">
+                    <span class="status-dot" style="background-color: #409eff" />
+                    我发起的
+                  </span>
+                </el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-space>
+        </div>
+      </el-col>
+    </el-row>
+
+    <!-- 审批列表 -->
+    <el-row class="bg-bg_color w-full px-4 pt-0 overflow-auto">
+      <pure-table
+        border
+        row-key="id"
+        alignWhole="center"
+        :show-overflow-tooltip="false"
+        :loading="loading"
+        :loading-config="{ background: 'transparent' }"
+        adaptive
+        :adaptiveConfig="{ offsetBottom: 108 }"
+        :data="dataList"
+        :size="tableSize as any"
+        :columns="columns"
+        :pagination="pagination"
+        :header-cell-style="{
+          background: 'var(--el-fill-color-light)',
+          color: 'var(--el-text-color-primary)'
+        }"
+        @page-size-change="handleSizeChange"
+        @page-current-change="handleCurrentChange"
+      >
+        <template #operation="{ row }">
+          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="handleView(row)">
+            {{ activeTab === "todo" ? "审批" : "查看" }}
+          </el-button>
+        </template>
+      </pure-table>
+    </el-row>
+  </div>
+</template>
+
 <script setup lang="ts">
-  import { ref } from "vue";
   import { useApprovalTodo } from "./utils/hook";
-  import { PureTableBar } from "@/components/RePureTableBar";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
+  import SearchIcon from "~icons/ri/search-line";
+  import Search from "~icons/ep/search";
   import Refresh from "~icons/ep/refresh";
   import View from "~icons/ep/view";
 
@@ -11,120 +106,48 @@
     name: "ApprovalTodo"
   });
 
-  const formRef = ref();
-  const tableRef = ref();
   const {
-    form,
+    queryForm,
     loading,
     columns,
     dataList,
     pagination,
     activeTab,
+    tableSize,
     bizTypeOptions,
     statusOptions,
+    todoCount,
     onSearch,
-    resetForm,
+    resetQueryForm,
     handleTabChange,
     handleSizeChange,
     handleCurrentChange,
     handleView
   } = useApprovalTodo();
-
-  function onFullscreen() {
-    tableRef.value.setAdaptive();
-  }
 </script>
 
-<template>
-  <div class="main">
-    <!-- Tab 切换 -->
-    <el-tabs v-model="activeTab" @tab-change="handleTabChange" class="approval-tabs">
-      <el-tab-pane name="todo">
-        <template #label>
-          <span>
-            我的待办
-            <el-badge :value="pagination.todoCount" :max="99" v-if="pagination.todoCount > 0" />
-          </span>
-        </template>
-      </el-tab-pane>
-      <el-tab-pane label="我的已办" name="done" />
-      <el-tab-pane label="我发起的" name="apply" />
-    </el-tabs>
-
-    <!-- 搜索表单 -->
-    <el-form ref="formRef" :inline="true" :model="form" class="search-form bg-bg_color w-full pl-8 pt-[12px] overflow-auto">
-      <el-form-item label="业务类型：" prop="bizType">
-        <el-select v-model="form.bizType" placeholder="请选择" clearable class="w-[180px]!">
-          <el-option v-for="item in bizTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
-      </el-form-item>
-      <el-form-item v-if="activeTab !== 'todo'" label="状态：" prop="status">
-        <el-select v-model="form.status" placeholder="请选择" clearable class="w-[180px]!">
-          <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="关键字：" prop="keyword">
-        <el-input v-model="form.keyword" placeholder="标题/单号" clearable class="w-[200px]!" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :icon="useRenderIcon('ri:search-line')" :loading="loading" @click="onSearch">搜索</el-button>
-        <el-button :icon="useRenderIcon(Refresh)" @click="resetForm(formRef)">重置</el-button>
-      </el-form-item>
-    </el-form>
-
-    <!-- 列表 -->
-    <PureTableBar
-      :title="activeTab === 'todo' ? '待办列表' : activeTab === 'done' ? '已办列表' : '我发起的'"
-      :columns="columns"
-      :tableRef="tableRef?.getTableRef()"
-      @refresh="onSearch"
-      @fullscreen="onFullscreen"
-    >
-      <template v-slot="{ size, dynamicColumns }">
-        <pure-table
-          ref="tableRef"
-          adaptive
-          :adaptiveConfig="{ offsetBottom: 45 }"
-          align-whole="center"
-          row-key="id"
-          showOverflowTooltip
-          table-layout="auto"
-          :loading="loading"
-          :size="size"
-          :data="dataList"
-          :columns="dynamicColumns"
-          :pagination="pagination"
-          :paginationSmall="size === 'small'"
-          :header-cell-style="{
-            background: 'var(--el-fill-color-light)',
-            color: 'var(--el-text-color-primary)'
-          }"
-          @page-size-change="handleSizeChange"
-          @page-current-change="handleCurrentChange"
-        >
-          <template #operation="{ row }">
-            <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(View)" @click="handleView(row)">
-              {{ activeTab === "todo" ? "审批" : "查看" }}
-            </el-button>
-          </template>
-        </pure-table>
-      </template>
-    </PureTableBar>
-  </div>
-</template>
-
 <style lang="scss" scoped>
-  .main {
-    padding: 8px;
-
-    .approval-tabs {
-      margin-bottom: 16px;
+  .search-form {
+    :deep(.el-form-item) {
+      margin-bottom: 12px;
     }
+  }
 
-    .search-form {
-      :deep(.el-form-item) {
-        margin-bottom: 12px;
-      }
-    }
+  :deep(.el-dropdown-menu__item i) {
+    margin: 0;
+  }
+
+  .status-content {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .status-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
   }
 </style>

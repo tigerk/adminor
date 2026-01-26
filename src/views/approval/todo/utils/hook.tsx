@@ -1,24 +1,23 @@
 import dayjs from "dayjs";
-import { message } from "@/utils/message";
-import { getTodoList, getDoneList, getApplyList, getTodoCount, getBizTypeOptions } from "@/api/approval";
-import { usePublicHooks } from "@/utils/publicHooks";
-import { onMounted, reactive, ref, computed } from "vue";
+import { getApplyList, getBizTypeOptions, getDoneList, getTodoCount, getTodoList } from "@/api/approval";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
 export function useApprovalTodo() {
   const router = useRouter();
-  const { tagStyle } = usePublicHooks();
 
-  const form = reactive({
+  const queryForm = reactive({
     bizType: "",
-    status: null,
+    status: null as number | null,
     keyword: ""
   });
 
   const loading = ref(false);
   const dataList = ref([]);
   const activeTab = ref("todo");
-  const bizTypeOptions = ref([]);
+  const bizTypeOptions = ref<Array<{ label: string; value: string }>>([]);
+  const todoCount = ref(0);
+  const tableSize = ref("default");
 
   const statusOptions = [
     { label: "审批中", value: 1 },
@@ -31,8 +30,7 @@ export function useApprovalTodo() {
     total: 0,
     pageSize: 10,
     currentPage: 1,
-    background: true,
-    todoCount: 0
+    background: true
   });
 
   // 待办列表列配置
@@ -206,7 +204,7 @@ export function useApprovalTodo() {
     loading.value = true;
     try {
       const params = {
-        ...form,
+        ...queryForm,
         pageNum: pagination.currentPage,
         pageSize: pagination.pageSize
       };
@@ -233,7 +231,7 @@ export function useApprovalTodo() {
 
   async function loadTodoCount() {
     const { data } = await getTodoCount();
-    pagination.todoCount = data || 0;
+    todoCount.value = data || 0;
   }
 
   async function loadBizTypeOptions() {
@@ -241,9 +239,10 @@ export function useApprovalTodo() {
     bizTypeOptions.value = data || [];
   }
 
-  function resetForm(formEl) {
-    if (!formEl) return;
-    formEl.resetFields();
+  function resetQueryForm() {
+    queryForm.bizType = "";
+    queryForm.status = null;
+    queryForm.keyword = "";
     onSearch();
   }
 
@@ -282,16 +281,18 @@ export function useApprovalTodo() {
   });
 
   return {
-    form,
+    queryForm,
     loading,
     columns,
     dataList,
     pagination,
     activeTab,
+    tableSize,
     bizTypeOptions,
     statusOptions,
+    todoCount,
     onSearch,
-    resetForm,
+    resetQueryForm,
     handleTabChange,
     handleSizeChange,
     handleCurrentChange,
