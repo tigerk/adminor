@@ -48,13 +48,13 @@ export function useApprovalTodo() {
     },
     {
       label: "业务单号",
-      prop: "bizCode",
+      prop: "bizId",
       width: 160
     },
     {
       label: "申请人",
       prop: "applicantName",
-      width: 100
+      width: 150
     },
     {
       label: "当前节点",
@@ -138,7 +138,7 @@ export function useApprovalTodo() {
     {
       label: "审批单号",
       prop: "instanceNo",
-      width: 180
+      width: 230
     },
     {
       label: "审批标题",
@@ -236,7 +236,10 @@ export function useApprovalTodo() {
 
   async function loadBizTypeOptions() {
     const { data } = await getBizTypeOptions();
-    bizTypeOptions.value = data || [];
+    bizTypeOptions.value = data.map(item => ({
+      label: item.name,
+      value: item.code
+    }));
   }
 
   function resetQueryForm() {

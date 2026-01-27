@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     <!-- 搜索栏 -->
-    <el-row class="bg-bg_color w-full px-4 pb-3 pt-[12px]">
+    <el-row class="bg-bg_color w-full px-4 pt-[12px]">
       <el-col :span="24">
         <el-form ref="queryFormRef" :inline="true" :model="queryForm" class="search-form">
           <el-form-item>
@@ -29,67 +29,60 @@
       </el-col>
     </el-row>
 
-    <!-- Tab 状态栏 -->
-    <el-row class="bg-bg_color w-full px-4">
-      <el-col :span="24">
-        <div class="grid-content ep-bg-purple" style="align-items: flex-start">
-          <el-space>
-            <el-form-item>
-              <el-radio-group v-model="activeTab" @change="handleTabChange">
-                <el-radio-button value="todo" :class="['approval-status-button']">
-                  <span class="status-content">
-                    <span class="status-dot" style="background-color: #e6a23c" />
-                    我的待办（{{ todoCount }}）
-                  </span>
-                </el-radio-button>
-                <el-radio-button value="done" :class="['approval-status-button']">
-                  <span class="status-content">
-                    <span class="status-dot" style="background-color: #67c23a" />
-                    我的已办
-                  </span>
-                </el-radio-button>
-                <el-radio-button value="apply" :class="['approval-status-button']">
-                  <span class="status-content">
-                    <span class="status-dot" style="background-color: #409eff" />
-                    我发起的
-                  </span>
-                </el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-          </el-space>
-        </div>
-      </el-col>
-    </el-row>
-
-    <!-- 审批列表 -->
-    <el-row class="bg-bg_color w-full px-4 pt-0 overflow-auto">
-      <pure-table
-        border
-        row-key="id"
-        alignWhole="center"
-        :show-overflow-tooltip="false"
-        :loading="loading"
-        :loading-config="{ background: 'transparent' }"
-        adaptive
-        :adaptiveConfig="{ offsetBottom: 108 }"
-        :data="dataList"
-        :size="tableSize as any"
-        :columns="columns"
-        :pagination="pagination"
-        :header-cell-style="{
-          background: 'var(--el-fill-color-light)',
-          color: 'var(--el-text-color-primary)'
-        }"
-        @page-size-change="handleSizeChange"
-        @page-current-change="handleCurrentChange"
-      >
-        <template #operation="{ row }">
-          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="handleView(row)">
-            {{ activeTab === "todo" ? "审批" : "查看" }}
-          </el-button>
-        </template>
-      </pure-table>
-    </el-row>
+    <PureTableBar title="我的审批" :columns="columns" @refresh="onSearch">
+      <template #buttons>
+        <el-space>
+          <el-radio-group v-model="activeTab" @change="handleTabChange">
+            <el-radio-button value="todo" :class="['approval-status-button']">
+              <span class="status-content">
+                <span class="status-dot" style="background-color: #e6a23c" />
+                我的待办（{{ todoCount }}）
+              </span>
+            </el-radio-button>
+            <el-radio-button value="done" :class="['approval-status-button']">
+              <span class="status-content">
+                <span class="status-dot" style="background-color: #67c23a" />
+                我的已办
+              </span>
+            </el-radio-button>
+            <el-radio-button value="apply" :class="['approval-status-button']">
+              <span class="status-content">
+                <span class="status-dot" style="background-color: #409eff" />
+                我发起的
+              </span>
+            </el-radio-button>
+          </el-radio-group>
+        </el-space>
+      </template>
+      <template v-slot="{}">
+        <pure-table
+          border
+          row-key="id"
+          alignWhole="center"
+          :show-overflow-tooltip="false"
+          :loading="loading"
+          :loading-config="{ background: 'transparent' }"
+          adaptive
+          :adaptiveConfig="{ offsetBottom: 108 }"
+          :data="dataList"
+          :size="tableSize as any"
+          :columns="columns"
+          :pagination="pagination"
+          :header-cell-style="{
+            background: 'var(--el-fill-color-light)',
+            color: 'var(--el-text-color-primary)'
+          }"
+          @page-size-change="handleSizeChange"
+          @page-current-change="handleCurrentChange"
+        >
+          <template #operation="{ row }">
+            <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="handleView(row)">
+              {{ activeTab === "todo" ? "审批" : "查看" }}
+            </el-button>
+          </template>
+        </pure-table>
+      </template>
+    </PureTableBar>
   </div>
 </template>
 
@@ -101,6 +94,7 @@
   import Search from "~icons/ep/search";
   import Refresh from "~icons/ep/refresh";
   import View from "~icons/ep/view";
+  import { PureTableBar } from "@/components/RePureTableBar";
 
   defineOptions({
     name: "ApprovalTodo"
