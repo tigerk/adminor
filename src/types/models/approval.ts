@@ -1,10 +1,10 @@
 // ==================== 类型定义 ====================
 export interface ApprovalActionProps {
-  id: number;
+  id: bigint;
   nodeName: string;
   nodeOrder: number;
   approverName: string;
-  approverId: number;
+  approverId: bigint;
   action?: number;
   actionName?: string;
   remark?: string;
@@ -14,7 +14,7 @@ export interface ApprovalActionProps {
 }
 
 export interface ApprovalInstanceProps {
-  id: number;
+  id: bigint;
   instanceNo: string;
   status: number;
   statusName: string;
@@ -31,11 +31,11 @@ export interface ApprovalInstanceProps {
  * 审批节点类型
  */
 export interface ApprovalNodeProps {
-  id?: number;
+  id?: bigint;
   nodeName: string;
   nodeOrder: number;
   approverType: number;
-  approverIds: number[];
+  approverIds: bigint[];
   multiApproveType: number;
 }
 
@@ -43,7 +43,7 @@ export interface ApprovalNodeProps {
  * 表单项类型
  */
 export interface ApprovalFormItemProps {
-  id: number | null;
+  id: bigint | null;
   flowName: string;
   bizType: string;
   enabled: boolean;

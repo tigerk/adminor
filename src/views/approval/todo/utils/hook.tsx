@@ -1,8 +1,11 @@
 import dayjs from "dayjs";
 import { getApplyList, getBizTypeOptions, getDoneList, getTodoCount, getTodoList } from "@/api/approval";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, h, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import useTenant from "@/views/contract/tenant/utils/hook";
+import ApprovalDetailDialog from "../../detail/index.vue";
+import { addDialog } from "@/components/ReDialog";
+import { deviceDetection } from "@pureadmin/utils";
 
 export function useApprovalTodo() {
   // 导入租客相关的 hook
@@ -74,7 +77,7 @@ export function useApprovalTodo() {
     {
       label: "操作",
       fixed: "right",
-      width: 100,
+      width: 150,
       slot: "operation"
     }
   ];
@@ -269,31 +272,31 @@ export function useApprovalTodo() {
     onSearch().then();
   }
 
+  // 使用 addDialog 打开审批详情
   function handleView(row) {
-    // 判断业务类型
-    if (row.bizType === "TENANT_CHECKIN") {
-      // 直接调用，传入只读模式
-      openTenantViewDialog(
-        "审批",
-        {
-          id: row.bizId,
-          tenantName: ""
-        },
-        {
-          readonly: true // 设置为只读模式
-        }
-      );
-    } else {
-      // 跳转到审批详情页或对应业务详情页
-      router.push({
-        path: "/approval/detail",
-        query: {
+    addDialog({
+      title: row.title || "审批详情",
+      width: "80%",
+      draggable: true,
+      lockScroll: true, // 弹窗打开时锁定滚动
+      alignCenter: true, // 弹窗居中对齐
+      fullscreen: deviceDetection(), // 移动端全屏
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () =>
+        h(ApprovalDetailDialog, {
           instanceId: row.instanceId || row.id,
-          bizType: row.bizType,
-          bizId: row.bizId
+          from: activeTab.value // todo/done/apply
+        }),
+      beforeCancel: done => {
+        done();
+        // 关闭后刷新列表和待办数量
+        onSearch();
+        if (activeTab.value === "todo") {
+          loadTodoCount();
         }
-      });
-    }
+      }
+    });
   }
 
   onMounted(() => {

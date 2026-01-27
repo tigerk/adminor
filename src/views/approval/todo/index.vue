@@ -77,6 +77,9 @@
         >
           <template #operation="{ row }">
             <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="handleView(row)">
+              查看
+            </el-button>
+            <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="handleView(row)">
               {{ activeTab === "todo" ? "审批" : "查看" }}
             </el-button>
           </template>
