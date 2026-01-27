@@ -37,8 +37,8 @@
   const approverTypeOptions = [
     { label: "指定用户", value: 1 },
     { label: "指定角色", value: 2 },
-    { label: "部门主管", value: 3 },
-    { label: "发起人自选", value: 4 }
+    { label: "部门主管", value: 3 }
+    // { label: "发起人自选", value: 4 }
   ];
 
   // 多人审批方式选项
