@@ -59,7 +59,7 @@
           border
           row-key="id"
           alignWhole="center"
-          :show-overflow-tooltip="false"
+          :show-overflow-tooltip="true"
           :loading="loading"
           :loading-config="{ background: 'transparent' }"
           adaptive
