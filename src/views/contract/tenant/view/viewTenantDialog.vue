@@ -455,10 +455,13 @@
 
   interface FormProps {
     formInline: TenantDetailProps;
+    readonly?: boolean; // 新增：是否只读模式
   }
 
   const expandedBillRows = ref<string[]>([]);
-  const props = defineProps<FormProps>();
+  const props = withDefaults(defineProps<FormProps>(), {
+    readonly: false
+  });
   const localFormInline = ref({ ...props.formInline });
 
   watch(
@@ -575,6 +578,10 @@
   };
 
   const allowEdit = status => {
+    // 如果是只读模式，直接返回 false
+    if (props.readonly) {
+      return false;
+    }
     return !(status === TENANT_STATUS_ENUM.TERMINATED.code || status === TENANT_STATUS_ENUM.CANCELLED.code);
   };
 

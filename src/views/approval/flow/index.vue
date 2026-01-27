@@ -31,7 +31,7 @@
     </el-row>
 
     <!-- 流程列表 -->
-    <PureTableBar title="审批流" :columns="columns" @refresh="onSearch">
+    <PureTableBar title="审批流配置" :columns="columns" @refresh="onSearch">
       <template #buttons>
         <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openDialog()">新增流程</el-button>
       </template>
