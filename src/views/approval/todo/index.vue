@@ -63,7 +63,7 @@
           :loading="loading"
           :loading-config="{ background: 'transparent' }"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 108 }"
+          :adaptiveConfig="{ offsetBottom: 113 }"
           :data="dataList"
           :size="tableSize as any"
           :columns="columns"
