@@ -39,12 +39,14 @@ export function useApprovalFlow() {
       minWidth: 300,
       cellRenderer: ({ row }) => (
         <div class="node-flow">
-          {row.nodes?.map((node, index) => (
-            <>
-              <el-tag type="info">{node.nodeName}</el-tag>
-              {index < row.nodes.length - 1 && <span class="node-arrow mx-1">→</span>}
-            </>
-          ))}
+          <el-space size={0}>
+            {row.nodes?.map((node, index) => (
+              <>
+                <el-tag type="info">{node.nodeName}</el-tag>
+                {index < row.nodes.length - 1 && <span class="node-arrow mx-1">→</span>}
+              </>
+            ))}
+          </el-space>
         </div>
       )
     },
