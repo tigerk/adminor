@@ -462,7 +462,17 @@ function useTenant() {
     onTenantSearch();
   };
 
-  function openTenantViewDialog(title = "查看", row?: TenantRowProps) {
+  /**
+   * 打开租客详情弹窗
+   * @param title - 弹窗标题，默认 "查看"
+   * @param row - 要查看的租客数据行
+   * @param options - 可选配置项，包含只读模式、合同签署回调、合同更新回调
+   */
+  function openTenantViewDialog(
+    title = "查看",
+    row?: TenantRowProps | any,
+    options?: { readonly?: boolean; onContractSigned?: (tenantId: bigint) => void; onContractUpdated?: () => void }
+  ) {
     // 设置 loading 状态为 true
     loading.value = true;
 
@@ -475,21 +485,24 @@ function useTenant() {
           const tenantDetail = resp.data;
           // 合并 row 数据和 API 返回的详情数据
           addDialog({
-            title: `${title} ${row.tenantName}`,
+            title: `${title} ${row?.tenantName}`,
             props: {
               formInline: {
                 title,
                 ...tenantDetail
               },
+              readonly: options?.readonly || false, // 传递只读标志
               // 传递事件处理器
-              onContractSigned: (tenantId: bigint) => {
-                // 方法2: 只更新当前行数据（更高效）
-                updateTenantRowStatus(tenantId, 1);
-              },
-              onContractUpdated: () => {
-                // 刷新列表
-                onTenantSearch();
-              }
+              onContractSigned:
+                options?.onContractSigned ||
+                ((tenantId: bigint) => {
+                  updateTenantRowStatus(tenantId, 1);
+                }),
+              onContractUpdated:
+                options?.onContractUpdated ||
+                (() => {
+                  onTenantSearch();
+                })
             },
             top: "1vh",
             width: "70vw",

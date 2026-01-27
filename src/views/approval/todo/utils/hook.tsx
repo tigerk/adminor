@@ -2,8 +2,12 @@ import dayjs from "dayjs";
 import { getApplyList, getBizTypeOptions, getDoneList, getTodoCount, getTodoList } from "@/api/approval";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import useTenant from "@/views/contract/tenant/utils/hook";
 
 export function useApprovalTodo() {
+  // 导入租客相关的 hook
+  const { openTenantViewDialog } = useTenant();
+
   const router = useRouter();
 
   const queryForm = reactive({
@@ -246,41 +250,56 @@ export function useApprovalTodo() {
     queryForm.bizType = "";
     queryForm.status = null;
     queryForm.keyword = "";
-    onSearch();
+    onSearch().then();
   }
 
   function handleTabChange(tab: string) {
     activeTab.value = tab;
     pagination.currentPage = 1;
-    onSearch();
+    onSearch().then();
   }
 
   function handleSizeChange(val: number) {
     pagination.pageSize = val;
-    onSearch();
+    onSearch().then();
   }
 
   function handleCurrentChange(val: number) {
     pagination.currentPage = val;
-    onSearch();
+    onSearch().then();
   }
 
   function handleView(row) {
-    // 跳转到审批详情页或对应业务详情页
-    router.push({
-      path: "/approval/detail",
-      query: {
-        instanceId: row.instanceId || row.id,
-        bizType: row.bizType,
-        bizId: row.bizId
-      }
-    });
+    // 判断业务类型
+    if (row.bizType === "TENANT_CHECKIN") {
+      // 直接调用，传入只读模式
+      openTenantViewDialog(
+        "审批",
+        {
+          id: row.bizId,
+          tenantName: ""
+        },
+        {
+          readonly: true // 设置为只读模式
+        }
+      );
+    } else {
+      // 跳转到审批详情页或对应业务详情页
+      router.push({
+        path: "/approval/detail",
+        query: {
+          instanceId: row.instanceId || row.id,
+          bizType: row.bizType,
+          bizId: row.bizId
+        }
+      });
+    }
   }
 
   onMounted(() => {
-    onSearch();
-    loadTodoCount();
-    loadBizTypeOptions();
+    onSearch().then();
+    loadTodoCount().then();
+    loadBizTypeOptions().then();
   });
 
   return {
