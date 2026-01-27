@@ -51,7 +51,7 @@ export function useApprovalTodo() {
       cellRenderer: ({ row }) => <el-tag>{row.bizTypeName}</el-tag>
     },
     {
-      label: "业务单号",
+      label: "业务关联单号",
       prop: "bizId",
       width: 160
     },

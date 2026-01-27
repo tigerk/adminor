@@ -120,6 +120,8 @@ export function useApprovalFlow() {
         bizTypeOptions: bizTypeOptions.value
       },
       width: "680px",
+      alignCenter: true,
+      lockScroll: true,
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
