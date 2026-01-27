@@ -41,9 +41,7 @@ export function useApprovalFlow() {
         <div class="node-flow">
           {row.nodes?.map((node, index) => (
             <>
-              <el-tag size="small" type="info">
-                {node.nodeName}
-              </el-tag>
+              <el-tag type="info">{node.nodeName}</el-tag>
               {index < row.nodes.length - 1 && <span class="node-arrow mx-1">→</span>}
             </>
           ))}
