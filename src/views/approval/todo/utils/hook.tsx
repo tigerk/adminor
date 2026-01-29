@@ -276,12 +276,12 @@ export function useApprovalTodo() {
   function handleView(row) {
     addDialog({
       title: row.title || "审批详情",
-      width: "80%",
+      width: "50%",
       draggable: true,
       lockScroll: true, // 弹窗打开时锁定滚动
       alignCenter: true, // 弹窗居中对齐
       fullscreen: deviceDetection(), // 移动端全屏
-      fullscreenIcon: true,
+      fullscreenIcon: false,
       closeOnClickModal: false,
       contentRenderer: () =>
         h(ApprovalDetailDialog, {
@@ -291,9 +291,9 @@ export function useApprovalTodo() {
       beforeCancel: done => {
         done();
         // 关闭后刷新列表和待办数量
-        onSearch();
+        onSearch().then();
         if (activeTab.value === "todo") {
-          loadTodoCount();
+          loadTodoCount().then();
         }
       }
     });

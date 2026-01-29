@@ -6,9 +6,7 @@
   import { getApprovalInstanceDetail } from "@/api/approval";
   import { Refresh, View } from "@element-plus/icons-vue";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks"; // 导入各业务模块的 hook
-  import useTenant from "@/views/contract/tenant/utils/hook"; // import useTenantCheckout from "@/views/contract/checkout/utils/hook";
-  // import useTenantCheckout from "@/views/contract/checkout/utils/hook";
-  // import useHouse from "@/views/house/utils/hook";
+  import useTenant from "@/views/contract/tenant/utils/hook";
 
   interface Props {
     instanceId: number;
@@ -172,20 +170,25 @@
           <el-button type="primary" :icon="useRenderIcon(View)" size="small" @click="handleViewBusinessDetail">查看业务详情</el-button>
         </div>
 
-        <el-alert type="info" :closable="false" show-icon>
-          <template #default>
-            <div class="business-info">
-              <div>
-                <span class="label">业务类型：</span>
-                <el-tag size="small">{{ detail?.bizTypeName }}</el-tag>
-              </div>
-              <div v-if="detail?.bizCode">
-                <span class="label">业务单号：</span>
-                <span class="value">{{ detail?.bizCode }}</span>
-              </div>
-            </div>
-          </template>
-        </el-alert>
+        <div class="business-info">
+          <el-descriptions :column="2">
+            <el-descriptions-item label="业务类型">
+              {{ detail?.bizTypeName }}
+            </el-descriptions-item>
+            <el-descriptions-item label="业务类型">
+              <el-tag>{{ detail?.bizTypeName }}</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="业务类型">
+              <el-tag>{{ detail?.bizTypeName }}</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="业务类型">
+              <el-tag>{{ detail?.bizTypeName }}</el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="业务类型">
+              <el-tag>{{ detail?.bizTypeName }}</el-tag>
+            </el-descriptions-item>
+          </el-descriptions>
+        </div>
       </div>
 
       <!-- 审批记录 -->
