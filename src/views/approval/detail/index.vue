@@ -7,6 +7,7 @@
   import { Refresh, View } from "@element-plus/icons-vue";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks"; // 导入各业务模块的 hook
   import useTenant from "@/views/contract/tenant/utils/hook";
+  import { message } from "@/utils/message";
 
   interface Props {
     instanceId: number;
@@ -48,8 +49,6 @@
     try {
       const { data } = await getApprovalInstanceDetail(props.instanceId);
       detail.value = data;
-    } catch (error) {
-      ElMessage.error("获取审批详情失败");
     } finally {
       loading.value = false;
     }

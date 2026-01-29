@@ -3,6 +3,8 @@ import type { PureHttpError, RequestMethods, PureHttpResponse, PureHttpRequestCo
 import { stringify } from "qs";
 import { getToken, formatToken } from "@/utils/auth";
 import { useUserStoreHook } from "@/store/modules/user";
+import { closeAllDialog } from "@/components/ReDialog";
+import { ElMessageBox } from "element-plus";
 
 // 相关配置请参考：www.axios-js.com/zh-cn/docs/#axios-request-config-1
 const defaultConfig: AxiosRequestConfig = {
@@ -26,6 +28,12 @@ class PureHttp {
   }
 
   private redirectToLogin(): void {
+    // 1. 关闭通过 addDialog 开启的所有弹窗
+    closeAllDialog();
+
+    // 2. 关闭所有的 ElMessageBox (confirm/alert)
+    ElMessageBox.close();
+
     useUserStoreHook().logOut();
   }
 
