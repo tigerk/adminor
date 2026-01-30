@@ -1,6 +1,7 @@
 <template>
   <el-config-provider :locale="currentLocale">
     <router-view />
+    <ReLockScreen />
     <ReDialog />
     <ReDrawer />
     <ReFloatButton v-if="isLoggedIn" :floatBtns="floatBtns" />
@@ -13,6 +14,7 @@
   import { ElConfigProvider } from "element-plus";
   import { ReDialog } from "@/components/ReDialog";
   import { ReDrawer } from "@/components/ReDrawer";
+  import { ReLockScreen } from "@/components/ReLockScreen";
   import en from "element-plus/es/locale/lang/en";
   import ja from "element-plus/es/locale/lang/ja";
   import ko from "element-plus/es/locale/lang/ko";
@@ -21,8 +23,6 @@
   import plusEn from "plus-pro-components/es/locale/lang/en";
   import plusZhCn from "plus-pro-components/es/locale/lang/zh-cn";
   import ReFloatButton from "@/components/ReFloatButton";
-
-  import Service from "~icons/ri/user-heart-line";
   import Book from "~icons/ri/book-open-line";
   import Max from "~icons/ri/vip-diamond-line";
   import { useUserStoreHook } from "@/store/modules/user";
@@ -33,6 +33,7 @@
       [ElConfigProvider.name]: ElConfigProvider,
       ReDialog,
       ReDrawer,
+      ReLockScreen,
       ReFloatButton
     },
     computed: {

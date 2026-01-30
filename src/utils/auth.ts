@@ -2,6 +2,18 @@ import Cookies from "js-cookie";
 import { useUserStoreHook } from "@/store/modules/user";
 import { storageLocal, isString, isIncludeAllChildren } from "@pureadmin/utils";
 
+/** 定义有效时长 */
+export const ACTIVE_TIMEOUT = 1800000;
+
+/** 封装一个专门更新过期时间的方法 */
+export function updateExpires() {
+  const data = getToken();
+  if (data) {
+    data.expires = Date.now() + ACTIVE_TIMEOUT;
+    setToken(data);
+  }
+}
+
 export interface DataInfo<T> {
   /** token */
   accessToken: string;

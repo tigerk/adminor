@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LaySidebarThemeMode from "../lay-sidebar/components/SidebarThemeMode.vue";
+  import LaySidebarThemeMode from "../lay-sidebar/components/SidebarThemeMode.vue";
   import { useNav } from "@/layout/hooks/useNav";
   import LaySearch from "../lay-search/index.vue";
   import LayNotice from "../lay-notice/index.vue";
@@ -20,8 +20,8 @@ import LaySidebarThemeMode from "../lay-sidebar/components/SidebarThemeMode.vue"
   import { switchCompany } from "@/api/login";
   import { ElMessage } from "element-plus";
 
-  import FunctionMenu from "../../../components/Business/FunctionMenu.vue";
-  import { message } from "@/utils/message"; // 导入功能菜单组件
+  import { message } from "@/utils/message";
+  import FunctionMenu from "@/components/Business/FunctionMenu.vue"; // 导入功能菜单组件
 
   const {
     layout,

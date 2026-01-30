@@ -1,7 +1,7 @@
 import Axios, { type AxiosInstance, type AxiosRequestConfig, type CustomParamsSerializer } from "axios";
 import type { PureHttpError, RequestMethods, PureHttpResponse, PureHttpRequestConfig } from "./types.d";
 import { stringify } from "qs";
-import { getToken, formatToken } from "@/utils/auth";
+import { getToken, formatToken, updateExpires } from "@/utils/auth";
 import { useUserStoreHook } from "@/store/modules/user";
 import { closeAllDialog } from "@/components/ReDialog";
 import { ElMessageBox } from "element-plus";
@@ -127,12 +127,11 @@ class PureHttp {
           this.redirectToLogin();
 
           // 返回一个被拒绝的Promise，阻止后续处理
-          return Promise.reject({
-            code: 9999,
-            message: "需要重新登录",
-            response
-          });
+          return Promise.reject(new Error("需要重新登录"));
         }
+
+        // 更新token过期时间
+        updateExpires();
 
         // 优先判断post/get等方法是否传入回调，否则执行初始化设置等回调
         if (typeof $config.beforeResponseCallback === "function") {
