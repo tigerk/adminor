@@ -4,7 +4,7 @@ import { isIncludeAllChildren, isString, storageLocal } from "@pureadmin/utils";
 import { useLockStoreHook } from "@/store/modules/lock";
 
 /** 定义有效时长 */
-export const ACTIVE_TIMEOUT = 5000;
+export const ACTIVE_TIMEOUT = 1800000;
 
 /** 封装一个专门更新过期时间的方法 */
 export function updateExpires() {

@@ -15,8 +15,10 @@
           </div>
           <h2 class="lock-title">系统已锁定</h2>
           <div class="lock-user-info">
-            <el-avatar :size="32" class="user-avatar" :src="userStore.avatar" />
-            <p class="lock-user">{{ userStore.nickname }}</p>
+            <el-avatar :size="32" class="user-avatar" :src="userSnapshot.avatar">
+              {{ userSnapshot.nickname?.charAt(0) || userSnapshot.username?.charAt(0) }}
+            </el-avatar>
+            <p class="lock-user">{{ userSnapshot.nickname || userSnapshot.username }}</p>
           </div>
         </div>
 
@@ -25,7 +27,16 @@
           <!-- 输入区域 -->
           <div class="input-area">
             <div class="input-wrapper">
-              <el-input v-model="password" type="password" placeholder="请输入登录密码解锁" size="large" show-password class="password-input" @keyup.enter="onUnlock">
+              <el-input
+                v-model="password"
+                type="password"
+                placeholder="请输入登录密码解锁"
+                size="large"
+                show-password
+                class="password-input"
+                :disabled="loading"
+                @keyup.enter="onUnlock"
+              >
                 <template #prefix>
                   <el-icon><Key /></el-icon>
                 </template>
@@ -38,10 +49,12 @@
             </el-button>
 
             <!-- 尝试次数提示 -->
-            <div v-if="failedAttempts > 0" class="attempts-hint">
-              <el-icon :size="14"><WarningFilled /></el-icon>
-              <span>剩余尝试次数: {{ 3 - failedAttempts }}</span>
-            </div>
+            <transition name="el-zoom-in-top">
+              <div v-if="failedAttempts > 0" class="attempts-hint">
+                <el-icon :size="14"><WarningFilled /></el-icon>
+                <span>剩余尝试次数: {{ 3 - failedAttempts }}</span>
+              </div>
+            </transition>
           </div>
         </div>
 
@@ -63,25 +76,84 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, ref } from "vue";
+  import { computed, onMounted, onUnmounted, ref, watch } from "vue";
   import { useLockStoreHook } from "@/store/modules/lock";
   import { useUserStoreHook } from "@/store/modules/user";
   import { message } from "@/utils/message";
   import { Key, Lock, SwitchButton, Unlock, WarningFilled } from "@element-plus/icons-vue";
-  import { verifyLogin } from "@/api/login";
 
   const lockStore = useLockStoreHook();
   const userStore = useUserStoreHook();
   const password = ref("");
   const loading = ref(false);
   const now = ref(Date.now());
-  const failedAttempts = ref(0); // 本地统计错误次数
+  const failedAttempts = ref(0);
+
+  // 用户信息快照（锁屏时的状态）
+  const userSnapshot = ref({
+    username: "",
+    avatar: "",
+    nickname: "",
+    roles: [] as string[],
+    permissions: [] as string[],
+    curCompanyId: 0,
+    companyList: [] as any[]
+  });
 
   let timer: any;
+
   onMounted(() => {
     timer = setInterval(() => (now.value = Date.now()), 1000);
   });
-  onUnmounted(() => clearInterval(timer));
+
+  onUnmounted(() => {
+    if (timer) {
+      clearInterval(timer);
+    }
+  });
+
+  // 监听锁屏状态，锁屏时立即备份用户信息
+  watch(
+    () => lockStore.isLocked,
+    isLocked => {
+      if (isLocked) {
+        // 检查用户信息是否存在
+        if (!userStore.username) {
+          console.warn("锁屏时用户信息不存在，跳转到登录页");
+          toLogin();
+          return;
+        }
+
+        // 锁屏时备份当前用户信息
+        userSnapshot.value = {
+          username: userStore.username,
+          avatar: userStore.avatar,
+          nickname: userStore.nickname,
+          roles: [...userStore.roles],
+          permissions: [...userStore.permissions],
+          curCompanyId: userStore.curCompanyId,
+          companyList: [...(userStore.companyList || [])]
+        };
+
+        // 重置失败次数
+        failedAttempts.value = 0;
+        password.value = "";
+      }
+    },
+    { immediate: true }
+  );
+
+  // 监听 userStore.username，如果为空则跳转登录
+  watch(
+    () => userStore.username,
+    username => {
+      if (lockStore.isLocked && !username) {
+        console.warn("用户信息丢失，跳转到登录页");
+        toLogin();
+      }
+    },
+    { immediate: true }
+  );
 
   // 当前时间
   const currentTime = computed(() => {
@@ -94,33 +166,90 @@
     });
   });
 
+  // 恢复用户信息
+  function restoreUserInfo(backup: typeof userSnapshot.value) {
+    userStore.SET_USERNAME(backup.username);
+    userStore.SET_AVATAR(backup.avatar);
+    userStore.SET_NICKNAME(backup.nickname);
+    userStore.SET_ROLES(backup.roles);
+    userStore.SET_PERMS(backup.permissions);
+    userStore.SET_CUR_COMPANY_ID(backup.curCompanyId);
+    userStore.SET_COMPANY_LIST(backup.companyList);
+  }
+
   async function onUnlock() {
+    // 再次检查用户名是否存在
+    if (!userStore.username || !userSnapshot.value.username) {
+      message("用户信息丢失，请重新登录", { type: "error" });
+      toLogin();
+      return;
+    }
+
     if (!password.value) {
       message("请输入密码", { type: "warning" });
       return;
     }
 
     loading.value = true;
+
+    // 备份当前快照
+    const backup = { ...userSnapshot.value };
+
     try {
-      const res = await verifyLogin({
-        username: userStore.username,
+      // 调用完整登录接口，获取新的 token
+      const res = await userStore.loginByUsername({
+        username: backup.username,
         password: password.value
       });
 
       if (res.code === 0) {
+        // 解锁成功
         message("解锁成功", { type: "success" });
         lockStore.setLock(false);
         password.value = "";
+        failedAttempts.value = 0;
 
-        // 解锁成功后重新启动锁屏定时器
+        // 重新启动锁屏定时器
         lockStore.startLockTimer();
       } else {
-        lockStore.handleError();
-        message("密码错误", { type: "error" });
+        // 登录失败，恢复用户信息
+        restoreUserInfo(backup);
+
+        // 累加失败次数
+        failedAttempts.value++;
+
+        // 检查是否达到3次失败
+        if (failedAttempts.value >= 3) {
+          message("密码错误次数过多，即将退出到登录页", { type: "error" });
+
+          // 延迟1.5秒后自动退出
+          setTimeout(() => {
+            failedAttempts.value = 0;
+            toLogin();
+          }, 1500);
+        } else {
+          message(`密码错误，剩余尝试次数: ${3 - failedAttempts.value}`, { type: "error" });
+          password.value = "";
+        }
       }
     } catch (error) {
-      lockStore.handleError();
-      message("密码错误", { type: "error" });
+      // 异常时也恢复用户信息
+      restoreUserInfo(backup);
+
+      failedAttempts.value++;
+
+      if (failedAttempts.value >= 3) {
+        message("密码错误次数过多，即将退出到登录页", { type: "error" });
+        setTimeout(() => {
+          failedAttempts.value = 0;
+          toLogin();
+        }, 1500);
+      } else {
+        message("解锁失败，请重试", { type: "error" });
+        password.value = "";
+      }
+
+      console.error("解锁错误:", error);
     } finally {
       loading.value = false;
     }
@@ -318,20 +447,19 @@
   }
 
   .password-input :deep(.el-input__inner) {
-    text-align: center; /* 核心代码：内容居中 */
+    text-align: center;
     font-size: 15px;
     font-weight: 500;
     color: var(--el-text-color-primary);
   }
 
-  /* 修正 placeholder 的居中（部分浏览器兼容性） */
   .password-input :deep(.el-input__inner::placeholder) {
     text-align: center;
   }
 
   .password-input :deep(.el-input__prefix) {
     position: absolute;
-    left: 18px; /* 固定图标位置，不随文字居中而移动 */
+    left: 18px;
     font-size: 18px;
     color: var(--el-text-color-secondary);
   }
@@ -394,7 +522,6 @@
       0 0 0 3px var(--el-color-primary-light-9);
   }
 
-  /* 深色模式下的按钮优化 */
   :deep(.dark) .unlock-btn {
     background: linear-gradient(135deg, var(--el-color-primary-light-1), var(--el-color-primary));
     box-shadow:
@@ -418,15 +545,12 @@
     background: var(--el-color-warning-light-9);
     color: var(--el-color-warning);
     font-size: 13px;
+    font-weight: 500;
   }
 
   /* 底部样式 */
   .lock-footer {
     margin-top: 24px;
-  }
-
-  .footer-divider {
-    margin: 0 0 16px 0;
   }
 
   .logout-btn {
