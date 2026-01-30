@@ -1,29 +1,16 @@
 <script setup lang="ts">
   import { computed } from "vue";
   import { Check, Clock, Close, Minus } from "@element-plus/icons-vue";
-
-  interface ApprovalAction {
-    id: number;
-    nodeName: string;
-    nodeOrder: number;
-    approverId: number;
-    approverName: string;
-    action: number | null; // 1=通过, 2=驳回, null=待审批
-    remark: string;
-    operateTime: string;
-    status: number; // 0=待审批, 1=已审批, 2=已跳过
-    statusName: string;
-    actionName: string;
-  }
+  import { ApprovalActionProps } from "@/types";
 
   interface Props {
-    actions: ApprovalAction[];
+    actions: ApprovalActionProps[];
   }
 
   const props = defineProps<Props>();
 
   // 获取时间线项的颜色
-  const getTimelineColor = (action: ApprovalAction) => {
+  const getTimelineColor = (action: ApprovalActionProps) => {
     if (action.status === 0) return ""; // 待审批 - 灰色
     if (action.status === 2) return "info"; // 已跳过
     if (action.action === 1) return "success"; // 通过
@@ -32,7 +19,7 @@
   };
 
   // 获取图标
-  const getTimelineIcon = (action: ApprovalAction) => {
+  const getTimelineIcon = (action: ApprovalActionProps) => {
     if (action.status === 0) return Clock; // 待审批
     if (action.status === 2) return Minus; // 已跳过
     if (action.action === 1) return Check; // 通过
@@ -58,7 +45,7 @@
     <el-timeline v-else>
       <el-timeline-item
         v-for="action in sortedActions"
-        :key="action.id"
+        :key="action.id.toString()"
         :type="getTimelineColor(action)"
         :icon="getTimelineIcon(action)"
         :size="action.status === 0 ? 'large' : 'normal'"

@@ -7,7 +7,7 @@
   import { Refresh, View } from "@element-plus/icons-vue";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks"; // 导入各业务模块的 hook
   import useTenant from "@/views/contract/tenant/utils/hook";
-  import { message } from "@/utils/message";
+  import { ApprovalInstanceProps } from "@/types";
 
   interface Props {
     instanceId: number;
@@ -17,7 +17,7 @@
   const props = defineProps<Props>();
 
   const loading = ref(false);
-  const detail = ref<any>(null);
+  const detail = ref<ApprovalInstanceProps>(null);
   const approvalDialogVisible = ref(false);
 
   // 导入业务模块的查看方法
@@ -104,6 +104,10 @@
     fetchDetail(); // 刷新详情
   };
 
+  const displayRoomList = computed(() => {
+    return detail.value?.tenantDetail?.roomList?.map(item => item?.houseName + "【" + item?.roomNumber + "】").join(", ") || "-";
+  });
+
   onMounted(() => {
     if (!props.instanceId) {
       ElMessage.error("缺少审批实例ID");
@@ -114,7 +118,7 @@
 </script>
 
 <template>
-  <div class="approval-detail-dialog" v-loading="loading">
+  <div v-loading="loading" class="approval-detail-dialog">
     <!-- 顶部操作栏 -->
     <div class="detail-actions">
       <div class="actions-left">
@@ -169,22 +173,31 @@
           <el-button type="primary" :icon="useRenderIcon(View)" size="small" @click="handleViewBusinessDetail">查看业务详情</el-button>
         </div>
 
-        <div class="business-info">
-          <el-descriptions :column="2">
-            <el-descriptions-item label="业务类型">
-              {{ detail?.bizTypeName }}
+        <div v-if="detail?.bizType === 'TENANT_CHECKIN'" class="business-info">
+          <el-descriptions :column="2" border>
+            <el-descriptions-item label="租客姓名">
+              {{ detail?.tenantDetail?.tenantName }}
             </el-descriptions-item>
-            <el-descriptions-item label="业务类型">
-              <el-tag>{{ detail?.bizTypeName }}</el-tag>
+            <el-descriptions-item label="租客手机号">
+              {{ detail?.tenantDetail?.tenantPhone }}
             </el-descriptions-item>
-            <el-descriptions-item label="业务类型">
-              <el-tag>{{ detail?.bizTypeName }}</el-tag>
+            <el-descriptions-item label="房间信息" :span="4">
+              {{ displayRoomList }}
             </el-descriptions-item>
-            <el-descriptions-item label="业务类型">
-              <el-tag>{{ detail?.bizTypeName }}</el-tag>
+            <el-descriptions-item label="合同周期">
+              <el-space :size="8">
+                <el-tag type="primary">{{ detail?.tenantDetail?.leaseStart }}</el-tag>
+                <span>至</span>
+                <el-tag type="primary">{{ detail?.tenantDetail?.leaseEnd }}</el-tag>
+              </el-space>
             </el-descriptions-item>
-            <el-descriptions-item label="业务类型">
-              <el-tag>{{ detail?.bizTypeName }}</el-tag>
+            <el-descriptions-item label="月租金">
+              <span class="rent-price">¥ {{ detail?.tenantDetail?.rentPrice }}</span>
+              <span class="rent-unit">元/月</span>
+            </el-descriptions-item>
+
+            <el-descriptions-item label="押付方式">
+              <span class="text-value">押 {{ detail?.tenantDetail?.depositMonths }} 付 {{ detail?.tenantDetail?.paymentMonths }}</span>
             </el-descriptions-item>
           </el-descriptions>
         </div>
