@@ -63,6 +63,11 @@ export const getLogin = (data?: object) => {
   return http.request<UserResult>("post", baseUrlApi("login"), { data });
 };
 
+/** 校验登录 */
+export const verifyLogin = (data?: object) => {
+  return http.request<UserResult>("post", baseUrlApi("auth/verify"), { data });
+};
+
 /** 刷新`token` */
 export const refreshTokenApi = (data?: object) => {
   return http.request<RefreshTokenResult>("post", baseUrlApi("token/refresh"), { data });

@@ -68,6 +68,7 @@
   import { useUserStoreHook } from "@/store/modules/user";
   import { message } from "@/utils/message";
   import { Key, Lock, SwitchButton, Unlock, WarningFilled } from "@element-plus/icons-vue";
+  import { verifyLogin } from "@/api/login";
 
   const lockStore = useLockStoreHook();
   const userStore = useUserStoreHook();
@@ -101,7 +102,7 @@
 
     loading.value = true;
     try {
-      const res = await userStore.loginByUsername({
+      const res = await verifyLogin({
         username: userStore.username,
         password: password.value
       });
@@ -110,24 +111,16 @@
         message("解锁成功", { type: "success" });
         lockStore.setLock(false);
         password.value = "";
-        failedAttempts.value = 0; // 重置错误次数
+
+        // 解锁成功后重新启动锁屏定时器
         lockStore.startLockTimer();
       } else {
-        failedAttempts.value++; // 累加错误次数
-
-        // 检查是否已经达到3次
-        if (failedAttempts.value >= 3) {
-          message("密码错误次数过多，请重新登录", { type: "error" });
-          // 延迟1秒后自动退出到登录页
-          setTimeout(() => {
-            failedAttempts.value = 0; // 重置错误次数
-            toLogin();
-          }, 1000);
-        } else {
-          message(`密码错误，剩余尝试次数: ${3 - failedAttempts.value}`, { type: "error" });
-          password.value = "";
-        }
+        lockStore.handleError();
+        message("密码错误", { type: "error" });
       }
+    } catch (error) {
+      lockStore.handleError();
+      message("密码错误", { type: "error" });
     } finally {
       loading.value = false;
     }
