@@ -7,7 +7,6 @@
     <ReFloatButton v-if="isLoggedIn" :floatBtns="floatBtns" />
   </el-config-provider>
 </template>
-
 <script lang="ts">
   import { defineComponent } from "vue";
   import { checkVersion } from "version-rocket";
@@ -26,6 +25,7 @@
   import Book from "~icons/ri/book-open-line";
   import Max from "~icons/ri/vip-diamond-line";
   import { useUserStoreHook } from "@/store/modules/user";
+  import { useLockStoreHook } from "@/store/modules/lock";
 
   export default defineComponent({
     name: "app",
@@ -70,26 +70,32 @@
         ];
       },
       isLoggedIn() {
-        // 判断用户是否已登录，可以通过检查用户名、token或角色等
         const userStore = useUserStoreHook();
         return !!userStore.username || !!userStore.roles.length;
       }
     },
+    mounted() {
+      // 如果用户已登录，启动锁屏定时器
+      if (this.isLoggedIn) {
+        const lockStore = useLockStoreHook();
+        lockStore.startLockTimer();
+      }
+    },
+    beforeUnmount() {
+      // 组件销毁时清除定时器
+      const lockStore = useLockStoreHook();
+      lockStore.clearLockTimer();
+    },
     beforeCreate() {
       const { version, name: title } = __APP_INFO__.pkg;
       const { VITE_PUBLIC_PATH, MODE } = import.meta.env;
-      // https://github.com/guMcrey/version-rocket/blob/main/README.zh-CN.md#api
       if (MODE === "production") {
-        // 版本实时更新检测，只作用于线上环境
         checkVersion(
-          // config
           {
-            // 5分钟检测一次版本
             pollingTime: 300000,
             localPackageVersion: version,
             originVersionFileUrl: `${location.origin}${VITE_PUBLIC_PATH}version.json`
           },
-          // options
           {
             title,
             description: "检测到新版本",

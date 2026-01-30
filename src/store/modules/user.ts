@@ -97,7 +97,7 @@ export const useUserStore = defineStore("pure-user", {
       return new Promise<UserResult>((resolve, reject) => {
         getLogin(data)
           .then(data => {
-            if (data?.code == 0) {
+            if (data?.code === 0) {
               setToken(data.data);
             }
             resolve(data);
