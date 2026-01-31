@@ -58,14 +58,14 @@
 
   const dataList = ref([
     {
-      title: "响应体",
-      name: "responseBody",
-      data: parseStr2Json((props.data[0] as any).jsonResult)
-    },
-    {
       title: "请求体",
       name: "requestBody",
       data: parseStr2Json((props.data[0] as any).param)
+    },
+    {
+      title: "响应体",
+      name: "responseBody",
+      data: parseStr2Json((props.data[0] as any).jsonResult)
     }
   ]);
 
@@ -89,12 +89,7 @@
       <PureDescriptions border :data="data" :columns="columns" :column="5" />
     </el-scrollbar>
     <el-tabs :modelValue="'responseBody'" type="border-card" class="mt-4">
-      <el-tab-pane
-        v-for="(item, index) in dataList"
-        :key="index"
-        :name="item.name"
-        :label="item.title"
-      >
+      <el-tab-pane v-for="(item, index) in dataList" :key="index" :name="item.name" :label="item.title">
         <el-scrollbar max-height="calc(100vh - 240px)">
           <vue-json-pretty v-model:data="item.data" />
         </el-scrollbar>
