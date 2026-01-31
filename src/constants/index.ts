@@ -1,6 +1,7 @@
 // src/constants/house.ts
 
 export * from "./delivery";
+export * from "./approval";
 
 /**
  * 根据值获取租赁类型

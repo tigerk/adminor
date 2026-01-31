@@ -80,7 +80,7 @@
   const handleSubmit = async () => {
     if (!formRef.value) return;
 
-    await formRef.value.validate(async valid => {
+    formRef.value.validate(async valid => {
       if (!valid) return;
 
       loading.value = true;
@@ -147,7 +147,7 @@
     </el-form>
 
     <template #footer>
-      <el-button @click="handleClose" :disabled="loading">取消</el-button>
+      <el-button :disabled="loading" @click="handleClose">取消</el-button>
       <el-button :type="confirmType" :loading="loading" @click="handleSubmit">
         {{ confirmText }}
       </el-button>
