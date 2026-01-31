@@ -1,24 +1,23 @@
 /**
  * 交割单状态枚举
  */
-export const APPROVAL_ACTION_ENUM = {
+export const APPROVAL_ACTION_TYPE_ENUM = {
   /**
    * APPROVED(1, "已通过"),
    * REJECTED(2, "已驳回"),
    * TRANSFERRED(3, "已转交");
    */
-  APPROVED: {
+  APPROVE: {
     code: 1,
-    name: "已通过"
+    name: "通过"
   },
-  REJECTED: {
+  REJECT: {
     code: 2,
-    name: "已驳回"
+    name: "驳回"
   },
-  TRANSFERRED: {
+  TRANSFER: {
     code: 3,
-    name: "已转交",
-    color: "#67C23A"
+    name: "转交"
   }
 } as const;
 
