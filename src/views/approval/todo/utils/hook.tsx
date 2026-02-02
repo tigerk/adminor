@@ -276,7 +276,7 @@ export function useApprovalTodo() {
   function handleView(row) {
     addDialog({
       title: row.title || "审批详情",
-      width: "860px",
+      width: "800px",
       draggable: true,
       lockScroll: true, // 弹窗打开时锁定滚动
       alignCenter: true, // 弹窗居中对齐

@@ -1,19 +1,38 @@
 <script setup lang="ts">
-  import { computed, onMounted, ref } from "vue";
-  import { ElMessage, FormInstance, FormRules } from "element-plus";
+  import { computed, nextTick, onMounted, ref } from "vue";
+  import { ElMessage, type FormInstance, type FormRules } from "element-plus";
+  import {
+    Calendar,
+    ChatLineSquare,
+    Check,
+    CircleCloseFilled,
+    Clock,
+    Close,
+    Document,
+    DocumentDelete,
+    Edit,
+    House,
+    Loading as IconLoading,
+    Minus,
+    Money,
+    Phone,
+    RefreshLeft,
+    SuccessFilled,
+    User,
+    UserFilled,
+    Wallet
+  } from "@element-plus/icons-vue";
   import { getApprovalInstanceDetail, handleApproval } from "@/api/approval";
   import useTenant from "@/views/contract/tenant/utils/hook";
-  import { ApprovalActionProps, ApprovalInstanceProps } from "@/types";
+  import type { ApprovalActionProps, ApprovalInstanceProps } from "@/types";
   import { useUserStoreHook } from "@/store/modules/user";
   import { APPROVAL_ACTION_STATUS_HELPER, APPROVAL_ACTION_TYPE_ENUM, APPROVAL_ACTION_TYPE_HELPER, APPROVAL_BIZ_TYPE_HELPER, APPROVAL_INSTANCE_STATUS_HELPER } from "@/constants";
 
-  defineOptions({
-    name: "ApprovalDetailDialog"
-  });
+  defineOptions({ name: "ApprovalDetailDialog" });
 
   interface Props {
     instanceId: number;
-    from?: string; // todo/done/apply
+    from?: string;
   }
 
   const props = defineProps<Props>();
@@ -22,7 +41,6 @@
   const detail = ref<ApprovalInstanceProps>(null);
   const userStore = useUserStoreHook();
 
-  // 审批表单相关
   const showApprovalPanel = ref(false);
   const approvalFormRef = ref<FormInstance>();
   const submitting = ref(false);
@@ -30,12 +48,13 @@
     action: APPROVAL_ACTION_TYPE_ENUM.APPROVE.code,
     remark: ""
   });
+  const showConfirmDialog = ref(false);
 
   const { openTenantViewDialog } = useTenant();
 
-  const canApprove = computed(() => {
-    return props.from === "todo" && APPROVAL_INSTANCE_STATUS_HELPER.isPending(detail.value?.status);
-  });
+  // ====== Computed ======
+
+  const canApprove = computed(() => props.from === "todo" && APPROVAL_INSTANCE_STATUS_HELPER.isPending(detail.value?.status));
 
   const isRejectAction = computed(() => APPROVAL_ACTION_TYPE_HELPER.isReject(approvalForm.value.action));
 
@@ -44,11 +63,62 @@
     remark: [
       {
         required: isRejectAction.value,
-        message: "驳回时必须填写驳回原因",
+        message: "驳回时必须填写原因",
         trigger: "blur"
       }
     ]
   }));
+
+  const displayRoomList = computed(() => detail.value?.tenantDetail?.roomList?.map(i => i?.houseName + "【" + i?.roomNumber + "】").join("、") || "-");
+
+  const sortedActions = computed(() => {
+    if (!detail.value?.actions) return [];
+    return [...detail.value.actions].sort((a, b) => a.nodeOrder - b.nodeOrder);
+  });
+
+  const completedCount = computed(
+    () => sortedActions.value.filter(a => !APPROVAL_ACTION_STATUS_HELPER.isPending(a.status) && !APPROVAL_ACTION_STATUS_HELPER.isSkipped(a.status)).length
+  );
+
+  const activeNodeIndex = computed(() => sortedActions.value.findIndex(a => APPROVAL_ACTION_STATUS_HELPER.isPending(a.status)));
+
+  const progressPercent = computed(() => {
+    if (!sortedActions.value.length) return 0;
+    return Math.round((completedCount.value / sortedActions.value.length) * 100);
+  });
+
+  // ====== Status ======
+
+  type StatusKey = "pending" | "approved" | "rejected" | "withdrawn" | "cancelled";
+
+  const getStatusKey = (status: number): StatusKey => {
+    if (APPROVAL_INSTANCE_STATUS_HELPER.isPending(status)) return "pending";
+    if (APPROVAL_INSTANCE_STATUS_HELPER.isApproved(status)) return "approved";
+    if (APPROVAL_INSTANCE_STATUS_HELPER.isRejected(status)) return "rejected";
+    if (APPROVAL_INSTANCE_STATUS_HELPER.isWithdrawn(status)) return "withdrawn";
+    if (APPROVAL_INSTANCE_STATUS_HELPER.isCancelled(status)) return "cancelled";
+    return "pending";
+  };
+
+  const statusTheme = computed(() => getStatusKey(detail.value?.status));
+
+  const getTimelineStatus = (action: ApprovalActionProps) => {
+    if (APPROVAL_ACTION_STATUS_HELPER.isPending(action.status)) return "active";
+    if (APPROVAL_ACTION_STATUS_HELPER.isSkipped(action.status)) return "wait";
+    if (APPROVAL_ACTION_TYPE_HELPER.isApprove(action.action)) return "done";
+    if (APPROVAL_ACTION_TYPE_HELPER.isReject(action.action)) return "reject";
+    return "active";
+  };
+
+  const getTagClass = (s: string) =>
+    ({
+      done: "ad-tag--green",
+      reject: "ad-tag--red",
+      active: "ad-tag--amber",
+      wait: "ad-tag--gray"
+    })[s] || "ad-tag--gray";
+
+  // ====== API ======
 
   const fetchDetail = async () => {
     loading.value = true;
@@ -74,83 +144,57 @@
     }
   };
 
+  // ====== Approval Actions ======
+
   const handleShowApprovalPanel = () => {
     showApprovalPanel.value = true;
-    approvalForm.value = { action: APPROVAL_ACTION_TYPE_ENUM.APPROVE.code, remark: "" };
-    approvalFormRef.value?.clearValidate();
+    approvalForm.value = {
+      action: APPROVAL_ACTION_TYPE_ENUM.APPROVE.code,
+      remark: ""
+    };
+    nextTick(() => approvalFormRef.value?.clearValidate());
   };
 
   const handleCancelApproval = () => {
     showApprovalPanel.value = false;
-    approvalForm.value = { action: APPROVAL_ACTION_TYPE_ENUM.APPROVE.code, remark: "" };
+    approvalForm.value = {
+      action: APPROVAL_ACTION_TYPE_ENUM.APPROVE.code,
+      remark: ""
+    };
     approvalFormRef.value?.clearValidate();
   };
 
   const handleActionChange = () => {
     approvalForm.value.remark = "";
-    approvalFormRef.value?.clearValidate("remark");
+    nextTick(() => approvalFormRef.value?.clearValidate("remark"));
   };
 
-  const handleSubmitApproval = async () => {
-    if (!approvalFormRef.value) return;
-    approvalFormRef.value.validate(async valid => {
-      if (!valid) return;
-      submitting.value = true;
-      try {
-        await handleApproval({
-          instanceId: props.instanceId,
-          approverId: userStore.id,
-          action: approvalForm.value.action,
-          remark: approvalForm.value.remark || undefined
-        });
-        const actionName = APPROVAL_ACTION_TYPE_HELPER.getNameByCode(approvalForm.value.action);
-        ElMessage.success(APPROVAL_ACTION_TYPE_HELPER.isApprove(approvalForm.value.action) ? "审批通过成功" : `已${actionName}该审批`);
-        showApprovalPanel.value = false;
-        fetchDetail();
-      } catch (error: any) {
-        ElMessage.error(error?.message || "审批操作失败");
-      } finally {
-        submitting.value = false;
-      }
+  const handlePreSubmit = () => {
+    approvalFormRef.value?.validate(valid => {
+      if (valid) showConfirmDialog.value = true;
     });
   };
 
-  const displayRoomList = computed(() => {
-    return detail.value?.tenantDetail?.roomList?.map(item => item?.houseName + "【" + item?.roomNumber + "】").join("、") || "-";
-  });
-
-  const sortedActions = computed(() => {
-    if (!detail.value?.actions) return [];
-    return [...detail.value.actions].sort((a, b) => a.nodeOrder - b.nodeOrder);
-  });
-
-  // 已完成的节点数
-  const completedCount = computed(() => {
-    return sortedActions.value.filter(a => !APPROVAL_ACTION_STATUS_HELPER.isPending(a.status) && !APPROVAL_ACTION_STATUS_HELPER.isSkipped(a.status)).length;
-  });
-
-  const getStatusIcon = (status: number) => {
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isPending(status)) return "ep:loading";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isApproved(status)) return "ep:success-filled";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isRejected(status)) return "ep:circle-close-filled";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isWithdrawn(status)) return "ep:refresh-left";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isCancelled(status)) return "ep:close";
-    return "ep:document";
-  };
-
-  const getStatusTheme = (status: number) => {
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isPending(status)) return "pending";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isApproved(status)) return "approved";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isRejected(status)) return "rejected";
-    return "default";
-  };
-
-  const getTimelineStatus = (action: ApprovalActionProps) => {
-    if (APPROVAL_ACTION_STATUS_HELPER.isPending(action.status)) return "pending";
-    if (APPROVAL_ACTION_STATUS_HELPER.isSkipped(action.status)) return "skipped";
-    if (APPROVAL_ACTION_TYPE_HELPER.isApprove(action.action)) return "approved";
-    if (APPROVAL_ACTION_TYPE_HELPER.isReject(action.action)) return "rejected";
-    return "pending";
+  const handleSubmitApproval = async () => {
+    showConfirmDialog.value = false;
+    submitting.value = true;
+    try {
+      await handleApproval({
+        instanceId: props.instanceId,
+        approverId: userStore.id,
+        action: approvalForm.value.action,
+        remark: approvalForm.value.remark || undefined
+      });
+      ElMessage.success(
+        APPROVAL_ACTION_TYPE_HELPER.isApprove(approvalForm.value.action) ? "审批通过成功" : `已${APPROVAL_ACTION_TYPE_HELPER.getNameByCode(approvalForm.value.action)}该审批`
+      );
+      showApprovalPanel.value = false;
+      fetchDetail();
+    } catch (error: any) {
+      ElMessage.error(error?.message || "审批操作失败");
+    } finally {
+      submitting.value = false;
+    }
   };
 
   onMounted(() => {
@@ -164,306 +208,402 @@
 
 <template>
   <div v-loading="loading" class="ad">
-    <!-- ====== 顶部状态栏 ====== -->
-    <div class="ad-header" :data-theme="getStatusTheme(detail?.status)">
-      <div class="ad-header__icon">
-        <iconify-icon :icon="getStatusIcon(detail?.status)" />
-      </div>
-      <div class="ad-header__body">
-        <span class="ad-header__title">{{ APPROVAL_INSTANCE_STATUS_HELPER.getNameByCode(detail?.status) }}</span>
-        <span class="ad-header__sub">{{ detail?.bizTypeName }} · {{ detail?.instanceNo }}</span>
-      </div>
-      <el-button v-if="canApprove && !showApprovalPanel" type="primary" round @click="handleShowApprovalPanel" class="ad-header__action">
-        <iconify-icon icon="ep:edit" style="margin-right: 6px" />
-        立即审批
-      </el-button>
+    <!-- ===== Status Banner ===== -->
+    <div class="ad-banner" :data-s="statusTheme">
+      <span class="ad-banner__ico">
+        <el-icon :size="18">
+          <IconLoading v-if="statusTheme === 'pending'" />
+          <SuccessFilled v-else-if="statusTheme === 'approved'" />
+          <CircleCloseFilled v-else-if="statusTheme === 'rejected'" />
+          <RefreshLeft v-else-if="statusTheme === 'withdrawn'" />
+          <Close v-else />
+        </el-icon>
+      </span>
+      <span class="ad-banner__body">
+        <span class="ad-banner__title">
+          {{ APPROVAL_INSTANCE_STATUS_HELPER.getNameByCode(detail?.status) }}
+        </span>
+        <span class="ad-banner__sub">{{ detail?.bizTypeName }} · {{ detail?.instanceNo }}</span>
+      </span>
+      <button v-if="canApprove && !showApprovalPanel" class="ad-banner__btn" @click="handleShowApprovalPanel">
+        <el-icon :size="14"><Edit /></el-icon>
+        审批
+      </button>
     </div>
 
-    <!-- ====== 审批操作面板 ====== -->
-    <transition name="slide-down">
-      <div v-if="showApprovalPanel && canApprove" class="ad-panel">
-        <div class="ad-panel__head">
-          <iconify-icon icon="ep:edit-pen" />
-          <span>审批操作</span>
-        </div>
-
+    <!-- ===== Inline Approval Panel ===== -->
+    <div class="ad-panel" :class="{ 'is-open': showApprovalPanel && canApprove }">
+      <div class="ad-panel__inner">
         <el-form ref="approvalFormRef" :model="approvalForm" :rules="approvalFormRules" label-position="top">
-          <el-form-item prop="action" class="ad-panel__selector">
-            <div class="ad-panel__cards">
+          <el-form-item prop="action" class="ad-panel__pick-item">
+            <div class="ad-panel__picks">
               <div
-                class="ad-panel__card ad-panel__card--approve"
-                :class="{ 'is-active': approvalForm.action === APPROVAL_ACTION_TYPE_ENUM.APPROVE.code }"
+                class="ad-pick ad-pick--pass"
+                :class="{ 'is-on': approvalForm.action === APPROVAL_ACTION_TYPE_ENUM.APPROVE.code }"
                 @click="
                   approvalForm.action = APPROVAL_ACTION_TYPE_ENUM.APPROVE.code;
                   handleActionChange();
                 "
               >
-                <iconify-icon icon="ep:success-filled" class="ad-panel__card-icon" />
-                <span>通过</span>
+                <span class="ad-pick__dot" />
+                <el-icon :size="18"><SuccessFilled /></el-icon>
+                <span class="ad-pick__body">
+                  <span class="ad-pick__label">通过</span>
+                  <span class="ad-pick__hint">同意此审批申请</span>
+                </span>
               </div>
               <div
-                class="ad-panel__card ad-panel__card--reject"
-                :class="{ 'is-active': approvalForm.action === APPROVAL_ACTION_TYPE_ENUM.REJECT.code }"
+                class="ad-pick ad-pick--deny"
+                :class="{ 'is-on': approvalForm.action === APPROVAL_ACTION_TYPE_ENUM.REJECT.code }"
                 @click="
                   approvalForm.action = APPROVAL_ACTION_TYPE_ENUM.REJECT.code;
                   handleActionChange();
                 "
               >
-                <iconify-icon icon="ep:circle-close-filled" class="ad-panel__card-icon" />
-                <span>驳回</span>
+                <span class="ad-pick__dot" />
+                <el-icon :size="18"><CircleCloseFilled /></el-icon>
+                <span class="ad-pick__body">
+                  <span class="ad-pick__label">驳回</span>
+                  <span class="ad-pick__hint">退回给申请人修改</span>
+                </span>
               </div>
             </div>
           </el-form-item>
 
-          <el-form-item :label="isRejectAction ? '驳回原因' : '审批意见（选填）'" prop="remark">
+          <el-form-item :label="isRejectAction ? '驳回原因（必填）' : '审批意见（选填）'" prop="remark">
             <el-input
               v-model="approvalForm.remark"
               type="textarea"
-              :rows="3"
-              :placeholder="isRejectAction ? '请输入驳回原因...' : '请输入审批意见...'"
+              :rows="2"
+              :placeholder="isRejectAction ? '请输入驳回原因…' : '请输入审批意见…'"
               maxlength="500"
               show-word-limit
               resize="none"
             />
           </el-form-item>
 
-          <div class="ad-panel__foot">
+          <div class="ad-panel__bar">
             <el-button @click="handleCancelApproval">取消</el-button>
-            <el-button :type="isRejectAction ? 'danger' : 'primary'" :loading="submitting" @click="handleSubmitApproval">
+            <el-button :type="isRejectAction ? 'danger' : 'success'" :loading="submitting" @click="handlePreSubmit">
+              <el-icon style="margin-right: 4px">
+                <Close v-if="isRejectAction" />
+                <Check v-else />
+              </el-icon>
               {{ isRejectAction ? "确认驳回" : "确认通过" }}
             </el-button>
           </div>
         </el-form>
       </div>
-    </transition>
+    </div>
 
-    <!-- ====== 主体双栏 ====== -->
-    <div class="ad-body">
-      <!-- 左栏：业务信息 -->
-      <div class="ad-main">
-        <!-- 申请信息 -->
-        <section class="ad-card">
-          <div class="ad-card__head">
-            <iconify-icon icon="ep:user" class="ad-card__head-icon" />
-            <span>申请信息</span>
-          </div>
-          <div class="ad-card__grid">
-            <div class="ad-field">
-              <span class="ad-field__label">申请人</span>
-              <span class="ad-field__value">{{ detail?.applicantName || "-" }}</span>
-            </div>
-            <div class="ad-field">
-              <span class="ad-field__label">申请时间</span>
-              <span class="ad-field__value">{{ detail?.createTime || "-" }}</span>
-            </div>
-            <div class="ad-field">
-              <span class="ad-field__label">当前节点</span>
-              <span class="ad-field__value">
-                <el-tag v-if="detail?.currentNodeName" type="warning" size="small" effect="light">
-                  {{ detail?.currentNodeName }}
-                </el-tag>
-                <span v-else class="ad-field__placeholder">-</span>
-              </span>
-            </div>
-            <div class="ad-field">
-              <span class="ad-field__label">完成时间</span>
-              <span class="ad-field__value">{{ detail?.finishTime || "-" }}</span>
-            </div>
-          </div>
-          <div v-if="detail?.resultRemark" class="ad-card__remark">
-            <span class="ad-card__remark-label">最终意见</span>
-            <span class="ad-card__remark-text">{{ detail?.resultRemark }}</span>
-          </div>
-        </section>
+    <!-- ===== Confirm Dialog ===== -->
+    <el-dialog v-model="showConfirmDialog" :title="isRejectAction ? '确认驳回' : '确认通过'" width="400px" append-to-body destroy-on-close :close-on-click-modal="false">
+      <div class="ad-cfm">
+        <div class="ad-cfm__ico" :class="isRejectAction ? 'ad-cfm__ico--d' : 'ad-cfm__ico--p'">
+          <el-icon :size="22">
+            <Close v-if="isRejectAction" />
+            <Check v-else />
+          </el-icon>
+        </div>
+        <p>
+          {{ isRejectAction ? "确认驳回此审批？驳回后申请人需重新提交。" : "确认通过此审批？通过后将进入下一审批节点或直接完成。" }}
+        </p>
+        <div v-if="approvalForm.remark" class="ad-cfm__note">
+          <span class="ad-cfm__note-lbl">审批意见</span>
+          {{ approvalForm.remark }}
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="showConfirmDialog = false">再想想</el-button>
+        <el-button :type="isRejectAction ? 'danger' : 'success'" :loading="submitting" @click="handleSubmitApproval">
+          {{ isRejectAction ? "确认驳回" : "确认通过" }}
+        </el-button>
+      </template>
+    </el-dialog>
 
-        <!-- 业务详情 -->
-        <section class="ad-card">
-          <div class="ad-card__head">
-            <iconify-icon icon="ep:document" class="ad-card__head-icon" />
-            <span>业务详情</span>
-            <el-button type="primary" link size="small" class="ad-card__head-extra" @click="handleViewBusinessDetail">
-              <iconify-icon icon="ep:view" style="margin-right: 4px" />
-              查看完整信息
-            </el-button>
-          </div>
+    <!-- ===== 申请信息 ===== -->
+    <section class="ad-sec">
+      <div class="ad-sec__hd">
+        <el-icon :size="14"><User /></el-icon>
+        <span class="ad-sec__label">申请信息</span>
+      </div>
+      <div class="ad-grid">
+        <div class="ad-grid__cell">
+          <span class="ad-grid__k">申请人</span>
+          <span class="ad-grid__v">{{ detail?.applicantName || "-" }}</span>
+        </div>
+        <div class="ad-grid__cell">
+          <span class="ad-grid__k">申请时间</span>
+          <span class="ad-grid__v">{{ detail?.createTime || "-" }}</span>
+        </div>
+        <div class="ad-grid__cell">
+          <span class="ad-grid__k">当前节点</span>
+          <span class="ad-grid__v">
+            <el-tag v-if="detail?.currentNodeName" type="warning" size="small" effect="light">
+              {{ detail?.currentNodeName }}
+            </el-tag>
+            <span v-else class="ad-grid__muted">-</span>
+          </span>
+        </div>
+        <div class="ad-grid__cell">
+          <span class="ad-grid__k">完成时间</span>
+          <span class="ad-grid__v" :class="{ 'ad-grid__muted': !detail?.finishTime }">
+            {{ detail?.finishTime || "-" }}
+          </span>
+        </div>
+      </div>
+    </section>
 
-          <!-- 租客入住 -->
-          <template v-if="APPROVAL_BIZ_TYPE_HELPER.isTenantCheckin(detail?.bizType)">
-            <div class="ad-tenant">
-              <div class="ad-tenant__avatar">
-                <iconify-icon icon="ep:user-filled" />
-              </div>
-              <div class="ad-tenant__info">
-                <div class="ad-tenant__name">{{ detail?.tenantDetail?.tenantName }}</div>
-                <div class="ad-tenant__phone">
-                  <iconify-icon icon="ep:phone" />
-                  {{ detail?.tenantDetail?.tenantPhone }}
-                </div>
-              </div>
-            </div>
+    <!-- 最终意见 -->
+    <div v-if="detail?.resultRemark" class="ad-final">
+      <span class="ad-final__lbl">最终意见</span>
+      <span class="ad-final__txt">{{ detail.resultRemark }}</span>
+    </div>
 
-            <div class="ad-biz-list">
-              <div class="ad-biz-item">
-                <iconify-icon icon="ep:house" class="ad-biz-item__icon" />
-                <div class="ad-biz-item__body">
-                  <span class="ad-biz-item__label">入住房间</span>
-                  <span class="ad-biz-item__value">{{ displayRoomList }}</span>
-                </div>
-              </div>
-              <div class="ad-biz-item">
-                <iconify-icon icon="ep:calendar" class="ad-biz-item__icon" />
-                <div class="ad-biz-item__body">
-                  <span class="ad-biz-item__label">租赁周期</span>
-                  <span class="ad-biz-item__value">{{ detail?.tenantDetail?.leaseStart }} 至 {{ detail?.tenantDetail?.leaseEnd }}</span>
-                </div>
-              </div>
-              <div class="ad-biz-item ad-biz-item--highlight">
-                <iconify-icon icon="ep:money" class="ad-biz-item__icon" />
-                <div class="ad-biz-item__body">
-                  <span class="ad-biz-item__label">月租金</span>
-                  <span class="ad-biz-item__value ad-biz-item__price">
-                    ¥{{ detail?.tenantDetail?.rentPrice }}
-                    <small>/月</small>
-                  </span>
-                </div>
-              </div>
-              <div class="ad-biz-item">
-                <iconify-icon icon="ep:wallet" class="ad-biz-item__icon" />
-                <div class="ad-biz-item__body">
-                  <span class="ad-biz-item__label">押付方式</span>
-                  <span class="ad-biz-item__value">押{{ detail?.tenantDetail?.depositMonths }}付{{ detail?.tenantDetail?.paymentMonths }}</span>
-                </div>
-              </div>
-            </div>
-          </template>
-        </section>
+    <div class="ad-div" />
+
+    <!-- ===== 业务详情 ===== -->
+    <section class="ad-sec">
+      <div class="ad-sec__hd">
+        <el-icon :size="14"><Document /></el-icon>
+        <span class="ad-sec__label">业务详情</span>
+        <el-button type="primary" link size="small" class="ad-sec__link" @click="handleViewBusinessDetail">查看完整信息 →</el-button>
       </div>
 
-      <!-- 右栏：审批流程 -->
-      <aside class="ad-aside">
-        <div class="ad-card ad-card--sticky">
-          <div class="ad-card__head">
-            <iconify-icon icon="ep:list" class="ad-card__head-icon" />
-            <span>审批流程</span>
-            <span v-if="sortedActions.length" class="ad-card__head-badge">{{ completedCount }}/{{ sortedActions.length }}</span>
+      <template v-if="APPROVAL_BIZ_TYPE_HELPER.isTenantCheckin(detail?.bizType)">
+        <div class="ad-tenant">
+          <span class="ad-tenant__av">
+            <el-icon :size="17"><UserFilled /></el-icon>
+          </span>
+          <span class="ad-tenant__meta">
+            <span class="ad-tenant__name">{{ detail?.tenantDetail?.tenantName }}</span>
+            <span class="ad-tenant__phone">
+              <el-icon :size="12"><Phone /></el-icon>
+              {{ detail?.tenantDetail?.tenantPhone }}
+            </span>
+          </span>
+        </div>
+
+        <div class="ad-rows">
+          <div class="ad-row">
+            <span class="ad-row__ico">
+              <el-icon :size="14"><House /></el-icon>
+            </span>
+            <span class="ad-row__k">入住房间</span>
+            <span class="ad-row__v">{{ displayRoomList }}</span>
           </div>
-
-          <!-- 空状态 -->
-          <div v-if="sortedActions.length === 0" class="ad-timeline-empty">
-            <iconify-icon icon="ep:document-delete" />
-            <span>暂无审批记录</span>
+          <div class="ad-row">
+            <span class="ad-row__ico">
+              <el-icon :size="14"><Calendar /></el-icon>
+            </span>
+            <span class="ad-row__k">租赁周期</span>
+            <span class="ad-row__v">{{ detail?.tenantDetail?.leaseStart }} 至 {{ detail?.tenantDetail?.leaseEnd }}</span>
           </div>
+          <div class="ad-row ad-row--hl">
+            <span class="ad-row__ico">
+              <el-icon :size="14"><Money /></el-icon>
+            </span>
+            <span class="ad-row__k">月租金</span>
+            <span class="ad-row__v">
+              <span class="ad-price">
+                ¥{{ detail?.tenantDetail?.rentPrice }}
+                <small>/月</small>
+              </span>
+            </span>
+          </div>
+          <div class="ad-row">
+            <span class="ad-row__ico">
+              <el-icon :size="14"><Wallet /></el-icon>
+            </span>
+            <span class="ad-row__k">押付方式</span>
+            <span class="ad-row__v">押{{ detail?.tenantDetail?.depositMonths }}付{{ detail?.tenantDetail?.paymentMonths }}</span>
+          </div>
+        </div>
+      </template>
 
-          <!-- 时间线 -->
-          <div v-else class="ad-timeline">
-            <div v-for="(action, idx) in sortedActions" :key="action.id.toString()" class="ad-timeline__item" :data-status="getTimelineStatus(action)">
-              <!-- 节点 -->
-              <div class="ad-timeline__rail">
-                <div class="ad-timeline__dot">
-                  <iconify-icon v-if="getTimelineStatus(action) === 'approved'" icon="ep:check" />
-                  <iconify-icon v-else-if="getTimelineStatus(action) === 'rejected'" icon="ep:close" />
-                  <iconify-icon v-else-if="getTimelineStatus(action) === 'skipped'" icon="ep:minus" />
-                  <span v-else class="ad-timeline__dot-num">{{ idx + 1 }}</span>
-                </div>
-                <div v-if="idx < sortedActions.length - 1" class="ad-timeline__line" />
-              </div>
+      <template v-else>
+        <el-empty description="暂无业务详情" :image-size="48" />
+      </template>
+    </section>
 
-              <!-- 内容 -->
-              <div class="ad-timeline__card">
-                <div class="ad-timeline__card-head">
-                  <span class="ad-timeline__node-name">{{ action.nodeName }}</span>
-                  <el-tag
-                    :type="
-                      getTimelineStatus(action) === 'approved'
-                        ? 'success'
-                        : getTimelineStatus(action) === 'rejected'
-                          ? 'danger'
-                          : getTimelineStatus(action) === 'skipped'
-                            ? 'info'
-                            : 'warning'
-                    "
-                    size="small"
-                    effect="light"
-                  >
-                    {{ action.statusName }}
-                  </el-tag>
-                </div>
-                <div class="ad-timeline__card-body">
-                  <div class="ad-timeline__meta">
-                    <iconify-icon icon="ep:user" />
-                    <span>{{ action.approverName || "待分配" }}</span>
-                  </div>
-                  <div v-if="action.operateTime" class="ad-timeline__meta">
-                    <iconify-icon icon="ep:clock" />
-                    <span>{{ action.operateTime }}</span>
-                  </div>
-                  <div v-if="action.remark" class="ad-timeline__remark">
-                    <iconify-icon icon="ep:chat-line-square" />
-                    <span>{{ action.remark }}</span>
-                  </div>
-                </div>
-              </div>
+    <div class="ad-div" />
+
+    <!-- ===== 审批流程 ===== -->
+    <section class="ad-sec">
+      <div class="ad-sec__hd">
+        <el-icon :size="14"><Document /></el-icon>
+        <span class="ad-sec__label">审批流程</span>
+        <span v-if="sortedActions.length" class="ad-sec__badge">{{ completedCount }}/{{ sortedActions.length }}</span>
+      </div>
+
+      <div v-if="sortedActions.length" class="ad-bar">
+        <div class="ad-bar__fill" :style="{ width: progressPercent + '%' }" />
+      </div>
+
+      <div v-if="!sortedActions.length" class="ad-tl-empty">
+        <el-icon :size="28"><DocumentDelete /></el-icon>
+        <span>暂无审批记录</span>
+      </div>
+
+      <div v-else class="ad-tl">
+        <div v-for="(act, idx) in sortedActions" :key="act.id.toString()" class="ad-tl__node" :data-s="getTimelineStatus(act)" :class="{ 'is-active': idx === activeNodeIndex }">
+          <div class="ad-tl__rail">
+            <span class="ad-tl__dot">
+              <el-icon v-if="getTimelineStatus(act) === 'done'" :size="13"><Check /></el-icon>
+              <el-icon v-else-if="getTimelineStatus(act) === 'reject'" :size="13"><Close /></el-icon>
+              <el-icon v-else-if="getTimelineStatus(act) === 'wait'" :size="13"><Minus /></el-icon>
+              <span v-else class="ad-tl__num">{{ idx + 1 }}</span>
+            </span>
+            <span v-if="idx < sortedActions.length - 1" class="ad-tl__line" />
+          </div>
+          <div class="ad-tl__body">
+            <div class="ad-tl__head">
+              <span class="ad-tl__name">{{ act.nodeName }}</span>
+              <span class="ad-tag" :class="getTagClass(getTimelineStatus(act))">
+                {{ act.statusName }}
+              </span>
+            </div>
+            <div class="ad-tl__meta">
+              <el-icon :size="12"><User /></el-icon>
+              {{ act.approverName || "待分配" }}
+            </div>
+            <div v-if="act.operateTime" class="ad-tl__meta">
+              <el-icon :size="12"><Clock /></el-icon>
+              {{ act.operateTime }}
+            </div>
+            <div v-if="act.remark" class="ad-tl__remark">
+              <el-icon :size="12"><ChatLineSquare /></el-icon>
+              <span>{{ act.remark }}</span>
             </div>
           </div>
         </div>
-      </aside>
-    </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <style scoped lang="scss">
-  /* ===== 变量 ===== */
-  $radius-sm: 6px;
-  $radius-md: 10px;
-  $radius-lg: 14px;
-  $gap: 16px;
-  $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* ===== 根容器 ===== */
+  /* =============================================
+   Tokens — 全部基于 Element Plus CSS 变量
+   深色模式自动跟随 EP dark theme
+   ============================================= */
   .ad {
-    --ad-bg: var(--el-bg-color);
-    --ad-bg-soft: var(--el-fill-color-lighter);
-    --ad-border: var(--el-border-color-lighter);
-    --ad-text: var(--el-text-color-primary);
-    --ad-text-2: var(--el-text-color-secondary);
-    --ad-text-3: var(--el-text-color-placeholder);
+    --c-green: var(--el-color-success);
+    --c-green-dim: var(--el-color-success-light-9);
+    --c-red: var(--el-color-danger);
+    --c-red-dim: var(--el-color-danger-light-9);
+    --c-amber: var(--el-color-warning);
+    --c-amber-dim: var(--el-color-warning-light-9);
+    --c-blue: var(--el-color-primary);
+    --c-blue-dim: var(--el-color-primary-light-9);
+    --r: 10px;
 
-    color: var(--ad-text);
+    /* 浅色模式层次体系:
+     drawer body = white → .ad 容器 = 浅灰底 → 卡片 = 白底 + 微阴影
+     深色模式: drawer body = dark → .ad 容器 = 透明 → 卡片 = overlay */
+    --ad-page: var(--el-fill-color-lighter); /* 浅色 #fafafa, 深色会被 dark 覆盖 */
+    --ad-card: #ffffff; /* 卡片底色 */
+    --ad-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+    --ad-card-border: var(--el-border-color-lighter);
+
     font-size: 14px;
+    color: var(--el-text-color-primary);
+    padding: 20px;
+    padding-bottom: 8px;
+    background: var(--ad-page);
+    border-radius: 4px;
   }
 
-  /* ===== 状态头 ===== */
-  .ad-header {
+  /* 深色模式覆盖 —— 兼容 html.dark + .dark 两种切换方式 */
+  html.dark .ad,
+  .dark .ad {
+    --ad-page: transparent;
+    --ad-card: var(--el-bg-color-overlay);
+    --ad-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --ad-card-border: var(--el-border-color-darker);
+  }
+
+  /* =============================================
+   Status Banner
+   ============================================= */
+  .ad-banner {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 18px 22px;
-    margin: -20px -20px 20px;
-    border-radius: 4px 4px 0 0;
-    color: #fff;
-    /* 默认渐变 */
-    background: linear-gradient(135deg, var(--el-color-primary-light-3) 0%, var(--el-color-primary) 100%);
+    padding: 16px 20px;
+    border-radius: var(--r);
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
 
-    &[data-theme="pending"] {
-      background: linear-gradient(135deg, var(--el-color-warning-light-3) 0%, var(--el-color-warning) 100%);
-    }
-    &[data-theme="approved"] {
-      background: linear-gradient(135deg, var(--el-color-success-light-3) 0%, var(--el-color-success) 100%);
-    }
-    &[data-theme="rejected"] {
-      background: linear-gradient(135deg, var(--el-color-danger-light-3) 0%, var(--el-color-danger) 100%);
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.12;
+      border-radius: inherit;
     }
 
-    &__icon {
+    &[data-s="pending"] {
+      background: var(--c-amber-dim);
+      &::before {
+        background: linear-gradient(135deg, var(--c-amber) 0%, transparent 60%);
+      }
+      .ad-banner__ico {
+        background: var(--c-amber-dim);
+        color: var(--c-amber);
+      }
+      .ad-banner__title {
+        color: var(--c-amber);
+      }
+    }
+    &[data-s="approved"] {
+      background: var(--c-green-dim);
+      &::before {
+        background: linear-gradient(135deg, var(--c-green) 0%, transparent 60%);
+      }
+      .ad-banner__ico {
+        background: var(--c-green-dim);
+        color: var(--c-green);
+      }
+      .ad-banner__title {
+        color: var(--c-green);
+      }
+    }
+    &[data-s="rejected"] {
+      background: var(--c-red-dim);
+      &::before {
+        background: linear-gradient(135deg, var(--c-red) 0%, transparent 60%);
+      }
+      .ad-banner__ico {
+        background: var(--c-red-dim);
+        color: var(--c-red);
+      }
+      .ad-banner__title {
+        color: var(--c-red);
+      }
+    }
+    &[data-s="withdrawn"],
+    &[data-s="cancelled"] {
+      background: var(--el-fill-color-light);
+      .ad-banner__ico {
+        background: var(--el-fill-color);
+        color: var(--el-text-color-secondary);
+      }
+      .ad-banner__title {
+        color: var(--el-text-color-secondary);
+      }
+    }
+
+    &__ico {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       display: grid;
       place-items: center;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(8px);
-      font-size: 24px;
       flex-shrink: 0;
+      position: relative;
+      z-index: 1;
     }
 
     &__body {
@@ -471,540 +611,656 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      position: relative;
+      z-index: 1;
     }
 
     &__title {
-      font-size: 18px;
-      font-weight: 600;
-      line-height: 1.3;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
     }
 
     &__sub {
-      font-size: 13px;
-      opacity: 0.85;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      margin-top: 1px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    &__action {
+    &__btn {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
       flex-shrink: 0;
+      transition: all 0.15s;
+      background: var(--c-amber);
+      color: #000;
 
-      &.el-button {
-        --el-button-bg-color: rgba(255, 255, 255, 0.92);
-        --el-button-text-color: var(--el-color-primary);
-        --el-button-hover-bg-color: #fff;
-        --el-button-hover-text-color: var(--el-color-primary);
-        font-weight: 500;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      &:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
       }
     }
   }
 
-  /* ===== 审批面板 ===== */
+  /* =============================================
+   Approval Panel
+   ============================================= */
   .ad-panel {
-    padding: 18px 20px;
-    margin-bottom: 20px;
-    border-radius: $radius-md;
-    border: 1px solid var(--ad-border);
-    background: var(--ad-bg-soft);
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
+    transition:
+      max-height 0.4s ease,
+      opacity 0.3s ease,
+      margin 0.3s ease;
 
-    &__head {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: var(--ad-text);
+    &.is-open {
+      max-height: 500px;
+      opacity: 1;
+      margin-bottom: 20px;
     }
 
-    &__selector {
-      margin-bottom: 16px;
+    &__inner {
+      background: var(--ad-card);
+      border: 1px solid var(--ad-card-border);
+      border-radius: var(--r);
+      padding: 18px 20px;
+      box-shadow: var(--ad-card-shadow);
+    }
+
+    &__pick-item {
+      margin-bottom: 12px;
       :deep(.el-form-item__content) {
         line-height: 1;
       }
     }
 
-    &__cards {
+    &__picks {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
     }
 
-    &__card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      padding: 14px 12px;
-      border-radius: $radius-sm;
-      border: 2px solid var(--ad-border);
-      background: var(--ad-bg);
-      cursor: pointer;
-      transition: all $transition;
-      font-size: 14px;
-      font-weight: 500;
-
-      &:hover {
-        border-color: var(--el-border-color-darker);
-      }
-
-      &-icon {
-        font-size: 28px;
-      }
-
-      &--approve {
-        .ad-panel__card-icon {
-          color: var(--el-color-success-light-3);
-        }
-        &.is-active {
-          border-color: var(--el-color-success);
-          background: var(--el-color-success-light-9);
-          .ad-panel__card-icon {
-            color: var(--el-color-success);
-          }
-        }
-      }
-
-      &--reject {
-        .ad-panel__card-icon {
-          color: var(--el-color-danger-light-3);
-        }
-        &.is-active {
-          border-color: var(--el-color-danger);
-          background: var(--el-color-danger-light-9);
-          .ad-panel__card-icon {
-            color: var(--el-color-danger);
-          }
-        }
-      }
-    }
-
-    &__foot {
+    &__bar {
       display: flex;
       justify-content: flex-end;
-      gap: 12px;
-      margin-top: 8px;
-    }
-  }
-
-  /* ===== 双栏布局 ===== */
-  .ad-body {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-    }
-  }
-
-  .ad-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .ad-aside {
-    width: 290px;
-    flex-shrink: 0;
-
-    @media (max-width: 768px) {
-      width: 100%;
-    }
-  }
-
-  /* ===== 通用卡片 ===== */
-  .ad-card {
-    padding: 16px;
-    border-radius: $radius-md;
-    border: 1px solid var(--ad-border);
-    background: var(--ad-bg);
-
-    &--sticky {
-      position: sticky;
-      top: 0;
-      max-height: calc(100vh - 240px);
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-
-    &__head {
-      display: flex;
-      align-items: center;
       gap: 8px;
-      margin-bottom: 16px;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--ad-text);
+      padding-top: 4px;
+    }
+  }
 
-      &-icon {
-        font-size: 18px;
-        color: var(--el-color-primary);
-      }
+  .ad-pick {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 2px solid var(--el-border-color);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
 
-      &-extra {
-        margin-left: auto;
-      }
+    &:hover {
+      border-color: var(--el-border-color-darker);
+    }
 
-      &-badge {
-        margin-left: auto;
-        font-size: 12px;
-        font-weight: 500;
-        padding: 2px 8px;
-        border-radius: 10px;
-        background: var(--el-color-primary-light-9);
-        color: var(--el-color-primary);
+    &__dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--el-text-color-placeholder);
+      flex-shrink: 0;
+      position: relative;
+      transition: all 0.15s;
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border-radius: 50%;
+        transition: background 0.15s;
       }
     }
 
-    &__grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px 24px;
-
-      @media (max-width: 480px) {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    &__remark {
-      margin-top: 14px;
-      padding: 10px 14px;
-      border-radius: $radius-sm;
-      background: var(--ad-bg-soft);
-      font-size: 13px;
-      line-height: 1.6;
+    &__body {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+    }
+    &__label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+    &__hint {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+      margin-top: 1px;
+    }
 
-      &-label {
-        font-size: 12px;
-        color: var(--ad-text-2);
-        font-weight: 500;
+    &--pass {
+      color: var(--c-green);
+    }
+    &--pass.is-on {
+      border-color: var(--c-green);
+      background: var(--c-green-dim);
+      .ad-pick__dot {
+        border-color: var(--c-green);
+        &::after {
+          background: var(--c-green);
+        }
       }
-      &-text {
-        color: var(--ad-text);
+    }
+
+    &--deny {
+      color: var(--c-red);
+    }
+    &--deny.is-on {
+      border-color: var(--c-red);
+      background: var(--c-red-dim);
+      .ad-pick__dot {
+        border-color: var(--c-red);
+        &::after {
+          background: var(--c-red);
+        }
       }
     }
   }
 
-  /* ===== 字段 ===== */
-  .ad-field {
+  /* =============================================
+   Confirm Dialog
+   ============================================= */
+  .ad-cfm {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
 
-    &__label {
-      font-size: 12px;
-      color: var(--ad-text-2);
-      line-height: 1.4;
+    &__ico {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      &--p {
+        background: var(--c-green-dim);
+        color: var(--c-green);
+      }
+      &--d {
+        background: var(--c-red-dim);
+        color: var(--c-red);
+      }
     }
-    &__value {
-      font-size: 14px;
-      color: var(--ad-text);
-      line-height: 1.4;
-    }
-    &__placeholder {
-      color: var(--ad-text-3);
+
+    &__note {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: var(--el-fill-color-light);
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+      text-align: left;
+      &-lbl {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--el-text-color-placeholder);
+        margin-bottom: 2px;
+      }
     }
   }
 
-  /* ===== 租客头像卡 ===== */
+  /* =============================================
+   Section
+   ============================================= */
+  .ad-sec {
+    margin-bottom: 4px;
+  }
+
+  .ad-sec__hd {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+
+    > .el-icon {
+      color: var(--el-text-color-placeholder);
+    }
+  }
+
+  .ad-sec__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--el-text-color-placeholder);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .ad-sec__link {
+    margin-left: auto;
+    font-size: 12px;
+  }
+
+  .ad-sec__badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 99px;
+    background: var(--c-green-dim);
+    color: var(--c-green);
+  }
+
+  /* =============================================
+   Info Grid
+   ============================================= */
+  .ad-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--ad-card-border);
+    border-radius: var(--r);
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--ad-card-shadow);
+
+    &__cell {
+      padding: 12px 16px;
+      background: var(--ad-card);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    &__k {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+    }
+    &__v {
+      font-size: 14px;
+      color: var(--el-text-color-primary);
+      font-weight: 500;
+    }
+    &__muted {
+      color: var(--el-text-color-placeholder);
+    }
+  }
+
+  /* =============================================
+   Final Remark / Divider
+   ============================================= */
+  .ad-final {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--ad-card);
+    border: 1px solid var(--ad-card-border);
+    box-shadow: var(--ad-card-shadow);
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    &__lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--el-text-color-placeholder);
+    }
+    &__txt {
+      font-size: 13px;
+      color: var(--el-text-color-primary);
+      line-height: 1.6;
+    }
+  }
+
+  .ad-div {
+    height: 1px;
+    background: var(--el-border-color-extra-light);
+    margin: 16px 0;
+  }
+
+  /* =============================================
+   Tenant
+   ============================================= */
   .ad-tenant {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 14px;
-    margin-bottom: 14px;
-    border-radius: $radius-sm;
-    background: linear-gradient(135deg, var(--el-color-primary-light-9), var(--ad-bg-soft));
+    padding: 12px 16px;
+    background: var(--ad-card);
+    border: 1px solid var(--ad-card-border);
+    box-shadow: var(--ad-card-shadow);
+    border-radius: var(--r);
+    margin-bottom: 10px;
 
-    &__avatar {
+    &__av {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--c-blue-dim);
+      color: var(--c-blue);
       display: grid;
       place-items: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: var(--el-color-primary-light-7);
-      color: var(--el-color-primary);
-      font-size: 22px;
       flex-shrink: 0;
     }
 
-    &__info {
+    &__meta {
+      display: flex;
+      flex-direction: column;
       flex: 1;
-      min-width: 0;
     }
-
     &__name {
       font-size: 15px;
       font-weight: 600;
-      color: var(--ad-text);
-      line-height: 1.3;
     }
-
     &__phone {
       display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: 13px;
-      color: var(--ad-text-2);
+      gap: 3px;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
       margin-top: 2px;
     }
   }
 
-  /* ===== 业务条目 ===== */
-  .ad-biz-list {
+  /* =============================================
+   Data Rows
+   ============================================= */
+  .ad-rows {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 2px;
+    margin-bottom: 16px;
+    background: var(--ad-card);
+    border: 1px solid var(--ad-card-border);
+    box-shadow: var(--ad-card-shadow);
+    border-radius: var(--r);
+    overflow: hidden;
   }
 
-  .ad-biz-item {
+  .ad-row {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: $radius-sm;
-    background: var(--ad-bg-soft);
-    transition: background $transition;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: transparent;
+    transition: background 0.12s;
 
-    &--highlight {
-      background: linear-gradient(135deg, var(--el-color-danger-light-9), var(--ad-bg-soft));
+    &:hover {
+      background: var(--el-fill-color-light);
     }
 
-    &__icon {
+    &__ico {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: var(--el-fill-color-light);
+      display: grid;
+      place-items: center;
+      color: var(--el-text-color-placeholder);
       flex-shrink: 0;
-      font-size: 18px;
-      color: var(--ad-text-2);
-      margin-top: 2px;
     }
 
-    &__body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-
-    &__label {
+    &__k {
       font-size: 12px;
-      color: var(--ad-text-2);
+      color: var(--el-text-color-secondary);
+      min-width: 55px;
+      white-space: nowrap;
     }
-
-    &__value {
+    &__v {
       font-size: 14px;
-      color: var(--ad-text);
+      color: var(--el-text-color-primary);
+      font-weight: 500;
       word-break: break-all;
     }
 
-    &__price {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--el-color-danger);
-      letter-spacing: -0.5px;
-
-      small {
-        font-size: 12px;
-        font-weight: 400;
-        color: var(--ad-text-2);
-        letter-spacing: 0;
+    &--hl {
+      background: var(--c-red-dim);
+      .ad-row__ico {
+        background: rgba(239, 91, 91, 0.12);
+        color: var(--c-red);
+      }
+      &:hover {
+        background: var(--c-red-dim);
+        filter: brightness(1.05);
       }
     }
   }
 
-  /* ===== 时间线 ===== */
-  .ad-timeline-empty {
+  .ad-price {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--c-red);
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+
+    small {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--el-text-color-placeholder);
+      letter-spacing: 0;
+    }
+  }
+
+  /* =============================================
+   Progress Bar
+   ============================================= */
+  .ad-bar {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--el-fill-color);
+    margin-bottom: 14px;
+    overflow: hidden;
+
+    &__fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--c-green);
+      transition: width 0.4s ease;
+    }
+  }
+
+  /* =============================================
+   Tags
+   ============================================= */
+  .ad-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+
+    &--amber {
+      background: var(--c-amber-dim);
+      color: var(--c-amber);
+    }
+    &--green {
+      background: var(--c-green-dim);
+      color: var(--c-green);
+    }
+    &--red {
+      background: var(--c-red-dim);
+      color: var(--c-red);
+    }
+    &--gray {
+      background: var(--el-fill-color);
+      color: var(--el-text-color-secondary);
+    }
+  }
+
+  /* =============================================
+   Timeline
+   ============================================= */
+  .ad-tl-empty {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 28px 0;
-    color: var(--ad-text-3);
+    gap: 6px;
+    padding: 20px 0;
+    color: var(--el-text-color-placeholder);
     font-size: 13px;
-
-    .iconify-icon {
-      font-size: 36px;
-      opacity: 0.4;
-    }
   }
 
-  .ad-timeline {
+  .ad-tl {
     display: flex;
     flex-direction: column;
   }
 
-  .ad-timeline__item {
+  .ad-tl__node {
     display: flex;
-    gap: 12px;
-
-    &:last-child .ad-timeline__line {
+    gap: 14px;
+    &:last-child .ad-tl__line {
       display: none;
     }
+    &.is-active .ad-tl__dot {
+      animation: ad-pulse 2.5s ease-in-out infinite;
+    }
+  }
 
-    /* --- 节点轨道 --- */
-    .ad-timeline__rail {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 26px;
+  .ad-tl__rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 28px;
+    flex-shrink: 0;
+  }
+
+  .ad-tl__dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 800;
+    z-index: 1;
+    transition: all 0.2s;
+    border: 2px solid var(--el-border-color-lighter);
+    background: var(--ad-card);
+    color: var(--el-text-color-placeholder);
+  }
+
+  .ad-tl__num {
+    font-size: 11px;
+  }
+
+  .ad-tl__line {
+    flex: 1;
+    width: 2px;
+    min-height: 10px;
+    margin: 3px 0;
+    background: var(--el-fill-color);
+    transition: background 0.2s;
+  }
+
+  .ad-tl__node[data-s="done"] {
+    .ad-tl__dot {
+      border-color: var(--c-green);
+      background: var(--c-green);
+      color: #fff;
+    }
+    .ad-tl__line {
+      background: var(--c-green);
+      opacity: 0.25;
+    }
+  }
+  .ad-tl__node[data-s="reject"] .ad-tl__dot {
+    border-color: var(--c-red);
+    background: var(--c-red);
+    color: #fff;
+  }
+  .ad-tl__node[data-s="active"] .ad-tl__dot {
+    border-color: var(--c-amber);
+    background: var(--c-amber-dim);
+    color: var(--c-amber);
+  }
+  .ad-tl__node[data-s="wait"] {
+    .ad-tl__dot {
+      border-style: dashed;
+      border-color: var(--el-text-color-placeholder);
+    }
+    .ad-tl__line {
+      border-left: 2px dashed var(--el-border-color-lighter);
+      background: transparent;
+      width: 0;
+    }
+  }
+
+  .ad-tl__body {
+    flex: 1;
+    min-width: 0;
+    padding-bottom: 16px;
+  }
+
+  .ad-tl__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .ad-tl__name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .ad-tl__meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    margin-top: 3px;
+    .el-icon {
+      opacity: 0.5;
+    }
+  }
+
+  .ad-tl__remark {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: var(--el-fill-color-light);
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    line-height: 1.6;
+    border-left: 3px solid var(--el-border-color-lighter);
+
+    .el-icon {
       flex-shrink: 0;
-    }
-
-    .ad-timeline__dot {
-      display: grid;
-      place-items: center;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      font-size: 12px;
-      font-weight: 600;
-      border: 2px solid var(--el-border-color);
-      background: var(--ad-bg);
-      color: var(--ad-text-3);
-      transition: all $transition;
-    }
-
-    .ad-timeline__dot-num {
-      font-size: 11px;
-    }
-
-    .ad-timeline__line {
-      flex: 1;
-      width: 2px;
-      min-height: 12px;
-      margin: 4px 0;
-      background: var(--ad-border);
-      transition: background $transition;
-    }
-
-    /* --- 状态变体 --- */
-    &[data-status="approved"] {
-      .ad-timeline__dot {
-        border-color: var(--el-color-success);
-        background: var(--el-color-success);
-        color: #fff;
-      }
-      .ad-timeline__line {
-        background: var(--el-color-success-light-5);
-      }
-    }
-
-    &[data-status="rejected"] {
-      .ad-timeline__dot {
-        border-color: var(--el-color-danger);
-        background: var(--el-color-danger);
-        color: #fff;
-      }
-    }
-
-    &[data-status="pending"] {
-      .ad-timeline__dot {
-        border-color: var(--el-color-warning);
-        background: var(--el-color-warning-light-9);
-        color: var(--el-color-warning);
-      }
-    }
-
-    &[data-status="skipped"] {
-      .ad-timeline__dot {
-        border-color: var(--el-border-color);
-        background: var(--el-fill-color);
-        color: var(--ad-text-3);
-      }
-      .ad-timeline__line {
-        background: transparent;
-        border-left: 2px dashed var(--el-border-color);
-      }
-    }
-
-    /* --- 内容卡片 --- */
-    .ad-timeline__card {
-      flex: 1;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-      border-radius: $radius-sm;
-      border: 1px solid var(--ad-border);
-      background: var(--ad-bg-soft);
-      transition:
-        border-color $transition,
-        box-shadow $transition;
-
-      &:hover {
-        border-color: var(--el-border-color);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-      }
-
-      &-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 8px;
-      }
-
-      &-body {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        font-size: 12px;
-        color: var(--ad-text-2);
-      }
-    }
-
-    .ad-timeline__node-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ad-text);
-    }
-
-    .ad-timeline__meta {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-
-      .iconify-icon {
-        flex-shrink: 0;
-        font-size: 13px;
-      }
-    }
-
-    .ad-timeline__remark {
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-      margin-top: 4px;
-      padding: 6px 8px;
-      border-radius: 4px;
-      background: var(--el-fill-color-light);
-      color: var(--ad-text);
-      line-height: 1.5;
-
-      .iconify-icon {
-        flex-shrink: 0;
-        margin-top: 2px;
-        font-size: 13px;
-        color: var(--ad-text-2);
-      }
+      margin-top: 3px;
+      opacity: 0.5;
     }
   }
 
-  /* ===== 过渡动画 ===== */
-  .slide-down-enter-active,
-  .slide-down-leave-active {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: top;
-  }
-  .slide-down-enter-from,
-  .slide-down-leave-to {
-    opacity: 0;
-    transform: translateY(-8px) scaleY(0.96);
+  /* =============================================
+   Animation
+   ============================================= */
+  @keyframes ad-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(var(--el-color-warning-rgb, 240, 180, 41), 0.25);
+    }
+    50% {
+      box-shadow: 0 0 0 6px rgba(var(--el-color-warning-rgb, 240, 180, 41), 0);
+    }
   }
 </style>
