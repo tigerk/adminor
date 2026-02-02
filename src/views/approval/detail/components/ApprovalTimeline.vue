@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from "vue";
-  import { Check, Clock, Close, Minus } from "@element-plus/icons-vue";
   import { ApprovalActionProps } from "@/types";
+  import { APPROVAL_ACTION_STATUS_HELPER, APPROVAL_ACTION_TYPE_HELPER } from "@/constants";
 
   interface Props {
     actions: ApprovalActionProps[];
@@ -9,82 +9,84 @@
 
   const props = defineProps<Props>();
 
-  // 获取时间线项的颜色
-  const getTimelineColor = (action: ApprovalActionProps) => {
-    if (action.status === 0) return ""; // 待审批 - 灰色
-    if (action.status === 2) return "info"; // 已跳过
-    if (action.action === 1) return "success"; // 通过
-    if (action.action === 2) return "danger"; // 驳回
+  const getTimelineType = (action: ApprovalActionProps) => {
+    if (APPROVAL_ACTION_STATUS_HELPER.isPending(action.status)) return "";
+    if (APPROVAL_ACTION_STATUS_HELPER.isSkipped(action.status)) return "info";
+    if (APPROVAL_ACTION_TYPE_HELPER.isApprove(action.action)) return "success";
+    if (APPROVAL_ACTION_TYPE_HELPER.isReject(action.action)) return "danger";
     return "";
   };
 
-  // 获取图标
   const getTimelineIcon = (action: ApprovalActionProps) => {
-    if (action.status === 0) return Clock; // 待审批
-    if (action.status === 2) return Minus; // 已跳过
-    if (action.action === 1) return Check; // 通过
-    if (action.action === 2) return Close; // 驳回
-    return Clock;
+    if (APPROVAL_ACTION_STATUS_HELPER.isPending(action.status)) return "ep:clock";
+    if (APPROVAL_ACTION_STATUS_HELPER.isSkipped(action.status)) return "ep:minus";
+    if (APPROVAL_ACTION_TYPE_HELPER.isApprove(action.action)) return "ep:success-filled";
+    if (APPROVAL_ACTION_TYPE_HELPER.isReject(action.action)) return "ep:circle-close-filled";
+    return "ep:clock";
   };
 
-  // 按节点顺序排序
+  const getDotClass = (action: ApprovalActionProps) => {
+    if (APPROVAL_ACTION_STATUS_HELPER.isPending(action.status)) return "at-dot--pending";
+    if (APPROVAL_ACTION_STATUS_HELPER.isSkipped(action.status)) return "at-dot--skipped";
+    if (APPROVAL_ACTION_TYPE_HELPER.isApprove(action.action)) return "at-dot--success";
+    if (APPROVAL_ACTION_TYPE_HELPER.isReject(action.action)) return "at-dot--danger";
+    return "at-dot--pending";
+  };
+
   const sortedActions = computed(() => {
     return [...props.actions].sort((a, b) => a.nodeOrder - b.nodeOrder);
   });
 
-  // 是否为空
-  const isEmpty = computed(() => {
-    return !props.actions || props.actions.length === 0;
-  });
+  const isEmpty = computed(() => !props.actions || props.actions.length === 0);
 </script>
 
 <template>
-  <div class="approval-timeline">
-    <el-empty v-if="isEmpty" description="暂无审批记录" :image-size="120" />
+  <div class="at">
+    <el-empty v-if="isEmpty" description="暂无审批记录" :image-size="80" />
 
     <el-timeline v-else>
       <el-timeline-item
         v-for="action in sortedActions"
         :key="action.id.toString()"
-        :type="getTimelineColor(action)"
-        :icon="getTimelineIcon(action)"
-        :size="action.status === 0 ? 'large' : 'normal'"
-        :hollow="action.status === 0"
+        :type="getTimelineType(action)"
+        :size="APPROVAL_ACTION_STATUS_HELPER.isPending(action.status) ? 'large' : 'normal'"
+        :hollow="APPROVAL_ACTION_STATUS_HELPER.isPending(action.status)"
       >
-        <div class="timeline-content">
-          <!-- 节点头部 -->
-          <div class="timeline-header">
-            <div class="header-left">
-              <span class="node-order">第{{ action.nodeOrder }}级</span>
-              <span class="node-name">{{ action.nodeName }}</span>
+        <template #dot>
+          <div class="at-dot" :class="getDotClass(action)">
+            <iconify-icon :icon="getTimelineIcon(action)" />
+          </div>
+        </template>
+
+        <div class="at-card">
+          <div class="at-card__head">
+            <div class="at-card__head-left">
+              <el-tag size="small" effect="plain">第{{ action.nodeOrder }}级</el-tag>
+              <span class="at-card__name">{{ action.nodeName }}</span>
             </div>
-            <el-tag :type="getTimelineColor(action)" size="small" :effect="action.status === 0 ? 'plain' : 'light'">
+            <el-tag :type="getTimelineType(action)" size="small" effect="light">
               {{ action.statusName }}
             </el-tag>
           </div>
 
-          <!-- 节点内容 -->
-          <div class="timeline-body">
-            <div class="info-row">
-              <span class="label">审批人：</span>
-              <span class="value">{{ action.approverName || "待分配" }}</span>
+          <div class="at-card__body">
+            <div class="at-card__row">
+              <span class="at-card__label">审批人</span>
+              <span class="at-card__value">{{ action.approverName || "待分配" }}</span>
             </div>
-
-            <div v-if="action.operateTime" class="info-row">
-              <span class="label">操作时间：</span>
-              <span class="value">{{ action.operateTime }}</span>
+            <div v-if="action.operateTime" class="at-card__row">
+              <span class="at-card__label">操作时间</span>
+              <span class="at-card__value">{{ action.operateTime }}</span>
             </div>
-
-            <div v-if="action.action" class="info-row">
-              <span class="label">审批结果：</span>
-              <el-tag :type="action.action === 1 ? 'success' : 'danger'" size="small">
+            <div v-if="action.action" class="at-card__row">
+              <span class="at-card__label">审批结果</span>
+              <el-tag :type="APPROVAL_ACTION_TYPE_HELPER.isApprove(action.action) ? 'success' : 'danger'" size="small">
                 {{ action.actionName }}
               </el-tag>
             </div>
-
-            <div v-if="action.remark" class="remark-row">
-              <span class="label">审批意见：</span>
-              <div class="remark-content">{{ action.remark }}</div>
+            <div v-if="action.remark" class="at-card__remark">
+              <span class="at-card__label">审批意见</span>
+              <div class="at-card__remark-text">{{ action.remark }}</div>
             </div>
           </div>
         </div>
@@ -94,91 +96,135 @@
 </template>
 
 <style scoped lang="scss">
-  .approval-timeline {
-    min-height: 200px;
+  $radius: 8px;
+  $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-    .timeline-content {
-      padding-bottom: 8px;
+  .at {
+    --at-bg: var(--el-bg-color);
+    --at-bg-soft: var(--el-fill-color-lighter);
+    --at-border: var(--el-border-color-lighter);
+    --at-text: var(--el-text-color-primary);
+    --at-text-2: var(--el-text-color-secondary);
+  }
 
-      .timeline-header {
+  /* ===== 时间线节点 ===== */
+  .at-dot {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 15px;
+    border: 2px solid;
+    transition: all $transition;
+
+    &--pending {
+      background: var(--at-bg);
+      border-color: var(--el-border-color);
+      color: var(--at-text-2);
+    }
+
+    &--success {
+      background: var(--el-color-success-light-9);
+      border-color: var(--el-color-success);
+      color: var(--el-color-success);
+    }
+
+    &--danger {
+      background: var(--el-color-danger-light-9);
+      border-color: var(--el-color-danger);
+      color: var(--el-color-danger);
+    }
+
+    &--skipped {
+      background: var(--el-fill-color);
+      border-color: var(--el-border-color);
+      color: var(--at-text-2);
+    }
+  }
+
+  /* ===== 内容卡片 ===== */
+  .at-card {
+    padding: 12px 14px;
+    border-radius: $radius;
+    border: 1px solid var(--at-border);
+    background: var(--at-bg-soft);
+    transition:
+      border-color $transition,
+      box-shadow $transition;
+
+    &:hover {
+      border-color: var(--el-border-color);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    &__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+
+      &-left {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 16px;
-
-        .header-left {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-
-          .node-order {
-            padding: 2px 8px;
-            background-color: var(--el-fill-color);
-            border-radius: 4px;
-            font-size: 12px;
-            color: var(--el-text-color-secondary);
-          }
-
-          .node-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--el-text-color-primary);
-          }
-        }
+        gap: 8px;
       }
+    }
 
-      .timeline-body {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding-left: 4px;
+    &__name {
+      font-weight: 500;
+      color: var(--at-text);
+      font-size: 14px;
+    }
 
-        .info-row {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          font-size: 14px;
-          line-height: 1.5;
-        }
+    &__body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+    }
 
-        .remark-row {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          font-size: 14px;
+    &__row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-          .remark-content {
-            padding: 12px;
-            background-color: var(--el-fill-color-light);
-            border-left: 3px solid var(--el-color-primary);
-            border-radius: 4px;
-            color: var(--el-text-color-regular);
-            white-space: pre-wrap;
-            word-break: break-all;
-            line-height: 1.6;
-          }
-        }
+    &__label {
+      flex-shrink: 0;
+      width: 56px;
+      color: var(--at-text-2);
+      font-size: 12px;
+    }
 
-        .label {
-          color: var(--el-text-color-secondary);
-          font-weight: 500;
-        }
+    &__value {
+      color: var(--at-text);
+    }
 
-        .value {
-          color: var(--el-text-color-primary);
-        }
+    &__remark {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 4px;
+
+      &-text {
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: var(--el-fill-color-light);
+        color: var(--at-text);
+        line-height: 1.5;
+        font-size: 13px;
       }
     }
   }
 
-  // 自定义时间线样式
+  /* ===== Element 覆盖 ===== */
   :deep(.el-timeline-item__wrapper) {
-    padding-left: 32px;
+    padding-left: 24px;
   }
 
-  :deep(.el-timeline-item__node) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  :deep(.el-timeline-item__tail) {
+    border-left: 2px solid var(--at-border);
   }
 </style>
