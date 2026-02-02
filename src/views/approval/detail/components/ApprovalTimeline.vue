@@ -181,7 +181,6 @@
     try {
       await handleApproval({
         instanceId: props.instanceId,
-        approverId: userStore.id,
         action: approvalForm.value.action,
         remark: approvalForm.value.remark || undefined
       });

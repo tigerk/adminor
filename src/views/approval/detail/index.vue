@@ -872,7 +872,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1px;
-    background: var(--ad-card-border);
     border-radius: var(--r);
     overflow: hidden;
     margin-bottom: 16px;
