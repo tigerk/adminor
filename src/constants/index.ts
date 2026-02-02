@@ -201,12 +201,13 @@ export const TENANT_TYPE_OPTIONS = [
 
 /**
  * 租客状态选项
- * 租客状态：0=待签字，1=在租中，2=已退租，3=已作废
+ * 租客状态：0=待审批，1=待签字，2=在租中，3=已退租，-1=已作废
  */
 export const TENANT_STATUS_OPTIONS = [
-  { label: "待签字", value: 0 },
-  { label: "在租中", value: 1 },
-  { label: "已退租", value: 2 },
+  { label: "待审批", value: 0 },
+  { label: "待签字", value: 1 },
+  { label: "在租中", value: 2 },
+  { label: "已退租", value: 3 },
   { label: "已作废", value: -1 }
 ] as const;
 

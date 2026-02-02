@@ -277,7 +277,6 @@ export function useApprovalTodo() {
     addDialog({
       title: row.title || "审批详情",
       width: "800px",
-      draggable: true,
       lockScroll: true, // 弹窗打开时锁定滚动
       alignCenter: true, // 弹窗居中对齐
       fullscreen: deviceDetection(), // 移动端全屏
@@ -285,7 +284,7 @@ export function useApprovalTodo() {
       closeOnClickModal: false,
       contentRenderer: () =>
         h(ApprovalDetailDialog, {
-          instanceId: row.instanceId || row.id,
+          instanceId: Number(row.instanceId || row.id),
           from: activeTab.value // todo/done/apply
         }),
       beforeCancel: done => {

@@ -25,8 +25,23 @@
   import { getApprovalInstanceDetail, handleApproval } from "@/api/approval";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import type { ApprovalActionProps, ApprovalInstanceProps } from "@/types";
-  import { useUserStoreHook } from "@/store/modules/user";
   import { APPROVAL_ACTION_STATUS_HELPER, APPROVAL_ACTION_TYPE_ENUM, APPROVAL_ACTION_TYPE_HELPER, APPROVAL_BIZ_TYPE_HELPER, APPROVAL_INSTANCE_STATUS_HELPER } from "@/constants";
+
+  // ====== Types ======
+
+  interface GroupedNode {
+    nodeOrder: number;
+    nodeName: string;
+    actions: ApprovalActionProps[];
+    isOrSign: boolean;
+    status: "done" | "reject" | "active" | "wait";
+  }
+
+  // 添加类型定义
+  interface ApprovalForm {
+    action: number;
+    remark: string;
+  }
 
   defineOptions({ name: "ApprovalDetailDialog" });
 
@@ -39,12 +54,11 @@
 
   const loading = ref(false);
   const detail = ref<ApprovalInstanceProps>(null);
-  const userStore = useUserStoreHook();
 
   const showApprovalPanel = ref(false);
   const approvalFormRef = ref<FormInstance>();
   const submitting = ref(false);
-  const approvalForm = ref({
+  const approvalForm = ref<ApprovalForm>({
     action: APPROVAL_ACTION_TYPE_ENUM.APPROVE.code,
     remark: ""
   });
@@ -53,7 +67,6 @@
   const { openTenantViewDialog } = useTenant();
 
   // ====== Computed ======
-
   const canApprove = computed(() => props.from === "todo" && APPROVAL_INSTANCE_STATUS_HELPER.isPending(detail.value?.status));
 
   const isRejectAction = computed(() => APPROVAL_ACTION_TYPE_HELPER.isReject(approvalForm.value.action));
@@ -71,20 +84,72 @@
 
   const displayRoomList = computed(() => detail.value?.tenantDetail?.roomList?.map(i => i?.houseName + "【" + i?.roomNumber + "】").join("、") || "-");
 
-  const sortedActions = computed(() => {
+  // 获取分组状态
+  const getGroupStatus = (actions: ApprovalActionProps[]): "done" | "reject" | "active" | "wait" => {
+    // 如果有任一通过，则节点通过（或签逻辑）
+    if (actions.some(a => APPROVAL_ACTION_TYPE_HELPER.isApprove(a.action))) {
+      return "done";
+    }
+    // 如果有任一驳回，则节点驳回
+    if (actions.some(a => APPROVAL_ACTION_TYPE_HELPER.isReject(a.action))) {
+      return "reject";
+    }
+    // 如果全部跳过，则跳过
+    if (actions.every(a => APPROVAL_ACTION_STATUS_HELPER.isSkipped(a.status))) {
+      return "wait";
+    }
+    // 如果有待审批的，则为进行中
+    if (actions.some(a => APPROVAL_ACTION_STATUS_HELPER.isPending(a.status))) {
+      return "active";
+    }
+    return "wait";
+  };
+
+  // 将 actions 按 nodeOrder 分组
+  const groupedNodes = computed<GroupedNode[]>(() => {
     if (!detail.value?.actions) return [];
-    return [...detail.value.actions].sort((a, b) => a.nodeOrder - b.nodeOrder);
+
+    console.log("=== 原始 actions ===", detail.value.actions);
+    console.log("=== 第一个 action 的 nodeOrder ===", detail.value.actions[0]?.nodeOrder, typeof detail.value.actions[0]?.nodeOrder);
+
+    const groups = new Map<number, ApprovalActionProps[]>();
+
+    for (const action of detail.value.actions) {
+      // 确保转换为数字类型
+      const order = Number(action.nodeOrder);
+      console.log(`action id=${action.id}, nodeOrder=${action.nodeOrder}, converted=${order}`);
+
+      if (!groups.has(order)) {
+        groups.set(order, []);
+      }
+      groups.get(order)!.push(action);
+    }
+
+    console.log("=== 分组后的 Map ===", groups);
+    console.log("=== Map 大小 ===", groups.size);
+
+    // 转换为数组并按 nodeOrder 排序
+    const result = Array.from(groups.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([nodeOrder, actions]) => ({
+        nodeOrder,
+        nodeName: actions[0].nodeName,
+        actions,
+        isOrSign: actions.length > 1,
+        status: getGroupStatus(actions)
+      }));
+
+    console.log("=== 最终 groupedNodes ===", result);
+    return result;
   });
 
-  const completedCount = computed(
-    () => sortedActions.value.filter(a => !APPROVAL_ACTION_STATUS_HELPER.isPending(a.status) && !APPROVAL_ACTION_STATUS_HELPER.isSkipped(a.status)).length
-  );
+  const completedCount = computed(() => groupedNodes.value.filter(n => n.status === "done" || n.status === "reject").length);
 
-  const activeNodeIndex = computed(() => sortedActions.value.findIndex(a => APPROVAL_ACTION_STATUS_HELPER.isPending(a.status)));
+  const activeNodeIndex = computed(() => groupedNodes.value.findIndex(n => n.status === "active"));
 
   const progressPercent = computed(() => {
-    if (!sortedActions.value.length) return 0;
-    return Math.round((completedCount.value / sortedActions.value.length) * 100);
+    if (!groupedNodes.value.length) return 0;
+    return Math.round((completedCount.value / groupedNodes.value.length) * 100);
   });
 
   // ====== Status ======
@@ -102,7 +167,8 @@
 
   const statusTheme = computed(() => getStatusKey(detail.value?.status));
 
-  const getTimelineStatus = (action: ApprovalActionProps) => {
+  // 获取单个审批人的状态
+  const getActionStatus = (action: ApprovalActionProps) => {
     if (APPROVAL_ACTION_STATUS_HELPER.isPending(action.status)) return "active";
     if (APPROVAL_ACTION_STATUS_HELPER.isSkipped(action.status)) return "wait";
     if (APPROVAL_ACTION_TYPE_HELPER.isApprove(action.action)) return "done";
@@ -124,6 +190,7 @@
     loading.value = true;
     try {
       const { data } = await getApprovalInstanceDetail(props.instanceId);
+
       detail.value = data;
     } finally {
       loading.value = false;
@@ -181,7 +248,6 @@
     try {
       await handleApproval({
         instanceId: props.instanceId,
-        approverId: userStore.id,
         action: approvalForm.value.action,
         remark: approvalForm.value.remark || undefined
       });
@@ -433,47 +499,59 @@
       <div class="ad-sec__hd">
         <el-icon :size="14"><Document /></el-icon>
         <span class="ad-sec__label">审批流程</span>
-        <span v-if="sortedActions.length" class="ad-sec__badge">{{ completedCount }}/{{ sortedActions.length }}</span>
+        <span v-if="groupedNodes.length" class="ad-sec__badge">{{ completedCount }}/{{ groupedNodes.length }}</span>
       </div>
 
-      <div v-if="sortedActions.length" class="ad-bar">
+      <div v-if="groupedNodes.length" class="ad-bar">
         <div class="ad-bar__fill" :style="{ width: progressPercent + '%' }" />
       </div>
 
-      <div v-if="!sortedActions.length" class="ad-tl-empty">
+      <div v-if="!groupedNodes.length" class="ad-tl-empty">
         <el-icon :size="28"><DocumentDelete /></el-icon>
         <span>暂无审批记录</span>
       </div>
 
       <div v-else class="ad-tl">
-        <div v-for="(act, idx) in sortedActions" :key="act.id.toString()" class="ad-tl__node" :data-s="getTimelineStatus(act)" :class="{ 'is-active': idx === activeNodeIndex }">
+        <div v-for="(node, idx) in groupedNodes" :key="node.nodeOrder" class="ad-tl__node" :data-s="node.status" :class="{ 'is-active': idx === activeNodeIndex }">
           <div class="ad-tl__rail">
             <span class="ad-tl__dot">
-              <el-icon v-if="getTimelineStatus(act) === 'done'" :size="13"><Check /></el-icon>
-              <el-icon v-else-if="getTimelineStatus(act) === 'reject'" :size="13"><Close /></el-icon>
-              <el-icon v-else-if="getTimelineStatus(act) === 'wait'" :size="13"><Minus /></el-icon>
+              <el-icon v-if="node.status === 'done'" :size="13"><Check /></el-icon>
+              <el-icon v-else-if="node.status === 'reject'" :size="13"><Close /></el-icon>
+              <el-icon v-else-if="node.status === 'wait'" :size="13"><Minus /></el-icon>
               <span v-else class="ad-tl__num">{{ idx + 1 }}</span>
             </span>
-            <span v-if="idx < sortedActions.length - 1" class="ad-tl__line" />
+            <span v-if="idx < groupedNodes.length - 1" class="ad-tl__line" />
           </div>
           <div class="ad-tl__body">
             <div class="ad-tl__head">
-              <span class="ad-tl__name">{{ act.nodeName }}</span>
-              <span class="ad-tag" :class="getTagClass(getTimelineStatus(act))">
-                {{ act.statusName }}
+              <span class="ad-tl__name">{{ node.nodeName }}</span>
+              <span v-if="node.isOrSign" class="ad-tag ad-tag--blue">或签</span>
+              <span class="ad-tag" :class="getTagClass(node.status)">
+                {{ node.status === "done" ? "已通过" : node.status === "reject" ? "已驳回" : node.status === "active" ? "审批中" : "待审批" }}
               </span>
             </div>
-            <div class="ad-tl__meta">
-              <el-icon :size="12"><User /></el-icon>
-              {{ act.approverName || "待分配" }}
-            </div>
-            <div v-if="act.operateTime" class="ad-tl__meta">
-              <el-icon :size="12"><Clock /></el-icon>
-              {{ act.operateTime }}
-            </div>
-            <div v-if="act.remark" class="ad-tl__remark">
-              <el-icon :size="12"><ChatLineSquare /></el-icon>
-              <span>{{ act.remark }}</span>
+
+            <!-- 审批人列表 -->
+            <div class="ad-tl__approvers">
+              <div v-for="act in node.actions" :key="act.id.toString()" class="ad-tl__approver" :data-s="getActionStatus(act)">
+                <div class="ad-tl__approver-main">
+                  <span class="ad-tl__approver-avatar">
+                    <el-icon :size="12"><User /></el-icon>
+                  </span>
+                  <span class="ad-tl__approver-name">{{ act.approverName || "待分配" }}</span>
+                  <span class="ad-tl__approver-status" :class="getTagClass(getActionStatus(act))">
+                    {{ act.statusName }}
+                  </span>
+                </div>
+                <div v-if="act.operateTime" class="ad-tl__approver-time">
+                  <el-icon :size="11"><Clock /></el-icon>
+                  {{ act.operateTime }}
+                </div>
+                <div v-if="act.remark" class="ad-tl__approver-remark">
+                  <el-icon :size="11"><ChatLineSquare /></el-icon>
+                  <span>{{ act.remark }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -484,9 +562,9 @@
 
 <style scoped lang="scss">
   /* =============================================
-   Tokens — 全部基于 Element Plus CSS 变量
-   深色模式自动跟随 EP dark theme
-   ============================================= */
+Tokens — 全部基于 Element Plus CSS 变量
+深色模式自动跟随 EP dark theme
+============================================= */
   .ad {
     --c-green: var(--el-color-success);
     --c-green-dim: var(--el-color-success-light-9);
@@ -498,34 +576,15 @@
     --c-blue-dim: var(--el-color-primary-light-9);
     --r: 10px;
 
-    /* 浅色模式层次体系:
-     drawer body = white → .ad 容器 = 浅灰底 → 卡片 = 白底 + 微阴影
-     深色模式: drawer body = dark → .ad 容器 = 透明 → 卡片 = overlay */
-    --ad-page: var(--el-fill-color-lighter); /* 浅色 #fafafa, 深色会被 dark 覆盖 */
-    --ad-card: #ffffff; /* 卡片底色 */
-    --ad-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
-    --ad-card-border: var(--el-border-color-lighter);
-
     font-size: 14px;
     color: var(--el-text-color-primary);
     padding: 20px;
     padding-bottom: 8px;
-    background: var(--ad-page);
-    border-radius: 4px;
-  }
-
-  /* 深色模式覆盖 —— 兼容 html.dark + .dark 两种切换方式 */
-  html.dark .ad,
-  .dark .ad {
-    --ad-page: transparent;
-    --ad-card: var(--el-bg-color-overlay);
-    --ad-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    --ad-card-border: var(--el-border-color-darker);
   }
 
   /* =============================================
-   Status Banner
-   ============================================= */
+Status Banner
+============================================= */
   .ad-banner {
     display: flex;
     align-items: center;
@@ -656,8 +715,8 @@
   }
 
   /* =============================================
-   Approval Panel
-   ============================================= */
+Approval Panel
+============================================= */
   .ad-panel {
     overflow: hidden;
     max-height: 0;
@@ -675,11 +734,10 @@
     }
 
     &__inner {
-      background: var(--ad-card);
-      border: 1px solid var(--ad-card-border);
+      background: var(--el-bg-color-overlay);
+      border: 1px solid var(--el-border-color-lighter);
       border-radius: var(--r);
       padding: 18px 20px;
-      box-shadow: var(--ad-card-shadow);
     }
 
     &__pick-item {
@@ -781,8 +839,8 @@
   }
 
   /* =============================================
-   Confirm Dialog
-   ============================================= */
+Confirm Dialog
+============================================= */
   .ad-cfm {
     display: flex;
     flex-direction: column;
@@ -825,8 +883,8 @@
   }
 
   /* =============================================
-   Section
-   ============================================= */
+Section
+============================================= */
   .ad-sec {
     margin-bottom: 4px;
   }
@@ -866,20 +924,20 @@
   }
 
   /* =============================================
-   Info Grid
-   ============================================= */
+Info Grid
+============================================= */
   .ad-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1px;
+    background: var(--el-border-color-lighter);
     border-radius: var(--r);
     overflow: hidden;
     margin-bottom: 16px;
-    box-shadow: var(--ad-card-shadow);
 
     &__cell {
       padding: 12px 16px;
-      background: var(--ad-card);
+      background: var(--el-bg-color-overlay);
       display: flex;
       flex-direction: column;
       gap: 3px;
@@ -900,14 +958,12 @@
   }
 
   /* =============================================
-   Final Remark / Divider
-   ============================================= */
+Final Remark / Divider
+============================================= */
   .ad-final {
     padding: 10px 14px;
     border-radius: 8px;
-    background: var(--ad-card);
-    border: 1px solid var(--ad-card-border);
-    box-shadow: var(--ad-card-shadow);
+    background: var(--el-bg-color-overlay);
     margin-bottom: 16px;
     display: flex;
     flex-direction: column;
@@ -932,16 +988,14 @@
   }
 
   /* =============================================
-   Tenant
-   ============================================= */
+Tenant
+============================================= */
   .ad-tenant {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    background: var(--ad-card);
-    border: 1px solid var(--ad-card-border);
-    box-shadow: var(--ad-card-shadow);
+    background: var(--el-bg-color-overlay);
     border-radius: var(--r);
     margin-bottom: 10px;
 
@@ -976,18 +1030,13 @@
   }
 
   /* =============================================
-   Data Rows
-   ============================================= */
+Data Rows
+============================================= */
   .ad-rows {
     display: flex;
     flex-direction: column;
     gap: 2px;
     margin-bottom: 16px;
-    background: var(--ad-card);
-    border: 1px solid var(--ad-card-border);
-    box-shadow: var(--ad-card-shadow);
-    border-radius: var(--r);
-    overflow: hidden;
   }
 
   .ad-row {
@@ -995,7 +1044,8 @@
     align-items: center;
     gap: 10px;
     padding: 10px 16px;
-    background: transparent;
+    border-radius: 8px;
+    background: var(--el-bg-color-overlay);
     transition: background 0.12s;
 
     &:hover {
@@ -1006,7 +1056,7 @@
       width: 30px;
       height: 30px;
       border-radius: 8px;
-      background: var(--el-fill-color-light);
+      background: var(--el-fill-color);
       display: grid;
       place-items: center;
       color: var(--el-text-color-placeholder);
@@ -1028,6 +1078,7 @@
 
     &--hl {
       background: var(--c-red-dim);
+      border: 1px solid rgba(239, 91, 91, 0.08);
       .ad-row__ico {
         background: rgba(239, 91, 91, 0.12);
         color: var(--c-red);
@@ -1055,8 +1106,8 @@
   }
 
   /* =============================================
-   Progress Bar
-   ============================================= */
+Progress Bar
+============================================= */
   .ad-bar {
     height: 3px;
     border-radius: 2px;
@@ -1073,8 +1124,8 @@
   }
 
   /* =============================================
-   Tags
-   ============================================= */
+Tags
+============================================= */
   .ad-tag {
     display: inline-flex;
     align-items: center;
@@ -1099,11 +1150,15 @@
       background: var(--el-fill-color);
       color: var(--el-text-color-secondary);
     }
+    &--blue {
+      background: var(--c-blue-dim);
+      color: var(--c-blue);
+    }
   }
 
   /* =============================================
-   Timeline
-   ============================================= */
+Timeline
+============================================= */
   .ad-tl-empty {
     display: flex;
     flex-direction: column;
@@ -1148,8 +1203,8 @@
     font-weight: 800;
     z-index: 1;
     transition: all 0.2s;
-    border: 2px solid var(--el-border-color-lighter);
-    background: var(--ad-card);
+    border: 2px solid var(--el-fill-color);
+    background: var(--el-bg-color-overlay);
     color: var(--el-text-color-placeholder);
   }
 
@@ -1209,7 +1264,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 6px;
+    margin-bottom: 10px;
   }
 
   .ad-tl__name {
@@ -1218,41 +1273,104 @@
     color: var(--el-text-color-primary);
   }
 
-  .ad-tl__meta {
+  /* =============================================
+Approvers List (或签审批人列表)
+============================================= */
+  .ad-tl__approvers {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ad-tl__approver {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--el-fill-color-light);
+    border-left: 3px solid var(--el-border-color);
+    transition: all 0.15s;
+
+    &[data-s="done"] {
+      border-left-color: var(--c-green);
+      background: var(--c-green-dim);
+    }
+    &[data-s="reject"] {
+      border-left-color: var(--c-red);
+      background: var(--c-red-dim);
+    }
+    &[data-s="active"] {
+      border-left-color: var(--c-amber);
+      background: var(--c-amber-dim);
+    }
+  }
+
+  .ad-tl__approver-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ad-tl__approver-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--el-bg-color-overlay);
+    display: grid;
+    place-items: center;
+    color: var(--el-text-color-secondary);
+    flex-shrink: 0;
+  }
+
+  .ad-tl__approver-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+    flex: 1;
+  }
+
+  .ad-tl__approver-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .ad-tl__approver-time {
     display: flex;
     align-items: center;
     gap: 4px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-    margin-top: 3px;
+    margin-top: 6px;
+    padding-left: 30px;
+
     .el-icon {
-      opacity: 0.5;
+      opacity: 0.6;
     }
   }
 
-  .ad-tl__remark {
+  .ad-tl__approver-remark {
     display: flex;
     align-items: flex-start;
-    gap: 5px;
-    margin-top: 8px;
-    padding: 8px 10px;
-    border-radius: 6px;
-    background: var(--el-fill-color-light);
+    gap: 4px;
+    margin-top: 6px;
+    padding: 6px 8px;
+    margin-left: 30px;
+    border-radius: 4px;
+    background: var(--el-bg-color-overlay);
     font-size: 12px;
     color: var(--el-text-color-secondary);
-    line-height: 1.6;
-    border-left: 3px solid var(--el-border-color-lighter);
+    line-height: 1.5;
 
     .el-icon {
       flex-shrink: 0;
-      margin-top: 3px;
-      opacity: 0.5;
+      margin-top: 2px;
+      opacity: 0.6;
     }
   }
 
   /* =============================================
-   Animation
-   ============================================= */
+Animation
+============================================= */
   @keyframes ad-pulse {
     0%,
     100% {
