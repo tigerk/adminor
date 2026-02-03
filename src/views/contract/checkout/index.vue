@@ -2,7 +2,7 @@
   import { ref } from "vue";
   import { useCheckout } from "./utils/hook";
   import type { FormInstance } from "element-plus";
-  import { CHECKOUT_TYPE_OPTIONS, DEDUCTION_FEE_TYPE_OPTIONS, FEE_DIRECTION_ENUM, REFUND_FEE_TYPE_OPTIONS } from "@types";
+  import { CHECKOUT_TYPE_OPTIONS, DEDUCTION_FEE_TYPE_OPTIONS, FEE_DIRECTION_ENUM, REFUND_FEE_TYPE_OPTIONS } from "@/types";
   import { checkoutFormRules } from "./utils/rule";
 
   defineOptions({

@@ -6,7 +6,7 @@ import {
   CHECKOUT_FEE_TYPE_ENUM,
   CHECKOUT_STATUS_ENUM,
   type CheckoutDetailProps,
-  CheckoutFeeProps,
+  type CheckoutFeeProps,
   type CheckoutFormProps,
   type CheckoutInitDataProps,
   FEE_DIRECTION_ENUM
@@ -21,9 +21,9 @@ export function useCheckout() {
   const submitting = ref(false);
 
   // 租客ID
-  const tenantId = computed(() => Number(route.query.tenantId) || 0);
+  const tenantId = computed(() => String(route.query.tenantId) || "");
   // 退租单ID（编辑时）
-  const checkoutId = computed(() => Number(route.query.id) || 0);
+  const checkoutId = computed(() => String(route.query.id) || "");
   // 是否编辑模式
   const isEdit = computed(() => !!checkoutId.value);
 
@@ -36,7 +36,7 @@ export function useCheckout() {
   // 表单数据
   const form = reactive<CheckoutFormProps>({
     id: undefined,
-    tenantId: 0,
+    tenantId: "",
     checkoutType: null,
     checkoutReason: "",
     actualCheckoutDate: "",
@@ -169,7 +169,7 @@ export function useCheckout() {
   /** 添加费用 */
   function addFee(fee?: Partial<CheckoutFeeProps>) {
     form.feeList.push({
-      billType: fee?.billType || 0,
+      feeType: fee?.feeType || 0,
       feeName: fee?.feeName || "",
       feeAmount: fee?.feeAmount || 0,
       feeDirection: fee?.feeDirection || FEE_DIRECTION_ENUM.DEDUCTION,

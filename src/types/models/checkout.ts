@@ -108,7 +108,7 @@ export interface UnpaidBillProps {
 /** 退租费用明细 */
 export interface CheckoutFeeProps {
   id?: string;
-  billType: number;
+  feeType: number;
   feeName: string;
   feeAmount: number;
   feeDirection: number;
@@ -157,20 +157,6 @@ export interface CheckoutDetailProps {
   createBy: string;
   createByName: string;
   createTime: string;
-}
-
-/** 退租费用 VO */
-export interface CheckoutFeeProps {
-  id: string;
-  checkoutId: string;
-  feeType: number;
-  feeTypeName: string;
-  feeName: string;
-  feeAmount: number;
-  feeDirection: number;
-  feeDirectionName: string;
-  billId?: string;
-  remark?: string;
 }
 
 /** 退租单查询参数 */
