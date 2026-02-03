@@ -15,8 +15,8 @@
   import Setting from "~icons/ri/settings-3-line";
   import Check from "~icons/ep/check";
 
-  import FunctionMenu from "@/components/Business/FunctionMenu.vue";
   import CompanySwitcher from "./components/CompanySwitcher.vue"; // 引入公司切换组件
+  import FunctionMenu from "./components/FunctionMenu.vue";
 
   const { layout, device, logout, onPanel, pureApp, username, userAvatar, avatarsStyle, toggleSideBar, toAccountSettings, getDropdownItemStyle, getDropdownItemClass } = useNav();
 
