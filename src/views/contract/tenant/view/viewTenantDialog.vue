@@ -94,7 +94,7 @@
                 </template>
                 <template #extra>
                   <el-tooltip class="box-item" effect="dark" content="修改租客信息，包括姓名、联系电话、证件类型、证件号码等。" placement="top">
-                    <el-button type="primary" size="small" :icon="Edit" :disabled="!allowEdit(localFormInline.status)" @click="editTenant(localFormInline)">修改租客</el-button>
+                    <el-button type="primary" size="small" :icon="Edit" :disabled="!allowEdit(localFormInline.status)" @click="editTenant(localFormInline)">修改租约</el-button>
                   </el-tooltip>
                 </template>
                 <el-descriptions-item label="姓名" label-align="right">
@@ -352,7 +352,7 @@
                     <el-button type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
                     <el-popconfirm title="确认将合同状态改为已签约吗？" @confirm="handleSignContract">
                       <template #reference>
-                        <el-button type="primary" :icon="Checked">改为已签约</el-button>
+                        <el-button type="primary" :disabled="!allowChangeSignStatus(localFormInline.status)" :icon="Checked">改为已签约</el-button>
                       </template>
                     </el-popconfirm>
                   </el-space>
@@ -577,12 +577,20 @@
     });
   };
 
-  const allowEdit = status => {
+  const allowEdit = (status: number) => {
     // 如果是只读模式，直接返回 false
     if (props.readonly) {
       return false;
     }
-    return !(status === TENANT_STATUS_ENUM.TERMINATED.code || status === TENANT_STATUS_ENUM.CANCELLED.code);
+    return !(status === TENANT_STATUS_ENUM.TERMINATED.code || status === TENANT_STATUS_ENUM.EFFECTIVE.code);
+  };
+
+  const allowChangeSignStatus = (status: number) => {
+    // 如果是只读模式，直接返回 false
+    if (props.readonly) {
+      return false;
+    }
+    return status === TENANT_STATUS_ENUM.TO_SIGN.code;
   };
 
   const editTenant = (row: TenantDetailProps) => {

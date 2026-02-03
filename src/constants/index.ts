@@ -238,20 +238,27 @@ export const FIRST_BILL_DAY_OPTIONS = [
   { label: "跟随合同创建日", value: 1 }
 ] as const;
 
-/* 租客状态枚举 */
+/* 租客状态枚举
+ * 租客状态：0=待审批，1=待签字，2=在租中，3=已退租，-1=已作废
+ */
 export const TENANT_STATUS_ENUM = {
-  TO_SIGN: {
+  PENDING_APPROVAL: {
     code: 0,
+    name: "待审批",
+    color: "#FF2800"
+  },
+  TO_SIGN: {
+    code: 1,
     name: "待签字",
     color: "#FF2800"
   },
   EFFECTIVE: {
-    code: 1,
+    code: 2,
     name: "在租中",
     color: "#52C41A"
   },
   TERMINATED: {
-    code: 2,
+    code: 3,
     name: "已退租",
     color: "#EAA212"
   },
