@@ -316,7 +316,7 @@
     color: white;
     background: linear-gradient(135deg, #e13c39 0%, #764ba2 100%);
     border: none;
-    border-radius: 16px;
+    border-radius: 8px;
     box-shadow: 0 2px 8px rgb(102 126 234 / 30%);
     transition: all 0.3s ease;
 

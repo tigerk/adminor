@@ -14,57 +14,13 @@
   import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
   import Setting from "~icons/ri/settings-3-line";
   import Check from "~icons/ep/check";
-  import { ref } from "vue";
 
-  import { setToken } from "@/utils/auth";
-  import { switchCompany } from "@/api/login";
-  import { ElMessage } from "element-plus";
+  import FunctionMenu from "@/components/Business/FunctionMenu.vue";
+  import CompanySwitcher from "./components/CompanySwitcher.vue"; // 引入公司切换组件
 
-  import { message } from "@/utils/message";
-  import FunctionMenu from "@/components/Business/FunctionMenu.vue"; // 导入功能菜单组件
-
-  const {
-    layout,
-    device,
-    logout,
-    onPanel,
-    pureApp,
-    username,
-    userAvatar,
-    avatarsStyle,
-    toggleSideBar,
-    toAccountSettings,
-    getDropdownItemStyle,
-    getDropdownItemClass,
-    getCurCompanyId,
-    getCompanyList
-  } = useNav();
-  const selectedCompanyId = ref<any>(getCurCompanyId);
-  console.log("current login companyId:" + selectedCompanyId.value);
-
-  const currentCompanyName = getCompanyList.value.find(item => item.companyId === selectedCompanyId.value)?.companyName || "";
+  const { layout, device, logout, onPanel, pureApp, username, userAvatar, avatarsStyle, toggleSideBar, toAccountSettings, getDropdownItemStyle, getDropdownItemClass } = useNav();
 
   const { t, locale, translationCh, translationTw, translationEn, translationJa, translationKo } = useTranslationLang();
-
-  // 处理公司切换事件
-  const handleCompanyChange = (companyId: string) => {
-    if (companyId) {
-      // 实现切换公司的逻辑，比如调用API等
-      console.log("Switching to company:", companyId);
-      // 示例：调用API切换公司
-      switchCompany({ companyId: companyId }).then(r => {
-        if (r.code == 0) {
-          setToken(r.data);
-          message("正在切换公司，请稍后...", {
-            duration: 2000
-          });
-          window.location.reload();
-        } else {
-          ElMessage.error(r.message);
-        }
-      });
-    }
-  };
 </script>
 
 <template>
@@ -76,27 +32,8 @@
     <LayNavMix v-if="layout === 'mix'" />
 
     <div v-if="/vertical|double/.test(layout)" class="vertical-header-right">
-      <!-- 公司切换下拉菜单 -->
-      <el-dropdown trigger="click" split-button class="company-dropdown">
-        {{ currentCompanyName }}
-        <template #dropdown>
-          <el-dropdown-menu class="company-menu">
-            <el-dropdown-item
-              v-for="item in getCompanyList"
-              :key="item.companyId"
-              :class="{ 'is-selected': item.companyId === selectedCompanyId }"
-              @click="handleCompanyChange(item.companyId)"
-            >
-              <div class="company-item">
-                <span class="company-name">{{ item.companyName }}</span>
-                <el-icon v-if="item.companyId === selectedCompanyId" class="check-icon" color="#409EFF">
-                  <Check />
-                </el-icon>
-              </div>
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+      <!-- 公司切换组件 -->
+      <CompanySwitcher />
 
       <!-- 功能菜单 -->
       <FunctionMenu :style="{ marginLeft: '15px' }" />
@@ -235,82 +172,6 @@
       display: inline-flex;
       flex-wrap: wrap;
       min-width: 100%;
-    }
-  }
-
-  .company-dropdown {
-    .company-selector {
-      cursor: pointer;
-      padding: 8px 12px;
-      border-radius: 4px;
-      background: #f5f7fa;
-      min-width: 200px;
-
-      .company-title {
-        display: block;
-        font-size: 12px;
-        color: #666;
-        margin-bottom: 4px;
-      }
-
-      .company-current {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 14px;
-        color: #333;
-
-        .arrow-icon {
-          margin-left: 8px;
-          transition: transform 0.3s;
-        }
-      }
-
-      &:hover {
-        background: #e6f7ff;
-
-        .arrow-icon {
-          transform: rotate(180deg);
-        }
-      }
-    }
-  }
-
-  .company-menu {
-    min-width: 150px;
-
-    ::v-deep(.el-dropdown-menu__item) {
-      padding: 0;
-
-      &.is-selected {
-        background: #e6f7ff;
-        color: #409eff;
-      }
-
-      .company-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 12px 16px;
-
-        .company-name {
-          flex: 1;
-          font-size: 14px;
-        }
-
-        .check-icon {
-          font-size: 16px;
-        }
-
-        .forbidden-btn {
-          font-size: 12px;
-          padding: 2px 8px;
-          height: 24px;
-          border-color: #d9d9d9;
-          color: #666;
-        }
-      }
     }
   }
 </style>
