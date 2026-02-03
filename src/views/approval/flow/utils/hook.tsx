@@ -196,8 +196,8 @@ export function useApprovalFlow() {
   }
 
   onMounted(() => {
-    onSearch();
-    loadBizTypeOptions();
+    onSearch().then();
+    loadBizTypeOptions().then();
   });
 
   return {

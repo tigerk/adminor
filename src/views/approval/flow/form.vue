@@ -99,6 +99,11 @@
     });
   }
 
+  // 审批人类型切换时清空已选
+  function onApproverTypeChange(node: any) {
+    node.approverIds = [];
+  }
+
   function getRef() {
     return ruleFormRef.value;
   }
@@ -141,7 +146,7 @@
           </el-form-item>
 
           <el-form-item label="审批人" label-width="80px" style="margin-bottom: 12px">
-            <el-radio-group v-model="node.approverType">
+            <el-radio-group v-model="node.approverType" @change="() => onApproverTypeChange(node)">
               <el-radio v-for="item in approverTypeOptions" :key="item.value" :value="item.value">
                 {{ item.label }}
               </el-radio>

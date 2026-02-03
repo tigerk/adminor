@@ -20,12 +20,12 @@ export const saveApprovalFlow = (data: any) => {
 };
 
 // 删除审批流程
-export const deleteApprovalFlow = (flowId: number) => {
+export const deleteApprovalFlow = (flowId: bigint) => {
   return http.request<ApiResponse>("post", baseUrlApi("approval/flow/delete"), { data: { flowId } });
 };
 
 // 启用/停用审批流程
-export const toggleApprovalFlowStatus = (flowId: number) => {
+export const toggleApprovalFlowStatus = (flowId: bigint) => {
   return http.request<ApiResponse>("post", baseUrlApi("approval/flow/toggle"), { data: { flowId } });
 };
 
