@@ -187,3 +187,115 @@
     background: rgb(199 201 203); /* 滑块hover颜色 */
   }
 }
+
+// ==========================================
+// 操作列下拉菜单美化（仅针对 .action-dropdown）
+// ==========================================
+
+.action-dropdown.el-popper {
+  --dropdown-padding: 6px;
+  --dropdown-radius: 10px;
+  --dropdown-item-radius: 6px;
+  --dropdown-item-padding: 8px 14px;
+  --dropdown-item-gap: 8px;
+
+  border-radius: var(--dropdown-radius) !important;
+  border: 1px solid var(--el-border-color-lighter) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+
+  .el-dropdown-menu {
+    padding: var(--dropdown-padding) !important;
+
+    // 修复滚动条问题
+    &.el-scrollbar {
+      max-height: none;
+    }
+  }
+
+  .el-scrollbar__wrap {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .el-scrollbar__bar {
+    display: none;
+  }
+
+  .el-dropdown-menu__item {
+    padding: var(--dropdown-item-padding) !important;
+    margin: 2px 0 !important;
+    border-radius: var(--dropdown-item-radius) !important;
+    line-height: 1.4 !important;
+
+    // 关键：确保内容不换行，图标和文字在一行
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--dropdown-item-gap) !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+
+    // 重置内部 button 样式
+    .el-button {
+      padding: 0 !important;
+      height: auto !important;
+      border: none !important;
+      background: transparent !important;
+      color: inherit !important;
+
+      span {
+        display: flex !important;
+        align-items: center !important;
+        gap: var(--dropdown-item-gap) !important;
+        white-space: nowrap !important;
+      }
+
+      i, .el-icon {
+        margin: 0 !important;
+      }
+    }
+
+    // 图标样式
+    .action-icon,
+    i:first-child,
+    .el-icon:first-child {
+      flex-shrink: 0 !important;
+      width: 16px !important;
+      height: 16px !important;
+      font-size: 16px !important;
+      margin-right: 0 !important;
+    }
+
+    // 悬停效果
+    &:not(.is-disabled):hover {
+      background: var(--el-color-primary-light-9) !important;
+      color: var(--el-color-primary) !important;
+    }
+
+    // 危险操作
+    &.danger-item {
+      color: var(--el-color-danger);
+
+      &:hover {
+        background: var(--el-color-danger-light-9) !important;
+        color: var(--el-color-danger) !important;
+      }
+    }
+  }
+
+  // 暗色模式适配
+  .dark & {
+    background: var(--el-bg-color-overlay) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+
+    .el-dropdown-menu__item {
+      &:not(.is-disabled):hover {
+        background: rgba(64, 158, 255, 0.12) !important;
+      }
+
+      &.danger-item:hover {
+        background: rgba(245, 108, 108, 0.12) !important;
+      }
+    }
+  }
+}

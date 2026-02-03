@@ -82,10 +82,16 @@
         <template #operation="{ row }">
           <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="openTenantViewDialog('查看租客', row)">查看</el-button>
           <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(Printer)" @click="handlePreview(row)">预览合同</el-button>
-          <el-dropdown :hide-on-click="false">
+          <el-dropdown :hide-on-click="false" popper-class="action-dropdown">
             <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item @click="handleTenantRenew(row)">
+                  <el-button link :icon="useRenderIcon(EpCollection)">租客续约</el-button>
+                </el-dropdown-item>
+                <el-dropdown-item @click="handleTenantCheckout(row)">
+                  <el-button link :icon="useRenderIcon(EpRemove)">租客退租</el-button>
+                </el-dropdown-item>
                 <el-dropdown-item @click="handleConfirmDelete(row)">
                   <el-button link :icon="useRenderIcon(Delete)">作废</el-button>
                 </el-dropdown-item>
@@ -114,6 +120,8 @@
   import User from "~icons/ep/user";
   import Phone from "~icons/ep/phone";
   import Delete from "~icons/ep/delete";
+  import EpCollection from "~icons/ep/collection";
+  import EpRemove from "~icons/ep/remove";
   import More from "~icons/ep/more-filled";
   import { TenantRowProps } from "@/types";
   import { cancelTenant, previewTenantContract } from "@/api/contract/tenant";
@@ -175,6 +183,13 @@
         message("作废租客失败", { type: "error" });
       });
   };
+
+  /** 租客退租 */
+  const handleTenantCheckout = row => {};
+
+  /** 租客续约 */
+  const handleTenantRenew = row => {};
+
   const previewVisible = ref(false);
   const pdfUrl = ref("");
   function handlePreview(row: any) {
