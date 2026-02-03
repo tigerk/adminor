@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, computed } from "vue";
+  import { computed, ref } from "vue";
   import { ArrowDown, OfficeBuilding } from "@element-plus/icons-vue";
   import Check from "~icons/ep/check";
   import { ElMessage } from "element-plus";
@@ -69,6 +69,9 @@
 </template>
 
 <style lang="scss" scoped>
+  // 使用 vue-pure-admin 主题色变量: --el-color-primary
+  // 主题色切换时会自动跟随变化
+
   .company-dropdown {
     margin-right: 8px;
 
@@ -80,14 +83,15 @@
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--el-color-primary);
       color: #fff;
       font-weight: 500;
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--el-color-primary) 40%, transparent);
 
       &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        background: var(--el-color-primary-dark-2);
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--el-color-primary) 50%, transparent);
       }
 
       &:active {
@@ -170,19 +174,19 @@
       }
 
       &:hover {
-        background: #f5f7ff !important;
+        background: var(--el-color-primary-light-9) !important;
       }
 
       &.is-active {
-        background: linear-gradient(135deg, #e8ecff 0%, #f3e8ff 100%) !important;
+        background: var(--el-color-primary-light-8) !important;
 
         .company-name {
-          color: #667eea;
+          color: var(--el-color-primary);
           font-weight: 600;
         }
 
         .company-avatar {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: var(--el-color-primary);
           color: #fff;
         }
       }
@@ -198,8 +202,8 @@
           width: 32px;
           height: 32px;
           border-radius: 8px;
-          background: #e8ecff;
-          color: #667eea;
+          background: var(--el-color-primary-light-8);
+          color: var(--el-color-primary);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -220,7 +224,7 @@
         }
 
         .check-icon {
-          color: #667eea;
+          color: var(--el-color-primary);
           font-size: 16px;
           flex-shrink: 0;
           animation: checkIn 0.3s ease;
@@ -244,44 +248,62 @@
   html.dark {
     .company-dropdown {
       .company-trigger {
-        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        background: var(--el-color-primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+        &:hover {
+          background: var(--el-color-primary-light-3);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
       }
     }
 
     .company-dropdown-popper {
       &.el-dropdown__popper {
+        box-shadow:
+          0 10px 40px rgba(0, 0, 0, 0.5),
+          0 2px 10px rgba(0, 0, 0, 0.3) !important;
+
         .el-dropdown-menu {
-          background: #1f1f1f;
+          background: #1f2937;
         }
       }
 
       .menu-header {
         background: #262626;
-        border-bottom-color: #333;
-        color: #8c8c8c;
+        border-bottom-color: #374151;
+        color: #9ca3af;
       }
 
       .company-option {
         &:hover {
-          background: #2a2a3d !important;
+          background: #374151 !important;
         }
 
         &.is-active {
-          background: linear-gradient(135deg, #2d2d4a 0%, #352d4a 100%) !important;
+          background: color-mix(in srgb, var(--el-color-primary) 20%, #1f2937) !important;
 
           .company-avatar {
-            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            background: var(--el-color-primary);
+          }
+
+          .company-name {
+            color: var(--el-color-primary-light-3);
           }
         }
 
         .company-item {
           .company-avatar {
-            background: #2d2d4a;
-            color: #818cf8;
+            background: #374151;
+            color: var(--el-color-primary-light-3);
           }
 
           .company-name {
             color: #e5e5e5;
+          }
+
+          .check-icon {
+            color: var(--el-color-primary-light-3);
           }
         }
       }

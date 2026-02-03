@@ -20,7 +20,7 @@
             <div class="group-title">合同管理</div>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('tenant-contract')">
               <div class="menu-content">
-                <div class="icon-wrapper orange">
+                <div class="icon-wrapper primary">
                   <el-icon><Document /></el-icon>
                 </div>
                 <span class="menu-text">租客合同</span>
@@ -28,7 +28,7 @@
             </el-dropdown-item>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('owner-contract')">
               <div class="menu-content">
-                <div class="icon-wrapper blue">
+                <div class="icon-wrapper primary-light">
                   <el-icon><DocumentChecked /></el-icon>
                 </div>
                 <span class="menu-text">房东合同</span>
@@ -41,7 +41,7 @@
             <div class="group-title">房源管理</div>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('shared-rental')">
               <div class="menu-content">
-                <div class="icon-wrapper purple">
+                <div class="icon-wrapper success">
                   <el-icon><Calendar /></el-icon>
                 </div>
                 <span class="menu-text">合租房源</span>
@@ -49,7 +49,7 @@
             </el-dropdown-item>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('whole-rental')">
               <div class="menu-content">
-                <div class="icon-wrapper blue">
+                <div class="icon-wrapper primary">
                   <el-icon><House /></el-icon>
                 </div>
                 <span class="menu-text">整租房源</span>
@@ -57,7 +57,7 @@
             </el-dropdown-item>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('standalone-project')">
               <div class="menu-content">
-                <div class="icon-wrapper green">
+                <div class="icon-wrapper warning">
                   <el-icon><OfficeBuilding /></el-icon>
                 </div>
                 <span class="menu-text">集中式项目</span>
@@ -70,7 +70,7 @@
             <div class="group-title">客户管理</div>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('potential-customer')">
               <div class="menu-content">
-                <div class="icon-wrapper cyan">
+                <div class="icon-wrapper info">
                   <el-icon><User /></el-icon>
                 </div>
                 <span class="menu-text">潜在客户</span>
@@ -78,7 +78,7 @@
             </el-dropdown-item>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('potential-owner')">
               <div class="menu-content">
-                <div class="icon-wrapper orange">
+                <div class="icon-wrapper warning">
                   <el-icon><UserFilled /></el-icon>
                 </div>
                 <span class="menu-text">潜在业主</span>
@@ -86,7 +86,7 @@
             </el-dropdown-item>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('reservation')">
               <div class="menu-content">
-                <div class="icon-wrapper pink">
+                <div class="icon-wrapper danger">
                   <el-icon><Edit /></el-icon>
                 </div>
                 <span class="menu-text">办预定</span>
@@ -99,7 +99,7 @@
             <div class="group-title">工单服务</div>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('billing')">
               <div class="menu-content">
-                <div class="icon-wrapper green">
+                <div class="icon-wrapper success">
                   <el-icon><Tickets /></el-icon>
                 </div>
                 <span class="menu-text">账单</span>
@@ -107,7 +107,7 @@
             </el-dropdown-item>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('maintenance')">
               <div class="menu-content">
-                <div class="icon-wrapper orange">
+                <div class="icon-wrapper warning">
                   <el-icon><Tools /></el-icon>
                 </div>
                 <span class="menu-text">维修</span>
@@ -115,7 +115,7 @@
             </el-dropdown-item>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('cleaning')">
               <div class="menu-content">
-                <div class="icon-wrapper cyan">
+                <div class="icon-wrapper info">
                   <el-icon><Brush /></el-icon>
                 </div>
                 <span class="menu-text">保洁</span>
@@ -123,7 +123,7 @@
             </el-dropdown-item>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('delivery')">
               <div class="menu-content">
-                <div class="icon-wrapper blue">
+                <div class="icon-wrapper primary">
                   <el-icon><Van /></el-icon>
                 </div>
                 <span class="menu-text">配货</span>
@@ -263,6 +263,9 @@
 </script>
 
 <style lang="scss" scoped>
+  // 使用 vue-pure-admin 主题色变量
+  // 主题色切换时会自动跟随变化
+
   .function-menu-container {
     display: inline-block;
   }
@@ -271,26 +274,26 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    height: 33px;
+    height: 32px;
     padding: 0 14px;
     font-size: 13px;
     font-weight: 500;
     color: #fff;
-    background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
+    background: var(--el-color-primary);
     border: none;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(244, 63, 94, 0.35);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--el-color-primary) 40%, transparent);
     transition: all 0.25s ease;
 
     &:hover {
-      background: linear-gradient(135deg, #e11d48 0%, #db2777 100%);
-      box-shadow: 0 4px 16px rgba(244, 63, 94, 0.45);
+      background: var(--el-color-primary-dark-2);
+      box-shadow: 0 4px 16px color-mix(in srgb, var(--el-color-primary) 50%, transparent);
       transform: translateY(-1px);
     }
 
     &:active {
       transform: translateY(0);
-      box-shadow: 0 2px 8px rgba(244, 63, 94, 0.35);
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--el-color-primary) 40%, transparent);
     }
 
     .trigger-icon {
@@ -378,15 +381,15 @@
       transition: all 0.2s ease;
 
       &:hover {
-        background: #f8fafc !important;
+        background: var(--el-color-primary-light-9) !important;
 
         .menu-content .menu-text {
-          color: #1f2937;
+          color: var(--el-color-primary);
         }
       }
 
       &:active {
-        background: #f1f5f9 !important;
+        background: var(--el-color-primary-light-8) !important;
       }
 
       .menu-content {
@@ -421,40 +424,40 @@
             }
           }
 
-          // 图标颜色
-          &.orange {
-            background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-            box-shadow: 0 2px 6px rgba(249, 115, 22, 0.3);
+          // 使用 Element Plus 主题色变量
+          &.primary {
+            background: var(--el-color-primary);
+            box-shadow: 0 2px 6px color-mix(in srgb, var(--el-color-primary) 40%, transparent);
           }
 
-          &.blue {
-            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+          &.primary-light {
+            background: var(--el-color-primary-light-3);
+            box-shadow: 0 2px 6px color-mix(in srgb, var(--el-color-primary) 30%, transparent);
           }
 
-          &.green {
-            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-            box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
+          &.success {
+            background: var(--el-color-success);
+            box-shadow: 0 2px 6px color-mix(in srgb, var(--el-color-success) 40%, transparent);
           }
 
-          &.cyan {
-            background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
-            box-shadow: 0 2px 6px rgba(6, 182, 212, 0.3);
+          &.warning {
+            background: var(--el-color-warning);
+            box-shadow: 0 2px 6px color-mix(in srgb, var(--el-color-warning) 40%, transparent);
           }
 
-          &.purple {
-            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-            box-shadow: 0 2px 6px rgba(139, 92, 246, 0.3);
+          &.danger {
+            background: var(--el-color-danger);
+            box-shadow: 0 2px 6px color-mix(in srgb, var(--el-color-danger) 40%, transparent);
           }
 
-          &.pink {
-            background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
-            box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3);
+          &.info {
+            background: var(--el-color-info);
+            box-shadow: 0 2px 6px color-mix(in srgb, var(--el-color-info) 40%, transparent);
           }
 
           &.gray {
-            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
-            box-shadow: 0 2px 6px rgba(107, 114, 128, 0.3);
+            background: #9ca3af;
+            box-shadow: 0 2px 6px rgba(156, 163, 175, 0.4);
           }
         }
 
@@ -477,12 +480,12 @@
   /* ========== 暗黑模式适配 ========== */
   html.dark {
     .function-menu-trigger {
-      background: linear-gradient(135deg, #be123c 0%, #be185d 100%);
-      box-shadow: 0 2px 8px rgba(190, 18, 60, 0.4);
+      background: var(--el-color-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 
       &:hover {
-        background: linear-gradient(135deg, #9f1239 0%, #9d174d 100%);
-        box-shadow: 0 4px 16px rgba(190, 18, 60, 0.5);
+        background: var(--el-color-primary-light-3);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
       }
     }
 
@@ -520,7 +523,7 @@
           background: #374151 !important;
 
           .menu-content .menu-text {
-            color: #f9fafb;
+            color: var(--el-color-primary-light-3);
           }
         }
 
@@ -530,33 +533,8 @@
 
         .menu-content {
           .icon-wrapper {
-            // 暗黑模式下图标更亮
-            &.orange {
-              background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            }
-
-            &.blue {
-              background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            }
-
-            &.green {
-              background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            }
-
-            &.cyan {
-              background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-            }
-
-            &.purple {
-              background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-            }
-
-            &.pink {
-              background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
-            }
-
             &.gray {
-              background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+              background: #6b7280;
             }
           }
 
