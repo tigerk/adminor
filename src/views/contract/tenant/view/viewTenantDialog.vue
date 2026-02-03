@@ -341,74 +341,15 @@
               </el-tag>
             </el-space>
           </template>
-          <div class="tab-content">
-            <!-- 有合同信息时显示 -->
-            <div v-if="localFormInline.tenantContract" class="contract-section">
-              <!-- 操作按钮栏 -->
-              <div class="contract-action-bar">
-                <div class="action-left">
-                  <el-space :size="12">
-                    <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
-                    <el-button type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
-                    <el-popconfirm title="确认将合同状态改为已签约吗？" @confirm="handleSignContract">
-                      <template #reference>
-                        <el-button type="primary" :disabled="!allowChangeSignStatus(localFormInline.status)" :icon="Checked">改为已签约</el-button>
-                      </template>
-                    </el-popconfirm>
-                  </el-space>
-                </div>
-                <div class="action-right">
-                  <el-space :size="16" alignment="flex-end">
-                    <div class="info-item">
-                      <span class="info-label">合同模板：</span>
-                      <span class="info-value">{{ localFormInline.tenantContract.contractTemplateName || "未设置" }}</span>
-                    </div>
-                    <div class="info-item">
-                      <span class="info-label">签约状态：</span>
-                      <el-tag :type="localFormInline.tenantContract.signStatus === 0 ? 'danger' : 'success'" size="small">
-                        {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === localFormInline.tenantContract.signStatus)?.label || "未知" }}
-                      </el-tag>
-                    </div>
-                    <div class="info-item">
-                      <span class="info-label">创建时间：</span>
-                      <span class="info-value">{{ localFormInline.createTime }}</span>
-                    </div>
-                  </el-space>
-                </div>
-              </div>
-              <!-- 合同信息摘要 -->
-              <div v-if="localFormInline.tenantContract.remark" class="mb-2">
-                <el-descriptions :column="1" size="default">
-                  <el-descriptions-item label="合同备注" label-align="right">
-                    <span class="text-value">{{ localFormInline.tenantContract.remark }}</span>
-                  </el-descriptions-item>
-                </el-descriptions>
-              </div>
-
-              <!-- 合同内容预览区域 -->
-              <div v-if="localFormInline.tenantContract.contractContent" class="contract-content-section">
-                <div class="contract-header">
-                  <span class="contract-title">合同内容</span>
-                  <el-tag type="info" size="small">预览模式</el-tag>
-                </div>
-                <div class="contract-preview-wrapper">
-                  <div class="contract-preview" v-html="localFormInline.tenantContract.contractContent" />
-                </div>
-              </div>
-
-              <!-- 合同内容为空时 -->
-              <div v-else class="no-content">
-                <el-empty description="合同内容为空" :image-size="120">
-                  <el-button type="primary" :icon="Document" @click="handleGenerateContract">生成合同内容</el-button>
-                </el-empty>
-              </div>
-            </div>
-
-            <!-- 没有合同信息时显示 -->
-            <el-empty v-else description="暂无合同信息" :image-size="150">
-              <el-button type="primary" :icon="Document">生成合同</el-button>
-            </el-empty>
-          </div>
+          <TenantContractTab
+            :tenant-contract="localFormInline.tenantContract"
+            :tenant-id="localFormInline.id"
+            :tenant-status="localFormInline.status"
+            :create-time="localFormInline.createTime"
+            :readonly="readonly"
+            @contract-signed="tenantId => emit('contract-signed', tenantId)"
+            @contract-updated="contract => (localFormInline.tenantContract = contract)"
+          />
         </el-tab-pane>
 
         <!-- 物业交割单 Tab - 使用独立组件 -->
@@ -431,7 +372,7 @@
 
 <script setup lang="ts">
   import { h, ref, watch } from "vue";
-  import { TenantDetailProps, TenantsCreateFormProps } from "@/types";
+  import { TenantContractProps, TenantDetailProps, TenantsCreateFormProps } from "@/types";
   import {
     getOptionByCode,
     ID_TYPE_OPTIONS,
@@ -450,6 +391,7 @@
   import useTenant from "@/views/contract/tenant/utils/hook";
   import BillTable from "@/views/contract/tenant/view/BillTable.vue";
   import DeliveryTab from "@/views/contract/tenant/view/DeliveryTab.vue";
+  import TenantContractTab from "@/views/contract/tenant/view/TenantContractTab.vue";
 
   const { openTenantDialog } = useTenant();
 
