@@ -72,7 +72,7 @@
 
   interface DeliveryTabProps {
     roomList: RoomListProps[];
-    subjectTypeId: bigint;
+    subjectTypeId: string;
   }
 
   const props = defineProps<DeliveryTabProps>();
@@ -144,7 +144,7 @@
   };
 
   // 创建交割单
-  const handleCreateDelivery = (roomId: bigint) => {
+  const handleCreateDelivery = (roomId: string) => {
     const room = props.roomList.find(r => r.roomId === roomId);
 
     if (!room) {

@@ -83,7 +83,7 @@
 
   interface Props {
     tenantContract: TenantContractProps | null;
-    tenantId: bigint; // 租客ID，用于事件回调
+    tenantId: string; // 租客ID，用于事件回调
     tenantStatus: number;
     createTime?: Date;
     readonly?: boolean;
@@ -94,7 +94,7 @@
   });
 
   const emit = defineEmits<{
-    "contract-signed": [tenantId: bigint];
+    "contract-signed": [tenantId: string];
     "contract-updated": [contract: TenantContractProps];
   }>();
 

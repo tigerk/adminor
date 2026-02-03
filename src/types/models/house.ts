@@ -34,7 +34,7 @@ export interface HouseQueryParams {
 
 export interface PriceConfigProps {
   /** 房间ID */
-  roomId: bigint;
+  roomId: string;
   /** 出房价格（单位：元/月） */
   price: number;
   /** 底价（单位：元/月） */
@@ -65,7 +65,7 @@ export interface OtherFeeProps {
 /** 租金方案配置 */
 export interface PricePlanProps {
   /** 房间ID */
-  roomId: bigint;
+  roomId: string;
   /** 租金方案名称 */
   planName: string;
   /** 租金方案类型（如：长期/短租/节假日） */

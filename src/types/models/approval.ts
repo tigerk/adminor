@@ -2,11 +2,11 @@
 import type { TenantDetailProps } from "@/types";
 
 export interface ApprovalActionProps {
-  id: bigint;
+  id: string;
   nodeName: string;
   nodeOrder: number;
   approverName: string;
-  approverId: bigint;
+  approverId: string;
   action?: number;
   actionName?: string;
   remark?: string;
@@ -16,13 +16,13 @@ export interface ApprovalActionProps {
 }
 
 export interface ApprovalInstanceProps {
-  id: bigint;
+  id: string;
   instanceNo: string; /** 审批实例编号 */
   bizType: string; /** 业务类型 */
   bizTypeName?: string; /** 业务类型名称 */
-  bizId: bigint; /** 业务ID */
+  bizId: string; /** 业务ID */
   title?: string; /** 审批标题 */
-  applicantId: bigint; /** 申请人ID */
+  applicantId: string; /** 申请人ID */
   applicantName: string; /** 申请人名称 */
   currentNodeOrder: number; /** 当前节点顺序 */
   currentNodeName: string; /** 当前节点名称 */
@@ -39,11 +39,11 @@ export interface ApprovalInstanceProps {
  * 审批节点类型
  */
 export interface ApprovalNodeProps {
-  id?: bigint;
+  id?: string;
   nodeName: string;
   nodeOrder: number;
   approverType: number;
-  approverIds: bigint[];
+  approverIds: string[];
   multiApproveType: number;
 }
 
@@ -51,7 +51,7 @@ export interface ApprovalNodeProps {
  * 表单项类型
  */
 export interface ApprovalFormItemProps {
-  id: bigint | null;
+  id: string | null;
   flowName: string;
   bizType: string;
   enabled: boolean;

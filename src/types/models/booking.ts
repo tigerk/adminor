@@ -15,8 +15,8 @@ export interface BookingQueryParams {
 
 /** 预定列表项 */
 export interface BookingListProps {
-  id?: bigint; // 预定 ID
-  roomIds: bigint[]; /** 预定房间 ids */
+  id?: string; // 预定 ID
+  roomIds: string[]; /** 预定房间 ids */
   roomList: RoomListProps[];
   tenantType?: number; /** 租客类型：0=个人，1=企业 */
   tenantName?: string; /** 客户姓名 */
@@ -27,23 +27,23 @@ export interface BookingListProps {
   expectedLeaseStart?: Date; /** 预计租赁开始时间 */
   expectedLeaseEnd?: Date; /** 预计租赁结束时间 */
   expectedRentPrice?: number; /** 谈定的意向租金 */
-  companyId?: bigint; /** 公司ID */
-  salesmanId?: bigint; /** 业务人员ID */
+  companyId?: string; /** 公司ID */
+  salesmanId?: string; /** 业务人员ID */
   salesmanName?: string; /** 业务人员名称 */
   bookingStatus?: number; /** 预定状态：1=预定中，2=已转合同，3=客户违约（没收定金），4=业主违约（退还定金），5=已取消/过期 */
   bookingStatusName?: string; /** 预定状态名称 */
-  tenantId?: bigint; /** 转合同后关联的租客表 ID */
+  tenantId?: string; /** 转合同后关联的租客表 ID */
   remark?: string; /** 备注 */
-  createBy?: bigint; /** 创建人ID */
+  createBy?: string; /** 创建人ID */
   createTime?: Date; /** 创建时间 */
-  updateBy?: bigint; /** 修改人ID */
+  updateBy?: string; /** 修改人ID */
   updateTime?: Date; /** 修改时间 */
 }
 
 /** 预定创建 */
 export interface BookingCreateProps {
-  id: bigint; // 预定 ID
-  roomIds: bigint[]; /** 预定房间 ids */
+  id: string; // 预定 ID
+  roomIds: string[]; /** 预定房间 ids */
   roomList: RoomListProps[];
   tenantType: number; /** 租客类型：0=个人，1=企业 */
   tenantName: string; /** 客户姓名 */
@@ -54,20 +54,20 @@ export interface BookingCreateProps {
   expectedLeaseStart: Date; /** 预计租赁开始时间 */
   expectedLeaseEnd: Date; /** 预计租赁结束时间 */
   expectedRentPrice: number; /** 谈定的意向租金 */
-  companyId: bigint; /** 公司ID */
-  salesmanId: bigint; /** 业务人员ID */
+  companyId: string; /** 公司ID */
+  salesmanId: string; /** 业务人员ID */
   bookingStatus: number; /** 预定状态：1=预定中，2=已转合同，3=客户违约（没收定金），4=业主违约（退还定金），5=已取消/过期 */
   bookingStatusName: string; /** 预定状态名称 */
-  tenantId: bigint; /** 转合同后关联的租客表 ID */
+  tenantId: string; /** 转合同后关联的租客表 ID */
   remark: string; /** 备注 */
-  createBy: bigint; /** 创建人ID */
+  createBy: string; /** 创建人ID */
   createTime: Date; /** 创建时间 */
-  updateBy: bigint; /** 修改人ID */
+  updateBy: string; /** 修改人ID */
   updateTime: Date; /** 修改时间 */
 }
 
 export interface BookingCancelProps {
-  id: bigint; /** 预定 ID */
+  id: string; /** 预定 ID */
   cancelReason: string; /** 取消/过期原因备注 */
 }
 

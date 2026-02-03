@@ -17,7 +17,7 @@ export interface ContractTemplateFormProps {
 export interface TenantContractProps {
   id?: string;
   tenantId?: string;
-  contractTemplateId?: bigint;
+  contractTemplateId?: string;
   contractTemplateName?: string;
   contractContent?: string;
   signStatus?: number;

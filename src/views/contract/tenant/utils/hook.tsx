@@ -307,7 +307,7 @@ function useTenant() {
     });
   });
 
-  function openTenantDialog(title = "添加租客", row?: TenantsCreateFormProps, onSuccess?: (tenantId: bigint) => void) {
+  function openTenantDialog(title = "添加租客", row?: TenantsCreateFormProps, onSuccess?: (tenantId: string) => void) {
     addDialog({
       title: `${title}`,
       props: {
@@ -471,7 +471,7 @@ function useTenant() {
   function openTenantViewDialog(
     title = "查看",
     row?: TenantRowProps | any,
-    options?: { readonly?: boolean; onContractSigned?: (tenantId: bigint) => void; onContractUpdated?: () => void }
+    options?: { readonly?: boolean; onContractSigned?: (tenantId: string) => void; onContractUpdated?: () => void }
   ) {
     // 设置 loading 状态为 true
     loading.value = true;
@@ -495,7 +495,7 @@ function useTenant() {
               // 传递事件处理器
               onContractSigned:
                 options?.onContractSigned ||
-                ((tenantId: bigint) => {
+                ((tenantId: string) => {
                   updateTenantRowStatus(tenantId, 1);
                 }),
               onContractUpdated:
@@ -532,7 +532,7 @@ function useTenant() {
   }
 
   // 辅助函数：只更新指定租客的状态（可选，更高效）
-  function updateTenantRowStatus(tenantId: bigint, signStatus: number) {
+  function updateTenantRowStatus(tenantId: string, signStatus: number) {
     const tenant = tenantList.value.find(t => t.id === tenantId);
     if (tenant) {
       // 修改为在租状态

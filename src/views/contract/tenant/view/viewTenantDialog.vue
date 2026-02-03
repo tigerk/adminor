@@ -415,7 +415,7 @@
   );
 
   const emit = defineEmits<{
-    "contract-signed": [tenantId: bigint];
+    "contract-signed": [tenantId: string];
     "contract-updated": [];
   }>();
 

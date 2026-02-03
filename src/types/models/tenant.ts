@@ -36,15 +36,15 @@ export interface TenantCompanyProps {
 }
 
 export interface TenantProps {
-  id?: bigint; // 租客 ID
+  id?: string; // 租客 ID
   contractCode?: string; // 合同编号
   contractNature: number; // 合同性质：1=新签，2=续签，3=转租，4=换房
-  companyId?: bigint; // 公司ID
+  companyId?: string; // 公司ID
   deptId?: string; // 部门ID
-  roomIds: bigint[]; // 房间ID列表
+  roomIds: string[]; // 房间ID列表
   roomList?: RoomListProps[]; // 房间列表
-  contractTemplateId: bigint; // 合同模板ID
-  tenantId?: bigint; // 租客ID
+  contractTemplateId: string; // 合同模板ID
+  tenantId?: string; // 租客ID
   tenantType: number; // 租客类型：1=个人，2=企业
   tenantName: string;
   tenantPhone: string;
@@ -64,8 +64,8 @@ export interface TenantProps {
   rentDueType: number; // 收租类型：1=提前，2=固定，3=延后
   rentDueDay?: number; // 固定收租日（1-31，0=当月最后一天）
   rentDueOffsetDays?: number; // 收租偏移天数（提前/延后）
-  salesmanId: bigint; // 业务人员ID
-  helperId?: bigint; // 协助人员ID
+  salesmanId: string; // 业务人员ID
+  helperId?: string; // 协助人员ID
   signStatus?: number; // 签约状态：0=待签字、1=已签字
   checkOutStatus?: number; // 租户退租状态：0=未退租、1=正常退、2=换房退、3=违约退、4=作废
   status?: number; // 合同状态：0=未生效，1=生效中，2=已退租，3=已逾期，4=已作废
@@ -115,15 +115,15 @@ export interface TenantMateProps {
 }
 
 export interface TenantRowProps {
-  id?: bigint; // 租客 ID
+  id?: string; // 租客 ID
   contractCode?: string; // 合同编号
   contractNature: number; // 合同性质：1=新签，2=续签，3=转租，4=换房
-  companyId?: bigint; // 公司ID
+  companyId?: string; // 公司ID
   deptId?: string; // 部门ID
   deptName?: string; // 部门名称
   roomIds: string[]; // 房间ID列表
-  contractTemplateId: bigint; // 合同模板ID
-  tenantId?: bigint; // 租客ID
+  contractTemplateId: string; // 合同模板ID
+  tenantId?: string; // 租客ID
   tenantType: number; // 租客类型：1=个人，2=企业
   tenantName: string;
   tenantPhone: string;
@@ -149,9 +149,9 @@ export interface TenantRowProps {
   rentDueType: number; // 收租类型：1=提前，2=固定，3=延后
   rentDueDay?: number; // 固定收租日（1-31，0=当月最后一天）
   rentDueOffsetDays?: number; // 收租偏移天数（提前/延后）
-  salesmanId: bigint; // 业务人员ID
+  salesmanId: string; // 业务人员ID
   salesmanName?: string; // 业务人员名称
-  helperId?: bigint; // 协助人员ID
+  helperId?: string; // 协助人员ID
   signStatus?: number; // 签约状态：0=待签字、1=已签字
   checkOutStatus?: number; // 租户退租状态：0=未退租、1=正常退、2=换房退、3=违约退、4=作废
   status?: number; // 合同状态：0=未生效，1=生效中，2=已退租，3=已逾期，4=已作废
@@ -162,15 +162,15 @@ export interface TenantRowProps {
 }
 
 export interface TenantDetailProps {
-  id?: bigint; // 租客 ID
+  id?: string; // 租客 ID
   contractCode?: string; // 合同编号
   contractNature: number; // 合同性质：1=新签，2=续签，3=转租，4=换房
-  companyId?: bigint; // 公司ID
+  companyId?: string; // 公司ID
   deptId?: string; // 部门ID
   deptName?: string; // 部门名称
-  roomIds: bigint[]; // 房间ID列表
-  contractTemplateId: bigint; // 合同模板ID
-  tenantId?: bigint; // 租客ID
+  roomIds: string[]; // 房间ID列表
+  contractTemplateId: string; // 合同模板ID
+  tenantId?: string; // 租客ID
   tenantType: number; // 租客类型：1=个人，2=企业
   tenantName: string;
   tenantPhone: string;
@@ -198,9 +198,9 @@ export interface TenantDetailProps {
   rentDueType: number; // 收租类型：1=提前，2=固定，3=延后
   rentDueDay?: number; // 固定收租日（1-31，0=当月最后一天）
   rentDueOffsetDays?: number; // 收租偏移天数（提前/延后）
-  salesmanId: bigint; // 业务人员ID
+  salesmanId: string; // 业务人员ID
   salesmanName?: string; // 业务人员名称
-  helperId?: bigint; // 协助人员ID
+  helperId?: string; // 协助人员ID
   signStatus?: number; // 签约状态：0=待签字、1=已签字
   checkOutStatus?: number; // 租户退租状态：0=未退租、1=正常退、2=换房退、3=违约退、4=作废
   status?: number; // 合同状态：0=未生效，1=生效中，2=已退租，3=已逾期，4=已作废

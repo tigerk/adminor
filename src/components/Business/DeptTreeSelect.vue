@@ -35,7 +35,7 @@
   // 定义 props - 支持 v-model
   const props = defineProps({
     modelValue: {
-      type: [BigInt, String, Array],
+      type: [String, Array],
       default: null
     },
     // 是否在设置默认值时也触发 dept-selected 事件
@@ -49,7 +49,7 @@
   const emit = defineEmits({
     "update:modelValue": value => true,
     "dept-selected": deptId => {
-      return typeof deptId === "bigint" || deptId === null || deptId === undefined;
+      return typeof deptId === "string" || deptId === null || deptId === undefined;
     }
   });
 

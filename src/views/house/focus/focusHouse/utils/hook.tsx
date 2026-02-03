@@ -98,12 +98,12 @@ export function useFocusHouse() {
   }
 
   // 管理小区
-  const handleEditFocus = (focusId: bigint) => {
+  const handleEditFocus = (focusId: string) => {
     if (focusId) {
       getFocusById({
         id: focusId
       }).then(res => {
-        openFocusEditDialog("更新", res.data, (id: bigint) => {
+        openFocusEditDialog("更新", res.data, (id: string) => {
           onFocusHouseSearch().then();
         });
       });

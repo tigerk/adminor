@@ -14,7 +14,7 @@ export const getBookingList = (data?: BookingQueryParams) => {
 
 /** 创建预定 */
 export const createBooking = (data?: BookingCreateProps) => {
-  return http.request<ApiResponse<bigint>>("post", baseUrlApi("contract/booking/create"), { data });
+  return http.request<ApiResponse<string>>("post", baseUrlApi("contract/booking/create"), { data });
 };
 
 /** 获取租客详情 */

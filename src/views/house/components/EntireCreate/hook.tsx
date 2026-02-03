@@ -67,7 +67,7 @@ export function useEntireEdit() {
    * @param title 对话框标题（"新增" 或 "编辑"）
    * @param row 房源数据（如果是编辑模式则传入，新增模式则不传）
    */
-  async function openEntireEditDialog(title = "新增", row?: { id?: bigint } | ScatterCreateFormProps) {
+  async function openEntireEditDialog(title = "新增", row?: { id?: string } | ScatterCreateFormProps) {
     let formInlineData: Partial<ScatterCreateFormProps> = {
       id: undefined,
       leaseMode: 2, // 分散式

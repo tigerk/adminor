@@ -5,8 +5,8 @@ import type { CommunityProps, HouseLayoutProps, RoomDetailProps } from "@/types"
 
 /** 分散式房源 */
 export interface ScatterHouseProps<T = any> {
-  id?: bigint; // 房源ID
-  companyId?: bigint; // 公司ID
+  id?: string; // 房源ID
+  companyId?: string; // 公司ID
   leaseMode?: number; // 房源租赁类型：1、集中式；2、分散式
   rentalType?: number; // 出租类型：1=整租，2=合租
   community?: CommunityProps; // 住宅小区
@@ -26,26 +26,26 @@ export interface ScatterHouseProps<T = any> {
   hasElevator?: boolean; // 是否有电梯
   hasGas?: boolean; // 是否有燃气
   houseLayout?: HouseLayoutProps; // 户型，保存合租房源的公共图片、房源配置、图片等信息
-  deptId?: bigint; // 部门ID
-  salesmanId?: bigint; // 业务员ID
+  deptId?: string; // 部门ID
+  salesmanId?: string; // 业务员ID
   roomList?: RoomDetailProps[]; // 合租使用：房间列表，每个房间包含房间号、面积、价格等信息
 }
 
 /** 分散式房源详情，通过详情接口获取详细信息 */
 export interface ScatterHouseDetailProps {
-  id: bigint; // 房源ID
+  id: string; // 房源ID
   houseCode: string; // 房源编号
   houseName: string; // 小区名称
-  companyId: bigint; // 公司ID
-  deptId: bigint; // 部门ID
-  salesmanId: bigint; // 业务员ID
+  companyId: string; // 公司ID
+  deptId: string; // 部门ID
+  salesmanId: string; // 业务员ID
   leaseMode: number; // 房源租赁类型：1、集中式；2、整租、3、合租
-  leaseModeId: bigint; // 来源id，集中式为集中式id，整租、合租为community_id
-  communityId: bigint; // 小区ID
+  leaseModeId: string; // 来源id，集中式为集中式id，整租、合租为community_id
+  communityId: string; // 小区ID
   building: string; // 座栋
   unit: string; // 单元
   doorNumber: string; // 门牌号，分散式独有
-  houseLayoutId: bigint; // 户型
+  houseLayoutId: string; // 户型
   rentalType: number; // 出租类型：1=整租，2=合租
   area: string; // 套内面积
   direction: string; // 朝向
@@ -65,7 +65,7 @@ export interface ScatterHouseDetailProps {
   certificateNo: string; // 权属证明及编号
   sharedOwner: boolean; // 是否共有产权  0=否 1=是
   mortgaged: boolean; // 是否抵押  0=否 1=是
-  customerId: bigint; // 客户Id
+  customerId: string; // 客户Id
   houseStatus: number; // 房源状态
   locked: boolean; // 锁定状态：是否锁定
   closed: boolean; // 禁用状态：是否已禁用
@@ -78,12 +78,12 @@ export interface ScatterHouseDetailProps {
 }
 /** 分散式房源表单 */
 export interface ScatterCreateFormProps {
-  id: bigint;
+  id: string;
   leaseMode: number;
   rentalType: number; // 出租类型：1=整租，2=合租
   community: CommunityProps | null;
-  deptId: bigint;
-  salesmanId: bigint;
+  deptId: string;
+  salesmanId: string;
   water: "commercial" | "residential";
   electricity: "commercial" | "residential";
   heating: "central" | "independent";
