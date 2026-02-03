@@ -292,41 +292,10 @@
             <el-space class="tab-label">
               <el-icon><Money /></el-icon>
               <span>账单信息</span>
-              <el-tag type="info" size="default">{{ localFormInline.tenantBillList?.length || 0 }}条</el-tag>
             </el-space>
           </template>
-          <div class="mb-3 tab-content">
-            <div class="section-header-wrapper">
-              <div class="flex items-center justify-between px-4 py-2.5 section-header-content">
-                <div class="flex items-center gap-3">
-                  <span class="text-sm font-semibold section-title">当前账单</span>
-                  <div class="flex items-center gap-1.5 px-2 py-1 count-badge">
-                    <span class="text-xs font-medium">{{ localFormInline.tenantBillList?.length || 0 }}条</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <BillTable :bill-list="localFormInline.tenantBillList" :expanded-rows="expandedBillRows" empty-text="暂无当前账单">
-              <template #empty>
-                <el-button type="primary" size="default">生成账单</el-button>
-              </template>
-            </BillTable>
-          </div>
-
-          <!-- 历史无效账单 -->
-          <div v-if="localFormInline.tenantInvalidBillList?.length > 0">
-            <div class="section-header-wrapper">
-              <div class="flex items-center justify-between px-4 py-2.5 section-header-content">
-                <div class="flex items-center gap-3">
-                  <span class="text-sm font-semibold section-title">历史无效账单</span>
-                  <div class="flex items-center gap-1.5 px-2 py-1 count-badge">
-                    <span class="text-xs font-medium">{{ localFormInline.tenantInvalidBillList?.length || 0 }}条</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <BillTable :bill-list="localFormInline.tenantInvalidBillList" :expanded-rows="expandedBillRows" empty-text="暂无历史无效账单" />
+          <div class="tab-content">
+            <TenantBillTab :tenant-id="localFormInline.id" />
           </div>
         </el-tab-pane>
 
@@ -372,7 +341,7 @@
 
 <script setup lang="ts">
   import { h, ref, watch } from "vue";
-  import { TenantContractProps, TenantDetailProps, TenantsCreateFormProps } from "@/types";
+  import { TenantDetailProps, TenantsCreateFormProps } from "@/types";
   import {
     getOptionByCode,
     ID_TYPE_OPTIONS,
@@ -382,16 +351,16 @@
     TENANT_SIGN_STATUS_OPTIONS,
     TENANT_STATUS_ENUM
   } from "@/constants";
-  import { Checked, Document, Download, Edit, Files, House, Money, User } from "@element-plus/icons-vue";
+  import { Document, Edit, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
   import useTenant from "@/views/contract/tenant/utils/hook";
-  import BillTable from "@/views/contract/tenant/view/BillTable.vue";
   import DeliveryTab from "@/views/contract/tenant/view/DeliveryTab.vue";
   import TenantContractTab from "@/views/contract/tenant/view/TenantContractTab.vue";
+  import TenantBillTab from "@/views/contract/tenant/view/TenantBillTab.vue";
 
   const { openTenantDialog } = useTenant();
 

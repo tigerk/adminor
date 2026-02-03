@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, TenantContractProps, TenantDetailProps } from "@/types";
+import { ApiResponse, PaginationResponse, TenantBillListProps, TenantContractProps, TenantDetailProps } from "@/types";
 
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
@@ -35,6 +35,16 @@ export const updateTenantStatus = (data?: object) => {
 /** 获取租客详情 */
 export const getTenantDetail = (data?: object) => {
   return http.request<ApiResponse<TenantDetailProps>>("post", baseUrlApi("contract/tenant/detail"), { data });
+};
+
+/** 获取租客账单列表 */
+export const getTenantBillList = (data?: object) => {
+  return http.request<ApiResponse<TenantBillListProps[]>>("post", baseUrlApi("contract/tenant/bill/list"), { data });
+};
+
+/** 获取租客无效账单列表 */
+export const getTenantBillInvalidList = (data?: object) => {
+  return http.request<ApiResponse<TenantBillListProps[]>>("post", baseUrlApi("contract/tenant/bill/invalid/list"), { data });
 };
 
 /** 生成租客合同 */

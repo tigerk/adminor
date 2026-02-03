@@ -213,30 +213,6 @@ export interface TenantDetailProps {
 }
 
 export interface TenantBillListProps {
-  /**
-   * {
-   *                 "id": "2005552566663000065",
-   *                 "companyId": "1995379998362611714",
-   *                 "tenantId": "22",
-   *                 "sortOrder": 1,
-   *                 "billType": 1,
-   *                 "rentPeriodStart": "2025-12-17 00:00:00",
-   *                 "rentPeriodEnd": "2026-01-16 00:00:00",
-   *                 "rentalAmount": 43453.00,
-   *                 "depositAmount": 0.00,
-   *                 "otherFeeAmount": 0.00,
-   *                 "totalAmount": 43453.00,
-   *                 "dueDate": "2025-12-02 00:00:00",
-   *                 "payTime": null,
-   *                 "payAmount": null,
-   *                 "payStatus": 0,
-   *                 "payChannel": null,
-   *                 "remark": "第1期，共 1 月",
-   *                 "otherFees": [],
-   *                 "createBy": "1",
-   *                 "createTime": "2025-12-29 16:12:48"
-   *             },
-   */
   id?: string; // 账单ID
   companyId?: string; // 公司ID
   tenantId?: string; // 租客ID
