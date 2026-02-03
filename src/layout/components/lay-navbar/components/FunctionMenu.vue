@@ -274,7 +274,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    height: 32px;
+    height: 33px;
     padding: 0 14px;
     font-size: 13px;
     font-weight: 500;
@@ -400,25 +400,28 @@
         width: 100%;
 
         .icon-wrapper {
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          position: relative;
           width: 28px;
           height: 28px;
+          min-width: 28px;
+          min-height: 28px;
           border-radius: 8px;
           flex-shrink: 0;
           transition: transform 0.2s ease;
 
           .el-icon {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            width: 100%;
-            height: 100%;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: auto !important;
+            height: auto !important;
             font-size: 16px;
             color: #fff;
+            line-height: 1;
 
             svg {
+              display: block;
               width: 16px;
               height: 16px;
             }
