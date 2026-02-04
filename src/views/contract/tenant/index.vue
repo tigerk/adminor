@@ -102,14 +102,19 @@
       </pure-table>
     </el-row>
   </div>
+
+  <!-- 合同预览对话框 -->
   <el-dialog v-model="previewVisible" top="10px" title="租客合同预览" width="80%" height="100vh" :destroy-on-close="true" align-center :lock-scroll="true">
     <iframe title="租客合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
   </el-dialog>
+
+  <!-- 退租对话框 -->
+  <CheckoutDialog ref="checkoutDialogRef" @success="onCheckoutSuccess" />
 </template>
 
 <script setup lang="ts">
   import { ref, watch } from "vue";
-  import { TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import { TENANT_STATUS_ENUM, TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import View from "~icons/ep/view";
@@ -128,12 +133,14 @@
   import { message } from "@/utils/message";
   import { ElMessageBox } from "element-plus";
   import { hideLoading, showLoading } from "@/utils/yeah";
+  import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
 
   defineOptions({
     name: "ContractTenant"
   });
 
   const queryFormRef = ref();
+  const checkoutDialogRef = ref<InstanceType<typeof CheckoutDialog>>();
 
   const {
     queryForm,
@@ -184,8 +191,27 @@
       });
   };
 
+  /** 可退租的状态：待签字(1)、在租中(2) */
+  const canCheckoutStatus: number[] = [TENANT_STATUS_ENUM.TO_SIGN.code, TENANT_STATUS_ENUM.EFFECTIVE.code];
+
   /** 租客退租 */
-  const handleTenantCheckout = row => {};
+  const handleTenantCheckout = (row: TenantRowProps) => {
+    // 检查租客状态是否允许退租（状态1=待签字 或 2=在租中）
+    if (!canCheckoutStatus.includes(row.status)) {
+      message("当前租客状态不允许退租，只有待签字或在租中的租客才能退租", { type: "warning" });
+      return;
+    }
+
+    // 打开退租对话框
+    checkoutDialogRef.value?.open(row.id);
+  };
+
+  /** 退租成功回调 */
+  const onCheckoutSuccess = () => {
+    // 刷新列表
+    onTenantSearch();
+    message("退租提交成功");
+  };
 
   /** 租客续约 */
   const handleTenantRenew = row => {};

@@ -98,7 +98,7 @@ export interface CheckoutInitDataProps {
 export interface UnpaidBillProps {
   billId: string;
   billCode: string;
-  feeType: string;
+  feeType: number;
   billPeriod: string;
   payableAmount: number;
   paidAmount: number;
