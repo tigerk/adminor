@@ -195,6 +195,10 @@ menus:
   pureMindMap: Mind Map
   pureMenuOverflow: Menu Overflow Show Tooltip Text
   pureChildMenuOverflow: Child Menu Overflow Show Tooltip Text
+  sysNotice: Sys Notices
+  sysNoticeMessage: Personal Messages
+  sysNoticeNotice: System Announcements
+  sysNoticeTodo: Todo Messages
 status:
   pureLoad: Loading...
   pureMessage: Message

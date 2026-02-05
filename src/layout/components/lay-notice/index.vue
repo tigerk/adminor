@@ -1,18 +1,94 @@
 <script setup lang="ts">
   import { useI18n } from "vue-i18n";
-  import { ref, computed } from "vue";
-  import { noticesData } from "./data";
+  import { ref, computed, onMounted } from "vue";
+  import dayjs from "dayjs";
+  import type { ListItem, TabItem } from "./data";
   import NoticeList from "./components/NoticeList.vue";
   import BellIcon from "~icons/ep/bell";
+  import { getRecentNotice } from "@/api/sys-notice";
 
   const { t } = useI18n();
-  const noticesNum = ref(0);
-  const notices = ref(noticesData);
-  const activeKey = ref(noticesData[0]?.key);
+  const notices = ref<TabItem[]>([]);
+  const activeKey = ref("1");
 
-  notices.value.map(v => (noticesNum.value += v.list.length));
+  const noticesNum = computed(() => notices.value.reduce((sum, item) => sum + item.list.length, 0));
 
-  const getLabel = computed(() => item => t(item.name) + (item.list.length > 0 ? `(${item.list.length})` : ""));
+  const getLabel = computed(() => (item: TabItem) => t(item.name) + (item.list.length > 0 ? `(${item.list.length})` : ""));
+
+  function formatTime(time?: string) {
+    if (!time) return "";
+    return dayjs(time).format("YYYY-MM-DD HH:mm");
+  }
+
+  function mapMessageList(list: any[] = []): ListItem[] {
+    return list.map(item => ({
+      avatar: "",
+      title: item?.title ?? "",
+      description: item?.content ?? "",
+      datetime: formatTime(item?.createTime),
+      type: "2"
+    }));
+  }
+
+  function mapNoticeList(list: any[] = []): ListItem[] {
+    return list.map(item => ({
+      avatar: "",
+      title: item?.title ?? "",
+      description: item?.content ?? "",
+      datetime: formatTime(item?.publishTime),
+      type: "1"
+    }));
+  }
+
+  function mapTodoList(list: any[] = []): ListItem[] {
+    return list.map(item => ({
+      avatar: "",
+      title: item?.title ?? "",
+      description: item?.content ?? "",
+      datetime: formatTime(item?.createTime),
+      type: "3"
+    }));
+  }
+
+  async function loadRecentNotices() {
+    try {
+      const { data, code } = await getRecentNotice({ days: 3 });
+      if (code !== 0) {
+        notices.value = [];
+        return;
+      }
+      const messages = mapMessageList(data?.messages ?? []);
+      const noticeList = mapNoticeList(data?.notices ?? []);
+      const todoList = mapTodoList(data?.todos ?? []);
+
+      notices.value = [
+        {
+          key: "1",
+          name: "status.pureNotify",
+          list: noticeList,
+          emptyText: "status.pureNoNotify"
+        },
+        {
+          key: "2",
+          name: "status.pureMessage",
+          list: messages,
+          emptyText: "status.pureNoMessage"
+        },
+        {
+          key: "3",
+          name: "status.pureTodo",
+          list: todoList,
+          emptyText: "status.pureNoTodo"
+        }
+      ];
+    } catch {
+      notices.value = [];
+    }
+  }
+
+  onMounted(() => {
+    loadRecentNotices();
+  });
 </script>
 
 <template>

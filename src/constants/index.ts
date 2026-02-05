@@ -2,6 +2,7 @@
 
 export * from "./delivery";
 export * from "./approval";
+export * from "./notice";
 
 /**
  * 根据值获取租赁类型

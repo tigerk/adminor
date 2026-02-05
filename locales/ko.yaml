@@ -195,6 +195,10 @@ menus:
   pureMindMap: 마인드 맵
   pureMenuOverflow: 메뉴 오버 플로우 툴팁 표시
   pureChildMenuOverflow: 하위 메뉴 오버 플로우 툴팁 표시
+  sysNotice: 시스템 알림
+  sysNoticeMessage: 개인 메시지
+  sysNoticeNotice: 시스템 공지
+  sysNoticeTodo: 할 일 메시지
 status:
     pureLoad: 로딩 중...
     pureMessage: 메시지

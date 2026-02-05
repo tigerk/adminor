@@ -13,3 +13,4 @@ export * from "./booking";
 export * from "./delivery";
 export * from "./approval";
 export * from "./checkout";
+export * from "./notice";

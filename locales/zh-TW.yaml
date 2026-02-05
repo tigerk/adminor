@@ -195,6 +195,10 @@ menus:
   pureMindMap: 思維導圖
   pureMenuOverflow: 目錄超出顯示 Tooltip 文字提示
   pureChildMenuOverflow: 菜單超出顯示 Tooltip 文字提示
+  sysNotice: 系統通知
+  sysNoticeMessage: 個人訊息
+  sysNoticeNotice: 系統公告
+  sysNoticeTodo: 待辦訊息
 status:
   pureLoad: 載入中...
   pureMessage: 訊息

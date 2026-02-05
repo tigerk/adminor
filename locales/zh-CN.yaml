@@ -196,6 +196,10 @@ menus:
   pureMenuOverflow: 目录超出显示 Tooltip 文字提示
   pureChildMenuOverflow: 菜单超出显示 Tooltip 文字提示
   platformManagement: 平台管理
+  sysNotice: 系统通知
+  sysNoticeMessage: 个人消息
+  sysNoticeNotice: 系统公告
+  sysNoticeTodo: 待办消息
 status:
   pureLoad: 加载中...
   pureMessage: 消息
