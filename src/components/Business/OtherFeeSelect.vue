@@ -58,7 +58,6 @@
                 </el-input>
               </td>
               <td class="text-center">
-                <!-- dictDataId="0" 时不显示删除按钮 -->
                 <el-button v-if="feeItem.dictDataId !== '0'" type="danger" :icon="Delete" link @click="removeOtherFee(index)" />
                 <span v-else class="readonly-placeholder">-</span>
               </td>
@@ -84,16 +83,14 @@
   import { getDictDataByParentCode } from "@/api/sys/dict";
 
   interface Props {
-    modelValue: OtherFeeProps[];
+    modelValue?: OtherFeeProps[];
   }
 
   const props = withDefaults(defineProps<Props>(), {
     modelValue: () => []
   });
 
-  const emit = defineEmits<{
-    (e: "update:modelValue", value: OtherFeeProps[]): void;
-  }>();
+  const emit = defineEmits<(e: "update:modelValue", value: OtherFeeProps[]) => void>();
 
   const otherFeeTypeOptions = ref<any[]>([]);
   const cascaderValues = ref<Record<number, any[]>>({});

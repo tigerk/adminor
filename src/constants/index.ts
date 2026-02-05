@@ -167,7 +167,8 @@ export const CONTRACT_TYPE_OPTIONS = [
   { label: "全部", value: null },
   { label: "租客合同", value: 1 },
   { label: "房东合同", value: 2 },
-  { label: "预定合同", value: 3 }
+  { label: "预定合同", value: 3 },
+  { label: "退租合同", value: 4 }
 ] as const;
 
 export const CONTRACT_TEMPLATE_STATUS_OPTIONS = [

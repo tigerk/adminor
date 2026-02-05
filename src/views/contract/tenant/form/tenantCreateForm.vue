@@ -485,7 +485,7 @@
     let roomList = [];
 
     // 优先从 formInline 中获取 roomList（编辑模式）
-    if (props.formInline?.tenant.roomList && props.formInline.tenant?.roomList.length > 0) {
+    if (props.formInline?.tenant?.roomList && props.formInline.tenant?.roomList.length > 0) {
       roomList = props.formInline?.tenant.roomList;
     }
     // 其次从 booking 中获取（新建模式）

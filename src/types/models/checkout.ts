@@ -1,41 +1,72 @@
 /**
- * 退租单类型定义
+ * 退租单类型定义（退租并结账）
  */
 
 /** 退租初始化数据 */
 export interface CheckoutInitDataProps {
   tenantId: string;
-  tenantName: string;
-  tenantPhone: string;
-  roomInfo: string;
+  roomAddress: string;
   leaseStart: string;
   leaseEnd: string;
+  tenantName: string;
+  tenantPhone: string;
+  agentInfo?: string;
   rentPrice: number;
   depositAmount: number;
+  depositMonths: number;
   unpaidBills: UnpaidBillProps[];
   unpaidAmount: number;
+  presetFees: PresetFeeProps[];
+  payeeInfo: PayeeInfoProps;
 }
 
 /** 未付账单 */
 export interface UnpaidBillProps {
   billId: string;
   billCode: string;
-  feeType: number;
+  billType: number;
+  billTypeName: string;
   billPeriod: string;
-  payableAmount: number;
-  paidAmount: number;
+  periodStart: string;
+  periodEnd: string;
+  totalAmount: number;
+  payAmount: number;
   unpaidAmount: number;
 }
 
-/** 退租费用明细 */
+/** 预填费用行 */
+export interface PresetFeeProps {
+  feeDirection: number;
+  feeType: number;
+  feeSubName: string;
+  feeAmount: number;
+  feePeriodStart: string;
+  feePeriodEnd: string;
+  remark: string;
+  billId?: string;
+}
+
+/** 收款人信息 */
+export interface PayeeInfoProps {
+  payeeName: string;
+  payeePhone: string;
+  payeeIdType?: string;
+  payeeIdNumber?: string;
+}
+
+/** 退租费用明细行（表格行） */
 export interface CheckoutFeeProps {
   id?: string;
-  feeType: number;
-  feeName: string;
-  feeAmount: number;
   feeDirection: number;
+  feeType: number | string | null;
+  feeSubName: string;
+  feeAmount: number | null;
+  feePeriodStart: string;
+  feePeriodEnd: string;
+  remark: string;
   billId?: string;
-  remark?: string;
+  /** 级联选择器绑定值 [parentCode, childId] */
+  feeTypeCascade?: [string, string] | null;
 }
 
 /** 退租单表单 */
@@ -43,11 +74,29 @@ export interface CheckoutFormProps {
   id?: string;
   tenantId: string;
   checkoutType: number | null;
-  checkoutReason: string;
   actualCheckoutDate: string;
-  depositAmount: number;
+  /** 解约原因（违约退时选填） */
+  breachReason: string;
+  addCleaningFee: boolean;
+  cleaningFeeAmount: number | null;
   feeList: CheckoutFeeProps[];
+  expectedPaymentDate: string;
+  settlementMethod: number;
   remark: string;
+  attachmentIds: string[];
+  /** UploadImage 组件绑定的文件列表 */
+  attachmentFiles: any[];
+  payeeName: string;
+  payeePhone: string;
+  payeeIdType: string;
+  payeeIdNumber: string;
+  bankType: string;
+  bankCardType: string;
+  bankAccount: string;
+  bankName: string;
+  bankBranch: string;
+  sendConfirmation: boolean;
+  confirmationTemplate: string;
 }
 
 /** 退租单详情 */
@@ -56,26 +105,43 @@ export interface CheckoutDetailProps {
   checkoutCode: string;
   companyId: string;
   tenantId: string;
+  roomAddress: string;
+  leaseStart: string;
+  leaseEnd: string;
   tenantName: string;
   tenantPhone: string;
-  roomInfo: string;
+  agentInfo?: string;
+  rentPrice: number;
+  depositAmount: number;
   deliveryId?: string;
   checkoutType: number;
   checkoutTypeName: string;
-  checkoutReason: string;
-  leaseEnd: string;
   actualCheckoutDate: string;
-  depositAmount: number;
-  deductionAmount: number;
-  refundAmount: number;
+  /** 解约原因（违约退时填写） */
+  breachReason?: string;
+  incomeAmount: number;
+  expenseAmount: number;
   finalAmount: number;
+  expectedPaymentDate: string;
+  settlementMethod: number;
+  settlementMethodName: string;
+  feeList: CheckoutFeeProps[];
+  remark: string;
+  attachmentUrls: string[];
+  payeeName: string;
+  payeePhone: string;
+  payeeIdType: string;
+  payeeIdNumber: string;
+  bankType: string;
+  bankCardType: string;
+  bankAccount: string;
+  bankName: string;
+  bankBranch: string;
   status: number;
   statusName: string;
   approvalStatus: number;
   approvalStatusName: string;
   settlementTime?: string;
-  remark: string;
-  feeList: CheckoutFeeProps[];
   createBy: string;
   createByName: string;
   createTime: string;
@@ -91,11 +157,4 @@ export interface CheckoutQueryProps {
   approvalStatus?: number;
   pageNum?: number;
   pageSize?: number;
-}
-
-/** 快捷选项 */
-export interface CheckoutQuickOptionProps {
-  type: number;
-  label: string;
-  icon: any;
 }

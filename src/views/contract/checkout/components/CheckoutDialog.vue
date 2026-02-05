@@ -2,7 +2,7 @@
   <el-dialog
     v-model="visible"
     :show-close="false"
-    width="1000px"
+    width="1020px"
     :close-on-click-modal="false"
     :lock-scroll="true"
     :align-center="true"
@@ -14,12 +14,9 @@
     <template #header>
       <div class="dialog-header">
         <div class="header-left">
-          <div class="header-icon">
-            <el-icon :size="24"><Tickets /></el-icon>
-          </div>
-          <div class="header-text">
-            <h3>租客退租</h3>
-            <p>办理退租手续，结算相关费用</p>
+          <div>
+            <span class="header-title">租客退租</span>
+            <span v-if="checkoutDetail?.checkoutCode" class="header-code">{{ checkoutDetail.checkoutCode }}</span>
           </div>
         </div>
         <el-button class="close-btn" :icon="Close" circle size="small" @click="handleClose" />
@@ -27,368 +24,596 @@
     </template>
 
     <div v-loading="loading" class="checkout-body">
-      <!-- 租客信息横幅 -->
-      <div class="tenant-banner">
-        <div class="tenant-main">
-          <el-avatar :size="48" class="tenant-avatar">
-            {{ initData?.tenantName?.charAt(0) || "?" }}
-          </el-avatar>
-          <div class="tenant-info">
-            <div class="tenant-name">{{ initData?.tenantName || "-" }}</div>
-            <div class="tenant-meta">
-              <span class="meta-item">
-                <el-icon><Phone /></el-icon>
-                {{ initData?.tenantPhone || "-" }}
-              </span>
-              <span v-if="initData?.roomInfo" class="meta-item">
-                <el-icon><House /></el-icon>
-                {{ initData.roomInfo }}
-              </span>
-            </div>
-          </div>
+      <!-- ====== 步骤指示器 ====== -->
+      <div class="steps-bar">
+        <div class="step" :class="{ active: currentStep >= 1, done: currentStep > 1 }" @click="scrollToSection('contract')">
+          <span class="step-num">1</span>
+          <span class="step-label">合同信息</span>
         </div>
-        <div class="tenant-stats">
-          <div class="stat-item">
-            <span class="stat-value">{{ formatDate(initData?.leaseStart) }}</span>
-            <span class="stat-label">入住日期</span>
-          </div>
-          <div class="stat-divider" />
-          <div class="stat-item">
-            <span class="stat-value warning">{{ formatDate(initData?.leaseEnd) }}</span>
-            <span class="stat-label">合同到期</span>
-          </div>
-          <div class="stat-divider" />
-          <div class="stat-item">
-            <span class="stat-value">¥{{ formatMoney(rentPrice) }}</span>
-            <span class="stat-label">月租金</span>
-          </div>
-          <div class="stat-divider" />
-          <div class="stat-item">
-            <span class="stat-value primary">¥{{ formatMoney(form.depositAmount) }}</span>
-            <span class="stat-label">押金</span>
-          </div>
+        <div class="step-line" />
+        <div class="step" :class="{ active: currentStep >= 2, done: currentStep > 2 }" @click="scrollToSection('checkout')">
+          <span class="step-num">2</span>
+          <span class="step-label">退租信息</span>
+        </div>
+        <div class="step-line" />
+        <div class="step" :class="{ active: currentStep >= 3, done: currentStep > 3 }" @click="scrollToSection('fees')">
+          <span class="step-num">3</span>
+          <span class="step-label">费用清算</span>
+        </div>
+        <div class="step-line" />
+        <div class="step" :class="{ active: currentStep >= 4 }" @click="scrollToSection('payee')">
+          <span class="step-num">4</span>
+          <span class="step-label">收款信息</span>
         </div>
       </div>
 
-      <!-- 主内容区 - 左右布局（表单在左，费用在右） -->
-      <div class="main-content">
-        <!-- 左侧：退租信息 + 备注 -->
-        <div class="left-panel">
-          <div class="panel-section">
-            <div class="section-header">
-              <el-icon class="section-icon"><Document /></el-icon>
-              <span>退租信息</span>
+      <div ref="scrollContainerRef" class="scroll-container" @scroll="handleScroll">
+        <!-- ====== 合同信息 ====== -->
+        <div ref="contractRef" class="section-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-dot" />
+              <span class="card-title">合同信息</span>
             </div>
-            <el-form ref="formRef" :model="form" :rules="formRules" label-position="top" :disabled="!canEdit" class="checkout-form">
-              <el-form-item label="退租类型" prop="checkoutType">
-                <el-select v-model="form.checkoutType" placeholder="请选择退租类型" class="w-full">
-                  <el-option v-for="item in CHECKOUT_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="实际退租日" prop="actualCheckoutDate">
-                <el-date-picker v-model="form.actualCheckoutDate" type="date" placeholder="请选择日期" value-format="YYYY-MM-DD" class="w-full" :shortcuts="dateShortcuts" />
-              </el-form-item>
-              <el-form-item label="月租金">
-                <el-input-number v-model="rentPrice" :min="0" :precision="2" controls-position="right" class="w-full" @change="handleRentPriceChange" />
-              </el-form-item>
-              <el-form-item label="押金金额" prop="depositAmount">
-                <el-input-number v-model="form.depositAmount" :min="0" :precision="2" controls-position="right" class="w-full" @change="handleDepositAmountChange" />
-              </el-form-item>
-              <el-form-item label="退租原因">
-                <el-input v-model="form.checkoutReason" placeholder="请输入退租原因（选填）" />
-              </el-form-item>
-              <el-form-item label="备注">
-                <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注信息（选填）" maxlength="500" show-word-limit />
-              </el-form-item>
-            </el-form>
+          </div>
+          <div class="contract-grid">
+            <div class="contract-cell full-width">
+              <span class="cell-label">房源地址</span>
+              <span class="cell-value address-value">{{ initData?.roomAddress || "-" }}</span>
+            </div>
+            <div class="contract-cell">
+              <span class="cell-label">合同周期</span>
+              <span class="cell-value">{{ formatDate(initData?.leaseStart) }} ~ {{ formatDate(initData?.leaseEnd) }}</span>
+            </div>
+            <div class="contract-cell">
+              <span class="cell-label">承租人</span>
+              <span class="cell-value">
+                {{ initData?.tenantName || "-" }}
+                <span v-if="initData?.agentInfo" class="agent-tag">委托：{{ initData.agentInfo }}</span>
+              </span>
+            </div>
+            <div class="contract-cell">
+              <span class="cell-label">租金</span>
+              <span class="cell-value highlight-value">
+                {{ formatMoney(initData?.rentPrice) }}
+                <span class="unit">元/月</span>
+              </span>
+            </div>
+            <div class="contract-cell">
+              <span class="cell-label">押金</span>
+              <span class="cell-value highlight-value">
+                {{ formatMoney(initData?.depositAmount) }}
+                <span class="unit">元</span>
+              </span>
+            </div>
           </div>
         </div>
 
-        <!-- 右侧：费用结算 -->
-        <div class="right-panel">
-          <div class="panel-section">
-            <div class="section-header">
-              <div class="flex items-center gap-2">
-                <el-icon class="section-icon"><Money /></el-icon>
-                <span>费用结算</span>
+        <!-- ====== 退租信息 ====== -->
+        <div ref="checkoutRef" class="section-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-dot" />
+              <span class="card-title">退租信息</span>
+            </div>
+            <el-button type="primary" plain size="small" @click="handleOpenDelivery">
+              <el-icon class="mr-1"><Plus /></el-icon>
+              退房交割单
+            </el-button>
+          </div>
+          <el-form ref="formRef" :model="form" :rules="formRules" label-position="top" :disabled="!canEdit" class="checkout-form">
+            <el-row>
+              <el-col :span="6">
+                <el-form-item label="实际离房日期" prop="actualCheckoutDate">
+                  <el-date-picker v-model="form.actualCheckoutDate" type="date" placeholder="请选择日期" value-format="YYYY-MM-DD" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="18">
+                <el-form-item label="退租类型" prop="checkoutType">
+                  <el-radio-group v-model="form.checkoutType" @change="handleCheckoutTypeChange">
+                    <el-radio-button :value="CHECKOUT_TYPE_ENUM.NORMAL">
+                      <el-icon class="mr-1"><CircleCheck /></el-icon>
+                      正常退
+                    </el-radio-button>
+                    <el-radio-button :value="CHECKOUT_TYPE_ENUM.BREACH">
+                      <el-icon class="mr-1"><Warning /></el-icon>
+                      违约退
+                    </el-radio-button>
+                  </el-radio-group>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <!-- 违约退时显示解约原因 -->
+            <transition name="slide-fade">
+              <el-form-item v-if="form.checkoutType === CHECKOUT_TYPE_ENUM.BREACH" label="解约原因">
+                <el-input v-model="form.breachReason" type="textarea" :rows="2" placeholder="请输入解约原因（选填）" maxlength="300" show-word-limit :disabled="!canEdit" />
+              </el-form-item>
+            </transition>
+          </el-form>
+        </div>
+
+        <!-- ====== 退租费用清算 ====== -->
+        <div ref="feesRef" class="section-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-dot" />
+              <span class="card-title">退租费用清算</span>
+            </div>
+            <!-- 改动1: 原按钮位置移除 -->
+          </div>
+          <!-- 清洁费选项 -->
+          <div class="cleaning-fee-bar">
+            <span class="cleaning-label">加收房屋清洁费</span>
+            <el-switch v-model="form.addCleaningFee" :disabled="!canEdit" @change="handleCleaningFeeChange" />
+            <transition name="slide-fade">
+              <div v-if="form.addCleaningFee" class="cleaning-amount">
+                <el-input-number v-model="form.cleaningFeeAmount" :min="0" :precision="2" :disabled="!canEdit" controls-position="right" placeholder="金额" style="width: 160px">
+                  <template #prefix>
+                    <span>￥</span>
+                  </template>
+                </el-input-number>
+                <span class="unit-text">元</span>
               </div>
-              <el-dropdown v-if="canEdit" trigger="click" @command="handleQuickAdd">
-                <el-button type="primary" size="small">
-                  <el-icon class="mr-1"><Plus /></el-icon>
-                  添加费用
-                  <el-icon class="ml-1"><ArrowDown /></el-icon>
-                </el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item :icon="Minus" command="deduction">添加扣款项</el-dropdown-item>
-                    <el-dropdown-item :icon="Plus" command="refund">添加退款项</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
+            </transition>
+          </div>
+
+          <!-- 费用表格 -->
+          <div class="fee-table-wrapper">
+            <table class="fee-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px">收支</th>
+                  <th style="width: 180px">
+                    费用类型
+                    <span class="required">*</span>
+                  </th>
+                  <th style="width: 160px">
+                    金额(元)
+                    <span class="required">*</span>
+                  </th>
+                  <th style="width: 280px">
+                    费用周期
+                    <span class="required">*</span>
+                  </th>
+                  <th>备注</th>
+                  <th style="width: 40px" />
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="form.feeList.length === 0" class="empty-row">
+                  <td colspan="6">
+                    <div class="empty-state">
+                      <el-icon :size="28"><Tickets /></el-icon>
+                      <span>暂无费用明细，点击下方"添加费用"新增</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-for="(fee, index) in form.feeList" :key="index" class="fee-row">
+                  <!-- 收支类型 -->
+                  <td>
+                    <div class="direction-chip" :class="fee.feeDirection === FEE_DIRECTION_ENUM.INCOME ? 'chip-income' : 'chip-expense'" @click="canEdit && toggleDirection(fee)">
+                      {{ fee.feeDirection === FEE_DIRECTION_ENUM.INCOME ? "收入" : "支出" }}
+                    </div>
+                  </td>
+                  <!-- 费用类型（级联） -->
+                  <td>
+                    <el-cascader
+                      v-model="fee.feeTypeCascade"
+                      :options="feeTypeCascadeOptions"
+                      :props="{ expandTrigger: 'hover' }"
+                      placeholder="请选择费用类型"
+                      :disabled="!canEdit"
+                      clearable
+                      size="default"
+                      class="w-full"
+                      @change="(val: any) => handleFeeTypeCascadeChange(val, fee)"
+                    />
+                  </td>
+                  <!-- 金额 -->
+                  <td>
+                    <el-input-number v-model="fee.feeAmount" :min="0" :precision="2" :disabled="!canEdit" controls-position="right" placeholder="0.00" class="w-full">
+                      <template #prefix>
+                        <span>￥</span>
+                      </template>
+                    </el-input-number>
+                  </td>
+                  <!-- 费用周期 -->
+                  <td>
+                    <div class="period-picker">
+                      <el-date-picker
+                        v-model="fee.feePeriodStart"
+                        type="date"
+                        placeholder="开始日期"
+                        value-format="YYYY-MM-DD"
+                        format="YYYY-MM-DD"
+                        :disabled="!canEdit"
+                        style="width: 130px"
+                      />
+                      <span class="period-sep">至</span>
+                      <el-date-picker
+                        v-model="fee.feePeriodEnd"
+                        type="date"
+                        placeholder="结束日期"
+                        value-format="YYYY-MM-DD"
+                        format="YYYY-MM-DD"
+                        :disabled="!canEdit"
+                        style="width: 130px"
+                      />
+                    </div>
+                  </td>
+                  <!-- 备注 -->
+                  <td>
+                    <el-input v-model="fee.remark" placeholder="选填" :disabled="!canEdit" />
+                  </td>
+                  <!-- 操作 -->
+                  <td class="text-center">
+                    <el-button v-if="canEdit" type="danger" link :icon="Delete" size="small" @click="handleRemoveFee(index)" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 改动1: 添加费用按钮移到表格下方 -->
+          <div v-if="canEdit" class="add-fee-bar">
+            <el-button type="primary" text size="small" @click="handleAddFee">
+              <el-icon class="mr-1"><CirclePlus /></el-icon>
+              添加费用
+            </el-button>
+          </div>
+
+          <!-- 改动2: 费用汇总卡片 — 上下两行布局 -->
+          <div class="summary-card">
+            <!-- 第一行: 收支计算 -->
+            <div class="summary-row">
+              <div class="summary-item">
+                <span class="summary-label">收入合计</span>
+                <span class="summary-val income-color">+{{ formatMoney(incomeTotal) }}</span>
+              </div>
+              <span class="summary-op">−</span>
+              <div class="summary-item">
+                <span class="summary-label">支出合计</span>
+                <span class="summary-val expense-color">−{{ formatMoney(expenseTotal) }}</span>
+              </div>
+              <span class="summary-eq">=</span>
+              <div class="summary-item result">
+                <span class="summary-label">结算金额</span>
+                <span class="summary-val" :class="finalAmount >= 0 ? 'income-color' : 'expense-color'">
+                  {{ finalAmount >= 0 ? "+" : "−" }}{{ formatMoney(Math.abs(finalAmount)) }}元
+                </span>
+                <span class="summary-hint">{{ finalAmount >= 0 ? "租客补缴" : "应退租客" }}</span>
+              </div>
+            </div>
+            <!-- 第二行: 付款时间 + 账单方式 -->
+            <div class="summary-row-2">
+              <div class="summary-field">
+                <span class="field-label">
+                  预计收/付款时间
+                  <span class="required">*</span>
+                </span>
+                <el-date-picker v-model="form.expectedPaymentDate" type="date" placeholder="请选择" value-format="YYYY-MM-DD" :disabled="!canEdit" style="width: 160px" />
+              </div>
+              <div class="summary-field">
+                <span class="field-label">账单处理方式</span>
+                <el-radio-group v-model="form.settlementMethod" :disabled="!canEdit" @change="handleSettlementMethodChange">
+                  <el-radio :value="SETTLEMENT_METHOD_ENUM.GENERATE_BILL">生成待付账单</el-radio>
+                  <el-radio :value="SETTLEMENT_METHOD_ENUM.OFFLINE_PAYMENT">线下付款</el-radio>
+                  <el-radio :value="SETTLEMENT_METHOD_ENUM.APPLY_PAYMENT">申请付款</el-radio>
+                  <el-radio :value="SETTLEMENT_METHOD_ENUM.BAD_DEBT">标记坏账</el-radio>
+                </el-radio-group>
+              </div>
             </div>
 
-            <!-- 费用列表 -->
-            <div class="fee-container">
-              <!-- 扣款区域 -->
-              <div class="fee-group">
-                <div class="fee-group-header deduction">
-                  <span class="group-title">
-                    <el-icon><Minus /></el-icon>
-                    扣款项目
+            <!-- 标记坏账时必须录入坏账原因 -->
+            <transition name="slide-fade">
+              <div v-if="form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT" class="bad-debt-reason">
+                <el-icon class="bad-debt-icon"><Warning /></el-icon>
+                <div class="bad-debt-input">
+                  <span class="field-label">
+                    坏账原因
+                    <span class="required">*</span>
                   </span>
-                  <span class="group-total">¥{{ formatMoney(deductionTotal) }}</span>
-                </div>
-                <div class="fee-group-body">
-                  <TransitionGroup name="fee-item">
-                    <div v-for="(fee, index) in deductionFees" :key="'d-' + fee.feeName + index" class="fee-row">
-                      <div class="fee-info">
-                        <span class="fee-name">
-                          {{ fee.feeName }}
-                          <span v-if="fee.remark" class="fee-remark">{{ fee.remark }}</span>
-                        </span>
-                      </div>
-                      <div class="fee-actions">
-                        <span class="fee-amount deduction">-¥{{ formatMoney(fee.feeAmount) }}</span>
-                        <el-button v-if="canEdit && !fee.billId" type="danger" link size="small" class="delete-btn" @click="handleRemoveFee(index, 'deduction')">
-                          <el-icon><Delete /></el-icon>
-                        </el-button>
-                      </div>
-                    </div>
-                  </TransitionGroup>
-                  <div v-if="deductionFees.length === 0" class="fee-empty">
-                    <span>暂无扣款项目</span>
-                  </div>
+                  <el-input v-model="form.badDebtReason" type="textarea" :rows="2" placeholder="请输入坏账原因（必填）" maxlength="300" show-word-limit :disabled="!canEdit" />
                 </div>
               </div>
+            </transition>
+          </div>
+        </div>
 
-              <!-- 退款区域 -->
-              <div class="fee-group">
-                <div class="fee-group-header refund">
-                  <span class="group-title">
-                    <el-icon><Plus /></el-icon>
-                    退款项目
-                  </span>
-                  <span class="group-total">¥{{ formatMoney(refundTotal) }}</span>
-                </div>
-                <div class="fee-group-body">
-                  <TransitionGroup name="fee-item">
-                    <div v-for="(fee, index) in refundFees" :key="'r-' + fee.feeName + index" class="fee-row">
-                      <div class="fee-info">
-                        <span class="fee-name">
-                          {{ fee.feeName }}
-                          <span v-if="fee.remark" class="fee-remark">{{ fee.remark }}</span>
-                        </span>
-                      </div>
-                      <div class="fee-actions">
-                        <span class="fee-amount refund">+¥{{ formatMoney(fee.feeAmount) }}</span>
-                        <el-button
-                          v-if="canEdit && fee.feeType !== CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND"
-                          type="danger"
-                          link
-                          size="small"
-                          class="delete-btn"
-                          @click="handleRemoveFee(index, 'refund')"
-                        >
-                          <el-icon><Delete /></el-icon>
-                        </el-button>
-                      </div>
-                    </div>
-                  </TransitionGroup>
-                  <div v-if="refundFees.length === 0" class="fee-empty">
-                    <span>暂无退款项目</span>
-                  </div>
-                </div>
+        <!-- ====== 退租备注 & 凭证 ====== -->
+        <div class="section-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-dot" />
+              <span class="card-title">退租备注 & 凭证</span>
+            </div>
+          </div>
+          <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入退租备注信息（选填）" maxlength="500" show-word-limit :disabled="!canEdit" class="mb-3" />
+          <div class="upload-area">
+            <span class="upload-label">退租凭证</span>
+            <UploadImage v-model="form.attachmentFiles" :limit="3" :width="90" :height="90">
+              <template #tip="{ limit }">最多{{ limit }}张，单个≤2MB，jpg/png/gif</template>
+            </UploadImage>
+          </div>
+        </div>
+
+        <!-- ====== 收款人信息 ====== -->
+        <div ref="payeeRef" class="section-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-dot" />
+              <span class="card-title">退租租客收款人信息</span>
+            </div>
+          </div>
+
+          <div class="payee-grid">
+            <div class="payee-cell">
+              <span class="cell-label">收款人姓名</span>
+              <span class="cell-value">{{ form.payeeName || "-" }}</span>
+            </div>
+            <div class="payee-cell">
+              <span class="cell-label">收款人电话</span>
+              <span class="cell-value">{{ form.payeePhone || "-" }}</span>
+            </div>
+            <div class="payee-cell">
+              <span class="cell-label">证件信息</span>
+              <div class="inline-fields">
+                <el-select v-model="form.payeeIdType" placeholder="身份证" :disabled="!canEdit" style="width: 100px" size="default">
+                  <el-option label="身份证" value="ID_CARD" />
+                  <el-option label="护照" value="PASSPORT" />
+                  <el-option label="营业执照" value="BUSINESS_LICENSE" />
+                </el-select>
+                <el-input v-model="form.payeeIdNumber" placeholder="证件号码" :disabled="!canEdit" style="width: 200px" />
               </div>
             </div>
+          </div>
 
-            <!-- 结算汇总 -->
-            <div class="settlement-card" :class="finalAmount >= 0 ? 'payable' : 'refundable'">
-              <div class="settlement-label">{{ finalAmount >= 0 ? "租客应补缴" : "应退还租客" }}</div>
-              <div class="settlement-amount">
-                <span class="currency">¥</span>
-                <span class="number">{{ formatMoney(Math.abs(finalAmount)) }}</span>
-              </div>
-              <div class="settlement-formula">
-                <span>扣款 {{ formatMoney(deductionTotal) }}</span>
-                <span class="operator">-</span>
-                <span>退款 {{ formatMoney(refundTotal) }}</span>
-                <span class="operator">=</span>
-                <span class="result">{{ finalAmount >= 0 ? "+" : "-" }}{{ formatMoney(Math.abs(finalAmount)) }}</span>
-              </div>
+          <!-- 收款银行 -->
+          <div class="bank-section">
+            <span class="bank-section-title">收款银行及账号</span>
+            <div class="bank-fields">
+              <el-select v-model="form.bankType" placeholder="银联" :disabled="!canEdit" style="width: 100px" @change="handleBankTypeChange">
+                <el-option label="银联" value="UNIONPAY" />
+                <el-option label="支付宝" value="ALIPAY" />
+                <el-option label="微信" value="WECHAT" />
+              </el-select>
+              <template v-if="form.bankType === 'UNIONPAY'">
+                <el-select v-model="form.bankCardType" placeholder="借记卡" :disabled="!canEdit" style="width: 96px">
+                  <el-option label="借记卡" value="DEBIT" />
+                  <el-option label="信用卡" value="CREDIT" />
+                </el-select>
+                <el-input v-model="form.bankAccount" placeholder="银行账号" :disabled="!canEdit" style="width: 200px" />
+                <el-input v-model="form.bankName" placeholder="银行名称" :disabled="!canEdit" style="width: 140px" />
+                <el-input v-model="form.bankBranch" placeholder="支行名称" :disabled="!canEdit" style="width: 140px" />
+              </template>
+              <template v-else>
+                <el-input v-model="form.bankAccount" :placeholder="form.bankType === 'ALIPAY' ? '支付宝账号' : '微信账号'" :disabled="!canEdit" style="width: 260px" />
+              </template>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 底部按钮 -->
+    <!-- 底部 -->
     <template #footer>
-      <el-button @click="handleClose">取 消</el-button>
-      <el-button v-if="canSubmit" type="primary" :loading="submitting" @click="handleSubmit">
-        <el-icon class="mr-1"><Promotion /></el-icon>
-        提交
-      </el-button>
-    </template>
-
-    <!-- 添加费用弹窗 -->
-    <el-dialog v-model="quickAddVisible" :title="quickAddTitle" width="420px" append-to-body :close-on-click-modal="false">
-      <div class="quick-add-content">
-        <!-- 快捷选项 -->
-        <div v-if="!showCustomForm" class="quick-options">
-          <div v-for="option in quickAddOptions" :key="option.type" class="quick-option-item" @click="selectQuickOption(option)">
-            <el-icon :size="20"><component :is="option.icon" /></el-icon>
-            <span>{{ option.label }}</span>
-          </div>
-          <div class="quick-option-item custom" @click="showCustomForm = true">
-            <el-icon :size="20"><Edit /></el-icon>
-            <span>自定义</span>
-          </div>
+      <div class="dialog-footer">
+        <div class="footer-left">
+          <el-checkbox v-model="form.sendConfirmation" :disabled="!canEdit">发送退租确认单给租客</el-checkbox>
+          <el-select v-if="form.sendConfirmation" v-model="form.confirmationTemplate" :disabled="!canEdit" style="width: 130px" size="small">
+            <el-option label="退租模板" value="checkout_default" />
+            <el-option label="违约退租模板" value="checkout_breach" />
+          </el-select>
         </div>
-
-        <!-- 自定义表单 -->
-        <el-form v-else ref="quickFormRef" :model="quickForm" :rules="quickFormRules" label-position="top">
-          <el-form-item label="费用名称" prop="feeName">
-            <el-input v-model="quickForm.feeName" placeholder="请输入费用名称" />
-          </el-form-item>
-          <el-form-item label="金额" prop="feeAmount">
-            <el-input v-model.number="quickForm.feeAmount" placeholder="请输入金额" type="number">
-              <template #prefix>¥</template>
-            </el-input>
-          </el-form-item>
-          <el-form-item label="备注">
-            <el-input v-model="quickForm.remark" placeholder="备注（选填）" />
-          </el-form-item>
-        </el-form>
+        <div class="footer-right">
+          <el-button @click="handleClose">取 消</el-button>
+          <el-button v-if="canEdit" type="primary" :loading="submitting" @click="handleSubmit">
+            <el-icon v-if="!submitting" class="mr-1"><Check /></el-icon>
+            确 定
+          </el-button>
+        </div>
       </div>
-      <template #footer>
-        <el-button v-if="showCustomForm" @click="showCustomForm = false">返回</el-button>
-        <el-button @click="quickAddVisible = false">取消</el-button>
-        <el-button v-if="showCustomForm" type="primary" @click="confirmQuickAdd">确认添加</el-button>
-      </template>
-    </el-dialog>
+    </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
   import { computed, reactive, ref } from "vue";
-  import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus";
-  import {
-    ArrowDown,
-    Brush,
-    Close,
-    Coin,
-    Delete,
-    Document,
-    Edit,
-    House,
-    Minus,
-    Money,
-    More,
-    Phone,
-    Plus,
-    Promotion,
-    Refresh,
-    Tickets,
-    Tools
-  } from "@element-plus/icons-vue";
-  import { APPROVAL_STATUS_ENUM, CHECKOUT_BILL_TYPE_MAP, CHECKOUT_FEE_TYPE_ENUM, CHECKOUT_STATUS_ENUM, CHECKOUT_TYPE_OPTIONS, FEE_DIRECTION_ENUM } from "@/constants";
-  import type { CheckoutDetailProps, CheckoutFeeProps, CheckoutFormProps, CheckoutInitDataProps, CheckoutQuickOptionProps } from "@/types";
+  import { ElMessage, type FormInstance, type FormRules } from "element-plus";
+  import { Check, CircleCheck, CirclePlus, Close, Delete, Plus, Tickets, Warning } from "@element-plus/icons-vue";
+  import { APPROVAL_STATUS_ENUM, CHECKOUT_FEE_TYPE_ENUM, CHECKOUT_STATUS_ENUM, CHECKOUT_TYPE_ENUM, FEE_DIRECTION_ENUM, SETTLEMENT_METHOD_ENUM } from "@/constants";
+  import type { CheckoutDetailProps, CheckoutFeeProps, CheckoutFormProps, CheckoutInitDataProps } from "@/types";
   import { getCheckoutByTenantId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
+  import { getDictDataByParentCode } from "@/api/sys/dict";
+  import UploadImage from "@/components/Business/UploadImage.vue";
 
-  const emit = defineEmits<{ (e: "success"): void }>();
+  const emit = defineEmits<(e: "success") => void>();
 
   const visible = ref(false);
   const loading = ref(false);
   const submitting = ref(false);
   const formRef = ref<FormInstance>();
-  const quickFormRef = ref<FormInstance>();
+  const currentStep = ref(1);
+
+  // section refs for scroll tracking
+  const scrollContainerRef = ref<HTMLElement>();
+  const contractRef = ref<HTMLElement>();
+  const checkoutRef = ref<HTMLElement>();
+  const feesRef = ref<HTMLElement>();
+  const payeeRef = ref<HTMLElement>();
 
   const initData = ref<CheckoutInitDataProps | null>(null);
   const checkoutDetail = ref<CheckoutDetailProps | null>(null);
-  const rentPrice = ref(0);
+
+  // ===== 费用类型字典数据 =====
+  interface DictDataItem {
+    id: string;
+    name: string;
+    value: string;
+    color?: string;
+  }
+  interface DictGroup {
+    dictCode: string;
+    dictName: string;
+    dictDataList: DictDataItem[];
+  }
+  const feeTypeDictList = ref<DictGroup[]>([]);
+
+  /** 从字典接口加载费用类型 */
+  async function loadFeeTypeDict() {
+    try {
+      const res = await getDictDataByParentCode({ dictCode: "fee_type" });
+      if (res?.code === 0 && Array.isArray(res.data)) {
+        feeTypeDictList.value = res.data;
+      }
+    } catch (e) {
+      console.error("加载费用类型字典失败", e);
+    }
+  }
+
+  /** 构建级联选项：大类 → 子类 */
+  const feeTypeCascadeOptions = computed(() => {
+    return feeTypeDictList.value.map(group => ({
+      value: group.dictCode,
+      label: group.dictName,
+      children: group.dictDataList.map(item => ({
+        value: item.id,
+        label: item.name
+      }))
+    }));
+  });
+
+  /** 级联选择变更时，回填 feeType / feeSubName */
+  function handleFeeTypeCascadeChange(val: [string, string] | null, fee: any) {
+    if (!val || val.length < 2) {
+      fee.feeType = null;
+      fee.feeSubName = "";
+      return;
+    }
+    const [parentCode, childId] = val;
+    fee.feeType = childId;
+    const group = feeTypeDictList.value.find(g => g.dictCode === parentCode);
+    if (group) {
+      const child = group.dictDataList.find(c => c.id === childId);
+      fee.feeSubName = child?.name || "";
+    }
+  }
+
+  /**
+   * FIX #2: 根据 feeSubName 自动匹配级联选择值
+   */
+  function resolveFeeCascadeValue(fee: CheckoutFeeProps): [string, string] | null {
+    if (!feeTypeDictList.value.length || !fee.feeSubName) return null;
+
+    for (const group of feeTypeDictList.value) {
+      for (const item of group.dictDataList) {
+        if (item.name === fee.feeSubName) {
+          return [group.dictCode, item.id];
+        }
+      }
+    }
+
+    const keywordMap: Record<string, string> = {
+      租金: "fangwuzujin",
+      房屋租金: "fangwuzujin",
+      押金: "fangwuyajin",
+      房屋押金: "fangwuyajin",
+      水费: "shuifei",
+      电费: "dianfei",
+      燃气费: "ranqifei",
+      物业费: "wuyefei",
+      清洁费: "qingjiefei"
+    };
+
+    const targetId = keywordMap[fee.feeSubName];
+    if (targetId) {
+      for (const group of feeTypeDictList.value) {
+        for (const item of group.dictDataList) {
+          if (item.id === targetId || item.value === targetId) {
+            return [group.dictCode, item.id];
+          }
+        }
+      }
+    }
+
+    return null;
+  }
 
   // 表单数据
-  const form = reactive<CheckoutFormProps>({
+  const form = reactive<CheckoutFormProps & { badDebtReason: string }>({
     id: undefined,
     tenantId: "",
-    checkoutType: null,
-    checkoutReason: "",
+    checkoutType: CHECKOUT_TYPE_ENUM.NORMAL,
     actualCheckoutDate: "",
-    depositAmount: 0,
+    breachReason: "",
+    addCleaningFee: false,
+    cleaningFeeAmount: null,
     feeList: [],
-    remark: ""
+    expectedPaymentDate: "",
+    settlementMethod: SETTLEMENT_METHOD_ENUM.GENERATE_BILL,
+    remark: "",
+    attachmentIds: [],
+    attachmentFiles: [],
+    payeeName: "",
+    payeePhone: "",
+    payeeIdType: "ID_CARD",
+    payeeIdNumber: "",
+    bankType: "UNIONPAY",
+    bankCardType: "DEBIT",
+    bankAccount: "",
+    bankName: "",
+    bankBranch: "",
+    sendConfirmation: false,
+    confirmationTemplate: "checkout_default",
+    badDebtReason: ""
   });
 
   const formRules = reactive<FormRules>({
     checkoutType: [{ required: true, message: "请选择退租类型", trigger: "change" }],
-    actualCheckoutDate: [{ required: true, message: "请选择实际退租日", trigger: "change" }]
+    actualCheckoutDate: [{ required: true, message: "请选择实际离房日期", trigger: "change" }]
   });
-
-  // 日期快捷选项
-  const dateShortcuts = [
-    { text: "今天", value: new Date() },
-    {
-      text: "明天",
-      value: () => {
-        const d = new Date();
-        d.setDate(d.getDate() + 1);
-        return d;
-      }
-    },
-    {
-      text: "本月底",
-      value: () => {
-        const d = new Date();
-        d.setMonth(d.getMonth() + 1, 0);
-        return d;
-      }
-    }
-  ];
-
-  // 快捷添加相关
-  const quickAddVisible = ref(false);
-  const quickAddDirection = ref<"deduction" | "refund">("deduction");
-  const showCustomForm = ref(false);
-  const quickForm = reactive({ feeName: "", feeAmount: null as number | null, remark: "", feeType: null as number | null });
-  const quickFormRules = reactive<FormRules>({
-    feeName: [{ required: true, message: "请输入费用名称", trigger: "blur" }],
-    feeAmount: [
-      { required: true, message: "请输入金额", trigger: "blur" },
-      { type: "number", min: 0.01, message: "金额必须大于0", trigger: "blur" }
-    ]
-  });
-
-  const quickAddTitle = computed(() => (quickAddDirection.value === "deduction" ? "添加扣款项目" : "添加退款项目"));
-
-  const deductionQuickOptions: CheckoutQuickOptionProps[] = [
-    { type: CHECKOUT_FEE_TYPE_ENUM.UNPAID_RENT, label: "欠缴租金", icon: Refresh },
-    { type: CHECKOUT_FEE_TYPE_ENUM.UNPAID_FEE, label: "欠缴杂费", icon: Refresh },
-    { type: CHECKOUT_FEE_TYPE_ENUM.UTILITY, label: "水电燃气", icon: Coin },
-    { type: CHECKOUT_FEE_TYPE_ENUM.CLEANING, label: "清洁费", icon: Brush },
-    { type: CHECKOUT_FEE_TYPE_ENUM.DAMAGE, label: "物品损坏", icon: Tools },
-    { type: CHECKOUT_FEE_TYPE_ENUM.OTHER_DEDUCTION, label: "其他扣款", icon: More }
-  ];
-
-  const refundQuickOptions: CheckoutQuickOptionProps[] = [
-    { type: CHECKOUT_FEE_TYPE_ENUM.RENT_REFUND, label: "租金退还", icon: Refresh },
-    { type: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND, label: "押金退还", icon: Refresh },
-    { type: CHECKOUT_FEE_TYPE_ENUM.OTHER_REFUND, label: "其他退款", icon: More }
-  ];
-
-  const quickAddOptions = computed(() => (quickAddDirection.value === "deduction" ? deductionQuickOptions : refundQuickOptions));
 
   // 计算属性
-  const deductionFees = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION));
-  const refundFees = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND));
-  const deductionTotal = computed(() => deductionFees.value.reduce((sum, f) => sum + (f.feeAmount || 0), 0));
-  const refundTotal = computed(() => refundFees.value.reduce((sum, f) => sum + (f.feeAmount || 0), 0));
-  const finalAmount = computed(() => deductionTotal.value - refundTotal.value);
+  const incomeTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.INCOME).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
+  const expenseTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.EXPENSE).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
+  const finalAmount = computed(() => incomeTotal.value - expenseTotal.value);
 
   const canEdit = computed(() => {
     if (!checkoutDetail.value) return true;
     return checkoutDetail.value.status === CHECKOUT_STATUS_ENUM.DRAFT || checkoutDetail.value.approvalStatus === APPROVAL_STATUS_ENUM.REJECTED;
   });
-  const canSubmit = computed(() => canEdit.value && form.checkoutType !== null);
+
+  // Scroll tracking for step indicator
+  function handleScroll() {
+    const container = scrollContainerRef.value;
+    if (!container) return;
+    const scrollTop = container.scrollTop + 60;
+    const sections = [
+      { ref: contractRef.value, step: 1 },
+      { ref: checkoutRef.value, step: 2 },
+      { ref: feesRef.value, step: 3 },
+      { ref: payeeRef.value, step: 4 }
+    ];
+    for (let i = sections.length - 1; i >= 0; i--) {
+      if (sections[i].ref && sections[i].ref!.offsetTop <= scrollTop) {
+        currentStep.value = sections[i].step;
+        break;
+      }
+    }
+  }
+
+  function scrollToSection(section: string) {
+    const map: Record<string, any> = {
+      contract: contractRef,
+      checkout: checkoutRef,
+      fees: feesRef,
+      payee: payeeRef
+    };
+    const el = map[section]?.value;
+    if (el && scrollContainerRef.value) {
+      scrollContainerRef.value.scrollTo({ top: el.offsetTop - 10, behavior: "smooth" });
+    }
+  }
 
   // 工具函数
   function formatDate(dateStr: string | undefined | null): string {
@@ -396,7 +621,10 @@
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) return "-";
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}.${m}.${d}`;
     } catch {
       return "-";
     }
@@ -407,110 +635,118 @@
     return Math.abs(amount).toFixed(2);
   }
 
-  function formatBillPeriod(period: string): string {
-    if (!period) return "";
-    const parts = period.split(" ~ ");
-    if (parts.length !== 2) return period;
-    const formatPart = (part: string): string => {
-      try {
-        const date = new Date(part);
-        if (isNaN(date.getTime())) return part;
-        return `${date.getMonth() + 1}/${date.getDate()}`;
-      } catch {
-        return part;
+  function getTodayStr(): string {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${dd}`;
+  }
+
+  function toggleDirection(fee: CheckoutFeeProps) {
+    fee.feeDirection = fee.feeDirection === FEE_DIRECTION_ENUM.INCOME ? FEE_DIRECTION_ENUM.EXPENSE : FEE_DIRECTION_ENUM.INCOME;
+  }
+
+  // 退租类型变更
+  function handleCheckoutTypeChange(val: number) {
+    if (val === CHECKOUT_TYPE_ENUM.BREACH) {
+      form.feeList = form.feeList.filter(f => !(f.feeDirection === FEE_DIRECTION_ENUM.EXPENSE && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND));
+    } else if (val === CHECKOUT_TYPE_ENUM.NORMAL) {
+      form.breachReason = "";
+      const hasDepositRefund = form.feeList.some(f => f.feeDirection === FEE_DIRECTION_ENUM.EXPENSE && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
+      if (!hasDepositRefund && initData.value && initData.value.depositAmount > 0) {
+        const newFee: CheckoutFeeProps = {
+          feeDirection: FEE_DIRECTION_ENUM.EXPENSE,
+          feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
+          feeSubName: "房屋押金",
+          feeAmount: initData.value.depositAmount,
+          feePeriodStart: formatDate(initData.value.leaseStart).replace(/\./g, "-"),
+          feePeriodEnd: formatDate(initData.value.leaseEnd).replace(/\./g, "-"),
+          remark: "",
+          feeTypeCascade: null
+        };
+        newFee.feeTypeCascade = resolveFeeCascadeValue(newFee);
+        form.feeList.push(newFee);
       }
-    };
-    return `${formatPart(parts[0])} ~ ${formatPart(parts[1])}`;
-  }
-
-  // 快捷添加
-  function handleQuickAdd(command: string) {
-    quickAddDirection.value = command as "deduction" | "refund";
-    showCustomForm.value = false;
-    quickForm.feeName = "";
-    quickForm.feeAmount = null;
-    quickForm.remark = "";
-    quickForm.feeType = null;
-    quickAddVisible.value = true;
-  }
-
-  function selectQuickOption(option: CheckoutQuickOptionProps) {
-    quickForm.feeName = option.label;
-    quickForm.feeType = option.type;
-    showCustomForm.value = true;
-  }
-
-  async function confirmQuickAdd() {
-    if (!quickFormRef.value) return;
-    await quickFormRef.value.validate(valid => {
-      if (valid) {
-        const fallbackFeeType =
-          quickAddDirection.value === "deduction" ? CHECKOUT_FEE_TYPE_ENUM.OTHER_DEDUCTION : CHECKOUT_FEE_TYPE_ENUM.OTHER_REFUND;
-        addFee({
-          feeType: quickForm.feeType ?? fallbackFeeType,
-          feeName: quickForm.feeName,
-          feeAmount: quickForm.feeAmount || 0,
-          feeDirection: quickAddDirection.value === "deduction" ? FEE_DIRECTION_ENUM.DEDUCTION : FEE_DIRECTION_ENUM.REFUND,
-          remark: quickForm.remark
-        });
-        quickAddVisible.value = false;
-        ElMessage.success("添加成功");
-      }
-    });
-  }
-
-  // 费用管理
-  function addFee(fee: Partial<CheckoutFeeProps>) {
-    form.feeList.push({
-      feeType: fee.feeType || 0,
-      feeName: fee.feeName || "",
-      feeAmount: fee.feeAmount || 0,
-      feeDirection: fee.feeDirection || FEE_DIRECTION_ENUM.DEDUCTION,
-      billId: fee.billId,
-      remark: fee.remark
-    });
-  }
-
-  function syncDepositRefundFee(amount: number) {
-    const targetIndex = form.feeList.findIndex(f => f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
-    if (targetIndex > -1) {
-      form.feeList[targetIndex].feeAmount = amount;
-      return;
     }
+  }
 
-    addFee({
-      feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
-      feeName: "押金退还",
-      feeAmount: amount,
-      feeDirection: FEE_DIRECTION_ENUM.REFUND
+  // 清洁费变更
+  function handleCleaningFeeChange(val: boolean) {
+    if (val && form.cleaningFeeAmount && form.cleaningFeeAmount > 0) {
+      addCleaningFeeRow();
+    } else if (!val) {
+      form.feeList = form.feeList.filter(f => f.feeType !== CHECKOUT_FEE_TYPE_ENUM.CLEANING);
+    }
+  }
+
+  function addCleaningFeeRow() {
+    const today = getTodayStr();
+    const exists = form.feeList.some(f => f.feeType === CHECKOUT_FEE_TYPE_ENUM.CLEANING);
+    if (!exists) {
+      form.feeList.push({
+        feeDirection: FEE_DIRECTION_ENUM.INCOME,
+        feeType: CHECKOUT_FEE_TYPE_ENUM.CLEANING,
+        feeSubName: "清洁费",
+        feeAmount: form.cleaningFeeAmount || 0,
+        feePeriodStart: today,
+        feePeriodEnd: today,
+        remark: "",
+        feeTypeCascade: null
+      });
+    }
+  }
+
+  // 账单处理方式变更
+  function handleSettlementMethodChange(val: number) {
+    if (val !== SETTLEMENT_METHOD_ENUM.BAD_DEBT) {
+      form.badDebtReason = "";
+    }
+  }
+
+  // 添加费用行
+  function handleAddFee() {
+    const today = getTodayStr();
+    form.feeList.push({
+      feeDirection: FEE_DIRECTION_ENUM.INCOME,
+      feeType: null,
+      feeSubName: "",
+      feeAmount: null,
+      feePeriodStart: today,
+      feePeriodEnd: today,
+      remark: "",
+      feeTypeCascade: null
     });
   }
 
-  function handleDepositAmountChange(value?: number) {
-    const amount = typeof value === "number" ? value : form.depositAmount || 0;
-    form.depositAmount = amount;
-    if (initData.value) initData.value.depositAmount = amount;
-    syncDepositRefundFee(amount);
+  function handleRemoveFee(index: number) {
+    form.feeList.splice(index, 1);
   }
 
-  function handleRentPriceChange(value?: number) {
-    const amount = typeof value === "number" ? value : rentPrice.value || 0;
-    rentPrice.value = amount;
-    if (initData.value) initData.value.rentPrice = amount;
+  function handleOpenDelivery() {
+    ElMessage.info("退房交割单功能待实现");
   }
 
-  function handleRemoveFee(index: number, type: "deduction" | "refund") {
-    const fees = type === "deduction" ? deductionFees.value : refundFees.value;
-    const fee = fees[index];
-    const realIndex = form.feeList.findIndex(f => f.feeType === fee.feeType && f.feeName === fee.feeName && f.feeAmount === fee.feeAmount && f.feeDirection === fee.feeDirection);
-    if (realIndex > -1) form.feeList.splice(realIndex, 1);
+  function handleBankTypeChange(val: string) {
+    if (val !== "UNIONPAY") {
+      form.bankCardType = "";
+      form.bankName = "";
+      form.bankBranch = "";
+    } else {
+      form.bankCardType = "DEBIT";
+    }
   }
 
   // 打开对话框
   async function open(tenantId: string | number) {
     visible.value = true;
     loading.value = true;
+    currentStep.value = 1;
     resetForm();
+
+    if (feeTypeDictList.value.length === 0) {
+      await loadFeeTypeDict();
+    }
 
     try {
       const existRes = await getCheckoutByTenantId(String(tenantId));
@@ -540,35 +776,30 @@
     const res = await getCheckoutInitData(tenantId);
     initData.value = res.data;
     form.tenantId = tenantId;
-    form.depositAmount = res.data.depositAmount;
-    form.actualCheckoutDate = new Date().toISOString().split("T")[0];
-    rentPrice.value = res.data.rentPrice || 0;
+    form.actualCheckoutDate = getTodayStr();
+    form.expectedPaymentDate = getTodayStr();
+    form.checkoutType = CHECKOUT_TYPE_ENUM.NORMAL;
 
-    syncDepositRefundFee(res.data.depositAmount);
+    if (res.data.payeeInfo) {
+      form.payeeName = res.data.payeeInfo.payeeName || "";
+      form.payeePhone = res.data.payeeInfo.payeePhone || "";
+    }
 
-    if (res.data.unpaidBills?.length > 0) {
-      res.data.unpaidBills.forEach(bill => {
-        const billTypeName = CHECKOUT_BILL_TYPE_MAP[bill.feeType] || "其他费用";
-        const periodStr = formatBillPeriod(bill.billPeriod);
-        if (bill.unpaidAmount > 0) {
-          addFee({
-            feeType: bill.feeType === 1 ? CHECKOUT_FEE_TYPE_ENUM.UNPAID_RENT : CHECKOUT_FEE_TYPE_ENUM.UNPAID_FEE,
-            feeName: billTypeName,
-            feeAmount: bill.unpaidAmount,
-            feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
-            billId: bill.billId,
-            remark: periodStr ? `账期: ${periodStr}` : undefined
-          });
-        } else if (bill.unpaidAmount < 0) {
-          addFee({
-            feeType: CHECKOUT_FEE_TYPE_ENUM.RENT_REFUND,
-            feeName: billTypeName,
-            feeAmount: Math.abs(bill.unpaidAmount),
-            feeDirection: FEE_DIRECTION_ENUM.REFUND,
-            billId: bill.billId,
-            remark: periodStr ? `账期: ${periodStr}` : undefined
-          });
-        }
+    if (res.data.presetFees?.length > 0) {
+      form.feeList = res.data.presetFees.map(pf => {
+        const fee: CheckoutFeeProps = {
+          feeDirection: pf.feeDirection,
+          feeType: pf.feeType,
+          feeSubName: pf.feeSubName || "",
+          feeAmount: pf.feeAmount,
+          feePeriodStart: pf.feePeriodStart?.split("T")[0] || getTodayStr(),
+          feePeriodEnd: pf.feePeriodEnd?.split("T")[0] || getTodayStr(),
+          remark: pf.remark || "",
+          billId: pf.billId,
+          feeTypeCascade: null
+        };
+        fee.feeTypeCascade = resolveFeeCascadeValue(fee);
+        return fee;
       });
     }
   }
@@ -578,96 +809,133 @@
     form.id = detail.id;
     form.tenantId = detail.tenantId;
     form.checkoutType = detail.checkoutType;
-    form.checkoutReason = detail.checkoutReason;
     form.actualCheckoutDate = detail.actualCheckoutDate;
-    form.depositAmount = detail.depositAmount;
+    form.breachReason = detail.breachReason || "";
+    form.expectedPaymentDate = detail.expectedPaymentDate;
+    form.settlementMethod = detail.settlementMethod;
     form.remark = detail.remark;
-    form.feeList = detail.feeList.map(f => ({ ...f }));
+
+    form.feeList = detail.feeList.map(f => {
+      const fee = { ...f, feeTypeCascade: null as [string, string] | null };
+      fee.feeTypeCascade = resolveFeeCascadeValue(fee);
+      return fee;
+    });
+
+    form.payeeName = detail.payeeName || "";
+    form.payeePhone = detail.payeePhone || "";
+    form.payeeIdType = detail.payeeIdType || "ID_CARD";
+    form.payeeIdNumber = detail.payeeIdNumber || "";
+    form.bankType = detail.bankType || "UNIONPAY";
+    form.bankCardType = detail.bankCardType || "DEBIT";
+    form.bankAccount = detail.bankAccount || "";
+    form.bankName = detail.bankName || "";
+    form.bankBranch = detail.bankBranch || "";
+
+    if (detail.attachmentUrls?.length > 0) {
+      form.attachmentFiles = detail.attachmentUrls;
+    }
 
     initData.value = {
       tenantId: detail.tenantId,
+      roomAddress: detail.roomAddress,
+      leaseStart: detail.leaseStart,
+      leaseEnd: detail.leaseEnd,
       tenantName: detail.tenantName,
       tenantPhone: detail.tenantPhone,
-      roomInfo: detail.roomInfo,
-      leaseStart: "",
-      leaseEnd: detail.leaseEnd,
-      rentPrice: 0,
+      agentInfo: detail.agentInfo,
+      rentPrice: detail.rentPrice,
       depositAmount: detail.depositAmount,
+      depositMonths: 0,
       unpaidBills: [],
-      unpaidAmount: 0
-    };
-    rentPrice.value = initData.value?.rentPrice || 0;
-  }
-
-  async function handleSave() {
-    if (!formRef.value) return;
-    formRef.value.validate(async valid => {
-      if (!valid) return;
-      submitting.value = true;
-      try {
-        const res = await saveCheckout(form);
-        form.id = res.data;
-        ElMessage.success("保存成功");
-      } catch (error) {
-        console.error("保存失败", error);
-        ElMessage.error("保存失败");
-      } finally {
-        submitting.value = false;
+      unpaidAmount: 0,
+      presetFees: [],
+      payeeInfo: {
+        payeeName: detail.payeeName,
+        payeePhone: detail.payeePhone
       }
-    });
+    };
   }
 
   async function handleSubmit() {
     if (!formRef.value) return;
     formRef.value.validate(async valid => {
       if (!valid) return;
-      submitting.value = true;
-      try {
-        const res = await saveCheckout(form);
-        form.id = res.data;
-      } catch (error) {
-        console.error("保存失败", error);
-        ElMessage.error("保存失败");
-        submitting.value = false;
+
+      if (!form.expectedPaymentDate) {
+        ElMessage.warning("请选择预计收/付款时间");
+        return;
+      }
+      if (form.feeList.length === 0) {
+        ElMessage.warning("请至少添加一条费用明细");
         return;
       }
 
-      ElMessageBox.confirm("确定提交退租审批吗？提交后将进入审批流程。", "提交确认", {
-        confirmButtonText: "确定提交",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(async () => {
-          try {
-            await submitCheckout(form.id!);
-            ElMessage.success("提交成功");
-            visible.value = false;
-            emit("success");
-          } catch (error) {
-            console.error("提交失败", error);
-            ElMessage.error("提交失败");
-          } finally {
-            submitting.value = false;
+      if (form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT && !form.badDebtReason?.trim()) {
+        ElMessage.warning("标记坏账时必须填写坏账原因");
+        return;
+      }
+
+      const attachmentIds: string[] = [];
+      if (form.attachmentFiles?.length > 0) {
+        for (const file of form.attachmentFiles) {
+          if (typeof file === "string") {
+            attachmentIds.push(file);
+          } else if (file?.url) {
+            attachmentIds.push(file.url);
           }
-        })
-        .catch(() => {
-          submitting.value = false;
-        });
+        }
+      }
+
+      submitting.value = true;
+      try {
+        const submitData = {
+          ...form,
+          attachmentIds,
+          remark: form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT ? `${form.remark || ""}${form.remark ? "\n" : ""}【坏账原因】${form.badDebtReason}` : form.remark
+        };
+        const res = await saveCheckout(submitData);
+        form.id = res.data;
+        await submitCheckout(form.id!);
+        ElMessage.success("退租并结账提交成功");
+        visible.value = false;
+        emit("success");
+      } catch (error) {
+        console.error("提交失败", error);
+        ElMessage.error("提交失败");
+      } finally {
+        submitting.value = false;
+      }
     });
   }
 
   function resetForm() {
     form.id = undefined;
     form.tenantId = "";
-    form.checkoutType = null;
-    form.checkoutReason = "";
+    form.checkoutType = CHECKOUT_TYPE_ENUM.NORMAL;
     form.actualCheckoutDate = "";
-    form.depositAmount = 0;
+    form.breachReason = "";
+    form.addCleaningFee = false;
+    form.cleaningFeeAmount = null;
     form.feeList = [];
+    form.expectedPaymentDate = "";
+    form.settlementMethod = SETTLEMENT_METHOD_ENUM.GENERATE_BILL;
     form.remark = "";
+    form.attachmentIds = [];
+    form.attachmentFiles = [];
+    form.payeeName = "";
+    form.payeePhone = "";
+    form.payeeIdType = "ID_CARD";
+    form.payeeIdNumber = "";
+    form.bankType = "UNIONPAY";
+    form.bankCardType = "DEBIT";
+    form.bankAccount = "";
+    form.bankName = "";
+    form.bankBranch = "";
+    form.sendConfirmation = false;
+    form.confirmationTemplate = "checkout_default";
+    form.badDebtReason = "";
     initData.value = null;
     checkoutDetail.value = null;
-    rentPrice.value = 0;
   }
 
   function handleClose() {
@@ -679,7 +947,13 @@
 </script>
 
 <style lang="scss" scoped>
+  /* ===== Dialog Shell ===== */
   .checkout-dialog {
+    :deep(.el-dialog) {
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
     :deep(.el-dialog__header) {
       padding: 0;
       margin: 0;
@@ -687,45 +961,39 @@
     :deep(.el-dialog__body) {
       padding: 0;
     }
+    :deep(.el-dialog__footer) {
+      padding: 0;
+      border-top: none;
+    }
   }
 
+  /* ===== Header ===== */
   .dialog-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, var(--el-color-primary-light-9) 0%, var(--el-fill-color-light) 100%);
+    padding-bottom: 7px;
     border-bottom: 1px solid var(--el-border-color-lighter);
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
-    .header-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      color: var(--el-color-primary);
-      background: var(--el-color-primary-light-8);
-      border-radius: 10px;
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
     }
 
-    .header-text {
-      h3 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--el-text-color-primary);
-      }
-      p {
-        margin: 2px 0 0;
-        font-size: 12px;
-        color: var(--el-text-color-secondary);
-      }
+    .header-code {
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      margin-left: 8px;
+      background: var(--el-fill-color);
+      padding: 1px 8px;
+      border-radius: 4px;
     }
 
     .close-btn {
@@ -734,357 +1002,641 @@
     }
   }
 
-  .checkout-body {
-    height: calc(85vh - 140px);
-    overflow-y: auto;
-  }
-
-  // 租客横幅
-  .tenant-banner {
+  /* ===== Steps Bar ===== */
+  .steps-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-    background: var(--el-fill-color-light);
+    justify-content: center;
+    padding: 12px 24px;
+    background: var(--el-bg-color-page);
     border-bottom: 1px solid var(--el-border-color-lighter);
+    gap: 0;
+  }
 
-    .tenant-main {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 20px;
+    transition: all 0.2s;
+    user-select: none;
 
-    .tenant-avatar {
-      background: var(--el-color-primary);
-      font-weight: 600;
-    }
-
-    .tenant-name {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-    }
-
-    .tenant-meta {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-top: 6px;
-
-      .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 13px;
-        color: var(--el-text-color-secondary);
-
-        .el-icon {
-          font-size: 14px;
-        }
-      }
-    }
-
-    .tenant-stats {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-
-    .stat-item {
-      text-align: center;
-    }
-
-    .stat-value {
-      display: block;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-
-      &.warning {
-        color: var(--el-color-warning);
-      }
-      &.primary {
-        color: var(--el-color-primary);
-      }
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
-      margin-top: 2px;
-    }
-
-    .stat-divider {
-      width: 1px;
-      height: 32px;
+    .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
       background: var(--el-border-color);
-    }
-  }
-
-  // 主内容区
-  .main-content {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-  }
-
-  .left-panel {
-    padding: 20px;
-    background: var(--el-fill-color-blank);
-    border-right: 1px solid var(--el-border-color-lighter);
-  }
-
-  .right-panel {
-    padding: 20px;
-    background: var(--el-bg-color);
-  }
-
-  .panel-section {
-    .section-header {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
+      justify-content: center;
+      transition: all 0.2s;
+    }
 
-      .section-icon {
-        margin-right: 6px;
+    .step-label {
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    &.active {
+      background: var(--el-color-primary-light-9);
+
+      .step-num {
+        background: var(--el-color-primary);
+        color: #fff;
+      }
+      .step-label {
         color: var(--el-color-primary);
+        font-weight: 500;
       }
     }
-  }
 
-  .checkout-form {
-    :deep(.el-form-item) {
-      margin-bottom: 18px;
+    &.done {
+      .step-num {
+        background: var(--el-color-success);
+        color: #fff;
+      }
     }
-    :deep(.el-form-item__label) {
-      font-weight: 500;
-    }
-  }
-
-  // 费用区域
-  .fee-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .fee-group {
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .fee-group-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    font-weight: 600;
-    font-size: 13px;
-
-    &.deduction {
-      background: var(--el-color-danger-light-9);
-      color: var(--el-color-danger);
-    }
-
-    &.refund {
-      background: var(--el-color-success-light-9);
-      color: var(--el-color-success);
-    }
-
-    .group-title {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .group-total {
-      font-size: 15px;
-    }
-  }
-
-  .fee-group-body {
-    padding: 8px;
-    background: var(--el-fill-color-blank);
-  }
-
-  .fee-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    border-radius: 6px;
-    transition: background-color 0.2s;
 
     &:hover {
       background: var(--el-fill-color-light);
+    }
+  }
 
-      .delete-btn {
-        opacity: 1;
+  .step-line {
+    width: 32px;
+    height: 1px;
+    background: var(--el-border-color);
+    margin: 0 4px;
+  }
+
+  /* ===== Scroll Container ===== */
+  .checkout-body {
+    display: flex;
+    flex-direction: column;
+    height: calc(90vh - 120px);
+    overflow: hidden;
+  }
+
+  .scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 0;
+    scroll-behavior: smooth;
+
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--el-border-color);
+      border-radius: 3px;
+      &:hover {
+        background-color: var(--el-border-color-darker);
       }
     }
+    scrollbar-width: thin;
+    scrollbar-color: var(--el-border-color) transparent;
   }
 
-  .fee-info {
-    flex: 1;
-    min-width: 0;
+  /* ===== Section Card ===== */
+  .section-card {
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    transition: box-shadow 0.2s;
 
-    .fee-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--el-text-color-primary);
+    &:hover {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
     }
 
-    .fee-remark {
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
-      margin-left: 8px;
+    &:last-child {
+      margin-bottom: 0;
     }
   }
 
-  .fee-actions {
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .card-title-group {
     display: flex;
     align-items: center;
     gap: 8px;
   }
 
-  .fee-amount {
-    font-weight: 600;
+  .card-dot {
+    width: 4px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--el-color-primary);
+  }
+
+  .card-title {
     font-size: 14px;
-    white-space: nowrap;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
 
-    &.deduction {
-      color: var(--el-color-danger);
-    }
-    &.refund {
-      color: var(--el-color-success);
+  /* ===== Contract Grid ===== */
+  .contract-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+
+  .contract-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    &.full-width {
+      grid-column: 1 / -1;
     }
   }
 
-  .delete-btn {
+  .cell-label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .cell-value {
+    font-size: 13px;
+    color: var(--el-text-color-primary);
+    font-weight: 500;
+  }
+
+  .address-value {
+    font-size: 14px;
+  }
+
+  .highlight-value {
+    color: var(--el-color-primary);
+    font-size: 15px;
+    font-weight: 600;
+
+    .unit {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--el-text-color-secondary);
+      margin-left: 2px;
+    }
+  }
+
+  .agent-tag {
+    font-size: 11px;
+    color: var(--el-text-color-secondary);
+    background: var(--el-fill-color);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+  }
+
+  /* ===== Checkout Form ===== */
+  .checkout-form {
+    :deep(.el-form-item) {
+      margin-bottom: 10px;
+    }
+    :deep(.el-form-item__label) {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--el-text-color-regular);
+      padding-bottom: 4px;
+    }
+  }
+
+  .form-row {
+    display: flex;
+    gap: 24px;
+
+    > .el-form-item {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  /* ===== Transition ===== */
+  .slide-fade-enter-active {
+    transition: all 0.25s ease-out;
+  }
+  .slide-fade-leave-active {
+    transition: all 0.15s ease-in;
+  }
+  .slide-fade-enter-from {
     opacity: 0;
-    transition: opacity 0.2s;
+    transform: translateY(-6px);
+  }
+  .slide-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 
-  .fee-empty {
+  /* ===== Fee Section ===== */
+  .cleaning-fee-bar {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 24px;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 8px;
+    margin-bottom: 14px;
+
+    .cleaning-label {
+      font-size: 13px;
+      color: var(--el-text-color-regular);
+      font-weight: 500;
+    }
+
+    .cleaning-amount {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      .unit-text {
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+      }
+    }
+  }
+
+  /* ===== Fee Table ===== */
+  .fee-table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 0;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+  }
+
+  .fee-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+
+    th {
+      background: var(--el-fill-color-light);
+      padding: 9px 10px;
+      text-align: left;
+      font-weight: 500;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      border-bottom: 1px solid var(--el-border-color-lighter);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--el-border-color-lighter);
+      vertical-align: middle;
+    }
+
+    .required {
+      color: var(--el-color-danger);
+    }
+  }
+
+  .empty-row td {
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 28px 0;
     color: var(--el-text-color-placeholder);
     font-size: 13px;
   }
 
-  // 结算卡片
-  .settlement-card {
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
+  .fee-row {
+    transition: background 0.15s;
+    &:hover {
+      background: var(--el-fill-color-lighter);
+    }
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
 
-    &.payable {
-      background: linear-gradient(135deg, var(--el-color-danger-light-9) 0%, var(--el-color-danger-light-8) 100%);
-      .settlement-amount {
-        color: var(--el-color-danger);
-      }
-      .result {
-        color: var(--el-color-danger);
-      }
+  /* ===== 改动1: 添加费用按钮移至表格下方、右对齐 ===== */
+  .add-fee-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 0;
+  }
+
+  /* ===== Direction Chip ===== */
+  .direction-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+
+    &.chip-income {
+      background: var(--el-color-warning-light-8);
+      color: var(--el-color-warning-dark-2);
+      border: 1px solid var(--el-color-warning-light-5);
     }
 
-    &.refundable {
-      background: linear-gradient(135deg, var(--el-color-success-light-9) 0%, var(--el-color-success-light-8) 100%);
-      .settlement-amount {
-        color: var(--el-color-success);
-      }
-      .result {
-        color: var(--el-color-success);
-      }
+    &.chip-expense {
+      background: var(--el-color-primary-light-8);
+      color: var(--el-color-primary);
+      border: 1px solid var(--el-color-primary-light-5);
     }
 
-    .settlement-label {
-      font-size: 13px;
-      color: var(--el-text-color-secondary);
-      margin-bottom: 8px;
+    &:hover {
+      transform: scale(1.05);
     }
+  }
 
-    .settlement-amount {
-      font-weight: 700;
-      margin-bottom: 12px;
+  /* ===== Period Picker ===== */
+  .period-picker {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 
-      .currency {
-        font-size: 20px;
-        vertical-align: top;
-      }
-
-      .number {
-        font-size: 36px;
-        line-height: 1;
-      }
-    }
-
-    .settlement-formula {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+    .period-sep {
+      color: var(--el-text-color-placeholder);
       font-size: 12px;
-      color: var(--el-text-color-secondary);
-
-      .operator {
-        color: var(--el-text-color-placeholder);
-      }
-      .result {
-        font-weight: 600;
-      }
+      flex-shrink: 0;
     }
   }
 
-  // 快捷添加
-  .quick-add-content {
-    .quick-options {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
+  /* ===== 改动2: Summary Card — 上下两行布局 ===== */
+  .summary-card {
+    background: var(--el-fill-color-lighter);
+    border-radius: 10px;
+    padding: 16px;
+  }
 
-    .quick-option-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 20px 12px;
-      border: 1px solid var(--el-border-color);
+  /* 第一行：收支计算公式 */
+  .summary-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 80px;
+
+    &.result {
+      padding: 8px 16px;
+      background: var(--el-bg-color);
       border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
+      border: 1px dashed var(--el-border-color);
+    }
+  }
+
+  .summary-label {
+    font-size: 11px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .summary-val {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .income-color {
+    color: var(--el-color-warning-dark-2);
+  }
+
+  .expense-color {
+    color: var(--el-color-primary);
+  }
+
+  .summary-hint {
+    font-size: 11px;
+    color: var(--el-text-color-placeholder);
+  }
+
+  .summary-op,
+  .summary-eq {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--el-text-color-placeholder);
+  }
+
+  /* 第二行：付款时间 + 账单处理方式 */
+  .summary-row-2 {
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--el-border-color-lighter);
+    flex-wrap: wrap;
+  }
+
+  .summary-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .field-label {
       font-size: 13px;
+      color: var(--el-text-color-regular);
+      font-weight: 500;
+    }
+  }
 
-      &:hover {
-        border-color: var(--el-color-primary);
-        background: var(--el-color-primary-light-9);
-        color: var(--el-color-primary);
-      }
+  /* ===== Bad Debt Reason ===== */
+  .bad-debt-reason {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px;
+    background: var(--el-color-danger-light-9);
+    border: 1px solid var(--el-color-danger-light-5);
+    border-radius: 8px;
 
-      &.custom {
-        border-style: dashed;
+    .bad-debt-icon {
+      color: var(--el-color-danger);
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .bad-debt-input {
+      flex: 1;
+
+      .field-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--el-color-danger-dark-2);
+        margin-bottom: 6px;
+        display: block;
       }
     }
   }
 
-  // 动画
-  .fee-item-enter-active,
-  .fee-item-leave-active {
-    transition: all 0.3s ease;
+  .required {
+    color: var(--el-color-danger);
   }
 
-  .fee-item-enter-from,
-  .fee-item-leave-to {
-    opacity: 0;
-    transform: translateX(-20px);
+  /* ===== Upload Area ===== */
+  .upload-area {
+    .upload-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--el-text-color-regular);
+      margin-bottom: 8px;
+      display: block;
+    }
+  }
+
+  /* ===== Payee ===== */
+  .payee-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .payee-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .inline-fields {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .bank-section {
+    padding-top: 14px;
+    border-top: 1px solid var(--el-border-color-lighter);
+  }
+
+  .bank-section-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--el-text-color-regular);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .bank-fields {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* ===== Footer ===== */
+  .dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-top: 1px solid var(--el-border-color-lighter);
+    background: var(--el-bg-color-page);
+  }
+
+  .footer-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Utility */
+  .mb-3 {
+    margin-bottom: 12px;
+  }
+
+  .mr-1 {
+    margin-right: 4px;
+  }
+
+  .w-full {
+    width: 100%;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  /* ================================================================
+ * 改动3: 深色主题适配
+ *
+ * vue-pure-admin 暗色模式会在 <html> 加 class="dark"，
+ * 同时 Element Plus 的 CSS 变量会自动切换（如 --el-bg-color、
+ * --el-text-color-primary 等），所以上面使用 var(--el-xxx) 的部分
+ * 已经自动适配。
+ *
+ * 下面仅针对「写死了具体色值」或「Element Plus 暗色变量对比度不够」
+ * 的地方做补充覆盖，保持最小改动量。
+ * ================================================================ */
+  :global(html.dark) {
+    .checkout-dialog {
+      :deep(.el-dialog) {
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      }
+    }
+
+    /* section-card hover 阴影适配暗色 */
+    .section-card:hover {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 添加费用按钮在暗色下边框加强可见性 */
+    .add-fee-bar {
+      :deep(.el-button--text) {
+        border: 1px dashed var(--el-border-color);
+        border-radius: 6px;
+        padding: 5px 16px;
+
+        &:hover {
+          border-color: var(--el-color-primary);
+        }
+      }
+    }
+
+    /* 汇总卡片 result 项边框 */
+    .summary-item.result {
+      border-color: var(--el-border-color);
+    }
+
+    /* 第二行分割线 */
+    .summary-row-2 {
+      border-top-color: var(--el-border-color);
+    }
   }
 </style>
