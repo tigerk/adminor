@@ -21,6 +21,7 @@ export interface SysNoticeProps {
   targetScope?: number;
   createBy?: number;
   createByName?: string;
+  isRead?: boolean;
 }
 
 export interface SysTodoProps {

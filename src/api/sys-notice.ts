@@ -36,3 +36,11 @@ export const getNoticeDetail = (data: { id: number }) => {
 export const deleteNotice = (data: { id: number }) => {
   return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/delete"), { data });
 };
+
+export const markMessageRead = (data: { id: number }) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/message/read"), { data });
+};
+
+export const markNoticeRead = (data: { id: number }) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/notice/read"), { data });
+};

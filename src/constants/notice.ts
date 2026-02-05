@@ -83,3 +83,42 @@ export const NOTICE_TARGET_SCOPE_HELPER = {
     return this.getByCode(code)?.name ?? "未知";
   }
 };
+
+// ==================== 待办优先级枚举 ====================
+export const NOTICE_TODO_PRIORITY_ENUM = {
+  HIGH: { code: 1, name: "高" },
+  MEDIUM: { code: 2, name: "中" },
+  LOW: { code: 3, name: "低" }
+} as const;
+
+export type NoticeTodoPriorityCode = (typeof NOTICE_TODO_PRIORITY_ENUM)[keyof typeof NOTICE_TODO_PRIORITY_ENUM]["code"];
+
+export const NOTICE_TODO_PRIORITY_HELPER = {
+  getByCode(code: number | undefined | null) {
+    if (code == null) return null;
+    return Object.values(NOTICE_TODO_PRIORITY_ENUM).find(item => item.code === code) ?? null;
+  },
+  getNameByCode(code: number | undefined | null): string {
+    return this.getByCode(code)?.name ?? "未知";
+  }
+};
+
+// ==================== 待办状态枚举 ====================
+export const NOTICE_TODO_STATUS_ENUM = {
+  PENDING: { code: 0, name: "待处理" },
+  DONE: { code: 1, name: "已处理" },
+  IGNORED: { code: 2, name: "已忽略" },
+  EXPIRED: { code: 3, name: "已过期" }
+} as const;
+
+export type NoticeTodoStatusCode = (typeof NOTICE_TODO_STATUS_ENUM)[keyof typeof NOTICE_TODO_STATUS_ENUM]["code"];
+
+export const NOTICE_TODO_STATUS_HELPER = {
+  getByCode(code: number | undefined | null) {
+    if (code == null) return null;
+    return Object.values(NOTICE_TODO_STATUS_ENUM).find(item => item.code === code) ?? null;
+  },
+  getNameByCode(code: number | undefined | null): string {
+    return this.getByCode(code)?.name ?? "未知";
+  }
+};

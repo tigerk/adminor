@@ -4,7 +4,7 @@
   import type { PaginationProps } from "@pureadmin/table";
   import { PureTableBar } from "@/components/RePureTableBar";
   import { getTodoPage } from "@/api/sys-notice";
-  import { NOTICE_TODO_TYPE_HELPER } from "@/constants";
+  import { NOTICE_TODO_PRIORITY_HELPER, NOTICE_TODO_STATUS_HELPER, NOTICE_TODO_TYPE_HELPER } from "@/constants";
 
   defineOptions({
     name: "SysNoticeTodo"
@@ -37,6 +37,18 @@
       prop: "todoType",
       minWidth: 140,
       formatter: ({ todoType }) => NOTICE_TODO_TYPE_HELPER.getNameByCode(todoType)
+    },
+    {
+      label: "优先级",
+      prop: "priority",
+      minWidth: 100,
+      formatter: ({ priority }) => NOTICE_TODO_PRIORITY_HELPER.getNameByCode(priority)
+    },
+    {
+      label: "状态",
+      prop: "status",
+      minWidth: 100,
+      formatter: ({ status }) => NOTICE_TODO_STATUS_HELPER.getNameByCode(status)
     },
     {
       label: "时间",

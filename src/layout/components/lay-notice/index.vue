@@ -5,15 +5,42 @@
   import type { ListItem, TabItem } from "./data";
   import NoticeList from "./components/NoticeList.vue";
   import BellIcon from "~icons/ep/bell";
-  import { getRecentNotice } from "@/api/sys-notice";
+  import { getRecentNotice, markMessageRead, markNoticeRead } from "@/api/sys-notice";
+  import { NOTICE_TODO_PRIORITY_HELPER, NOTICE_TODO_STATUS_HELPER } from "@/constants";
 
   const { t } = useI18n();
   const notices = ref<TabItem[]>([]);
   const activeKey = ref("1");
 
-  const noticesNum = computed(() => notices.value.reduce((sum, item) => sum + item.list.length, 0));
+  const unreadNoticeCount = computed(() => {
+    const noticeTab = notices.value.find(item => item.key === "1");
+    return noticeTab ? noticeTab.list.filter(notice => notice.isRead === false).length : 0;
+  });
 
-  const getLabel = computed(() => (item: TabItem) => t(item.name) + (item.list.length > 0 ? `(${item.list.length})` : ""));
+  const unreadMessageCount = computed(() => {
+    const msgTab = notices.value.find(item => item.key === "2");
+    return msgTab ? msgTab.list.filter(msg => msg.isRead === false).length : 0;
+  });
+
+  const pendingTodoCount = computed(() => {
+    const todoTab = notices.value.find(item => item.key === "3");
+    return todoTab ? todoTab.list.filter(todo => todo.status === 0).length : 0;
+  });
+
+  const noticesNum = computed(() => unreadNoticeCount.value + unreadMessageCount.value + pendingTodoCount.value);
+
+  const getLabel = computed(() => (item: TabItem) => {
+    if (item.key === "1") {
+      return t(item.name) + (unreadNoticeCount.value > 0 ? `(${unreadNoticeCount.value})` : "");
+    }
+    if (item.key === "2") {
+      return t(item.name) + (unreadMessageCount.value > 0 ? `(${unreadMessageCount.value})` : "");
+    }
+    if (item.key === "3") {
+      return t(item.name) + (pendingTodoCount.value > 0 ? `(${pendingTodoCount.value})` : "");
+    }
+    return t(item.name);
+  });
 
   function formatTime(time?: string) {
     if (!time) return "";
@@ -22,31 +49,40 @@
 
   function mapMessageList(list: any[] = []): ListItem[] {
     return list.map(item => ({
+      id: item?.id,
       avatar: "",
       title: item?.title ?? "",
       description: item?.content ?? "",
       datetime: formatTime(item?.createTime),
-      type: "2"
+      type: "2",
+      isRead: item?.isRead ?? false
     }));
   }
 
   function mapNoticeList(list: any[] = []): ListItem[] {
     return list.map(item => ({
+      id: item?.id,
       avatar: "",
       title: item?.title ?? "",
       description: item?.content ?? "",
       datetime: formatTime(item?.publishTime),
-      type: "1"
+      type: "1",
+      isRead: item?.isRead ?? false
     }));
   }
 
   function mapTodoList(list: any[] = []): ListItem[] {
     return list.map(item => ({
+      id: item?.id,
       avatar: "",
       title: item?.title ?? "",
       description: item?.content ?? "",
       datetime: formatTime(item?.createTime),
-      type: "3"
+      type: "3",
+      status: item?.status,
+      priority: item?.priority,
+      todoStatus: item?.status,
+      extra: NOTICE_TODO_STATUS_HELPER.getNameByCode(item?.status)
     }));
   }
 
@@ -86,6 +122,29 @@
     }
   }
 
+  async function handleItemRead(item: ListItem) {
+    if (!item?.id) return;
+    if (item.type === "2") {
+      const { code } = await markMessageRead({ id: item.id });
+      if (code === 0) {
+        const msgTab = notices.value.find(tab => tab.key === "2");
+        const target = msgTab?.list?.find(msg => msg.id === item.id);
+        if (target) {
+          target.isRead = true;
+        }
+      }
+    } else if (item.type === "1") {
+      const { code } = await markNoticeRead({ id: item.id });
+      if (code === 0) {
+        const noticeTab = notices.value.find(tab => tab.key === "1");
+        const target = noticeTab?.list?.find(notice => notice.id === item.id);
+        if (target) {
+          target.isRead = true;
+        }
+      }
+    }
+  }
+
   onMounted(() => {
     loadRecentNotices();
   });
@@ -109,7 +168,7 @@
               <el-tab-pane :label="getLabel(item)" :name="`${item.key}`">
                 <el-scrollbar max-height="330px">
                   <div class="noticeList-container">
-                    <NoticeList :list="item.list" :emptyText="item.emptyText" />
+                    <NoticeList :list="item.list" :emptyText="item.emptyText" @item-click="handleItemRead" />
                   </div>
                 </el-scrollbar>
               </el-tab-pane>
