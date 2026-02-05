@@ -1,16 +1,8 @@
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import {
-  APPROVAL_STATUS_ENUM,
-  CHECKOUT_FEE_TYPE_ENUM,
-  CHECKOUT_STATUS_ENUM,
-  type CheckoutDetailProps,
-  type CheckoutFeeProps,
-  type CheckoutFormProps,
-  type CheckoutInitDataProps,
-  FEE_DIRECTION_ENUM
-} from "@/types";
+import { APPROVAL_STATUS_ENUM, CHECKOUT_FEE_TYPE_ENUM, CHECKOUT_STATUS_ENUM, FEE_DIRECTION_ENUM } from "@/constants";
+import type { CheckoutDetailProps, CheckoutFeeProps, CheckoutFormProps, CheckoutInitDataProps } from "@/types";
 import { getCheckoutDetail, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
 
 export function useCheckout() {
@@ -60,6 +52,21 @@ export function useCheckout() {
     return deductionTotal.value - refundTotal.value;
   });
 
+  function syncDepositRefundFee(amount: number) {
+    const targetIndex = form.feeList.findIndex(f => f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
+    if (targetIndex > -1) {
+      form.feeList[targetIndex].feeAmount = amount;
+      return;
+    }
+
+    addFee({
+      feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
+      feeName: "押金退还",
+      feeAmount: amount,
+      feeDirection: FEE_DIRECTION_ENUM.REFUND
+    });
+  }
+
   // 是否可以编辑
   const canEdit = computed(() => {
     if (!checkoutDetail.value) return true;
@@ -89,12 +96,7 @@ export function useCheckout() {
       form.actualCheckoutDate = new Date().toISOString().split("T")[0];
 
       // 自动添加押金退还
-      addFee({
-        feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
-        feeName: "押金退还",
-        feeAmount: res.data.depositAmount,
-        feeDirection: FEE_DIRECTION_ENUM.REFUND
-      });
+      syncDepositRefundFee(res.data.depositAmount);
 
       // 自动添加未付账单作为扣款
       if (res.data.unpaidBills && res.data.unpaidBills.length > 0) {
@@ -241,6 +243,16 @@ export function useCheckout() {
       loadInitData();
     }
   });
+
+  watch(
+    () => form.depositAmount,
+    value => {
+      if (!initData.value) return;
+      if (typeof value !== "number") return;
+      initData.value.depositAmount = value;
+      syncDepositRefundFee(value);
+    }
+  );
 
   return {
     loading,

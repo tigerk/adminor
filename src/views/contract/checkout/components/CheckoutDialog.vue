@@ -59,12 +59,12 @@
           </div>
           <div class="stat-divider" />
           <div class="stat-item">
-            <span class="stat-value">¥{{ formatMoney(initData?.rentPrice) }}</span>
+            <span class="stat-value">¥{{ formatMoney(rentPrice) }}</span>
             <span class="stat-label">月租金</span>
           </div>
           <div class="stat-divider" />
           <div class="stat-item">
-            <span class="stat-value primary">¥{{ formatMoney(initData?.depositAmount) }}</span>
+            <span class="stat-value primary">¥{{ formatMoney(form.depositAmount) }}</span>
             <span class="stat-label">押金</span>
           </div>
         </div>
@@ -87,6 +87,12 @@
               </el-form-item>
               <el-form-item label="实际退租日" prop="actualCheckoutDate">
                 <el-date-picker v-model="form.actualCheckoutDate" type="date" placeholder="请选择日期" value-format="YYYY-MM-DD" class="w-full" :shortcuts="dateShortcuts" />
+              </el-form-item>
+              <el-form-item label="月租金">
+                <el-input-number v-model="rentPrice" :min="0" :precision="2" controls-position="right" class="w-full" @change="handleRentPriceChange" />
+              </el-form-item>
+              <el-form-item label="押金金额" prop="depositAmount">
+                <el-input-number v-model="form.depositAmount" :min="0" :precision="2" controls-position="right" class="w-full" @change="handleDepositAmountChange" />
               </el-form-item>
               <el-form-item label="退租原因">
                 <el-input v-model="form.checkoutReason" placeholder="请输入退租原因（选填）" />
@@ -285,46 +291,9 @@
     Tickets,
     Tools
   } from "@element-plus/icons-vue";
-  import {
-    APPROVAL_STATUS_ENUM,
-    CHECKOUT_FEE_TYPE_ENUM,
-    CHECKOUT_STATUS_ENUM,
-    CHECKOUT_TYPE_OPTIONS,
-    type CheckoutDetailProps,
-    type CheckoutFeeProps,
-    type CheckoutFormProps,
-    CheckoutInitDataProps,
-    FEE_DIRECTION_ENUM
-  } from "@/types";
+  import { APPROVAL_STATUS_ENUM, CHECKOUT_BILL_TYPE_MAP, CHECKOUT_FEE_TYPE_ENUM, CHECKOUT_STATUS_ENUM, CHECKOUT_TYPE_OPTIONS, FEE_DIRECTION_ENUM } from "@/constants";
+  import type { CheckoutDetailProps, CheckoutFeeProps, CheckoutFormProps, CheckoutInitDataProps, CheckoutQuickOptionProps } from "@/types";
   import { getCheckoutByTenantId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
-
-  /** 账单类型映射 */
-  const BILL_TYPE_MAP: Record<number, string> = {
-    1: "租金",
-    2: "押金",
-    3: "优惠减免",
-    4: "水费",
-    5: "电费",
-    6: "燃气费",
-    7: "物业费",
-    8: "其他费用"
-  };
-
-  interface UnpaidBill {
-    billId: string;
-    billCode: string | null;
-    billType: number;
-    billPeriod: string;
-    totalAmount: number;
-    payAmount: number;
-    unpaidAmount: number;
-  }
-
-  interface QuickOption {
-    type: number;
-    label: string;
-    icon: any;
-  }
 
   const emit = defineEmits<{ (e: "success"): void }>();
 
@@ -336,6 +305,7 @@
 
   const initData = ref<CheckoutInitDataProps | null>(null);
   const checkoutDetail = ref<CheckoutDetailProps | null>(null);
+  const rentPrice = ref(0);
 
   // 表单数据
   const form = reactive<CheckoutFormProps>({
@@ -379,7 +349,7 @@
   const quickAddVisible = ref(false);
   const quickAddDirection = ref<"deduction" | "refund">("deduction");
   const showCustomForm = ref(false);
-  const quickForm = reactive({ feeName: "", feeAmount: null as number | null, remark: "" });
+  const quickForm = reactive({ feeName: "", feeAmount: null as number | null, remark: "", feeType: null as number | null });
   const quickFormRules = reactive<FormRules>({
     feeName: [{ required: true, message: "请输入费用名称", trigger: "blur" }],
     feeAmount: [
@@ -390,15 +360,18 @@
 
   const quickAddTitle = computed(() => (quickAddDirection.value === "deduction" ? "添加扣款项目" : "添加退款项目"));
 
-  const deductionQuickOptions: QuickOption[] = [
-    { type: CHECKOUT_FEE_TYPE_ENUM.UTILITY, label: "水电费", icon: Coin },
+  const deductionQuickOptions: CheckoutQuickOptionProps[] = [
+    { type: CHECKOUT_FEE_TYPE_ENUM.UNPAID_RENT, label: "欠缴租金", icon: Refresh },
+    { type: CHECKOUT_FEE_TYPE_ENUM.UNPAID_FEE, label: "欠缴杂费", icon: Refresh },
+    { type: CHECKOUT_FEE_TYPE_ENUM.UTILITY, label: "水电燃气", icon: Coin },
     { type: CHECKOUT_FEE_TYPE_ENUM.CLEANING, label: "清洁费", icon: Brush },
     { type: CHECKOUT_FEE_TYPE_ENUM.DAMAGE, label: "物品损坏", icon: Tools },
     { type: CHECKOUT_FEE_TYPE_ENUM.OTHER_DEDUCTION, label: "其他扣款", icon: More }
   ];
 
-  const refundQuickOptions: QuickOption[] = [
+  const refundQuickOptions: CheckoutQuickOptionProps[] = [
     { type: CHECKOUT_FEE_TYPE_ENUM.RENT_REFUND, label: "租金退还", icon: Refresh },
+    { type: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND, label: "押金退还", icon: Refresh },
     { type: CHECKOUT_FEE_TYPE_ENUM.OTHER_REFUND, label: "其他退款", icon: More }
   ];
 
@@ -457,11 +430,13 @@
     quickForm.feeName = "";
     quickForm.feeAmount = null;
     quickForm.remark = "";
+    quickForm.feeType = null;
     quickAddVisible.value = true;
   }
 
-  function selectQuickOption(option: QuickOption) {
+  function selectQuickOption(option: CheckoutQuickOptionProps) {
     quickForm.feeName = option.label;
+    quickForm.feeType = option.type;
     showCustomForm.value = true;
   }
 
@@ -469,8 +444,10 @@
     if (!quickFormRef.value) return;
     await quickFormRef.value.validate(valid => {
       if (valid) {
+        const fallbackFeeType =
+          quickAddDirection.value === "deduction" ? CHECKOUT_FEE_TYPE_ENUM.OTHER_DEDUCTION : CHECKOUT_FEE_TYPE_ENUM.OTHER_REFUND;
         addFee({
-          feeType: CHECKOUT_FEE_TYPE_ENUM.OTHER_DEDUCTION,
+          feeType: quickForm.feeType ?? fallbackFeeType,
           feeName: quickForm.feeName,
           feeAmount: quickForm.feeAmount || 0,
           feeDirection: quickAddDirection.value === "deduction" ? FEE_DIRECTION_ENUM.DEDUCTION : FEE_DIRECTION_ENUM.REFUND,
@@ -492,6 +469,34 @@
       billId: fee.billId,
       remark: fee.remark
     });
+  }
+
+  function syncDepositRefundFee(amount: number) {
+    const targetIndex = form.feeList.findIndex(f => f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
+    if (targetIndex > -1) {
+      form.feeList[targetIndex].feeAmount = amount;
+      return;
+    }
+
+    addFee({
+      feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
+      feeName: "押金退还",
+      feeAmount: amount,
+      feeDirection: FEE_DIRECTION_ENUM.REFUND
+    });
+  }
+
+  function handleDepositAmountChange(value?: number) {
+    const amount = typeof value === "number" ? value : form.depositAmount || 0;
+    form.depositAmount = amount;
+    if (initData.value) initData.value.depositAmount = amount;
+    syncDepositRefundFee(amount);
+  }
+
+  function handleRentPriceChange(value?: number) {
+    const amount = typeof value === "number" ? value : rentPrice.value || 0;
+    rentPrice.value = amount;
+    if (initData.value) initData.value.rentPrice = amount;
   }
 
   function handleRemoveFee(index: number, type: "deduction" | "refund") {
@@ -537,12 +542,13 @@
     form.tenantId = tenantId;
     form.depositAmount = res.data.depositAmount;
     form.actualCheckoutDate = new Date().toISOString().split("T")[0];
+    rentPrice.value = res.data.rentPrice || 0;
 
-    addFee({ feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND, feeName: "押金退还", feeAmount: res.data.depositAmount, feeDirection: FEE_DIRECTION_ENUM.REFUND });
+    syncDepositRefundFee(res.data.depositAmount);
 
     if (res.data.unpaidBills?.length > 0) {
       res.data.unpaidBills.forEach(bill => {
-        const billTypeName = BILL_TYPE_MAP[bill.feeType] || "其他费用";
+        const billTypeName = CHECKOUT_BILL_TYPE_MAP[bill.feeType] || "其他费用";
         const periodStr = formatBillPeriod(bill.billPeriod);
         if (bill.unpaidAmount > 0) {
           addFee({
@@ -590,6 +596,7 @@
       unpaidBills: [],
       unpaidAmount: 0
     };
+    rentPrice.value = initData.value?.rentPrice || 0;
   }
 
   async function handleSave() {
@@ -660,6 +667,7 @@
     form.remark = "";
     initData.value = null;
     checkoutDetail.value = null;
+    rentPrice.value = 0;
   }
 
   function handleClose() {
