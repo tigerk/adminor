@@ -63,3 +63,23 @@ export const NOTICE_TODO_TYPE_HELPER = {
     return this.getByCode(code)?.name ?? "未知";
   }
 };
+
+// ==================== 公告发布范围枚举 ====================
+export const NOTICE_TARGET_SCOPE_ENUM = {
+  ALL: { code: 1, name: "全员" },
+  LANDLORD: { code: 2, name: "房东" },
+  TENANT: { code: 3, name: "租客" },
+  ROLE: { code: 4, name: "指定角色" }
+} as const;
+
+export type NoticeTargetScopeCode = (typeof NOTICE_TARGET_SCOPE_ENUM)[keyof typeof NOTICE_TARGET_SCOPE_ENUM]["code"];
+
+export const NOTICE_TARGET_SCOPE_HELPER = {
+  getByCode(code: number | undefined | null) {
+    if (code == null) return null;
+    return Object.values(NOTICE_TARGET_SCOPE_ENUM).find(item => item.code === code) ?? null;
+  },
+  getNameByCode(code: number | undefined | null): string {
+    return this.getByCode(code)?.name ?? "未知";
+  }
+};

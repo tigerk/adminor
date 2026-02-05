@@ -203,7 +203,7 @@ menus:
 status:
   pureLoad: 加载中...
   pureMessage: 消息
-  pureNotify: 通知
+  pureNotify: 公告
   pureTodo: 待办
   pureNoMessage: 暂无消息
   pureNoNotify: 暂无通知

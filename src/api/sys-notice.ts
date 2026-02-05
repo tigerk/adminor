@@ -24,3 +24,15 @@ export const getNoticePage = (data: { currentPage: number; pageSize: number; key
 export const getTodoPage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {
   return http.request<ApiResponse<PaginationResponse<SysTodoProps>>>("post", baseUrlApi("sys/notice/todo/page"), { data });
 };
+
+export const saveNotice = (data: { id?: number; title: string; content: string; noticeType: number; targetScope?: number; remark?: string; roleIds?: number[] }) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/create"), { data });
+};
+
+export const getNoticeDetail = (data: { id: number }) => {
+  return http.request<ApiResponse<{ notice: SysNoticeProps; roleIds: number[] }>>("post", baseUrlApi("sys/notice/detail"), { data });
+};
+
+export const deleteNotice = (data: { id: number }) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/delete"), { data });
+};

@@ -18,6 +18,9 @@ export interface SysNoticeProps {
   noticeType?: number;
   status?: number;
   publishTime?: string;
+  targetScope?: number;
+  createBy?: number;
+  createByName?: string;
 }
 
 export interface SysTodoProps {
