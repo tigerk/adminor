@@ -52,17 +52,17 @@
             <span class="stat-value">{{ formatDate(initData?.leaseStart) }}</span>
             <span class="stat-label">入住日期</span>
           </div>
-          <div class="stat-divider"></div>
+          <div class="stat-divider" />
           <div class="stat-item">
             <span class="stat-value warning">{{ formatDate(initData?.leaseEnd) }}</span>
             <span class="stat-label">合同到期</span>
           </div>
-          <div class="stat-divider"></div>
+          <div class="stat-divider" />
           <div class="stat-item">
             <span class="stat-value">¥{{ formatMoney(initData?.rentPrice) }}</span>
             <span class="stat-label">月租金</span>
           </div>
-          <div class="stat-divider"></div>
+          <div class="stat-divider" />
           <div class="stat-item">
             <span class="stat-value primary">¥{{ formatMoney(initData?.depositAmount) }}</span>
             <span class="stat-label">押金</span>
@@ -218,13 +218,9 @@
     <!-- 底部按钮 -->
     <template #footer>
       <el-button @click="handleClose">取 消</el-button>
-      <el-button v-if="canEdit" :loading="submitting" @click="handleSave">
-        <el-icon class="mr-1"><FolderOpened /></el-icon>
-        保存草稿
-      </el-button>
       <el-button v-if="canSubmit" type="primary" :loading="submitting" @click="handleSubmit">
         <el-icon class="mr-1"><Promotion /></el-icon>
-        提交审批
+        提交
       </el-button>
     </template>
 
@@ -278,7 +274,6 @@
     Delete,
     Document,
     Edit,
-    FolderOpened,
     House,
     Minus,
     Money,
@@ -298,6 +293,7 @@
     type CheckoutDetailProps,
     type CheckoutFeeProps,
     type CheckoutFormProps,
+    CheckoutInitDataProps,
     FEE_DIRECTION_ENUM
   } from "@/types";
   import { getCheckoutByTenantId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
@@ -313,19 +309,6 @@
     7: "物业费",
     8: "其他费用"
   };
-
-  interface CheckoutInitData {
-    tenantId: string;
-    tenantName: string;
-    tenantPhone: string;
-    roomInfo: string | null;
-    leaseStart: string;
-    leaseEnd: string;
-    rentPrice: number;
-    depositAmount: number;
-    unpaidBills: UnpaidBill[];
-    unpaidAmount: number;
-  }
 
   interface UnpaidBill {
     billId: string;
@@ -351,7 +334,7 @@
   const formRef = ref<FormInstance>();
   const quickFormRef = ref<FormInstance>();
 
-  const initData = ref<CheckoutInitData | null>(null);
+  const initData = ref<CheckoutInitDataProps | null>(null);
   const checkoutDetail = ref<CheckoutDetailProps | null>(null);
 
   // 表单数据
@@ -559,11 +542,11 @@
 
     if (res.data.unpaidBills?.length > 0) {
       res.data.unpaidBills.forEach(bill => {
-        const billTypeName = BILL_TYPE_MAP[bill.billType] || "其他费用";
+        const billTypeName = BILL_TYPE_MAP[bill.feeType] || "其他费用";
         const periodStr = formatBillPeriod(bill.billPeriod);
         if (bill.unpaidAmount > 0) {
           addFee({
-            feeType: bill.billType === 1 ? CHECKOUT_FEE_TYPE_ENUM.UNPAID_RENT : CHECKOUT_FEE_TYPE_ENUM.UNPAID_FEE,
+            feeType: bill.feeType === 1 ? CHECKOUT_FEE_TYPE_ENUM.UNPAID_RENT : CHECKOUT_FEE_TYPE_ENUM.UNPAID_FEE,
             feeName: billTypeName,
             feeAmount: bill.unpaidAmount,
             feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
@@ -611,7 +594,7 @@
 
   async function handleSave() {
     if (!formRef.value) return;
-    await formRef.value.validate(async valid => {
+    formRef.value.validate(async valid => {
       if (!valid) return;
       submitting.value = true;
       try {
@@ -629,7 +612,7 @@
 
   async function handleSubmit() {
     if (!formRef.value) return;
-    await formRef.value.validate(async valid => {
+    formRef.value.validate(async valid => {
       if (!valid) return;
       submitting.value = true;
       try {

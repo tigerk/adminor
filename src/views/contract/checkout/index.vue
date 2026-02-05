@@ -236,7 +236,7 @@
     <!-- 底部操作栏 -->
     <div class="footer-bar">
       <el-button @click="handleBack">取消</el-button>
-      <el-button type="info" :loading="submitting" :disabled="!canEdit" @click="onSave">保存草稿</el-button>
+<!--      <el-button type="info" :loading="submitting" :disabled="!canEdit" @click="onSave">保存草稿</el-button>-->
       <el-button type="primary" :loading="submitting" :disabled="!canSubmit" @click="onSubmit">提交审批</el-button>
     </div>
   </div>
