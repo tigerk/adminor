@@ -141,9 +141,3 @@ export const BANK_CARD_TYPE_OPTIONS = [
   { label: "借记卡", value: "DEBIT" },
   { label: "信用卡", value: "CREDIT" }
 ] as const;
-
-/** 退租确认单模板选项 */
-export const CONFIRMATION_TEMPLATE_OPTIONS = [
-  { label: "退租模板", value: "checkout_default" },
-  { label: "违约退租模板", value: "checkout_breach" }
-] as const;

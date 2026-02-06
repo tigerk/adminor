@@ -191,7 +191,11 @@
                 <tr v-for="(fee, index) in form.feeList" :key="index" class="fee-row">
                   <!-- 收支类型 -->
                   <td>
-                    <div class="direction-chip" :class="fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? 'chip-income' : 'chip-expense'" @click="canEdit && toggleDirection(fee)">
+                    <div
+                      class="direction-chip"
+                      :class="fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? 'chip-income' : 'chip-expense'"
+                      @click="canEdit && toggleDirection(fee)"
+                    >
                       {{ fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? "收入" : "支出" }}
                     </div>
                   </td>
@@ -400,9 +404,8 @@
       <div class="dialog-footer">
         <div class="footer-left">
           <el-checkbox v-model="form.sendConfirmation" :disabled="!canEdit">发送退租确认单给租客</el-checkbox>
-          <el-select v-if="form.sendConfirmation" v-model="form.confirmationTemplate" :disabled="!canEdit" style="width: 130px" size="small">
-            <el-option label="退租模板" value="checkout_default" />
-            <el-option label="违约退租模板" value="checkout_breach" />
+          <el-select v-if="form.sendConfirmation" v-model="form.confirmationTemplate" :disabled="!canEdit" style="width: 160px" size="small">
+            <el-option v-for="item in confirmationTemplateOptions" :key="item.id" :label="item.templateName" :value="item.id" />
           </el-select>
         </div>
         <div class="footer-right">
@@ -421,9 +424,18 @@
   import { computed, reactive, ref } from "vue";
   import { ElMessage, type FormInstance, type FormRules } from "element-plus";
   import { Check, CircleCheck, CirclePlus, Close, Delete, Plus, Tickets, Warning } from "@element-plus/icons-vue";
-  import { APPROVAL_STATUS_ENUM, CHECKOUT_FEE_TYPE_ENUM, CHECKOUT_STATUS_ENUM, CHECKOUT_TYPE_ENUM, FEE_DIRECTION_ENUM, SETTLEMENT_METHOD_ENUM } from "@/constants";
+  import {
+    APPROVAL_STATUS_ENUM,
+    CHECKOUT_FEE_TYPE_ENUM,
+    CHECKOUT_STATUS_ENUM,
+    CHECKOUT_TYPE_ENUM,
+    CONTRACT_TYPE_ENUM,
+    FEE_DIRECTION_ENUM,
+    SETTLEMENT_METHOD_ENUM
+  } from "@/constants";
   import type { CheckoutDetailProps, CheckoutFeeProps, CheckoutFormProps, CheckoutInitDataProps } from "@/types";
   import { getCheckoutByTenantId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
+  import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import { getDictDataByParentCode } from "@/api/sys/dict";
   import UploadImage from "@/components/Business/UploadImage.vue";
 
@@ -445,6 +457,8 @@
   const initData = ref<CheckoutInitDataProps | null>(null);
   const checkoutDetail = ref<CheckoutDetailProps | null>(null);
 
+  const confirmationTemplateOptions = ref<{ id: string; templateName: string }[]>([]);
+
   // ===== 费用类型字典数据 =====
   interface DictDataItem {
     id: string;
@@ -458,6 +472,14 @@
     dictDataList: DictDataItem[];
   }
   const feeTypeDictList = ref<DictGroup[]>([]);
+
+  async function loadConfirmationTemplates() {
+    if (confirmationTemplateOptions.value.length > 0) return;
+    const res = await getMyAvailableContractTemplates({ contractType: CONTRACT_TYPE_ENUM.CHECKOUT });
+    if (res.code === 0) {
+      confirmationTemplateOptions.value = res.data || [];
+    }
+  }
 
   /** 从字典接口加载费用类型 */
   async function loadFeeTypeDict() {
@@ -565,7 +587,7 @@
     bankName: "",
     bankBranch: "",
     sendConfirmation: false,
-    confirmationTemplate: "checkout_default",
+    confirmationTemplate: "",
     badDebtReason: ""
   });
 
@@ -748,6 +770,7 @@
     if (feeTypeDictList.value.length === 0) {
       await loadFeeTypeDict();
     }
+    await loadConfirmationTemplates();
 
     try {
       const existRes = await getCheckoutByTenantId(String(tenantId), leaseId ? String(leaseId) : undefined);
@@ -787,6 +810,10 @@
       form.payeePhone = res.data.payeeInfo.payeePhone || "";
     }
 
+    if (!form.confirmationTemplate && confirmationTemplateOptions.value.length > 0) {
+      form.confirmationTemplate = confirmationTemplateOptions.value[0].id;
+    }
+
     if (res.data.presetFees?.length > 0) {
       form.feeList = res.data.presetFees.map(pf => {
         const fee: CheckoutFeeProps = {
@@ -817,6 +844,10 @@
     form.expectedPaymentDate = detail.expectedPaymentDate;
     form.settlementMethod = detail.settlementMethod;
     form.remark = detail.remark;
+
+    if (!form.confirmationTemplate && confirmationTemplateOptions.value.length > 0) {
+      form.confirmationTemplate = confirmationTemplateOptions.value[0].id;
+    }
 
     form.feeList = detail.feeList.map(f => {
       const fee = { ...f, feeTypeCascade: null as [string, string] | null };
@@ -936,7 +967,7 @@
     form.bankName = "";
     form.bankBranch = "";
     form.sendConfirmation = false;
-    form.confirmationTemplate = "checkout_default";
+    form.confirmationTemplate = "";
     form.badDebtReason = "";
     initData.value = null;
     checkoutDetail.value = null;

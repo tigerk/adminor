@@ -171,6 +171,13 @@ export const CONTRACT_TYPE_OPTIONS = [
   { label: "退租合同", value: 4 }
 ] as const;
 
+export const CONTRACT_TYPE_ENUM = {
+  TENANT: 1,
+  LANDLORD: 2,
+  BOOKING: 3,
+  CHECKOUT: 4
+} as const;
+
 export const CONTRACT_TEMPLATE_STATUS_OPTIONS = [
   { label: "未启用", value: 0 },
   { label: "启用中", value: 1 }
