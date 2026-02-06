@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import { ApiResponse, PaginationResponse, TenantBillListProps, TenantContractProps, TenantDetailProps } from "@/types";
+import { ApiResponse, PaginationResponse, LeaseBillListProps, LeaseContractProps, TenantDetailProps } from "@/types";
 
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
@@ -15,6 +15,11 @@ export const getTenantList = (data?: object) => {
 /** 创建租客 */
 export const createTenant = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/create"), { data });
+};
+
+/** 续签租约 */
+export const renewLease = (data?: object) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/renew"), { data });
 };
 
 /** 更新租客 */
@@ -38,32 +43,32 @@ export const getTenantDetail = (data?: object) => {
 };
 
 /** 获取租客账单列表 */
-export const getTenantBillList = (data?: object) => {
-  return http.request<ApiResponse<TenantBillListProps[]>>("post", baseUrlApi("contract/tenant/bill/list"), { data });
+export const getLeaseBillList = (data?: object) => {
+  return http.request<ApiResponse<LeaseBillListProps[]>>("post", baseUrlApi("contract/tenant/bill/list"), { data });
 };
 
 /** 获取租客无效账单列表 */
-export const getTenantBillInvalidList = (data?: object) => {
-  return http.request<ApiResponse<TenantBillListProps[]>>("post", baseUrlApi("contract/tenant/bill/invalid/list"), { data });
+export const getLeaseBillInvalidList = (data?: object) => {
+  return http.request<ApiResponse<LeaseBillListProps[]>>("post", baseUrlApi("contract/tenant/bill/invalid/list"), { data });
 };
 
 /** 生成租客合同 */
-export const generateTenantContract = (data?: object) => {
-  return http.request<ApiResponse<TenantContractProps>>("post", baseUrlApi("contract/tenant/contract/generate"), { data });
+export const generateLeaseContract = (data?: object) => {
+  return http.request<ApiResponse<LeaseContractProps>>("post", baseUrlApi("contract/tenant/contract/generate"), { data });
 };
 
 /** 下载租客合同 */
-export const downloadTenantContract = (data?: object) => {
+export const downloadLeaseContract = (data?: object) => {
   return http.request<Blob>("post", baseUrlApi("contract/tenant/contract/download"), { data }, { responseType: "blob" });
 };
 
 /** 更新租客合同签署状态 */
-export const updateTenantContractSignStatus = (data?: object) => {
+export const updateLeaseContractSignStatus = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/contract/sign/status/update"), { data });
 };
 
 /** 删除租客合同 */
-export const deleteTenantContract = (data?: object) => {
+export const deleteLeaseContract = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/tenant/contract/delete"), { data });
 };
 
@@ -73,6 +78,6 @@ export const cancelTenant = (data?: object) => {
 };
 
 /** 租客合同预览 */
-export const previewTenantContract = (data?: object) => {
+export const previewLeaseContract = (data?: object) => {
   return http.request<Blob>("post", baseUrlApi("contract/tenant/contract/preview"), { data }, { responseType: "blob" });
 };

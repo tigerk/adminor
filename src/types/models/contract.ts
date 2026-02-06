@@ -14,9 +14,9 @@ export interface ContractTemplateFormProps {
 }
 
 /** 租客合同 */
-export interface TenantContractProps {
+export interface LeaseContractProps {
   id?: string;
-  tenantId?: string;
+  leaseId?: string;
   contractTemplateId?: string;
   contractTemplateName?: string;
   contractContent?: string;

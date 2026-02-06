@@ -307,7 +307,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
               roomIds: [room.roomId],
               roomList: [room]
             },
-            tenant: undefined,
+            lease: undefined,
             tenantPersonal: undefined,
             tenantCompany: undefined,
             tenantMateList: undefined,

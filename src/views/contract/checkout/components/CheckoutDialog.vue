@@ -191,8 +191,8 @@
                 <tr v-for="(fee, index) in form.feeList" :key="index" class="fee-row">
                   <!-- 收支类型 -->
                   <td>
-                    <div class="direction-chip" :class="fee.feeDirection === FEE_DIRECTION_ENUM.INCOME ? 'chip-income' : 'chip-expense'" @click="canEdit && toggleDirection(fee)">
-                      {{ fee.feeDirection === FEE_DIRECTION_ENUM.INCOME ? "收入" : "支出" }}
+                    <div class="direction-chip" :class="fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? 'chip-income' : 'chip-expense'" @click="canEdit && toggleDirection(fee)">
+                      {{ fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? "收入" : "支出" }}
                     </div>
                   </td>
                   <!-- 费用类型（级联） -->
@@ -543,6 +543,7 @@
   const form = reactive<CheckoutFormProps & { badDebtReason: string }>({
     id: undefined,
     tenantId: "",
+    leaseId: "",
     checkoutType: CHECKOUT_TYPE_ENUM.NORMAL,
     actualCheckoutDate: "",
     breachReason: "",
@@ -574,8 +575,8 @@
   });
 
   // 计算属性
-  const incomeTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.INCOME).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
-  const expenseTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.EXPENSE).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
+  const incomeTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
+  const expenseTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
   const finalAmount = computed(() => incomeTotal.value - expenseTotal.value);
 
   const canEdit = computed(() => {
@@ -644,19 +645,19 @@
   }
 
   function toggleDirection(fee: CheckoutFeeProps) {
-    fee.feeDirection = fee.feeDirection === FEE_DIRECTION_ENUM.INCOME ? FEE_DIRECTION_ENUM.EXPENSE : FEE_DIRECTION_ENUM.INCOME;
+    fee.feeDirection = fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? FEE_DIRECTION_ENUM.REFUND : FEE_DIRECTION_ENUM.DEDUCTION;
   }
 
   // 退租类型变更
   function handleCheckoutTypeChange(val: number) {
     if (val === CHECKOUT_TYPE_ENUM.BREACH) {
-      form.feeList = form.feeList.filter(f => !(f.feeDirection === FEE_DIRECTION_ENUM.EXPENSE && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND));
+      form.feeList = form.feeList.filter(f => !(f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND));
     } else if (val === CHECKOUT_TYPE_ENUM.NORMAL) {
       form.breachReason = "";
-      const hasDepositRefund = form.feeList.some(f => f.feeDirection === FEE_DIRECTION_ENUM.EXPENSE && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
+      const hasDepositRefund = form.feeList.some(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
       if (!hasDepositRefund && initData.value && initData.value.depositAmount > 0) {
         const newFee: CheckoutFeeProps = {
-          feeDirection: FEE_DIRECTION_ENUM.EXPENSE,
+          feeDirection: FEE_DIRECTION_ENUM.REFUND,
           feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
           feeSubName: "房屋押金",
           feeAmount: initData.value.depositAmount,
@@ -685,7 +686,7 @@
     const exists = form.feeList.some(f => f.feeType === CHECKOUT_FEE_TYPE_ENUM.CLEANING);
     if (!exists) {
       form.feeList.push({
-        feeDirection: FEE_DIRECTION_ENUM.INCOME,
+        feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
         feeType: CHECKOUT_FEE_TYPE_ENUM.CLEANING,
         feeSubName: "清洁费",
         feeAmount: form.cleaningFeeAmount || 0,
@@ -708,7 +709,7 @@
   function handleAddFee() {
     const today = getTodayStr();
     form.feeList.push({
-      feeDirection: FEE_DIRECTION_ENUM.INCOME,
+      feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
       feeType: null,
       feeSubName: "",
       feeAmount: null,
@@ -738,7 +739,7 @@
   }
 
   // 打开对话框
-  async function open(tenantId: string | number) {
+  async function open(tenantId: string | number, leaseId?: string | number) {
     visible.value = true;
     loading.value = true;
     currentStep.value = 1;
@@ -749,16 +750,16 @@
     }
 
     try {
-      const existRes = await getCheckoutByTenantId(String(tenantId));
+      const existRes = await getCheckoutByTenantId(String(tenantId), leaseId ? String(leaseId) : undefined);
       if (existRes.data?.id) {
         await loadCheckoutDetail(existRes.data);
       } else {
-        await loadInitData(String(tenantId));
+        await loadInitData(String(tenantId), leaseId ? String(leaseId) : undefined);
       }
     } catch (error: any) {
       if (error?.response?.status === 404 || error?.code === 404 || !error?.data?.id) {
         try {
-          await loadInitData(String(tenantId));
+          await loadInitData(String(tenantId), leaseId ? String(leaseId) : undefined);
         } catch (initError) {
           console.error("加载初始化数据失败", initError);
           ElMessage.error("加载数据失败");
@@ -772,10 +773,11 @@
     }
   }
 
-  async function loadInitData(tenantId: string) {
-    const res = await getCheckoutInitData(tenantId);
+  async function loadInitData(tenantId: string, leaseId?: string) {
+    const res = await getCheckoutInitData(tenantId, leaseId);
     initData.value = res.data;
     form.tenantId = tenantId;
+    form.leaseId = leaseId || res.data.leaseId || "";
     form.actualCheckoutDate = getTodayStr();
     form.expectedPaymentDate = getTodayStr();
     form.checkoutType = CHECKOUT_TYPE_ENUM.NORMAL;
@@ -808,6 +810,7 @@
     checkoutDetail.value = detail;
     form.id = detail.id;
     form.tenantId = detail.tenantId;
+    form.leaseId = detail.leaseId || "";
     form.checkoutType = detail.checkoutType;
     form.actualCheckoutDate = detail.actualCheckoutDate;
     form.breachReason = detail.breachReason || "";
@@ -911,6 +914,7 @@
   function resetForm() {
     form.id = undefined;
     form.tenantId = "";
+    form.leaseId = "";
     form.checkoutType = CHECKOUT_TYPE_ENUM.NORMAL;
     form.actualCheckoutDate = "";
     form.breachReason = "";

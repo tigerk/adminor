@@ -166,7 +166,7 @@
 
     switch (menuType) {
       case "tenant-contract":
-        handleTenantContract();
+        handleLeaseContract();
         break;
       case "owner-contract":
         handleOwnerContract();
@@ -209,7 +209,7 @@
     }
   };
 
-  const handleTenantContract = () => {
+  const handleLeaseContract = () => {
     ElMessage.success("打开租客合同模块");
   };
 

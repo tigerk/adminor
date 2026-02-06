@@ -4,6 +4,7 @@
 
   interface Props {
     tenantId: number;
+    leaseId?: number;
     tenantStatus: number;
     disabled?: boolean;
   }
@@ -29,7 +30,7 @@
 
     router.push({
       path: "/tenant/checkout",
-      query: { tenantId: props.tenantId }
+      query: { tenantId: props.tenantId, leaseId: props.leaseId }
     });
   }
 </script>

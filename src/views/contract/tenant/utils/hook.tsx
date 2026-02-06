@@ -47,7 +47,7 @@ function useTenant() {
   const switchLoadMap = ref({});
   const { switchStyle } = usePublicHooks();
 
-  const tenantContractSignStatusOptions = [...TENANT_SIGN_STATUS_OPTIONS] as any[];
+  const leaseContractSignStatusOptions = [...TENANT_SIGN_STATUS_OPTIONS] as any[];
   const mutableTenantStatusOptions = [...TENANT_STATUS_OPTIONS] as any[];
 
   // 计算当前页的起始索引
@@ -67,7 +67,7 @@ function useTenant() {
       .then(() => {
         switchLoadMap.value[index] = { ...switchLoadMap.value[index], loading: true };
 
-        updateTenantStatus({ id: row.id, status: row.status }).then(resp => {
+        updateTenantStatus({ id: row.tenantId, status: row.status }).then(resp => {
           if (resp.code === 0) {
             switchLoadMap.value[index] = { ...switchLoadMap.value[index], loading: false };
             message(`已成功${row.status === 1 ? "启用" : "停用"}"${row.name}"`, {
@@ -250,10 +250,10 @@ function useTenant() {
   }
 
   /** 高亮当前权限选中行 */
-  function rowStyle({ row: { id } }) {
+  function rowStyle({ row: { leaseId } }) {
     return {
       cursor: "pointer",
-      background: id === curRow.value?.id ? "var(--el-fill-color-light)" : ""
+      background: leaseId === curRow.value?.leaseId ? "var(--el-fill-color-light)" : ""
     };
   }
 
@@ -307,7 +307,7 @@ function useTenant() {
     });
   });
 
-  function openTenantDialog(title = "添加租客", row?: TenantsCreateFormProps, onSuccess?: (tenantId: string) => void) {
+  function openTenantDialog(title = "添加租客", row?: TenantsCreateFormProps, onSuccess?: (leaseId: string) => void) {
     addDialog({
       title: `${title}`,
       props: {
@@ -337,7 +337,7 @@ function useTenant() {
 
         getFormRuleRef.validate(valid => {
           if (valid) {
-            const apiCall = curData?.tenant?.id == null ? createTenant : updateTenant;
+            const apiCall = curData?.lease?.id == null ? createTenant : updateTenant;
 
             // 处理 imageList 字段，图片对象时，提取 url 字段，字符串时，直接添加
             curData.tenantPersonal.idCardBackList = convertImage2string(curData.tenantPersonal.idCardBackList);
@@ -345,15 +345,19 @@ function useTenant() {
             curData.tenantPersonal.idCardInHandList = convertImage2string(curData.tenantPersonal.idCardInHandList);
             curData.tenantPersonal.otherImageList = convertImage2string(curData.tenantPersonal.otherImageList);
 
-            curData.tenant.leaseStart = curData.tenant.leaseDate[0];
-            curData.tenant.leaseEnd = curData.tenant.leaseDate[1];
-            curData.tenant.checkInTime = curData.tenant.checkDate[0];
-            curData.tenant.checkOutTime = curData.tenant.checkDate[1];
-            curData.tenant.roomIds = FormInstance.roomSelection.map(item => item.value);
+            const leaseDate = curData.lease.leaseDate || [];
+            const checkDate = curData.lease.checkDate || [];
+            curData.lease.leaseStart = leaseDate[0];
+            curData.lease.leaseEnd = leaseDate[1];
+            curData.lease.checkInTime = checkDate[0];
+            curData.lease.checkOutTime = checkDate[1];
+            curData.lease.roomIds = FormInstance.roomSelection.map(item => item.value);
 
             apiCall(curData).then(resp => {
               if (resp.code === 0) {
-                message(`您${title}了租客"${curData.tenant.tenantName}"`, {
+                const tenantName =
+                  curData.lease.tenantType === 0 ? curData.tenantPersonal.name : curData.tenantCompany.companyName;
+                message(`您${title}了租客"${tenantName}"`, {
                   type: "success"
                 });
                 onSuccess?.(resp.data);
@@ -471,13 +475,13 @@ function useTenant() {
   function openTenantViewDialog(
     title = "查看",
     row?: TenantRowProps | any,
-    options?: { readonly?: boolean; onContractSigned?: (tenantId: string) => void; onContractUpdated?: () => void }
+    options?: { readonly?: boolean; onContractSigned?: (leaseId: string) => void; onContractUpdated?: () => void }
   ) {
     // 设置 loading 状态为 true
     loading.value = true;
 
     // 从 API 获取租客详情
-    getTenantDetail({ tenantId: row.id })
+    getTenantDetail({ leaseId: row.leaseId })
       .then(resp => {
         loading.value = false;
 
@@ -495,8 +499,8 @@ function useTenant() {
               // 传递事件处理器
               onContractSigned:
                 options?.onContractSigned ||
-                ((tenantId: string) => {
-                  updateTenantRowStatus(tenantId, 1);
+                ((leaseId: string) => {
+                  updateTenantRowStatus(leaseId, 1);
                 }),
               onContractUpdated:
                 options?.onContractUpdated ||
@@ -532,8 +536,8 @@ function useTenant() {
   }
 
   // 辅助函数：只更新指定租客的状态（可选，更高效）
-  function updateTenantRowStatus(tenantId: string, signStatus: number) {
-    const tenant = tenantList.value.find(t => t.id === tenantId);
+  function updateTenantRowStatus(leaseId: string, signStatus: number) {
+    const tenant = tenantList.value.find(t => t.leaseId === leaseId);
     if (tenant) {
       // 修改为在租状态
       tenant.status = signStatus;

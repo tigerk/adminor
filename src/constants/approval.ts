@@ -97,7 +97,7 @@ export const APPROVAL_BIZ_TYPE_ENUM = {
   TENANT_CHECKOUT: {
     code: "TENANT_CHECKOUT",
     name: "租客退租",
-    tableName: "tenant_checkout",
+    tableName: "lease_checkout",
     pkField: "id"
   },
   HOUSE_CREATE: {

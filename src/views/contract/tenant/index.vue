@@ -61,7 +61,7 @@
     <el-row class="bg-bg_color w-full px-4 pt-0 overflow-auto">
       <pure-table
         border
-        row-key="id"
+        row-key="leaseId"
         alignWhole="center"
         :show-overflow-tooltip="false"
         :loading="loading"
@@ -128,8 +128,8 @@
   import EpCollection from "~icons/ep/collection";
   import EpRemove from "~icons/ep/remove";
   import More from "~icons/ep/more-filled";
-  import { TenantRowProps } from "@/types";
-  import { cancelTenant, previewTenantContract } from "@/api/contract/tenant";
+  import { TenantRowProps, TenantsCreateFormProps } from "@/types";
+  import { cancelTenant, getTenantDetail, previewLeaseContract } from "@/api/contract/tenant";
   import { message } from "@/utils/message";
   import { ElMessageBox } from "element-plus";
   import { hideLoading, showLoading } from "@/utils/yeah";
@@ -177,7 +177,7 @@
   };
 
   const handleCancelTenant = (row: TenantRowProps) => {
-    cancelTenant({ tenantId: row.id })
+    cancelTenant({ leaseId: row.leaseId })
       .then(resp => {
         if (resp.code == 0) {
           message("作废租客成功");
@@ -203,7 +203,7 @@
     }
 
     // 打开退租对话框
-    checkoutDialogRef.value?.open(row.id);
+    checkoutDialogRef.value?.open(row.tenantId, row.leaseId);
   };
 
   /** 退租成功回调 */
@@ -214,13 +214,47 @@
   };
 
   /** 租客续约 */
-  const handleTenantRenew = row => {};
+  const handleTenantRenew = (row: TenantRowProps) => {
+    if (!row?.leaseId || !row?.tenantId) {
+      message("租约信息不完整，无法续约", { type: "warning" });
+      return;
+    }
+    getTenantDetail({ leaseId: row.leaseId })
+      .then(resp => {
+        if (resp.code !== 0) {
+          message(resp.message || "获取租约详情失败", { type: "error" });
+          return;
+        }
+        const detail = resp.data;
+        const renewData: TenantsCreateFormProps = {
+          tenantPersonal: detail.tenantPersonal,
+          tenantCompany: detail.tenantCompany,
+          tenantMateList: detail.tenantMateList || [],
+          lease: {
+            ...detail,
+            id: undefined,
+            tenantId: detail.tenantId,
+            parentLeaseId: detail.leaseId,
+            contractNature: 2,
+            leaseStart: detail.leaseEnd,
+            leaseEnd: detail.leaseEnd,
+            leaseDate: [detail.leaseEnd, detail.leaseEnd],
+            checkDate: detail.checkOutTime ? [detail.checkOutTime, detail.checkOutTime] : undefined
+          },
+          otherFees: detail.otherFees || []
+        };
+        openTenantDialog("续签租约 " + detail.tenantName, renewData);
+      })
+      .catch(() => {
+        message("获取租约详情失败", { type: "error" });
+      });
+  };
 
   const previewVisible = ref(false);
   const pdfUrl = ref("");
   function handlePreview(row: any) {
     showLoading();
-    previewTenantContract({ tenantId: row.id })
+    previewLeaseContract({ leaseId: row.leaseId })
       .then(resp => {
         const blob = new Blob([resp], { type: "application/pdf" });
         pdfUrl.value = URL.createObjectURL(blob);

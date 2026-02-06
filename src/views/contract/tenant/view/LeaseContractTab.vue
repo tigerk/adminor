@@ -1,7 +1,7 @@
 <template>
   <div class="tab-content">
     <!-- 有合同信息时显示 -->
-    <div v-if="tenantContract" class="contract-section">
+    <div v-if="leaseContract" class="contract-section">
       <!-- 操作按钮栏 -->
       <div class="contract-action-bar">
         <div class="action-left">
@@ -19,12 +19,12 @@
           <el-space :size="16" alignment="flex-end">
             <div class="info-item">
               <span class="info-label">合同模板：</span>
-              <span class="info-value">{{ tenantContract.contractTemplateName || "未设置" }}</span>
+              <span class="info-value">{{ leaseContract.contractTemplateName || "未设置" }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">签约状态：</span>
-              <el-tag :type="tenantContract.signStatus === 0 ? 'danger' : 'success'" size="small">
-                {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === tenantContract.signStatus)?.label || "未知" }}
+              <el-tag :type="leaseContract.signStatus === 0 ? 'danger' : 'success'" size="small">
+                {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === leaseContract.signStatus)?.label || "未知" }}
               </el-tag>
             </div>
             <div class="info-item">
@@ -35,22 +35,22 @@
         </div>
       </div>
       <!-- 合同信息摘要 -->
-      <div v-if="tenantContract.remark" class="mb-2">
+      <div v-if="leaseContract.remark" class="mb-2">
         <el-descriptions :column="1" size="default">
           <el-descriptions-item label="合同备注" label-align="right">
-            <span class="text-value">{{ tenantContract.remark }}</span>
+            <span class="text-value">{{ leaseContract.remark }}</span>
           </el-descriptions-item>
         </el-descriptions>
       </div>
 
       <!-- 合同内容预览区域 -->
-      <div v-if="tenantContract.contractContent" class="contract-content-section">
+      <div v-if="leaseContract.contractContent" class="contract-content-section">
         <div class="contract-header">
           <span class="contract-title">合同内容</span>
           <el-tag type="info" size="small">预览模式</el-tag>
         </div>
         <div class="contract-preview-wrapper">
-          <div class="contract-preview" v-html="tenantContract.contractContent" />
+          <div class="contract-preview" v-html="leaseContract.contractContent" />
         </div>
       </div>
 
@@ -75,15 +75,15 @@
   import { Checked, Document, Download } from "@element-plus/icons-vue";
   import { TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_ENUM } from "@/constants";
   import { message } from "@/utils/message";
-  import { downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
+  import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
-  import { TenantContractProps } from "@/types";
+  import { LeaseContractProps } from "@/types";
 
   interface Props {
-    tenantContract: TenantContractProps | null;
-    tenantId: string; // 租客ID，用于事件回调
+    leaseContract: LeaseContractProps | null;
+    leaseId: string; // 租约ID，用于事件回调
     tenantStatus: number;
     createTime?: Date;
     readonly?: boolean;
@@ -94,11 +94,11 @@
   });
 
   const emit = defineEmits<{
-    "contract-signed": [tenantId: string];
-    "contract-updated": [contract: TenantContractProps];
+    "contract-signed": [leaseId: string];
+    "contract-updated": [contract: LeaseContractProps];
   }>();
 
-  const localContract = ref<TenantContractProps | null>(props.tenantContract ? { ...props.tenantContract } : null);
+  const localContract = ref<LeaseContractProps | null>(props.leaseContract ? { ...props.leaseContract } : null);
 
   // 格式化创建时间
   const formattedCreateTime = computed(() => {
@@ -127,14 +127,14 @@
       message("合同内容为空，无法下载", { type: "warning" });
       return;
     }
-    downloadTenantContract({
-      tenantId: props.tenantId
+    downloadLeaseContract({
+      leaseId: props.leaseId
     }).then(res => {
       const blob = new Blob([res], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `租客合同_${props.tenantId}.pdf`;
+      a.download = `租客合同_${props.leaseId}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -156,7 +156,7 @@
       title: `重新生成合同，请选择合同模板`,
       props: {
         formInline: {
-          tenantId: props.tenantId
+          leaseId: props.leaseId
         }
       },
       top: "8%",
@@ -165,16 +165,16 @@
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, tenantId: props.tenantId }),
+      contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, leaseId: props.leaseId }),
       beforeSure: (done, { options }) => {
         const selectedTemplate = formRef.value.getSelectedTemplate();
         if (!selectedTemplate) {
           message("请选择合同模板", { type: "warning" });
           return;
         }
-        generateTenantContract({
-          tenantContractId: contractId,
-          tenantId: props.tenantId,
+        generateLeaseContract({
+          leaseContractId: contractId,
+          leaseId: props.leaseId,
           contractTemplateId: selectedTemplate
         }).then(resp => {
           if (resp.code == 0) {
@@ -198,14 +198,14 @@
       message("合同已签约，无需重复操作", { type: "warning" });
       return;
     }
-    updateTenantContractSignStatus({
-      tenantContractId: localContract.value.id,
+    updateLeaseContractSignStatus({
+      leaseContractId: localContract.value.id,
       signStatus: 1
     }).then(resp => {
       if (resp.code == 0) {
         message("合同签约成功", { type: "success" });
         localContract.value!.signStatus = 1;
-        emit("contract-signed", props.tenantId);
+        emit("contract-signed", props.leaseId);
       } else {
         message(resp.message || "合同签约修改失败", { type: "warning" });
       }
@@ -213,7 +213,7 @@
   };
 
   watch(
-    () => props.tenantContract,
+    () => props.leaseContract,
     newVal => {
       localContract.value = newVal ? { ...newVal } : null;
     },

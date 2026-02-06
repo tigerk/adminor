@@ -14,6 +14,8 @@ export function useCheckout() {
 
   // 租客ID
   const tenantId = computed(() => String(route.query.tenantId) || "");
+  // 租约ID
+  const leaseId = computed(() => String(route.query.leaseId) || "");
   // 退租单ID（编辑时）
   const checkoutId = computed(() => String(route.query.id) || "");
   // 是否编辑模式
@@ -29,6 +31,7 @@ export function useCheckout() {
   const form = reactive<CheckoutFormProps>({
     id: undefined,
     tenantId: "",
+    leaseId: "",
     checkoutType: null,
     checkoutReason: "",
     actualCheckoutDate: "",
@@ -87,11 +90,12 @@ export function useCheckout() {
 
     loading.value = true;
     try {
-      const res = await getCheckoutInitData(tenantId.value);
+      const res = await getCheckoutInitData(tenantId.value, leaseId.value || undefined);
       initData.value = res.data;
 
       // 设置表单默认值
       form.tenantId = tenantId.value;
+      form.leaseId = res.data.leaseId || leaseId.value;
       form.depositAmount = res.data.depositAmount;
       form.actualCheckoutDate = new Date().toISOString().split("T")[0];
 
@@ -102,8 +106,8 @@ export function useCheckout() {
       if (res.data.unpaidBills && res.data.unpaidBills.length > 0) {
         res.data.unpaidBills.forEach(bill => {
           addFee({
-            feeType: CHECKOUT_FEE_TYPE_ENUM.UNPAID_RENT,
-            feeName: `${bill.feeType} (${bill.billPeriod})`,
+            feeType: CHECKOUT_FEE_TYPE_ENUM.RENT,
+            feeName: `${bill.billTypeName} (${bill.billPeriod})`,
             feeAmount: bill.unpaidAmount,
             feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
             billId: bill.billId
@@ -130,6 +134,7 @@ export function useCheckout() {
       // 填充表单
       form.id = res.data.id;
       form.tenantId = res.data.tenantId;
+      form.leaseId = res.data.leaseId || "";
       form.checkoutType = res.data.checkoutType;
       form.checkoutReason = res.data.checkoutReason;
       form.actualCheckoutDate = res.data.actualCheckoutDate;
@@ -150,15 +155,23 @@ export function useCheckout() {
       // 设置初始化数据
       initData.value = {
         tenantId: res.data.tenantId,
+        leaseId: res.data.leaseId,
         tenantName: res.data.tenantName,
         tenantPhone: res.data.tenantPhone,
+        roomAddress: res.data.roomAddress || "",
         roomInfo: res.data.roomInfo,
-        leaseStart: "",
+        leaseStart: res.data.leaseStart || "",
         leaseEnd: res.data.leaseEnd,
-        rentPrice: 0,
-        depositAmount: res.data.depositAmount,
+        rentPrice: res.data.rentPrice || 0,
+        depositAmount: res.data.depositAmount || 0,
+        depositMonths: 0,
         unpaidBills: [],
-        unpaidAmount: 0
+        unpaidAmount: 0,
+        presetFees: [],
+        payeeInfo: {
+          payeeName: res.data.tenantName,
+          payeePhone: res.data.tenantPhone
+        }
       };
     } catch (error) {
       console.error("加载退租单详情失败", error);

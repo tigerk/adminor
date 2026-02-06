@@ -4,7 +4,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { cancelBooking, createBooking, getBookingDetail, getBookingList, getBookingTotal } from "@/api/contract/booking";
-import type { BookingCancelProps, BookingListProps, BookingQueryParams, TenantCompanyProps, TenantPersonalProps, TenantProps } from "@/types";
+import type { BookingCancelProps, BookingListProps, BookingQueryParams, LeaseProps, TenantCompanyProps, TenantPersonalProps } from "@/types";
 import { ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import BookingCreateForm from "../form/bookingCreateForm.vue";
@@ -350,10 +350,7 @@ function useBooking() {
         };
       }
 
-      const tenant: TenantProps = {
-        tenantName: row.tenantName,
-        tenantPhone: row.tenantPhone,
-        tenantType: row.tenantType,
+      const lease: LeaseProps = {
         contractNature: undefined,
         roomIds: row.roomIds,
         contractTemplateId: undefined,
@@ -371,7 +368,7 @@ function useBooking() {
 
       openTenantDialog("添加", {
         booking: row,
-        tenant: tenant,
+        lease: lease,
         tenantCompany: tenantCompany,
         tenantPersonal: tenantPersonal,
         tenantMateList: [],

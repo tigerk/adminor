@@ -111,6 +111,10 @@ export function useDict() {
   }
 
   function handleDelete(row) {
+    if (row.deletable === 0) {
+      message("该字典项不允许删除", { type: "error" });
+      return;
+    }
     deleteDictData([row.id]).then(resp => {
       message(`您删除了字典标签为${row.name}的这条数据`, { type: "success" });
       onSearch();

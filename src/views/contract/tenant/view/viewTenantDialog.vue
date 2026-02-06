@@ -295,7 +295,7 @@
             </el-space>
           </template>
           <div class="tab-content">
-            <TenantBillTab :tenant-id="localFormInline.id" />
+            <LeaseBillTab :lease-id="localFormInline.leaseId" />
           </div>
         </el-tab-pane>
 
@@ -305,19 +305,19 @@
             <el-space class="tab-label">
               <el-icon><Document /></el-icon>
               <span>合同信息</span>
-              <el-tag :type="localFormInline.tenantContract?.signStatus === 0 ? 'danger' : 'success'" size="default">
-                {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === localFormInline?.tenantContract?.signStatus)?.label || "未知" }}
+              <el-tag :type="localFormInline.leaseContract?.signStatus === 0 ? 'danger' : 'success'" size="default">
+                {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === localFormInline?.leaseContract?.signStatus)?.label || "未知" }}
               </el-tag>
             </el-space>
           </template>
-          <TenantContractTab
-            :tenant-contract="localFormInline.tenantContract"
-            :tenant-id="localFormInline.id"
+          <LeaseContractTab
+            :lease-contract="localFormInline.leaseContract"
+            :lease-id="localFormInline.leaseId"
             :tenant-status="localFormInline.status"
             :create-time="localFormInline.createTime"
             :readonly="readonly"
-            @contract-signed="tenantId => emit('contract-signed', tenantId)"
-            @contract-updated="contract => (localFormInline.tenantContract = contract)"
+            @contract-signed="leaseId => emit('contract-signed', leaseId)"
+            @contract-updated="contract => (localFormInline.leaseContract = contract)"
           />
         </el-tab-pane>
 
@@ -331,7 +331,7 @@
             </el-space>
           </template>
           <div class="tab-content">
-            <DeliveryTab :room-list="localFormInline.roomList" :subject-type-id="localFormInline.id" />
+            <DeliveryTab :room-list="localFormInline.roomList" :subject-type-id="localFormInline.leaseId" />
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -353,14 +353,14 @@
   } from "@/constants";
   import { Document, Edit, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
-  import { downloadTenantContract, generateTenantContract, updateTenantContractSignStatus } from "@/api/contract/tenant";
+  import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import DeliveryTab from "@/views/contract/tenant/view/DeliveryTab.vue";
-  import TenantContractTab from "@/views/contract/tenant/view/TenantContractTab.vue";
-  import TenantBillTab from "@/views/contract/tenant/view/TenantBillTab.vue";
+  import LeaseContractTab from "@/views/contract/tenant/view/LeaseContractTab.vue";
+  import LeaseBillTab from "@/views/contract/tenant/view/LeaseBillTab.vue";
 
   const { openTenantDialog } = useTenant();
 
@@ -384,7 +384,7 @@
   );
 
   const emit = defineEmits<{
-    "contract-signed": [tenantId: string];
+    "contract-signed": [leaseId: string];
     "contract-updated": [];
   }>();
 
@@ -412,18 +412,18 @@
   };
 
   const handleDownloadContract = () => {
-    if (!props.formInline.tenantContract?.contractContent) {
+    if (!props.formInline.leaseContract?.contractContent) {
       message("合同内容为空，无法下载", { type: "warning" });
       return;
     }
-    downloadTenantContract({
-      tenantId: props.formInline.tenantContract.tenantId
+    downloadLeaseContract({
+      leaseId: props.formInline.leaseContract.leaseId
     }).then(res => {
       const blob = new Blob([res], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `租客合同_${props.formInline.tenantContract.tenantId}.pdf`;
+      a.download = `租客合同_${props.formInline.leaseContract.leaseId}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -438,7 +438,7 @@
       title: `重新生成合同，请选择合同模板`,
       props: {
         formInline: {
-          tenantId: props.formInline.tenantContract.tenantId
+          leaseId: props.formInline.leaseContract.leaseId
         }
       },
       top: "8%",
@@ -447,20 +447,20 @@
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, tenantId: props.formInline.tenantContract.tenantId }),
+      contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, leaseId: props.formInline.leaseContract.leaseId }),
       beforeSure: (done, { options }) => {
         const selectedTemplate = formRef.value.getSelectedTemplate();
         if (!selectedTemplate) {
           message("请选择合同模板", { type: "warning" });
           return;
         }
-        generateTenantContract({
-          tenantContractId: localFormInline.value.tenantContract.id,
-          tenantId: localFormInline.value.tenantContract.tenantId,
+        generateLeaseContract({
+          leaseContractId: localFormInline.value.leaseContract.id,
+          leaseId: localFormInline.value.leaseContract.leaseId,
           contractTemplateId: selectedTemplate
         }).then(resp => {
           if (resp.code == 0) {
-            localFormInline.value.tenantContract = resp.data;
+            localFormInline.value.leaseContract = resp.data;
             message("合同生成成功", { type: "success" });
             done();
           }
@@ -470,18 +470,18 @@
   };
 
   const handleSignContract = () => {
-    if (localFormInline.value.tenantContract?.signStatus === 1) {
+    if (localFormInline.value.leaseContract?.signStatus === 1) {
       message("合同已签约，无需重复操作", { type: "warning" });
       return;
     }
-    updateTenantContractSignStatus({
-      tenantContractId: localFormInline.value.tenantContract.id,
+    updateLeaseContractSignStatus({
+      leaseContractId: localFormInline.value.leaseContract.id,
       signStatus: 1
     }).then(resp => {
       if (resp.code == 0) {
         message("合同签约成功", { type: "success" });
-        localFormInline.value.tenantContract.signStatus = 1;
-        emit("contract-signed", localFormInline.value.id);
+        localFormInline.value.leaseContract.signStatus = 1;
+        emit("contract-signed", localFormInline.value.leaseId);
       } else {
         message(resp.message || "合同签约修改失败", { type: "warning" });
       }
@@ -510,9 +510,11 @@
       return;
     }
     const tenantCreateFormInline: TenantsCreateFormProps = {
-      tenant: {
+      lease: {
         ...row,
-        contractTemplateId: row.tenantContract?.contractTemplateId
+        id: row.leaseId,
+        tenantId: row.tenantId,
+        contractTemplateId: row.leaseContract?.contractTemplateId
       },
       tenantPersonal: { ...row.tenantPersonal },
       tenantCompany: { ...row.tenantCompany },

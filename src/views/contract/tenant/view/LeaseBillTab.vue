@@ -53,10 +53,12 @@
             <template #default="{ row }">{{ row.dueDate?.substring(0, 10) }}</template>
           </el-table-column>
 
-          <el-table-column prop="billType" label="账单类型" align="center" width="100">
+          <el-table-column prop="billType" label="账单类型" align="center" width="110">
             <template #default="{ row }">
               <el-tag v-if="row.billType === 1" type="success">租金</el-tag>
               <el-tag v-else-if="row.billType === 2" type="warning">押金</el-tag>
+              <el-tag v-else-if="row.billType === 5" type="success">押金结转入</el-tag>
+              <el-tag v-else-if="row.billType === 6" type="warning">押金结转出</el-tag>
               <el-tag v-else type="info">其他费用</el-tag>
             </template>
           </el-table-column>
@@ -78,7 +80,7 @@
 
           <el-table-column prop="depositAmount" label="押金" align="center" width="100">
             <template #default="{ row }">
-              <span v-if="row.depositAmount > 0" class="amount-text">¥{{ row.depositAmount }}</span>
+              <span v-if="row.depositAmount !== 0" class="amount-text">¥{{ row.depositAmount }}</span>
               <span v-else>-</span>
             </template>
           </el-table-column>
@@ -168,10 +170,12 @@
             <template #default="{ row }">{{ row.dueDate?.substring(0, 10) }}</template>
           </el-table-column>
 
-          <el-table-column prop="billType" label="账单类型" align="center" width="100">
+          <el-table-column prop="billType" label="账单类型" align="center" width="110">
             <template #default="{ row }">
               <el-tag v-if="row.billType === 1" type="success">租金</el-tag>
               <el-tag v-else-if="row.billType === 2" type="warning">押金</el-tag>
+              <el-tag v-else-if="row.billType === 5" type="success">押金结转入</el-tag>
+              <el-tag v-else-if="row.billType === 6" type="warning">押金结转出</el-tag>
               <el-tag v-else type="info">其他费用</el-tag>
             </template>
           </el-table-column>
@@ -193,7 +197,7 @@
 
           <el-table-column prop="depositAmount" label="押金" align="center" width="100">
             <template #default="{ row }">
-              <span v-if="row.depositAmount > 0" class="amount-text">¥{{ row.depositAmount }}</span>
+              <span v-if="row.depositAmount !== 0" class="amount-text">¥{{ row.depositAmount }}</span>
               <span v-else>-</span>
             </template>
           </el-table-column>
@@ -232,32 +236,32 @@
 <script setup lang="ts">
   import { onMounted, ref, watch } from "vue";
   import { Refresh } from "@element-plus/icons-vue";
-  import { TenantBillListProps } from "@/types";
-  import { getTenantBillInvalidList, getTenantBillList } from "@/api/contract/tenant";
+  import { LeaseBillListProps } from "@/types";
+  import { getLeaseBillInvalidList, getLeaseBillList } from "@/api/contract/tenant";
 
   interface Props {
-    tenantId: string;
+    leaseId: string;
   }
 
   const props = defineProps<Props>();
 
   // 当前账单数据
-  const billList = ref<TenantBillListProps[]>([]);
+  const billList = ref<LeaseBillListProps[]>([]);
   const loading = ref(false);
   const expandedBillRows = ref<string[]>([]);
 
   // 历史无效账单数据
-  const invalidBillList = ref<TenantBillListProps[]>([]);
+  const invalidBillList = ref<LeaseBillListProps[]>([]);
   const invalidLoading = ref(false);
   const expandedInvalidBillRows = ref<string[]>([]);
 
   // 获取当前账单数据
   const fetchBillList = async () => {
-    if (!props.tenantId) return;
+    if (!props.leaseId) return;
 
     loading.value = true;
     try {
-      const res = await getTenantBillList({ tenantId: props.tenantId });
+      const res = await getLeaseBillList({ leaseId: props.leaseId });
       if (res.code === 0) {
         billList.value = res.data || [];
       }
@@ -268,11 +272,11 @@
 
   // 获取历史无效账单数据
   const fetchInvalidBillList = async () => {
-    if (!props.tenantId) return;
+    if (!props.leaseId) return;
 
     invalidLoading.value = true;
     try {
-      const res = await getTenantBillInvalidList({ tenantId: props.tenantId });
+      const res = await getLeaseBillInvalidList({ leaseId: props.leaseId });
       if (res.code === 0) {
         invalidBillList.value = res.data || [];
       }
@@ -292,9 +296,9 @@
     refresh: fetchBillData
   });
 
-  // 监听 tenantId 变化
+  // 监听 leaseId 变化
   watch(
-    () => props.tenantId,
+    () => props.leaseId,
     newVal => {
       if (newVal) {
         fetchBillData();

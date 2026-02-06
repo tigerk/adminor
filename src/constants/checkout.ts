@@ -32,8 +32,8 @@ export const CHECKOUT_STATUS_OPTIONS = [
 
 /** 收支类型 */
 export enum FEE_DIRECTION_ENUM {
-  INCOME = 1, // 收（租客应付）
-  EXPENSE = 2 // 支（退还租客）
+  DEDUCTION = 1, // 扣款（租客应付）
+  REFUND = 2 // 退款（退还租客）
 }
 
 /** 费用类型（收入方向） */
@@ -68,12 +68,17 @@ export const INCOME_FEE_TYPE_OPTIONS = [
   { label: "其他费用", value: CHECKOUT_FEE_TYPE_ENUM.OTHER }
 ] as const;
 
+// 别名：扣款/退款
+export const DEDUCTION_FEE_TYPE_OPTIONS = INCOME_FEE_TYPE_OPTIONS;
+
 /** 费用类型选项（支出方向 - 退款） */
 export const EXPENSE_FEE_TYPE_OPTIONS = [
   { label: "租金", value: CHECKOUT_FEE_TYPE_ENUM.RENT_REFUND },
   { label: "押金", value: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND },
   { label: "其他退款", value: CHECKOUT_FEE_TYPE_ENUM.OTHER_REFUND }
 ] as const;
+
+export const REFUND_FEE_TYPE_OPTIONS = EXPENSE_FEE_TYPE_OPTIONS;
 
 /** 费用类型子类选项（用于"费用类型"下拉第二级） */
 export const FEE_SUB_NAME_MAP: Record<number, string[]> = {
