@@ -121,7 +121,7 @@ function useTenant() {
     {
       label: "房间",
       prop: "roomList",
-      width: 300,
+      width: 260,
       showOverflowTooltip: false,
       cellRenderer: ({ row }) => (
         <el-tooltip placement="top" effect="light" popper-class="room-tooltip">
@@ -143,7 +143,7 @@ function useTenant() {
                   <el-text
                     truncated
                     style={{
-                      width: "220px",
+                      width: "160px",
                       display: "inline-block"
                     }}
                   >
