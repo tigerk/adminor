@@ -7,6 +7,9 @@ type RecentNoticeResponse = {
   messages: SysMessageProps[];
   notices: SysNoticeProps[];
   todos: SysTodoProps[];
+  unreadMessageCount?: number;
+  unreadNoticeCount?: number;
+  pendingTodoCount?: number;
 };
 
 export const getRecentNotice = (data: { days: number }) => {
@@ -19,6 +22,10 @@ export const getMessagePage = (data: { currentPage: number; pageSize: number; ke
 
 export const getNoticePage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {
   return http.request<ApiResponse<PaginationResponse<SysNoticeProps>>>("post", baseUrlApi("sys/notice/notice/page"), { data });
+};
+
+export const getMyNoticePage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {
+  return http.request<ApiResponse<PaginationResponse<SysNoticeProps>>>("post", baseUrlApi("sys/notice/notice/my/page"), { data });
 };
 
 export const getTodoPage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {

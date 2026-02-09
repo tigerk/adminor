@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { useI18n } from "vue-i18n";
   import { ref, computed, onMounted } from "vue";
+  import { useRouter } from "vue-router";
   import dayjs from "dayjs";
   import type { ListItem, TabItem } from "./data";
   import NoticeList from "./components/NoticeList.vue";
@@ -11,20 +12,23 @@
   const { t } = useI18n();
   const notices = ref<TabItem[]>([]);
   const activeKey = ref("1");
+  const router = useRouter();
+  const noticeCounts = ref({
+    unreadNoticeCount: 0,
+    unreadMessageCount: 0,
+    pendingTodoCount: 0
+  });
 
   const unreadNoticeCount = computed(() => {
-    const noticeTab = notices.value.find(item => item.key === "1");
-    return noticeTab ? noticeTab.list.filter(notice => notice.isRead === false).length : 0;
+    return Number(noticeCounts.value.unreadNoticeCount || 0);
   });
 
   const unreadMessageCount = computed(() => {
-    const msgTab = notices.value.find(item => item.key === "2");
-    return msgTab ? msgTab.list.filter(msg => msg.isRead === false).length : 0;
+    return Number(noticeCounts.value.unreadMessageCount || 0);
   });
 
   const pendingTodoCount = computed(() => {
-    const todoTab = notices.value.find(item => item.key === "3");
-    return todoTab ? todoTab.list.filter(todo => todo.status === 0).length : 0;
+    return Number(noticeCounts.value.pendingTodoCount || 0);
   });
 
   const noticesNum = computed(() => unreadNoticeCount.value + unreadMessageCount.value + pendingTodoCount.value);
@@ -96,6 +100,11 @@
       const messages = mapMessageList(data?.messages ?? []);
       const noticeList = mapNoticeList(data?.notices ?? []);
       const todoList = mapTodoList(data?.todos ?? []);
+      noticeCounts.value = {
+        unreadNoticeCount: Number(data?.unreadNoticeCount ?? 0),
+        unreadMessageCount: Number(data?.unreadMessageCount ?? 0),
+        pendingTodoCount: Number(data?.pendingTodoCount ?? 0)
+      };
 
       notices.value = [
         {
@@ -132,6 +141,9 @@
         if (target) {
           target.isRead = true;
         }
+        if (noticeCounts.value.unreadMessageCount > 0) {
+          noticeCounts.value.unreadMessageCount -= 1;
+        }
       }
     } else if (item.type === "1") {
       const { code } = await markNoticeRead({ id: item.id });
@@ -141,7 +153,22 @@
         if (target) {
           target.isRead = true;
         }
+        if (noticeCounts.value.unreadNoticeCount > 0) {
+          noticeCounts.value.unreadNoticeCount -= 1;
+        }
       }
+    }
+  }
+
+  function handleViewAll(key: string) {
+    const pathMap: Record<string, string> = {
+      "1": "/sys-notice/notice",
+      "2": "/sys-notice/message",
+      "3": "/sys-notice/todo"
+    };
+    const target = pathMap[key];
+    if (target) {
+      router.push(target);
     }
   }
 
@@ -169,6 +196,9 @@
                 <el-scrollbar max-height="330px">
                   <div class="noticeList-container">
                     <NoticeList :list="item.list" :emptyText="item.emptyText" @item-click="handleItemRead" />
+                    <div class="noticeList-footer">
+                      <el-button link type="primary" @click="handleViewAll(item.key)">查看全部消息</el-button>
+                    </div>
                   </div>
                 </el-scrollbar>
               </el-tab-pane>
@@ -197,6 +227,10 @@
   .dropdown-tabs {
     .noticeList-container {
       padding: 15px 24px 0;
+    }
+    .noticeList-footer {
+      padding: 8px 0 12px;
+      text-align: center;
     }
 
     :deep(.el-tabs__header) {
