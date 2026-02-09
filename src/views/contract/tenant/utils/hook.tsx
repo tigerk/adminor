@@ -121,7 +121,7 @@ function useTenant() {
     {
       label: "房间",
       prop: "roomList",
-      width: 260,
+      width: 200,
       showOverflowTooltip: false,
       cellRenderer: ({ row }) => (
         <el-tooltip placement="top" effect="light" popper-class="room-tooltip">
@@ -143,13 +143,13 @@ function useTenant() {
                   <el-text
                     truncated
                     style={{
-                      width: "160px",
+                      width: "100px",
                       display: "inline-block"
                     }}
                   >
                     {row.roomList.map(room => `${room.communityName} ${room.doorNumber} -${room.roomNumber}`).join(" | ")}
                   </el-text>
-                  <el-tag type="info">共 {row.roomList.length} 间</el-tag>
+                  <el-tag size="small" type="info">共 {row.roomList.length} 间</el-tag>
                 </el-space>
               </div>
             )

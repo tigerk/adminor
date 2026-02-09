@@ -1,6 +1,6 @@
 <template>
   <div class="main">
-    <el-row class="bg-bg_color w-full px-4 pb-3 pt-[12px]">
+    <el-row class="bg-bg_color w-full px-4 pt-[12px]">
       <el-col :span="24">
         <el-form ref="queryFormRef" :inline="true" :model="queryForm" class="search-form">
           <el-form-item>
@@ -41,7 +41,7 @@
         :loading="loading"
         :loading-config="{ background: 'transparent' }"
         adaptive
-        :adaptiveConfig="{ offsetBottom: 110 }"
+        :adaptiveConfig="{ offsetBottom: 108 }"
         :data="tableData"
         :size="tableSize as any"
         :columns="columns"
@@ -126,13 +126,13 @@
       label: "押金金额",
       prop: "depositAmount",
       minWidth: 110,
-      formatter: (row: CheckoutDetailProps) => (row.depositAmount != null ? `¥${row.depositAmount}` : "-")
+      formatter: (row: CheckoutDetailProps) => (row.depositAmount == null ? "-" : `¥${row.depositAmount}`)
     },
     {
       label: "结算金额",
       prop: "finalAmount",
       minWidth: 110,
-      formatter: (row: CheckoutDetailProps) => (row.finalAmount != null ? `¥${row.finalAmount}` : "-")
+      formatter: (row: CheckoutDetailProps) => (row.finalAmount == null ? "-" : `¥${row.finalAmount}`)
     },
     { label: "退租状态", prop: "statusName", minWidth: 110 },
     { label: "审批状态", prop: "approvalStatusName", minWidth: 110 },
