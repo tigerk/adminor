@@ -225,6 +225,10 @@
           message(resp.message || "获取租约详情失败", { type: "error" });
           return;
         }
+
+        // 续约时过滤掉预定租金
+        resp.data.otherFees = resp.data.otherFees?.filter(fee => fee.dictDataId !== "0") || [];
+
         const detail = resp.data;
         const renewData: TenantsCreateFormProps = {
           tenantPersonal: detail.tenantPersonal,
@@ -235,11 +239,11 @@
             id: undefined,
             tenantId: detail.tenantId,
             parentLeaseId: detail.leaseId,
-            contractNature: 2,
+            contractNature: 2, // 续约
             leaseStart: detail.leaseEnd,
-            leaseEnd: detail.leaseEnd,
-            leaseDate: [detail.leaseEnd, detail.leaseEnd],
-            checkDate: detail.checkOutTime ? [detail.checkOutTime, detail.checkOutTime] : undefined
+            leaseEnd: null,
+            leaseDate: [detail.leaseEnd, null],
+            checkDate: detail.checkOutTime ? [detail.checkOutTime, null] : undefined
           },
           otherFees: detail.otherFees || []
         };
