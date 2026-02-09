@@ -2,13 +2,13 @@ import dayjs from "dayjs";
 import editForm from "../form/index.vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
-import { usePublicHooks } from "../../../../utils/publicHooks";
-import { h, ref, reactive, onMounted } from "vue";
+import { usePublicHooks } from "@/utils/publicHooks";
+import { h, onMounted, reactive, ref } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import type { FormItemProps } from "../utils/types";
 import type { PaginationProps } from "@pureadmin/table";
-import { createDictData, deleteDictData, getDictData, getDictTree, switchDictDataStatus } from "@/api/sys/dict";
+import { createDictData, deleteDictData, getDictData, getDictTree, toggleDictDataStatus } from "@/api/sys/dict";
 
 export function useDict() {
   // 左侧字典树的id
@@ -57,6 +57,7 @@ export function useDict() {
           size={scope.props.size === "small" ? "small" : "default"}
           loading={switchLoadMap.value[scope.index]?.loading}
           v-model={scope.row.status}
+          disabled={scope.row.deletable === false}
           active-value={1}
           inactive-value={0}
           active-text="已启用"
@@ -90,19 +91,13 @@ export function useDict() {
       draggable: true
     })
       .then(() => {
-        switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], {
-          loading: true
-        });
+        switchLoadMap.value[index] = { ...switchLoadMap.value[index], loading: true };
 
-        createDictData(row).then(resp => {
-          setTimeout(() => {
-            switchLoadMap.value[index] = Object.assign({}, switchLoadMap.value[index], {
-              loading: false
-            });
-            message("已成功修改状态", {
-              type: "success"
-            });
-          }, 300);
+        toggleDictDataStatus(row).then(resp => {
+          switchLoadMap.value[index] = { ...switchLoadMap.value[index], loading: false };
+          message("已成功修改状态", {
+            type: "success"
+          });
         });
       })
       .catch(() => {

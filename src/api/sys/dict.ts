@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import { ApiListResponse, ApiResponse } from "@/types";
+import { type ApiListResponse } from "@/types";
 
 type Result = {
   code: number;
@@ -30,7 +30,7 @@ export const getDictTree = () => {
 
 /** 字典管理-根据字典 dictId 查字典详情 */
 export const getDictData = (data?: object) => {
-  return http.request<ResultTable>("get", baseUrlApi("sys/dict/data/list"), { params: data });
+  return http.request<ResultTable>("post", baseUrlApi("sys/dict/data/list"), { data });
 };
 
 /** 新增字典数据 */
@@ -39,8 +39,8 @@ export const createDictData = (data?: object) => {
 };
 
 /** 新增字典数据 */
-export const switchDictDataStatus = (data?: object) => {
-  return http.request<Result>("post", baseUrlApi("sys/dict/data/updateStatus"), { data });
+export const toggleDictDataStatus = (data?: object) => {
+  return http.request<Result>("post", baseUrlApi("sys/dict/data/status/toggle"), { data });
 };
 
 /** 通过字典编号查询数据项 */
