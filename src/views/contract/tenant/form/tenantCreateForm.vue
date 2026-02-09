@@ -22,7 +22,7 @@
         </div>
 
         <!-- 房源标签展示区域 -->
-        <div v-if="roomSelection.length > 0" class="room-tags-box p-3 border rounded-md" :class="{ 'disabled-box': props.isEdit }">
+        <div v-if="roomSelection.length > 0" class="room-tags-box p-1 border rounded-md" :class="{ 'disabled-box': props.isEdit }">
           <el-tag
             v-for="(room, index) in roomSelection"
             :key="room.value"
