@@ -8,6 +8,8 @@ export interface SysMessageProps {
   bizType?: string;
   bizId?: number;
   isRead?: boolean;
+  receiverId?: number;
+  receiverName?: string;
   createTime?: string;
 }
 
@@ -29,7 +31,14 @@ export interface SysTodoProps {
   title?: string;
   content?: string;
   todoType?: number;
+  priority?: number;
   status?: number;
   deadline?: string;
   createTime?: string;
+  isRead?: boolean;
+  readTime?: string;
+  handleRemark?: string;
+  handleTime?: string;
+  userId?: number;
+  executorName?: string;
 }

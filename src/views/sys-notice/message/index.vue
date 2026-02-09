@@ -3,8 +3,12 @@
   import dayjs from "dayjs";
   import type { PaginationProps } from "@pureadmin/table";
   import { PureTableBar } from "@/components/RePureTableBar";
-  import { getMessagePage } from "@/api/sys-notice";
-  import { NOTICE_MESSAGE_TYPE_HELPER } from "@/constants";
+  import { getMessageAdminPage, sendMessage } from "@/api/sys-notice";
+  import { NOTICE_MESSAGE_TYPE_ENUM, NOTICE_MESSAGE_TYPE_HELPER } from "@/constants";
+  import { message } from "@/utils/message";
+  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+  import Plus from "~icons/ep/plus";
+  import { pageUserList } from "@/api/sys/user";
 
   defineOptions({
     name: "SysNoticeMessage"
@@ -12,6 +16,28 @@
 
   const loading = ref(false);
   const dataList = ref([]);
+  const dialogVisible = ref(false);
+  const dialogLoading = ref(false);
+  const formRef = ref();
+  const userOptions = ref<Array<{ label: string; value: number }>>([]);
+  const form = reactive({
+    receiverId: undefined as number | undefined,
+    title: "",
+    content: "",
+    msgType: NOTICE_MESSAGE_TYPE_ENUM.SYSTEM.code
+  });
+
+  const rules = {
+    receiverId: [{ required: true, message: "请选择接收人", trigger: "change" }],
+    title: [{ required: true, message: "请输入消息标题", trigger: "blur" }],
+    content: [{ required: true, message: "请输入消息内容", trigger: "blur" }],
+    msgType: [{ required: true, message: "请选择消息类型", trigger: "change" }]
+  };
+
+  const msgTypeOptions = Object.values(NOTICE_MESSAGE_TYPE_ENUM).map(item => ({
+    label: item.name,
+    value: item.code
+  }));
 
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -39,6 +65,12 @@
       formatter: ({ msgType }) => NOTICE_MESSAGE_TYPE_HELPER.getNameByCode(msgType)
     },
     {
+      label: "接收人",
+      prop: "receiverName",
+      minWidth: 140,
+      formatter: ({ receiverName, receiverId }) => receiverName || receiverId || "-"
+    },
+    {
       label: "时间",
       prop: "createTime",
       minWidth: 180,
@@ -49,7 +81,7 @@
   async function fetchList() {
     loading.value = true;
     try {
-      const { data } = await getMessagePage({
+      const { data } = await getMessageAdminPage({
         currentPage: pagination.currentPage,
         pageSize: pagination.pageSize
       });
@@ -72,14 +104,57 @@
     fetchList();
   }
 
+  function openSendDialog() {
+    form.receiverId = undefined;
+    form.title = "";
+    form.content = "";
+    form.msgType = NOTICE_MESSAGE_TYPE_ENUM.SYSTEM.code;
+    dialogVisible.value = true;
+  }
+
+  async function handleSubmit() {
+    if (!formRef.value) return;
+    await formRef.value.validate();
+    dialogLoading.value = true;
+    try {
+      const { code } = await sendMessage({
+        receiverId: form.receiverId as number,
+        title: form.title,
+        content: form.content,
+        msgType: form.msgType
+      });
+      if (code === 0) {
+        message("发送成功", { type: "success" });
+        dialogVisible.value = false;
+        fetchList();
+      }
+    } finally {
+      dialogLoading.value = false;
+    }
+  }
+
+  function handleDialogClosed() {
+    formRef.value?.resetFields();
+  }
+
   onMounted(() => {
     fetchList();
+    pageUserList({ currentPage: 1, pageSize: 2000 }).then(({ data }) => {
+      const list = data?.list ?? [];
+      userOptions.value = list.map(item => ({
+        label: item.nickname ?? item.username ?? item.name ?? item.label ?? item.phone ?? item.id,
+        value: item.id ?? item.userId ?? item.value
+      })).filter(item => item.value != null);
+    });
   });
 </script>
 
 <template>
   <div class="main">
     <PureTableBar title="个人消息" :columns="columns" @refresh="fetchList">
+      <template #buttons>
+        <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openSendDialog">发送消息</el-button>
+      </template>
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
           row-key="id"
@@ -102,6 +177,31 @@
         />
       </template>
     </PureTableBar>
+
+    <el-dialog v-model="dialogVisible" title="发送消息" :lock-scroll="true" :align-center="true" width="540px" @closed="handleDialogClosed">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px" label-position="top">
+        <el-form-item label="接收人" prop="receiverId">
+          <el-select v-model="form.receiverId" filterable placeholder="请选择接收人" class="w-full">
+            <el-option v-for="item in userOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="类型" prop="msgType">
+          <el-select v-model="form.msgType" placeholder="请选择消息类型" class="w-full">
+            <el-option v-for="item in msgTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="标题" prop="title">
+          <el-input v-model="form.title" placeholder="请输入消息标题" maxlength="100" show-word-limit />
+        </el-form-item>
+        <el-form-item label="内容" prop="content">
+          <el-input v-model="form.content" type="textarea" :rows="6" placeholder="请输入消息内容" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="dialogLoading" @click="handleSubmit">发送</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

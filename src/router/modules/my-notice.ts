@@ -1,6 +1,6 @@
 export default {
   path: "/my-notice",
-  name: "NoticeMy",
+  name: "MyNotice",
   meta: {
     title: "我的消息",
     icon: "ep:bell",
@@ -10,7 +10,8 @@ export default {
   children: [
     {
       path: "/my-notice/notice/index",
-      name: "NoticeMyNotice",
+      name: "MyNoticeNotice",
+      component: () => import("@/views/my-notice/notice/index.vue"),
       meta: {
         title: "系统公告",
         icon: "ri:notification-line",
@@ -19,7 +20,8 @@ export default {
     },
     {
       path: "/my-notice/message/index",
-      name: "NoticeMyMessage",
+      name: "MyNoticeMessage",
+      component: () => import("@/views/my-notice/message/index.vue"),
       meta: {
         title: "个人消息",
         icon: "ri:message-3-line",
@@ -28,7 +30,8 @@ export default {
     },
     {
       path: "/my-notice/todo/index",
-      name: "NoticeMyTodo",
+      name: "MyNoticeTodo",
+      component: () => import("@/views/my-notice/todo/index.vue"),
       meta: {
         title: "我的待办",
         icon: "ri:todo-line",

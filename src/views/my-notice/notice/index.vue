@@ -1,26 +1,35 @@
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from "vue";
+  import { computed, onMounted, reactive, ref } from "vue";
   import dayjs from "dayjs";
   import type { PaginationProps } from "@pureadmin/table";
   import { PureTableBar } from "@/components/RePureTableBar";
-  import { getMyNoticePage } from "@/api/sys-notice";
+  import { getMyNoticePage, markNoticeRead, markNoticeReadBatch } from "@/api/sys-notice";
   import { NOTICE_NOTICE_TYPE_HELPER } from "@/constants";
   import { message } from "@/utils/message";
 
   defineOptions({
-    name: "SysNoticeMy"
+    name: "MyNoticeNotice"
   });
 
   const loading = ref(false);
   const dataList = ref([]);
+  const tableRef = ref();
+  const selectedRows = ref([]);
+  const selectedIds = computed(() => selectedRows.value.map(item => item?.id).filter(Boolean));
+
   const pagination = reactive<PaginationProps>({
     total: 0,
-    pageSize: 10,
+    pageSize: 15,
     currentPage: 1,
     background: true
   });
 
   const columns: TableColumnList = [
+    {
+      type: "selection",
+      align: "left",
+      width: 48
+    },
     {
       label: "标题",
       prop: "title",
@@ -43,6 +52,19 @@
       prop: "publishTime",
       minWidth: 180,
       formatter: ({ publishTime }) => (publishTime ? dayjs(publishTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+    },
+    {
+      label: "已读",
+      prop: "isRead",
+      minWidth: 90,
+      formatter: ({ isRead }) => (isRead ? "已读" : "未读")
+    },
+    {
+      label: "操作",
+      prop: "operation",
+      width: 120,
+      fixed: "right",
+      slot: "operation"
     }
   ];
 
@@ -72,6 +94,32 @@
     fetchList();
   }
 
+  function handleSelectionChange(rows) {
+    selectedRows.value = rows || [];
+  }
+
+  async function handleRead(row) {
+    if (!row?.id || row?.isRead) return;
+    const { code } = await markNoticeRead({ id: row.id });
+    if (code === 0) {
+      message("已读确认成功", { type: "success" });
+      fetchList();
+    }
+  }
+
+  async function handleBatchRead() {
+    if (selectedIds.value.length === 0) {
+      message("请先选择需要已读确认的公告", { type: "warning" });
+      return;
+    }
+    const { code } = await markNoticeReadBatch({ ids: selectedIds.value });
+    if (code === 0) {
+      message("批量已读确认成功", { type: "success" });
+      tableRef.value?.getTableRef()?.clearSelection();
+      fetchList();
+    }
+  }
+
   onMounted(() => {
     fetchList();
   });
@@ -79,9 +127,13 @@
 
 <template>
   <div class="main">
-    <PureTableBar title="我的公告" :columns="columns" @refresh="fetchList">
+    <PureTableBar title="系统公告" :columns="columns" @refresh="fetchList">
+      <template #buttons>
+        <el-button type="primary" :disabled="selectedIds.length === 0" @click="handleBatchRead">批量已读</el-button>
+      </template>
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
+          ref="tableRef"
           row-key="id"
           :border="true"
           align-whole="center"
@@ -97,9 +149,14 @@
             background: 'var(--el-fill-color-light)',
             color: 'var(--el-text-color-primary)'
           }"
+          @selection-change="handleSelectionChange"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
-        />
+        >
+          <template #operation="{ row }">
+            <el-button link type="primary" :size="size" :disabled="row?.isRead" @click="handleRead(row)">已读</el-button>
+          </template>
+        </pure-table>
       </template>
     </PureTableBar>
   </div>

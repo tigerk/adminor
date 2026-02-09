@@ -3,7 +3,7 @@
   import dayjs from "dayjs";
   import type { PaginationProps } from "@pureadmin/table";
   import { PureTableBar } from "@/components/RePureTableBar";
-  import { getTodoPage } from "@/api/sys-notice";
+  import { getTodoAdminPage } from "@/api/sys-notice";
   import { NOTICE_TODO_PRIORITY_HELPER, NOTICE_TODO_STATUS_HELPER, NOTICE_TODO_TYPE_HELPER } from "@/constants";
 
   defineOptions({
@@ -45,6 +45,12 @@
       formatter: ({ priority }) => NOTICE_TODO_PRIORITY_HELPER.getNameByCode(priority)
     },
     {
+      label: "执行人",
+      prop: "executorName",
+      minWidth: 140,
+      formatter: ({ executorName, userId }) => executorName || userId || "-"
+    },
+    {
       label: "状态",
       prop: "status",
       minWidth: 100,
@@ -61,7 +67,7 @@
   async function fetchList() {
     loading.value = true;
     try {
-      const { data } = await getTodoPage({
+      const { data } = await getTodoAdminPage({
         currentPage: pagination.currentPage,
         pageSize: pagination.pageSize
       });

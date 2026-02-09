@@ -6,8 +6,8 @@
   import type { ListItem, TabItem } from "./data";
   import NoticeList from "./components/NoticeList.vue";
   import BellIcon from "~icons/ep/bell";
-  import { getRecentNotice, markMessageRead, markNoticeRead } from "@/api/sys-notice";
-  import { NOTICE_TODO_PRIORITY_HELPER, NOTICE_TODO_STATUS_HELPER } from "@/constants";
+  import { getRecentNotice } from "@/api/sys-notice";
+  import { NOTICE_TODO_STATUS_HELPER } from "@/constants";
 
   const { t } = useI18n();
   const notices = ref<TabItem[]>([]);
@@ -52,7 +52,7 @@
   }
 
   function mapMessageList(list: any[] = []): ListItem[] {
-    return list.map(item => ({
+    return list.slice(0, 3).map(item => ({
       id: item?.id,
       avatar: "",
       title: item?.title ?? "",
@@ -64,7 +64,7 @@
   }
 
   function mapNoticeList(list: any[] = []): ListItem[] {
-    return list.map(item => ({
+    return list.slice(0, 3).map(item => ({
       id: item?.id,
       avatar: "",
       title: item?.title ?? "",
@@ -76,7 +76,7 @@
   }
 
   function mapTodoList(list: any[] = []): ListItem[] {
-    return list.map(item => ({
+    return list.slice(0, 3).map(item => ({
       id: item?.id,
       avatar: "",
       title: item?.title ?? "",
@@ -92,7 +92,7 @@
 
   async function loadRecentNotices() {
     try {
-      const { data, code } = await getRecentNotice({ days: 3 });
+      const { data, code } = await getRecentNotice({});
       if (code !== 0) {
         notices.value = [];
         return;
@@ -131,40 +131,11 @@
     }
   }
 
-  async function handleItemRead(item: ListItem) {
-    if (!item?.id) return;
-    if (item.type === "2") {
-      const { code } = await markMessageRead({ id: item.id });
-      if (code === 0) {
-        const msgTab = notices.value.find(tab => tab.key === "2");
-        const target = msgTab?.list?.find(msg => msg.id === item.id);
-        if (target) {
-          target.isRead = true;
-        }
-        if (noticeCounts.value.unreadMessageCount > 0) {
-          noticeCounts.value.unreadMessageCount -= 1;
-        }
-      }
-    } else if (item.type === "1") {
-      const { code } = await markNoticeRead({ id: item.id });
-      if (code === 0) {
-        const noticeTab = notices.value.find(tab => tab.key === "1");
-        const target = noticeTab?.list?.find(notice => notice.id === item.id);
-        if (target) {
-          target.isRead = true;
-        }
-        if (noticeCounts.value.unreadNoticeCount > 0) {
-          noticeCounts.value.unreadNoticeCount -= 1;
-        }
-      }
-    }
-  }
-
   function handleViewAll(key: string) {
     const pathMap: Record<string, string> = {
-      "1": "/sys-notice/notice",
-      "2": "/sys-notice/message",
-      "3": "/sys-notice/todo"
+      "1": "/my-notice/notice/index",
+      "2": "/my-notice/message/index",
+      "3": "/my-notice/todo/index"
     };
     const target = pathMap[key];
     if (target) {
@@ -193,9 +164,9 @@
           <span v-else>
             <template v-for="item in notices" :key="item.key">
               <el-tab-pane :label="getLabel(item)" :name="`${item.key}`">
-                <el-scrollbar max-height="330px">
+                <el-scrollbar max-height="400px">
                   <div class="noticeList-container">
-                    <NoticeList :list="item.list" :emptyText="item.emptyText" @item-click="handleItemRead" />
+                    <NoticeList :list="item.list" :emptyText="item.emptyText" />
                     <div class="noticeList-footer">
                       <el-button link type="primary" @click="handleViewAll(item.key)">查看全部消息</el-button>
                     </div>
