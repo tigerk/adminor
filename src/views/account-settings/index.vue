@@ -38,13 +38,13 @@
       component: AccountManagement,
       description: "密码、手机、邮箱管理"
     },
-    {
-      key: "preferences",
-      label: "偏好设置",
-      icon: "ri-settings-3-line",
-      component: Preferences,
-      description: "通知和显示偏好"
-    },
+    // {
+    //   key: "preferences",
+    //   label: "偏好设置",
+    //   icon: "ri-settings-3-line",
+    //   component: Preferences,
+    //   description: "通知和显示偏好"
+    // },
     {
       key: "securityLog",
       label: "安全日志",

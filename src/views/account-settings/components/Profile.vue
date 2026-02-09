@@ -334,10 +334,6 @@
               color: white;
             }
           }
-
-          &:hover .avatar-overlay {
-            opacity: 1;
-          }
         }
 
         .avatar-actions {
