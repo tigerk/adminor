@@ -347,7 +347,7 @@
     ID_TYPE_OPTIONS,
     PAYMENT_METHOD_OPTIONS,
     PRICE_METHOD_OPTIONS,
-    TENANT_CONTRACT_NATURE_OPTIONS,
+    LEASE_CONTRACT_NATURE_OPTIONS,
     TENANT_SIGN_STATUS_OPTIONS,
     TENANT_STATUS_ENUM
   } from "@/constants";
@@ -407,7 +407,7 @@
   };
 
   const getContractNatureName = (nature: number) => {
-    const option = TENANT_CONTRACT_NATURE_OPTIONS.find(item => item.value === nature);
+    const option = LEASE_CONTRACT_NATURE_OPTIONS.find(item => item.value === nature);
     return option?.label || "未知";
   };
 

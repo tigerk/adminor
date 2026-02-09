@@ -207,7 +207,7 @@
           <el-col :span="3">
             <el-form-item label="签约类型" prop="lease.contractNature">
               <el-select v-model="formInline.lease.contractNature" default-first-option placeholder="签约类型" class="w-full" clearable>
-                <el-option v-for="item in TENANT_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+                <el-option v-for="item in LEASE_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -385,7 +385,7 @@
     ID_TYPE_OPTIONS,
     RENT_DUE_TYPE_OPTIONS,
     RENTAL_TYPE_OPTIONS,
-    TENANT_CONTRACT_NATURE_OPTIONS,
+    LEASE_CONTRACT_NATURE_OPTIONS,
     TENANT_TYPE_OPTIONS
   } from "@/constants";
   import type { TenantsCreateFormProps } from "@/types";

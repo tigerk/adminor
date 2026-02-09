@@ -222,12 +222,35 @@ export const TENANT_STATUS_OPTIONS = [
 ] as const;
 
 // 签约类型：1=新签，2=续签，3=转租，4=换房
-export const TENANT_CONTRACT_NATURE_OPTIONS = [
+export const LEASE_CONTRACT_NATURE_OPTIONS = [
   { label: "新签", value: 1 },
   { label: "续签", value: 2 },
   { label: "转租", value: 3 },
   { label: "换房", value: 4 }
 ] as const;
+
+export const LEASE_CONTRACT_NATURE_ENUM = {
+  NEW: {
+    code: 1,
+    name: "新签",
+    color: "#409eff"
+  },
+  RENEW: {
+    code: 2,
+    name: "续签",
+    color: "#67c23a"
+  },
+  TRANSFER: {
+    code: 3,
+    name: "转租",
+    color: "#e6a23c"
+  },
+  CHANGE_ROOM: {
+    code: 4,
+    name: "换房",
+    color: "#909399"
+  }
+} as const;
 
 // 合同状态：0=待签字，1=在租中，2=已退租，3=已作废
 export const TENANT_SIGN_STATUS_OPTIONS = [

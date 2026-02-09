@@ -5,7 +5,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { createTenant, deleteTenant, getTenantDetail, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
-import { getOptionByCode, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS } from "@/constants";
+import { getOptionByCode, LEASE_CONTRACT_NATURE_ENUM, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { TenantMateProps, TenantPersonalProps, TenantQueryFormProps, TenantRowProps, TenantsCreateFormProps } from "@/types";
@@ -49,6 +49,7 @@ function useTenant() {
 
   const leaseContractSignStatusOptions = [...TENANT_SIGN_STATUS_OPTIONS] as any[];
   const mutableTenantStatusOptions = [...TENANT_STATUS_OPTIONS] as any[];
+  const leaseContractNatureOptions = Object.values(LEASE_CONTRACT_NATURE_ENUM);
 
   // 计算当前页的起始索引
   const startIndex = computed(() => (pagination.currentPage - 1) * pagination.pageSize + 1);
@@ -155,6 +156,25 @@ function useTenant() {
           }}
         </el-tooltip>
       )
+    },
+    {
+      label: "合同类型",
+      prop: "contractNature",
+      minWidth: 100,
+      cellRenderer: ({ row }) => {
+        const nature = leaseContractNatureOptions.find(item => item.code === row.contractNature);
+        return (
+          <el-tag
+            style={{
+              borderColor: nature?.color,
+              backgroundColor: "var(--el-bg-color)",
+              color: nature?.color
+            }}
+          >
+            {nature?.name}
+          </el-tag>
+        );
+      }
     },
     {
       label: "合同周期",
@@ -355,8 +375,7 @@ function useTenant() {
 
             apiCall(curData).then(resp => {
               if (resp.code === 0) {
-                const tenantName =
-                  curData.lease.tenantType === 0 ? curData.tenantPersonal.name : curData.tenantCompany.companyName;
+                const tenantName = curData.lease.tenantType === 0 ? curData.tenantPersonal.name : curData.tenantCompany.companyName;
                 message(`您${title}了租客"${tenantName}"`, {
                   type: "success"
                 });
