@@ -4,7 +4,7 @@
   import type { PaginationProps } from "@pureadmin/table";
   import { PureTableBar } from "@/components/RePureTableBar";
   import { deleteNotice, getNoticeDetail, getNoticePage, saveNotice } from "@/api/sys-notice";
-  import { NOTICE_NOTICE_TYPE_ENUM, NOTICE_NOTICE_TYPE_HELPER, NOTICE_TARGET_SCOPE_ENUM } from "@/constants";
+  import { NOTICE_NOTICE_TYPE_ENUM, NOTICE_NOTICE_TYPE_HELPER, NOTICE_TARGET_SCOPE_ENUM, NOTICE_TARGET_SCOPE_HELPER } from "@/constants";
   import { message } from "@/utils/message";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import { getSimpleRoleList } from "@/api/sys/user";
@@ -91,6 +91,12 @@
       formatter: ({ noticeType }) => NOTICE_NOTICE_TYPE_HELPER.getNameByCode(noticeType)
     },
     {
+      label: "发送范围",
+      prop: "targetScope",
+      minWidth: 140,
+      formatter: ({ targetScope }) => NOTICE_TARGET_SCOPE_HELPER.getNameByCode(targetScope)
+    },
+    {
       label: "发布时间",
       prop: "publishTime",
       minWidth: 180,
@@ -154,7 +160,7 @@
       form.content = notice.content || "";
       form.noticeType = notice.noticeType ?? 1;
       form.targetScope = notice.targetScope ?? 1;
-      form.roleIds = data?.roleIds ?? [];
+      form.roleIds = (data?.roleIds ?? []).map(id => String(id));
       editMeta.createByName = notice.createByName || "-";
       editMeta.publishTime = notice.publishTime ? dayjs(notice.publishTime).format("YYYY-MM-DD HH:mm:ss") : "-";
       dialogVisible.value = true;
@@ -207,7 +213,7 @@
     getSimpleRoleList().then(({ data }) => {
       roleOptions.value = (data || []).map(item => ({
         label: item.roleName ?? item.name ?? item.label ?? item.code,
-        value: item.id ?? item.value
+        value: String(item.id ?? item.value)
       }));
     });
   });
