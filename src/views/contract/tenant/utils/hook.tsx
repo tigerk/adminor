@@ -149,7 +149,9 @@ function useTenant() {
                   >
                     {row.roomList.map(room => `${room.communityName} ${room.doorNumber} -${room.roomNumber}`).join(" | ")}
                   </el-text>
-                  <el-tag size="small" type="info">共 {row.roomList.length} 间</el-tag>
+                  <el-tag size="small" type="info">
+                    共 {row.roomList.length} 间
+                  </el-tag>
                 </el-space>
               </div>
             )
