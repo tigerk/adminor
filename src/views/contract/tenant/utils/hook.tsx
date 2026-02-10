@@ -12,7 +12,7 @@ import type { TenantMateProps, TenantPersonalProps, TenantQueryFormProps, Tenant
 import { getDictDataByDictCode } from "@/api/sys/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
 import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
-import ViewTenantDialog from "@/views/contract/tenant/view/viewTenantDialog.vue";
+import ViewTenantDialog from "@/views/contract/tenant/view/ViewTenantDialog.vue";
 import { calculateMonthsDifference } from "@/utils/yeah";
 import { convertImage2string } from "@/utils/image";
 

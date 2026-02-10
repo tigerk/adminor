@@ -78,7 +78,7 @@
   import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
-  import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
+  import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
   import { LeaseContractProps } from "@/types";
 
   interface Props {

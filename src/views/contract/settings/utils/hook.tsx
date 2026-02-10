@@ -4,7 +4,7 @@ import type { PaginationProps } from "@pureadmin/table";
 import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import ContractTemplateForm from "@/views/contract/settings/form/contractTemplateForm.vue";
+import ContractTemplateForm from "@/views/contract/settings/form/ContractTemplateForm.vue";
 import { createContractTemplate, deleteContractTemplate, getContractTemplateList, updateContractTemplateStatus } from "@/api/contract/template";
 import { CONTRACT_TEMPLATE_STATUS_OPTIONS, CONTRACT_TYPE_OPTIONS, getOptionByCode } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";

@@ -51,32 +51,37 @@
         @page-current-change="handleCurrentChange"
       >
         <template #operation="{ row }">
-          <el-button link type="primary" :icon="useRenderIcon(View)" @click="goDetail(row)">查看</el-button>
+          <el-button link type="primary" :icon="useRenderIcon(View)" @click="openDetail(row)">查看</el-button>
         </template>
       </pure-table>
     </el-row>
+    <el-dialog v-model="detailVisible" title="退租详情" width="60%" top="5vh" :destroy-on-close="true" align-center lock-scroll>
+      <ViewCheckoutTab :loading="detailLoading" :checkout-detail="detailData" />
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, onMounted } from "vue";
-  import { useRouter } from "vue-router";
+  import { onMounted, reactive, ref } from "vue";
   import dayjs from "dayjs";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Search from "~icons/ep/search";
   import Refresh from "~icons/ep/refresh";
   import View from "~icons/ep/view";
-  import { CHECKOUT_STATUS_OPTIONS, CHECKOUT_TYPE_OPTIONS, APPROVAL_STATUS_ENUM } from "@/constants";
-  import { queryCheckoutList } from "@/api/contract/checkout";
+  import { APPROVAL_STATUS_ENUM, CHECKOUT_STATUS_OPTIONS, CHECKOUT_TYPE_OPTIONS } from "@/constants";
+  import { getCheckoutDetail, queryCheckoutList } from "@/api/contract/checkout";
   import type { CheckoutDetailProps, CheckoutQueryProps } from "@/types";
+  import ViewCheckoutTab from "@/views/contract/checkout/components/ViewCheckoutTab.vue";
 
   defineOptions({
     name: "LeaseCheckoutList"
   });
 
-  const router = useRouter();
   const queryFormRef = ref();
   const loading = ref(false);
+  const detailVisible = ref(false);
+  const detailLoading = ref(false);
+  const detailData = ref<CheckoutDetailProps | null>(null);
 
   const tableSize = ref("default");
   const tableData = ref<CheckoutDetailProps[]>([]);
@@ -186,15 +191,19 @@
     fetchList();
   }
 
-  function goDetail(row: CheckoutDetailProps) {
-    router.push({
-      path: "/tenant/checkout",
-      query: {
-        id: row.id,
-        tenantId: row.tenantId,
-        leaseId: row.leaseId
+  async function openDetail(row: CheckoutDetailProps) {
+    detailVisible.value = true;
+    detailLoading.value = true;
+    try {
+      const res = await getCheckoutDetail(row.id);
+      if (res.code === 0) {
+        detailData.value = res.data || null;
+      } else {
+        detailData.value = null;
       }
-    });
+    } finally {
+      detailLoading.value = false;
+    }
   }
 
   onMounted(fetchList);

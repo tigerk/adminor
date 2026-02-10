@@ -334,14 +334,25 @@
             <DeliveryTab :room-list="localFormInline.roomList" :subject-type-id="localFormInline.leaseId" />
           </div>
         </el-tab-pane>
+
+        <!-- 退租信息 Tab -->
+        <el-tab-pane v-if="isTerminated" name="checkout">
+          <template #label>
+            <el-space class="tab-label">
+              <el-icon><Money /></el-icon>
+              <span>退租单</span>
+            </el-space>
+          </template>
+          <ViewCheckoutTab :loading="checkoutLoading" :checkout-detail="checkoutDetail" />
+        </el-tab-pane>
       </el-tabs>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { h, ref, watch } from "vue";
-  import { TenantDetailProps, TenantsCreateFormProps } from "@/types";
+  import { h, ref, watch, computed } from "vue";
+  import { CheckoutDetailProps, TenantDetailProps, TenantsCreateFormProps } from "@/types";
   import {
     getOptionByCode,
     ID_TYPE_OPTIONS,
@@ -354,11 +365,13 @@
   import { Document, Edit, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
+  import { getCheckoutByTenantId } from "@/api/contract/checkout";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
-  import SelectContractTemplateDialog from "@/views/contract/tenant/view/selectContractTemplateDialog.vue";
+  import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import DeliveryTab from "@/views/contract/tenant/view/DeliveryTab.vue";
+  import ViewCheckoutTab from "@/views/contract/checkout/components/ViewCheckoutTab.vue";
   import LeaseContractTab from "@/views/contract/tenant/view/LeaseContractTab.vue";
   import LeaseBillTab from "@/views/contract/tenant/view/LeaseBillTab.vue";
 
@@ -389,6 +402,45 @@
   }>();
 
   const activeTab = ref("tenant");
+  const isTerminated = computed(() => localFormInline.value.status === TENANT_STATUS_ENUM.TERMINATED.code);
+  const checkoutDetail = ref<CheckoutDetailProps | null>(null);
+  const checkoutLoading = ref(false);
+
+  const fetchCheckoutDetail = async () => {
+    if (!isTerminated.value) return;
+    const tenantId = localFormInline.value.tenantId;
+    const leaseId = localFormInline.value.leaseId;
+    if (!tenantId) return;
+    checkoutLoading.value = true;
+    try {
+      const res = await getCheckoutByTenantId(tenantId, leaseId);
+      if (res.code === 0) {
+        checkoutDetail.value = res.data || null;
+      } else {
+        checkoutDetail.value = null;
+      }
+    } finally {
+      checkoutLoading.value = false;
+    }
+  };
+
+  watch(
+    () => activeTab.value,
+    tab => {
+      if (tab === "checkout") {
+        fetchCheckoutDetail();
+      }
+    }
+  );
+
+  watch(
+    () => localFormInline.value.status,
+    status => {
+      if (status === TENANT_STATUS_ENUM.TERMINATED.code && activeTab.value === "checkout") {
+        fetchCheckoutDetail();
+      }
+    }
+  );
 
   const getTotalArea = () => {
     if (!props.formInline.roomList) return 0;
