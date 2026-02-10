@@ -120,6 +120,6 @@ export const updateUserProfile = (data?: object) => {
 };
 
 /** 账户设置-个人安全日志 */
-export const getMineLogs = (data?: object) => {
-  return http.request<ApiResponse<PaginationResponse>>("get", "/mine-logs", { data });
+export const getMineLogs = (data?: { currentPage?: number; pageSize?: number }) => {
+  return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("monitor/operation/log/mine"), { data });
 };

@@ -10,6 +10,7 @@
   });
 
   const loading = ref(true);
+  const fetching = ref(false);
   const dataList = ref([]);
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -22,44 +23,44 @@
   const columns: TableColumnList = [
     {
       label: "操作详情",
-      prop: "summary",
+      prop: "title",
       minWidth: 200,
       cellRenderer: ({ row }) => (
         <div class="log-summary">
-          <div class="summary-main">{row.summary}</div>
+          <div class="summary-main">{row.title || row.requestUrl}</div>
         </div>
       )
     },
     {
       label: "IP 地址",
-      prop: "ip",
+      prop: "ipAddress",
       minWidth: 140,
       cellRenderer: ({ row }) => (
         <el-space>
           <IconifyIconOnline icon="ri-global-line" />
-          <span>{row.ip}</span>
+          <span>{row.ipAddress}</span>
         </el-space>
       )
     },
     {
       label: "地理位置",
-      prop: "address",
+      prop: "location",
       minWidth: 160,
       cellRenderer: ({ row }) => (
         <el-space>
           <IconifyIconOnline icon="ri-map-pin-line" />
-          <span>{row.address || "未知"}</span>
+          <span>{row.location || "未知"}</span>
         </el-space>
       )
     },
     {
       label: "设备信息",
-      prop: "system",
+      prop: "os",
       minWidth: 180,
       cellRenderer: ({ row }) => (
         <el-space>
           <IconifyIconOnline icon="ri-computer-line" />
-          <span>{row.system || "未知"}</span>
+          <span>{row.os || "未知"}</span>
           <IconifyIconOnline icon="ri-window-line" />
           <span>{row.browser || "未知"}</span>
         </el-space>
@@ -67,31 +68,35 @@
     },
     {
       label: "操作时间",
-      prop: "operatingTime",
+      prop: "requestTime",
       minWidth: 180,
       cellRenderer: ({ row }) => (
         <el-space>
           <IconifyIconOnline icon="ri-time-line" />
-          <span>{dayjs(row.operatingTime).format("YYYY-MM-DD HH:mm:ss")}</span>
+          <span>{dayjs(row.requestTime).format("YYYY-MM-DD HH:mm:ss")}</span>
         </el-space>
       )
     }
   ];
 
   async function onSearch() {
+    if (fetching.value) return;
+    fetching.value = true;
     loading.value = true;
     try {
-      const { data } = await getMineLogs();
-      dataList.value = data.list;
-      pagination.total = data.total;
-      pagination.pageSize = data.pageSize;
-      pagination.currentPage = data.currentPage;
+      const { data } = await getMineLogs({
+        currentPage: pagination.currentPage,
+        pageSize: pagination.pageSize
+      });
+      dataList.value = data?.list ?? [];
+      pagination.total = Number(data?.total ?? 0);
+      pagination.pageSize = Number(data?.pageSize ?? pagination.pageSize);
+      pagination.currentPage = Number(data?.currentPage ?? pagination.currentPage);
     } catch (error) {
       console.error("获取日志失败", error);
     } finally {
-      setTimeout(() => {
-        loading.value = false;
-      }, 200);
+      loading.value = false;
+      fetching.value = false;
     }
   }
 
@@ -144,9 +149,9 @@
         :loading="loading"
         :data="dataList"
         :columns="columns"
-        :pagination="pagination"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+        :pagination="{ ...pagination, hideOnSinglePage: false }"
+        @page-size-change="handleSizeChange"
+        @page-current-change="handleCurrentChange"
       >
         <template #empty>
           <el-empty description="暂无日志记录" :image-size="120" />
