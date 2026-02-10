@@ -3,7 +3,7 @@
   import type { floatBtnsType } from "./type";
   import { isUrl, openLink } from "@pureadmin/utils";
 
-  import Open from "~icons/ri/open-arm-line";
+  import EpQuestionFilled from "~icons/ep/question-filled";
   import Close from "~icons/ep/close";
 
   defineOptions({
@@ -20,7 +20,7 @@
   const isOpen = ref(false);
   const mergeFloatBtns = ref<Array<floatBtnsType>>(
     props.floatBtns.concat({
-      icon: Open,
+      icon: EpQuestionFilled,
       show: true
     })
   );
@@ -33,7 +33,7 @@
       Array.from({ length }).forEach((_, k) => {
         mergeFloatBtns.value[k].show = !mergeFloatBtns.value[k].show;
       });
-      mergeFloatBtns.value[index].icon = isOpen.value ? Close : Open;
+      mergeFloatBtns.value[index].icon = isOpen.value ? Close : EpQuestionFilled;
     } else {
       return;
     }
