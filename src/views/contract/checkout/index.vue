@@ -200,8 +200,4 @@
   onMounted(fetchList);
 </script>
 
-<style scoped lang="scss">
-  .main {
-    width: 100%;
-  }
-</style>
+<style scoped lang="scss"></style>

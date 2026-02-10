@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     <!-- 搜索栏 -->
-    <el-row class="bg-bg_color w-full px-4 pb-3 pt-[12px]">
+    <el-row class="bg-bg_color w-full px-4 pb-1 pt-[12px]">
       <el-col :span="24">
         <el-form ref="queryFormRef" :inline="true" :model="queryForm" class="search-form">
           <el-form-item>
@@ -67,7 +67,7 @@
         :loading="loading"
         :loading-config="{ background: 'transparent' }"
         adaptive
-        :adaptiveConfig="{ offsetBottom: 108 }"
+        :adaptiveConfig="{ offsetBottom: 118 }"
         :data="tenantList"
         :size="tableSize as any"
         :columns="columns"
@@ -101,15 +101,14 @@
         </template>
       </pure-table>
     </el-row>
+    <!-- 合同预览对话框 -->
+    <el-dialog v-model="previewVisible" top="10px" title="租客合同预览" width="80%" height="100vh" :destroy-on-close="true" align-center :lock-scroll="true">
+      <iframe title="租客合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
+    </el-dialog>
+
+    <!-- 退租对话框 -->
+    <CheckoutDialog ref="checkoutDialogRef" @success="onCheckoutSuccess" />
   </div>
-
-  <!-- 合同预览对话框 -->
-  <el-dialog v-model="previewVisible" top="10px" title="租客合同预览" width="80%" height="100vh" :destroy-on-close="true" align-center :lock-scroll="true">
-    <iframe title="租客合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
-  </el-dialog>
-
-  <!-- 退租对话框 -->
-  <CheckoutDialog ref="checkoutDialogRef" @success="onCheckoutSuccess" />
 </template>
 
 <script setup lang="ts">
