@@ -13,7 +13,8 @@ export function useRole(tableRef: Ref) {
     currentPage: 1,
     pageSize: 15,
     title: "",
-    requestTime: null
+    requestTime: null,
+    username: ""
   });
 
   const dataList = ref([]);
@@ -65,6 +66,12 @@ export function useRole(tableRef: Ref) {
       width: 100,
       showOverflowTooltip: true,
       cellRenderer: ({ row, props }) => operationTypeMap[row.operationType]
+    },
+    {
+      label: "操作账号",
+      prop: "username",
+      showOverflowTooltip: true,
+      width: 160
     },
     {
       headerRenderer: () => (
