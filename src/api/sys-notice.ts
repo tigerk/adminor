@@ -72,6 +72,10 @@ export const sendMessage = (data: { receiverId: number; title: string; content: 
   return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/message/send"), { data });
 };
 
+export const deleteMessage = (data: { id: number }) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/message/delete"), { data });
+};
+
 export const markTodoRead = (data: { id: number }) => {
   return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/todo/read"), { data });
 };

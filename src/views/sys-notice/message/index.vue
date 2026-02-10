@@ -3,11 +3,12 @@
   import dayjs from "dayjs";
   import type { PaginationProps } from "@pureadmin/table";
   import { PureTableBar } from "@/components/RePureTableBar";
-  import { getMessageAdminPage, sendMessage } from "@/api/sys-notice";
+  import { deleteMessage, getMessageAdminPage, sendMessage } from "@/api/sys-notice";
   import { NOTICE_MESSAGE_TYPE_ENUM, NOTICE_MESSAGE_TYPE_HELPER } from "@/constants";
   import { message } from "@/utils/message";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Plus from "~icons/ep/plus";
+  import Delete from "~icons/ep/delete";
   import { pageUserList } from "@/api/sys/user";
 
   defineOptions({
@@ -75,6 +76,13 @@
       prop: "createTime",
       minWidth: 180,
       formatter: ({ createTime }) => (createTime ? dayjs(createTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+    },
+    {
+      label: "操作",
+      prop: "operation",
+      width: 120,
+      fixed: "right",
+      slot: "operation"
     }
   ];
 
@@ -137,6 +145,14 @@
     formRef.value?.resetFields();
   }
 
+  async function handleDelete(row) {
+    const { code } = await deleteMessage({ id: row.id });
+    if (code === 0) {
+      message("删除成功", { type: "success" });
+      fetchList();
+    }
+  }
+
   onMounted(() => {
     fetchList();
     pageUserList({ currentPage: 1, pageSize: 2000 }).then(({ data }) => {
@@ -174,7 +190,15 @@
           }"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
-        />
+        >
+          <template #operation="{ row }">
+            <el-popconfirm title="确定删除该消息吗？" @confirm="handleDelete(row)">
+              <template #reference>
+                <el-button link type="danger" :size="size" :icon="useRenderIcon(Delete)">删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </pure-table>
       </template>
     </PureTableBar>
 
