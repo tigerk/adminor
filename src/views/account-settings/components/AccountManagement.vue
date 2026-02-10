@@ -1,6 +1,8 @@
 <script setup lang="ts">
-  import { ref } from "vue";
+  import { computed, onMounted, ref } from "vue";
   import { message } from "@/utils/message";
+  import { getUserProfile, sendAccountEmailSms, sendAccountNewPhoneSms, sendAccountOldPhoneSms, updateAccountEmail, updateAccountPassword, updateAccountPhone } from "@/api/login";
+  import { useUserStoreHook } from "@/store/modules/user";
 
   defineOptions({
     name: "AccountManagement"
@@ -15,12 +17,17 @@
     type: "password" | "phone" | "email";
   }
 
-  const accountList = ref<AccountItem[]>([
+  const profile = ref({
+    phone: "",
+    email: ""
+  });
+
+  const accountList = computed<AccountItem[]>(() => [
     {
       icon: "ri-lock-password-line",
       title: "账户密码",
       description: "定期更换密码可以提高账户安全性",
-      value: "当前密码强度：强",
+      value: "修改后需重新登录",
       action: "修改密码",
       type: "password"
     },
@@ -28,7 +35,7 @@
       icon: "ri-phone-line",
       title: "登录手机号码",
       description: "用于登录验证和重要通知",
-      value: "已绑定手机：158****6789",
+      value: profile.value.phone ? `已绑定手机：${maskPhone(profile.value.phone)}` : "未绑定手机",
       action: "更换手机",
       type: "phone"
     },
@@ -36,15 +43,215 @@
       icon: "ri-mail-line",
       title: "邮箱地址",
       description: "用于接收系统通知和找回密码",
-      value: "已绑定邮箱：pure***@163.com",
+      value: profile.value.email ? `已绑定邮箱：${maskEmail(profile.value.email)}` : "未绑定邮箱",
       action: "更换邮箱",
       type: "email"
     }
   ]);
 
-  function handleClick(item: AccountItem) {
-    message(`${item.action}功能开发中，请根据具体业务自行实现`, { type: "info" });
+  const passwordDialogVisible = ref(false);
+  const phoneDialogVisible = ref(false);
+  const emailDialogVisible = ref(false);
+
+  const passwordFormRef = ref();
+  const phoneFormRef = ref();
+  const emailFormRef = ref();
+
+  const passwordForm = ref({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  const phoneForm = ref({
+    oldVerifyCode: "",
+    newPhone: "",
+    newVerifyCode: ""
+  });
+
+  const emailForm = ref({
+    email: "",
+    verifyCode: ""
+  });
+
+  const oldPhoneCodeCountdown = ref(0);
+  const newPhoneCodeCountdown = ref(0);
+  const emailCodeCountdown = ref(0);
+  let oldPhoneTimer: number | undefined;
+  let newPhoneTimer: number | undefined;
+  let emailTimer: number | undefined;
+
+  const passwordRules = {
+    oldPassword: [{ required: true, message: "请输入原密码", trigger: "blur" }],
+    newPassword: [{ required: true, message: "请输入新密码", trigger: "blur" }],
+    confirmPassword: [
+      { required: true, message: "请确认新密码", trigger: "blur" },
+      {
+        validator: (_rule, value, callback) => {
+          if (value !== passwordForm.value.newPassword) {
+            callback(new Error("两次输入的密码不一致"));
+            return;
+          }
+          callback();
+        },
+        trigger: "blur"
+      }
+    ]
+  };
+
+  const phoneRules = {
+    oldVerifyCode: [{ required: true, message: "请输入原手机号验证码", trigger: "blur" }],
+    newPhone: [{ required: true, message: "请输入新手机号", trigger: "blur" }],
+    newVerifyCode: [{ required: true, message: "请输入新手机号验证码", trigger: "blur" }]
+  };
+
+  const emailRules = {
+    email: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
+    verifyCode: [{ required: true, message: "请输入验证码", trigger: "blur" }]
+  };
+
+  function maskPhone(phone: string) {
+    if (!phone || phone.length < 7) return phone || "-";
+    return phone.slice(0, 3) + "****" + phone.slice(-4);
   }
+
+  function maskEmail(email: string) {
+    if (!email || !email.includes("@")) return email || "-";
+    const [name, domain] = email.split("@");
+    if (name.length <= 2) return `${name[0]}***@${domain}`;
+    return `${name.slice(0, 2)}***@${domain}`;
+  }
+
+  function handleClick(item: AccountItem) {
+    if (item.type === "password") passwordDialogVisible.value = true;
+    if (item.type === "phone") phoneDialogVisible.value = true;
+    if (item.type === "email") emailDialogVisible.value = true;
+  }
+
+  function startCountdown(type: "oldPhone" | "newPhone" | "email") {
+    if (type === "oldPhone") {
+      oldPhoneCodeCountdown.value = 60;
+      oldPhoneTimer = window.setInterval(() => {
+        oldPhoneCodeCountdown.value -= 1;
+        if (oldPhoneCodeCountdown.value <= 0) {
+          window.clearInterval(oldPhoneTimer);
+        }
+      }, 1000);
+    } else if (type === "newPhone") {
+      newPhoneCodeCountdown.value = 60;
+      newPhoneTimer = window.setInterval(() => {
+        newPhoneCodeCountdown.value -= 1;
+        if (newPhoneCodeCountdown.value <= 0) {
+          window.clearInterval(newPhoneTimer);
+        }
+      }, 1000);
+    } else {
+      emailCodeCountdown.value = 60;
+      emailTimer = window.setInterval(() => {
+        emailCodeCountdown.value -= 1;
+        if (emailCodeCountdown.value <= 0) {
+          window.clearInterval(emailTimer);
+        }
+      }, 1000);
+    }
+  }
+
+  async function sendOldPhoneCode() {
+    const { code } = await sendAccountOldPhoneSms();
+    if (code === 0) {
+      message("验证码已发送到原手机号", { type: "success" });
+      startCountdown("oldPhone");
+    }
+  }
+
+  async function sendNewPhoneCode() {
+    if (!phoneForm.value.newPhone) {
+      message("请输入新手机号", { type: "warning" });
+      return;
+    }
+    const { code } = await sendAccountNewPhoneSms({ phone: phoneForm.value.newPhone });
+    if (code === 0) {
+      message("验证码已发送到新手机号", { type: "success" });
+      startCountdown("newPhone");
+    }
+  }
+
+  async function sendEmailCode() {
+    if (!emailForm.value.email) {
+      message("请输入新邮箱", { type: "warning" });
+      return;
+    }
+    const { code } = await sendAccountEmailSms({ email: emailForm.value.email });
+    if (code === 0) {
+      message("验证码已发送至新邮箱", { type: "success" });
+      startCountdown("email");
+    }
+  }
+
+  async function submitPassword() {
+    await passwordFormRef.value.validate();
+    const { code, message: errMsg } = await updateAccountPassword({
+      oldPassword: passwordForm.value.oldPassword,
+      newPassword: passwordForm.value.newPassword
+    });
+    if (code === 0) {
+      message("密码修改成功，请重新登录", { type: "success" });
+      passwordDialogVisible.value = false;
+      useUserStoreHook().logOut();
+    } else {
+      message(errMsg || "密码修改失败", { type: "error" });
+    }
+  }
+
+  async function submitPhone() {
+    await phoneFormRef.value.validate();
+    const { code, message: errMsg } = await updateAccountPhone({
+      oldVerifyCode: phoneForm.value.oldVerifyCode,
+      newPhone: phoneForm.value.newPhone,
+      newVerifyCode: phoneForm.value.newVerifyCode
+    });
+    if (code === 0) {
+      message("手机号修改成功，请重新登录", { type: "success" });
+      phoneDialogVisible.value = false;
+      useUserStoreHook().logOut();
+    } else {
+      message(errMsg || "手机号修改失败", { type: "error" });
+    }
+  }
+
+  async function submitEmail() {
+    await emailFormRef.value.validate();
+    const { code, message: errMsg } = await updateAccountEmail({
+      email: emailForm.value.email,
+      verifyCode: emailForm.value.verifyCode
+    });
+    if (code === 0) {
+      message("邮箱修改成功", { type: "success" });
+      emailDialogVisible.value = false;
+      profile.value.email = emailForm.value.email;
+    } else {
+      message(errMsg || "邮箱修改失败", { type: "error" });
+    }
+  }
+
+  function resetPasswordDialog() {
+    passwordFormRef.value?.resetFields();
+  }
+
+  function resetPhoneDialog() {
+    phoneFormRef.value?.resetFields();
+  }
+
+  function resetEmailDialog() {
+    emailFormRef.value?.resetFields();
+  }
+
+  onMounted(() => {
+    getUserProfile().then(({ data }) => {
+      profile.value.phone = data?.phone ?? "";
+      profile.value.email = data?.email ?? "";
+    });
+  });
 </script>
 
 <template>
@@ -93,6 +300,76 @@
         </ul>
       </template>
     </el-alert>
+
+    <el-dialog v-model="passwordDialogVisible" title="修改密码" width="520px" @closed="resetPasswordDialog">
+      <el-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-width="90px" label-position="top">
+        <el-form-item label="原密码" prop="oldPassword">
+          <el-input v-model="passwordForm.oldPassword" type="password" show-password placeholder="请输入原密码" />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="passwordForm.newPassword" type="password" show-password placeholder="请输入新密码" />
+        </el-form-item>
+        <el-form-item label="确认新密码" prop="confirmPassword">
+          <el-input v-model="passwordForm.confirmPassword" type="password" show-password placeholder="请确认新密码" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="passwordDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitPassword">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="phoneDialogVisible" title="更换手机号" width="520px" @closed="resetPhoneDialog">
+      <el-form ref="phoneFormRef" :model="phoneForm" :rules="phoneRules" label-width="90px" label-position="top">
+        <el-form-item label="原手机号验证码" prop="oldVerifyCode">
+          <el-input v-model="phoneForm.oldVerifyCode" placeholder="请输入原手机号验证码">
+            <template #append>
+              <el-button :disabled="oldPhoneCodeCountdown > 0" @click="sendOldPhoneCode">
+                {{ oldPhoneCodeCountdown > 0 ? `${oldPhoneCodeCountdown}s` : "发送验证码" }}
+              </el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="新手机号" prop="newPhone">
+          <el-input v-model="phoneForm.newPhone" placeholder="请输入新手机号" />
+        </el-form-item>
+        <el-form-item label="新手机号验证码" prop="newVerifyCode">
+          <el-input v-model="phoneForm.newVerifyCode" placeholder="请输入新手机号验证码">
+            <template #append>
+              <el-button :disabled="newPhoneCodeCountdown > 0" @click="sendNewPhoneCode">
+                {{ newPhoneCodeCountdown > 0 ? `${newPhoneCodeCountdown}s` : "发送验证码" }}
+              </el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="phoneDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitPhone">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="emailDialogVisible" title="更换邮箱" width="520px" @closed="resetEmailDialog">
+      <el-form ref="emailFormRef" :model="emailForm" :rules="emailRules" label-width="90px" label-position="top">
+        <el-form-item label="新邮箱" prop="email">
+          <el-input v-model="emailForm.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="验证码" prop="verifyCode">
+          <el-input v-model="emailForm.verifyCode" placeholder="请输入验证码">
+            <template #append>
+              <el-button :disabled="emailCodeCountdown > 0" @click="sendEmailCode">
+                {{ emailCodeCountdown > 0 ? `${emailCodeCountdown}s` : "发送验证码" }}
+              </el-button>
+            </template>
+          </el-input>
+          <div class="text-xs text-[var(--el-text-color-secondary)] mt-1">验证码将发送至新邮箱</div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="emailDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitEmail">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

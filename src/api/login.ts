@@ -85,6 +85,30 @@ export const loginUpdate = (data?: object) => {
   return http.request<UserResult>("post", baseUrlApi("login/update"), { data });
 };
 
+export const sendAccountOldPhoneSms = () => {
+  return http.request<ApiResponse>("post", baseUrlApi("account/phone/old/sms/send"));
+};
+
+export const sendAccountNewPhoneSms = (data?: { phone: string }) => {
+  return http.request<ApiResponse>("post", baseUrlApi("account/phone/new/sms/send"), { data });
+};
+
+export const sendAccountEmailSms = (data?: { email: string }) => {
+  return http.request<ApiResponse>("post", baseUrlApi("account/email/code/send"), { data });
+};
+
+export const updateAccountPassword = (data?: { oldPassword: string; newPassword: string }) => {
+  return http.request<ApiResponse>("post", baseUrlApi("account/password/update"), { data });
+};
+
+export const updateAccountPhone = (data?: { oldVerifyCode: string; newPhone: string; newVerifyCode: string }) => {
+  return http.request<ApiResponse>("post", baseUrlApi("account/phone/update"), { data });
+};
+
+export const updateAccountEmail = (data?: { email: string; verifyCode: string }) => {
+  return http.request<ApiResponse>("post", baseUrlApi("account/email/update"), { data });
+};
+
 /** 获取当前账户的个人信息 */
 export const getUserProfile = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("login/profile/get"), { data });
