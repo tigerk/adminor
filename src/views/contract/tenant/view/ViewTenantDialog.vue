@@ -100,7 +100,7 @@
                 <el-descriptions-item label="姓名" label-align="right">
                   <el-space>
                     <span class="text-value">{{ localFormInline.tenantName }}</span>
-                    <el-tag type="info" size="small">{{ localFormInline.tenantPersonal?.gender === 0 ? "男" : "女" }}</el-tag>
+                    <el-tag type="info" size="small">{{ localFormInline.tenantPersonal?.gender === 1 ? "男" : "女" }}</el-tag>
                   </el-space>
                 </el-descriptions-item>
                 <el-descriptions-item label="联系电话" label-align="right">
@@ -561,6 +561,7 @@
       message("已退租或作废租客不能修改", { type: "warning" });
       return;
     }
+
     const tenantCreateFormInline: TenantsCreateFormProps = {
       lease: {
         ...row,

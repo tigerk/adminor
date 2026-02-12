@@ -163,13 +163,12 @@
   };
 
   watch(
-    () => props.modelValue,
-    newValue => {
-      if (newValue) {
+    [() => props.modelValue, otherFeeTypeOptions],
+    ([newValue, options]) => {
+      if (newValue && options.length > 0) {
         newValue.forEach((fee, index) => {
-          // dictDataId="0" 的项不需要初始化级联选择器值
           if (fee.dictDataId && fee.dictDataId !== "0") {
-            for (const parent of otherFeeTypeOptions.value) {
+            for (const parent of options) {
               const child = parent.children?.find((c: any) => c.value === fee.dictDataId);
               if (child) {
                 cascaderValues.value[index] = [parent.value, child.value];

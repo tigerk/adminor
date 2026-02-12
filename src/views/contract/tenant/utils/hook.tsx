@@ -357,6 +357,11 @@ function useTenant() {
         const getFormRuleRef = FormInstance?.getRef?.();
         const curData = FormInstance?.formInline;
 
+        // ✅ 关键修改：在验证之前先给 roomIds 赋值
+        if (FormInstance?.roomSelection) {
+          curData.lease.roomIds = FormInstance.roomSelection.map(item => item.value);
+        }
+
         getFormRuleRef.validate(valid => {
           if (valid) {
             const apiCall = curData?.lease?.id == null ? createTenant : updateTenant;
@@ -373,7 +378,6 @@ function useTenant() {
             curData.lease.leaseEnd = leaseDate[1];
             curData.lease.checkInTime = checkDate[0];
             curData.lease.checkOutTime = checkDate[1];
-            curData.lease.roomIds = FormInstance.roomSelection.map(item => item.value);
 
             apiCall(curData).then(resp => {
               if (resp.code === 0) {

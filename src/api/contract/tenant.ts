@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import { ApiResponse, PaginationResponse, LeaseBillListProps, LeaseContractProps, TenantDetailProps } from "@/types";
+import type { ApiResponse, PaginationResponse, LeaseBillListProps, LeaseContractProps, TenantDetailProps } from "@/types";
 
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
