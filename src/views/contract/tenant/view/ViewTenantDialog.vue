@@ -156,7 +156,7 @@
 
             <!-- 租约信息 -->
             <div class="info-section">
-              <el-descriptions title="租约信息" :column="4" class="info-descriptions" size="default">
+              <el-descriptions title="租约信息" :column="5" class="info-descriptions" size="default">
                 <el-descriptions-item label="合同周期" label-align="right">
                   <el-space :size="8">
                     <el-tag type="primary">{{ localFormInline.leaseStart }}</el-tag>
