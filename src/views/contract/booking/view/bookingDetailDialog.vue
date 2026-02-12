@@ -144,7 +144,6 @@
               <div class="text-xl font-bold" :class="isExpired ? 'text-red-700 dark:text-red-300' : 'text-gray-800 dark:text-gray-200'">
                 {{ formatDateTime(formInline.expiryTime) }}
               </div>
-              <el-tag v-if="isExpired" type="danger" effect="dark" round>已过期</el-tag>
             </div>
           </div>
         </div>
@@ -254,7 +253,7 @@
 
                 <!-- 房间详情 -->
                 <div class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-600">
-                  <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                  <div class="flex items-center gap-4 text-lg text-gray-500 dark:text-gray-400">
                     <span class="flex items-center gap-1">
                       <el-icon><Grid /></el-icon>
                       {{ room.area || "--" }} m²
@@ -318,6 +317,10 @@
   const props = defineProps<{ formInline: BookingListProps }>();
 
   const isExpired = computed(() => {
+    if (props.formInline.bookingStatus === 2) {
+      return false;
+    }
+
     return props.formInline.expiryTime ? new Date(props.formInline.expiryTime) < new Date() : false;
   });
 
