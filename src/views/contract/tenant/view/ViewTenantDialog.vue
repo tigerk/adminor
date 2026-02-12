@@ -165,9 +165,7 @@
                   </el-space>
                 </el-descriptions-item>
                 <el-descriptions-item label="入住时间" label-align="right">
-                  <el-space :size="8">
-                    {{ localFormInline.checkInTime }} 至 {{ localFormInline.checkOutTime }}
-                  </el-space>
+                  <el-space :size="8">{{ localFormInline.checkInTime }} 至 {{ localFormInline.checkOutTime }}</el-space>
                 </el-descriptions-item>
                 <el-descriptions-item label="月租金" label-align="right">
                   <span class="rent-price">¥ {{ localFormInline.rentPrice }}</span>
