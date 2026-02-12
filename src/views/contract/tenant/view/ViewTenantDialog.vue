@@ -70,6 +70,11 @@
     </div>
 
     <div class="tabs-wrapper">
+      <div class="tabs-action-container">
+        <el-tooltip class="box-item" effect="dark" content="修改租客信息，包括姓名、联系电话、证件类型、证件号码等。" placement="top">
+          <el-button type="primary" size="small" :icon="Edit" :disabled="!allowEdit(localFormInline.status)" @click="editTenant(localFormInline)">修改租约</el-button>
+        </el-tooltip>
+      </div>
       <!-- 标签页内容 -->
       <el-tabs v-model="activeTab" class="modern-tabs">
         <!-- 租客信息 Tab -->
@@ -83,7 +88,7 @@
           <div class="tab-content">
             <!-- 基本信息 -->
             <div class="info-section mt-4">
-              <el-descriptions title="基本信息" :column="3" class="info-descriptions" size="default">
+              <el-descriptions title="基本信息" :column="5" class="info-descriptions" size="default">
                 <template #title>
                   <el-space>
                     <span>基本信息</span>
@@ -91,11 +96,6 @@
                       {{ localFormInline.tenantType === 0 ? "个人" : "企业" }}
                     </el-tag>
                   </el-space>
-                </template>
-                <template #extra>
-                  <el-tooltip class="box-item" effect="dark" content="修改租客信息，包括姓名、联系电话、证件类型、证件号码等。" placement="top">
-                    <el-button type="primary" size="small" :icon="Edit" :disabled="!allowEdit(localFormInline.status)" @click="editTenant(localFormInline)">修改租约</el-button>
-                  </el-tooltip>
                 </template>
                 <el-descriptions-item label="姓名" label-align="right">
                   <el-space>
@@ -156,7 +156,7 @@
 
             <!-- 租约信息 -->
             <div class="info-section">
-              <el-descriptions title="租约信息" :column="3" class="info-descriptions" size="default">
+              <el-descriptions title="租约信息" :column="4" class="info-descriptions" size="default">
                 <el-descriptions-item label="合同周期" label-align="right">
                   <el-space :size="8">
                     <el-tag type="primary">{{ localFormInline.leaseStart }}</el-tag>
@@ -164,11 +164,15 @@
                     <el-tag type="primary">{{ localFormInline.leaseEnd }}</el-tag>
                   </el-space>
                 </el-descriptions-item>
+                <el-descriptions-item label="入住时间" label-align="right">
+                  <el-space :size="8">
+                    {{ localFormInline.checkInTime }} 至 {{ localFormInline.checkOutTime }}
+                  </el-space>
+                </el-descriptions-item>
                 <el-descriptions-item label="月租金" label-align="right">
                   <span class="rent-price">¥ {{ localFormInline.rentPrice }}</span>
                   <span class="rent-unit">元/月</span>
                 </el-descriptions-item>
-
                 <el-descriptions-item label="押付方式" label-align="right">
                   <span class="text-value">押 {{ localFormInline.depositMonths }} 付 {{ localFormInline.paymentMonths }}</span>
                 </el-descriptions-item>
@@ -177,13 +181,6 @@
                 </el-descriptions-item>
                 <el-descriptions-item label="签约类型" label-align="right">
                   <span class="text-value">{{ getContractNatureName(localFormInline.contractNature) }}</span>
-                </el-descriptions-item>
-                <el-descriptions-item label="入住时间" label-align="right">
-                  <el-space :size="8">
-                    <el-tag type="info">{{ localFormInline.checkInTime }}</el-tag>
-                    <span>至</span>
-                    <el-tag type="info">{{ localFormInline.checkOutTime }}</el-tag>
-                  </el-space>
                 </el-descriptions-item>
               </el-descriptions>
               <div class="info-section">
@@ -351,14 +348,14 @@
 </template>
 
 <script setup lang="ts">
-  import { h, ref, watch, computed } from "vue";
+  import { computed, h, ref, watch } from "vue";
   import { CheckoutDetailProps, TenantDetailProps, TenantsCreateFormProps } from "@/types";
   import {
     getOptionByCode,
     ID_TYPE_OPTIONS,
+    LEASE_CONTRACT_NATURE_OPTIONS,
     PAYMENT_METHOD_OPTIONS,
     PRICE_METHOD_OPTIONS,
-    LEASE_CONTRACT_NATURE_OPTIONS,
     TENANT_SIGN_STATUS_OPTIONS,
     TENANT_STATUS_ENUM
   } from "@/constants";

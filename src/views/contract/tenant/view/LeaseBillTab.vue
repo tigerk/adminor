@@ -85,7 +85,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="otherFeeAmount" label="其他费用" align="center" width="100">
+          <el-table-column prop="otherFeeAmount" label="其他费用" align="center" width="120">
             <template #default="{ row }">
               <el-space v-if="row.otherFeeAmount > 0" :size="4">
                 <span class="amount-text">¥{{ row.otherFeeAmount }}</span>
