@@ -111,9 +111,9 @@
       message("只能上传图片");
       return false;
     }
-    const isExceed = file.size / 1024 / 1024 > 2;
+    const isExceed = file.size / 1024 / 1024 > 10;
     if (isExceed) {
-      message(`单个图片大小不能超过2MB`);
+      message(`单个图片大小不能超过10MB`);
       return false;
     }
     return true;

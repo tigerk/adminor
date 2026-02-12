@@ -41,6 +41,7 @@ export interface LeaseProps {
   parentLeaseId?: string; // 续签时传入上一份租约ID
   contractTemplateId: string;
   contractNature: number;
+  tenantType: number; // 租客类型
   companyId?: string;
   deptId?: string;
   roomIds: string[];
