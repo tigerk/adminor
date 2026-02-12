@@ -7,7 +7,7 @@
         <div class="action-left">
           <el-space :size="12">
             <el-button type="primary" :icon="Download" @click="handleDownloadContract">下载合同</el-button>
-            <el-button type="primary" :icon="Document" @click="handleGenerateContract">重新生成</el-button>
+            <el-button type="primary" :icon="Document" :disabled="!allowChangeSignStatus" @click="handleGenerateContract">重新生成</el-button>
             <el-popconfirm title="确认将合同状态改为已签约吗？" @confirm="handleSignContract">
               <template #reference>
                 <el-button type="primary" :disabled="!allowChangeSignStatus" :icon="Checked">改为已签约</el-button>

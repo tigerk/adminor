@@ -72,7 +72,7 @@
     <div class="tabs-wrapper">
       <div class="tabs-action-container">
         <el-tooltip class="box-item" effect="dark" content="修改租客信息，包括姓名、联系电话、证件类型、证件号码等。" placement="top">
-          <el-button type="primary" size="small" :icon="Edit" :disabled="!allowEdit(localFormInline.status)" @click="editTenant(localFormInline)">修改租约</el-button>
+          <el-button type="primary" size="small" :icon="Edit" :disabled="!allowEdit(localFormInline.status)" @click="editLease(localFormInline)">修改租约</el-button>
         </el-tooltip>
       </div>
       <!-- 标签页内容 -->
@@ -97,11 +97,16 @@
                     </el-tag>
                   </el-space>
                 </template>
+                <template #extra>
+                  <el-tooltip class="box-item" effect="dark" content="修改租客信息，包括姓名、联系电话、证件类型、证件号码等。" placement="top">
+                    <el-button type="primary" size="small" :icon="Edit" @click="editTenantInfo(localFormInline)">修改租客信息</el-button>
+                  </el-tooltip>
+                </template>
                 <el-descriptions-item label="姓名" label-align="right">
-                  <el-space>
-                    <span class="text-value">{{ localFormInline.tenantName }}</span>
-                    <el-tag type="info" size="small">{{ localFormInline.tenantPersonal?.gender === 1 ? "男" : "女" }}</el-tag>
-                  </el-space>
+                  <span class="text-value">{{ localFormInline.tenantName }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="性别" label-align="right">
+                  {{ localFormInline.tenantPersonal?.gender === 1 ? "男" : "女" }}
                 </el-descriptions-item>
                 <el-descriptions-item label="联系电话" label-align="right">
                   <span class="text-value">{{ localFormInline.tenantPhone }}</span>
@@ -123,9 +128,6 @@
                     <span class="text-value">{{ localFormInline.tenantCompany?.legalPerson }}</span>
                   </el-descriptions-item>
                 </template>
-                <el-descriptions-item label="签约时间" label-align="right" :span="2">
-                  <span class="text-value">{{ localFormInline.createTime }}</span>
-                </el-descriptions-item>
               </el-descriptions>
               <div class="photo-wall">
                 <div
@@ -179,6 +181,9 @@
                 </el-descriptions-item>
                 <el-descriptions-item label="签约类型" label-align="right">
                   <span class="text-value">{{ getContractNatureName(localFormInline.contractNature) }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="签约时间" label-align="right" :span="2">
+                  <span class="text-value">{{ localFormInline.createTime }}</span>
                 </el-descriptions-item>
               </el-descriptions>
               <div class="info-section">
@@ -551,7 +556,7 @@
     return status === TENANT_STATUS_ENUM.TO_SIGN.code;
   };
 
-  const editTenant = (row: TenantDetailProps) => {
+  const editLease = (row: TenantDetailProps) => {
     if (!allowEdit(row.status)) {
       message("已退租或作废租客不能修改", { type: "warning" });
       return;
