@@ -39,7 +39,7 @@
         </div>
 
         <!-- 空状态 -->
-        <el-empty v-else :description="props.isEdit ? '暂无房源信息' : '请点击上方选择房源'" :image-size="60" />
+        <div v-else class="text-center">{{ props.isEdit ? "暂无房源信息" : "请点击右上方 选择房源" }}</div>
 
         <el-form-item prop="lease.roomIds" label-width="0" class="!m-0" />
       </div>

@@ -18,7 +18,7 @@
           <!-- 分组：合同管理 -->
           <div class="menu-group">
             <div class="group-title">合同管理</div>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('tenant-contract')">
+            <el-dropdown-item class="menu-item" @click="handleMenuClick('lease-contract')">
               <div class="menu-content">
                 <div class="icon-wrapper primary">
                   <el-icon><Document /></el-icon>
@@ -26,14 +26,14 @@
                 <span class="menu-text">租客合同</span>
               </div>
             </el-dropdown-item>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('owner-contract')">
-              <div class="menu-content">
-                <div class="icon-wrapper primary-light">
-                  <el-icon><DocumentChecked /></el-icon>
-                </div>
-                <span class="menu-text">房东合同</span>
-              </div>
-            </el-dropdown-item>
+<!--            <el-dropdown-item class="menu-item" @click="handleMenuClick('owner-contract')">-->
+<!--              <div class="menu-content">-->
+<!--                <div class="icon-wrapper primary-light">-->
+<!--                  <el-icon><DocumentChecked /></el-icon>-->
+<!--                </div>-->
+<!--                <span class="menu-text">房东合同</span>-->
+<!--              </div>-->
+<!--            </el-dropdown-item>-->
           </div>
 
           <!-- 分组：房源管理 -->
@@ -148,8 +148,10 @@
   import { ArrowDown, Brush, Calendar, Document, DocumentChecked, Edit, House, List, OfficeBuilding, Plus, Tickets, Tools, User, UserFilled, Van } from "@element-plus/icons-vue";
   import { ElMessage } from "element-plus";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
+  import useTenant from "@/views/contract/tenant/utils/hook";
 
   const { openFocusEditDialog } = useFocusEdit();
+  const { openTenantDialog } = useTenant();
 
   // 处理下拉菜单显示状态变化
   const handleVisibleChange = (visible: boolean) => {
@@ -165,7 +167,7 @@
     console.log(`点击了菜单: ${menuType}`);
 
     switch (menuType) {
-      case "tenant-contract":
+      case "lease-contract":
         handleLeaseContract();
         break;
       case "owner-contract":
@@ -210,7 +212,8 @@
   };
 
   const handleLeaseContract = () => {
-    ElMessage.success("打开租客合同模块");
+    // 添加租客
+    openTenantDialog();
   };
 
   const handleOwnerContract = () => {
