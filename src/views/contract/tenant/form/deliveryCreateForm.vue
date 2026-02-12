@@ -98,7 +98,7 @@
 
           <el-table-column prop="itemName" label="物品名称" min-width="150" align="center">
             <template #default="{ row }">
-              <el-input v-if="row.isCustom && !isViewMode" v-model="row.itemName" placeholder="请输入物品名称" size="small" />
+              <el-input v-if="row.isCustom && !isViewMode" v-model="row.itemName" placeholder="请输入物品名称" />
               <span v-else>{{ row.itemName }}</span>
             </template>
           </el-table-column>
@@ -186,7 +186,7 @@
     subjectType: props.formInline?.subjectType || "tenant",
     subjectTypeId: props.formInline?.subjectTypeId,
     roomId: props.formInline?.roomId,
-    handoverType: props.formInline?.handoverType || "check_in",
+    handoverType: props.formInline?.handoverType || "CHECK_IN",
     status: props.formInline?.status ?? 0,
     handoverDate: props.formInline?.handoverDate || new Date().toISOString().split("T")[0],
     inspectorId: props.formInline?.inspectorId,

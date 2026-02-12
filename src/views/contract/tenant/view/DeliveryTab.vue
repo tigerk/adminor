@@ -159,7 +159,7 @@
           subjectType: "tenant",
           subjectTypeId: props.subjectTypeId,
           roomId: roomId,
-          handoverType: "check_in",
+          handoverType: "CHECK_IN",
           status: 0,
           items: [],
           facilities: room.facilities || [],
