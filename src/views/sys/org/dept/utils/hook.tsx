@@ -3,11 +3,11 @@ import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
 import { message } from "@/utils/message";
 import { createDept, deleteDept, getDeptList } from "@/api/sys/dept";
-import { usePublicHooks } from "../../../../utils/publicHooks";
 import { addDialog } from "@/components/ReDialog";
 import { h, onMounted, reactive, ref } from "vue";
 import type { FormItemProps } from "../utils/types";
 import { cloneDeep, deviceDetection, isAllEmpty } from "@pureadmin/utils";
+import { usePublicHooks } from "@/utils/publicHooks";
 
 export function useDept() {
   const form = reactive({

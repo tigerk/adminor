@@ -3,7 +3,7 @@
   import ReCol from "@/components/ReCol";
   import { formRules } from "../utils/rule";
   import { FormProps } from "../utils/types";
-  import { usePublicHooks } from "../../../../utils/publicHooks";
+  import { usePublicHooks } from "@/utils/publicHooks";
 
   const props = withDefaults(defineProps<FormProps>(), {
     formInline: () => ({

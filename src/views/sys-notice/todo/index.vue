@@ -3,8 +3,10 @@
   import dayjs from "dayjs";
   import type { PaginationProps } from "@pureadmin/table";
   import { PureTableBar } from "@/components/RePureTableBar";
-  import { getTodoAdminPage } from "@/api/sys-notice";
+  import { deleteTodo, getTodoAdminPage } from "@/api/sys-notice";
   import { NOTICE_TODO_PRIORITY_HELPER, NOTICE_TODO_STATUS_HELPER, NOTICE_TODO_TYPE_HELPER } from "@/constants";
+  import { ElMessageBox } from "element-plus";
+  import { message } from "@/utils/message";
 
   defineOptions({
     name: "SysNoticeTodo"
@@ -61,6 +63,12 @@
       prop: "createTime",
       minWidth: 180,
       formatter: ({ createTime }) => (createTime ? dayjs(createTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+    },
+    {
+      label: "操作",
+      prop: "operation",
+      minWidth: 120,
+      slot: "operation"
     }
   ];
 
@@ -90,6 +98,24 @@
     fetchList();
   }
 
+  function handleDelete(row) {
+    ElMessageBox.confirm("确定删除该待办消息吗？", "删除确认", {
+      confirmButtonText: "删除",
+      cancelButtonText: "取消",
+      type: "warning"
+    })
+      .then(async () => {
+        const resp = await deleteTodo({ id: row.id });
+        if (resp.code === 0) {
+          message("删除成功");
+          fetchList();
+        } else {
+          message(resp.message || "删除失败", { type: "error" });
+        }
+      })
+      .catch(() => undefined);
+  }
+
   onMounted(() => {
     fetchList();
   });
@@ -117,7 +143,11 @@
           }"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
-        />
+        >
+          <template #operation="{ row }">
+            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+          </template>
+        </pure-table>
       </template>
     </PureTableBar>
   </div>

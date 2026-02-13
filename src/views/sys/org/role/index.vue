@@ -13,7 +13,7 @@
   import AddFill from "~icons/ri/add-circle-line";
   import Close from "~icons/ep/close";
   import Check from "~icons/ep/check";
-  import RoleUser from "@/views/sys/role/roleUser.vue";
+  import RoleUser from "@/views/sys/org/role/roleUser.vue";
 
   defineOptions({
     name: "SystemRole"

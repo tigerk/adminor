@@ -87,3 +87,7 @@ export const markTodoReadBatch = (data: { ids: number[] }) => {
 export const handleTodo = (data: { id: number; handleRemark: string }) => {
   return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/todo/handle"), { data });
 };
+
+export const deleteTodo = (data: { id: number }) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("sys/notice/todo/delete"), { data });
+};
