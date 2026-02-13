@@ -10,7 +10,8 @@ import { getShareHouseById } from "@/api/house/scatter";
 import type { RoomGridItemProps, RoomGridProps, RoomListProps, ScatterCreateFormProps, ScatterHouseProps } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
-import { ROOM_STATUS_ENUM } from "@/constants"; // ==================== Hook 特有的类型定义 ====================
+import { ROOM_STATUS_ENUM } from "@/constants";
+import { message } from "@/utils/message"; // ==================== Hook 特有的类型定义 ====================
 
 // ==================== Hook 特有的类型定义 ====================
 
@@ -321,8 +322,16 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         );
         ElMessage.success(`准备为房间 ${room.roomNumber} 签约`);
         break;
+      case "view":
+        // 查看房间详情
+        message(`查看房间详情：${room.roomNumber}`, {
+          type: "info"
+        });
+        break;
       default:
-        ElMessage.error(`未知操作：${action}`);
+        message(`未知操作：${action}`, {
+          type: "error"
+        });
     }
   };
 

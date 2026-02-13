@@ -1,7 +1,7 @@
 // ==================== 3. src/types/models/house.ts ====================
 // 房间相关业务模型
 
-import type { BuildingGroupProps, CompoundGroupProps, FacilityItemProps, FloorGroupProps, HouseLayoutProps, PriceConfigProps, RoomLeaseInfoProps } from "@/types";
+import type { BuildingGroupProps, CompoundGroupProps, FacilityItemProps, FloorGroupProps, HouseLayoutProps } from "@/types";
 
 export type RoomTotal = {
   code: number;
@@ -144,4 +144,65 @@ export type RoomListQueryProps = {
   currentPage?: number;
   /** 每页显示条目个数 */
   pageSize?: number;
+};
+
+export interface PriceConfigProps {
+  /** 房间ID */
+  roomId: string;
+  /** 出房价格（单位：元/月） */
+  price: number;
+  /** 底价（单位：元/月） */
+  floorPrice: number;
+  /** 底价方式：1=固定金额，2=按比例 */
+  floorPriceMethod: number;
+  /** 底价录入值（金额或比例，具体由 low_price_method 决定） */
+  floorPriceInput: number;
+  /** 其他费用列表 */
+  otherFees?: OtherFeeProps[];
+  pricePlans: PricePlanProps[];
+}
+
+/** 租金费用类型 */
+export interface OtherFeeProps {
+  /** 其他费用类型（如：装修/维修/房屋维修、随房租付、按固定金额等） */
+  dictDataId: string;
+  /** 其他费用名称 */
+  name: string;
+  /** 付款方式（如：随房租付、按固定金额等） */
+  paymentMethod: number;
+  /** 价格计算方式 */
+  priceMethod: number;
+  /** 价格输入值 */
+  priceInput: number;
+}
+
+/** 租金方案配置 */
+export interface PricePlanProps {
+  /** 房间ID */
+  roomId: string;
+  /** 租金方案名称 */
+  planName: string;
+  /** 租金方案类型（如：长期/短租/节假日） */
+  planType: string;
+  /** 出房价格比例（百分比，如 12.50 表示 12.5%） */
+  priceRatio: number;
+  /** 出房价格（若为固定价格） */
+  price: number;
+  /** 其他费用 */
+  otherFees?: OtherFeeProps[];
+  /** 默认方案 */
+  defaultPlan: boolean;
+}
+
+/**
+ * 租期信息（前端扩展，后端添加后可移除）
+ */
+export type RoomLeaseInfoProps = {
+  leaseStartDate?: string; /**  租期开始日期 */
+  leaseEndDate?: string; /**  租期结束日期 */
+  arrearsDays?: number; /** 欠费天数 */
+  /** 租户姓名 */
+  tenantName?: string;
+  /** 租户手机号 */
+  tenantPhone?: string;
 };

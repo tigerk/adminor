@@ -32,67 +32,6 @@ export interface HouseQueryParams {
   pageSize?: number;
 }
 
-export interface PriceConfigProps {
-  /** 房间ID */
-  roomId: string;
-  /** 出房价格（单位：元/月） */
-  price: number;
-  /** 底价（单位：元/月） */
-  floorPrice: number;
-  /** 底价方式：1=固定金额，2=按比例 */
-  floorPriceMethod: number;
-  /** 底价录入值（金额或比例，具体由 low_price_method 决定） */
-  floorPriceInput: number;
-  /** 其他费用列表 */
-  otherFees?: OtherFeeProps[];
-  pricePlans: PricePlanProps[];
-}
-
-/** 租金费用类型 */
-export interface OtherFeeProps {
-  /** 其他费用类型（如：装修/维修/房屋维修、随房租付、按固定金额等） */
-  dictDataId: string;
-  /** 其他费用名称 */
-  name: string;
-  /** 付款方式（如：随房租付、按固定金额等） */
-  paymentMethod: number;
-  /** 价格计算方式 */
-  priceMethod: number;
-  /** 价格输入值 */
-  priceInput: number;
-}
-
-/** 租金方案配置 */
-export interface PricePlanProps {
-  /** 房间ID */
-  roomId: string;
-  /** 租金方案名称 */
-  planName: string;
-  /** 租金方案类型（如：长期/短租/节假日） */
-  planType: string;
-  /** 出房价格比例（百分比，如 12.50 表示 12.5%） */
-  priceRatio: number;
-  /** 出房价格（若为固定价格） */
-  price: number;
-  /** 其他费用 */
-  otherFees?: OtherFeeProps[];
-  /** 默认方案 */
-  defaultPlan: boolean;
-}
-
-/**
- * 租期信息（前端扩展，后端添加后可移除）
- */
-export type RoomLeaseInfoProps = {
-  leaseStartDate?: string; /**  租期开始日期 */
-  leaseEndDate?: string; /**  租期结束日期 */
-  arrearsDays?: number; /** 欠费天数 */
-  /** 租户姓名 */
-  tenantName?: string;
-  /** 租户手机号 */
-  tenantPhone?: string;
-};
-
 /**
  * 小区分组
  */
@@ -150,3 +89,50 @@ export type FloorGroupProps = {
   /** 出租率 */
   occupancyRate?: string;
 };
+
+export interface HouseProps {
+  id: string; // 房源id
+  houseCode: string; // 房源编号
+  houseName: string; // 房源名称
+  companyId: string; // 公司ID
+  deptId: string; // 部门ID
+  salesmanId: string; // 业务员ID
+  leaseMode: number; // 房源租赁类型：1、集中式；2、整租、3、合租
+  leaseModeId: string; // 来源id，集中式为集中式id，整租、合租为community_id
+  communityId: string; // 小区ID
+  building: string; // 座栋
+  unit: string; // 单元
+  doorNumber: string; // 门牌号，分散式独有
+  houseLayoutId: string; // 户型
+  rentalType: number; // 出租类型：1=整租，2=合租
+  area: number; // 套内面积
+  direction: string; // 朝向
+  decorationType: number; // 装修类型：1=豪华装，2=简装，3=精装，4=毛坯，5=清水，6=简约，7=未装修
+  floor: number; // 楼层
+  floorTotal: number; // 总楼层
+  water: string; // 水
+  electricity: string; // 电
+  heating: string; // 供暖
+  hasElevator: boolean; // 是否有电梯
+  hasGas: boolean; // 是否有燃气
+  propertyFee: number; // 物业费，每月
+  heatingFee: number; // 暖气费，每月
+  mgmtFee: number; // 管理费，每月
+  roomCount: number; // 房间数 为0表示未分配房间
+  restRoomCount: number; // 房间余量
+  certificateNo: string; // 权属证明及编号
+  sharedOwner: boolean; // 是否共有产权  0=否 1=是
+  mortgaged: boolean; // 是否抵押  0=否 1=是
+  customerId: string; // 客户Id
+  houseStatus: number; // 房源状态
+  applicationStatus: number; // 审批状态：1-审批中 2-已通过 3-已驳回 4-已撤回
+  locked: boolean; // 锁定状态：是否锁定
+  closed: boolean; // 禁用状态：是否已禁用
+  houseDesc: string; // 房源描述、项目介绍
+  businessDesc: string; // 商圈介绍、广告语
+  remark: string; // 备注
+  createBy: string; // 创建人
+  createTime: Date; // 创建时间
+  updateBy: string; // 更新人
+  updateTime: Date; // 更新时间
+}
