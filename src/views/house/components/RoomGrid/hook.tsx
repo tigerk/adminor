@@ -6,6 +6,7 @@ import { getFocusById } from "@/api/house/focus";
 import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
+import { useHouseView } from "@/views/house/components/HouseView/hook";
 import { getShareHouseById } from "@/api/house/scatter";
 import type { RoomGridItemProps, RoomGridProps, RoomListProps, ScatterCreateFormProps, ScatterHouseProps } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
@@ -63,6 +64,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const { openFocusEditDialog } = useFocusEdit();
   const { openEntireEditDialog } = useEntireEdit();
   const { openShareEditDialog } = useShareEdit();
+  const { openHouseViewDialog } = useHouseView();
   const { openBookingDialog } = useBooking();
   const { openTenantDialog } = useTenant();
 
@@ -323,10 +325,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         ElMessage.success(`准备为房间 ${room.roomNumber} 签约`);
         break;
       case "view":
-        // 查看房间详情
-        message(`查看房间详情：${room.roomNumber}`, {
-          type: "info"
-        });
+        openHouseViewDialog(room);
         break;
       default:
         message(`未知操作：${action}`, {

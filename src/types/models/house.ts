@@ -1,6 +1,10 @@
 // ==================== 3. src/types/models/house.ts ====================
 // 房源相关业务模型
 
+import type { FocusFormItemProps } from "./focus";
+import type { RoomListProps } from "./room";
+import type { ScatterHouseDetailProps } from "./scatter";
+
 /** 户型信息 */
 export interface HouseLayoutProps {
   id?: string;
@@ -135,4 +139,14 @@ export interface HouseProps {
   createTime: Date; // 创建时间
   updateBy: string; // 更新人
   updateTime: Date; // 更新时间
+}
+
+/** 房源详情弹窗数据 */
+export interface HouseViewDetailProps {
+  loading: boolean;
+  room: RoomListProps;
+  leaseMode?: number;
+  rentalType?: number;
+  focusDetail?: FocusFormItemProps | null;
+  scatterDetail?: ScatterHouseDetailProps | null;
 }
