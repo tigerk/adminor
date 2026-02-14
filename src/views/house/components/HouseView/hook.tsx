@@ -28,7 +28,26 @@ export const useHouseView = () => {
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(HouseViewDialog, { detail })
+      contentRenderer: () =>
+        h(HouseViewDialog, {
+          detail,
+          onBooking: (room: RoomListProps) => {
+            console.log("预约看房", room);
+            // TODO: 打开预约对话框
+          },
+          onTenant: (room: RoomListProps) => {
+            console.log("签约入住", room);
+            // TODO: 打开签约对话框
+          },
+          onCheckout: (room: RoomListProps) => {
+            console.log("办理退租", room);
+            // TODO: 打开退租对话框
+          },
+          onViewContract: (room: RoomListProps) => {
+            console.log("查看合同", room);
+            // TODO: 打开合同详情
+          }
+        })
     });
 
     loadDetail(detail).catch(() => undefined);
