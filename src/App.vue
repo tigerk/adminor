@@ -4,7 +4,7 @@
     <ReLockScreen />
     <ReDialog />
     <ReDrawer />
-    <ReFloatButton v-if="isLoggedIn" :floatBtns="floatBtns" />
+<!--    <ReFloatButton v-if="isLoggedIn" :floatBtns="floatBtns" />-->
   </el-config-provider>
 </template>
 <script lang="ts">
