@@ -24,3 +24,18 @@ export const getDaysDifference = (targetTime?: string): number => {
     return 0;
   }
 };
+
+/**
+ * Formats a given date or string into a Chinese date format.
+ * If the input is not provided, returns a dash ("-").
+ * If the input is a string, it returns the string as is.
+ * If the input is a Date object, it converts it to a "zh-CN" locale date string with the format "YYYY.MM.DD".
+ *
+ * @param {Date | string} [date] - The date to format. Can be a Date object or a string.
+ * @returns {string} - A formatted date string in "YYYY.MM.DD" format for Date objects, the original string if a string was passed, or a dash ("-") if no argument was provided.
+ */
+export const formatDate = (date?: Date | string): string => {
+  if (!date) return "-";
+  if (typeof date === "string") return date;
+  return new Date(date).toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).replaceAll("/", ".");
+};

@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, RoomGridProps, RoomListQueryProps, RoomTotal } from "@/types";
+import type { ApiResponse, PaginationResponse, PriceConfigProps, RoomGridProps, RoomListQueryProps, RoomTotal } from "@/types";
 
 export type ResultTable = {
   code: number;
@@ -57,4 +57,26 @@ export const closeRoom = (data?: object) => {
 
 export const openRoom = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("room/open"), { data });
+};
+
+/**
+ * 保存单个房间的租金配置方案
+ * POST /saas/room/price-config/save
+ *
+ * 入参: PriceConfigDTO { roomId, price, floorPriceMethod, floorPriceInput, floorPrice, otherFees[], pricePlans[] }
+ * 出参: Boolean
+ */
+export const saveRoomPriceConfig = (data?: PriceConfigProps) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("room/price-config/save"), { data });
+};
+
+/**
+ * 获取单个房间的租金配置方案
+ * POST /saas/room/price-config/get
+ *
+ * 入参: { roomId: number }
+ * 出参: PriceConfigDTO
+ */
+export const getRoomPriceConfig = (data?: { roomId: number | string }) => {
+  return http.request<ApiResponse<PriceConfigProps>>("post", baseUrlApi("room/price-config/get"), { data });
 };
