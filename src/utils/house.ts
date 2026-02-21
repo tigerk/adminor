@@ -1,4 +1,4 @@
-import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, RENTAL_TYPE_OPTIONS } from "@/constants";
+import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, RENTAL_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
 
 /**
  * 显示装修类型的label
@@ -19,6 +19,23 @@ export const getDirectionLabel = (val?: string) => {
 export const getRentalTypeLabel = (val?: number) => {
   if (val == null) return "-";
   return RENTAL_TYPE_OPTIONS.find(item => item.value === val)?.label || "-";
+};
+
+export const getWaterTypeLabel = (val?: string) => {
+  if (val == null) return "-";
+  return WATER_TYPE_OPTIONS.find(item => item.value === val)?.label || "-";
+};
+
+/**
+ * Returns the label for a given electricity type value.
+ * If the value is not provided or does not match any known electricity type, returns a dash ("-").
+ *
+ * @param {string} [val] - The value of the electricity type to find the label for.
+ * @returns {string} The label of the electricity type, or "-" if not found or if `val` is null or undefined.
+ */
+export const getElectricityTypeLabel = (val?: string) => {
+  if (val == null) return "-";
+  return ELECTRICITY_TYPE_OPTIONS.find(item => item.value === val)?.label || "-";
 };
 
 /**

@@ -1,17 +1,15 @@
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
-  import type { BookingListProps, HouseViewDetailProps, RoomDetailProps, RoomListProps } from "@/types";
+  import type { BookingListProps, HouseViewDetailProps, PriceConfigProps, RoomDetailProps, RoomListProps } from "@/types";
   import { ROOM_STATUS_ENUM } from "@/constants";
-  import { Calendar, Edit, Plus, QuestionFilled, User, View } from "@element-plus/icons-vue";
+  import { ArrowRight, Calendar, Edit, House, Location, Phone, Plus, User, View } from "@element-plus/icons-vue";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
-  import { saveRoomPriceConfig } from "@/api/house/room";
+  import { getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
   import { message } from "@/utils/message";
-  import { getDecorationLabel, getDirectionLabel, getRentalTypeLabel } from "@/utils/house";
+  import { getDecorationLabel, getDirectionLabel, getElectricityTypeLabel, getRentalTypeLabel, getWaterTypeLabel } from "@/utils/house";
   import { formatDate } from "@/utils/date";
 
-  const props = defineProps<{
-    detail: HouseViewDetailProps;
-  }>();
+  const props = defineProps<{ detail: HouseViewDetailProps }>();
 
   const emit = defineEmits<{
     booking: [room: RoomListProps];
@@ -24,37 +22,29 @@
     addRoom: [];
   }>();
 
-  // ======================== 辅助函数 ========================
   const calcLeaseDuration = (start?: string, end?: string) => {
     if (!start || !end) return "";
-    const s = new Date(start);
-    const e = new Date(end);
+    const s = new Date(start),
+      e = new Date(end);
     const m = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
     if (m >= 12) {
-      const y = Math.floor(m / 12);
-      const r = m % 12;
-      return r > 0 ? `(${y}年${r}月)` : `(${y}年)`;
+      const y = Math.floor(m / 12),
+        r = m % 12;
+      return r > 0 ? `${y}年${r}月` : `${y}年`;
     }
-    return m > 0 ? `(${m}月)` : "";
+    return m > 0 ? `${m}个月` : "";
   };
 
   // ======================== 数据源 ========================
   const baseRoom = computed(() => props.detail.room);
-  /** leaseMode: 1=集中式 focus, 2=分散式 scatter */
   const isFocus = computed(() => props.detail.leaseMode === 1);
-  const isScatter = computed(() => props.detail.leaseMode === 2);
-  const focusDetail = computed(() => props.detail.focusDetail); // FocusFormItemProps | null
-  const scatterDetail = computed(() => props.detail.scatterDetail); // ScatterHouseDetailProps | null
+  const focusDetail = computed(() => props.detail.focusDetail);
+  const scatterDetail = computed(() => props.detail.scatterDetail);
   const isShareRental = computed(() => props.detail.rentalType === 2);
 
-  // ======================== 房间 Tab 切换 ========================
-  /**
-   * 分散式合租: scatterDetail.roomList → RoomDetailProps[] (带 priceConfig)
-   * 集中式 / 分散式整租: 只有 baseRoom 一个
-   */
+  // ======================== 房间 Tab ========================
   const roomTabs = computed<RoomListProps[]>(() => {
-    if (isScatter.value && isShareRental.value && scatterDetail.value?.roomList?.length) {
-      // RoomDetailProps → RoomListProps 做映射（字段基本兼容）
+    if (isShareRental.value && scatterDetail.value?.roomList?.length) {
       return scatterDetail.value.roomList as unknown as RoomListProps[];
     }
     return [baseRoom.value];
@@ -73,61 +63,37 @@
   // ======================== 图片 ========================
   const allImages = computed(() => {
     const set = new Set<string>();
-    // focus 图片
     focusDetail.value?.imageList?.forEach(i => i && set.add(typeof i === "string" ? i : ""));
-    // scatter 公区图片
     scatterDetail.value?.houseLayout?.imageList?.forEach(i => i && set.add(i));
-    // 当前房间图片
     currentRoom.value?.imageList?.forEach(i => i && set.add(i));
     set.delete("");
     return [...set];
   });
 
-  // ======================== ① 顶部 hv-header 房源基础信息 ========================
+  // ======================== 顶部信息 ========================
   const headerMeta = computed(() => {
-    const sv = scatterDetail.value; // ScatterHouseDetailProps
-    const fv = focusDetail.value; // FocusFormItemProps
-    const rm = currentRoom.value; // RoomListProps
-
-    // 通用字段：优先取 scatter/focus 详情，fallback 到 RoomListProps
+    const sv = scatterDetail.value,
+      fv = focusDetail.value,
+      rm = currentRoom.value;
     return {
-      // ---- 房型/朝向/装修 ----
       rentalType: getRentalTypeLabel(props.detail.rentalType),
       direction: getDirectionLabel(rm.direction || sv?.direction),
-      decoration: isScatter.value ? getDecorationLabel(sv?.decorationType) : "-",
-      // ---- 面积/楼层 ----
+      decoration: getDecorationLabel(sv?.decorationType),
       area: rm.area || sv?.area || "-",
       floor: rm.floor || sv?.floor || "-",
       floorTotal: sv?.floorTotal || "-",
-      // ---- 设施 ----
       hasElevator: (sv?.hasElevator ?? fv?.hasElevator) ? "有" : "无",
       hasGas: (sv?.hasGas ?? fv?.hasGas) ? "有" : "无",
       water: sv?.water ?? fv?.water ?? "-",
       electricity: sv?.electricity ?? fv?.electricity ?? "-",
-      heating: sv?.heating ?? fv?.heating ?? "-",
-      // ---- 费用 ----
       propertyFee: sv?.propertyFee ?? rm.propertyFee ?? "-",
-      heatingFee: sv?.heatingFee ?? "-",
-      mgmtFee: sv?.mgmtFee ?? "-",
-      // ---- 小区/门店 ----
       communityName: sv?.community?.name ?? fv?.community?.name ?? rm.communityName ?? "-",
-      communityAddress: sv?.community?.address ?? fv?.community?.address ?? fv?.address ?? "-",
-      // ---- 集中式特有 ----
       focusName: fv?.focusName ?? "-",
-      focusCode: fv?.focusCode ?? "-",
       storePhone: fv?.storePhone ?? "-",
-      // ---- 分散式特有 ----
-      houseCode: sv?.houseCode ?? rm.houseCode ?? "-",
-      houseName: sv?.houseName ?? rm.houseName ?? "-",
-      building: sv?.building ?? rm.building ?? "-",
-      doorNumber: sv?.doorNumber ?? rm.doorNumber ?? "-",
-      // ---- 负责人/部门 ----
       salesmanName: rm.salesmanName ?? "-",
       salesmanPhone: rm.salesmanPhone ?? "-",
       deptName: rm.deptName ?? "-",
-      // ---- 时间 ----
-      remark: sv?.remark ?? fv?.remark ?? "-",
-      houseDesc: sv?.houseDesc ?? fv?.houseDesc ?? "-"
+      remark: sv?.remark ?? fv?.remark ?? "-"
     };
   });
 
@@ -135,7 +101,6 @@
   const roomStatusInfo = computed(() => {
     const r = currentRoom.value;
     return {
-      status: r.roomStatus,
       statusName: r.roomStatusName || "-",
       statusColor: r.roomStatusColor || "",
       isLeased: r.roomStatus === ROOM_STATUS_ENUM.LEASED.code,
@@ -145,14 +110,23 @@
   });
 
   const getRoomTabStatus = (room: RoomListProps) => {
-    const map: Record<number, { text: string; cls: string }> = {
-      [ROOM_STATUS_ENUM.LEASED.code]: { text: "已租", cls: "st-leased" },
-      [ROOM_STATUS_ENUM.AVAILABLE.code]: { text: "空置", cls: "st-available" },
-      [ROOM_STATUS_ENUM.BOOKED.code]: { text: "已预定", cls: "st-booked" },
-      [ROOM_STATUS_ENUM.LOCKED.code]: { text: "锁房", cls: "st-locked" }
+    const map: Record<number, { text: string; cls: string; dot: string }> = {
+      [ROOM_STATUS_ENUM.LEASED.code]: { text: "已租", cls: "st-leased", dot: "#67c23a" },
+      [ROOM_STATUS_ENUM.AVAILABLE.code]: { text: "空置", cls: "st-available", dot: "#f56c6c" },
+      [ROOM_STATUS_ENUM.BOOKED.code]: { text: "已预定", cls: "st-booked", dot: "#e6a23c" },
+      [ROOM_STATUS_ENUM.LOCKED.code]: { text: "锁房", cls: "st-locked", dot: "#909399" }
     };
-    return map[room.roomStatus!] || { text: room.roomStatusName || "-", cls: "" };
+    return map[room.roomStatus!] || { text: room.roomStatusName || "-", cls: "", dot: "#909399" };
   };
+
+  // 统计各状态数量
+  const roomStats = computed(() => {
+    const total = roomTabs.value.length;
+    const leased = roomTabs.value.filter(r => r.roomStatus === ROOM_STATUS_ENUM.LEASED.code).length;
+    const available = roomTabs.value.filter(r => r.roomStatus === ROOM_STATUS_ENUM.AVAILABLE.code).length;
+    const booked = roomTabs.value.filter(r => r.roomStatus === ROOM_STATUS_ENUM.BOOKED.code).length;
+    return { total, leased, available, booked };
+  });
 
   // ======================== 租客 ========================
   const tenantInfo = computed(() => {
@@ -183,22 +157,71 @@
     } as BookingListProps;
   });
 
-  // ======================== Tab 控制 ========================
-  const activeLeftTab = ref("detail");
-  const activeDetailTab = ref("rent");
-  const activeRightTab = ref("quick");
+  // ======================== Tab ========================
+  const activeDetailTab = ref("room");
 
   // ======================== 租金配置 ========================
   const { openPriceConfigDialog } = usePriceConfigEdit();
+  const priceConfig = ref<PriceConfigProps | null>(null);
 
-  /**
-   * 打开 PriceConfigDialog
-   * 数据来源: 分散式 → RoomDetailProps.priceConfig；集中式 → 从 baseRoom 构造
-   */
+  const loadPriceConfig = async () => {
+    const roomId = currentRoom.value.roomId || (currentRoom.value as any).id;
+    if (!roomId) return;
+    const inlineConfig = (currentRoom.value as unknown as RoomDetailProps).priceConfig;
+    if (inlineConfig && inlineConfig.price) {
+      priceConfig.value = inlineConfig;
+      return;
+    }
+    try {
+      const res = await getRoomPriceConfig({ roomId });
+      priceConfig.value = res.code === 0 && res.data ? res.data : null;
+    } catch {
+      priceConfig.value = null;
+    }
+  };
+
+  watch(
+    () => currentRoom.value,
+    () => {
+      loadPriceConfig();
+    },
+    { immediate: true }
+  );
+
+  // ======================== 房间备注 ========================
+  const remarkEditing = ref(false);
+  const remarkText = ref("");
+  const remarkLoading = ref(false);
+
+  // 当房间切换时同步备注文本
+  watch(
+    () => currentRoom.value,
+    () => {
+      const sv = scatterDetail.value,
+        fv = focusDetail.value;
+      remarkText.value = sv?.remark ?? fv?.remark ?? "";
+      remarkEditing.value = false;
+    },
+    { immediate: true }
+  );
+
+  const handleSaveRemark = async () => {
+    remarkLoading.value = true;
+    try {
+      // TODO: 调用实际保存接口，此处仅模拟
+      await new Promise(r => setTimeout(r, 600));
+      message("备注保存成功", { type: "success" });
+      remarkEditing.value = false;
+    } catch {
+      message("备注保存失败", { type: "error" });
+    } finally {
+      remarkLoading.value = false;
+    }
+  };
+
   const handleOpenPriceConfig = () => {
     const room = currentRoom.value;
-    // 分散式合租房间自带 priceConfig
-    const existConfig = (room as unknown as RoomDetailProps).priceConfig || {
+    const existConfig = priceConfig.value || {
       roomId: room.roomId || (room as any).id,
       price: room.price ? Number(room.price) : 0,
       floorPrice: 0,
@@ -207,19 +230,20 @@
       otherFees: [],
       pricePlans: []
     };
-
     openPriceConfigDialog("配置", existConfig, async result => {
       try {
         const res = await saveRoomPriceConfig({ roomId: room.roomId || (room as any).id, ...result });
-        if (res.code === 0) message("租金配置保存成功", { type: "success" });
-        else message(res.message || "保存失败", { type: "error" });
+        if (res.code === 0) {
+          message("租金配置保存成功", { type: "success" });
+          loadPriceConfig();
+        } else message(res.message || "保存失败", { type: "error" });
       } catch {
         message("保存租金配置失败", { type: "error" });
       }
     });
   };
 
-  // ======================== 退租 / 续签 ========================
+  // ======================== 退租 / 续签（右侧面板使用） ========================
   const handleCheckout = () => {
     if (!currentRoom.value.leaseInfo) return message("当前房间没有在租租客", { type: "warning" });
     emit("checkout", currentRoom.value);
@@ -233,962 +257,1531 @@
   const roomDetail = computed(() => {
     const r = currentRoom.value;
     return {
-      roomNumber: r.roomNumber || (r as any).roomNumber || "-",
+      roomNumber: r.roomNumber || "-",
       direction: getDirectionLabel(r.direction),
-      buildingArea: "-",
       innerArea: r.area ? `${r.area}m²` : "-",
-      floorInfo: `第${headerMeta.value.floor}层/共${headerMeta.value.floorTotal}层`,
-      viewTime: "随时看房",
-      genderReq: "-",
-      maxOccupants: "-",
+      floorInfo: `第${headerMeta.value.floor}层 / 共${headerMeta.value.floorTotal}层`,
       firstAvailDate: r.availableDate || "-",
       vacancyStart: r.vacancyStartTime || "-"
     };
   });
 
-  const rentInfo = computed(() => ({
-    totalRent: currentRoom.value.price || (currentRoom.value as any)?.priceConfig?.price || "0",
-    deposit: "-",
-    rentDiff: "-",
-    postRentDiff: "-"
-  }));
+  const rentPrice = computed(() => priceConfig.value?.price || currentRoom.value.price || "0");
+
+  // 付款方式 label
+  const payMethodLabel = (m?: number) => {
+    const map: Record<number, string> = { 0: "随房租付", 1: "一次性", 2: "月付", 4: "季付", 5: "半年付", 6: "年付" };
+    return m !== undefined ? (map[m] ?? "其他") : "";
+  };
 </script>
 
 <template>
   <div class="hv">
-    <el-skeleton v-if="detail.loading" animated :rows="10" />
+    <!-- ===== Loading ===== -->
+    <div v-if="detail.loading" class="hv-loading">
+      <el-skeleton animated>
+        <template #template>
+          <div style="display: flex; gap: 20px; padding: 20px">
+            <el-skeleton-item variant="image" style="width: 240px; height: 100%; border-radius: 12px; flex-shrink: 0" />
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 12px">
+              <el-skeleton-item variant="h3" style="width: 60%" />
+              <el-skeleton-item variant="text" style="width: 40%" />
+              <el-skeleton-item variant="text" />
+              <el-skeleton-item variant="text" />
+            </div>
+          </div>
+        </template>
+      </el-skeleton>
+    </div>
+
     <template v-else>
-      <!-- ========== ① 顶部：房源基本信息 ========== -->
-      <div class="hv-header">
-        <div class="hv-header__meta">
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.rentalType }}</span>
-            <span class="hv-mi__l">房型</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.direction }}/{{ headerMeta.decoration }}</span>
-            <span class="hv-mi__l">朝向/装修</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.area }}m²</span>
-            <span class="hv-mi__l">面积</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.hasElevator }}</span>
-            <span class="hv-mi__l">电梯</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.floor }}/{{ headerMeta.floorTotal }}层</span>
-            <span class="hv-mi__l">楼层</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.water }}/{{ headerMeta.electricity }}</span>
-            <span class="hv-mi__l">水/电</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.hasGas }}</span>
-            <span class="hv-mi__l">燃气</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.propertyFee }}元/月</span>
-            <span class="hv-mi__l">物业费</span>
-          </div>
-          <div v-if="isFocus" class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.focusName }}</span>
-            <span class="hv-mi__l">门店</span>
-          </div>
-          <div v-if="isFocus" class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.storePhone }}</span>
-            <span class="hv-mi__l">门店电话</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.communityName }}</span>
-            <span class="hv-mi__l">小区</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.deptName }}</span>
-            <span class="hv-mi__l">部门</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.salesmanName }}</span>
-            <span class="hv-mi__l">负责人</span>
-          </div>
-          <div class="hv-mi">
-            <span class="hv-mi__v">{{ headerMeta.salesmanPhone }}</span>
-            <span class="hv-mi__l">联系电话</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ========== ② 房间 Tab 切换栏 ========== -->
-      <div class="hv-rooms">
-        <div class="hv-rooms__badge">
-          <span class="hv-rooms__type">{{ isShareRental ? "整套(公区)" : "整套" }}</span>
-          <span class="hv-rooms__count">已租{{ roomTabs.filter(r => r.roomStatus === ROOM_STATUS_ENUM.LEASED.code).length }}/共{{ roomTabs.length }}间</span>
-        </div>
-
-        <div class="hv-rooms__tabs">
-          <div
-            v-for="(room, idx) in roomTabs"
-            :key="(room as any).roomId || (room as any).id || idx"
-            class="hv-rooms__tab"
-            :class="{ 'is-active': activeRoomIndex === idx }"
-            @click="activeRoomIndex = idx"
-          >
-            <span class="hv-rooms__letter">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
-            <span class="hv-rooms__status" :class="getRoomTabStatus(room).cls">{{ getRoomTabStatus(room).text }}</span>
-          </div>
-          <div v-if="isShareRental" class="hv-rooms__tab hv-rooms__tab--add" @click="emit('addRoom')">
-            <el-icon><Plus /></el-icon>
-            <span>添加</span>
-          </div>
-        </div>
-        <div class="hv-rooms__actions">
-          修改房源
-        </div>
-      </div>
-
-      <!-- ========== ③ 主体 ========== -->
-      <div class="hv-body">
-        <div class="hv-left">
-          <!-- 图片 + 状态 -->
-          <div class="hv-overview">
-            <div class="hv-overview__img">
-              <el-image v-if="allImages.length" :src="allImages[0]" fit="cover" :preview-src-list="allImages" class="hv-overview__pic" />
-              <div v-else class="hv-overview__empty">暂无图片</div>
+      <!-- ===== 三栏布局 ===== -->
+      <div class="hv-layout">
+        <!-- ① 左侧：房源信息面板 -->
+        <aside class="hv-aside">
+          <!-- 图片区 -->
+          <div class="hv-aside__gallery">
+            <el-image v-if="allImages.length" :src="allImages[0]" fit="cover" :preview-src-list="allImages" class="hv-aside__img" />
+            <div v-else class="hv-aside__img-empty">
+              <el-icon :size="36" color="var(--el-text-color-placeholder)"><House /></el-icon>
+              <span>暂无图片</span>
             </div>
-            <div class="hv-overview__info">
-              <div class="hv-overview__row1">
-                <el-tag v-if="roomStatusInfo.isLeased" type="success" effect="dark" size="small" round>已租</el-tag>
-                <el-tag v-else-if="roomStatusInfo.isAvailable" type="danger" effect="dark" size="small" round>空置</el-tag>
-                <el-tag v-else-if="roomStatusInfo.isBooked" type="warning" effect="dark" size="small" round>已预定</el-tag>
-                <el-tag v-else effect="dark" size="small" round :color="roomStatusInfo.statusColor">{{ roomStatusInfo.statusName }}</el-tag>
-                <span class="hv-overview__price">{{ rentInfo.totalRent }} 元/月</span>
-                <div class="hv-overview__plan" @click="handleOpenPriceConfig">
+            <div class="hv-aside__img-count" v-if="allImages.length > 1">
+              <el-icon :size="11"><View /></el-icon>
+              {{ allImages.length }}张
+            </div>
+          </div>
+
+          <!-- 房源属性 -->
+          <div class="hv-aside__body">
+            <!-- 小区 + 负责人 -->
+            <div class="hv-aside__location">
+              <el-icon :size="13" color="var(--el-color-primary)"><Location /></el-icon>
+              <span>{{ headerMeta.communityName }}</span>
+            </div>
+
+            <!-- 关键指标 2列网格 -->
+            <div class="hv-kv-grid">
+              <div class="hv-kv">
+                <span class="hv-kv__label">房型</span>
+                <span class="hv-kv__value">{{ headerMeta.rentalType }}</span>
+              </div>
+              <div class="hv-kv">
+                <span class="hv-kv__label">建筑面积</span>
+                <span class="hv-kv__value">{{ headerMeta.area }} m²</span>
+              </div>
+              <div class="hv-kv">
+                <span class="hv-kv__label">楼层</span>
+                <span class="hv-kv__value">{{ headerMeta.floor }} / {{ headerMeta.floorTotal }} 层</span>
+              </div>
+              <div class="hv-kv">
+                <span class="hv-kv__label">朝向</span>
+                <span class="hv-kv__value">{{ headerMeta.direction }}</span>
+              </div>
+              <div class="hv-kv">
+                <span class="hv-kv__label">装修</span>
+                <span class="hv-kv__value">{{ headerMeta.decoration }}</span>
+              </div>
+              <div class="hv-kv">
+                <span class="hv-kv__label">电梯</span>
+                <span class="hv-kv__value">{{ headerMeta.hasElevator }}</span>
+              </div>
+              <div class="hv-kv">
+                <span class="hv-kv__label">燃气</span>
+                <span class="hv-kv__value">{{ headerMeta.hasGas }}</span>
+              </div>
+              <div class="hv-kv">
+                <span class="hv-kv__label">物业费</span>
+                <span class="hv-kv__value">{{ headerMeta.propertyFee }} 元/月</span>
+              </div>
+              <div class="hv-kv">
+                <span class="hv-kv__label">水费</span>
+                <span class="hv-kv__value">{{ getWaterTypeLabel(headerMeta.water) }}</span>
+              </div>
+              <div class="hv-kv">
+                <span class="hv-kv__label">电费</span>
+                <span class="hv-kv__value">{{ getElectricityTypeLabel(headerMeta.electricity) }}</span>
+              </div>
+              <template v-if="isFocus">
+                <div class="hv-kv">
+                  <span class="hv-kv__label">门店</span>
+                  <span class="hv-kv__value">{{ headerMeta.focusName }}</span>
+                </div>
+                <div class="hv-kv">
+                  <span class="hv-kv__label">门店电话</span>
+                  <span class="hv-kv__value">{{ headerMeta.storePhone }}</span>
+                </div>
+              </template>
+              <div class="hv-kv">
+                <span class="hv-kv__label">部门</span>
+                <span class="hv-kv__value">{{ headerMeta.deptName }}</span>
+              </div>
+            </div>
+
+            <!-- 分隔 -->
+            <div class="hv-divider" />
+
+            <!-- 负责人 -->
+            <div class="hv-salesman">
+              <div class="hv-salesman__avatar">{{ headerMeta.salesmanName.slice(0, 1) }}</div>
+              <div class="hv-salesman__info">
+                <span class="hv-salesman__name">{{ headerMeta.salesmanName }}</span>
+                <span class="hv-salesman__role">负责人</span>
+              </div>
+              <a :href="`tel:${headerMeta.salesmanPhone}`" class="hv-salesman__call">
+                <el-icon :size="14"><Phone /></el-icon>
+              </a>
+            </div>
+
+            <!-- 备注 -->
+            <div v-if="headerMeta.remark && headerMeta.remark !== '-'" class="hv-aside__remark">
+              <span class="hv-aside__remark-label">备注</span>
+              <span class="hv-aside__remark-text">{{ headerMeta.remark }}</span>
+            </div>
+
+            <!-- 修改房源 -->
+            <el-button class="hv-aside__edit-btn" size="small" plain>
+              <el-icon><Edit /></el-icon>
+              修改房源信息
+            </el-button>
+          </div>
+        </aside>
+
+        <!-- ② 中间：房间 + 详情 -->
+        <main class="hv-main">
+          <!-- 房间选择器 -->
+          <div class="hv-rooms">
+            <!-- 汇总 -->
+            <div class="hv-rooms__summary">
+              <span class="hv-rooms__summary-item">
+                <span class="hv-rooms__dot" style="background: #67c23a"></span>
+                已租
+                <strong>{{ roomStats.leased }}</strong>
+              </span>
+              <span class="hv-rooms__summary-item">
+                <span class="hv-rooms__dot" style="background: #f56c6c"></span>
+                空置
+                <strong>{{ roomStats.available }}</strong>
+              </span>
+              <span class="hv-rooms__summary-item">
+                <span class="hv-rooms__dot" style="background: #e6a23c"></span>
+                预定
+                <strong>{{ roomStats.booked }}</strong>
+              </span>
+              <span class="hv-rooms__summary-total">共 {{ roomStats.total }} 间</span>
+            </div>
+            <!-- 房间卡片列表 -->
+            <div class="hv-rooms__list">
+              <div
+                v-for="(room, idx) in roomTabs"
+                :key="(room as any).roomId || (room as any).id || idx"
+                class="hv-room-card"
+                :class="{ 'is-active': activeRoomIndex === idx }"
+                @click="activeRoomIndex = idx"
+              >
+                <span class="hv-room-card__dot" :style="{ background: getRoomTabStatus(room).dot }"></span>
+                <span class="hv-room-card__number">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
+                <span class="hv-room-card__status" :class="getRoomTabStatus(room).cls">
+                  {{ getRoomTabStatus(room).text }}
+                </span>
+              </div>
+              <div v-if="isShareRental" class="hv-room-card hv-room-card--add" @click="emit('addRoom')">
+                <el-icon :size="13"><Plus /></el-icon>
+                <span>添加房间</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 当前房间：价格 Hero -->
+          <div class="hv-hero">
+            <div class="hv-hero__left">
+              <!-- 状态徽章 -->
+              <div class="hv-hero__status">
+                <span
+                  class="hv-hero__badge"
+                  :class="{
+                    'is-leased': roomStatusInfo.isLeased,
+                    'is-available': roomStatusInfo.isAvailable,
+                    'is-booked': roomStatusInfo.isBooked
+                  }"
+                >
+                  <span class="hv-hero__badge-dot"></span>
+                  {{ roomStatusInfo.isLeased ? "已租" : roomStatusInfo.isAvailable ? "空置" : roomStatusInfo.isBooked ? "已预定" : roomStatusInfo.statusName }}
+                </span>
+                <span class="hv-hero__room-label">{{ currentRoom.roomNumber || "主卧" }}</span>
+              </div>
+              <!-- 价格 -->
+              <div class="hv-hero__price-row">
+                <span class="hv-hero__price">{{ rentPrice }}</span>
+                <span class="hv-hero__unit">元 / 月</span>
+                <button class="hv-hero__price-edit" @click="handleOpenPriceConfig">
                   <el-icon :size="12"><Edit /></el-icon>
-                  <span>修改租金</span>
-                </div>
+                  修改租金
+                </button>
               </div>
-              <div class="hv-overview__meta">
-                <span>底价：-</span>
-                <span>佣金：-</span>
+              <!-- 底价 -->
+              <div class="hv-hero__subprice">
+                <span class="hv-hero__subprice-label">底价</span>
+                <span class="hv-hero__subprice-val">
+                  <template v-if="priceConfig?.floorPrice">{{ priceConfig.floorPrice }} 元/月</template>
+                  <template v-else>—</template>
+                </span>
+                <span v-if="priceConfig?.floorPriceMethod" class="hv-hero__hint">
+                  ({{ priceConfig.floorPriceMethod === 1 ? "固定金额" : "按比例"
+                  }}{{ priceConfig.floorPriceInput ? "：" + priceConfig.floorPriceInput + (priceConfig.floorPriceMethod === 2 ? "%" : "元") : "" }})
+                </span>
               </div>
             </div>
           </div>
 
-          <!-- 内容区 -->
-          <div class="hv-content">
-            <template v-if="activeLeftTab === 'detail'">
-              <div class="hv-subtabs">
-                <span class="hv-subtab" :class="{ active: activeDetailTab === 'rent' }" @click="activeDetailTab = 'rent'">租金信息</span>
-                <span class="hv-subtab" :class="{ active: activeDetailTab === 'room' }" @click="activeDetailTab = 'room'">房间信息</span>
-              </div>
+          <!-- 详情 Tab 区域 -->
+          <div class="hv-detail">
+            <div class="hv-tabs">
+              <button class="hv-tab" :class="{ active: activeDetailTab === 'room' }" @click="activeDetailTab = 'room'">房间信息</button>
+              <button class="hv-tab" :class="{ active: activeDetailTab === 'rent' }" @click="activeDetailTab = 'rent'">租金配置</button>
+            </div>
 
+            <div class="hv-tab-body">
+              <!-- ===== 租金信息 ===== -->
               <template v-if="activeDetailTab === 'rent'">
-                <div class="hv-bar hv-bar--warn">
-                  <span class="hv-bar__badge">房源租金差</span>
-                  <span>总租金：{{ rentInfo.totalRent }}元</span>
-                  <span>总押金：{{ rentInfo.deposit }}元</span>
-                  <span>租差：{{ rentInfo.rentDiff }}元</span>
-                  <span class="hv-bar__sep">|</span>
-                  <span>租后预估差价：{{ rentInfo.postRentDiff }}元</span>
-                  <el-icon class="hv-bar__help"><QuestionFilled /></el-icon>
-                </div>
-                <div class="hv-block">
-                  <div class="hv-block__head">
-                    <span class="hv-block__title">租金信息</span>
+                <!-- 三列：租金/底价/佣金 -->
+                <div class="hv-section">
+                  <div class="hv-section__head">
+                    <span class="hv-section__title">租金明细</span>
                     <el-button size="small" link type="primary" @click="handleOpenPriceConfig">
                       <el-icon><Edit /></el-icon>
-                      编辑
+                      编辑配置
                     </el-button>
                   </div>
-                  <div class="hv-grid hv-grid--3">
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">租金价格</span>
-                      <span class="hv-cell__v hv-cell__v--primary">{{ rentInfo.totalRent }} 元/月</span>
-                    </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">租金底价</span>
-                      <span class="hv-cell__v">
-                        **** 元/月
-                        <el-button link size="small" type="primary">显示</el-button>
+                  <div class="hv-stat-row">
+                    <div class="hv-stat">
+                      <span class="hv-stat__label">租金价格</span>
+                      <span class="hv-stat__value hv-stat__value--primary">
+                        {{ rentPrice }}
+                        <em>元/月</em>
                       </span>
                     </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">佣金</span>
-                      <span class="hv-cell__v">-</span>
+                    <div class="hv-stat">
+                      <span class="hv-stat__label">租金底价</span>
+                      <span class="hv-stat__value">
+                        <template v-if="priceConfig?.floorPrice">
+                          {{ priceConfig.floorPrice }}
+                          <em>元/月</em>
+                        </template>
+                        <template v-else><span class="hv-stat__mask">—</span></template>
+                      </span>
+                    </div>
+                    <div class="hv-stat">
+                      <span class="hv-stat__label">佣金</span>
+                      <span class="hv-stat__value">—</span>
                     </div>
                   </div>
-                  <div class="hv-field">
-                    <span class="hv-field__l">其他费用</span>
-                    <span class="hv-field__v">-</span>
+                </div>
+
+                <!-- 其他费用 -->
+                <div class="hv-section">
+                  <div class="hv-section__head">
+                    <span class="hv-section__title">其他费用</span>
                   </div>
-                  <div class="hv-field hv-field--link" @click="handleOpenPriceConfig">
-                    <span class="hv-field__l">更多租金方案</span>
-                    <el-button link size="small" type="primary">查看/编辑方案</el-button>
+                  <template v-if="priceConfig?.otherFees?.length">
+                    <div class="hv-fee-list">
+                      <div v-for="(fee, i) in priceConfig.otherFees" :key="i" class="hv-fee-item">
+                        <span class="hv-fee-item__name">{{ fee.name || "-" }}</span>
+                        <span class="hv-fee-item__amount">{{ fee.priceInput ?? "-" }}{{ fee.priceMethod === 2 ? "%" : "元" }}</span>
+                        <span class="hv-fee-item__method">{{ payMethodLabel(fee.paymentMethod) }}</span>
+                      </div>
+                    </div>
+                  </template>
+                  <div v-else class="hv-empty">暂未配置其他费用</div>
+                </div>
+
+                <!-- 租金方案 -->
+                <div class="hv-section">
+                  <div class="hv-section__head">
+                    <span class="hv-section__title">租金方案</span>
+                    <el-button link size="small" type="primary" @click="handleOpenPriceConfig">查看 / 编辑</el-button>
                   </div>
+                  <template v-if="priceConfig?.pricePlans?.length">
+                    <div class="hv-table">
+                      <div class="hv-table__head">
+                        <span>方案名称</span>
+                        <span>类型</span>
+                        <span>价格</span>
+                        <span>比例</span>
+                      </div>
+                      <div v-for="(plan, i) in priceConfig.pricePlans" :key="i" class="hv-table__row">
+                        <span>{{ plan.planName || "-" }}</span>
+                        <span>{{ plan.planType || "-" }}</span>
+                        <span class="hv-table__price">{{ plan.price ?? "-" }} 元</span>
+                        <span>{{ plan.priceRatio ? plan.priceRatio + "%" : "-" }}</span>
+                      </div>
+                    </div>
+                  </template>
+                  <div v-else class="hv-empty">暂无租金方案</div>
                 </div>
               </template>
 
+              <!-- ===== 房间信息 ===== -->
               <template v-if="activeDetailTab === 'room'">
-                <div class="hv-block">
-                  <div class="hv-block__head">
-                    <span class="hv-block__title">房间信息</span>
+                <div class="hv-section">
+                  <div class="hv-section__head">
+                    <span class="hv-section__title">基本信息</span>
                     <el-button size="small" link type="primary">
                       <el-icon><Edit /></el-icon>
                       编辑
                     </el-button>
                   </div>
-                  <div class="hv-grid hv-grid--4">
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">房间号</span>
-                      <span class="hv-cell__v">{{ roomDetail.roomNumber }}</span>
+                  <div class="hv-info-grid">
+                    <div class="hv-info-item">
+                      <span class="hv-info-item__label">房间号</span>
+                      <span class="hv-info-item__value">{{ roomDetail.roomNumber }}</span>
                     </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">朝向</span>
-                      <span class="hv-cell__v">{{ roomDetail.direction }}</span>
+                    <div class="hv-info-item">
+                      <span class="hv-info-item__label">朝向</span>
+                      <span class="hv-info-item__value">{{ roomDetail.direction }}</span>
                     </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">建筑面积</span>
-                      <span class="hv-cell__v">{{ roomDetail.buildingArea }}</span>
+                    <div class="hv-info-item">
+                      <span class="hv-info-item__label">套内面积</span>
+                      <span class="hv-info-item__value">{{ roomDetail.innerArea }}</span>
                     </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">套内面积</span>
-                      <span class="hv-cell__v">{{ roomDetail.innerArea }}</span>
+                    <div class="hv-info-item">
+                      <span class="hv-info-item__label">所在楼层</span>
+                      <span class="hv-info-item__value">{{ roomDetail.floorInfo }}</span>
                     </div>
-                  </div>
-                  <div class="hv-grid hv-grid--4">
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">楼层</span>
-                      <span class="hv-cell__v">{{ roomDetail.floorInfo }}</span>
+                    <div class="hv-info-item">
+                      <span class="hv-info-item__label">首次可租</span>
+                      <span class="hv-info-item__value">{{ roomDetail.firstAvailDate }}</span>
                     </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">看房时间</span>
-                      <span class="hv-cell__v">{{ roomDetail.viewTime }}</span>
+                    <div class="hv-info-item">
+                      <span class="hv-info-item__label">空置开始</span>
+                      <span class="hv-info-item__value">{{ roomDetail.vacancyStart }}</span>
                     </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">性别要求</span>
-                      <span class="hv-cell__v">{{ roomDetail.genderReq }}</span>
+                    <div class="hv-info-item">
+                      <span class="hv-info-item__label">锁房期限</span>
+                      <span class="hv-info-item__value">—</span>
                     </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">最多入住</span>
-                      <span class="hv-cell__v">{{ roomDetail.maxOccupants }}</span>
+                    <div class="hv-info-item">
+                      <span class="hv-info-item__label">锁房备注</span>
+                      <span class="hv-info-item__value">—</span>
                     </div>
                   </div>
-                  <div class="hv-grid hv-grid--4">
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">首次可租日期</span>
-                      <span class="hv-cell__v">{{ roomDetail.firstAvailDate }}</span>
-                    </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">空置开始时间</span>
-                      <span class="hv-cell__v">{{ roomDetail.vacancyStart }}</span>
-                    </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">锁房期限</span>
-                      <span class="hv-cell__v">-</span>
-                    </div>
-                    <div class="hv-cell">
-                      <span class="hv-cell__l">锁房备注</span>
-                      <span class="hv-cell__v">-</span>
-                    </div>
-                  </div>
-                  <div class="hv-field">
-                    <span class="hv-field__l">房间配置</span>
+                </div>
+                <div class="hv-section">
+                  <div class="hv-section__head">
+                    <span class="hv-section__title">房间配置</span>
                     <el-button size="small" link type="primary">
                       <el-icon><View /></el-icon>
                       查看物资明细
                     </el-button>
                   </div>
-                  <div class="hv-field">
-                    <span class="hv-field__l">接待要求</span>
-                    <span class="hv-field__v">-</span>
+                  <div class="hv-empty">暂无配置信息</div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </main>
+
+        <!-- ③ 右侧：租客 / 预定 / 跟进 -->
+        <aside class="hv-panel">
+          <!-- 租客信息 -->
+          <div class="hv-panel-sec">
+            <div class="hv-panel-sec__head">
+              <div class="hv-panel-sec__icon hv-panel-sec__icon--tenant">
+                <el-icon :size="14"><User /></el-icon>
+              </div>
+              <span class="hv-panel-sec__title">租客信息</span>
+              <div class="hv-panel-sec__actions">
+                <el-button v-if="roomStatusInfo.isLeased" size="small" link type="danger" @click="handleCheckout">退租</el-button>
+                <el-button v-if="roomStatusInfo.isLeased" size="small" link type="primary" @click="handleRenew">续签</el-button>
+                <el-button v-if="!roomStatusInfo.isLeased && !roomStatusInfo.isBooked" size="small" type="primary" plain @click="emit('tenant', currentRoom)">
+                  录入租客
+                </el-button>
+              </div>
+            </div>
+            <div class="hv-panel-sec__body">
+              <template v-if="tenantInfo">
+                <div class="hv-tenant-card" @click="emit('openTenantDetail', currentRoom.leaseInfo?.tenantName || '', '')">
+                  <div class="hv-tenant-card__avatar">{{ tenantInfo.name.slice(0, 1) }}</div>
+                  <div class="hv-tenant-card__info">
+                    <div class="hv-tenant-card__name">
+                      {{ tenantInfo.name }}
+                      <span class="hv-tenant-card__phone">{{ tenantInfo.phone }}</span>
+                    </div>
+                    <div class="hv-tenant-card__rent">
+                      月租
+                      <strong>{{ tenantInfo.rentPrice }}</strong>
+                      元
+                      <span v-if="tenantInfo.duration" class="hv-tenant-card__duration">{{ tenantInfo.duration }}</span>
+                    </div>
+                    <div class="hv-tenant-card__lease">
+                      <el-icon :size="11"><Calendar /></el-icon>
+                      <span class="hv-tenant-card__lease-date">{{ tenantInfo.leaseStart }}</span>
+                      <span>—</span>
+                      <span class="hv-tenant-card__lease-date">{{ tenantInfo.leaseEnd }}</span>
+                    </div>
+                  </div>
+                  <el-icon class="hv-tenant-card__arrow"><ArrowRight /></el-icon>
+                </div>
+              </template>
+              <div v-else class="hv-panel-empty">
+                <el-icon :size="28" color="var(--el-text-color-placeholder)"><User /></el-icon>
+                <span>暂无租客</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 预定信息 -->
+          <div class="hv-panel-sec">
+            <div class="hv-panel-sec__head">
+              <div class="hv-panel-sec__icon hv-panel-sec__icon--booking">
+                <el-icon :size="14"><Calendar /></el-icon>
+              </div>
+              <span class="hv-panel-sec__title">预定信息</span>
+              <div class="hv-panel-sec__actions">
+                <el-button size="small" type="warning" plain @click="emit('booking', currentRoom)">添加预定</el-button>
+              </div>
+            </div>
+            <div class="hv-panel-sec__body">
+              <template v-if="bookingInfo">
+                <div class="hv-booking-card" @click="emit('openBookingDetail', bookingInfo.id || '')">
+                  <div class="hv-booking-card__row">
+                    <span class="hv-booking-card__label">预定人</span>
+                    <span class="hv-booking-card__val">{{ bookingInfo.tenantName || "-" }}</span>
+                  </div>
+                  <div class="hv-booking-card__row">
+                    <span class="hv-booking-card__label">预定时间</span>
+                    <span class="hv-booking-card__val">{{ formatDate(bookingInfo.bookingTime) }}</span>
+                  </div>
+                  <div class="hv-booking-card__row">
+                    <span class="hv-booking-card__label">到期时间</span>
+                    <span class="hv-booking-card__val">{{ formatDate(bookingInfo.expiryTime) }}</span>
                   </div>
                 </div>
               </template>
-            </template>
-            <template v-if="activeLeftTab === 'contract'"><el-empty description="暂无合约信息" /></template>
-            <template v-if="activeLeftTab === 'finance'"><el-empty description="暂无财务账单" /></template>
-            <template v-if="activeLeftTab === 'workorder'"><el-empty description="暂无工单信息" /></template>
-          </div>
-        </div>
-
-        <!-- ========== 右侧 ========== -->
-        <div class="hv-right">
-          <div class="hv-right__tabs">
-            <span class="hv-right__tab" :class="{ active: activeRightTab === 'quick' }" @click="activeRightTab = 'quick'">快捷入口</span>
+              <div v-else class="hv-panel-empty">
+                <el-icon :size="28" color="var(--el-text-color-placeholder)"><Calendar /></el-icon>
+                <span>暂无预定</span>
+              </div>
+            </div>
           </div>
 
-          <div v-if="activeRightTab === 'quick'" class="hv-right__body">
-            <!-- 住户 -->
-            <div class="hv-sec">
-              <div class="hv-sec__head">
-                <span class="hv-sec__icon hv-sec__icon--tenant">
-                  <el-icon :size="13"><User /></el-icon>
-                </span>
-                <span class="hv-sec__title">租客信息</span>
-                <div class="hv-sec__acts">
-                  <el-button v-if="roomStatusInfo.isLeased" size="small" link type="danger" @click="handleCheckout">退租</el-button>
-                  <el-button v-if="roomStatusInfo.isLeased" size="small" link type="primary" @click="handleRenew">续签</el-button>
-                  <el-button v-if="!roomStatusInfo.isLeased" size="small" link type="primary" @click="emit('tenant', currentRoom)">添加租客</el-button>
+          <!-- 备注 -->
+          <div class="hv-panel-sec hv-panel-sec--note">
+            <div class="hv-panel-sec__head">
+              <div class="hv-panel-sec__icon hv-panel-sec__icon--note">
+                <el-icon :size="14"><Edit /></el-icon>
+              </div>
+              <span class="hv-panel-sec__title">房间备注</span>
+              <div class="hv-panel-sec__actions">
+                <template v-if="remarkEditing">
+                  <el-button
+                    size="small"
+                    link
+                    @click="
+                      remarkEditing = false;
+                      remarkText = headerMeta.remark !== '-' ? headerMeta.remark : '';
+                    "
+                  >
+                    取消
+                  </el-button>
+                  <el-button size="small" type="primary" link :loading="remarkLoading" @click="handleSaveRemark">保存</el-button>
+                </template>
+                <template v-else>
+                  <el-button size="small" link type="primary" @click="remarkEditing = true">
+                    <el-icon><Edit /></el-icon>
+                    编辑
+                  </el-button>
+                </template>
+              </div>
+            </div>
+            <div class="hv-panel-sec__body">
+              <template v-if="remarkEditing">
+                <el-input v-model="remarkText" type="textarea" :rows="4" placeholder="请输入房间备注..." resize="none" class="hv-remark-input" />
+              </template>
+              <template v-else>
+                <p v-if="remarkText" class="hv-panel-remark">{{ remarkText }}</p>
+                <div v-else class="hv-panel-empty hv-panel-empty--sm">
+                  <span>暂无备注，</span>
+                  <span class="hv-panel-empty__link" @click="remarkEditing = true">点击添加</span>
                 </div>
-              </div>
-              <div class="hv-sec__body">
-                <template v-if="tenantInfo">
-                  <div class="hv-person hv-person--click" @click="emit('openTenantDetail', currentRoom.leaseInfo?.tenantName || '', '')">
-                    <div class="hv-person__detail">
-                      <span class="hv-person__name">{{ tenantInfo.name }} / {{ tenantInfo.phone }}</span>
-                      <span class="hv-person__meta">
-                        月租金：
-                        <em class="hv-price--tenant">{{ tenantInfo.rentPrice }}元/月</em>
-                      </span>
-                      <span class="hv-person__meta">
-                        合同：{{ tenantInfo.leaseStart }} - {{ tenantInfo.leaseEnd }}
-                        <em class="hv-dur">{{ tenantInfo.duration }}</em>
-                      </span>
-                    </div>
-                  </div>
-                </template>
-                <span v-else class="hv-empty">暂无住户</span>
-              </div>
-            </div>
-            <!-- 预定 -->
-            <div class="hv-sec">
-              <div class="hv-sec__head">
-                <span class="hv-sec__icon hv-sec__icon--booking">
-                  <el-icon :size="13"><Calendar /></el-icon>
-                </span>
-                <span class="hv-sec__title">预定</span>
-                <div class="hv-sec__acts"><el-button size="small" link type="primary" @click="emit('booking', currentRoom)">添加预定</el-button></div>
-              </div>
-              <div class="hv-sec__body">
-                <template v-if="bookingInfo">
-                  <div class="hv-booking hv-person--click" @click="emit('openBookingDetail', bookingInfo.id || '')">
-                    <span>预定人：{{ bookingInfo.tenantName || "-" }}</span>
-                    <span>预定时间：{{ formatDate(bookingInfo.bookingTime) }}</span>
-                    <span>到期时间：{{ formatDate(bookingInfo.expiryTime) }}</span>
-                  </div>
-                </template>
-                <span v-else class="hv-empty">暂无预定</span>
-              </div>
-            </div>
-            <!-- 备注 -->
-            <div class="hv-sec">
-              <div class="hv-sec__head">
-                <span class="hv-sec__icon hv-sec__icon--note">
-                  <el-icon :size="13"><Edit /></el-icon>
-                </span>
-                <span class="hv-sec__title">房间备注</span>
-                <div class="hv-sec__acts"><el-button size="small" link type="primary">编辑</el-button></div>
-              </div>
-              <div class="hv-sec__body">
-                <span class="hv-empty">{{ headerMeta.remark !== "-" ? headerMeta.remark : "暂无备注" }}</span>
-              </div>
+              </template>
             </div>
           </div>
-
-          <div v-else class="hv-right__body"><span class="hv-empty" style="padding: 20px">暂无房源记录</span></div>
-
-          <div class="hv-right__footer">
-            <span class="hv-right__flink active">跟进</span>
-            <span class="hv-right__flink">提醒</span>
-            <span class="hv-right__flink">备注</span>
-            <span class="hv-right__fsep">|</span>
-            <span class="hv-right__fhint">请输入跟进记录</span>
-          </div>
-        </div>
+        </aside>
       </div>
     </template>
   </div>
 </template>
 
 <style scoped lang="scss">
-  /* 全部使用 var(--el-xxx) → 浅色/深色自动适配 */
+  // ======================== 全局 ========================
   .hv {
     display: flex;
     flex-direction: column;
     height: 100%;
     font-size: 13px;
-    background: var(--el-bg-color-page);
     color: var(--el-text-color-primary);
+    background: var(--el-bg-color-page);
+    overflow: hidden;
   }
 
-  /* ① 顶部 */
-  .hv-header {
-    padding: 12px 16px;
-    background: var(--el-bg-color);
-    border-bottom: 1px solid var(--el-border-color-lighter);
-    &__meta {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-  }
-  .hv-mi {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 5px 10px;
-    min-width: 64px;
-    background: var(--el-fill-color-lighter);
-    border-radius: 6px;
-    &__v {
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    &__l {
-      font-size: 11px;
-      color: var(--el-text-color-placeholder);
-    }
-  }
-
-  /* ② 房间栏 */
-  .hv-rooms {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    background: var(--el-bg-color);
-    border-bottom: 1px solid var(--el-border-color-lighter);
-    flex-wrap: wrap;
-    &__badge {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 6px 12px;
-      font-size: 12px;
-      background: var(--el-fill-color);
-      border-radius: 6px;
-      min-width: 72px;
-    }
-    &__count {
-      font-size: 11px;
-      color: var(--el-text-color-placeholder);
-      margin-top: 2px;
-    }
-    &__tabs {
-      display: flex;
-      gap: 8px;
-      flex: 1;
-      overflow-x: auto;
-    }
-    &__tab {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 6px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all 0.2s;
-      min-width: 52px;
-      &:hover {
-        background: var(--el-color-primary-light-9);
-      }
-      &.is-active {
-        border-color: var(--el-color-primary);
-        background: var(--el-color-primary-light-9);
-      }
-      &--add {
-        border: 2px dashed var(--el-border-color);
-        color: var(--el-text-color-placeholder);
-        font-size: 12px;
-        &:hover {
-          border-color: var(--el-color-primary);
-          color: var(--el-color-primary);
-        }
-      }
-    }
-    &__letter {
-      font-size: 15px;
-      font-weight: 600;
-    }
-    &__status {
-      font-size: 11px;
-      margin-top: 2px;
-      &.st-leased {
-        color: var(--el-color-success);
-      }
-      &.st-available {
-        color: var(--el-color-danger);
-      }
-      &.st-booked {
-        color: var(--el-color-warning);
-      }
-      &.st-locked {
-        color: var(--el-text-color-placeholder);
-      }
-    }
-    &__lease-brief {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
-      padding: 4px 10px;
-      background: var(--el-fill-color-light);
-      border-radius: 4px;
-    }
-    &__expire {
-      color: var(--el-color-primary);
-    }
-    &__actions {
-      display: flex;
-      gap: 12px;
-      margin-left: auto;
-      :deep(.el-checkbox__label) {
-        font-size: 12px;
-      }
-    }
-  }
-
-  /* ③ 主体 */
-  .hv-body {
-    display: grid;
-    grid-template-columns: 1fr 310px;
-    gap: 0;
+  .hv-loading {
     flex: 1;
     overflow: hidden;
   }
-  .hv-left {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
+
+  // ======================== 三栏布局 ========================
+  .hv-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr 280px;
+    height: 100%;
+    overflow: hidden;
   }
 
-  .hv-overview {
+  // ======================== 左侧面板 ========================
+  .hv-aside {
     display: flex;
-    gap: 16px;
-    padding: 16px 16px;
+    flex-direction: column;
+    border-right: 1px solid var(--el-border-color-lighter);
     background: var(--el-bg-color);
-    &__img {
+    overflow-y: auto;
+
+    &__gallery {
       position: relative;
-      width: 150px;
-      min-width: 150px;
-      height: 112px;
-      border-radius: 8px;
-      overflow: hidden;
+      height: 160px;
+      flex-shrink: 0;
       background: var(--el-fill-color);
     }
-    &__pic {
+
+    &__img {
       width: 100%;
       height: 100%;
+      display: block;
       :deep(img) {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
     }
-    &__empty {
+
+    &__img-empty {
+      height: 100%;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 100%;
-      height: 100%;
+      gap: 8px;
       color: var(--el-text-color-placeholder);
       font-size: 12px;
     }
+
+    &__img-count {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.45);
+      color: #fff;
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    &__body {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    &__location {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+
+    &__remark {
+      background: var(--el-fill-color-lighter);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    &__remark-label {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    &__remark-text {
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      line-height: 1.6;
+    }
+
+    &__edit-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  // 属性网格
+  .hv-kv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--el-border-color-extra-light);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .hv-kv {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--el-border-color-extra-light);
+    border-right: 1px solid var(--el-border-color-extra-light);
+
+    &:nth-child(2n) {
+      border-right: none;
+    }
+    &:nth-last-child(-n + 2) {
+      border-bottom: none;
+    }
+
+    &__label {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+      line-height: 1.3;
+    }
+
+    &__value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+      line-height: 1.4;
+    }
+  }
+
+  .hv-divider {
+    height: 1px;
+    background: var(--el-border-color-extra-light);
+    margin: -4px 0;
+  }
+
+  // 负责人
+  .hv-salesman {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 8px;
+
+    &__avatar {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 50%;
+      background: var(--el-color-primary-light-7);
+      color: var(--el-color-primary);
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     &__info {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 2px;
     }
-    &__row1 {
+
+    &__name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    &__role {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+    }
+
+    &__call {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--el-color-success-light-9);
+      color: var(--el-color-success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: background 0.15s;
+
+      &:hover {
+        background: var(--el-color-success-light-7);
+      }
+    }
+  }
+
+  // ======================== 中间主区域 ========================
+  .hv-main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--el-bg-color-page);
+  }
+
+  // 房间选择器
+  .hv-rooms {
+    background: var(--el-bg-color);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    padding: 12px 20px;
+    flex-shrink: 0;
+
+    &__summary {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+    }
+
+    &__summary-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      strong {
+        color: var(--el-text-color-primary);
+      }
+    }
+
+    &__dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    &__summary-total {
+      margin-left: auto;
+      font-weight: 500;
+      color: var(--el-text-color-regular);
+    }
+
+    &__list {
       display: flex;
       gap: 8px;
-      align-items: center;
-    }
-    &__price {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--el-color-danger);
-      margin-left: 8px;
-    }
-    &__plan {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      color: var(--el-color-primary);
-      font-size: 12px;
-      cursor: pointer;
-      &:hover {
-        opacity: 0.8;
-      }
-    }
-    &__meta {
-      display: flex;
-      gap: 16px;
-      font-size: 12px;
-      color: var(--el-text-color-placeholder);
+      overflow-x: auto;
+      padding-bottom: 2px;
     }
   }
 
-  .hv-tags {
+  .hv-room-card {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
     align-items: center;
-    padding: 8px 16px;
+    gap: 4px;
+    padding: 8px 14px 7px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1.5px solid var(--el-border-color-lighter);
     background: var(--el-bg-color);
-    border-bottom: 1px solid var(--el-border-color-extra-light);
-    &__add {
-      font-size: 12px;
+    transition: all 0.15s;
+    min-width: 62px;
+    position: relative;
+
+    &:hover {
+      border-color: var(--el-color-primary-light-5);
+      background: var(--el-color-primary-light-9);
+    }
+
+    &.is-active {
+      border-color: var(--el-color-primary);
+      background: var(--el-color-primary-light-9);
+      box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
+    }
+
+    &--add {
+      border-style: dashed;
       color: var(--el-text-color-placeholder);
-      cursor: pointer;
+      font-size: 12px;
+      flex-direction: row;
+      gap: 3px;
+      padding: 8px 12px;
+
       &:hover {
         color: var(--el-color-primary);
+        border-color: var(--el-color-primary);
+      }
+    }
+
+    &__dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    &__number {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    &__status {
+      font-size: 11px;
+      line-height: 1;
+
+      &.st-leased {
+        color: #67c23a;
+      }
+      &.st-available {
+        color: #f56c6c;
+      }
+      &.st-booked {
+        color: #e6a23c;
+      }
+      &.st-locked {
+        color: #909399;
       }
     }
   }
 
-  .hv-ftabs {
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
+  // Hero 区
+  .hv-hero {
     background: var(--el-bg-color);
-    border-bottom: 1px solid var(--el-border-color-extra-light);
-    :deep(.el-tabs) {
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    flex-shrink: 0;
+
+    &__left {
       flex: 1;
-    }
-    :deep(.el-tabs__header) {
-      margin: 0;
-    }
-    :deep(.el-tabs__nav-wrap::after) {
-      display: none;
-    }
-    :deep(.el-tabs__item) {
-      font-size: 13px;
-      height: 42px;
-      line-height: 42px;
-    }
-    &__actions {
       display: flex;
-      gap: 4px;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    &__status {
+      display: flex;
       align-items: center;
-      .el-button {
-        font-size: 12px;
+      gap: 10px;
+    }
+
+    &__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+
+      &.is-leased {
+        background: #f0faf0;
+        color: #67c23a;
       }
+      &.is-available {
+        background: #fff5f5;
+        color: #f56c6c;
+      }
+      &.is-booked {
+        background: #fdf6ec;
+        color: #e6a23c;
+      }
+    }
+
+    &__badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    &__room-label {
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+      font-weight: 500;
+    }
+
+    &__price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    &__price {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--el-color-success);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &__unit {
+      font-size: 14px;
+      color: var(--el-text-color-secondary);
+      font-weight: 400;
+    }
+
+    &__price-edit {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--el-border-color);
+      background: var(--el-bg-color);
+      color: var(--el-text-color-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-left: 4px;
+
+      &:hover {
+        color: var(--el-color-primary);
+        border-color: var(--el-color-primary);
+        background: var(--el-color-primary-light-9);
+      }
+    }
+
+    &__subprice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    &__subprice-label {
+      color: var(--el-text-color-placeholder);
+    }
+
+    &__subprice-val {
+      color: var(--el-text-color-regular);
+      font-weight: 500;
+    }
+
+    &__hint {
+      font-size: 12px;
+      color: var(--el-text-color-placeholder);
     }
   }
 
-  .hv-content {
+  // 详情 Tab
+  .hv-detail {
     flex: 1;
-    padding: 0 16px 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background: var(--el-bg-color);
   }
 
-  .hv-subtabs {
+  .hv-tabs {
     display: flex;
-    gap: 24px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--el-border-color-extra-light);
+    gap: 0;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    padding: 0 20px;
+    flex-shrink: 0;
+    background: var(--el-bg-color);
   }
-  .hv-subtab {
+
+  .hv-tab {
+    padding: 12px 16px;
     font-size: 13px;
+    font-weight: 500;
     color: var(--el-text-color-secondary);
+    background: none;
+    border: none;
     cursor: pointer;
-    padding-bottom: 8px;
     position: relative;
+    transition: color 0.15s;
+
     &.active {
-      color: var(--el-text-color-primary);
-      font-weight: 500;
+      color: var(--el-color-primary);
+
       &::after {
         content: "";
         position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        bottom: -1px;
+        left: 16px;
+        right: 16px;
         height: 2px;
         background: var(--el-color-primary);
         border-radius: 1px;
       }
     }
-    &:hover {
-      color: var(--el-color-primary);
+
+    &:hover:not(.active) {
+      color: var(--el-text-color-primary);
     }
   }
 
-  .hv-bar {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 10px 14px;
-    margin: 12px 0;
-    border-radius: 6px;
-    font-size: 12px;
-    color: var(--el-text-color-regular);
-    &--warn {
-      background: var(--el-color-warning-light-9);
-    }
-    &__badge {
-      padding: 2px 8px;
-      color: #fff;
-      background: var(--el-color-warning);
-      border-radius: 4px;
-      font-weight: 500;
-    }
-    &__sep {
-      color: var(--el-border-color);
-    }
-    &__help {
-      color: var(--el-text-color-placeholder);
-      cursor: pointer;
-    }
+  .hv-tab-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 20px 20px;
   }
 
-  .hv-block {
+  // 内容区 Section
+  .hv-section {
     padding: 16px 0;
+    border-bottom: 1px solid var(--el-border-color-extra-light);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
     &__head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
+
     &__title {
-      font-size: 15px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+  }
+
+  // 统计行
+  .hv-stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .hv-stat {
+    padding: 12px 14px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    &__label {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+    }
+
+    &__value {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+
+      em {
+        font-size: 12px;
+        font-weight: 400;
+        font-style: normal;
+        color: var(--el-text-color-secondary);
+      }
+
+      &--primary {
+        color: var(--el-color-primary);
+      }
+    }
+
+    &__mask {
+      letter-spacing: 3px;
+      color: var(--el-text-color-placeholder);
+    }
+  }
+
+  // 提示条
+  .hv-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    border-radius: 8px;
+    background: var(--el-color-warning-light-9);
+    border: 1px solid var(--el-color-warning-light-5);
+    font-size: 13px;
+
+    &__tag {
+      flex-shrink: 0;
+      padding: 2px 8px;
+      background: var(--el-color-warning);
+      color: #fff;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    &__items {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+      flex-wrap: wrap;
+      color: var(--el-text-color-regular);
+
+      strong {
+        color: var(--el-text-color-primary);
+      }
+    }
+
+    &__sep {
+      color: var(--el-border-color);
+    }
+
+    &__help {
+      color: var(--el-text-color-placeholder);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+  }
+
+  // 费用列表
+  .hv-fee-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .hv-fee-item {
+    display: grid;
+    grid-template-columns: 1fr 100px 80px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 6px;
+    font-size: 13px;
+
+    &__name {
+      font-weight: 500;
+    }
+    &__amount {
+      color: var(--el-color-primary);
+      font-weight: 600;
+    }
+    &__method {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+      text-align: right;
+    }
+  }
+
+  // 方案表格
+  .hv-table {
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 13px;
+
+    &__head,
+    &__row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr 1fr 0.6fr;
+    }
+
+    &__head {
+      background: var(--el-fill-color-lighter);
+      font-weight: 500;
+      color: var(--el-text-color-secondary);
+      font-size: 12px;
+
+      span {
+        padding: 10px 14px;
+      }
+    }
+
+    &__row {
+      border-top: 1px solid var(--el-border-color-extra-light);
+      transition: background 0.1s;
+
+      span {
+        padding: 10px 14px;
+      }
+
+      &:hover {
+        background: var(--el-fill-color-light);
+      }
+    }
+
+    &__price {
+      color: var(--el-color-primary);
       font-weight: 600;
     }
   }
 
-  .hv-grid {
+  // 房间信息网格
+  .hv-info-grid {
     display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 0;
-    &--3 {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    &--4 {
-      grid-template-columns: repeat(4, 1fr);
-    }
+    border: 1px solid var(--el-border-color-extra-light);
+    border-radius: 8px;
+    overflow: hidden;
   }
-  .hv-cell {
+
+  .hv-info-item {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 12px 0;
+    gap: 5px;
+    padding: 12px 14px;
+    border-right: 1px solid var(--el-border-color-extra-light);
     border-bottom: 1px solid var(--el-border-color-extra-light);
-    &__l {
-      font-size: 12px;
+
+    &:nth-child(4n) {
+      border-right: none;
+    }
+    &:nth-last-child(-n + 4) {
+      border-bottom: none;
+    }
+
+    &__label {
+      font-size: 11px;
       color: var(--el-text-color-placeholder);
     }
-    &__v {
+
+    &__value {
       font-size: 13px;
-      &--primary {
-        color: var(--el-color-primary);
-        font-weight: 600;
-      }
-    }
-  }
-  .hv-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--el-border-color-extra-light);
-    &__l {
-      font-size: 14px;
       font-weight: 500;
-    }
-    &__v {
-      font-size: 13px;
-      color: var(--el-text-color-placeholder);
-    }
-    &--link {
-      cursor: pointer;
-      &:hover {
-        color: var(--el-color-primary);
-      }
     }
   }
 
-  /* 右侧 */
-  .hv-right {
+  // 空状态
+  .hv-empty {
+    padding: 16px 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--el-text-color-placeholder);
+  }
+
+  // ======================== 右侧面板 ========================
+  .hv-panel {
     display: flex;
     flex-direction: column;
     border-left: 1px solid var(--el-border-color-lighter);
     background: var(--el-bg-color);
     overflow: hidden;
-    &__tabs {
-      display: flex;
-      gap: 24px;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--el-border-color-extra-light);
-    }
-    &__tab {
-      font-size: 13px;
-      color: var(--el-text-color-secondary);
-      cursor: pointer;
-      padding-bottom: 4px;
-      position: relative;
-      &.active {
-        color: var(--el-text-color-primary);
-        font-weight: 600;
-        &::after {
-          content: "";
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 2px;
-          background: var(--el-color-primary);
-          border-radius: 1px;
-        }
-      }
-    }
-    &__body {
-      flex: 1;
-      overflow-y: auto;
-    }
-    &__footer {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 16px;
-      border-top: 1px solid var(--el-border-color-extra-light);
-      font-size: 13px;
-    }
-    &__flink {
-      cursor: pointer;
-      color: var(--el-text-color-secondary);
-      &.active {
-        color: var(--el-color-primary);
-        font-weight: 500;
-      }
-      &:hover {
-        color: var(--el-color-primary);
-      }
-    }
-    &__fsep {
-      color: var(--el-border-color);
-    }
-    &__fhint {
-      flex: 1;
-      color: var(--el-text-color-placeholder);
-      font-size: 12px;
-    }
   }
 
-  .hv-sec {
+  .hv-panel-sec {
     border-bottom: 1px solid var(--el-border-color-extra-light);
+
     &__head {
       display: flex;
       align-items: center;
       gap: 8px;
       padding: 12px 16px 8px;
     }
+
     &__icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
+
       &--tenant {
-        background: var(--el-color-success-light-9);
-        color: var(--el-color-success);
+        background: #f0faf0;
+        color: #67c23a;
       }
       &--booking {
-        background: var(--el-color-warning-light-9);
-        color: var(--el-color-warning);
+        background: #fdf6ec;
+        color: #e6a23c;
       }
       &--note {
         background: var(--el-color-primary-light-9);
         color: var(--el-color-primary);
       }
     }
+
     &__title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
+      flex: 1;
     }
-    &__acts {
-      margin-left: auto;
+
+    &__actions {
       display: flex;
       gap: 4px;
-      .el-button {
-        font-size: 12px;
-      }
     }
+
     &__body {
-      padding: 4px 16px 12px;
-      margin: 0 6px;
+      padding: 4px 16px 14px;
+    }
+
+    &--note {
+      flex: 1;
     }
   }
 
-  .hv-person {
+  // 租客卡片
+  .hv-tenant-card {
     display: flex;
+    align-items: center;
     gap: 10px;
-    padding: 8px 0;
-    &--click {
-      cursor: pointer;
-      border-radius: 6px;
-      padding: 8px;
-      margin: -4px -8px;
-      &:hover {
-        background: var(--el-fill-color-light);
-      }
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--el-fill-color-lighter);
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+      background: var(--el-fill-color);
     }
+
     &__avatar {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
       border-radius: 50%;
+      background: var(--el-color-primary-light-7);
+      color: var(--el-color-primary);
+      font-size: 18px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--el-fill-color);
-      &--tenant {
-        background: var(--el-color-success-light-9);
-        color: var(--el-color-success);
-      }
     }
-    &__detail {
+
+    &__info {
+      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 4px;
-      font-size: 12px;
+      overflow: hidden;
     }
+
     &__name {
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    &__meta {
+
+    &__phone {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+      font-weight: 400;
+    }
+
+    &__rent {
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      strong {
+        color: var(--el-color-success);
+        font-size: 15px;
+        font-weight: 700;
+      }
+    }
+
+    &__lease {
+      font-size: 11px;
       color: var(--el-text-color-placeholder);
       display: flex;
-      gap: 6px;
       align-items: center;
-      flex-wrap: wrap;
+      gap: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    &__lease-date {
+      white-space: nowrap;
+    }
+
+    &__duration {
+      color: var(--el-color-primary);
+      font-weight: 500;
+      background: var(--el-color-primary-light-9);
+      padding: 1px 6px;
+      border-radius: 8px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    &__arrow {
+      color: var(--el-text-color-placeholder);
+      flex-shrink: 0;
     }
   }
 
-  .hv-price--tenant {
-    font-style: normal;
-    font-weight: 600;
-    color: var(--el-color-success);
-  }
-  .hv-dur {
-    font-style: normal;
-    font-size: 11px;
-    color: var(--el-color-primary);
-  }
-  .hv-booking {
+  // 预定卡片
+  .hv-booking-card {
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--el-fill-color-lighter);
+    cursor: pointer;
+    transition: background 0.15s;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-  }
-  .hv-empty {
-    font-size: 12px;
-    color: var(--el-text-color-placeholder);
-    padding: 4px 0;
-    display: block;
+    gap: 7px;
+
+    &:hover {
+      background: var(--el-fill-color);
+    }
+
+    &__row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    &__label {
+      color: var(--el-text-color-placeholder);
+      font-size: 11px;
+      min-width: 48px;
+    }
+
+    &__val {
+      color: var(--el-text-color-primary);
+      font-weight: 500;
+    }
   }
 
-  @media (width <= 1200px) {
-    .hv-body {
+  .hv-panel-remark {
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+    line-height: 1.7;
+    margin: 0;
+    padding: 4px 0;
+  }
+
+  .hv-remark-input {
+    :deep(.el-textarea__inner) {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+  }
+
+  .hv-panel-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 0;
+    gap: 6px;
+    color: var(--el-text-color-placeholder);
+    font-size: 12px;
+
+    &--sm {
+      padding: 6px 0;
+      flex-direction: row;
+      justify-content: flex-start;
+    }
+
+    &__link {
+      color: var(--el-color-primary);
+      cursor: pointer;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  @media (width <= 1280px) {
+    .hv-layout {
+      grid-template-columns: 220px 1fr 260px;
+    }
+  }
+
+  @media (width <= 1100px) {
+    .hv-layout {
+      grid-template-columns: 1fr 260px;
+    }
+
+    .hv-aside {
+      display: none;
+    }
+  }
+
+  @media (width <= 900px) {
+    .hv-layout {
       grid-template-columns: 1fr;
     }
-    .hv-right {
+
+    .hv-panel {
       display: none;
     }
   }
