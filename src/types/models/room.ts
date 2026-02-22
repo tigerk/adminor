@@ -23,6 +23,8 @@ export interface RoomDetailProps {
   imageList?: string[];
   videoList?: string[];
   priceConfig?: PriceConfigProps;
+  /** 租期信息（前端扩展） */
+  leaseInfo?: RoomLeaseInfoProps;
 }
 
 /**

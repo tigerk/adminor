@@ -1,27 +1,36 @@
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
-  import type { BookingListProps, HouseViewDetailProps, PriceConfigProps, RoomDetailProps, RoomListProps } from "@/types";
+  import type { BookingListProps, HouseViewDetailProps, PriceConfigProps, RoomDetailProps } from "@/types";
   import { ROOM_STATUS_ENUM } from "@/constants";
-  import { ArrowRight, Calendar, Edit, House, Location, Phone, Plus, User, View } from "@element-plus/icons-vue";
+  import { ArrowRight, Calendar, Edit, House, Location, Plus, User, View } from "@element-plus/icons-vue";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
   import { message } from "@/utils/message";
   import { getDecorationLabel, getDirectionLabel, getElectricityTypeLabel, getRentalTypeLabel, getWaterTypeLabel } from "@/utils/house";
   import { formatDate } from "@/utils/date";
 
-  const props = defineProps<{ detail: HouseViewDetailProps }>();
-
-  const emit = defineEmits<{
-    booking: [room: RoomListProps];
-    tenant: [room: RoomListProps];
-    checkout: [room: RoomListProps];
-    viewContract: [room: RoomListProps];
-    openTenantDetail: [tenantId: string, leaseId: string];
-    openBookingDetail: [bookingId: string];
-    renewLease: [room: RoomListProps];
-    addRoom: [];
+  // ======================== Props / Emits ========================
+  const props = defineProps<{
+    /** 是否正在加载 */
+    loading: boolean;
+    /** 房源详情（接口返回的完整数据，null 表示未加载或加载失败） */
+    detail: HouseViewDetailProps | null;
   }>();
 
+  const emit = defineEmits<{
+    booking: [room: RoomDetailProps];
+    tenant: [room: RoomDetailProps];
+    checkout: [room: RoomDetailProps];
+    viewContract: [room: RoomDetailProps];
+    openTenantDetail: [tenantId: string, leaseId: string];
+    openBookingDetail: [bookingId: string];
+    renewLease: [room: RoomDetailProps];
+    addRoom: [];
+    /** 操作完成后通知父级刷新详情 */
+    reload: [];
+  }>();
+
+  // ======================== 工具函数 ========================
   const calcLeaseDuration = (start?: string, end?: string) => {
     if (!start || !end) return "";
     const s = new Date(start),
@@ -35,20 +44,34 @@
     return m > 0 ? `${m}个月` : "";
   };
 
-  // ======================== 数据源 ========================
-  const baseRoom = computed(() => props.detail.room);
-  const isFocus = computed(() => props.detail.leaseMode === 1);
-  const focusDetail = computed(() => props.detail.focusDetail);
-  const scatterDetail = computed(() => props.detail.scatterDetail);
-  const isShareRental = computed(() => props.detail.rentalType === 2);
+  // ======================== 房源基础信息（直接读 detail） ========================
+  const isFocus = computed(() => props.detail?.leaseMode === 1);
+  const isShareRental = computed(() => props.detail?.rentalType === 2);
 
-  // ======================== 房间 Tab ========================
-  const roomTabs = computed<RoomListProps[]>(() => {
-    if (isShareRental.value && scatterDetail.value?.roomList?.length) {
-      return scatterDetail.value.roomList as unknown as RoomListProps[];
-    }
-    return [baseRoom.value];
+  /** 左侧面板展示用 meta */
+  const houseMeta = computed(() => {
+    const d = props.detail;
+    return {
+      rentalType: getRentalTypeLabel(d?.rentalType),
+      direction: getDirectionLabel(d?.direction),
+      decoration: getDecorationLabel(d?.decorationType),
+      area: d?.area || "-",
+      floor: d?.floor || "-",
+      floorTotal: d?.floorTotal || "-",
+      hasElevator: d?.hasElevator ? "有" : "无",
+      hasGas: d?.hasGas ? "有" : "无",
+      water: d?.water || "-",
+      electricity: d?.electricity || "-",
+      propertyFee: d?.propertyFee ?? "-",
+      communityName: d?.community?.name ?? d?.houseName ?? "-",
+      salesmanName: d?.salesmanName || "-",
+      deptId: d?.deptId || "-",
+      houseRemark: d?.remark || ""
+    };
   });
+
+  // ======================== 房间 Tab（来自 detail.roomList） ========================
+  const roomTabs = computed<RoomDetailProps[]>(() => props.detail?.roomList ?? []);
 
   const activeRoomIndex = ref(0);
   watch(
@@ -58,48 +81,21 @@
     },
     { immediate: true }
   );
-  const currentRoom = computed(() => roomTabs.value[activeRoomIndex.value] || baseRoom.value);
+  const currentRoom = computed<RoomDetailProps | null>(() => roomTabs.value[activeRoomIndex.value] ?? roomTabs.value[0] ?? null);
 
-  // ======================== 图片 ========================
+  // ======================== 图片（来自 houseLayout + 当前房间） ========================
   const allImages = computed(() => {
     const set = new Set<string>();
-    focusDetail.value?.imageList?.forEach(i => i && set.add(typeof i === "string" ? i : ""));
-    scatterDetail.value?.houseLayout?.imageList?.forEach(i => i && set.add(i));
+    props.detail?.houseLayout?.imageList?.forEach(i => i && set.add(i));
     currentRoom.value?.imageList?.forEach(i => i && set.add(i));
     set.delete("");
     return [...set];
   });
 
-  // ======================== 顶部信息 ========================
-  const headerMeta = computed(() => {
-    const sv = scatterDetail.value,
-      fv = focusDetail.value,
-      rm = currentRoom.value;
-    return {
-      rentalType: getRentalTypeLabel(props.detail.rentalType),
-      direction: getDirectionLabel(rm.direction || sv?.direction),
-      decoration: getDecorationLabel(sv?.decorationType),
-      area: rm.area || sv?.area || "-",
-      floor: rm.floor || sv?.floor || "-",
-      floorTotal: sv?.floorTotal || "-",
-      hasElevator: (sv?.hasElevator ?? fv?.hasElevator) ? "有" : "无",
-      hasGas: (sv?.hasGas ?? fv?.hasGas) ? "有" : "无",
-      water: sv?.water ?? fv?.water ?? "-",
-      electricity: sv?.electricity ?? fv?.electricity ?? "-",
-      propertyFee: sv?.propertyFee ?? rm.propertyFee ?? "-",
-      communityName: sv?.community?.name ?? fv?.community?.name ?? rm.communityName ?? "-",
-      focusName: fv?.focusName ?? "-",
-      storePhone: fv?.storePhone ?? "-",
-      salesmanName: rm.salesmanName ?? "-",
-      salesmanPhone: rm.salesmanPhone ?? "-",
-      deptName: rm.deptName ?? "-",
-      remark: sv?.remark ?? fv?.remark ?? "-"
-    };
-  });
-
   // ======================== 房间状态 ========================
   const roomStatusInfo = computed(() => {
     const r = currentRoom.value;
+    if (!r) return { statusName: "-", statusColor: "", isLeased: false, isAvailable: false, isBooked: false };
     return {
       statusName: r.roomStatusName || "-",
       statusColor: r.roomStatusColor || "",
@@ -109,7 +105,7 @@
     };
   });
 
-  const getRoomTabStatus = (room: RoomListProps) => {
+  const getRoomTabStatus = (room: RoomDetailProps) => {
     const map: Record<number, { text: string; cls: string; dot: string }> = {
       [ROOM_STATUS_ENUM.LEASED.code]: { text: "已租", cls: "st-leased", dot: "#67c23a" },
       [ROOM_STATUS_ENUM.AVAILABLE.code]: { text: "空置", cls: "st-available", dot: "#f56c6c" },
@@ -119,35 +115,37 @@
     return map[room.roomStatus!] || { text: room.roomStatusName || "-", cls: "", dot: "#909399" };
   };
 
-  // 统计各状态数量
+  /** 各状态房间数量统计 */
   const roomStats = computed(() => {
-    const total = roomTabs.value.length;
-    const leased = roomTabs.value.filter(r => r.roomStatus === ROOM_STATUS_ENUM.LEASED.code).length;
-    const available = roomTabs.value.filter(r => r.roomStatus === ROOM_STATUS_ENUM.AVAILABLE.code).length;
-    const booked = roomTabs.value.filter(r => r.roomStatus === ROOM_STATUS_ENUM.BOOKED.code).length;
-    return { total, leased, available, booked };
+    const tabs = roomTabs.value;
+    return {
+      total: tabs.length,
+      leased: tabs.filter(r => r.roomStatus === ROOM_STATUS_ENUM.LEASED.code).length,
+      available: tabs.filter(r => r.roomStatus === ROOM_STATUS_ENUM.AVAILABLE.code).length,
+      booked: tabs.filter(r => r.roomStatus === ROOM_STATUS_ENUM.BOOKED.code).length
+    };
   });
 
-  // ======================== 租客 ========================
+  // ======================== 租客信息 ========================
   const tenantInfo = computed(() => {
-    const li = currentRoom.value.leaseInfo;
+    const li = currentRoom.value?.leaseInfo;
     if (!li?.tenantName) return null;
     return {
       name: li.tenantName,
       phone: li.tenantPhone || "-",
-      rentPrice: currentRoom.value.price || "-",
+      rentPrice: currentRoom.value?.price || "-",
       leaseStart: formatDate(li.leaseStartDate),
       leaseEnd: formatDate(li.leaseEndDate),
       duration: calcLeaseDuration(li.leaseStartDate, li.leaseEndDate)
     };
   });
 
-  // ======================== 预定 ========================
+  // ======================== 预定信息 ========================
   const bookingInfo = computed<BookingListProps | null>(() => {
-    if (!roomStatusInfo.value.isBooked || !currentRoom.value.leaseInfo) return null;
+    if (!roomStatusInfo.value.isBooked || !currentRoom.value?.leaseInfo) return null;
     const li = currentRoom.value.leaseInfo;
     return {
-      id: "",
+      id: li.leaseId || "",
       roomIds: [],
       roomList: [],
       tenantName: li.tenantName,
@@ -157,18 +155,32 @@
     } as BookingListProps;
   });
 
-  // ======================== Tab ========================
+  // ======================== 详情 Tab ========================
   const activeDetailTab = ref("room");
+
+  // ======================== 房间基本信息 ========================
+  const roomDetail = computed(() => {
+    const r = currentRoom.value;
+    return {
+      roomNumber: r?.roomNumber || "-",
+      direction: getDirectionLabel(r?.direction),
+      innerArea: r?.area ? `${r.area}m²` : "-",
+      floorInfo: `第${houseMeta.value.floor}层 / 共${houseMeta.value.floorTotal}层`,
+      firstAvailDate: r?.availableDate || "-",
+      vacancyStart: r?.vacancyStartTime || "-"
+    };
+  });
 
   // ======================== 租金配置 ========================
   const { openPriceConfigDialog } = usePriceConfigEdit();
   const priceConfig = ref<PriceConfigProps | null>(null);
 
   const loadPriceConfig = async () => {
-    const roomId = currentRoom.value.roomId || (currentRoom.value as any).id;
+    const roomId = currentRoom.value?.roomId || (currentRoom.value as any)?.id;
     if (!roomId) return;
-    const inlineConfig = (currentRoom.value as unknown as RoomDetailProps).priceConfig;
-    if (inlineConfig && inlineConfig.price) {
+    // 先检查 room 内联的 priceConfig
+    const inlineConfig = (currentRoom.value as any)?.priceConfig as PriceConfigProps | undefined;
+    if (inlineConfig?.price) {
       priceConfig.value = inlineConfig;
       return;
     }
@@ -188,18 +200,62 @@
     { immediate: true }
   );
 
+  const rentPrice = computed(() => priceConfig.value?.price || currentRoom.value?.price || "0");
+
+  const handleOpenPriceConfig = () => {
+    const room = currentRoom.value;
+    if (!room) return;
+    const roomId = room.roomId || (room as any).id;
+    const existConfig = priceConfig.value || {
+      roomId,
+      price: room.price ? Number(room.price) : 0,
+      floorPrice: 0,
+      floorPriceMethod: 1,
+      floorPriceInput: 0,
+      otherFees: [],
+      pricePlans: []
+    };
+    openPriceConfigDialog("配置", existConfig, async result => {
+      try {
+        const res = await saveRoomPriceConfig({ roomId, ...result });
+        if (res.code === 0) {
+          message("租金配置保存成功", { type: "success" });
+          loadPriceConfig();
+        } else {
+          message(res.message || "保存失败", { type: "error" });
+        }
+      } catch {
+        message("保存租金配置失败", { type: "error" });
+      }
+    });
+  };
+
+  // 付款方式 label
+  const payMethodLabel = (m?: number) => {
+    const map: Record<number, string> = { 0: "随房租付", 1: "一次性", 2: "月付", 4: "季付", 5: "半年付", 6: "年付" };
+    return m !== undefined ? (map[m] ?? "其他") : "";
+  };
+
+  // ======================== 退租 / 续签 ========================
+  const handleCheckout = () => {
+    if (!currentRoom.value?.leaseInfo) return message("当前房间没有在租租客", { type: "warning" });
+    emit("checkout", currentRoom.value!);
+  };
+  const handleRenew = () => {
+    if (!currentRoom.value?.leaseInfo) return message("当前房间没有在租租客", { type: "warning" });
+    emit("renewLease", currentRoom.value!);
+  };
+
   // ======================== 房间备注 ========================
   const remarkEditing = ref(false);
   const remarkText = ref("");
   const remarkLoading = ref(false);
 
-  // 当房间切换时同步备注文本
+  // 切换房间时同步房间级别的 remark
   watch(
     () => currentRoom.value,
-    () => {
-      const sv = scatterDetail.value,
-        fv = focusDetail.value;
-      remarkText.value = sv?.remark ?? fv?.remark ?? "";
+    r => {
+      remarkText.value = (r as any)?.remark ?? "";
       remarkEditing.value = false;
     },
     { immediate: true }
@@ -208,7 +264,7 @@
   const handleSaveRemark = async () => {
     remarkLoading.value = true;
     try {
-      // TODO: 调用实际保存接口，此处仅模拟
+      // TODO: 调用实际保存接口
       await new Promise(r => setTimeout(r, 600));
       message("备注保存成功", { type: "success" });
       remarkEditing.value = false;
@@ -219,66 +275,57 @@
     }
   };
 
-  const handleOpenPriceConfig = () => {
-    const room = currentRoom.value;
-    const existConfig = priceConfig.value || {
-      roomId: room.roomId || (room as any).id,
-      price: room.price ? Number(room.price) : 0,
-      floorPrice: 0,
-      floorPriceMethod: 1,
-      floorPriceInput: 0,
-      otherFees: [],
-      pricePlans: []
-    };
-    openPriceConfigDialog("配置", existConfig, async result => {
-      try {
-        const res = await saveRoomPriceConfig({ roomId: room.roomId || (room as any).id, ...result });
-        if (res.code === 0) {
-          message("租金配置保存成功", { type: "success" });
-          loadPriceConfig();
-        } else message(res.message || "保存失败", { type: "error" });
-      } catch {
-        message("保存租金配置失败", { type: "error" });
-      }
-    });
-  };
+  // ======================== 跟进记录 ========================
+  interface FollowRecord {
+    id: string;
+    content: string;
+    time: string;
+    author: string;
+  }
 
-  // ======================== 退租 / 续签（右侧面板使用） ========================
-  const handleCheckout = () => {
-    if (!currentRoom.value.leaseInfo) return message("当前房间没有在租租客", { type: "warning" });
-    emit("checkout", currentRoom.value);
-  };
-  const handleRenew = () => {
-    if (!currentRoom.value.leaseInfo) return message("当前房间没有在租租客", { type: "warning" });
-    emit("renewLease", currentRoom.value);
-  };
+  const followRecords = ref<FollowRecord[]>([]);
+  const followInput = ref("");
+  const followLoading = ref(false);
 
-  // ======================== 房间详情 ========================
-  const roomDetail = computed(() => {
-    const r = currentRoom.value;
-    return {
-      roomNumber: r.roomNumber || "-",
-      direction: getDirectionLabel(r.direction),
-      innerArea: r.area ? `${r.area}m²` : "-",
-      floorInfo: `第${headerMeta.value.floor}层 / 共${headerMeta.value.floorTotal}层`,
-      firstAvailDate: r.availableDate || "-",
-      vacancyStart: r.vacancyStartTime || "-"
-    };
-  });
+  watch(
+    () => currentRoom.value,
+    () => {
+      followRecords.value = [];
+      followInput.value = "";
+      // TODO: loadFollowRecords(currentRoom.value?.roomId)
+    },
+    { immediate: true }
+  );
 
-  const rentPrice = computed(() => priceConfig.value?.price || currentRoom.value.price || "0");
-
-  // 付款方式 label
-  const payMethodLabel = (m?: number) => {
-    const map: Record<number, string> = { 0: "随房租付", 1: "一次性", 2: "月付", 4: "季付", 5: "半年付", 6: "年付" };
-    return m !== undefined ? (map[m] ?? "其他") : "";
+  const handleAddFollow = async () => {
+    if (!followInput.value.trim()) return message("请输入跟进内容", { type: "warning" });
+    followLoading.value = true;
+    try {
+      // TODO: 调用保存接口
+      await new Promise(r => setTimeout(r, 400));
+      const now = new Date();
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const timeStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      followRecords.value.unshift({
+        id: String(Date.now()),
+        content: followInput.value.trim(),
+        time: timeStr,
+        author: houseMeta.value.salesmanName || "当前用户"
+      });
+      followInput.value = "";
+      message("跟进记录已保存", { type: "success" });
+    } catch {
+      message("保存失败", { type: "error" });
+    } finally {
+      followLoading.value = false;
+    }
   };
 </script>
 
 <template>
   <div class="hv">
     <!-- ===== Loading ===== -->
-    <div v-if="detail.loading" class="hv-loading">
+    <div v-if="loading" class="hv-loading">
       <el-skeleton animated>
         <template #template>
           <div style="display: flex; gap: 20px; padding: 20px">
@@ -294,7 +341,7 @@
       </el-skeleton>
     </div>
 
-    <template v-else>
+    <template v-else-if="detail">
       <!-- ===== 三栏布局 ===== -->
       <div class="hv-layout">
         <!-- ① 左侧：房源信息面板 -->
@@ -314,67 +361,63 @@
 
           <!-- 房源属性 -->
           <div class="hv-aside__body">
-            <!-- 小区 + 负责人 -->
+            <!-- 小区名 -->
             <div class="hv-aside__location">
               <el-icon :size="13" color="var(--el-color-primary)"><Location /></el-icon>
-              <span>{{ headerMeta.communityName }}</span>
+              <span>{{ houseMeta.communityName }}</span>
             </div>
 
             <!-- 关键指标 2列网格 -->
             <div class="hv-kv-grid">
               <div class="hv-kv">
                 <span class="hv-kv__label">房型</span>
-                <span class="hv-kv__value">{{ headerMeta.rentalType }}</span>
+                <span class="hv-kv__value">{{ houseMeta.rentalType }}</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">建筑面积</span>
-                <span class="hv-kv__value">{{ headerMeta.area }} m²</span>
+                <span class="hv-kv__value">{{ houseMeta.area }} m²</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">楼层</span>
-                <span class="hv-kv__value">{{ headerMeta.floor }} / {{ headerMeta.floorTotal }} 层</span>
+                <span class="hv-kv__value">{{ houseMeta.floor }} / {{ houseMeta.floorTotal }} 层</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">朝向</span>
-                <span class="hv-kv__value">{{ headerMeta.direction }}</span>
+                <span class="hv-kv__value">{{ houseMeta.direction }}</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">装修</span>
-                <span class="hv-kv__value">{{ headerMeta.decoration }}</span>
+                <span class="hv-kv__value">{{ houseMeta.decoration }}</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">电梯</span>
-                <span class="hv-kv__value">{{ headerMeta.hasElevator }}</span>
+                <span class="hv-kv__value">{{ houseMeta.hasElevator }}</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">燃气</span>
-                <span class="hv-kv__value">{{ headerMeta.hasGas }}</span>
+                <span class="hv-kv__value">{{ houseMeta.hasGas }}</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">物业费</span>
-                <span class="hv-kv__value">{{ headerMeta.propertyFee }} 元/月</span>
+                <span class="hv-kv__value">{{ houseMeta.propertyFee }} 元/月</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">水费</span>
-                <span class="hv-kv__value">{{ getWaterTypeLabel(headerMeta.water) }}</span>
+                <span class="hv-kv__value">{{ getWaterTypeLabel(houseMeta.water) }}</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">电费</span>
-                <span class="hv-kv__value">{{ getElectricityTypeLabel(headerMeta.electricity) }}</span>
+                <span class="hv-kv__value">{{ getElectricityTypeLabel(houseMeta.electricity) }}</span>
               </div>
               <template v-if="isFocus">
                 <div class="hv-kv">
                   <span class="hv-kv__label">门店</span>
-                  <span class="hv-kv__value">{{ headerMeta.focusName }}</span>
-                </div>
-                <div class="hv-kv">
-                  <span class="hv-kv__label">门店电话</span>
-                  <span class="hv-kv__value">{{ headerMeta.storePhone }}</span>
+                  <span class="hv-kv__value">{{ detail.houseName }}</span>
                 </div>
               </template>
               <div class="hv-kv">
                 <span class="hv-kv__label">部门</span>
-                <span class="hv-kv__value">{{ headerMeta.deptName }}</span>
+                <span class="hv-kv__value">{{ houseMeta.deptId }}</span>
               </div>
             </div>
 
@@ -383,20 +426,17 @@
 
             <!-- 负责人 -->
             <div class="hv-salesman">
-              <div class="hv-salesman__avatar">{{ headerMeta.salesmanName.slice(0, 1) }}</div>
+              <div class="hv-salesman__avatar">{{ houseMeta.salesmanName.slice(0, 1) }}</div>
               <div class="hv-salesman__info">
-                <span class="hv-salesman__name">{{ headerMeta.salesmanName }}</span>
+                <span class="hv-salesman__name">{{ houseMeta.salesmanName }}</span>
                 <span class="hv-salesman__role">负责人</span>
               </div>
-              <a :href="`tel:${headerMeta.salesmanPhone}`" class="hv-salesman__call">
-                <el-icon :size="14"><Phone /></el-icon>
-              </a>
             </div>
 
-            <!-- 备注 -->
-            <div v-if="headerMeta.remark && headerMeta.remark !== '-'" class="hv-aside__remark">
+            <!-- 房源备注 -->
+            <div v-if="houseMeta.houseRemark" class="hv-aside__remark">
               <span class="hv-aside__remark-label">备注</span>
-              <span class="hv-aside__remark-text">{{ headerMeta.remark }}</span>
+              <span class="hv-aside__remark-text">{{ houseMeta.houseRemark }}</span>
             </div>
 
             <!-- 修改房源 -->
@@ -409,87 +449,65 @@
 
         <!-- ② 中间：房间 + 详情 -->
         <main class="hv-main">
-          <!-- 房间选择器 -->
-          <div class="hv-rooms">
-            <!-- 汇总 -->
-            <div class="hv-rooms__summary">
-              <span class="hv-rooms__summary-item">
-                <span class="hv-rooms__dot" style="background: #67c23a"></span>
-                已租
-                <strong>{{ roomStats.leased }}</strong>
-              </span>
-              <span class="hv-rooms__summary-item">
-                <span class="hv-rooms__dot" style="background: #f56c6c"></span>
-                空置
-                <strong>{{ roomStats.available }}</strong>
-              </span>
-              <span class="hv-rooms__summary-item">
-                <span class="hv-rooms__dot" style="background: #e6a23c"></span>
-                预定
-                <strong>{{ roomStats.booked }}</strong>
-              </span>
-              <span class="hv-rooms__summary-total">共 {{ roomStats.total }} 间</span>
-            </div>
-            <!-- 房间卡片列表 -->
-            <div class="hv-rooms__list">
-              <div
-                v-for="(room, idx) in roomTabs"
-                :key="(room as any).roomId || (room as any).id || idx"
-                class="hv-room-card"
-                :class="{ 'is-active': activeRoomIndex === idx }"
-                @click="activeRoomIndex = idx"
+          <!-- ★ 合并式顶部条：价格 + 房间选择 -->
+          <div class="hv-topbar">
+            <!-- 左：价格区 -->
+            <div class="hv-topbar__price">
+              <span
+                class="hv-topbar__badge"
+                :class="{
+                  'is-leased': roomStatusInfo.isLeased,
+                  'is-available': roomStatusInfo.isAvailable,
+                  'is-booked': roomStatusInfo.isBooked
+                }"
               >
-                <span class="hv-room-card__dot" :style="{ background: getRoomTabStatus(room).dot }"></span>
-                <span class="hv-room-card__number">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
-                <span class="hv-room-card__status" :class="getRoomTabStatus(room).cls">
-                  {{ getRoomTabStatus(room).text }}
-                </span>
-              </div>
-              <div v-if="isShareRental" class="hv-room-card hv-room-card--add" @click="emit('addRoom')">
-                <el-icon :size="13"><Plus /></el-icon>
-                <span>添加房间</span>
-              </div>
+                <span class="hv-topbar__badge-dot"></span>
+                {{ roomStatusInfo.isLeased ? "已租" : roomStatusInfo.isAvailable ? "空置" : roomStatusInfo.isBooked ? "已预定" : roomStatusInfo.statusName }}
+              </span>
+              <span class="hv-topbar__amount">{{ rentPrice }}</span>
+              <span class="hv-topbar__unit">元/月</span>
+              <template v-if="priceConfig?.floorPrice">
+                <span class="hv-topbar__sep">|</span>
+                <span class="hv-topbar__floor-label">底价</span>
+                <span class="hv-topbar__floor-val">{{ priceConfig.floorPrice }} 元/月</span>
+              </template>
+              <button class="hv-topbar__edit" @click="handleOpenPriceConfig">
+                <el-icon :size="11"><Edit /></el-icon>
+                修改
+              </button>
             </div>
-          </div>
-
-          <!-- 当前房间：价格 Hero -->
-          <div class="hv-hero">
-            <div class="hv-hero__left">
-              <!-- 状态徽章 -->
-              <div class="hv-hero__status">
-                <span
-                  class="hv-hero__badge"
-                  :class="{
-                    'is-leased': roomStatusInfo.isLeased,
-                    'is-available': roomStatusInfo.isAvailable,
-                    'is-booked': roomStatusInfo.isBooked
-                  }"
+            <!-- 右：房间卡片 + 汇总 -->
+            <div class="hv-topbar__rooms">
+              <div class="hv-topbar__stats">
+                <span>
+                  <span class="hv-dot" style="background: #67c23a"></span>
+                  {{ roomStats.leased }}已租
+                </span>
+                <span>
+                  <span class="hv-dot" style="background: #f56c6c"></span>
+                  {{ roomStats.available }}空置
+                </span>
+                <span>
+                  <span class="hv-dot" style="background: #e6a23c"></span>
+                  {{ roomStats.booked }}预定
+                </span>
+              </div>
+              <div class="hv-topbar__room-list">
+                <div
+                  v-for="(room, idx) in roomTabs"
+                  :key="room.roomId || (room as any).id || idx"
+                  class="hv-rcard"
+                  :class="{ 'is-active': activeRoomIndex === idx }"
+                  @click="activeRoomIndex = idx"
                 >
-                  <span class="hv-hero__badge-dot"></span>
-                  {{ roomStatusInfo.isLeased ? "已租" : roomStatusInfo.isAvailable ? "空置" : roomStatusInfo.isBooked ? "已预定" : roomStatusInfo.statusName }}
-                </span>
-                <span class="hv-hero__room-label">{{ currentRoom.roomNumber || "主卧" }}</span>
-              </div>
-              <!-- 价格 -->
-              <div class="hv-hero__price-row">
-                <span class="hv-hero__price">{{ rentPrice }}</span>
-                <span class="hv-hero__unit">元 / 月</span>
-                <button class="hv-hero__price-edit" @click="handleOpenPriceConfig">
-                  <el-icon :size="12"><Edit /></el-icon>
-                  修改租金
-                </button>
-              </div>
-              <!-- 底价 -->
-              <div class="hv-hero__subprice">
-                <span class="hv-hero__subprice-label">底价</span>
-                <span class="hv-hero__subprice-val">
-                  <template v-if="priceConfig?.floorPrice">{{ priceConfig.floorPrice }} 元/月</template>
-                  <template v-else>—</template>
-                </span>
-                <span v-if="priceConfig?.floorPriceMethod" class="hv-hero__hint">
-                  ({{ priceConfig.floorPriceMethod === 1 ? "固定金额" : "按比例"
-                  }}{{ priceConfig.floorPriceInput ? "：" + priceConfig.floorPriceInput + (priceConfig.floorPriceMethod === 2 ? "%" : "元") : "" }})
-                </span>
+                  <span class="hv-rcard__dot" :style="{ background: getRoomTabStatus(room).dot }"></span>
+                  <span class="hv-rcard__num">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
+                  <span class="hv-rcard__st" :class="getRoomTabStatus(room).cls">{{ getRoomTabStatus(room).text }}</span>
+                </div>
+                <div v-if="isShareRental" class="hv-rcard hv-rcard--add" @click="emit('addRoom')">
+                  <el-icon :size="12"><Plus /></el-icon>
+                  <span>添加</span>
+                </div>
               </div>
             </div>
           </div>
@@ -653,14 +671,12 @@
               <div class="hv-panel-sec__actions">
                 <el-button v-if="roomStatusInfo.isLeased" size="small" link type="danger" @click="handleCheckout">退租</el-button>
                 <el-button v-if="roomStatusInfo.isLeased" size="small" link type="primary" @click="handleRenew">续签</el-button>
-                <el-button v-if="!roomStatusInfo.isLeased && !roomStatusInfo.isBooked" size="small" type="primary" plain @click="emit('tenant', currentRoom)">
-                  录入租客
-                </el-button>
+                <el-button v-if="!roomStatusInfo.isLeased && !roomStatusInfo.isBooked" size="small" type="primary" plain @click="emit('tenant', currentRoom)">录入租客</el-button>
               </div>
             </div>
             <div class="hv-panel-sec__body">
               <template v-if="tenantInfo">
-                <div class="hv-tenant-card" @click="emit('openTenantDetail', currentRoom.leaseInfo?.tenantName || '', '')">
+                <div class="hv-tenant-card" @click="emit('openTenantDetail', currentRoom?.leaseInfo?.tenantId || '', currentRoom?.leaseInfo?.leaseId || '')">
                   <div class="hv-tenant-card__avatar">{{ tenantInfo.name.slice(0, 1) }}</div>
                   <div class="hv-tenant-card__info">
                     <div class="hv-tenant-card__name">
@@ -770,6 +786,11 @@
         </aside>
       </div>
     </template>
+
+    <div v-else class="hv-empty-state">
+      <el-icon :size="48" color="var(--el-text-color-placeholder)"><House /></el-icon>
+      <p>房源数据加载失败，请关闭后重试</p>
+    </div>
   </div>
 </template>
 
@@ -1002,66 +1023,173 @@
     background: var(--el-bg-color-page);
   }
 
-  // 房间选择器
-  .hv-rooms {
+  // ★ 合并式顶部条
+  .hv-topbar {
+    display: flex;
+    align-items: center;
     background: var(--el-bg-color);
     border-bottom: 1px solid var(--el-border-color-lighter);
-    padding: 12px 20px;
+    flex-shrink: 0;
+    min-height: 52px;
+  }
+
+  .hv-topbar__price {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 16px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--el-border-color-extra-light);
+    height: 100%;
+    min-height: 52px;
+  }
+
+  .hv-topbar__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
     flex-shrink: 0;
 
-    &__summary {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 10px;
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
+    &.is-leased {
+      background: #f0faf0;
+      color: #67c23a;
     }
-
-    &__summary-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-
-      strong {
-        color: var(--el-text-color-primary);
-      }
+    &.is-available {
+      background: #fff5f5;
+      color: #f56c6c;
     }
-
-    &__dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-
-    &__summary-total {
-      margin-left: auto;
-      font-weight: 500;
-      color: var(--el-text-color-regular);
-    }
-
-    &__list {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 2px;
+    &.is-booked {
+      background: #fdf6ec;
+      color: #e6a23c;
     }
   }
 
-  .hv-room-card {
+  .hv-topbar__badge-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  .hv-topbar__amount {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--el-color-success);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hv-topbar__unit {
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
+    flex-shrink: 0;
+  }
+
+  .hv-topbar__sep {
+    color: var(--el-border-color);
+    font-size: 12px;
+  }
+
+  .hv-topbar__floor-label {
+    font-size: 11px;
+    color: var(--el-text-color-placeholder);
+    flex-shrink: 0;
+  }
+
+  .hv-topbar__floor-val {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .hv-topbar__edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--el-border-color-lighter);
+    background: transparent;
+    color: var(--el-text-color-placeholder);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+
+    &:hover {
+      color: var(--el-color-primary);
+      border-color: var(--el-color-primary);
+      background: var(--el-color-primary-light-9);
+    }
+  }
+
+  .hv-topbar__rooms {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6px 12px 6px 14px;
+    gap: 5px;
+    overflow: hidden;
+    min-height: 52px;
+  }
+
+  .hv-topbar__stats {
+    display: flex;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--el-text-color-placeholder);
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+  }
+
+  .hv-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .hv-topbar__room-list {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 1px;
+
+    &::-webkit-scrollbar {
+      height: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--el-border-color);
+      border-radius: 2px;
+    }
+  }
+
+  // 房间小卡片（精简版）
+  .hv-rcard {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px 14px 7px;
-    border-radius: 8px;
+    gap: 2px;
+    padding: 4px 10px 3px;
+    border-radius: 6px;
     cursor: pointer;
     border: 1.5px solid var(--el-border-color-lighter);
     background: var(--el-bg-color);
     transition: all 0.15s;
-    min-width: 62px;
+    min-width: 48px;
+    flex-shrink: 0;
     position: relative;
 
     &:hover {
@@ -1072,16 +1200,15 @@
     &.is-active {
       border-color: var(--el-color-primary);
       background: var(--el-color-primary-light-9);
-      box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
     }
 
     &--add {
       border-style: dashed;
       color: var(--el-text-color-placeholder);
-      font-size: 12px;
+      font-size: 11px;
       flex-direction: row;
-      gap: 3px;
-      padding: 8px 12px;
+      gap: 2px;
+      padding: 4px 8px;
 
       &:hover {
         color: var(--el-color-primary);
@@ -1091,21 +1218,21 @@
 
     &__dot {
       position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 6px;
-      height: 6px;
+      top: 4px;
+      right: 4px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
     }
 
-    &__number {
-      font-size: 15px;
+    &__num {
+      font-size: 13px;
       font-weight: 700;
       line-height: 1;
     }
 
-    &__status {
-      font-size: 11px;
+    &__st {
+      font-size: 10px;
       line-height: 1;
 
       &.st-leased {
@@ -1120,128 +1247,6 @@
       &.st-locked {
         color: #909399;
       }
-    }
-  }
-
-  // Hero 区
-  .hv-hero {
-    background: var(--el-bg-color);
-    padding: 16px 20px;
-    display: flex;
-    align-items: flex-end;
-    gap: 20px;
-    border-bottom: 1px solid var(--el-border-color-lighter);
-    flex-shrink: 0;
-
-    &__left {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    &__status {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    &__badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 500;
-
-      &.is-leased {
-        background: #f0faf0;
-        color: #67c23a;
-      }
-      &.is-available {
-        background: #fff5f5;
-        color: #f56c6c;
-      }
-      &.is-booked {
-        background: #fdf6ec;
-        color: #e6a23c;
-      }
-    }
-
-    &__badge-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    &__room-label {
-      font-size: 13px;
-      color: var(--el-text-color-secondary);
-      font-weight: 500;
-    }
-
-    &__price-row {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-
-    &__price {
-      font-size: 30px;
-      font-weight: 700;
-      color: var(--el-color-success);
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
-
-    &__unit {
-      font-size: 14px;
-      color: var(--el-text-color-secondary);
-      font-weight: 400;
-    }
-
-    &__price-edit {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 3px 10px;
-      border-radius: 4px;
-      border: 1px solid var(--el-border-color);
-      background: var(--el-bg-color);
-      color: var(--el-text-color-secondary);
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.15s;
-      margin-left: 4px;
-
-      &:hover {
-        color: var(--el-color-primary);
-        border-color: var(--el-color-primary);
-        background: var(--el-color-primary-light-9);
-      }
-    }
-
-    &__subprice {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-    }
-
-    &__subprice-label {
-      color: var(--el-text-color-placeholder);
-    }
-
-    &__subprice-val {
-      color: var(--el-text-color-regular);
-      font-weight: 500;
-    }
-
-    &__hint {
-      font-size: 12px;
-      color: var(--el-text-color-placeholder);
     }
   }
 
@@ -1783,6 +1788,22 @@
 
     .hv-panel {
       display: none;
+    }
+  }
+
+  // 加载失败兜底状态
+  .hv-empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--el-text-color-placeholder);
+    font-size: 14px;
+
+    p {
+      margin: 0;
     }
   }
 </style>
