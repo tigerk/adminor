@@ -149,6 +149,7 @@ export interface HouseViewDetailProps {
   companyId: string; // 公司ID
   deptId: string; // 部门ID
   salesmanId: string; // 业务员ID
+  salesmanName: string; // 业务员
   leaseMode: number; // 房源租赁类型：1、集中式；2、整租、3、合租
   leaseModeId: string; // 来源id，集中式为集中式id，整租、合租为community_id
   communityId: string; // 小区ID
