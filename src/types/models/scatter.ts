@@ -76,6 +76,7 @@ export interface ScatterHouseDetailProps {
   houseLayout: HouseLayoutProps; // 户型，保存合租房源的公共图片、房源配置、图片等信息
   roomList: RoomDetailProps[]; // 合租使用：房间列表，每个房间包含房间号、面积、价格等信息
 }
+
 /** 分散式房源表单 */
 export interface ScatterCreateFormProps {
   id: string;
