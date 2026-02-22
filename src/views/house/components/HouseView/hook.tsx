@@ -3,7 +3,7 @@ import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import { getFocusById } from "@/api/house/focus";
-import { getShareHouseById } from "@/api/house/scatter";
+import { getShareHouseDetailById } from "@/api/house/scatter";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
 import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
 import type { HouseViewDetailProps, RoomListProps } from "@/types";
@@ -146,7 +146,7 @@ export const useHouseView = () => {
         detail.focusDetail = res.code === 0 ? res.data || null : null;
       } else if (detail.room.houseId) {
         // POST /saas/scatter/house/get → ScatterHouseVO → ScatterHouseDetailProps
-        const res = await getShareHouseById({ id: detail.room.houseId });
+        const res = await getShareHouseDetailById({ id: detail.room.houseId });
         detail.scatterDetail = res.code === 0 ? res.data || null : null;
       }
     } catch {

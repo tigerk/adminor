@@ -10,10 +10,10 @@ export const createShareHouse = (data?: ScatterCreateFormProps) => {
   return http.request<ApiResponse<any>>("post", baseUrlApi("scatter/create"), { data });
 };
 
-export const getEntireHouseById = (data?: object) => {
-  return http.request<ApiResponse<ScatterHouseDetailProps>>("post", baseUrlApi("scatter/house/get"), { data });
+export const getEntireHouseDetailById = (data?: object) => {
+  return http.request<ApiResponse<ScatterHouseDetailProps>>("post", baseUrlApi("scatter/house/detail"), { data });
 };
 
-export const getShareHouseById = (data?: object) => {
-  return http.request<ApiResponse<ScatterHouseDetailProps>>("post", baseUrlApi("scatter/house/get"), { data });
+export const getShareHouseDetailById = (data?: object) => {
+  return http.request<ApiResponse<ScatterHouseDetailProps>>("post", baseUrlApi("scatter/house/detail"), { data });
 };

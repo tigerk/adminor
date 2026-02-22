@@ -7,7 +7,7 @@ import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { useHouseView } from "@/views/house/components/HouseView/hook";
-import { getShareHouseById } from "@/api/house/scatter";
+import { getShareHouseDetailById } from "@/api/house/scatter";
 import type { RoomGridItemProps, RoomGridProps, RoomListProps, ScatterCreateFormProps, ScatterHouseProps } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
@@ -542,7 +542,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   function editShareHouse(title: string, room: RoomListProps) {
-    getShareHouseById({ id: room.houseId }).then(res => {
+    getShareHouseDetailById({ id: room.houseId }).then(res => {
       if (res.code !== 0) {
         return;
       }

@@ -3,7 +3,7 @@ import { addDialog, closeAllDialog, closeDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import type { ScatterCreateFormProps, ScatterHouseDetailProps } from "@/types";
-import { createEntireHouse, getEntireHouseById } from "@/api/house/scatter";
+import { createEntireHouse, getEntireHouseDetailById } from "@/api/house/scatter";
 import { message } from "@/utils/message";
 
 export function useEntireEdit() {
@@ -87,7 +87,7 @@ export function useEntireEdit() {
     if (row && "id" in row && row.id) {
       try {
         // 从后端获取完整数据
-        const { data, code } = await getEntireHouseById({ id: row.id });
+        const { data, code } = await getEntireHouseDetailById({ id: row.id });
 
         if (code === 0 && data) {
           // 使用转换函数将 ScatterHouseDetailProps 转换为 ScatterCreateFormProps
