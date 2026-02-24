@@ -1,7 +1,7 @@
 // ==================== 3. src/types/models/house.ts ====================
 // 房间相关业务模型
 
-import type { BuildingGroupProps, CompoundGroupProps, FacilityItemProps, FloorGroupProps, HouseLayoutProps } from "@/types";
+import type { BookingListProps, BuildingGroupProps, CompoundGroupProps, FacilityItemProps, FloorGroupProps, HouseLayoutProps, LeaseListProps } from "@/types";
 
 export type RoomTotal = {
   code: number;
@@ -29,18 +29,22 @@ export interface RoomCreateProps {
 /** 房间详情数据结构 */
 export interface RoomDetailProps {
   id?: number;
-  roomNumber: string; // 房间名称
-  roomType?: number;
-  direction?: string;
-  area?: number;
-  price: number;
-  facilities?: FacilityItemProps[];
-  tags?: string[];
-  imageList?: string[];
-  videoList?: string[];
-  priceConfig?: PriceConfigProps;
-  /** 租期信息（前端扩展） */
-  leaseInfo?: RoomLeaseInfoProps;
+  roomNumber: string; // 房间号
+  roomType?: number; // 房间类型
+  direction?: string; // 朝向
+  area?: number; // 面积
+  price: number; // 出租价格
+  availableDate?: string; // 可出租日期
+  vacancyStartTime?: string; // 空置开始时间
+  roomStatus?: number; // 房间状态
+  remark?: string; // 房间备注
+  facilities?: FacilityItemProps[]; // 设施
+  tags?: string[]; // 标签
+  imageList?: string[]; // 图片列表
+  videoList?: string[]; // 视频列表
+  priceConfig?: PriceConfigProps; // 房间价格配置
+  lease?: LeaseListProps; // 租约信息
+  booking?: BookingListProps;
 }
 
 /**

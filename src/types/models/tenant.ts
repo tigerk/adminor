@@ -35,7 +35,7 @@ export interface TenantCompanyProps {
   status?: number; // 租客状态：0=停用，1=启用
 }
 
-export interface LeaseProps {
+export interface LeaseCreateProps {
   id?: string;
   tenantId?: string; // 续签时传入
   parentLeaseId?: string; // 续签时传入上一份租约ID
@@ -73,16 +73,6 @@ export interface LeaseProps {
   remark?: string;
 }
 
-export interface TenantProps {
-  id?: string; // 租客 ID
-  companyId?: string; // 公司ID
-  tenantType: number; // 租客类型：1=个人，2=企业
-  tenantTypeId?: string;
-  tenantName: string;
-  tenantPhone: string;
-  status?: number;
-}
-
 /** 租客查询表单 */
 export interface TenantQueryFormProps {
   name?: string;
@@ -100,7 +90,7 @@ export interface TenantsCreateFormProps {
   tenantPersonal: TenantPersonalProps;
   tenantCompany: TenantCompanyProps;
   tenantMateList: TenantMateProps[];
-  lease: LeaseProps;
+  lease: LeaseCreateProps;
   otherFees: OtherFeeProps[];
   isEdit?: boolean; // 是否为编辑模式
 }
@@ -243,4 +233,50 @@ export interface LeaseBillListProps {
   payChannel?: number; // 支付渠道：1=支付宝，2=微信
   remark?: string; // 备注
   otherFees: OtherFeeProps[]; // 其他费用列表
+}
+
+/** 租约列表数据结构 */
+export interface LeaseListProps {
+  leaseId?: number; // 租约 ID
+  tenantId?: number; // 租客 ID
+  contractCode?: string; // 合同编号
+  contractNature?: number; // 合同性质：1=新签，2=续签，3=转租，4=换房
+  companyId?: number; // 公司ID
+  deptId?: number; // 部门 ID
+  deptName?: string; // 部门名称
+  roomIds?: string; // 房间 ids
+  tenantTypeId?: number; // 租客类型关联ID
+  tenantType?: number; // 租客类型：0=个人，1=企业
+  tenantPersonal?: TenantPersonalProps; // 租客个人信息
+  tenantCompany?: TenantCompanyProps; // 租客企业信息
+  roomList?: RoomListProps[]; // 合同房间列表
+  tenantName?: string; // 租客名称
+  tenantPhone?: string; // 租客联系电话
+  rentPrice?: number; // 租金价格
+  depositMonths?: number; // 押金月数
+  paymentMonths?: number; // 支付周期（月）
+  leaseStart?: string; // 租赁开始时间
+  leaseEnd?: string; // 租赁结束时间
+  checkInTime?: string; // 实际入住时间
+  checkOutTime?: string; // 实际搬离时间
+  originalLeaseStart?: string; // 初始录入租赁开始时间
+  originalLeaseEnd?: string; // 初始录入租赁结束时间
+  leaseDurationDays?: number; // 累计租房天数
+  rentDueType?: number; // 收租类型：1=提前，2=固定，3=延后
+  rentDueDay?: number; // 固定收租日（1-31，0=当月最后一天）
+  rentDueOffsetDays?: number; // 收租偏移天数（提前/延后）
+  salesmanId?: number; // 业务人员ID
+  salesmanName?: string; // 业务人员名称
+  helperId?: number; // 协助人员ID
+  signStatus?: number; // 签约状态：0=待签字、1=已签字
+  checkOutStatus?: number; // 租户退租状态：0=未退租、1=正常退、2=换房退、3=违约退、4=作废
+  status?: number; // 合同状态：0=未生效，1=生效中，2=已退租，3=已逾期，4=已作废
+  tenantSource?: number; // 租客来源
+  dealChannel?: number; // 成交渠道
+  remark?: string; // 合同备注
+  deleted?: boolean; // 是否删除
+  createBy?: number; // 创建人ID
+  createTime?: string; // 创建时间
+  updateBy?: number; // 修改人ID
+  updateTime?: string; // 修改时间
 }

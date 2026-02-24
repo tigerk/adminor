@@ -4,7 +4,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { cancelBooking, createBooking, getBookingDetail, getBookingList, getBookingTotal } from "@/api/contract/booking";
-import type { BookingCancelProps, BookingListProps, BookingQueryParams, LeaseProps, TenantCompanyProps, TenantPersonalProps } from "@/types";
+import type { BookingCancelProps, BookingListProps, BookingQueryParams, LeaseCreateProps, TenantCompanyProps, TenantPersonalProps } from "@/types";
 import { ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import BookingCreateForm from "../form/bookingCreateForm.vue";
@@ -352,10 +352,11 @@ function useBooking() {
         };
       }
 
-      const lease: LeaseProps = {
+      const lease: LeaseCreateProps = {
         contractNature: undefined,
         roomIds: row.roomIds,
         contractTemplateId: undefined,
+        tenantType: undefined,
         rentPrice: row.expectedRentPrice,
         leaseDate: [row.expectedLeaseStart, row.expectedLeaseEnd],
         leaseStart: row.expectedLeaseStart,
