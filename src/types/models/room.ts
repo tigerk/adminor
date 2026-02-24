@@ -134,7 +134,7 @@ export type RoomListQueryProps = {
   roomIds?: string[];
   /** 空间查询参数 */
   spatialQuery?: any[];
-  /** 房源租赁类型：1、集中式；2、整租、3、合租 */
+  /** 房源租赁类型：1、集中式；2、分散式 */
   leaseMode?: number;
   /** 模式引用ID */
   leaseModeId?: string;

@@ -99,12 +99,12 @@ export interface HouseProps {
   companyId: string; // 公司ID
   deptId: string; // 部门ID
   salesmanId: string; // 业务员ID
-  leaseMode: number; // 房源租赁类型：1、集中式；2、整租、3、合租
+  leaseMode: number; // 房源租赁类型：1、集中式；2、分散式
   leaseModeId: string; // 来源id，集中式为集中式id，整租、合租为community_id
   communityId: string; // 小区ID
   building: string; // 座栋
   unit: string; // 单元
-  doorNumber: string; // 门牌号，分散式独有
+  doorNumber: string; // 门牌号
   houseLayoutId: string; // 户型
   rentalType: number; // 出租类型：1=整租，2=合租
   area: number; // 套内面积
@@ -150,12 +150,12 @@ export interface HouseViewDetailProps {
   deptId: string; // 部门ID
   salesmanId: string; // 业务员ID
   salesmanName: string; // 业务员
-  leaseMode: number; // 房源租赁类型：1、集中式；2、整租、3、合租
+  leaseMode: number; // 房源租赁类型：1、集中式；2、分散式
   leaseModeId: string; // 来源id，集中式为集中式id，整租、合租为community_id
   communityId: string; // 小区ID
   building: string; // 座栋
   unit: string; // 单元
-  doorNumber: string; // 门牌号，分散式独有
+  doorNumber: string; // 门牌号
   houseLayoutId: string; // 户型
   rentalType: number; // 出租类型：1=整租，2=合租
   area: string; // 套内面积
