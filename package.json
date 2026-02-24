@@ -27,7 +27,8 @@
     "lint": "pnpm lint:eslint && pnpm lint:prettier && pnpm lint:stylelint",
     "prepare": "command -v husky >/dev/null 2>&1 && husky || echo 'Husky not found, skipping'",
     "preinstall": "npx only-allow pnpm",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "api:update": "curl -s http://localhost:8887/v3/api-docs > swagger.json && npx @hey-api/openapi-ts && rm swagger.json"
   },
   "build": {
     "appId": "com.pureadmin.app",
@@ -160,6 +161,7 @@
     "@commitlint/types": "^20.2.0",
     "@eslint/js": "^9.39.1",
     "@faker-js/faker": "^10.1.0",
+    "@hey-api/openapi-ts": "^0.93.0",
     "@iconify/json": "^2.2.416",
     "@iconify/vue": "4.2.0",
     "@intlify/unplugin-vue-i18n": "^11.0.1",
