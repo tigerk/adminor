@@ -495,7 +495,7 @@
               <div class="hv-topbar__room-list">
                 <div
                   v-for="(room, idx) in roomTabs"
-                  :key="room.roomId || (room as any).id || idx"
+                  :key="room.id || (room as any).id || idx"
                   class="hv-rcard"
                   :class="{ 'is-active': activeRoomIndex === idx }"
                   @click="activeRoomIndex = idx"

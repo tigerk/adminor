@@ -11,6 +11,22 @@ export type RoomTotal = {
   };
 };
 
+/** 创建房间数据结构 */
+export interface RoomCreateProps {
+  id?: number;
+  roomNumber: string; // 房间名称
+  roomType?: number;
+  direction?: string;
+  area?: number;
+  price: number;
+  facilities?: FacilityItemProps[];
+  tags?: string[];
+  imageList?: string[];
+  videoList?: string[];
+  priceConfig?: PriceConfigProps;
+}
+
+/** 房间详情数据结构 */
 export interface RoomDetailProps {
   id?: number;
   roomNumber: string; // 房间名称

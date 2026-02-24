@@ -1,7 +1,7 @@
 // ==================== 3. src/types/models/house.ts ====================
 // 分散式房源相关业务模型
 
-import type { CommunityProps, HouseLayoutProps, RoomDetailProps } from "@/types";
+import type { CommunityProps, HouseLayoutProps, RoomCreateProps, RoomDetailProps } from "@/types";
 
 /** 分散式房源 */
 export interface ScatterHouseProps<T = any> {
@@ -28,7 +28,7 @@ export interface ScatterHouseProps<T = any> {
   houseLayout?: HouseLayoutProps; // 户型，保存合租房源的公共图片、房源配置、图片等信息
   deptId?: string; // 部门ID
   salesmanId?: string; // 业务员ID
-  roomList?: RoomDetailProps[]; // 合租使用：房间列表，每个房间包含房间号、面积、价格等信息
+  roomList?: RoomCreateProps[]; // 合租使用：房间列表，每个房间包含房间号、面积、价格等信息
 }
 
 /** 分散式房源详情，通过详情接口获取详细信息 */

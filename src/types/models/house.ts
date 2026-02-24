@@ -1,7 +1,7 @@
 // ==================== 3. src/types/models/house.ts ====================
 // 房源相关业务模型
 
-import type { CommunityProps, RoomDetailProps } from "@/types";
+import { CommunityProps, RoomCreateProps, RoomDetailProps } from "@/types";
 
 /** 户型信息 */
 export interface HouseLayoutProps {
