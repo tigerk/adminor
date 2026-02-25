@@ -3,9 +3,9 @@ import { transformI18n } from "@/plugins/i18n";
 import type { PaginationProps } from "@pureadmin/table";
 import { onMounted, reactive, ref, toRaw } from "vue";
 import router from "@/router";
-import { getRoomList, getRoomTotal } from "@/api/house/room";
+import { getRoomList, getRoomTotalVo } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
-import { HouseLayoutProps } from "@/types";
+import { HouseLayoutDto } from "@/types";
 
 export function useScatterRoom() {
   const pagination = reactive<PaginationProps>({
@@ -179,7 +179,7 @@ export function useScatterRoom() {
       loading.value = false;
     }, 500);
 
-    getRoomTotal(toRaw(queryForm)).then(res => {
+    getRoomTotalVo(toRaw(queryForm)).then(res => {
       roomStatusTotal.value = res.data.statusList;
 
       let total = 0;
@@ -230,7 +230,7 @@ export function useScatterRoom() {
     }
   }
 
-  function formatHouseLayout(layout: HouseLayoutProps): string {
+  function formatHouseLayout(layout: HouseLayoutDto): string {
     if (!layout) return "";
     const { bedroom, livingRoom, kitchen, bathroom } = layout;
     return `${bedroom || 0}室${livingRoom || 0}厅${kitchen || 0}厨${bathroom || 0}卫`;

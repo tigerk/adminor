@@ -1,8 +1,8 @@
-import type { ScatterCreateFormProps } from "@/types";
+import type { ScatterCreateDto } from "@/types";
 
 // 表单
 interface EntireFormProps {
-  formInline: Partial<ScatterCreateFormProps>;
+  formInline: Partial<ScatterCreateDto>;
 }
 
 export type { EntireFormProps };

@@ -236,7 +236,7 @@
 <script setup lang="ts">
   import { onMounted, ref, watch } from "vue";
   import { Refresh } from "@element-plus/icons-vue";
-  import { LeaseBillListProps } from "@/types";
+  import { LeaseBillListVo } from "@/types";
   import { getLeaseBillInvalidList, getLeaseBillList } from "@/api/contract/tenant";
 
   interface Props {
@@ -246,12 +246,12 @@
   const props = defineProps<Props>();
 
   // 当前账单数据
-  const billList = ref<LeaseBillListProps[]>([]);
+  const billList = ref<LeaseBillListVo[]>([]);
   const loading = ref(false);
   const expandedBillRows = ref<string[]>([]);
 
   // 历史无效账单数据
-  const invalidBillList = ref<LeaseBillListProps[]>([]);
+  const invalidBillList = ref<LeaseBillListVo[]>([]);
   const invalidLoading = ref(false);
   const expandedInvalidBillRows = ref<string[]>([]);
 

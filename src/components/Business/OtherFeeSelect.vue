@@ -78,19 +78,19 @@
 <script setup lang="ts">
   import { ref, watch } from "vue";
   import { Delete, Plus } from "@element-plus/icons-vue";
-  import type { OtherFeeProps } from "@/types";
+  import type { OtherFeeDto } from "@/types";
   import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS } from "@/constants";
   import { getDictDataByParentCode } from "@/api/sys/dict";
 
   interface Props {
-    modelValue?: OtherFeeProps[];
+    modelValue?: OtherFeeDto[];
   }
 
   const props = withDefaults(defineProps<Props>(), {
     modelValue: () => []
   });
 
-  const emit = defineEmits<(e: "update:modelValue", value: OtherFeeProps[]) => void>();
+  const emit = defineEmits<(e: "update:modelValue", value: OtherFeeDto[]) => void>();
 
   const otherFeeTypeOptions = ref<any[]>([]);
   const cascaderValues = ref<Record<number, any[]>>({});
@@ -115,7 +115,7 @@
     otherFeeTypeOptions.value = transformDictToCascader(res.data);
   });
 
-  const getDefaultOtherFee = (): OtherFeeProps => {
+  const getDefaultOtherFee = (): OtherFeeDto => {
     return {
       dictDataId: null,
       name: null,

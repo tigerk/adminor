@@ -112,11 +112,11 @@
 </template>
 
 <script setup lang="ts">
-  import type { CheckoutDetailProps } from "@/types";
+  import type { LeaseCheckoutVo } from "@/types";
 
   defineProps<{
     loading: boolean;
-    checkoutDetail: CheckoutDetailProps | null;
+    checkoutDetail: LeaseCheckoutVo | null;
   }>();
 </script>
 

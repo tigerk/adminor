@@ -4,13 +4,13 @@
   import { CircleCheckFilled, Delete, Edit, InfoFilled, Lock, Plus, QuestionFilled, Unlock } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
-  import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
+  import { FocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { useHouseLayoutManage } from "@/views/house/components/HouseLayout/HouseLayoutManage/useHouseLayoutManage";
-  import { FocusHouseStatusProps, HouseLayoutProps } from "@/types"; // 获取 FocusCreateForm 中的form数据
+  import { FocusHouseDto, HouseLayoutDto } from "@/types"; // 获取 FocusCreateForm 中的form数据
 
   // 获取 FocusCreateForm 中的form数据
-  const form = defineModel<FocusFormItemProps>();
+  const form = defineModel<FocusCreateDto>();
 
   // 使用房型管理 hook
   const { openHouseLayoutManageDialog } = useHouseLayoutManage();
@@ -66,7 +66,7 @@
     visible: false,
     x: 0,
     y: 0,
-    house: null as FocusHouseStatusProps | null
+    house: null as FocusHouseDto | null
   });
 
   // 批量配置表单
@@ -206,7 +206,7 @@
   };
 
   // 修改后的方法 - 返回预定义的 CSS 类名
-  const getHouseCardClass = (house: FocusHouseStatusProps) => {
+  const getHouseCardClass = (house: FocusHouseDto) => {
     if (selectedHouses.value.includes(house.cursor)) {
       return "house-card-selected";
     }
@@ -296,7 +296,7 @@
     }
 
     selectedHouses.value.forEach(cursor => {
-      const updates: Partial<FocusHouseStatusProps> = {};
+      const updates: Partial<FocusHouseDto> = {};
 
       if (batchConfig.houseLayoutId) {
         updates.houseLayoutId = batchConfig.houseLayoutId;
@@ -329,7 +329,7 @@
   };
 
   // 右键菜单相关方法
-  const handleHouseRightClick = (event: MouseEvent, house: FocusHouseStatusProps) => {
+  const handleHouseRightClick = (event: MouseEvent, house: FocusHouseDto) => {
     event.preventDefault();
     contextMenu.visible = true;
     contextMenu.x = event.clientX;
@@ -342,7 +342,7 @@
     contextMenu.house = null;
   };
 
-  const editHouse = (house: FocusHouseStatusProps | null) => {
+  const editHouse = (house: FocusHouseDto | null) => {
     if (!house) return;
 
     isEditingHouse.value = true;
@@ -353,7 +353,7 @@
     hideContextMenu();
   };
 
-  const deleteHouseAction = async (house: FocusHouseStatusProps | null) => {
+  const deleteHouseAction = async (house: FocusHouseDto | null) => {
     if (!house || !currentBuilding.value) return;
 
     try {
@@ -428,7 +428,7 @@
   // 房型管理 - 使用新的 hook
   const handleCreateHouseLayout = () => {
     openHouseLayoutManageDialog("创建", undefined, data => {
-      const newHouseLayout: HouseLayoutProps = {
+      const newHouseLayout: HouseLayoutDto = {
         id: Date.now().toString(),
         layoutName: data.layoutName,
         bedroom: data.bedroom,
@@ -443,7 +443,7 @@
     });
   };
 
-  const editHouseLayout = (houseLayout: HouseLayoutProps) => {
+  const editHouseLayout = (houseLayout: HouseLayoutDto) => {
     openHouseLayoutManageDialog("编辑", houseLayout, data => {
       const index = form.value.houseLayoutList.findIndex(hl => hl.id === data.id);
       if (index > -1) {
@@ -688,7 +688,7 @@
 
     const building = currentBuilding.value;
     const houseCount = building.houseCountPerFloor || 10;
-    const houseStatusMap = new Map<string, FocusHouseStatusProps>();
+    const houseStatusMap = new Map<string, FocusHouseDto>();
 
     for (let i = 1; i <= houseCount; i++) {
       const houseNum = i.toString();
@@ -723,7 +723,7 @@
   };
 
   // 锁房/解锁方法
-  const toggleHouseLock = async (house: FocusHouseStatusProps | null) => {
+  const toggleHouseLock = async (house: FocusHouseDto | null) => {
     if (!house || !currentBuilding.value) return;
 
     if (updateHouseInfo(currentBuilding.value, house.cursor, { closed: !house.closed })) {

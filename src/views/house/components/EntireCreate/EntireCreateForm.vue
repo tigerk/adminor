@@ -11,7 +11,7 @@
   import { createEntireFormRules } from "./rule";
   import type { FormInstance } from "element-plus";
   import { useHouseImageEdit } from "@/views/house/components/HouseImage/hook";
-  import { FacilityItemProps, type OtherFeeProps, type PriceConfigProps, type PricePlanProps, ScatterHouseProps } from "@/types";
+  import { FacilityItemDto, type OtherFeeDto, type PriceConfigDto, type PricePlanDto, ScatterHouseDto } from "@/types";
   import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { message } from "@/utils/message"; // 使用hook中的方法
@@ -22,7 +22,7 @@
   const { openHouseImageEditDialog } = useHouseImageEdit();
   const { openPriceConfigDialog } = usePriceConfigEdit();
 
-  function getDefaultPriceConfigItem(): PriceConfigProps {
+  function getDefaultPriceConfigItem(): PriceConfigDto {
     return {
       /** 房间ID */
       roomId: null,
@@ -35,12 +35,12 @@
       /** 底价录入值（金额或比例，具体由 low_price_method 决定） */
       floorPriceInput: null,
       /** 其他费用列表 */
-      otherFees: [] as OtherFeeProps[],
-      pricePlans: [] as PricePlanProps[]
+      otherFees: [] as OtherFeeDto[],
+      pricePlans: [] as PricePlanDto[]
     };
   }
 
-  const getDefaultEntireHouseItem = (): ScatterHouseProps => {
+  const getDefaultEntireHouseItem = (): ScatterHouseDto => {
     return {
       houseCode: "",
       building: "",
@@ -166,7 +166,7 @@
   const openFacilitiesDialog = (index: number) => {
     const currentHouse = entireForm.houseList[index];
 
-    openFacilityEditDialog("", currentHouse.houseLayout.facilities, (facilities: FacilityItemProps[]) => {
+    openFacilityEditDialog("", currentHouse.houseLayout.facilities, (facilities: FacilityItemDto[]) => {
       entireForm.houseList[index].houseLayout.facilities = facilities;
     });
   };

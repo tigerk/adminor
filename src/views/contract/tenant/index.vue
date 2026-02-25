@@ -127,7 +127,7 @@
   import EpCollection from "~icons/ep/collection";
   import EpRemove from "~icons/ep/remove";
   import More from "~icons/ep/more-filled";
-  import { TenantRowProps, TenantsCreateFormProps } from "@/types";
+  import { LeaseListVo, TenantsCreateFormProps } from "@/types";
   import { cancelTenant, getTenantDetail, previewLeaseContract } from "@/api/contract/tenant";
   import { message } from "@/utils/message";
   import { ElMessageBox } from "element-plus";
@@ -175,7 +175,7 @@
       });
   };
 
-  const handleCancelTenant = (row: TenantRowProps) => {
+  const handleCancelTenant = (row: LeaseListVo) => {
     cancelTenant({ leaseId: row.leaseId })
       .then(resp => {
         if (resp.code == 0) {
@@ -194,7 +194,7 @@
   const canCheckoutStatus: number[] = [TENANT_STATUS_ENUM.TO_SIGN.code, TENANT_STATUS_ENUM.EFFECTIVE.code];
 
   /** 租客退租 */
-  const handleTenantCheckout = (row: TenantRowProps) => {
+  const handleTenantCheckout = (row: LeaseListVo) => {
     // 检查租客状态是否允许退租（状态1=待签字 或 2=在租中）
     if (!canCheckoutStatus.includes(row.status)) {
       message("当前租客状态不允许退租，只有待签字或在租中的租客才能退租", { type: "warning" });
@@ -213,7 +213,7 @@
   };
 
   /** 租客续约 */
-  const handleTenantRenew = (row: TenantRowProps) => {
+  const handleTenantRenew = (row: LeaseListVo) => {
     if (!row?.leaseId || !row?.tenantId) {
       message("租约信息不完整，无法续约", { type: "warning" });
       return;

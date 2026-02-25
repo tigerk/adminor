@@ -8,7 +8,7 @@ import { createTenant, deleteTenant, getTenantDetail, getTenantList, getTenantTo
 import { getOptionByCode, LEASE_CONTRACT_NATURE_ENUM, TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
-import type { TenantMateProps, TenantPersonalProps, TenantQueryFormProps, TenantRowProps, TenantsCreateFormProps } from "@/types";
+import type { TenantMateVo, TenantPersonalVo, TenantQueryDto, LeaseListVo, TenantsCreateFormProps } from "@/types";
 import { getDictDataByDictCode } from "@/api/sys/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
 import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
@@ -24,14 +24,13 @@ function useTenant() {
     background: true
   });
 
-  const queryForm = reactive<TenantQueryFormProps>({
+  const queryForm = reactive<TenantQueryDto>({
     name: "",
     phone: "",
-    idNo: "",
     tenantType: undefined,
     status: undefined,
-    pageSize: 15,
-    currentPage: 1
+    pageSize: "15",
+    currentPage: "1"
   });
 
   const curRow = ref();
@@ -254,8 +253,8 @@ function useTenant() {
 
   function onTenantSearch() {
     loading.value = true;
-    queryForm.currentPage = pagination.currentPage;
-    queryForm.pageSize = pagination.pageSize;
+    queryForm.currentPage = pagination.currentPage + "";
+    queryForm.pageSize = pagination.pageSize + "";
 
     getTenantList(toRaw(queryForm))
       .then(resp => {
@@ -401,7 +400,7 @@ function useTenant() {
   }
 
   const tenantMateFormRef = ref();
-  function openTenantMateDialog(title = "添加", row?: TenantMateProps[], onConfirm?: (data: TenantMateProps[]) => void) {
+  function openTenantMateDialog(title = "添加", row?: TenantMateVo[], onConfirm?: (data: TenantMateVo[]) => void) {
     addDialog({
       title: `${title}同住人`,
       props: {
@@ -430,7 +429,7 @@ function useTenant() {
           getFormRuleRef.validate((valid: boolean) => {
             if (valid) {
               // 过滤掉空的同住人记录（只有默认值的记录）
-              const validMates = formInlines.filter((mate: TenantMateProps) => {
+              const validMates = formInlines.filter((mate: TenantMateVo) => {
                 return mate.name && mate.name.trim() !== "";
               });
 
@@ -447,7 +446,7 @@ function useTenant() {
           });
         } else {
           // 如果没有表单验证，直接返回数据
-          const validMates = formInlines.filter((mate: TenantMateProps) => {
+          const validMates = formInlines.filter((mate: TenantMateVo) => {
             return mate.name && mate.name.trim() !== "";
           });
 
@@ -460,7 +459,7 @@ function useTenant() {
     });
   }
 
-  function handleDeleteTenant(row: TenantPersonalProps) {
+  function handleDeleteTenant(row: TenantPersonalVo) {
     deleteTenant({ id: row.id }).then(resp => {
       if (resp.code === 0) {
         message(`您删除了租客"${row.name}"`, { type: "success" });
@@ -499,7 +498,7 @@ function useTenant() {
    */
   function openTenantViewDialog(
     title = "查看",
-    row?: TenantRowProps | any,
+    row?: LeaseListVo | any,
     options?: { readonly?: boolean; onContractSigned?: (leaseId: string) => void; onContractUpdated?: () => void }
   ) {
     // 设置 loading 状态为 true

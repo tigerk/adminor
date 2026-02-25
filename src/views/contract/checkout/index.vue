@@ -70,7 +70,7 @@
   import View from "~icons/ep/view";
   import { APPROVAL_STATUS_ENUM, CHECKOUT_STATUS_OPTIONS, CHECKOUT_TYPE_OPTIONS } from "@/constants";
   import { getCheckoutDetail, queryCheckoutList } from "@/api/contract/checkout";
-  import type { CheckoutDetailProps, CheckoutQueryProps } from "@/types";
+  import type { LeaseCheckoutVo, LeaseCheckoutQueryDto } from "@/types";
   import ViewCheckoutTab from "@/views/contract/checkout/components/ViewCheckoutTab.vue";
 
   defineOptions({
@@ -81,10 +81,10 @@
   const loading = ref(false);
   const detailVisible = ref(false);
   const detailLoading = ref(false);
-  const detailData = ref<CheckoutDetailProps | null>(null);
+  const detailData = ref<LeaseCheckoutVo | null>(null);
 
   const tableSize = ref("default");
-  const tableData = ref<CheckoutDetailProps[]>([]);
+  const tableData = ref<LeaseCheckoutVo[]>([]);
 
   const pagination = reactive({
     total: 0,
@@ -93,7 +93,7 @@
     pageSizes: [10, 20, 30, 50]
   });
 
-  const queryForm = reactive<CheckoutQueryProps>({
+  const queryForm = reactive<LeaseCheckoutQueryDto>({
     checkoutCode: "",
     tenantName: "",
     checkoutType: undefined,
@@ -119,25 +119,25 @@
       label: "合同到期日",
       prop: "leaseEnd",
       minWidth: 120,
-      formatter: (row: CheckoutDetailProps) => (row.leaseEnd ? dayjs(row.leaseEnd).format("YYYY-MM-DD") : "-")
+      formatter: (row: LeaseCheckoutVo) => (row.leaseEnd ? dayjs(row.leaseEnd).format("YYYY-MM-DD") : "-")
     },
     {
       label: "实际退租日",
       prop: "actualCheckoutDate",
       minWidth: 120,
-      formatter: (row: CheckoutDetailProps) => (row.actualCheckoutDate ? dayjs(row.actualCheckoutDate).format("YYYY-MM-DD") : "-")
+      formatter: (row: LeaseCheckoutVo) => (row.actualCheckoutDate ? dayjs(row.actualCheckoutDate).format("YYYY-MM-DD") : "-")
     },
     {
       label: "押金金额",
       prop: "depositAmount",
       minWidth: 110,
-      formatter: (row: CheckoutDetailProps) => (row.depositAmount == null ? "-" : `¥${row.depositAmount}`)
+      formatter: (row: LeaseCheckoutVo) => (row.depositAmount == null ? "-" : `¥${row.depositAmount}`)
     },
     {
       label: "结算金额",
       prop: "finalAmount",
       minWidth: 110,
-      formatter: (row: CheckoutDetailProps) => (row.finalAmount == null ? "-" : `¥${row.finalAmount}`)
+      formatter: (row: LeaseCheckoutVo) => (row.finalAmount == null ? "-" : `¥${row.finalAmount}`)
     },
     { label: "退租状态", prop: "statusName", minWidth: 110 },
     { label: "审批状态", prop: "approvalStatusName", minWidth: 110 },
@@ -191,7 +191,7 @@
     fetchList();
   }
 
-  async function openDetail(row: CheckoutDetailProps) {
+  async function openDetail(row: LeaseCheckoutVo) {
     detailVisible.value = true;
     detailLoading.value = true;
     try {

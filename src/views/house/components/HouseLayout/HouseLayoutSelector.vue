@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import { ArrowDown } from "@element-plus/icons-vue";
   import { useHouseLayoutEdit } from "@/views/house/components/HouseLayout/hook";
-  import { HouseLayoutProps } from "@/types";
+  import { HouseLayoutDto } from "@/types";
   import { computed } from "vue";
 
   interface Props {
-    modelValue?: HouseLayoutProps;
+    modelValue?: HouseLayoutDto;
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -13,19 +13,19 @@
   });
 
   const emit = defineEmits<{
-    "update:modelValue": [value: HouseLayoutProps];
+    "update:modelValue": [value: HouseLayoutDto];
   }>();
 
   const { openHouseLayoutEditDialog } = useHouseLayoutEdit();
 
   // 打开对话框
   const handleOpen = (): void => {
-    openHouseLayoutEditDialog("选择", props.modelValue, (layout: HouseLayoutProps) => {
+    openHouseLayoutEditDialog("选择", props.modelValue, (layout: HouseLayoutDto) => {
       emit("update:modelValue", layout);
     });
   };
 
-  // 假设 HouseLayoutProps 包含一个 name 字段用于显示
+  // 假设 HouseLayoutDto 包含一个 name 字段用于显示
   const displayedValue = computed(() => {
     let layoutName = "";
     if (props.modelValue === null) {

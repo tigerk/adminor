@@ -352,7 +352,7 @@
 
 <script setup lang="ts">
   import { computed, h, ref, watch } from "vue";
-  import { CheckoutDetailProps, TenantDetailProps, TenantsCreateFormProps } from "@/types";
+  import { LeaseCheckoutVo, LeaseDetailVo, TenantsCreateFormProps } from "@/types";
   import {
     getOptionByCode,
     ID_TYPE_OPTIONS,
@@ -378,7 +378,7 @@
   const { openTenantDialog } = useTenant();
 
   interface FormProps {
-    formInline: TenantDetailProps;
+    formInline: LeaseDetailVo;
     readonly?: boolean; // 新增：是否只读模式
   }
 
@@ -403,7 +403,7 @@
 
   const activeTab = ref("tenant");
   const isTerminated = computed(() => localFormInline.value.status === TENANT_STATUS_ENUM.TERMINATED.code);
-  const checkoutDetail = ref<CheckoutDetailProps | null>(null);
+  const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
   const checkoutLoading = ref(false);
 
   const fetchCheckoutDetail = async () => {
@@ -556,7 +556,7 @@
     return status === TENANT_STATUS_ENUM.TO_SIGN.code;
   };
 
-  const editLease = (row: TenantDetailProps) => {
+  const editLease = (row: LeaseDetailVo) => {
     if (!allowEdit(row.status)) {
       message("已退租或作废租客不能修改", { type: "warning" });
       return;

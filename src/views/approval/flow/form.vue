@@ -4,13 +4,13 @@
   import { ArrowDown, ArrowUp, Delete, Plus } from "@element-plus/icons-vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { getSimpleRoleList } from "@/api/sys/user";
-  import { ApprovalFormItemProps } from "@/types";
+  import { ApprovalFlowDto } from "@/types";
 
   /**
    * 表单 Props
    */
   export interface ApprovalFormProps {
-    formInline?: ApprovalFormItemProps;
+    formInline?: ApprovalFlowDto;
     bizTypeOptions?: Array<{ label: string; value: string }>;
   }
 

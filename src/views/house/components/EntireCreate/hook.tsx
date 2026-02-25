@@ -2,7 +2,7 @@ import EntireCreateForm from "./EntireCreateForm.vue";
 import { addDialog, closeAllDialog, closeDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
-import type { ScatterCreateFormProps, ScatterHouseDetailProps } from "@/types";
+import type { ScatterCreateDto, HouseDetailVo } from "@/types";
 import { createEntireHouse, getEntireHouseDetailById } from "@/api/house/scatter";
 import { message } from "@/utils/message";
 
@@ -16,8 +16,8 @@ export function useEntireEdit() {
 
   const entireFormRef = ref();
 
-  // 将 ScatterHouseDetailProps 转换为 ScatterCreateFormProps
-  const convertToScatterCreateForm = (data: ScatterHouseDetailProps): ScatterCreateFormProps => {
+  // 将 HouseDetailVo 转换为 ScatterCreateDto
+  const convertToScatterCreateForm = (data: HouseDetailVo): ScatterCreateDto => {
     return {
       id: data.id,
       leaseMode: data.leaseMode,
@@ -30,7 +30,7 @@ export function useEntireEdit() {
       heating: data.heating,
       hasGas: data.hasGas,
       hasElevator: data.hasElevator,
-      // 将完整的房源详情转换为 ScatterHouseProps 并放入 houseList
+      // 将完整的房源详情转换为 ScatterHouseDto 并放入 houseList
       houseList: [
         {
           id: data.id,
@@ -67,8 +67,8 @@ export function useEntireEdit() {
    * @param title 对话框标题（"新增" 或 "编辑"）
    * @param row 房源数据（如果是编辑模式则传入，新增模式则不传）
    */
-  async function openEntireEditDialog(title = "新增", row?: { id?: string } | ScatterCreateFormProps) {
-    let formInlineData: Partial<ScatterCreateFormProps> = {
+  async function openEntireEditDialog(title = "新增", row?: { id?: string } | ScatterCreateDto) {
+    let formInlineData: Partial<ScatterCreateDto> = {
       id: undefined,
       leaseMode: 2, // 分散式
       rentalType: 1, // 整租
@@ -90,7 +90,7 @@ export function useEntireEdit() {
         const { data, code } = await getEntireHouseDetailById({ id: row.id });
 
         if (code === 0 && data) {
-          // 使用转换函数将 ScatterHouseDetailProps 转换为 ScatterCreateFormProps
+          // 使用转换函数将 HouseDetailVo 转换为 ScatterCreateDto
           formInlineData = convertToScatterCreateForm(data);
         } else {
           message("获取房源数据失败", { type: "error" });

@@ -4,7 +4,7 @@
   import { ElMessageBox } from "element-plus";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Delete from "~icons/ep/delete";
-  import { SysUserProps } from "@/types";
+  import { UserVo } from "@/types";
   import { unbindRoleCompanyUser } from "@/api/sys/user";
 
   interface Props {
@@ -31,7 +31,7 @@
   });
 
   const loading = ref(false);
-  const dataList = ref<SysUserProps[]>([]);
+  const dataList = ref<UserVo[]>([]);
 
   // 表格列配置
   const columns: TableColumnList = [
@@ -91,7 +91,7 @@
   };
 
   // 解绑用户
-  const handleUnbind = (row: SysUserProps) => {
+  const handleUnbind = (row: UserVo) => {
     ElMessageBox.confirm(
       `确认要将用户 <strong style='color:var(--el-color-primary)'>${row.nickname || row.username}</strong> 从角色 <strong style='color:var(--el-color-primary)'>${props.roleInfo?.name}</strong> 中移除吗?`,
       "系统提示",

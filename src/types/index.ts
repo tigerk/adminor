@@ -1,7 +1,9 @@
 // 全局类型统一出口
 
 export * from "./common";
+export * from "./enums";
 export * from "./models";
+export * from "./generated";
 
 // ==================== 类型管理原则总结 ====================
 /**

@@ -1,8 +1,8 @@
 // 表单
-import type { HouseLayoutProps } from "@/types";
+import type { HouseLayoutDto } from "@/types";
 
 interface HouseLayoutFormProps {
-  formInline: HouseLayoutProps;
+  formInline: HouseLayoutDto;
 }
 
 export type { HouseLayoutFormProps };

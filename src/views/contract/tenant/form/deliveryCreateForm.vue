@@ -159,7 +159,7 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
-  import type { DeliveryCreateFormProps, DeliveryItemProps, FacilityItemProps } from "@/types";
+  import type { DeliveryCreateDto, DeliveryItemVo, FacilityItemDto } from "@/types";
   import { DataLine, Delete, Grid, InfoFilled, Lightning, Picture, Plus } from "@element-plus/icons-vue";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getCompanyUserOptions } from "@/api/company";
@@ -168,7 +168,7 @@
   import { DELIVERY_ITEM_CATEGORY, DELIVERY_TYPE_OPTIONS } from "@/constants";
 
   interface FormProps {
-    formInline: DeliveryCreateFormProps;
+    formInline: DeliveryCreateDto;
     isViewMode?: boolean; // 是否为查看模式
   }
 
@@ -181,7 +181,7 @@
   const facilityOptions = ref<Array<{ label: string; value: string }>>([]);
 
   // 表单数据
-  const formData = reactive<DeliveryCreateFormProps>({
+  const formData = reactive<DeliveryCreateDto>({
     id: props.formInline?.id,
     subjectType: props.formInline?.subjectType || "tenant",
     subjectTypeId: props.formInline?.subjectTypeId,
@@ -203,7 +203,7 @@
   });
 
   // 设施项目列表（包含水电燃气和房间设施）
-  const facilityItems = ref<DeliveryItemProps[]>([]);
+  const facilityItems = ref<DeliveryItemVo[]>([]);
 
   // 过滤后的设施列表（仅用于表格显示，不包含水电燃气）
   const facilityItemsFiltered = computed(() => {
@@ -241,7 +241,7 @@
 
   // 从房间设施初始化物品列表
   const initFacilitiesFromRoom = () => {
-    const items: DeliveryItemProps[] = [];
+    const items: DeliveryItemVo[] = [];
     let sortOrder = 1;
 
     // 1. 添加水电燃气项（固定项）
@@ -280,7 +280,7 @@
 
     // 2. 从房间设施添加设施项
     if (props.formInline?.facilities && props.formInline.facilities.length > 0) {
-      props.formInline.facilities.forEach((facility: FacilityItemProps) => {
+      props.formInline.facilities.forEach((facility: FacilityItemDto) => {
         const facilityOption = facilityOptions.value.find(opt => opt.value === facility.name);
 
         items.push({
@@ -356,7 +356,7 @@
   const getRef = () => formRef.value;
 
   // 获取表单数据（提交时调用）
-  const getFormData = (): DeliveryCreateFormProps => {
+  const getFormData = (): DeliveryCreateDto => {
     // 更新 formData.items 为当前的 facilityItems
     formData.items = facilityItems.value.map(item => ({
       id: item.id,

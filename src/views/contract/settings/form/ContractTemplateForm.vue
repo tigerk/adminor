@@ -90,7 +90,7 @@
   import { CONTRACT_TYPE_OPTIONS } from "@/constants";
   import { uploadFile } from "@/api/upload";
   import Editor from "@tinymce/tinymce-vue";
-  import type { ContractTemplateFormProps } from "@/types"; // 如果使用本地部署，需要导入这些
+  import type { ContractTemplateListVo } from "@/types"; // 如果使用本地部署，需要导入这些
   import "tinymce/tinymce";
   import "tinymce/themes/silver";
   import "tinymce/icons/default";
@@ -116,7 +116,7 @@
   import { getContractTemplateParams } from "@/api/contract/template";
 
   interface FormProps {
-    formInline: ContractTemplateFormProps;
+    formInline: ContractTemplateListVo;
   }
 
   const props = defineProps<FormProps>();
@@ -125,7 +125,7 @@
   const ruleFormRef = ref<FormInstance>();
 
   // 表单数据
-  const formInline = reactive<ContractTemplateFormProps>({
+  const formInline = reactive<ContractTemplateListVo>({
     templateName: props.formInline?.templateName || "",
     contractType: props.formInline?.contractType || 1,
     templateContent: props.formInline?.templateContent || "",

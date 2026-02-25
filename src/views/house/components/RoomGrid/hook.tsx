@@ -8,7 +8,7 @@ import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { useHouseView } from "@/views/house/components/HouseView/hook";
 import { getShareHouseDetailById } from "@/api/house/scatter";
-import type { RoomGridItemProps, RoomGridProps, RoomListProps, ScatterCreateFormProps, ScatterHouseProps } from "@/types";
+import type { RoomGridItemVo, RoomGridDto, RoomListVo, ScatterCreateDto, ScatterHouseDto } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { ROOM_STATUS_ENUM } from "@/constants";
@@ -25,7 +25,7 @@ interface ProcessedFloorGroup {
   roomCount: number;
   leasedCount: number;
   occupancyRate: string;
-  rooms: RoomListProps[];
+  rooms: RoomListVo[];
 }
 
 /**
@@ -71,13 +71,13 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   // 响应式数据
   const loading = ref(false);
   const loadingMore = ref(false);
-  const roomGridData = ref<RoomGridProps | null>(null);
+  const roomGridData = ref<RoomGridDto | null>(null);
   const hasMore = ref(false);
   const currentPage = ref(1);
   const pageSize = ref(3); // 可根据需要调整每页大小
 
   // 存储所有原始数据项
-  const allRoomGridItems = ref<RoomGridItemProps[]>([]);
+  const allRoomGridItems = ref<RoomGridItemVo[]>([]);
 
   // 计算属性：处理后的房间分组数据
   const processedRoomGroups: ComputedRef<ProcessedCompoundGroup[]> = computed(() => {
@@ -87,7 +87,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     const compoundMap = new Map<number, ProcessedCompoundGroup>();
     const compoundOrder: number[] = []; // 记录小区出现的顺序
 
-    allRoomGridItems.value.forEach((item: RoomGridItemProps) => {
+    allRoomGridItems.value.forEach((item: RoomGridItemVo) => {
       const leaseModeId = item.compoundGroup.leaseModeId || 0;
 
       if (!compoundMap.has(leaseModeId)) {
@@ -230,7 +230,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 
         // 临时模拟租期信息（后端添加后删除）
         if (data.roomGridItemList) {
-          const processedItems = data.roomGridItemList.map((item: RoomGridItemProps) => ({
+          const processedItems = data.roomGridItemList.map((item: RoomGridItemVo) => ({
             ...item
           }));
 
@@ -285,7 +285,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 处理快速操作
-  const handleQuickAction = (room: RoomListProps, action: string) => {
+  const handleQuickAction = (room: RoomListVo, action: string) => {
     switch (action) {
       case "booking":
         openBookingDialog(
@@ -347,7 +347,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 获取房间卡片样式类
-  const getRoomCardClass = (room: RoomListProps) => {
+  const getRoomCardClass = (room: RoomListVo) => {
     const classes: string[] = [];
 
     if (room.closed) {
@@ -378,7 +378,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 获取房间卡片动态样式
-  const getRoomCardStyle = (room: RoomListProps) => {
+  const getRoomCardStyle = (room: RoomListVo) => {
     const style: any = {};
 
     if (room.roomStatusColor) {
@@ -393,7 +393,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 获取房型标签
-  const getRoomTypeLabel = (room: RoomListProps) => {
+  const getRoomTypeLabel = (room: RoomListVo) => {
     const layout = room.houseLayout;
     if (!layout) {
       return "未分配";
@@ -488,8 +488,8 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   // 处理下拉菜单操作
-  const handleDropdownAction = (room: RoomListProps, command: string) => {
-    function handleCloseRoom(room: RoomListProps) {
+  const handleDropdownAction = (room: RoomListVo, command: string) => {
+    function handleCloseRoom(room: RoomListVo) {
       closeRoom({ roomId: room.roomId }).then(res => {
         if (res.code === 0) {
           ElMessage.success(`已关闭房间 ${room.roomNumber}`);
@@ -501,7 +501,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       });
     }
 
-    function handleOpenRoom(room: RoomListProps) {
+    function handleOpenRoom(room: RoomListVo) {
       openRoom({ roomId: room.roomId }).then(res => {
         if (res.code === 0) {
           ElMessage.success(`已开启房间 ${room.roomNumber}`);
@@ -541,20 +541,20 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     }
   };
 
-  function editShareHouse(title: string, room: RoomListProps) {
+  function editShareHouse(title: string, room: RoomListVo) {
     getShareHouseDetailById({ id: room.houseId }).then(res => {
       if (res.code !== 0) {
         return;
       }
-      const ScatterCreateFormProps = convertToScatterCreateFormProps(res.data);
-      openShareEditDialog(title, ScatterCreateFormProps).then(() => {
+      const ScatterCreateDto = convertToScatterCreateDto(res.data);
+      openShareEditDialog(title, ScatterCreateDto).then(() => {
         resetAndReload();
       });
     });
   }
 
-  // 将 ScatterHouseResponse 转换为 ScatterCreateFormProps
-  const convertToScatterCreateFormProps = (resp: ScatterHouseProps): ScatterCreateFormProps => {
+  // 将 ScatterHouseResponse 转换为 ScatterCreateDto
+  const convertToScatterCreateDto = (resp: ScatterHouseDto): ScatterCreateDto => {
     return {
       id: resp.id,
       leaseMode: resp.leaseMode,
@@ -588,7 +588,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     };
   };
 
-  const handleLockRoom = (room: RoomListProps) => {
+  const handleLockRoom = (room: RoomListVo) => {
     ElMessageBox.confirm(`确认锁定 ${room.houseName}-房间 ${room.roomNumber}？`, "提示", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
@@ -607,7 +607,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     });
   };
 
-  const handleUnlockRoom = (room: RoomListProps) => {
+  const handleUnlockRoom = (room: RoomListVo) => {
     ElMessageBox.confirm(`确认解锁 ${room.houseName}-房间 ${room.roomNumber}？`, "提示", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",

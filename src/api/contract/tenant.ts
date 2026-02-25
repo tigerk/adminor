@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, LeaseBillListProps, LeaseContractProps, TenantDetailProps } from "@/types";
+import type { ApiResponse, PaginationResponse, LeaseBillListVo, LeaseContractVo, LeaseDetailVo, LeaseListVo, TenantQueryDto } from "@/types";
 
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
@@ -8,8 +8,8 @@ export const getTenantTotal = (data?: object) => {
 };
 
 /** 获取租客列表 */
-export const getTenantList = (data?: object) => {
-  return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("contract/tenant/list"), { data });
+export const getTenantList = (data?: TenantQueryDto) => {
+  return http.request<ApiResponse<PaginationResponse<LeaseListVo>>>("post", baseUrlApi("contract/tenant/list"), { data });
 };
 
 /** 创建租客 */
@@ -39,22 +39,22 @@ export const updateTenantStatus = (data?: object) => {
 
 /** 获取租客详情 */
 export const getTenantDetail = (data?: object) => {
-  return http.request<ApiResponse<TenantDetailProps>>("post", baseUrlApi("contract/tenant/detail"), { data });
+  return http.request<ApiResponse<LeaseDetailVo>>("post", baseUrlApi("contract/tenant/detail"), { data });
 };
 
 /** 获取租客账单列表 */
 export const getLeaseBillList = (data?: object) => {
-  return http.request<ApiResponse<LeaseBillListProps[]>>("post", baseUrlApi("contract/tenant/bill/list"), { data });
+  return http.request<ApiResponse<LeaseBillListVo[]>>("post", baseUrlApi("contract/tenant/bill/list"), { data });
 };
 
 /** 获取租客无效账单列表 */
 export const getLeaseBillInvalidList = (data?: object) => {
-  return http.request<ApiResponse<LeaseBillListProps[]>>("post", baseUrlApi("contract/tenant/bill/invalid/list"), { data });
+  return http.request<ApiResponse<LeaseBillListVo[]>>("post", baseUrlApi("contract/tenant/bill/invalid/list"), { data });
 };
 
 /** 生成租客合同 */
 export const generateLeaseContract = (data?: object) => {
-  return http.request<ApiResponse<LeaseContractProps>>("post", baseUrlApi("contract/tenant/contract/generate"), { data });
+  return http.request<ApiResponse<LeaseContractVo>>("post", baseUrlApi("contract/tenant/contract/generate"), { data });
 };
 
 /** 下载租客合同 */

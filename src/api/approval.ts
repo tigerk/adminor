@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiListResponse, ApiResponse, ApprovalInstanceProps, CodeNameProps } from "@/types";
+import type { ApiListResponse, ApiResponse, ApprovalInstanceVo, CodeNameProps } from "@/types";
 
 /** 审批流程相关 API */
 
@@ -65,7 +65,7 @@ export const getApprovalInstance = (bizType: string, bizId: number) => {
 
 // 获取审批实例详情
 export const getApprovalInstanceDetail = (instanceId: number) => {
-  return http.request<ApiResponse<ApprovalInstanceProps>>("post", baseUrlApi("approval/instance/detail"), { data: { instanceId } });
+  return http.request<ApiResponse<ApprovalInstanceVo>>("post", baseUrlApi("approval/instance/detail"), { data: { instanceId } });
 };
 
 // 获取我的待办列表

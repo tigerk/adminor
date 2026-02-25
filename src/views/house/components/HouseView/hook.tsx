@@ -4,14 +4,14 @@ import { h, reactive } from "vue";
 import { message } from "@/utils/message";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
 import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
-import type { HouseViewDetailProps, RoomDetailProps, RoomListProps } from "@/types";
+import type { HouseDetailVo, RoomDetailVo, RoomListVo } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
 
 /** 弹窗内部使用的状态包装（loading + 数据） */
 export interface HouseViewState {
   loading: boolean;
-  detail: HouseViewDetailProps | null;
+  detail: HouseDetailVo | null;
 }
 
 export const useHouseView = () => {
@@ -24,7 +24,7 @@ export const useHouseView = () => {
    * 以弹窗形式打开房源详情
    * @param room - 列表行数据，取 houseId 作为查询参数
    */
-  function openHouseViewDialog(room: RoomListProps) {
+  function openHouseViewDialog(room: RoomListVo) {
     const state = reactive<HouseViewState>({
       loading: true,
       detail: null
@@ -45,10 +45,10 @@ export const useHouseView = () => {
           h(HouseViewDialog, {
             loading: state.loading,
             detail: state.detail,
-            onBooking: (r: RoomDetailProps) => {
+            onBooking: (r: RoomDetailVo) => {
               console.log("添加预定", r);
             },
-            onTenant: (r: RoomDetailProps) => {
+            onTenant: (r: RoomDetailVo) => {
               openTenantDialog("添加", {
                 lease: {
                   roomIds: [r.id],
@@ -60,10 +60,10 @@ export const useHouseView = () => {
                 otherFees: []
               });
             },
-            onCheckout: (r: RoomDetailProps) => {
+            onCheckout: (r: RoomDetailVo) => {
               handleOpenCheckout(r);
             },
-            onViewContract: (r: RoomDetailProps) => {
+            onViewContract: (r: RoomDetailVo) => {
               console.log("查看合同", r);
             },
             onOpenTenantDetail: (tenantId: string, leaseId: string) => {
@@ -74,7 +74,7 @@ export const useHouseView = () => {
             onOpenBookingDetail: (bookingId: string) => {
               console.log("打开预定详情", bookingId);
             },
-            onRenewLease: (r: RoomDetailProps) => {
+            onRenewLease: (r: RoomDetailVo) => {
               handleRenewLease(r);
             },
             onAddRoom: () => {
@@ -103,13 +103,13 @@ export const useHouseView = () => {
   /**
    * 退租 → CheckoutDialog.open(roomId, leaseId)
    */
-  function handleOpenCheckout(room: RoomDetailProps) {
-    if (!room.leaseInfo) {
+  function handleOpenCheckout(room: RoomDetailVo) {
+    if (!room.lease) {
       message("当前房间没有在租租客", { type: "warning" });
       return;
     }
     if (checkoutDialogRef?.open) {
-      checkoutDialogRef.open(room.id, room.leaseInfo.leaseId || "");
+      checkoutDialogRef.open(room.id, room.lease.leaseId || "");
     } else {
       message("退租组件未就绪，请稍后重试", { type: "warning" });
     }
@@ -118,8 +118,8 @@ export const useHouseView = () => {
   /**
    * 续签 → openTenantDialog(contractNature=2)
    */
-  function handleRenewLease(room: RoomDetailProps) {
-    if (!room.leaseInfo) {
+  function handleRenewLease(room: RoomDetailVo) {
+    if (!room.lease) {
       message("当前房间没有在租租客", { type: "warning" });
       return;
     }
@@ -130,8 +130,8 @@ export const useHouseView = () => {
         rentPrice: room.price ? Number(room.price) : undefined
       } as any,
       tenantPersonal: {
-        name: room.leaseInfo.tenantName || "",
-        phone: room.leaseInfo.tenantPhone || ""
+        name: room.lease.tenantName || "",
+        phone: room.lease.tenantPhone || ""
       } as any,
       tenantCompany: {} as any,
       tenantMateList: [],
@@ -169,7 +169,7 @@ export const useHouseView = () => {
   /**
    * 创建 reactive 状态（供 Tab 页复用）并触发加载
    */
-  function createDetail(room: RoomListProps): HouseViewState {
+  function createDetail(room: RoomListVo): HouseViewState {
     const state = reactive<HouseViewState>({ loading: true, detail: null });
     loadDetail(state, room.houseId).catch(() => undefined);
     return state;

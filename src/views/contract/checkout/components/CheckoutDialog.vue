@@ -433,7 +433,7 @@
     FEE_DIRECTION_ENUM,
     SETTLEMENT_METHOD_ENUM
   } from "@/constants";
-  import type { CheckoutDetailProps, CheckoutFeeProps, CheckoutFormProps, CheckoutInitDataProps } from "@/types";
+  import type { LeaseCheckoutVo, CheckoutFeeProps, LeaseCheckoutDto, LeaseCheckoutInitVo } from "@/types";
   import { getCheckoutByTenantId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import { getDictDataByParentCode } from "@/api/sys/dict";
@@ -454,8 +454,8 @@
   const feesRef = ref<HTMLElement>();
   const payeeRef = ref<HTMLElement>();
 
-  const initData = ref<CheckoutInitDataProps | null>(null);
-  const checkoutDetail = ref<CheckoutDetailProps | null>(null);
+  const initData = ref<LeaseCheckoutInitVo | null>(null);
+  const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
 
   const confirmationTemplateOptions = ref<{ id: string; templateName: string }[]>([]);
 
@@ -562,7 +562,7 @@
   }
 
   // 表单数据
-  const form = reactive<CheckoutFormProps & { badDebtReason: string }>({
+  const form = reactive<LeaseCheckoutDto & { badDebtReason: string }>({
     id: undefined,
     tenantId: "",
     leaseId: "",
@@ -833,7 +833,7 @@
     }
   }
 
-  async function loadCheckoutDetail(detail: CheckoutDetailProps) {
+  async function loadCheckoutDetail(detail: LeaseCheckoutVo) {
     checkoutDetail.value = detail;
     form.id = detail.id;
     form.tenantId = detail.tenantId;

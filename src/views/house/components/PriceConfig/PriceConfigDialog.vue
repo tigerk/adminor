@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
   import type { PriceConfigFormProps } from "./types";
-  import { PriceConfigProps, PricePlanProps } from "@/types";
+  import { PriceConfigDto, PricePlanDto } from "@/types";
   import { PRICE_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
@@ -10,7 +10,7 @@
 
   const props = withDefaults(defineProps<PriceConfigFormProps>(), {});
 
-  const priceConfig = ref<PriceConfigProps>({
+  const priceConfig = ref<PriceConfigDto>({
     ...props.formInline
   });
 
@@ -50,7 +50,7 @@
     selectedPlans,
     newPlans => {
       const existingPlans = priceConfig.value.pricePlans || [];
-      const newPricePlans: PricePlanProps[] = [];
+      const newPricePlans: PricePlanDto[] = [];
 
       newPlans.forEach((planIndex, arrayIndex) => {
         const existing = existingPlans.find(p => p.planType === String(pricePlantOptions[planIndex].value));

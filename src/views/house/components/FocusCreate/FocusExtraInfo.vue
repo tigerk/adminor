@@ -120,14 +120,14 @@
 
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, watch } from "vue";
-  import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
+  import { FocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
   import { createFocusBasicInfoRules } from "@/views/house/components/FocusCreate/utils/rule";
   import { ELECTRICITY_TYPE_OPTIONS, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
 
   // 获取 FocusCreateForm 中的form数据，vue3.3+
-  const formData = defineModel<FocusFormItemProps>();
+  const formData = defineModel<FocusCreateDto>();
 
   const focusBasicInfoRules = createFocusBasicInfoRules(formData);
 

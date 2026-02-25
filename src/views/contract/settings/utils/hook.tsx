@@ -10,7 +10,7 @@ import { CONTRACT_TEMPLATE_STATUS_OPTIONS, CONTRACT_TYPE_OPTIONS, getOptionByCod
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { ContractTemplateQueryFormProps } from "@/views/contract/settings/utils/types";
-import type { ContractTemplateFormProps } from "@/types";
+import type { ContractTemplateListVo } from "@/types";
 import { doc } from "prettier";
 import { handleTree } from "@/utils/tree";
 import { getDeptList } from "@/api/sys/dept";
@@ -203,7 +203,7 @@ function useContractSettings() {
     deptData.value = data;
   });
 
-  function openContractTemplateDialog(title = "新增", row?: ContractTemplateFormProps) {
+  function openContractTemplateDialog(title = "新增", row?: ContractTemplateListVo) {
     addDialog({
       title: `${title}合同模板`,
       props: {

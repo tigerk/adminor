@@ -3,15 +3,15 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, ref } from "vue";
 import { message } from "@/utils/message";
-import type { HouseLayoutProps } from "@/types";
+import type { HouseLayoutDto } from "@/types";
 
 export function useHouseLayoutEdit() {
   const layoutFormRef = ref();
 
   function openHouseLayoutEditDialog(
     title = "选择",
-    row?: HouseLayoutProps,
-    onConfirm?: (layout: HouseLayoutProps) => void // 添加回调函数参数
+    row?: HouseLayoutDto,
+    onConfirm?: (layout: HouseLayoutDto) => void // 添加回调函数参数
   ) {
     addDialog({
       title: `${title}户型`,

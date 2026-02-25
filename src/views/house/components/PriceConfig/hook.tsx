@@ -2,10 +2,10 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, ref } from "vue";
 import { message } from "@/utils/message";
-import type { OtherFeeProps, PriceConfigProps } from "@/types";
+import type { OtherFeeDto, PriceConfigDto } from "@/types";
 import PriceConfigDialog from "@/views/house/components/PriceConfig/PriceConfigDialog.vue";
 
-function getDefaultOtherFee(): OtherFeeProps {
+function getDefaultOtherFee(): OtherFeeDto {
   return {
     dictDataId: null,
     name: null,
@@ -20,7 +20,7 @@ function getDefaultOtherFee(): OtherFeeProps {
 export function usePriceConfigEdit() {
   const priceConfigFormRef = ref();
 
-  function openPriceConfigDialog(title = "配置", row?: PriceConfigProps, onConfirm?: (data: any) => void) {
+  function openPriceConfigDialog(title = "配置", row?: PriceConfigDto, onConfirm?: (data: any) => void) {
     addDialog({
       title: `${title}租金配置`,
       props: {

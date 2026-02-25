@@ -1,9 +1,9 @@
 // src/views/house/components/FocusCreate/utils/types.ts
 
-import type { FocusFormItemProps } from "@/types";
+import type { FocusCreateDto } from "@/types";
 
 interface FormProps {
-  formInline: FocusFormItemProps;
+  formInline: FocusCreateDto;
 }
 
-export type { FocusFormItemProps, FormProps };
+export type { FocusCreateDto, FormProps };

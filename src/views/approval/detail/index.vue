@@ -20,7 +20,7 @@
   } from "@element-plus/icons-vue";
   import { getApprovalInstanceDetail, handleApproval } from "@/api/approval";
   import useTenant from "@/views/contract/tenant/utils/hook";
-  import type { ApprovalInstanceProps } from "@/types";
+  import type { ApprovalInstanceVo } from "@/types";
   import { APPROVAL_ACTION_TYPE_ENUM, APPROVAL_ACTION_TYPE_HELPER, APPROVAL_BIZ_TYPE_HELPER, APPROVAL_INSTANCE_STATUS_HELPER } from "@/constants";
   import ApprovalTimeline from "@/views/approval/detail/components/ApprovalTimeline.vue";
 
@@ -40,7 +40,7 @@
   const props = defineProps<Props>();
 
   const loading = ref(false);
-  const detail = ref<ApprovalInstanceProps>(null);
+  const detail = ref<ApprovalInstanceVo>(null);
 
   const showApprovalPanel = ref(false);
   const approvalFormRef = ref<FormInstance>();

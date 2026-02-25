@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from "vue";
-  import { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
+  import { FocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
@@ -10,10 +10,10 @@
   import PoiSearch from "@/components/Business/PoiSearch.vue";
   import EpCircleClose from "~icons/ep/circle-close";
   import { message } from "@/utils/message";
-  import { FocusBuildingProps, FocusHouseStatusProps } from "@/types";
+  import { FocusBuildingDto, FocusHouseDto } from "@/types";
 
   // 获取 FocusCreateForm 中的form数据
-  const form = defineModel<FocusFormItemProps>();
+  const form = defineModel<FocusCreateDto>();
 
   // 定义 emits
   const emit = defineEmits<{
@@ -30,7 +30,7 @@
   });
 
   // 判断特定楼栋是否可编辑（新添加的楼栋在编辑模式下也可以编辑）
-  const isBuildingEditable = (building: FocusBuildingProps) => {
+  const isBuildingEditable = (building: FocusBuildingDto) => {
     // 如果不是编辑模式，所有楼栋都可编辑
     if (!isEditMode.value) {
       return false; // 返回false表示不禁用
@@ -60,7 +60,7 @@
 
   // 添加新楼栋 - 修复版本
   const addBuilding = () => {
-    const newBuilding: FocusBuildingProps = {
+    const newBuilding: FocusBuildingDto = {
       building: "",
       unit: "",
       floorTotal: 2,
@@ -71,7 +71,7 @@
       housePrefix: `A`,
       excludeFour: false,
       numberLength: 3,
-      housesStatusOfFloors: new Map<number, Map<string, FocusHouseStatusProps>>(),
+      housesStatusOfFloors: new Map<number, Map<string, FocusHouseDto>>(),
       isNew: true // 标记为新添加的楼栋
     };
 
@@ -138,7 +138,7 @@
     handleCloseFloor(building);
   };
 
-  const handleHouseClickWrapper = (buildingIndex: number, houseStatus: FocusHouseStatusProps) => {
+  const handleHouseClickWrapper = (buildingIndex: number, houseStatus: FocusHouseDto) => {
     const building = form.value.buildings[buildingIndex];
     handleHouseClick(building, houseStatus);
   };
@@ -210,7 +210,7 @@
           housePrefix: "A",
           excludeFour: false,
           numberLength: 3,
-          housesStatusOfFloors: new Map<number, Map<string, FocusHouseStatusProps>>(),
+          housesStatusOfFloors: new Map<number, Map<string, FocusHouseDto>>(),
           isNew: false // 初始楼栋不是新的
         }
       ];
@@ -230,7 +230,7 @@
       form.value.buildings.forEach(building => {
         // 如果楼栋没有 Map 或 Map 为空，初始化它
         if (!building.housesStatusOfFloors || !(building.housesStatusOfFloors instanceof Map) || building.housesStatusOfFloors.size === 0) {
-          building.housesStatusOfFloors = new Map<number, Map<string, FocusHouseStatusProps>>();
+          building.housesStatusOfFloors = new Map<number, Map<string, FocusHouseDto>>();
           initAllFloorsForBuilding(building);
         }
       });

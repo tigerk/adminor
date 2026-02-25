@@ -1,12 +1,12 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
 import type { ApiResponse, PaginationResponse } from "@/types/common";
-import type { SysMessageProps, SysNoticeProps, SysTodoProps } from "@/types";
+import type { SysMessage, SysNotice, SysTodo } from "@/types";
 
 type RecentNoticeResponse = {
-  messages: SysMessageProps[];
-  notices: SysNoticeProps[];
-  todos: SysTodoProps[];
+  messages: SysMessage[];
+  notices: SysNotice[];
+  todos: SysTodo[];
   unreadMessageCount?: number;
   unreadNoticeCount?: number;
   pendingTodoCount?: number;
@@ -17,27 +17,27 @@ export const getRecentNotice = (data: any) => {
 };
 
 export const getMyMessagePage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {
-  return http.request<ApiResponse<PaginationResponse<SysMessageProps>>>("post", baseUrlApi("sys/notice/message/my/page"), { data });
+  return http.request<ApiResponse<PaginationResponse<SysMessage>>>("post", baseUrlApi("sys/notice/message/my/page"), { data });
 };
 
 export const getMessageAdminPage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {
-  return http.request<ApiResponse<PaginationResponse<SysMessageProps>>>("post", baseUrlApi("sys/notice/message/admin/page"), { data });
+  return http.request<ApiResponse<PaginationResponse<SysMessage>>>("post", baseUrlApi("sys/notice/message/admin/page"), { data });
 };
 
 export const getNoticePage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {
-  return http.request<ApiResponse<PaginationResponse<SysNoticeProps>>>("post", baseUrlApi("sys/notice/notice/admin/page"), { data });
+  return http.request<ApiResponse<PaginationResponse<SysNotice>>>("post", baseUrlApi("sys/notice/notice/admin/page"), { data });
 };
 
 export const getMyNoticePage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {
-  return http.request<ApiResponse<PaginationResponse<SysNoticeProps>>>("post", baseUrlApi("sys/notice/notice/my/page"), { data });
+  return http.request<ApiResponse<PaginationResponse<SysNotice>>>("post", baseUrlApi("sys/notice/notice/my/page"), { data });
 };
 
 export const getTodoMyPage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {
-  return http.request<ApiResponse<PaginationResponse<SysTodoProps>>>("post", baseUrlApi("sys/notice/todo/my/page"), { data });
+  return http.request<ApiResponse<PaginationResponse<SysTodo>>>("post", baseUrlApi("sys/notice/todo/my/page"), { data });
 };
 
 export const getTodoAdminPage = (data: { currentPage: number; pageSize: number; keyword?: string }) => {
-  return http.request<ApiResponse<PaginationResponse<SysTodoProps>>>("post", baseUrlApi("sys/notice/todo/admin/page"), { data });
+  return http.request<ApiResponse<PaginationResponse<SysTodo>>>("post", baseUrlApi("sys/notice/todo/admin/page"), { data });
 };
 
 export const saveNotice = (data: { id?: number; title: string; content: string; noticeType: number; targetScope?: number; remark?: string; roleIds?: number[] }) => {
@@ -45,7 +45,7 @@ export const saveNotice = (data: { id?: number; title: string; content: string; 
 };
 
 export const getNoticeDetail = (data: { id: number }) => {
-  return http.request<ApiResponse<{ notice: SysNoticeProps; roleIds: number[] }>>("post", baseUrlApi("sys/notice/detail"), { data });
+  return http.request<ApiResponse<{ notice: SysNotice; roleIds: number[] }>>("post", baseUrlApi("sys/notice/detail"), { data });
 };
 
 export const deleteNotice = (data: { id: number }) => {

@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import { ref, computed } from "vue";
   import { HouseLayoutFormProps } from "./types";
-  import { FacilityItemProps, HouseLayoutProps } from "@/types";
+  import { FacilityItemDto, HouseLayoutDto } from "@/types";
 
   const props = withDefaults(defineProps<HouseLayoutFormProps>(), {});
 
-  const tempSelection = ref<HouseLayoutProps>({
+  const tempSelection = ref<HouseLayoutDto>({
     bedroom: 0,
     livingRoom: 0,
     kitchen: 0,
@@ -32,7 +32,7 @@
   const bathroomRange = generateRange(0, 30);
 
   // 解析现有的户型字符串
-  const parseLayout = (layout: HouseLayoutProps): void => {
+  const parseLayout = (layout: HouseLayoutDto): void => {
     if (layout == null) {
       tempSelection.value = {
         bedroom: 0,
@@ -98,7 +98,7 @@
   };
 
   // 获取选中的户型数据
-  const getRef = (): HouseLayoutProps => {
+  const getRef = (): HouseLayoutDto => {
     const { bedroom, livingRoom, kitchen, bathroom } = tempSelection.value;
 
     // 验证：至少有一个房间
@@ -108,7 +108,7 @@
 
     const layoutName = `${bedroom}室${livingRoom}厅${kitchen}厨${bathroom}卫`;
 
-    // 返回完整的 HouseLayoutProps 对象
+    // 返回完整的 HouseLayoutDto 对象
     return {
       id: props.formInline?.id || undefined,
       layoutName: layoutName,

@@ -5,9 +5,9 @@ import { deviceDetection } from "@pureadmin/utils";
 import { h, ref } from "vue";
 import { createShareHouse } from "@/api/house/scatter";
 import { message } from "@/utils/message";
-import type { ScatterHouseProps, HouseLayoutProps, OtherFeeProps, PriceConfigProps, PricePlanProps, RoomCreateProps, ScatterCreateFormProps } from "@/types";
+import type { ScatterHouseDto, HouseLayoutDto, OtherFeeDto, PriceConfigDto, PricePlanDto, RoomCreateDto, ScatterCreateDto } from "@/types";
 
-function getScatterDefaultHouseItem(): ScatterHouseProps {
+function getScatterDefaultHouseItem(): ScatterHouseDto {
   const roomList = [getDefaultRoomItem("A"), getDefaultRoomItem("B"), getDefaultRoomItem("C")];
   return {
     houseCode: "",
@@ -23,7 +23,7 @@ function getScatterDefaultHouseItem(): ScatterHouseProps {
       kitchen: null,
       bathroom: null,
       newly: true
-    } as HouseLayoutProps,
+    } as HouseLayoutDto,
     rentalType: 2,
     direction: "",
     area: "",
@@ -33,7 +33,7 @@ function getScatterDefaultHouseItem(): ScatterHouseProps {
   };
 }
 
-function getDefaultPriceConfigItem(): PriceConfigProps {
+function getDefaultPriceConfigItem(): PriceConfigDto {
   return {
     /** 房间ID */
     roomId: null,
@@ -46,12 +46,12 @@ function getDefaultPriceConfigItem(): PriceConfigProps {
     /** 底价录入值（金额或比例，具体由 low_price_method 决定） */
     floorPriceInput: null,
     /** 其他费用列表 */
-    otherFees: [] as OtherFeeProps[],
-    pricePlans: [] as PricePlanProps[]
+    otherFees: [] as OtherFeeDto[],
+    pricePlans: [] as PricePlanDto[]
   };
 }
 
-function getDefaultRoomItem(defaultRoomNumber = ""): RoomCreateProps {
+function getDefaultRoomItem(defaultRoomNumber = ""): RoomCreateDto {
   return {
     roomNumber: defaultRoomNumber,
     roomType: null,
@@ -68,7 +68,7 @@ function getDefaultRoomItem(defaultRoomNumber = ""): RoomCreateProps {
 export function useShareEdit() {
   const shareFormRef = ref();
 
-  async function openShareEditDialog(title = "新增", row?: ScatterCreateFormProps) {
+  async function openShareEditDialog(title = "新增", row?: ScatterCreateDto) {
     addDialog({
       title: `${title}合租房源`,
       props: {

@@ -4,16 +4,16 @@
   import HouseLayoutDialog from "@/views/house/components/HouseLayout/HouseLayoutDialog.vue";
   import HouseTagsDialog from "@/views/house/components/HouseTags/HouseTagsDialog.vue";
   import HouseFacilityDialog from "@/views/house/components/HouseFacility/HouseFacilityDialog.vue";
-  import type { FacilityItemProps, HouseLayoutProps } from "@/types";
+  import type { FacilityItemDto, HouseLayoutDto } from "@/types";
 
-  // 定义 props 接口 - layout 可以是字符串或 HouseLayoutProps 对象
+  // 定义 props 接口 - layout 可以是字符串或 HouseLayoutDto 对象
   interface HouseLayoutManageFormProps {
     formInline?: {
       id?: string;
       name?: string;
-      layout?: string | HouseLayoutProps;
+      layout?: string | HouseLayoutDto;
       tags?: number[];
-      facilities?: FacilityItemProps[];
+      facilities?: FacilityItemDto[];
     };
   }
 
@@ -36,9 +36,9 @@
   const formData = reactive<{
     id: string;
     name: string;
-    layout: string | HouseLayoutProps;
+    layout: string | HouseLayoutDto;
     tags: number[];
-    facilities: FacilityItemProps[];
+    facilities: FacilityItemDto[];
   }>({
     id: "",
     name: "",
@@ -63,7 +63,7 @@
         formData.id = newVal.id || "";
         formData.name = newVal.name || "";
 
-        // 处理 layout 字段 - 可能是字符串或 HouseLayoutProps 对象
+        // 处理 layout 字段 - 可能是字符串或 HouseLayoutDto 对象
         if (typeof newVal.layout === "string") {
           formData.layout = newVal.layout;
         } else if (newVal.layout && typeof newVal.layout === "object") {
@@ -81,7 +81,7 @@
   );
 
   // 获取表单数据的方法
-  const getRef = async (): Promise<HouseLayoutProps> => {
+  const getRef = async (): Promise<HouseLayoutDto> => {
     await formRef.value?.validate();
 
     const layoutData = layoutDialogRef.value?.getRef();
@@ -94,13 +94,13 @@
     const selectedFacilities = facilityDialogRef.value?.getRef() || {};
 
     // 将 facilities 对象转换为数组
-    const facilitiesArray: FacilityItemProps[] = Object.entries(selectedFacilities).map(([name, count]) => ({
+    const facilitiesArray: FacilityItemDto[] = Object.entries(selectedFacilities).map(([name, count]) => ({
       name,
       count: Number(count)
     }));
 
-    // 返回完整的 HouseLayoutProps 数据
-    const result: HouseLayoutProps = {
+    // 返回完整的 HouseLayoutDto 数据
+    const result: HouseLayoutDto = {
       id: formData.id || layoutData.id,
       layoutName: formData.name,
       bedroom: layoutData.bedroom,

@@ -312,9 +312,9 @@
 <script setup lang="ts">
   import { computed } from "vue";
   import { Calendar, Clock, FolderOpened, Grid, House, InfoFilled, Iphone, Memo, Money, Timer, User, Wallet, WarningFilled } from "@element-plus/icons-vue";
-  import type { BookingListProps } from "@/types";
+  import type { BookingListVo } from "@/types";
 
-  const props = defineProps<{ formInline: BookingListProps }>();
+  const props = defineProps<{ formInline: BookingListVo }>();
 
   const isExpired = computed(() => {
     if (props.formInline.bookingStatus === 2) {

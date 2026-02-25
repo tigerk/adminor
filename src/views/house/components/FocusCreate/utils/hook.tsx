@@ -3,8 +3,8 @@ import FocusCreateForm from "../FocusCreateForm.vue";
 import { addDialog, closeAllDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
-import type { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
-import type { FocusBuildingProps, FocusHouseStatusProps } from "@/types";
+import type { FocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
+import type { FocusBuildingDto, FocusHouseDto } from "@/types";
 
 export function useFocusEdit() {
   const form = reactive({
@@ -23,8 +23,8 @@ export function useFocusEdit() {
   };
 
   // 初始化特定楼层房源列表
-  const initHouseListOfFloor = (building: FocusBuildingProps, floor: number, houseCount: number) => {
-    const houseStatusMap = new Map<string, FocusHouseStatusProps>();
+  const initHouseListOfFloor = (building: FocusBuildingDto, floor: number, houseCount: number) => {
+    const houseStatusMap = new Map<string, FocusHouseDto>();
 
     let actualCount = 0;
     let doorIndex = 1;
@@ -63,14 +63,14 @@ export function useFocusEdit() {
   };
 
   // 为指定楼栋初始化所有楼层房源状态
-  const initAllFloorsForBuilding = (building: FocusBuildingProps) => {
+  const initAllFloorsForBuilding = (building: FocusBuildingDto) => {
     if (!building.floorTotal || !building.houseCountPerFloor) {
       return;
     }
 
     // 初始化 Map
     if (!building.housesStatusOfFloors) {
-      building.housesStatusOfFloors = new Map<number, Map<string, FocusHouseStatusProps>>();
+      building.housesStatusOfFloors = new Map<number, Map<string, FocusHouseDto>>();
     } else {
       building.housesStatusOfFloors.clear();
     }
@@ -102,7 +102,7 @@ export function useFocusEdit() {
   };
 
   // 获取指定楼栋的楼层列表
-  const getFloorList = (building: FocusBuildingProps) => {
+  const getFloorList = (building: FocusBuildingDto) => {
     if (!building?.floorTotal) {
       return [];
     }
@@ -110,7 +110,7 @@ export function useFocusEdit() {
   };
 
   // 获取指定楼栋指定楼层的房源列表
-  const getHouseListForFloor = (building: FocusBuildingProps, floor: number) => {
+  const getHouseListForFloor = (building: FocusBuildingDto, floor: number) => {
     if (!building?.housesStatusOfFloors || !building.housesStatusOfFloors.has(floor)) {
       return [];
     }
@@ -126,7 +126,7 @@ export function useFocusEdit() {
   };
 
   // 获取指定楼栋指定楼层的房源数量
-  const getHouseCountForFloor = (building: FocusBuildingProps, floor: number) => {
+  const getHouseCountForFloor = (building: FocusBuildingDto, floor: number) => {
     if (!building?.housesStatusOfFloors || !building.housesStatusOfFloors.has(floor)) {
       return building.houseCountPerFloor || 0;
     }
@@ -134,7 +134,7 @@ export function useFocusEdit() {
   };
 
   // 处理房源点击事件（锁定/解锁）
-  const handleHouseClick = (building: FocusBuildingProps, houseStatus: FocusHouseStatusProps) => {
+  const handleHouseClick = (building: FocusBuildingDto, houseStatus: FocusHouseDto) => {
     // 确保 closedHouses 是数组
     if (!Array.isArray(building.closedHouses)) {
       building.closedHouses = [];
@@ -158,7 +158,7 @@ export function useFocusEdit() {
   };
 
   // 处理关闭楼层
-  const handleCloseFloor = (building: FocusBuildingProps) => {
+  const handleCloseFloor = (building: FocusBuildingDto) => {
     // 确保 closedFloors 是数组
     if (!Array.isArray(building.closedFloors)) {
       building.closedFloors = [];
@@ -175,7 +175,7 @@ export function useFocusEdit() {
   };
 
   // 楼层选择处理
-  const handleFloorSelect = (building: FocusBuildingProps, floor: number) => {
+  const handleFloorSelect = (building: FocusBuildingDto, floor: number) => {
     building.selectedFloor = floor;
 
     // 如果选中的楼层没有房源数据，使用默认房源数量初始化
@@ -185,7 +185,7 @@ export function useFocusEdit() {
   };
 
   // 添加房源到指定楼层
-  const addHouseToFloor = (building: FocusBuildingProps, floor: number, doorNumber: string) => {
+  const addHouseToFloor = (building: FocusBuildingDto, floor: number, doorNumber: string) => {
     if (!building.housesStatusOfFloors.has(floor)) {
       building.housesStatusOfFloors.set(floor, new Map());
     }
@@ -193,7 +193,7 @@ export function useFocusEdit() {
     const floorMap = building.housesStatusOfFloors.get(floor);
     const newIndex = floorMap.size + 1;
 
-    const newHouse: FocusHouseStatusProps = {
+    const newHouse: FocusHouseDto = {
       cursor: `${building.building}-${building.unit || "0"}-${floor}-${newIndex}`,
       houseIndex: newIndex,
       doorNumber: doorNumber,
@@ -213,7 +213,7 @@ export function useFocusEdit() {
   };
 
   // 更新房源信息
-  const updateHouseInfo = (building: FocusBuildingProps, cursor: string, updates: Partial<FocusHouseStatusProps>) => {
+  const updateHouseInfo = (building: FocusBuildingDto, cursor: string, updates: Partial<FocusHouseDto>) => {
     for (const [floor, floorMap] of building.housesStatusOfFloors) {
       console.log("housesStatusOfFloors foreach, key={}, house={}", floor, floorMap);
       for (const [key, house] of floorMap) {
@@ -228,7 +228,7 @@ export function useFocusEdit() {
   };
 
   // 删除房源
-  const deleteHouse = (building: FocusBuildingProps, cursor: string) => {
+  const deleteHouse = (building: FocusBuildingDto, cursor: string) => {
     for (const [floor, floorMap] of building.housesStatusOfFloors) {
       console.log("building.housesStatusOfFloors, floor=%s, floorMap=%s", floor, floorMap);
       for (const [key, house] of floorMap) {
@@ -249,7 +249,7 @@ export function useFocusEdit() {
   };
 
   // 批量应用房型配置到楼层
-  const applyLayoutToFloor = (building: FocusBuildingProps, floor: number, layoutId: string, config?: { price?: number; direction?: string; area?: number }) => {
+  const applyLayoutToFloor = (building: FocusBuildingDto, floor: number, layoutId: string, config?: { price?: number; direction?: string; area?: number }) => {
     const floorMap = building.housesStatusOfFloors?.get(floor);
     if (!floorMap) return;
 
@@ -264,7 +264,7 @@ export function useFocusEdit() {
   };
 
   // 复制楼层配置
-  const copyFloorConfiguration = (building: FocusBuildingProps, sourceFloor: number, targetFloor: number) => {
+  const copyFloorConfiguration = (building: FocusBuildingDto, sourceFloor: number, targetFloor: number) => {
     const sourceMap = building.housesStatusOfFloors?.get(sourceFloor);
     const targetMap = building.housesStatusOfFloors?.get(targetFloor);
 
@@ -286,7 +286,7 @@ export function useFocusEdit() {
   };
 
   // 批量锁定/解锁楼层的所有房源
-  const toggleFloorLock = (building: FocusBuildingProps, floor: number, closed: boolean) => {
+  const toggleFloorLock = (building: FocusBuildingDto, floor: number, closed: boolean) => {
     const floorMap = building.housesStatusOfFloors?.get(floor);
     if (!floorMap) return;
 
@@ -312,8 +312,8 @@ export function useFocusEdit() {
   };
 
   // 将 buildings 的 Map 结构转换为 houseList 数组
-  const convertBuildingsToHouseList = (buildings: FocusBuildingProps[]): FocusHouseStatusProps[] => {
-    const houseList: FocusHouseStatusProps[] = [];
+  const convertBuildingsToHouseList = (buildings: FocusBuildingDto[]): FocusHouseDto[] => {
+    const houseList: FocusHouseDto[] = [];
 
     buildings.forEach(building => {
       if (building.housesStatusOfFloors) {
@@ -337,7 +337,7 @@ export function useFocusEdit() {
     return houseList;
   };
 
-  function openFocusEditDialog(title = "新增", row?: FocusFormItemProps, onConfirm?: (data: any) => void) {
+  function openFocusEditDialog(title = "新增", row?: FocusCreateDto, onConfirm?: (data: any) => void) {
     addDialog({
       title: `${title}项目`,
       props: {
@@ -394,7 +394,7 @@ export function useFocusEdit() {
    * 将 houseList 按照 building 和 unit 分配到对应的 buildings.housesStatusOfFloors 中
    * @param formData 表单数据
    */
-  function distributeHousesToBuildings(formData: FocusFormItemProps): void {
+  function distributeHousesToBuildings(formData: FocusCreateDto): void {
     // 如果没有 houseList，直接返回
     if (!formData.houseList || formData.houseList.length === 0) {
       return;
@@ -418,7 +418,7 @@ export function useFocusEdit() {
 
         // 获取或创建该楼层的 Map
         if (!building.housesStatusOfFloors.has(floor)) {
-          building.housesStatusOfFloors.set(floor, new Map<string, FocusHouseStatusProps>());
+          building.housesStatusOfFloors.set(floor, new Map<string, FocusHouseDto>());
         }
 
         const floorMap = building.housesStatusOfFloors.get(floor)!;
@@ -443,7 +443,7 @@ export function useFocusEdit() {
         const houseKey = house.houseIndex.toString();
 
         // 确保所有必需字段都有默认值
-        const completeHouse: FocusHouseStatusProps = {
+        const completeHouse: FocusHouseDto = {
           cursor: house.cursor,
           houseIndex: house.houseIndex,
           doorNumber: house.doorNumber,

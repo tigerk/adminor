@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { FocusFormItemProps } from "@/views/house/components/FocusCreate/utils/types";
+import type { FocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
 import type { ApiListResponse, ApiResponse, PaginationResponse } from "@/types/common";
 
 type ResultList = {
@@ -18,7 +18,7 @@ export const getFocusHouseOptions = (data?: object) => {
 };
 
 export const getFocusById = (data?: object) => {
-  return http.request<ApiResponse<FocusFormItemProps>>("get", baseUrlApi("focus/get"), { params: data });
+  return http.request<ApiResponse<FocusCreateDto>>("get", baseUrlApi("focus/get"), { params: data });
 };
 
 export const checkFocusCodeExist = (data?: object) => {

@@ -6,7 +6,7 @@ import { addDialog } from "@/components/ReDialog";
 import { h, onMounted, reactive, ref } from "vue";
 import { cloneDeep, deviceDetection } from "@pureadmin/utils";
 import { ElMessageBox } from "element-plus";
-import type { ApprovalFormItemProps } from "@/types";
+import type { ApprovalFlowDto } from "@/types";
 
 export function useApprovalFlow() {
   const formRef = ref();
@@ -105,7 +105,7 @@ export function useApprovalFlow() {
     onSearch();
   }
 
-  function openDialog(title = "新增", row?: ApprovalFormItemProps) {
+  function openDialog(title = "新增", row?: ApprovalFlowDto) {
     addDialog({
       title: `${title}审批流程`,
       props: {
@@ -129,7 +129,7 @@ export function useApprovalFlow() {
       contentRenderer: () => h(editForm, { ref: formRef, formInline: null, bizTypeOptions: null }),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as ApprovalFormItemProps;
+        const curData = options.props.formInline as ApprovalFlowDto;
 
         FormRef.validate(valid => {
           if (valid) {
@@ -168,7 +168,7 @@ export function useApprovalFlow() {
     });
   }
 
-  function handleConfirmDelete(row: ApprovalFormItemProps) {
+  function handleConfirmDelete(row: ApprovalFlowDto) {
     ElMessageBox.confirm(`确认删除流程「${row.flowName}」吗？`, "删除", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
@@ -185,7 +185,7 @@ export function useApprovalFlow() {
       .catch(() => {});
   }
 
-  function handleToggleStatus(row: ApprovalFormItemProps) {
+  function handleToggleStatus(row: ApprovalFlowDto) {
     toggleApprovalFlowStatus(row.id).then(resp => {
       if (resp.code === 0) {
         message(row.enabled ? "已启用" : "已停用", { type: "success" });

@@ -16,7 +16,7 @@
   import { ElMessage, ElMessageBox } from "element-plus";
   import { Check, CircleCheck, CircleClose, Clock, Close, RefreshRight } from "@element-plus/icons-vue";
   import { checkNeedApproval, getApprovalInstance, handleApproval, submitApproval, withdrawApproval } from "@/api/approval";
-  import { ApprovalActionProps, ApprovalInstanceProps } from "@/types"; // ==================== Props ====================
+  import { ApprovalActionVo, ApprovalInstanceVo } from "@/types"; // ==================== Props ====================
 
   // ==================== Props ====================
   interface Props {
@@ -39,7 +39,7 @@
 
   // ==================== 响应式数据 ====================
   const loading = ref(false);
-  const instance = ref<ApprovalInstanceProps | null>(null);
+  const instance = ref<ApprovalInstanceVo | null>(null);
   const needApprovalFlag = ref(false);
   const dialogVisible = ref(false);
   const handleForm = ref({
@@ -167,7 +167,7 @@
     }
   };
 
-  const getActionStatus = (action: ApprovalActionProps) => {
+  const getActionStatus = (action: ApprovalActionVo) => {
     if (action.status === 0) return { type: "info", text: "待审批" };
     if (action.status === 2) return { type: "info", text: "已跳过" };
     if (action.action === 1) return { type: "success", text: "已通过" };

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
-  import type { BookingListProps, HouseViewDetailProps, PriceConfigProps, RoomDetailProps } from "@/types";
+  import type { BookingListVo, HouseDetailVo, PriceConfigDto, RoomDetailVo } from "@/types";
   import { ROOM_STATUS_ENUM } from "@/constants";
   import { ArrowRight, Calendar, Edit, House, Location, Plus, User, View } from "@element-plus/icons-vue";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
@@ -14,17 +14,17 @@
     /** 是否正在加载 */
     loading: boolean;
     /** 房源详情（接口返回的完整数据，null 表示未加载或加载失败） */
-    detail: HouseViewDetailProps | null;
+    detail: HouseDetailVo | null;
   }>();
 
   const emit = defineEmits<{
-    booking: [room: RoomDetailProps];
-    tenant: [room: RoomDetailProps];
-    checkout: [room: RoomDetailProps];
-    viewContract: [room: RoomDetailProps];
+    booking: [room: RoomDetailVo];
+    tenant: [room: RoomDetailVo];
+    checkout: [room: RoomDetailVo];
+    viewContract: [room: RoomDetailVo];
     openTenantDetail: [tenantId: string, leaseId: string];
     openBookingDetail: [bookingId: string];
-    renewLease: [room: RoomDetailProps];
+    renewLease: [room: RoomDetailVo];
     addRoom: [];
     /** 操作完成后通知父级刷新详情 */
     reload: [];
@@ -71,7 +71,7 @@
   });
 
   // ======================== 房间 Tab（来自 detail.roomList） ========================
-  const roomTabs = computed<RoomDetailProps[]>(() => props.detail?.roomList ?? []);
+  const roomTabs = computed<RoomDetailVo[]>(() => props.detail?.roomList ?? []);
 
   const activeRoomIndex = ref(0);
   watch(
@@ -81,7 +81,7 @@
     },
     { immediate: true }
   );
-  const currentRoom = computed<RoomDetailProps | null>(() => roomTabs.value[activeRoomIndex.value] ?? roomTabs.value[0] ?? null);
+  const currentRoom = computed<RoomDetailVo | null>(() => roomTabs.value[activeRoomIndex.value] ?? roomTabs.value[0] ?? null);
 
   // ======================== 图片（来自 houseLayout + 当前房间） ========================
   const allImages = computed(() => {
@@ -105,7 +105,7 @@
     };
   });
 
-  const getRoomTabStatus = (room: RoomDetailProps) => {
+  const getRoomTabStatus = (room: RoomDetailVo) => {
     const map: Record<number, { text: string; cls: string; dot: string }> = {
       [ROOM_STATUS_ENUM.LEASED.code]: { text: "已租", cls: "st-leased", dot: "#67c23a" },
       [ROOM_STATUS_ENUM.AVAILABLE.code]: { text: "空置", cls: "st-available", dot: "#f56c6c" },
@@ -141,7 +141,7 @@
   });
 
   // ======================== 预定信息 ========================
-  const bookingInfo = computed<BookingListProps | null>(() => {
+  const bookingInfo = computed<BookingListVo | null>(() => {
     if (!roomStatusInfo.value.isBooked || !currentRoom.value?.leaseInfo) return null;
     const li = currentRoom.value.leaseInfo;
     return {
@@ -152,7 +152,7 @@
       tenantPhone: li.tenantPhone,
       bookingTime: li.leaseStartDate as any,
       expiryTime: li.leaseEndDate as any
-    } as BookingListProps;
+    } as BookingListVo;
   });
 
   // ======================== 详情 Tab ========================
@@ -173,13 +173,13 @@
 
   // ======================== 租金配置 ========================
   const { openPriceConfigDialog } = usePriceConfigEdit();
-  const priceConfig = ref<PriceConfigProps | null>(null);
+  const priceConfig = ref<PriceConfigDto | null>(null);
 
   const loadPriceConfig = async () => {
     const roomId = currentRoom.value?.roomId || (currentRoom.value as any)?.id;
     if (!roomId) return;
     // 先检查 room 内联的 priceConfig
-    const inlineConfig = (currentRoom.value as any)?.priceConfig as PriceConfigProps | undefined;
+    const inlineConfig = (currentRoom.value as any)?.priceConfig as PriceConfigDto | undefined;
     if (inlineConfig?.price) {
       priceConfig.value = inlineConfig;
       return;

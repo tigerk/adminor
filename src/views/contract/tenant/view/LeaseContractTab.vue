@@ -79,10 +79,10 @@
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
-  import { LeaseContractProps } from "@/types";
+  import { LeaseContractVo } from "@/types";
 
   interface Props {
-    leaseContract: LeaseContractProps | null;
+    leaseContract: LeaseContractVo | null;
     leaseId: string; // 租约ID，用于事件回调
     tenantStatus: number;
     createTime?: Date;
@@ -95,10 +95,10 @@
 
   const emit = defineEmits<{
     "contract-signed": [leaseId: string];
-    "contract-updated": [contract: LeaseContractProps];
+    "contract-updated": [contract: LeaseContractVo];
   }>();
 
-  const localContract = ref<LeaseContractProps | null>(props.leaseContract ? { ...props.leaseContract } : null);
+  const localContract = ref<LeaseContractVo | null>(props.leaseContract ? { ...props.leaseContract } : null);
 
   // 格式化创建时间
   const formattedCreateTime = computed(() => {

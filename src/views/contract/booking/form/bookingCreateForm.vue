@@ -117,13 +117,13 @@
 <script setup lang="ts">
   import { onMounted, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
-  import type { BookingCreateProps } from "@/types";
+  import type { BookingCreateDto } from "@/types";
   import { getOptionByCode, RENTAL_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import RoomPicker from "@/components/Business/RoomPicker.vue";
   import { Plus } from "@element-plus/icons-vue";
 
   interface FormProps {
-    formInline: BookingCreateProps;
+    formInline: BookingCreateDto;
   }
 
   const props = defineProps<FormProps>();
@@ -132,7 +132,7 @@
   const roomPickerRef = ref();
   const roomSelection = ref([]);
 
-  const formInline = reactive<BookingCreateProps>({
+  const formInline = reactive<BookingCreateDto>({
     id: props.formInline?.id || null,
     roomIds: props.formInline?.roomIds || [],
     roomList: props.formInline?.roomList || [],

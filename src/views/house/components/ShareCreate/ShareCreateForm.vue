@@ -15,7 +15,7 @@
   import { ShareFormProps } from "@/views/house/components/ShareCreate/types";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
-  import type { FacilityItemProps } from "@/types";
+  import type { FacilityItemDto } from "@/types";
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
@@ -108,7 +108,7 @@
   const openFacilitiesDialog = (index: number) => {
     const currentHouse = shareForm.houseList[index];
 
-    openFacilityEditDialog("", currentHouse.houseLayout.facilities, (facilities: FacilityItemProps[]) => {
+    openFacilityEditDialog("", currentHouse.houseLayout.facilities, (facilities: FacilityItemDto[]) => {
       shareForm.houseList[index].houseLayout.facilities = facilities;
     });
   };
@@ -127,7 +127,7 @@
   const openRoomFacilitiesDialog = (houseIndex: number, roomIndex: number) => {
     const currentRoom = shareForm.houseList[houseIndex].roomList[roomIndex];
 
-    openFacilityEditDialog("", currentRoom.facilities, (facilities: FacilityItemProps[]) => {
+    openFacilityEditDialog("", currentRoom.facilities, (facilities: FacilityItemDto[]) => {
       shareForm.houseList[houseIndex].roomList[roomIndex].facilities = facilities;
     });
   };

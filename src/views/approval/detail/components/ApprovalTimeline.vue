@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed } from "vue";
   import { ChatLineSquare, Check, Clock, Close, Document, DocumentDelete, Minus, User } from "@element-plus/icons-vue";
-  import type { ApprovalActionProps } from "@/types";
+  import type { ApprovalActionVo } from "@/types";
   import { APPROVAL_ACTION_STATUS_HELPER, APPROVAL_ACTION_TYPE_HELPER } from "@/constants";
 
   // ====== Types ======
@@ -9,7 +9,7 @@
   interface GroupedNode {
     nodeOrder: number;
     nodeName: string;
-    actions: ApprovalActionProps[];
+    actions: ApprovalActionVo[];
     isOrSign: boolean;
     status: "done" | "reject" | "active" | "wait";
   }
@@ -17,7 +17,7 @@
   defineOptions({ name: "ApprovalTimeline" });
 
   interface Props {
-    actions: ApprovalActionProps[];
+    actions: ApprovalActionVo[];
   }
 
   const props = defineProps<Props>();
@@ -25,7 +25,7 @@
   // ====== Computed ======
 
   /** 获取分组状态 */
-  const getGroupStatus = (actions: ApprovalActionProps[]): "done" | "reject" | "active" | "wait" => {
+  const getGroupStatus = (actions: ApprovalActionVo[]): "done" | "reject" | "active" | "wait" => {
     if (actions.some(a => APPROVAL_ACTION_TYPE_HELPER.isApprove(a.action))) {
       return "done";
     }
@@ -45,7 +45,7 @@
   const groupedNodes = computed<GroupedNode[]>(() => {
     if (!props.actions?.length) return [];
 
-    const groups = new Map<number, ApprovalActionProps[]>();
+    const groups = new Map<number, ApprovalActionVo[]>();
 
     for (const action of props.actions) {
       const order = Number(action.nodeOrder);
@@ -76,7 +76,7 @@
   });
 
   /** 获取单个审批人的状态 */
-  const getActionStatus = (action: ApprovalActionProps) => {
+  const getActionStatus = (action: ApprovalActionVo) => {
     if (APPROVAL_ACTION_STATUS_HELPER.isPending(action.status)) return "active";
     if (APPROVAL_ACTION_STATUS_HELPER.isSkipped(action.status)) return "wait";
     if (APPROVAL_ACTION_TYPE_HELPER.isApprove(action.action)) return "done";

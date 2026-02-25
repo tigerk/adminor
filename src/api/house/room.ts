@@ -1,29 +1,8 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, PriceConfigProps, RoomGridProps, RoomListQueryProps, RoomTotal } from "@/types";
+import type { ApiResponse, PaginationResponse, PriceConfigDto, RoomGridDto, RoomIdDto, RoomQueryDto, RoomTotalVo } from "@/types";
 
-export type ResultTable = {
-  code: number;
-  message: string;
-  data?: {
-    /** 列表数据 */
-    list: Array<any>;
-    /** 总条目数 */
-    total?: number;
-    /** 每页显示条目个数 */
-    pageSize?: number;
-    /** 当前页数 */
-    currentPage?: number;
-  };
-};
-
-export type ResultRoomGridProps = {
-  code: number;
-  message: string;
-  data?: RoomGridProps;
-};
-
-export const getRoomList = (data?: RoomListQueryProps) => {
+export const getRoomList = (data?: RoomQueryDto) => {
   return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("room/list"), { data });
 };
 
@@ -31,31 +10,31 @@ export const getRoomList = (data?: RoomListQueryProps) => {
  * 获取房间网格数据
  * @param data
  */
-export const getRoomGrid = (data?: object) => {
-  return http.request<ResultRoomGridProps>("post", baseUrlApi("room/grid"), { data });
+export const getRoomGrid = (data?: RoomQueryDto) => {
+  return http.request<ApiResponse<RoomGridDto>>("post", baseUrlApi("room/grid"), { data });
 };
 
-export const getRoomTotal = (data?: object) => {
-  return http.request<RoomTotal>("post", baseUrlApi("room/total"), { data });
+export const getRoomTotalVo = (data?: RoomQueryDto) => {
+  return http.request<RoomTotalVo>("post", baseUrlApi("room/total"), { data });
 };
 
 /**
  * 锁定房间
  * @param data
  */
-export const lockRoom = (data?: object) => {
+export const lockRoom = (data?: RoomIdDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("room/lock"), { data });
 };
 
-export const unlockRoom = (data?: object) => {
+export const unlockRoom = (data?: RoomIdDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("room/unlock"), { data });
 };
 
-export const closeRoom = (data?: object) => {
+export const closeRoom = (data?: RoomIdDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("room/close"), { data });
 };
 
-export const openRoom = (data?: object) => {
+export const openRoom = (data?: RoomIdDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("room/open"), { data });
 };
 
@@ -66,7 +45,7 @@ export const openRoom = (data?: object) => {
  * 入参: PriceConfigDTO { roomId, price, floorPriceMethod, floorPriceInput, floorPrice, otherFees[], pricePlans[] }
  * 出参: Boolean
  */
-export const saveRoomPriceConfig = (data?: PriceConfigProps) => {
+export const saveRoomPriceConfig = (data?: PriceConfigDto) => {
   return http.request<ApiResponse<boolean>>("post", baseUrlApi("room/price-config/save"), { data });
 };
 
@@ -77,6 +56,6 @@ export const saveRoomPriceConfig = (data?: PriceConfigProps) => {
  * 入参: { roomId: number }
  * 出参: PriceConfigDTO
  */
-export const getRoomPriceConfig = (data?: { roomId: number | string }) => {
-  return http.request<ApiResponse<PriceConfigProps>>("post", baseUrlApi("room/price-config/get"), { data });
+export const getRoomPriceConfig = (data?: RoomIdDto) => {
+  return http.request<ApiResponse<PriceConfigDto>>("post", baseUrlApi("room/price-config/get"), { data });
 };

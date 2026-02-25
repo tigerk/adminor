@@ -4,7 +4,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { defineEmits, h, ref } from "vue";
 import { message } from "@/utils/message";
-import type { FacilityItemProps } from "@/types";
+import type { FacilityItemDto } from "@/types";
 
 export function useFacilityEdit() {
   const facilityFormRef = ref();
@@ -13,8 +13,8 @@ export function useFacilityEdit() {
 
   function openFacilityEditDialog(
     title = "新增",
-    row?: FacilityItemProps[],
-    onConfirm?: (facilities: FacilityItemProps[]) => void // 添加回调函数参数
+    row?: FacilityItemDto[],
+    onConfirm?: (facilities: FacilityItemDto[]) => void // 添加回调函数参数
   ) {
     addDialog({
       title: `${title} 房源配置`,
@@ -31,7 +31,7 @@ export function useFacilityEdit() {
       beforeSure: (done, { options }) => {
         const selectedFacilities = facilityFormRef.value.getRef();
 
-        const result: FacilityItemProps[] = Object.entries(selectedFacilities).map(([name, count]) => ({
+        const result: FacilityItemDto[] = Object.entries(selectedFacilities).map(([name, count]) => ({
           name,
           count: Number(count) // 将 count 转换为 number 类型
         }));

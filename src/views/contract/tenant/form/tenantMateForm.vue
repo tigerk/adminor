@@ -105,7 +105,7 @@
   import { computed, reactive, ref } from "vue";
   import type { FormInstance } from "element-plus";
   import { GENDER_OPTIONS, ID_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
-  import type { TenantMateProps } from "@/types";
+  import type { TenantMateVo } from "@/types";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/Business/UploadImage.vue";
 
@@ -128,7 +128,7 @@
 
   interface TenantMateFormProps {
     formInline: {
-      tenantMateList: TenantMateProps[];
+      tenantMateList: TenantMateVo[];
     };
   }
 
@@ -159,7 +159,7 @@
 
   // 创建响应式对象
   // 表单数据
-  const formInlines = reactive<TenantMateProps[]>(initialTenantMateList);
+  const formInlines = reactive<TenantMateVo[]>(initialTenantMateList);
 
   // 常量选项
   const genderOptions = [...GENDER_OPTIONS];

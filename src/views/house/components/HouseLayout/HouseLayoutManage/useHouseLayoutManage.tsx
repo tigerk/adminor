@@ -3,7 +3,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { message } from "@/utils/message";
 import HouseLayoutManageDialog from "./HouseLayoutManageDialog.vue";
-import type { FacilityItemProps, HouseLayoutProps } from "@/types";
+import type { FacilityItemDto, HouseLayoutDto } from "@/types";
 
 export function useHouseLayoutManage() {
   const layoutManageFormRef = ref();
@@ -14,13 +14,13 @@ export function useHouseLayoutManage() {
    * @param row 房型数据
    * @param onConfirm 确认回调函数
    */
-  function openHouseLayoutManageDialog(title: "创建" | "编辑" = "创建", row?: HouseLayoutProps, onConfirm?: (data: HouseLayoutProps) => void) {
-    // 将 HouseLayoutProps 转换为表单需要的格式
+  function openHouseLayoutManageDialog(title: "创建" | "编辑" = "创建", row?: HouseLayoutDto, onConfirm?: (data: HouseLayoutDto) => void) {
+    // 将 HouseLayoutDto 转换为表单需要的格式
     const formInline = row
       ? {
           id: row.id || "",
           name: row.layoutName || "",
-          layout: row, // 直接传递完整的 HouseLayoutProps 对象
+          layout: row, // 直接传递完整的 HouseLayoutDto 对象
           tags: row.tags || [],
           facilities: row.facilities || []
         }
@@ -50,7 +50,7 @@ export function useHouseLayoutManage() {
         }),
       beforeSure: async done => {
         try {
-          const result: HouseLayoutProps = await layoutManageFormRef.value.getRef();
+          const result: HouseLayoutDto = await layoutManageFormRef.value.getRef();
 
           console.log("房型管理返回结果:", result);
 

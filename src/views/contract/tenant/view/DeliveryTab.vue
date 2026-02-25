@@ -65,13 +65,13 @@
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue";
-  import type { DeliveryProps, RoomListProps } from "@/types";
+  import type { DeliveryProps, RoomListVo } from "@/types";
   import { createDelivery, getDeliveryList, updateDelivery } from "@/api/delivery";
   import { convertImage2string } from "@/utils/image";
   import { DELIVERY_TYPE_OPTIONS, getOptionByCode } from "@/constants";
 
   interface DeliveryTabProps {
-    roomList: RoomListProps[];
+    roomList: RoomListVo[];
     subjectTypeId: string;
   }
 

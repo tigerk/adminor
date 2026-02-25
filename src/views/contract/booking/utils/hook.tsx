@@ -4,7 +4,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { cancelBooking, createBooking, getBookingDetail, getBookingList, getBookingTotal } from "@/api/contract/booking";
-import type { BookingCancelProps, BookingListProps, BookingQueryParams, LeaseCreateProps, TenantCompanyProps, TenantPersonalProps } from "@/types";
+import type { BookingCancelDto, BookingListVo, BookingQueryDto, TenantCreateDto, TenantCompanyVo, TenantPersonalVo } from "@/types";
 import { ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import BookingCreateForm from "../form/bookingCreateForm.vue";
@@ -24,7 +24,7 @@ function useBooking() {
     background: true
   });
 
-  const queryForm = reactive<BookingQueryParams>({
+  const queryForm = reactive<BookingQueryDto>({
     tenantName: "",
     tenantPhone: "",
     bookingStatus: undefined,
@@ -34,7 +34,7 @@ function useBooking() {
 
   const curRow = ref();
   const bookingStatusTotal = ref([]);
-  const bookingList = ref<BookingListProps[]>([]);
+  const bookingList = ref<BookingListVo[]>([]);
   const loading = ref(true);
   const tableSize = ref("default");
   const formRef = ref();
@@ -292,7 +292,7 @@ function useBooking() {
   }
 
   // 查看预定详情
-  function handleViewBooking(row: BookingListProps) {
+  function handleViewBooking(row: BookingListVo) {
     loading.value = true;
 
     getBookingDetail({ id: row.id })
@@ -327,14 +327,14 @@ function useBooking() {
   }
 
   // 转为租客
-  function handleConvertToTenant(row: BookingListProps) {
+  function handleConvertToTenant(row: BookingListVo) {
     ElMessageBox.confirm(`确认将预定"${row.tenantName}"转为租客合同吗？`, "转为租客", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning"
     }).then(() => {
-      let tenantPersonal: TenantPersonalProps = undefined;
-      let tenantCompany: TenantCompanyProps = undefined;
+      let tenantPersonal: TenantPersonalVo = undefined;
+      let tenantCompany: TenantCompanyVo = undefined;
       if (row.tenantType === 0) {
         tenantPersonal = {
           name: row.tenantName,
@@ -352,7 +352,7 @@ function useBooking() {
         };
       }
 
-      const lease: LeaseCreateProps = {
+      const lease: TenantCreateDto = {
         contractNature: undefined,
         roomIds: row.roomIds,
         contractTemplateId: undefined,
@@ -381,14 +381,14 @@ function useBooking() {
   }
 
   // 取消预定
-  function handleCancelBooking(row: BookingListProps) {
+  function handleCancelBooking(row: BookingListVo) {
     ElMessageBox.prompt("请输入取消原因", "取消预定", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       inputPattern: /.+/,
       inputErrorMessage: "请输入取消原因"
     }).then(({ value }) => {
-      const params: BookingCancelProps = {
+      const params: BookingCancelDto = {
         id: row.id,
         cancelReason: value
       };

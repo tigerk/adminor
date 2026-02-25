@@ -2,7 +2,7 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { APPROVAL_STATUS_ENUM, CHECKOUT_FEE_TYPE_ENUM, CHECKOUT_STATUS_ENUM, FEE_DIRECTION_ENUM } from "@/constants";
-import type { CheckoutDetailProps, CheckoutFeeProps, CheckoutFormProps, CheckoutInitDataProps } from "@/types";
+import type { LeaseCheckoutVo, CheckoutFeeProps, LeaseCheckoutDto, LeaseCheckoutInitVo } from "@/types";
 import { getCheckoutDetail, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
 
 export function useCheckout() {
@@ -22,13 +22,13 @@ export function useCheckout() {
   const isEdit = computed(() => !!checkoutId.value);
 
   // 初始化数据
-  const initData = ref<CheckoutInitDataProps | null>(null);
+  const initData = ref<LeaseCheckoutInitVo | null>(null);
 
   // 退租单详情（编辑时）
-  const checkoutDetail = ref<CheckoutDetailProps | null>(null);
+  const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
 
   // 表单数据
-  const form = reactive<CheckoutFormProps>({
+  const form = reactive<LeaseCheckoutDto>({
     id: undefined,
     tenantId: "",
     leaseId: "",
