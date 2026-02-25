@@ -129,7 +129,7 @@
   const bookingInfo = computed<BookingListVo | null>(() => currentRoom.value?.booking ?? null);
 
   // ── 房间详情 Tab ──────────────────────────────────
-  const activeDetailTab = ref<"room" | "rent">("room");
+  const activeDetailTab = ref<"room" | "rent" | "follow">("room");
 
   const roomDetail = computed(() => {
     const r = currentRoom.value;
@@ -308,19 +308,101 @@
 
     <!-- ══════════════ 主体三栏 ══════════════ -->
     <template v-else-if="detail">
+      <!-- ▌全局顶部：仿截图样式 -->
+      <div class="hv-topbar">
+        <!-- 最左侧：房源概要（类型 + 出租统计） -->
+        <div class="hv-topbar__summary">
+          <div class="hv-topbar__summary-type">{{ houseMeta.rentalType }}</div>
+          <div class="hv-topbar__summary-stat">已租 {{ roomStats.leased }} 间 / 共 {{ roomStats.total }} 间</div>
+        </div>
+
+        <!-- 房间卡片列表 -->
+        <div class="hv-topbar__rooms">
+          <button
+            v-for="(room, idx) in roomTabs"
+            :key="room.id || idx"
+            class="hv-troom"
+            :class="[`hv-troom--${getRoomStatus(room).cls}`, { 'is-active': activeRoomIndex === idx }]"
+            @click="activeRoomIndex = idx"
+          >
+            <!-- 左：房间号 + 状态 -->
+            <div class="hv-troom__left">
+              <span class="hv-troom__num">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
+              <span class="hv-troom__status" :class="`hv-troom__status--${getRoomStatus(room).cls}`">
+                {{ getRoomStatus(room).text }}
+              </span>
+            </div>
+            <!-- 竖线分隔 -->
+            <div class="hv-troom__divider" />
+            <!-- 右：租客/预定/空置信息（固定宽） -->
+            <div class="hv-troom__right">
+              <template v-if="room.lease?.tenantName">
+                <span class="hv-troom__info-line hv-troom__info-line--tenant">
+                  ♂ {{ room.lease.tenantName }}/押{{ room.lease.depositMonths ?? 1 }}付{{
+                    room.lease.paymentMethod === 2 ? 1 : room.lease.paymentMethod === 4 ? 3 : room.lease.paymentMethod === 5 ? 6 : room.lease.paymentMethod === 6 ? 12 : 1
+                  }}
+                </span>
+                <span v-if="room.lease.leaseEnd" class="hv-troom__info-line hv-troom__info-line--date">{{ formatDate(room.lease.leaseEnd) }}到期</span>
+              </template>
+              <template v-else-if="room.booking?.tenantName">
+                <span class="hv-troom__info-line hv-troom__info-line--booking">
+                  {{ room.booking.tenantName }}
+                </span>
+                <span v-if="room.booking.expiryTime" class="hv-troom__info-line hv-troom__info-line--date">{{ formatDate(room.booking.expiryTime) }}到期</span>
+              </template>
+              <template v-else>
+                <span class="hv-troom__info-line hv-troom__info-line--empty">待登记租客</span>
+              </template>
+            </div>
+          </button>
+          <button v-if="isShareRental" class="hv-troom hv-troom--add" @click="emit('addRoom')">
+            <el-icon :size="14"><Plus /></el-icon>
+            <span>添加房间</span>
+          </button>
+        </div>
+
+        <!-- 右侧：出租率（原始样式） -->
+        <div class="hv-topbar__occ">
+          <div class="hv-occ">
+            <div class="hv-occ__head">
+              <span class="hv-occ__label">出租率</span>
+              <span class="hv-occ__pct">{{ occupancyRate }}%</span>
+            </div>
+            <div class="hv-occ__track">
+              <div class="hv-occ__fill hv-occ__fill--leased" :style="{ width: roomStats.total ? (roomStats.leased / roomStats.total) * 100 + '%' : '0' }" />
+              <div class="hv-occ__fill hv-occ__fill--booked" :style="{ width: roomStats.total ? (roomStats.booked / roomStats.total) * 100 + '%' : '0' }" />
+            </div>
+            <div class="hv-occ__legend">
+              <span>
+                <i class="hv-dot hv-dot--leased" />
+                已租 {{ roomStats.leased }}
+              </span>
+              <span>
+                <i class="hv-dot hv-dot--booked" />
+                预定 {{ roomStats.booked }}
+              </span>
+              <span>
+                <i class="hv-dot hv-dot--available" />
+                空置 {{ roomStats.available }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="hv-layout">
         <!-- ██████ 左侧：房源档案 + 房间导航 ██████ -->
         <aside class="hv-aside">
           <!-- 封面图 -->
           <div class="hv-cover">
-            <el-image v-if="allImages.length" :src="allImages[0]" fit="cover" :preview-src-list="allImages" class="hv-cover__img" />
+            <el-image v-if="allImages.length" :src="allImages[0]" fit="cover" :preview-src-list="allImages" :preview-teleported="true" :initial-index="0" class="hv-cover__img" />
             <div v-else class="hv-cover__empty">
               <el-icon :size="28"><House /></el-icon>
               <span>暂无图片</span>
             </div>
-            <div v-if="allImages.length > 1" class="hv-cover__count">
-              <el-icon :size="10"><View /></el-icon>
-              {{ allImages.length }}
+            <div v-if="allImages.length" class="hv-cover__footer">
+              <el-icon :size="11"><View /></el-icon>
+              {{ allImages.length }} 张图片
             </div>
           </div>
 
@@ -401,72 +483,20 @@
               </div>
             </div>
 
-            <!-- 负责人 -->
-            <div class="hv-owner">
-              <div class="hv-owner__avatar">{{ houseMeta.salesmanName.slice(0, 1) }}</div>
-              <div>
-                <div class="hv-owner__name">{{ houseMeta.salesmanName }}</div>
-                <div class="hv-owner__dept">{{ houseMeta.deptId }}</div>
-              </div>
-            </div>
-
             <!-- 房源备注（有才展示） -->
             <div v-if="houseMeta.houseRemark" class="hv-aside__remark">
               <p>{{ houseMeta.houseRemark }}</p>
             </div>
+          </div>
 
-            <div class="hv-sep" />
-
-            <!-- ▌出租率进度条（此处唯一展示统计） -->
-            <div class="hv-occ">
-              <div class="hv-occ__head">
-                <span class="hv-occ__label">出租率</span>
-                <span class="hv-occ__pct">{{ occupancyRate }}%</span>
-              </div>
-              <div class="hv-occ__track">
-                <div class="hv-occ__fill hv-occ__fill--leased" :style="{ width: roomStats.total ? (roomStats.leased / roomStats.total) * 100 + '%' : '0' }" />
-                <div class="hv-occ__fill hv-occ__fill--booked" :style="{ width: roomStats.total ? (roomStats.booked / roomStats.total) * 100 + '%' : '0' }" />
-              </div>
-              <div class="hv-occ__legend">
-                <span>
-                  <i class="hv-dot hv-dot--leased" />
-                  已租 {{ roomStats.leased }}
-                </span>
-                <span>
-                  <i class="hv-dot hv-dot--booked" />
-                  预定 {{ roomStats.booked }}
-                </span>
-                <span>
-                  <i class="hv-dot hv-dot--available" />
-                  空置 {{ roomStats.available }}
-                </span>
-              </div>
+          <!-- 负责人：固定在左侧底部 -->
+          <div class="hv-owner hv-owner--fixed">
+            <div class="hv-owner__avatar">{{ houseMeta.salesmanName.slice(0, 1) }}</div>
+            <div class="hv-owner__info">
+              <div class="hv-owner__label">负责人</div>
+              <div class="hv-owner__name">{{ houseMeta.salesmanName }}</div>
             </div>
-
-            <div class="hv-sep" />
-
-            <!-- ▌房间导航列表（唯一切换入口，去掉顶部选择器） -->
-            <div class="hv-nav">
-              <div class="hv-nav__title">
-                全部房间
-                <span class="hv-nav__total">{{ roomStats.total }}</span>
-              </div>
-              <div class="hv-nav__list">
-                <button v-for="(room, idx) in roomTabs" :key="room.id || idx" class="hv-nav-item" :class="{ 'is-active': activeRoomIndex === idx }" @click="activeRoomIndex = idx">
-                  <span class="hv-nav-item__dot" :style="{ background: getRoomStatus(room).color }" />
-                  <span class="hv-nav-item__num">{{ room.roomNumber || `${String.fromCharCode(65 + idx)}室` }}</span>
-                  <span class="hv-nav-item__area">{{ room.area ? room.area + "m²" : "" }}</span>
-                  <span v-if="room.lease?.tenantName" class="hv-nav-item__tenant">{{ room.lease.tenantName }}</span>
-                  <span class="hv-nav-item__tag" :class="`hv-nav-item__tag--${getRoomStatus(room).cls}`">
-                    {{ getRoomStatus(room).text }}
-                  </span>
-                </button>
-                <button v-if="isShareRental" class="hv-nav-item hv-nav-item--add" @click="emit('addRoom')">
-                  <el-icon :size="12"><Plus /></el-icon>
-                  <span>添加房间</span>
-                </button>
-              </div>
-            </div>
+            <div class="hv-owner__dept-badge">{{ houseMeta.deptId }}</div>
           </div>
         </aside>
 
@@ -515,11 +545,28 @@
                 </el-button>
               </template>
               <template v-else-if="isBooked">
-                <el-button size="small" type="primary" @click="emit('tenant', currentRoom!)">
+                <el-button size="small" plain disabled>
                   <el-icon><User /></el-icon>
                   录入租客
                 </el-button>
+                <el-button size="small" type="primary" @click="emit('tenant', currentRoom!)">
+                  <el-icon><ArrowRight /></el-icon>
+                  转为租客
+                </el-button>
               </template>
+
+              <!-- 通用操作：所有状态都显示 -->
+              <div class="hv-room-header__divider" />
+              <el-button size="small" plain @click="activeDetailTab = 'room'">
+                <el-icon><Edit /></el-icon>
+                修改信息
+              </el-button>
+              <el-button size="small" plain @click="activeDetailTab = 'follow'">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 3px">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+                </svg>
+                添加跟进
+              </el-button>
             </div>
           </div>
 
@@ -527,6 +574,7 @@
           <div class="hv-tabs">
             <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'room' }" @click="activeDetailTab = 'room'">房间信息</button>
             <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'rent' }" @click="activeDetailTab = 'rent'">租金配置</button>
+            <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'follow' }" @click="activeDetailTab = 'follow'">跟进记录</button>
           </div>
 
           <!-- Tab 内容 -->
@@ -591,38 +639,7 @@
                 </div>
               </div>
 
-              <!-- 房间备注（在中间区域显示，非右侧重复） -->
-              <div class="hv-section hv-section--remark">
-                <div class="hv-section__hd">
-                  <span class="hv-section__title">房间备注</span>
-                  <div class="hv-section__hd-actions">
-                    <template v-if="remarkEditing">
-                      <el-button
-                        size="small"
-                        link
-                        @click="
-                          remarkEditing = false;
-                          remarkText = currentRoom?.remark || '';
-                        "
-                      >
-                        取消
-                      </el-button>
-                      <el-button size="small" link type="primary" :loading="remarkLoading" @click="handleSaveRemark">保存</el-button>
-                    </template>
-                    <el-button v-else size="small" link type="primary" @click="remarkEditing = true">
-                      <el-icon><Edit /></el-icon>
-                      编辑
-                    </el-button>
-                  </div>
-                </div>
-                <el-input v-if="remarkEditing" v-model="remarkText" type="textarea" :rows="3" placeholder="输入房间备注…" resize="none" />
-                <p v-else-if="remarkText" class="hv-remark-text">{{ remarkText }}</p>
-                <div v-else class="hv-empty-tip">
-                  <span class="hv-empty-tip__ico">✏️</span>
-                  暂无备注，
-                  <span class="hv-link" @click="remarkEditing = true">点击添加</span>
-                </div>
-              </div>
+              <!-- 房间备注已移至右侧面板 -->
             </template>
 
             <!-- ── 租金配置 ── -->
@@ -706,6 +723,49 @@
                 </div>
               </div>
             </template>
+
+            <!-- ── 跟进记录 ── -->
+            <template v-if="activeDetailTab === 'follow'">
+              <!-- 输入区 -->
+              <div class="hv-follow-compose">
+                <div class="hv-follow-compose__avatar">{{ houseMeta.salesmanName.slice(0, 1) }}</div>
+                <div class="hv-follow-compose__right">
+                  <el-input v-model="followInput" type="textarea" :rows="3" placeholder="记录跟进情况，支持描述客户意向、看房情况、沟通进展…" resize="none" />
+                  <div class="hv-follow-compose__footer">
+                    <span class="hv-follow-compose__hint">{{ followInput.length }} 字</span>
+                    <el-button type="primary" size="small" :loading="followLoading" :disabled="!followInput.trim()" @click="handleAddFollow">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 3px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+                      提交记录
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 时间轴列表 -->
+              <div class="hv-timeline">
+                <div v-if="!followRecords.length" class="hv-timeline__empty">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" fill="currentColor" opacity=".2" />
+                  </svg>
+                  <p>暂无跟进记录</p>
+                  <span>记录每一次跟进，把握租客意向</span>
+                </div>
+                <div v-for="(rec, idx) in followRecords" :key="rec.id" class="hv-timeline__item">
+                  <div class="hv-timeline__line" v-if="idx < followRecords.length - 1" />
+                  <div class="hv-timeline__dot" />
+                  <div class="hv-timeline__card">
+                    <div class="hv-timeline__meta">
+                      <div class="hv-timeline__author-wrap">
+                        <div class="hv-timeline__author-avatar">{{ rec.author.slice(0, 1) }}</div>
+                        <span class="hv-timeline__author">{{ rec.author }}</span>
+                      </div>
+                      <span class="hv-timeline__time">{{ rec.time }}</span>
+                    </div>
+                    <p class="hv-timeline__body">{{ rec.content }}</p>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
         </main>
 
@@ -743,7 +803,12 @@
                 </div>
               </template>
               <div v-else class="hv-panel-empty">
-                <span class="hv-panel-empty__ico">👤</span>
+                <span class="hv-panel-empty__ico">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5" />
+                    <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                  </svg>
+                </span>
                 <span>暂无租客</span>
                 <el-button v-if="isAvailable" size="small" type="primary" plain @click="emit('tenant', currentRoom!)">立即录入</el-button>
               </div>
@@ -787,31 +852,39 @@
           </div>
 
           <!-- 跟进记录 -->
-          <div class="hv-pcard hv-pcard--follow">
+          <div class="hv-pcard hv-pcard--remark">
             <div class="hv-pcard__hd">
               <div class="hv-pcard__ico hv-pcard__ico--follow">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
-                </svg>
+                <el-icon :size="13"><Edit /></el-icon>
               </div>
-              <span class="hv-pcard__title">跟进记录</span>
+              <span class="hv-pcard__title">房间备注</span>
+              <div style="margin-left: auto">
+                <template v-if="remarkEditing">
+                  <el-button
+                    size="small"
+                    link
+                    @click="
+                      remarkEditing = false;
+                      remarkText = currentRoom?.remark || '';
+                    "
+                  >
+                    取消
+                  </el-button>
+                  <el-button size="small" link type="primary" :loading="remarkLoading" @click="handleSaveRemark">保存</el-button>
+                </template>
+                <el-button v-else size="small" link type="primary" @click="remarkEditing = true">
+                  <el-icon><Edit /></el-icon>
+                  编辑
+                </el-button>
+              </div>
             </div>
-            <div class="hv-pcard__body hv-pcard__body--follow">
-              <!-- 输入 -->
-              <div class="hv-follow-input">
-                <el-input v-model="followInput" type="textarea" :rows="2" placeholder="记录跟进情况…" resize="none" size="small" />
-                <el-button type="primary" size="small" :loading="followLoading" :disabled="!followInput.trim()" @click="handleAddFollow">记录</el-button>
-              </div>
-              <!-- 列表 -->
-              <div class="hv-follow-list">
-                <div v-if="!followRecords.length" class="hv-panel-empty hv-panel-empty--sm">暂无跟进记录</div>
-                <div v-for="rec in followRecords" :key="rec.id" class="hv-follow-item">
-                  <div class="hv-follow-item__meta">
-                    <span class="hv-follow-item__author">{{ rec.author }}</span>
-                    <span class="hv-follow-item__time">{{ rec.time }}</span>
-                  </div>
-                  <p class="hv-follow-item__body">{{ rec.content }}</p>
-                </div>
+            <div class="hv-pcard__body hv-pcard__body--remark">
+              <el-input v-if="remarkEditing" v-model="remarkText" type="textarea" :rows="4" placeholder="输入房间备注…" resize="none" size="small" />
+              <p v-else-if="remarkText" class="hv-remark-text" style="margin: 0; padding: 0 14px 14px; font-size: 13px; color: var(--t2); line-height: 1.7">{{ remarkText }}</p>
+              <div v-else class="hv-panel-empty" style="padding: 14px">
+                <span style="font-size: 18px">✏️</span>
+                <span>暂无备注</span>
+                <el-button size="small" link type="primary" @click="remarkEditing = true">点击添加</el-button>
               </div>
             </div>
           </div>
@@ -977,7 +1050,8 @@
   .hv-layout {
     display: grid;
     grid-template-columns: 256px 1fr 280px;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
   }
 
@@ -989,14 +1063,7 @@
     flex-direction: column;
     background: var(--card);
     border-right: 1px solid var(--b);
-    overflow-y: auto;
-    &::-webkit-scrollbar {
-      width: 3px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: var(--bl);
-      border-radius: 2px;
-    }
+    overflow: hidden;
 
     &__body {
       flex: 1;
@@ -1004,6 +1071,14 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      overflow-y: auto;
+      &::-webkit-scrollbar {
+        width: 3px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: var(--bl);
+        border-radius: 2px;
+      }
     }
 
     &__title-row {
@@ -1056,15 +1131,17 @@
   // 封面图
   .hv-cover {
     position: relative;
-    height: 152px;
     flex-shrink: 0;
     background: var(--sub);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
     &__img {
       width: 100%;
-      height: 100%;
+      height: 140px;
       display: block;
+      cursor: pointer;
       transition: transform 0.35s ease;
       &:hover {
         transform: scale(1.04);
@@ -1077,7 +1154,7 @@
     }
 
     &__empty {
-      height: 100%;
+      height: 140px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1087,19 +1164,17 @@
       font-size: 12px;
     }
 
-    &__count {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
+    &__footer {
       display: flex;
       align-items: center;
-      gap: 3px;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(6px);
-      color: #fff;
-      border-radius: 20px;
-      padding: 2px 8px;
+      justify-content: center;
+      gap: 4px;
+      padding: 5px 0;
+      background: var(--sub);
+      border-top: 1px solid var(--bl);
       font-size: 11px;
+      color: var(--t3);
+      flex-shrink: 0;
     }
   }
 
@@ -1170,11 +1245,23 @@
     border: 1px solid var(--bl);
     border-radius: var(--r-sm);
 
+    // 固定在左侧底部
+    &--fixed {
+      border-radius: 0;
+      border: none;
+      border-top: 1px solid var(--b);
+      background: var(--card);
+      flex-shrink: 0;
+      padding: 10px 14px;
+      margin: 0;
+      gap: 10px;
+    }
+
     &__avatar {
-      width: 32px;
-      height: 32px;
-      min-width: 32px;
-      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      border-radius: 10px;
       background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--primary));
       color: #fff;
       font-size: 14px;
@@ -1182,15 +1269,49 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
+
+    &__info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    &__label {
+      font-size: 10px;
+      color: var(--t3);
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
     &__name {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--t1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+
     &__dept {
       font-size: 11px;
       color: var(--t3);
       margin-top: 1px;
+    }
+
+    &__dept-badge {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--primary-light);
+      border: 1px solid var(--el-color-primary-light-7);
+      border-radius: 6px;
+      padding: 2px 7px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
   }
 
@@ -1468,9 +1589,18 @@
 
     &__actions {
       display: flex;
+      align-items: center;
       gap: 6px;
       margin-left: auto;
       flex-shrink: 0;
+    }
+
+    &__divider {
+      width: 1px;
+      height: 20px;
+      background: var(--bl);
+      flex-shrink: 0;
+      margin: 0 2px;
     }
   }
 
@@ -1825,10 +1955,235 @@
     }
   }
 
+  // ════════════════════════════════════════
+  //  全局顶部栏（截图风格）
+  // ════════════════════════════════════════
+  .hv-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 8px 14px 0;
+    background: var(--card);
+    border-bottom: 1px solid var(--b);
+    flex-shrink: 0;
+    overflow-x: auto;
+    &::-webkit-scrollbar {
+      height: 0;
+    }
+  }
+
+  // 左侧：房源概要卡
+  .hv-topbar__summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 12px 6px 0;
+    margin-right: 10px;
+    border-right: 1px solid var(--b);
+    flex-shrink: 0;
+    background: var(--sub);
+    border: 1px solid var(--b);
+    border-radius: 8px;
+    padding: 6px 14px;
+    margin-right: 10px;
+
+    &-type {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--t1);
+      white-space: nowrap;
+    }
+    &-stat {
+      font-size: 11px;
+      color: var(--t3);
+      white-space: nowrap;
+    }
+  }
+
+  // 房间卡片列表容器
+  .hv-topbar__rooms {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    flex-wrap: wrap;
+    padding: 0 10px 0 0;
+  }
+
+  // 单个房间卡片（截图风格：左侧房号+状态，右侧信息，固定宽度）
+  .hv-troom {
+    display: flex;
+    align-items: stretch;
+    border-radius: 8px;
+    border: 1.5px solid var(--b);
+    background: var(--sub);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    width: 160px;
+    min-width: 160px;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    &:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--el-color-primary-light-8);
+    }
+
+    &.is-active {
+      border-color: var(--primary);
+      background: var(--card);
+      box-shadow: 0 0 0 2px var(--el-color-primary-light-7);
+
+      .hv-troom__left {
+        background: var(--primary);
+        color: #fff;
+      }
+      .hv-troom__status--leased {
+        color: #a5f3c0;
+      }
+      .hv-troom__status--available {
+        color: #fca5a5;
+      }
+      .hv-troom__status--booked {
+        color: #fcd34d;
+      }
+      .hv-troom__status--locked {
+        color: #cbd5e1;
+      }
+    }
+
+    &--add {
+      border-style: dashed;
+      border-color: var(--b);
+      color: var(--t3);
+      font-size: 12px;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      width: 80px;
+      min-width: 80px;
+      &:hover {
+        color: var(--primary);
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+    }
+
+    // 左侧：房间号 + 状态（固定宽，垂直居中）
+    &__left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 8px 10px;
+      min-width: 48px;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    &__num {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--t1);
+    }
+    &__status {
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      &--leased {
+        color: var(--success);
+      }
+      &--available {
+        color: var(--danger);
+      }
+      &--booked {
+        color: var(--warning);
+      }
+      &--locked {
+        color: var(--info);
+      }
+    }
+
+    // 竖线分隔
+    &__divider {
+      width: 1px;
+      background: var(--bl);
+      flex-shrink: 0;
+      align-self: stretch;
+    }
+
+    // 右侧：信息区（固定剩余宽度，垂直居中）
+    &__right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+      padding: 7px 10px;
+      min-width: 0;
+    }
+
+    &__info-line {
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      &--tenant {
+        color: var(--t2);
+        font-weight: 500;
+      }
+      &--booking {
+        color: var(--warning);
+        font-weight: 500;
+      }
+      &--empty {
+        color: var(--t3);
+      }
+      &--date {
+        color: var(--t3);
+        font-size: 10px;
+      }
+    }
+  }
+
+  // 右侧：出租率容器（原始 hv-occ 样式不变，只加容器）
+  .hv-topbar__occ {
+    flex-shrink: 0;
+    padding-left: 14px;
+    border-left: 1px solid var(--b);
+    min-width: 120px;
+
+    .hv-occ {
+      gap: 6px;
+    }
+  }
+
+  // 旧 modifier 清理
+  .hv-nav--topbar,
+  .hv-nav-item--compact,
+  .hv-occ--topbar,
+  .hv-topbar__occ-rate,
+  .hv-topbar__occ-label {
+    display: none;
+  }
+
   .hv-pcard {
     background: var(--card);
     border-bottom: 1px solid var(--b);
     flex-shrink: 0;
+
+    &--remark {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
 
     &--follow {
       flex: 1;
@@ -1881,6 +2236,13 @@
         gap: 10px;
         min-height: 0;
         padding-bottom: 14px;
+      }
+      &--remark {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        padding: 0 14px 14px;
       }
     }
   }
@@ -2031,6 +2393,10 @@
     font-size: 12px;
     &__ico {
       font-size: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--t3);
     }
     &--sm {
       flex-direction: row;
@@ -2039,7 +2405,181 @@
     }
   }
 
-  // 跟进记录
+  // ════════════════════════════════════════
+  //  跟进记录 - 输入区
+  // ════════════════════════════════════════
+  .hv-follow-compose {
+    display: flex;
+    gap: 12px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--bl);
+
+    &__avatar {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--primary));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    &__right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    &__footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    &__hint {
+      font-size: 11px;
+      color: var(--t3);
+    }
+  }
+
+  // ════════════════════════════════════════
+  //  跟进记录 - 时间轴
+  // ════════════════════════════════════════
+  .hv-timeline {
+    padding: 20px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+
+    &__empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+      gap: 8px;
+      color: var(--t3);
+
+      p {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--t2);
+      }
+
+      span {
+        font-size: 12px;
+        color: var(--t3);
+      }
+
+      svg {
+        color: var(--t3);
+      }
+    }
+
+    &__item {
+      display: flex;
+      gap: 14px;
+      position: relative;
+      padding-bottom: 20px;
+
+      &:last-child {
+        padding-bottom: 0;
+      }
+    }
+
+    &__dot {
+      width: 10px;
+      height: 10px;
+      min-width: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px var(--el-color-primary-light-5);
+      margin-top: 13px;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    &__line {
+      position: absolute;
+      left: 4px;
+      top: 22px;
+      bottom: 0;
+      width: 2px;
+      background: var(--bl);
+    }
+
+    &__card {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--b);
+      border-radius: var(--r);
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.15s;
+
+      &:hover {
+        box-shadow:
+          0 2px 8px rgba(0, 0, 0, 0.08),
+          0 8px 24px rgba(0, 0, 0, 0.06);
+      }
+    }
+
+    &__meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    &__author-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    &__author-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--primary));
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &__author {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--t1);
+    }
+
+    &__time {
+      font-size: 11px;
+      color: var(--t3);
+      font-variant-numeric: tabular-nums;
+    }
+
+    &__body {
+      margin: 0;
+      font-size: 13px;
+      color: var(--t2);
+      line-height: 1.7;
+    }
+  }
+
+  // 旧 follow 样式保留兼容
   .hv-follow-input {
     display: flex;
     flex-direction: column;
@@ -2048,50 +2588,11 @@
       align-self: flex-end;
     }
   }
-
   .hv-follow-list {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    overflow-y: auto;
-    flex: 1;
-    &::-webkit-scrollbar {
-      width: 3px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: var(--b);
-      border-radius: 2px;
-    }
+    display: none;
   }
-
   .hv-follow-item {
-    padding: 9px 11px;
-    border-radius: var(--r-sm);
-    background: var(--sub);
-    border: 1px solid var(--bl);
-    border-left: 3px solid #7c3aed;
-
-    &__meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 5px;
-    }
-    &__author {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--t2);
-    }
-    &__time {
-      font-size: 10px;
-      color: var(--t3);
-    }
-    &__body {
-      font-size: 12px;
-      color: var(--t1);
-      line-height: 1.6;
-      margin: 0;
-    }
+    display: none;
   }
 
   // ════════════════════════════════════════
