@@ -44,6 +44,17 @@
     return m > 0 ? `${m}个月` : "";
   };
 
+  /** 计算租约进度 0~100 */
+  const calcLeaseProgress = (start?: string, end?: string) => {
+    if (!start || !end) return 0;
+    const s = new Date(start).getTime();
+    const e = new Date(end).getTime();
+    const now = Date.now();
+    if (now <= s) return 0;
+    if (now >= e) return 100;
+    return Math.round(((now - s) / (e - s)) * 100);
+  };
+
   // ======================== 房源基础信息（直接读 detail） ========================
   const isFocus = computed(() => props.detail?.leaseMode === 1);
   const isShareRental = computed(() => props.detail?.rentalType === 2);
@@ -136,7 +147,10 @@
       rentPrice: currentRoom.value?.price || "-",
       leaseStart: formatDate(li.leaseStartDate),
       leaseEnd: formatDate(li.leaseEndDate),
-      duration: calcLeaseDuration(li.leaseStartDate, li.leaseEndDate)
+      duration: calcLeaseDuration(li.leaseStartDate, li.leaseEndDate),
+      progress: calcLeaseProgress(li.leaseStartDate, li.leaseEndDate),
+      leaseStartRaw: li.leaseStartDate,
+      leaseEndRaw: li.leaseEndDate
     };
   });
 
@@ -328,13 +342,33 @@
     <div v-if="loading" class="hv-loading">
       <el-skeleton animated>
         <template #template>
-          <div style="display: flex; gap: 20px; padding: 20px">
-            <el-skeleton-item variant="image" style="width: 240px; height: 100%; border-radius: 12px; flex-shrink: 0" />
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 12px">
-              <el-skeleton-item variant="h3" style="width: 60%" />
-              <el-skeleton-item variant="text" style="width: 40%" />
-              <el-skeleton-item variant="text" />
-              <el-skeleton-item variant="text" />
+          <div class="hv-skeleton-wrap">
+            <div class="hv-skeleton-left">
+              <el-skeleton-item variant="image" style="width: 100%; height: 180px; border-radius: 0" />
+              <div style="padding: 16px; display: flex; flex-direction: column; gap: 10px">
+                <el-skeleton-item variant="h3" style="width: 70%" />
+                <el-skeleton-item variant="text" />
+                <el-skeleton-item variant="text" style="width: 85%" />
+                <el-skeleton-item variant="text" style="width: 60%" />
+              </div>
+            </div>
+            <div class="hv-skeleton-main">
+              <div style="padding: 16px; display: flex; gap: 8px; border-bottom: 1px solid var(--el-border-color-extra-light)">
+                <el-skeleton-item v-for="i in 4" :key="i" variant="button" style="width: 72px; height: 68px; border-radius: 8px" />
+              </div>
+              <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px">
+                <el-skeleton-item variant="h3" style="width: 40%" />
+                <el-skeleton-item variant="text" />
+                <el-skeleton-item variant="text" style="width: 75%" />
+              </div>
+            </div>
+            <div class="hv-skeleton-panel">
+              <div style="padding: 16px; display: flex; flex-direction: column; gap: 10px">
+                <el-skeleton-item variant="h3" style="width: 50%" />
+                <el-skeleton-item variant="image" style="width: 100%; height: 90px; border-radius: 10px" />
+                <el-skeleton-item variant="text" />
+                <el-skeleton-item variant="text" style="width: 80%" />
+              </div>
             </div>
           </div>
         </template>
@@ -342,44 +376,68 @@
     </div>
 
     <template v-else-if="detail">
-      <!-- ===== 三栏布局 ===== -->
       <div class="hv-layout">
-        <!-- ① 左侧：房源信息面板 -->
+        <!-- ① 左侧：房源信息 -->
         <aside class="hv-aside">
-          <!-- 图片区 -->
-          <div class="hv-aside__gallery">
-            <el-image v-if="allImages.length" :src="allImages[0]" fit="cover" :preview-src-list="allImages" class="hv-aside__img" />
-            <div v-else class="hv-aside__img-empty">
-              <el-icon :size="36" color="var(--el-text-color-placeholder)"><House /></el-icon>
+          <!-- 图片英雄区 -->
+          <div class="hv-hero">
+            <el-image v-if="allImages.length" :src="allImages[0]" fit="cover" :preview-src-list="allImages" class="hv-hero__img" />
+            <div v-else class="hv-hero__empty">
+              <el-icon :size="40" color="var(--el-text-color-placeholder)"><House /></el-icon>
               <span>暂无图片</span>
             </div>
-            <div class="hv-aside__img-count" v-if="allImages.length > 1">
+            <!-- 渐变遮罩 -->
+            <div class="hv-hero__overlay" />
+            <!-- 右下角图片计数 -->
+            <div v-if="allImages.length > 1" class="hv-hero__count">
               <el-icon :size="11"><View /></el-icon>
-              {{ allImages.length }}张
+              {{ allImages.length }}
+            </div>
+            <!-- 左下角小区名 -->
+            <div class="hv-hero__caption">
+              <el-icon :size="12"><Location /></el-icon>
+              {{ houseMeta.communityName }}
             </div>
           </div>
 
           <!-- 房源属性 -->
           <div class="hv-aside__body">
-            <!-- 小区名 -->
-            <div class="hv-aside__location">
-              <el-icon :size="13" color="var(--el-color-primary)"><Location /></el-icon>
-              <span>{{ houseMeta.communityName }}</span>
+            <!-- 状态统计条 -->
+            <div class="hv-occ-bar">
+              <div class="hv-occ-bar__item hv-occ-bar__item--leased">
+                <span class="hv-occ-bar__num">{{ roomStats.leased }}</span>
+                <span class="hv-occ-bar__label">已租</span>
+              </div>
+              <div class="hv-occ-bar__divider" />
+              <div class="hv-occ-bar__item hv-occ-bar__item--available">
+                <span class="hv-occ-bar__num">{{ roomStats.available }}</span>
+                <span class="hv-occ-bar__label">空置</span>
+              </div>
+              <div class="hv-occ-bar__divider" />
+              <div class="hv-occ-bar__item hv-occ-bar__item--booked">
+                <span class="hv-occ-bar__num">{{ roomStats.booked }}</span>
+                <span class="hv-occ-bar__label">预定</span>
+              </div>
+              <div class="hv-occ-bar__divider" />
+              <div class="hv-occ-bar__item">
+                <span class="hv-occ-bar__num">{{ roomStats.total }}</span>
+                <span class="hv-occ-bar__label">总计</span>
+              </div>
             </div>
 
-            <!-- 关键指标 2列网格 -->
+            <!-- 属性 KV 网格 -->
             <div class="hv-kv-grid">
               <div class="hv-kv">
                 <span class="hv-kv__label">房型</span>
                 <span class="hv-kv__value">{{ houseMeta.rentalType }}</span>
               </div>
               <div class="hv-kv">
-                <span class="hv-kv__label">建筑面积</span>
+                <span class="hv-kv__label">面积</span>
                 <span class="hv-kv__value">{{ houseMeta.area }} m²</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">楼层</span>
-                <span class="hv-kv__value">{{ houseMeta.floor }} / {{ houseMeta.floorTotal }} 层</span>
+                <span class="hv-kv__value">{{ houseMeta.floor }}/{{ houseMeta.floorTotal }}层</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">朝向</span>
@@ -399,7 +457,7 @@
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">物业费</span>
-                <span class="hv-kv__value">{{ houseMeta.propertyFee }} 元/月</span>
+                <span class="hv-kv__value">{{ houseMeta.propertyFee }}/月</span>
               </div>
               <div class="hv-kv">
                 <span class="hv-kv__label">水费</span>
@@ -421,25 +479,22 @@
               </div>
             </div>
 
-            <!-- 分隔 -->
-            <div class="hv-divider" />
-
             <!-- 负责人 -->
             <div class="hv-salesman">
               <div class="hv-salesman__avatar">{{ houseMeta.salesmanName.slice(0, 1) }}</div>
               <div class="hv-salesman__info">
                 <span class="hv-salesman__name">{{ houseMeta.salesmanName }}</span>
-                <span class="hv-salesman__role">负责人</span>
+                <span class="hv-salesman__role">负责经纪人</span>
               </div>
             </div>
 
-            <!-- 房源备注 -->
+            <!-- 备注 -->
             <div v-if="houseMeta.houseRemark" class="hv-aside__remark">
-              <span class="hv-aside__remark-label">备注</span>
+              <span class="hv-aside__remark-label">房源备注</span>
               <span class="hv-aside__remark-text">{{ houseMeta.houseRemark }}</span>
             </div>
 
-            <!-- 修改房源 -->
+            <!-- 底部操作 -->
             <el-button class="hv-aside__edit-btn" size="small" plain>
               <el-icon><Edit /></el-icon>
               修改房源信息
@@ -447,82 +502,85 @@
           </div>
         </aside>
 
-        <!-- ② 中间：房间 + 详情 -->
+        <!-- ② 中间：房间选择 + 详情 -->
         <main class="hv-main">
-          <!-- ★ 合并式顶部条：价格 + 房间选择 -->
-          <div class="hv-topbar">
-            <!-- 左：价格区 -->
-            <div class="hv-topbar__price">
-              <span
-                class="hv-topbar__badge"
-                :class="{
-                  'is-leased': roomStatusInfo.isLeased,
-                  'is-available': roomStatusInfo.isAvailable,
-                  'is-booked': roomStatusInfo.isBooked
-                }"
-              >
-                <span class="hv-topbar__badge-dot"></span>
-                {{ roomStatusInfo.isLeased ? "已租" : roomStatusInfo.isAvailable ? "空置" : roomStatusInfo.isBooked ? "已预定" : roomStatusInfo.statusName }}
-              </span>
-              <span class="hv-topbar__amount">{{ rentPrice }}</span>
-              <span class="hv-topbar__unit">元/月</span>
-              <template v-if="priceConfig?.floorPrice">
-                <span class="hv-topbar__sep">|</span>
-                <span class="hv-topbar__floor-label">底价</span>
-                <span class="hv-topbar__floor-val">{{ priceConfig.floorPrice }} 元/月</span>
-              </template>
-              <button class="hv-topbar__edit" @click="handleOpenPriceConfig">
-                <el-icon :size="11"><Edit /></el-icon>
-                修改
-              </button>
+          <!-- 房间选择区 -->
+          <div class="hv-room-selector">
+            <div class="hv-room-selector__header">
+              <span class="hv-room-selector__title">房间列表</span>
+              <span class="hv-room-selector__sub">共 {{ roomStats.total }} 间</span>
             </div>
-            <!-- 右：房间卡片 + 汇总 -->
-            <div class="hv-topbar__rooms">
-              <div class="hv-topbar__stats">
-                <span>
-                  <span class="hv-dot" style="background: #67c23a"></span>
-                  {{ roomStats.leased }}已租
-                </span>
-                <span>
-                  <span class="hv-dot" style="background: #f56c6c"></span>
-                  {{ roomStats.available }}空置
-                </span>
-                <span>
-                  <span class="hv-dot" style="background: #e6a23c"></span>
-                  {{ roomStats.booked }}预定
-                </span>
+            <div class="hv-room-grid">
+              <div
+                v-for="(room, idx) in roomTabs"
+                :key="room.id || (room as any).id || idx"
+                class="hv-rcard"
+                :class="{
+                  'is-active': activeRoomIndex === idx,
+                  'is-leased': room.roomStatus === ROOM_STATUS_ENUM.LEASED.code,
+                  'is-available': room.roomStatus === ROOM_STATUS_ENUM.AVAILABLE.code,
+                  'is-booked': room.roomStatus === ROOM_STATUS_ENUM.BOOKED.code,
+                  'is-locked': room.roomStatus === ROOM_STATUS_ENUM.LOCKED.code
+                }"
+                @click="activeRoomIndex = idx"
+              >
+                <span class="hv-rcard__num">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
+                <span class="hv-rcard__status">{{ getRoomTabStatus(room).text }}</span>
+                <span class="hv-rcard__dot" :style="{ background: getRoomTabStatus(room).dot }" />
               </div>
-              <div class="hv-topbar__room-list">
-                <div
-                  v-for="(room, idx) in roomTabs"
-                  :key="room.id || (room as any).id || idx"
-                  class="hv-rcard"
-                  :class="{ 'is-active': activeRoomIndex === idx }"
-                  @click="activeRoomIndex = idx"
-                >
-                  <span class="hv-rcard__dot" :style="{ background: getRoomTabStatus(room).dot }"></span>
-                  <span class="hv-rcard__num">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
-                  <span class="hv-rcard__st" :class="getRoomTabStatus(room).cls">{{ getRoomTabStatus(room).text }}</span>
-                </div>
-                <div v-if="isShareRental" class="hv-rcard hv-rcard--add" @click="emit('addRoom')">
-                  <el-icon :size="12"><Plus /></el-icon>
-                  <span>添加</span>
-                </div>
+              <div v-if="isShareRental" class="hv-rcard hv-rcard--add" @click="emit('addRoom')">
+                <el-icon :size="16"><Plus /></el-icon>
+                <span class="hv-rcard__status">添加房间</span>
               </div>
             </div>
           </div>
 
-          <!-- 详情 Tab 区域 -->
+          <!-- 当前房间：价格 + 状态 -->
+          <div
+            class="hv-price-bar"
+            :class="{
+              'is-leased': roomStatusInfo.isLeased,
+              'is-available': roomStatusInfo.isAvailable,
+              'is-booked': roomStatusInfo.isBooked
+            }"
+          >
+            <div class="hv-price-bar__left">
+              <span class="hv-price-bar__status-dot" />
+              <span class="hv-price-bar__status-text">
+                {{ roomStatusInfo.isLeased ? "已租" : roomStatusInfo.isAvailable ? "空置中" : roomStatusInfo.isBooked ? "已预定" : roomStatusInfo.statusName }}
+              </span>
+              <span class="hv-price-bar__sep" />
+              <span class="hv-price-bar__amount">{{ rentPrice }}</span>
+              <span class="hv-price-bar__unit">元/月</span>
+              <span v-if="priceConfig?.floorPrice" class="hv-price-bar__floor">
+                底价
+                <strong>{{ priceConfig.floorPrice }}</strong>
+                元
+              </span>
+            </div>
+            <div class="hv-price-bar__right">
+              <button class="hv-price-bar__edit-btn" @click="handleOpenPriceConfig">
+                <el-icon :size="11"><Edit /></el-icon>
+                调整租金
+              </button>
+            </div>
+          </div>
+
+          <!-- 详情 Tab -->
           <div class="hv-detail">
             <div class="hv-tabs">
-              <button class="hv-tab" :class="{ active: activeDetailTab === 'room' }" @click="activeDetailTab = 'room'">房间信息</button>
-              <button class="hv-tab" :class="{ active: activeDetailTab === 'rent' }" @click="activeDetailTab = 'rent'">租金配置</button>
+              <button class="hv-tab" :class="{ active: activeDetailTab === 'room' }" @click="activeDetailTab = 'room'">
+                <span>房间信息</span>
+              </button>
+              <button class="hv-tab" :class="{ active: activeDetailTab === 'rent' }" @click="activeDetailTab = 'rent'">
+                <span>租金配置</span>
+              </button>
+              <div class="hv-tabs__ink" :style="{ left: activeDetailTab === 'room' ? '0' : '50%' }" />
             </div>
 
             <div class="hv-tab-body">
               <!-- ===== 租金信息 ===== -->
               <template v-if="activeDetailTab === 'rent'">
-                <!-- 三列：租金/底价/佣金 -->
                 <div class="hv-section">
                   <div class="hv-section__head">
                     <span class="hv-section__title">租金明细</span>
@@ -531,32 +589,31 @@
                       编辑配置
                     </el-button>
                   </div>
-                  <div class="hv-stat-row">
-                    <div class="hv-stat">
-                      <span class="hv-stat__label">租金价格</span>
-                      <span class="hv-stat__value hv-stat__value--primary">
+                  <div class="hv-price-cards">
+                    <div class="hv-price-card hv-price-card--primary">
+                      <span class="hv-price-card__label">租金价格</span>
+                      <span class="hv-price-card__value">
                         {{ rentPrice }}
                         <em>元/月</em>
                       </span>
                     </div>
-                    <div class="hv-stat">
-                      <span class="hv-stat__label">租金底价</span>
-                      <span class="hv-stat__value">
+                    <div class="hv-price-card">
+                      <span class="hv-price-card__label">租金底价</span>
+                      <span class="hv-price-card__value">
                         <template v-if="priceConfig?.floorPrice">
                           {{ priceConfig.floorPrice }}
                           <em>元/月</em>
                         </template>
-                        <template v-else><span class="hv-stat__mask">—</span></template>
+                        <template v-else>—</template>
                       </span>
                     </div>
-                    <div class="hv-stat">
-                      <span class="hv-stat__label">佣金</span>
-                      <span class="hv-stat__value">—</span>
+                    <div class="hv-price-card">
+                      <span class="hv-price-card__label">佣金</span>
+                      <span class="hv-price-card__value">—</span>
                     </div>
                   </div>
                 </div>
 
-                <!-- 其他费用 -->
                 <div class="hv-section">
                   <div class="hv-section__head">
                     <span class="hv-section__title">其他费用</span>
@@ -573,7 +630,6 @@
                   <div v-else class="hv-empty">暂未配置其他费用</div>
                 </div>
 
-                <!-- 租金方案 -->
                 <div class="hv-section">
                   <div class="hv-section__head">
                     <span class="hv-section__title">租金方案</span>
@@ -644,6 +700,7 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="hv-section">
                   <div class="hv-section__head">
                     <span class="hv-section__title">房间配置</span>
@@ -659,49 +716,72 @@
           </div>
         </main>
 
-        <!-- ③ 右侧：租客 / 预定 / 跟进 -->
+        <!-- ③ 右侧：租客 / 预定 / 备注 -->
         <aside class="hv-panel">
           <!-- 租客信息 -->
           <div class="hv-panel-sec">
             <div class="hv-panel-sec__head">
               <div class="hv-panel-sec__icon hv-panel-sec__icon--tenant">
-                <el-icon :size="14"><User /></el-icon>
+                <el-icon :size="13"><User /></el-icon>
               </div>
               <span class="hv-panel-sec__title">租客信息</span>
               <div class="hv-panel-sec__actions">
-                <el-button v-if="roomStatusInfo.isLeased" size="small" link type="danger" @click="handleCheckout">退租</el-button>
-                <el-button v-if="roomStatusInfo.isLeased" size="small" link type="primary" @click="handleRenew">续签</el-button>
+                <template v-if="roomStatusInfo.isLeased">
+                  <el-button size="small" link type="danger" @click="handleCheckout">退租</el-button>
+                  <el-button size="small" link type="primary" @click="handleRenew">续签</el-button>
+                </template>
                 <el-button v-if="!roomStatusInfo.isLeased && !roomStatusInfo.isBooked" size="small" type="primary" plain @click="emit('tenant', currentRoom)">录入租客</el-button>
               </div>
             </div>
             <div class="hv-panel-sec__body">
+              <!-- 租客卡片 -->
               <template v-if="tenantInfo">
                 <div class="hv-tenant-card" @click="emit('openTenantDetail', currentRoom?.leaseInfo?.tenantId || '', currentRoom?.leaseInfo?.leaseId || '')">
-                  <div class="hv-tenant-card__avatar">{{ tenantInfo.name.slice(0, 1) }}</div>
-                  <div class="hv-tenant-card__info">
-                    <div class="hv-tenant-card__name">
-                      {{ tenantInfo.name }}
-                      <span class="hv-tenant-card__phone">{{ tenantInfo.phone }}</span>
+                  <div class="hv-tenant-card__top">
+                    <div class="hv-tenant-card__avatar">{{ tenantInfo.name.slice(0, 1) }}</div>
+                    <div class="hv-tenant-card__info">
+                      <div class="hv-tenant-card__name">
+                        {{ tenantInfo.name }}
+                        <span class="hv-tenant-card__phone">{{ tenantInfo.phone }}</span>
+                      </div>
+                      <div class="hv-tenant-card__rent">
+                        月租
+                        <strong>{{ tenantInfo.rentPrice }}</strong>
+                        元
+                        <span v-if="tenantInfo.duration" class="hv-tenant-card__duration">{{ tenantInfo.duration }}</span>
+                      </div>
                     </div>
-                    <div class="hv-tenant-card__rent">
-                      月租
-                      <strong>{{ tenantInfo.rentPrice }}</strong>
-                      元
-                      <span v-if="tenantInfo.duration" class="hv-tenant-card__duration">{{ tenantInfo.duration }}</span>
-                    </div>
-                    <div class="hv-tenant-card__lease">
-                      <el-icon :size="11"><Calendar /></el-icon>
-                      <span class="hv-tenant-card__lease-date">{{ tenantInfo.leaseStart }}</span>
-                      <span>—</span>
-                      <span class="hv-tenant-card__lease-date">{{ tenantInfo.leaseEnd }}</span>
-                    </div>
+                    <el-icon class="hv-tenant-card__arrow"><ArrowRight /></el-icon>
                   </div>
-                  <el-icon class="hv-tenant-card__arrow"><ArrowRight /></el-icon>
+
+                  <!-- 租约进度条 -->
+                  <div class="hv-lease-timeline">
+                    <div class="hv-lease-timeline__dates">
+                      <span>{{ tenantInfo.leaseStart }}</span>
+                      <span>{{ tenantInfo.leaseEnd }}</span>
+                    </div>
+                    <div class="hv-lease-timeline__track">
+                      <div class="hv-lease-timeline__fill" :style="{ width: tenantInfo.progress + '%' }" />
+                      <div class="hv-lease-timeline__thumb" :style="{ left: tenantInfo.progress + '%' }" />
+                    </div>
+                    <div class="hv-lease-timeline__progress">已入住 {{ tenantInfo.progress }}%</div>
+                  </div>
+                </div>
+
+                <!-- 合同操作 -->
+                <div class="hv-tenant-actions">
+                  <el-button size="small" plain @click="emit('viewContract', currentRoom!)">
+                    <el-icon><View /></el-icon>
+                    查看合同
+                  </el-button>
                 </div>
               </template>
+
               <div v-else class="hv-panel-empty">
-                <el-icon :size="28" color="var(--el-text-color-placeholder)"><User /></el-icon>
-                <span>暂无租客</span>
+                <div class="hv-panel-empty__icon">
+                  <el-icon :size="22"><User /></el-icon>
+                </div>
+                <span class="hv-panel-empty__text">暂无在租租客</span>
               </div>
             </div>
           </div>
@@ -710,7 +790,7 @@
           <div class="hv-panel-sec">
             <div class="hv-panel-sec__head">
               <div class="hv-panel-sec__icon hv-panel-sec__icon--booking">
-                <el-icon :size="14"><Calendar /></el-icon>
+                <el-icon :size="13"><Calendar /></el-icon>
               </div>
               <span class="hv-panel-sec__title">预定信息</span>
               <div class="hv-panel-sec__actions">
@@ -720,32 +800,31 @@
             <div class="hv-panel-sec__body">
               <template v-if="bookingInfo">
                 <div class="hv-booking-card" @click="emit('openBookingDetail', bookingInfo.id || '')">
-                  <div class="hv-booking-card__row">
-                    <span class="hv-booking-card__label">预定人</span>
-                    <span class="hv-booking-card__val">{{ bookingInfo.tenantName || "-" }}</span>
+                  <div class="hv-booking-card__avatar">{{ (bookingInfo.tenantName || "?").slice(0, 1) }}</div>
+                  <div class="hv-booking-card__info">
+                    <div class="hv-booking-card__name">{{ bookingInfo.tenantName || "-" }}</div>
+                    <div class="hv-booking-card__dates">
+                      <el-icon :size="11"><Calendar /></el-icon>
+                      {{ formatDate(bookingInfo.bookingTime) }} — {{ formatDate(bookingInfo.expiryTime) }}
+                    </div>
                   </div>
-                  <div class="hv-booking-card__row">
-                    <span class="hv-booking-card__label">预定时间</span>
-                    <span class="hv-booking-card__val">{{ formatDate(bookingInfo.bookingTime) }}</span>
-                  </div>
-                  <div class="hv-booking-card__row">
-                    <span class="hv-booking-card__label">到期时间</span>
-                    <span class="hv-booking-card__val">{{ formatDate(bookingInfo.expiryTime) }}</span>
-                  </div>
+                  <el-icon class="hv-booking-card__arrow"><ArrowRight /></el-icon>
                 </div>
               </template>
               <div v-else class="hv-panel-empty">
-                <el-icon :size="28" color="var(--el-text-color-placeholder)"><Calendar /></el-icon>
-                <span>暂无预定</span>
+                <div class="hv-panel-empty__icon">
+                  <el-icon :size="22"><Calendar /></el-icon>
+                </div>
+                <span class="hv-panel-empty__text">暂无预定记录</span>
               </div>
             </div>
           </div>
 
-          <!-- 备注 -->
-          <div class="hv-panel-sec hv-panel-sec--note">
+          <!-- 房间备注 -->
+          <div class="hv-panel-sec hv-panel-sec--flex">
             <div class="hv-panel-sec__head">
               <div class="hv-panel-sec__icon hv-panel-sec__icon--note">
-                <el-icon :size="14"><Edit /></el-icon>
+                <el-icon :size="13"><Edit /></el-icon>
               </div>
               <span class="hv-panel-sec__title">房间备注</span>
               <div class="hv-panel-sec__actions">
@@ -755,19 +834,17 @@
                     link
                     @click="
                       remarkEditing = false;
-                      remarkText = headerMeta.remark !== '-' ? headerMeta.remark : '';
+                      remarkText = (currentRoom as any)?.remark ?? '';
                     "
                   >
                     取消
                   </el-button>
                   <el-button size="small" type="primary" link :loading="remarkLoading" @click="handleSaveRemark">保存</el-button>
                 </template>
-                <template v-else>
-                  <el-button size="small" link type="primary" @click="remarkEditing = true">
-                    <el-icon><Edit /></el-icon>
-                    编辑
-                  </el-button>
-                </template>
+                <el-button v-else size="small" link type="primary" @click="remarkEditing = true">
+                  <el-icon><Edit /></el-icon>
+                  编辑
+                </el-button>
               </div>
             </div>
             <div class="hv-panel-sec__body">
@@ -776,7 +853,7 @@
               </template>
               <template v-else>
                 <p v-if="remarkText" class="hv-panel-remark">{{ remarkText }}</p>
-                <div v-else class="hv-panel-empty hv-panel-empty--sm">
+                <div v-else class="hv-panel-empty hv-panel-empty--inline">
                   <span>暂无备注，</span>
                   <span class="hv-panel-empty__link" @click="remarkEditing = true">点击添加</span>
                 </div>
@@ -787,15 +864,16 @@
       </div>
     </template>
 
+    <!-- 加载失败 -->
     <div v-else class="hv-empty-state">
-      <el-icon :size="48" color="var(--el-text-color-placeholder)"><House /></el-icon>
+      <el-icon :size="52" color="var(--el-text-color-placeholder)"><House /></el-icon>
       <p>房源数据加载失败，请关闭后重试</p>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-  // ======================== 全局 ========================
+  /* ======================== 全局容器 ======================== */
   .hv {
     display: flex;
     flex-direction: column;
@@ -806,46 +884,75 @@
     overflow: hidden;
   }
 
+  /* ======================== 骨架屏 ======================== */
   .hv-loading {
     flex: 1;
     overflow: hidden;
   }
 
-  // ======================== 三栏布局 ========================
+  .hv-skeleton-wrap {
+    display: grid;
+    grid-template-columns: 220px 1fr 260px;
+    height: 100%;
+    gap: 0;
+  }
+
+  .hv-skeleton-left,
+  .hv-skeleton-main,
+  .hv-skeleton-panel {
+    border-right: 1px solid var(--el-border-color-extra-light);
+    overflow: hidden;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  /* ======================== 三栏布局 ======================== */
   .hv-layout {
     display: grid;
-    grid-template-columns: 240px 1fr 280px;
+    grid-template-columns: 220px 1fr 272px;
     height: 100%;
     overflow: hidden;
   }
 
-  // ======================== 左侧面板 ========================
+  /* ======================== 左侧栏 ======================== */
   .hv-aside {
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--el-border-color-lighter);
     background: var(--el-bg-color);
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--el-border-color) transparent;
+  }
 
-    &__gallery {
-      position: relative;
-      height: 160px;
-      flex-shrink: 0;
-      background: var(--el-fill-color);
-    }
+  /* 英雄图片区 */
+  .hv-hero {
+    position: relative;
+    height: 170px;
+    flex-shrink: 0;
+    background: var(--el-fill-color);
+    overflow: hidden;
 
     &__img {
       width: 100%;
       height: 100%;
       display: block;
+
       :deep(img) {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.4s ease;
+      }
+
+      &:hover :deep(img) {
+        transform: scale(1.03);
       }
     }
 
-    &__img-empty {
+    &__empty {
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -856,67 +963,106 @@
       font-size: 12px;
     }
 
-    &__img-count {
+    &__overlay {
       position: absolute;
-      bottom: 8px;
-      right: 8px;
-      background: rgba(0, 0, 0, 0.45);
+      inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 50%);
+      pointer-events: none;
+    }
+
+    &__count {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
       color: #fff;
-      border-radius: 10px;
-      padding: 2px 8px;
+      border-radius: 20px;
+      padding: 2px 9px;
       font-size: 11px;
       display: flex;
       align-items: center;
       gap: 3px;
     }
 
-    &__body {
-      flex: 1;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    &__location {
+    &__caption {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      right: 36px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 5px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-    }
-
-    &__remark {
-      background: var(--el-fill-color-lighter);
-      border-radius: 6px;
-      padding: 8px 10px;
-    }
-
-    &__remark-label {
-      font-size: 11px;
-      color: var(--el-text-color-placeholder);
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    &__remark-text {
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
-      line-height: 1.6;
-    }
-
-    &__edit-btn {
-      width: 100%;
-      justify-content: center;
+      gap: 4px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
-  // 属性网格
+  /* 入住统计横条 */
+  .hv-occ-bar {
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    border: 1px solid var(--el-border-color-extra-light);
+    overflow: hidden;
+
+    &__item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      padding: 8px 4px;
+
+      &--leased .hv-occ-bar__num {
+        color: #67c23a;
+      }
+      &--available .hv-occ-bar__num {
+        color: #f56c6c;
+      }
+      &--booked .hv-occ-bar__num {
+        color: #e6a23c;
+      }
+    }
+
+    &__divider {
+      width: 1px;
+      height: 28px;
+      background: var(--el-border-color-extra-light);
+      flex-shrink: 0;
+    }
+
+    &__num {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--el-text-color-primary);
+    }
+
+    &__label {
+      font-size: 10px;
+      color: var(--el-text-color-placeholder);
+    }
+  }
+
+  /* 左侧 body */
+  .hv-aside__body {
+    flex: 1;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* KV 属性网格 */
   .hv-kv-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;
     border: 1px solid var(--el-border-color-extra-light);
     border-radius: 8px;
     overflow: hidden;
@@ -925,10 +1071,11 @@
   .hv-kv {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--el-border-color-extra-light);
+    gap: 2px;
+    padding: 7px 10px;
     border-right: 1px solid var(--el-border-color-extra-light);
+    border-bottom: 1px solid var(--el-border-color-extra-light);
+    transition: background 0.15s;
 
     &:nth-child(2n) {
       border-right: none;
@@ -938,7 +1085,7 @@
     }
 
     &__label {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--el-text-color-placeholder);
       line-height: 1.3;
     }
@@ -948,32 +1095,29 @@
       font-weight: 600;
       color: var(--el-text-color-primary);
       line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
-  .hv-divider {
-    height: 1px;
-    background: var(--el-border-color-extra-light);
-    margin: -4px 0;
-  }
-
-  // 负责人
+  /* 负责人 */
   .hv-salesman {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px;
+    padding: 9px 11px;
     background: var(--el-fill-color-lighter);
     border-radius: 8px;
 
     &__avatar {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
       border-radius: 50%;
-      background: var(--el-color-primary-light-7);
-      color: var(--el-color-primary);
-      font-size: 16px;
+      background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--el-color-primary-light-3));
+      color: #fff;
+      font-size: 15px;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -984,7 +1128,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
     }
 
     &__name {
@@ -996,26 +1140,36 @@
       font-size: 11px;
       color: var(--el-text-color-placeholder);
     }
+  }
 
-    &__call {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--el-color-success-light-9);
-      color: var(--el-color-success);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      transition: background 0.15s;
+  /* 备注 */
+  .hv-aside__remark {
+    background: var(--el-fill-color-lighter);
+    border-radius: 6px;
+    padding: 9px 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 
-      &:hover {
-        background: var(--el-color-success-light-7);
-      }
+    &-label {
+      font-size: 10px;
+      color: var(--el-text-color-placeholder);
+    }
+
+    &-text {
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      line-height: 1.6;
     }
   }
 
-  // ======================== 中间主区域 ========================
+  .hv-aside__edit-btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: auto;
+  }
+
+  /* ======================== 中间主区域 ======================== */
   .hv-main {
     display: flex;
     flex-direction: column;
@@ -1023,174 +1177,87 @@
     background: var(--el-bg-color-page);
   }
 
-  // ★ 合并式顶部条
-  .hv-topbar {
-    display: flex;
-    align-items: center;
+  /* 房间选择器 */
+  .hv-room-selector {
+    flex-shrink: 0;
+    padding: 12px 16px 10px;
     background: var(--el-bg-color);
     border-bottom: 1px solid var(--el-border-color-lighter);
-    flex-shrink: 0;
-    min-height: 52px;
+
+    &__header {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    &__title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+
+    &__sub {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+    }
   }
 
-  .hv-topbar__price {
+  .hv-room-grid {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 16px;
-    flex-shrink: 0;
-    border-right: 1px solid var(--el-border-color-extra-light);
-    height: 100%;
-    min-height: 52px;
+    flex-wrap: wrap;
+    gap: 7px;
   }
 
-  .hv-topbar__badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 500;
-    flex-shrink: 0;
-
-    &.is-leased {
-      background: #f0faf0;
-      color: #67c23a;
-    }
-    &.is-available {
-      background: #fff5f5;
-      color: #f56c6c;
-    }
-    &.is-booked {
-      background: #fdf6ec;
-      color: #e6a23c;
-    }
-  }
-
-  .hv-topbar__badge-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    flex-shrink: 0;
-  }
-
-  .hv-topbar__amount {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--el-color-success);
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .hv-topbar__unit {
-    font-size: 12px;
-    color: var(--el-text-color-placeholder);
-    flex-shrink: 0;
-  }
-
-  .hv-topbar__sep {
-    color: var(--el-border-color);
-    font-size: 12px;
-  }
-
-  .hv-topbar__floor-label {
-    font-size: 11px;
-    color: var(--el-text-color-placeholder);
-    flex-shrink: 0;
-  }
-
-  .hv-topbar__floor-val {
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-    font-weight: 500;
-    flex-shrink: 0;
-  }
-
-  .hv-topbar__edit {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid var(--el-border-color-lighter);
-    background: transparent;
-    color: var(--el-text-color-placeholder);
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.15s;
-    flex-shrink: 0;
-
-    &:hover {
-      color: var(--el-color-primary);
-      border-color: var(--el-color-primary);
-      background: var(--el-color-primary-light-9);
-    }
-  }
-
-  .hv-topbar__rooms {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 6px 12px 6px 14px;
-    gap: 5px;
-    overflow: hidden;
-    min-height: 52px;
-  }
-
-  .hv-topbar__stats {
-    display: flex;
-    gap: 10px;
-    font-size: 11px;
-    color: var(--el-text-color-placeholder);
-
-    span {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }
-  }
-
-  .hv-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-  }
-
-  .hv-topbar__room-list {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 1px;
-
-    &::-webkit-scrollbar {
-      height: 3px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: var(--el-border-color);
-      border-radius: 2px;
-    }
-  }
-
-  // 房间小卡片（精简版）
+  /* 房间卡片 */
   .hv-rcard {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 4px 10px 3px;
-    border-radius: 6px;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 10px 6px;
+    border-radius: 8px;
     cursor: pointer;
     border: 1.5px solid var(--el-border-color-lighter);
     background: var(--el-bg-color);
-    transition: all 0.15s;
-    min-width: 48px;
-    flex-shrink: 0;
+    transition: all 0.16s;
+    min-width: 56px;
     position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 0 0 2px 2px;
+      background: transparent;
+      transition: background 0.16s;
+    }
+
+    &__num {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--el-text-color-primary);
+    }
+
+    &__status {
+      font-size: 10px;
+      color: var(--el-text-color-placeholder);
+    }
+
+    &__dot {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
 
     &:hover {
       border-color: var(--el-color-primary-light-5);
@@ -1200,148 +1267,287 @@
     &.is-active {
       border-color: var(--el-color-primary);
       background: var(--el-color-primary-light-9);
+      box-shadow: 0 2px 8px rgba(var(--el-color-primary-rgb), 0.15);
+
+      .hv-rcard__num {
+        color: var(--el-color-primary);
+      }
+      .hv-rcard__status {
+        color: var(--el-color-primary);
+        font-weight: 500;
+      }
+
+      &::before {
+        background: var(--el-color-primary);
+      }
+    }
+
+    &.is-leased.is-active::before {
+      background: #67c23a;
+    }
+    &.is-available.is-active::before {
+      background: #f56c6c;
+    }
+    &.is-booked.is-active::before {
+      background: #e6a23c;
     }
 
     &--add {
       border-style: dashed;
       color: var(--el-text-color-placeholder);
-      font-size: 11px;
-      flex-direction: row;
-      gap: 2px;
-      padding: 4px 8px;
-
-      &:hover {
-        color: var(--el-color-primary);
-        border-color: var(--el-color-primary);
-      }
-    }
-
-    &__dot {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-    }
-
-    &__num {
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1;
-    }
-
-    &__st {
-      font-size: 10px;
-      line-height: 1;
-
-      &.st-leased {
-        color: #67c23a;
-      }
-      &.st-available {
-        color: #f56c6c;
-      }
-      &.st-booked {
-        color: #e6a23c;
-      }
-      &.st-locked {
-        color: #909399;
+      .hv-rcard__status {
+        font-size: 10px;
       }
     }
   }
 
-  // 详情 Tab
+  /* 价格状态条 */
+  .hv-price-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 48px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--el-border-color-extra-light);
+    background: var(--el-bg-color);
+    gap: 12px;
+
+    &.is-leased {
+      background: linear-gradient(90deg, rgba(103, 194, 58, 0.06) 0%, transparent 60%);
+      .hv-price-bar__status-dot {
+        background: #67c23a;
+      }
+      .hv-price-bar__status-text {
+        color: #67c23a;
+      }
+    }
+
+    &.is-available {
+      background: linear-gradient(90deg, rgba(245, 108, 108, 0.06) 0%, transparent 60%);
+      .hv-price-bar__status-dot {
+        background: #f56c6c;
+      }
+      .hv-price-bar__status-text {
+        color: #f56c6c;
+      }
+    }
+
+    &.is-booked {
+      background: linear-gradient(90deg, rgba(230, 162, 60, 0.06) 0%, transparent 60%);
+      .hv-price-bar__status-dot {
+        background: #e6a23c;
+      }
+      .hv-price-bar__status-text {
+        color: #e6a23c;
+      }
+    }
+
+    &__left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    &__status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--el-text-color-placeholder);
+      flex-shrink: 0;
+      animation: pulse 2s infinite;
+    }
+
+    &__status-text {
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    &__sep {
+      width: 1px;
+      height: 16px;
+      background: var(--el-border-color-extra-light);
+      flex-shrink: 0;
+    }
+
+    &__amount {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--el-color-success);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &__unit {
+      font-size: 12px;
+      color: var(--el-text-color-placeholder);
+      flex-shrink: 0;
+    }
+
+    &__floor {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+      flex-shrink: 0;
+      padding-left: 4px;
+
+      strong {
+        color: var(--el-text-color-secondary);
+        font-weight: 600;
+      }
+    }
+
+    &__right {
+      flex-shrink: 0;
+    }
+
+    &__edit-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--el-border-color-lighter);
+      background: var(--el-bg-color);
+      color: var(--el-text-color-secondary);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+
+      &:hover {
+        color: var(--el-color-primary);
+        border-color: var(--el-color-primary-light-5);
+        background: var(--el-color-primary-light-9);
+      }
+    }
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+
+  /* 详情内容区 */
   .hv-detail {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: var(--el-bg-color);
+    background: var(--el-bg-color-page);
   }
 
+  /* Tab 导航 */
   .hv-tabs {
     display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--el-border-color-lighter);
-    padding: 0 20px;
-    flex-shrink: 0;
+    position: relative;
     background: var(--el-bg-color);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    flex-shrink: 0;
+    padding: 0 4px;
   }
 
   .hv-tab {
-    padding: 12px 16px;
+    flex: 0 0 auto;
+    padding: 0 20px;
+    height: 40px;
+    display: flex;
+    align-items: center;
     font-size: 13px;
-    font-weight: 500;
     color: var(--el-text-color-secondary);
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
     position: relative;
-    transition: color 0.15s;
+    transition: color 0.2s;
 
     &.active {
       color: var(--el-color-primary);
-
-      &::after {
-        content: "";
-        position: absolute;
-        bottom: -1px;
-        left: 16px;
-        right: 16px;
-        height: 2px;
-        background: var(--el-color-primary);
-        border-radius: 1px;
-      }
+      font-weight: 600;
     }
 
-    &:hover:not(.active) {
-      color: var(--el-text-color-primary);
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      border-radius: 2px 2px 0 0;
+      background: var(--el-color-primary);
+      transform: scaleX(0);
+      transition: transform 0.2s;
+    }
+
+    &.active::after {
+      transform: scaleX(1);
     }
   }
 
   .hv-tab-body {
     flex: 1;
     overflow-y: auto;
-    padding: 4px 20px 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--el-border-color) transparent;
   }
 
-  // 内容区 Section
+  /* 区块 */
   .hv-section {
-    padding: 16px 0;
-    border-bottom: 1px solid var(--el-border-color-extra-light);
-
-    &:last-child {
-      border-bottom: none;
-    }
-
     &__head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
     }
 
     &__title {
       font-size: 13px;
       font-weight: 600;
       color: var(--el-text-color-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      &::before {
+        content: "";
+        display: block;
+        width: 3px;
+        height: 13px;
+        border-radius: 2px;
+        background: var(--el-color-primary);
+      }
     }
   }
 
-  // 统计行
-  .hv-stat-row {
+  /* 价格卡片组 */
+  .hv-price-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    gap: 10px;
   }
 
-  .hv-stat {
-    padding: 12px 14px;
-    background: var(--el-fill-color-lighter);
-    border-radius: 8px;
+  .hv-price-card {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--el-border-color-extra-light);
+    border-radius: 8px;
+    background: var(--el-bg-color);
+
+    &--primary {
+      border-color: var(--el-color-success-light-5);
+      background: rgba(103, 194, 58, 0.04);
+    }
 
     &__label {
       font-size: 11px;
@@ -1349,76 +1555,26 @@
     }
 
     &__value {
-      font-size: 16px;
-      font-weight: 600;
-      display: flex;
-      align-items: baseline;
-      gap: 3px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--el-text-color-primary);
+      line-height: 1.2;
 
       em {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 400;
         font-style: normal;
-        color: var(--el-text-color-secondary);
-      }
-
-      &--primary {
-        color: var(--el-color-primary);
+        color: var(--el-text-color-placeholder);
+        margin-left: 2px;
       }
     }
 
-    &__mask {
-      letter-spacing: 3px;
-      color: var(--el-text-color-placeholder);
+    &--primary &__value {
+      color: var(--el-color-success);
     }
   }
 
-  // 提示条
-  .hv-alert {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    margin: 12px 0;
-    border-radius: 8px;
-    background: var(--el-color-warning-light-9);
-    border: 1px solid var(--el-color-warning-light-5);
-    font-size: 13px;
-
-    &__tag {
-      flex-shrink: 0;
-      padding: 2px 8px;
-      background: var(--el-color-warning);
-      color: #fff;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    &__items {
-      display: flex;
-      gap: 12px;
-      flex: 1;
-      flex-wrap: wrap;
-      color: var(--el-text-color-regular);
-
-      strong {
-        color: var(--el-text-color-primary);
-      }
-    }
-
-    &__sep {
-      color: var(--el-border-color);
-    }
-
-    &__help {
-      color: var(--el-text-color-placeholder);
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-  }
-
-  // 费用列表
+  /* 费用列表 */
   .hv-fee-list {
     display: flex;
     flex-direction: column;
@@ -1426,76 +1582,67 @@
   }
 
   .hv-fee-item {
-    display: grid;
-    grid-template-columns: 1fr 100px 80px;
+    display: flex;
     align-items: center;
-    padding: 10px 14px;
+    gap: 10px;
+    padding: 8px 12px;
     background: var(--el-fill-color-lighter);
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 12px;
 
     &__name {
+      flex: 1;
       font-weight: 500;
     }
+
     &__amount {
-      color: var(--el-color-primary);
+      color: var(--el-color-danger);
       font-weight: 600;
     }
+
     &__method {
-      font-size: 11px;
       color: var(--el-text-color-placeholder);
-      text-align: right;
+      font-size: 11px;
     }
   }
 
-  // 方案表格
+  /* 方案表格 */
   .hv-table {
-    border: 1px solid var(--el-border-color-lighter);
+    border: 1px solid var(--el-border-color-extra-light);
     border-radius: 8px;
     overflow: hidden;
-    font-size: 13px;
+    font-size: 12px;
 
     &__head,
     &__row {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr 1fr 0.6fr;
+      grid-template-columns: 2fr 1fr 1.2fr 1fr;
+      padding: 8px 12px;
+      gap: 8px;
     }
 
     &__head {
       background: var(--el-fill-color-lighter);
+      color: var(--el-text-color-placeholder);
+      font-size: 11px;
       font-weight: 500;
-      color: var(--el-text-color-secondary);
-      font-size: 12px;
-
-      span {
-        padding: 10px 14px;
-      }
     }
 
     &__row {
       border-top: 1px solid var(--el-border-color-extra-light);
-      transition: background 0.1s;
-
-      span {
-        padding: 10px 14px;
-      }
-
-      &:hover {
-        background: var(--el-fill-color-light);
-      }
+      align-items: center;
     }
 
     &__price {
-      color: var(--el-color-primary);
+      color: var(--el-color-success);
       font-weight: 600;
     }
   }
 
-  // 房间信息网格
+  /* 信息网格 */
   .hv-info-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0;
     border: 1px solid var(--el-border-color-extra-light);
     border-radius: 8px;
     overflow: hidden;
@@ -1504,8 +1651,8 @@
   .hv-info-item {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    padding: 12px 14px;
+    gap: 4px;
+    padding: 11px 13px;
     border-right: 1px solid var(--el-border-color-extra-light);
     border-bottom: 1px solid var(--el-border-color-extra-light);
 
@@ -1527,50 +1674,58 @@
     }
   }
 
-  // 空状态
+  /* 空状态 */
   .hv-empty {
-    padding: 16px 0;
+    padding: 14px 0;
     text-align: center;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--el-text-color-placeholder);
   }
 
-  // ======================== 右侧面板 ========================
+  /* ======================== 右侧面板 ======================== */
   .hv-panel {
     display: flex;
     flex-direction: column;
     border-left: 1px solid var(--el-border-color-lighter);
     background: var(--el-bg-color);
-    overflow: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--el-border-color) transparent;
   }
 
   .hv-panel-sec {
     border-bottom: 1px solid var(--el-border-color-extra-light);
 
+    &--flex {
+      flex: 1;
+    }
+
     &__head {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 16px 8px;
+      gap: 7px;
+      padding: 11px 14px 8px;
     }
 
     &__icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
 
       &--tenant {
-        background: #f0faf0;
+        background: rgba(103, 194, 58, 0.1);
         color: #67c23a;
       }
+
       &--booking {
-        background: #fdf6ec;
+        background: rgba(230, 162, 60, 0.1);
         color: #e6a23c;
       }
+
       &--note {
         background: var(--el-color-primary-light-9);
         color: var(--el-color-primary);
@@ -1586,19 +1741,165 @@
     &__actions {
       display: flex;
       gap: 4px;
+      flex-shrink: 0;
     }
 
     &__body {
-      padding: 4px 16px 14px;
-    }
-
-    &--note {
-      flex: 1;
+      padding: 0 14px 13px;
     }
   }
 
-  // 租客卡片
+  /* 租客卡片 */
   .hv-tenant-card {
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--el-fill-color-lighter);
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    &:hover {
+      background: var(--el-fill-color);
+    }
+
+    &__top {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+    }
+
+    &__avatar {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--el-color-primary-light-3));
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &__info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    &__name {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    &__phone {
+      font-size: 11px;
+      color: var(--el-text-color-placeholder);
+      font-weight: 400;
+    }
+
+    &__rent {
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      strong {
+        color: var(--el-color-success);
+        font-size: 16px;
+        font-weight: 700;
+      }
+    }
+
+    &__duration {
+      font-size: 10px;
+      color: var(--el-color-primary);
+      font-weight: 500;
+      background: var(--el-color-primary-light-9);
+      padding: 1px 6px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    &__arrow {
+      color: var(--el-text-color-placeholder);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+  }
+
+  /* 租约时间轴 */
+  .hv-lease-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    &__dates {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--el-text-color-placeholder);
+    }
+
+    &__track {
+      position: relative;
+      height: 6px;
+      background: var(--el-fill-color);
+      border-radius: 4px;
+      overflow: visible;
+    }
+
+    &__fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--el-color-primary-light-3), var(--el-color-primary));
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+
+    &__thumb {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--el-color-primary);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      transition: left 0.6s ease;
+    }
+
+    &__progress {
+      font-size: 10px;
+      color: var(--el-color-primary);
+      font-weight: 500;
+      text-align: right;
+    }
+  }
+
+  /* 租客操作按钮行 */
+  .hv-tenant-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    justify-content: flex-end;
+  }
+
+  /* 预定卡片 */
+  .hv-booking-card {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1613,17 +1914,18 @@
     }
 
     &__avatar {
-      width: 40px;
-      height: 40px;
-      min-width: 40px;
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
       border-radius: 50%;
-      background: var(--el-color-primary-light-7);
-      color: var(--el-color-primary);
-      font-size: 18px;
+      background: rgba(230, 162, 60, 0.15);
+      color: #e6a23c;
+      font-size: 15px;
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     &__info {
@@ -1631,59 +1933,23 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      overflow: hidden;
+      min-width: 0;
     }
 
     &__name {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
-    &__phone {
-      font-size: 11px;
-      color: var(--el-text-color-placeholder);
-      font-weight: 400;
-    }
-
-    &__rent {
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-
-      strong {
-        color: var(--el-color-success);
-        font-size: 15px;
-        font-weight: 700;
-      }
-    }
-
-    &__lease {
+    &__dates {
       font-size: 11px;
       color: var(--el-text-color-placeholder);
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
       white-space: nowrap;
       overflow: hidden;
-    }
-
-    &__lease-date {
-      white-space: nowrap;
-    }
-
-    &__duration {
-      color: var(--el-color-primary);
-      font-weight: 500;
-      background: var(--el-color-primary-light-9);
-      padding: 1px 6px;
-      border-radius: 8px;
-      font-size: 11px;
-      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     &__arrow {
@@ -1692,69 +1958,34 @@
     }
   }
 
-  // 预定卡片
-  .hv-booking-card {
-    padding: 10px;
-    border-radius: 8px;
-    background: var(--el-fill-color-lighter);
-    cursor: pointer;
-    transition: background 0.15s;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-
-    &:hover {
-      background: var(--el-fill-color);
-    }
-
-    &__row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-    }
-
-    &__label {
-      color: var(--el-text-color-placeholder);
-      font-size: 11px;
-      min-width: 48px;
-    }
-
-    &__val {
-      color: var(--el-text-color-primary);
-      font-weight: 500;
-    }
-  }
-
-  .hv-panel-remark {
-    font-size: 13px;
-    color: var(--el-text-color-secondary);
-    line-height: 1.7;
-    margin: 0;
-    padding: 4px 0;
-  }
-
-  .hv-remark-input {
-    :deep(.el-textarea__inner) {
-      font-size: 13px;
-      line-height: 1.7;
-    }
-  }
-
+  /* 面板空状态 */
   .hv-panel-empty {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 18px 0;
     gap: 6px;
+    padding: 18px 0;
     color: var(--el-text-color-placeholder);
-    font-size: 12px;
 
-    &--sm {
-      padding: 6px 0;
+    &__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--el-fill-color-lighter);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &__text {
+      font-size: 12px;
+    }
+
+    &--inline {
       flex-direction: row;
+      padding: 4px 0;
       justify-content: flex-start;
+      font-size: 12px;
     }
 
     &__link {
@@ -1765,33 +1996,23 @@
       }
     }
   }
-  @media (width <= 1280px) {
-    .hv-layout {
-      grid-template-columns: 220px 1fr 260px;
+
+  /* 备注 */
+  .hv-panel-remark {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  .hv-remark-input {
+    :deep(.el-textarea__inner) {
+      font-size: 12px;
+      line-height: 1.7;
     }
   }
 
-  @media (width <= 1100px) {
-    .hv-layout {
-      grid-template-columns: 1fr 260px;
-    }
-
-    .hv-aside {
-      display: none;
-    }
-  }
-
-  @media (width <= 900px) {
-    .hv-layout {
-      grid-template-columns: 1fr;
-    }
-
-    .hv-panel {
-      display: none;
-    }
-  }
-
-  // 加载失败兜底状态
+  /* ======================== 全局空/错误状态 ======================== */
   .hv-empty-state {
     flex: 1;
     display: flex;
@@ -1804,6 +2025,40 @@
 
     p {
       margin: 0;
+    }
+  }
+
+  /* ======================== 响应式 ======================== */
+  @media (width <= 1280px) {
+    .hv-layout {
+      grid-template-columns: 200px 1fr 256px;
+    }
+    .hv-skeleton-wrap {
+      grid-template-columns: 200px 1fr 256px;
+    }
+  }
+
+  @media (width <= 1080px) {
+    .hv-layout {
+      grid-template-columns: 1fr 256px;
+    }
+    .hv-skeleton-wrap {
+      grid-template-columns: 1fr 256px;
+    }
+    .hv-aside {
+      display: none;
+    }
+  }
+
+  @media (width <= 880px) {
+    .hv-layout {
+      grid-template-columns: 1fr;
+    }
+    .hv-skeleton-wrap {
+      grid-template-columns: 1fr;
+    }
+    .hv-panel {
+      display: none;
     }
   }
 </style>
