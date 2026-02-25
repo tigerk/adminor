@@ -288,11 +288,29 @@ export type ResponseResultPageVoLeaseCheckoutVo = {
     data?: PageVoLeaseCheckoutVo;
 };
 
+/**
+ * 退租初始化数据 VO
+ */
 export type LeaseCheckoutInitVo = {
+    /**
+     * 租客ID
+     */
     tenantId?: string;
+    /**
+     * 租约ID
+     */
     leaseId?: string;
+    /**
+     * 房源地址（如"12312栋12单元-104室"）
+     */
     roomAddress?: string;
+    /**
+     * 合同开始日
+     */
     leaseStart?: string;
+    /**
+     * 合同到期日
+     */
     leaseEnd?: string;
     tenantName?: string;
     tenantPhone?: string;
@@ -1501,9 +1519,14 @@ export type HouseDetailVo = {
      */
     deptId?: string;
     /**
+     * 部门名称
+     */
+    deptName?: string;
+    /**
      * 业务员ID
      */
     salesmanId?: string;
+    salesman?: UserLiteVo;
     /**
      * 业务员
      */
@@ -1949,6 +1972,10 @@ export type RoomDetailVo = {
      * 房间预订信息
      */
     booking?: BookingListVo;
+    /**
+     * 房间跟进记录
+     */
+    roomTracks?: Array<RoomTrackVo>;
 };
 
 export type RoomListVo = {
@@ -2096,6 +2123,53 @@ export type RoomListVo = {
      * 租约信息
      */
     leaseInfo?: LeaseInfoVo;
+};
+
+/**
+ * 房间跟进记录VO
+ */
+export type RoomTrackVo = {
+    id?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    roomId?: string;
+    /**
+     * 跟进记录
+     */
+    trackContent?: string;
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    updateBy?: string;
+    updateByName?: string;
+    /**
+     * 更新时间
+     */
+    updateTime?: string;
+};
+
+/**
+ * 用户返回VO
+ */
+export type UserLiteVo = {
+    /**
+     * 用户ID
+     */
+    userId?: string;
+    /**
+     * 用户名（登录名）
+     */
+    username?: string;
+    companyId?: string;
+    deptId?: string;
+    email?: string;
+    phone?: string;
+    nickname?: string;
+    avatar?: string;
 };
 
 /**
@@ -2298,6 +2372,17 @@ export type ResponseResultInteger = {
     code?: number;
     message?: string;
     data?: number;
+};
+
+/**
+ * 房间跟进记录DTO
+ */
+export type RoomTrackDto = {
+    roomId?: string;
+    /**
+     * 跟进记录
+     */
+    trackContent?: string;
 };
 
 /**
@@ -6576,6 +6661,24 @@ export type UnlockRoomResponses = {
 };
 
 export type UnlockRoomResponse = UnlockRoomResponses[keyof UnlockRoomResponses];
+
+export type AddRoomTrackData = {
+    body: RoomTrackDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/room/track/add';
+};
+
+export type AddRoomTrackResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type AddRoomTrackResponse = AddRoomTrackResponses[keyof AddRoomTrackResponses];
 
 export type GetRoomTotalData = {
     body: RoomQueryDto;
