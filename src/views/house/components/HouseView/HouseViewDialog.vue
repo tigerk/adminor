@@ -336,19 +336,47 @@
                 <el-icon><Edit /></el-icon>
               </el-button>
             </div>
-
             <!-- 属性 chips -->
             <div class="hv-chips">
               <span class="hv-chip hv-chip--blue">{{ houseMeta.rentalType }}</span>
               <span class="hv-chip">{{ houseMeta.area }} m²</span>
               <span class="hv-chip">{{ houseMeta.floor }}/{{ houseMeta.floorTotal }}层</span>
               <span class="hv-chip">{{ houseMeta.decoration }}</span>
-              <span class="hv-chip" :class="houseMeta.hasElevator === '有' ? 'hv-chip--green' : ''">电梯{{ houseMeta.hasElevator }}</span>
-              <span class="hv-chip">燃气{{ houseMeta.hasGas }}</span>
+              <span class="hv-chip" :class="houseMeta.hasElevator === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasElevator }}电梯</span>
+              <span class="hv-chip" :class="houseMeta.hasGas === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasGas }}燃气</span>
             </div>
 
             <!-- 费用列：物业/水/电 -->
             <div class="hv-aside__costs">
+              <div class="hv-cost-row">
+                <span class="hv-cost-row__label">楼层</span>
+                <span class="hv-cost-row__val">
+                  {{ houseMeta.floor }}
+                  <em>层</em>
+                  <em>共</em>
+                  {{ houseMeta.floorTotal }}
+                  <em>层</em>
+                </span>
+              </div>
+              <div class="hv-cost-row">
+                <span class="hv-cost-row__label">电梯</span>
+                <span class="hv-cost-row__val">
+                  <span class="hv-chip" :class="houseMeta.hasElevator === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasElevator }}电梯</span>
+                </span>
+              </div>
+              <div class="hv-cost-row">
+                <span class="hv-cost-row__label">面积</span>
+                <span class="hv-cost-row__val">
+                  {{ houseMeta.area }}
+                  <em>m²</em>
+                </span>
+              </div>
+              <div class="hv-cost-row">
+                <span class="hv-cost-row__label">装修</span>
+                <span class="hv-cost-row__val">
+                  {{ houseMeta.decoration }}
+                </span>
+              </div>
               <div class="hv-cost-row">
                 <span class="hv-cost-row__label">物业费</span>
                 <span class="hv-cost-row__val">
@@ -356,6 +384,13 @@
                   <em>元/月</em>
                 </span>
               </div>
+              <div class="hv-cost-row">
+                <span class="hv-cost-row__label">燃气</span>
+                <span class="hv-cost-row__val">
+                  <span class="hv-chip" :class="houseMeta.hasGas === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasGas }}燃气</span>
+                </span>
+              </div>
+
               <div class="hv-cost-row">
                 <span class="hv-cost-row__label">水费</span>
                 <span class="hv-cost-row__val">{{ getWaterTypeLabel(houseMeta.water) }}</span>
