@@ -129,7 +129,7 @@
   const bookingInfo = computed<BookingListVo | null>(() => currentRoom.value?.booking ?? null);
 
   // ── 房间详情 Tab ──────────────────────────────────
-  const activeDetailTab = ref<"room" | "rent" | "follow">("room");
+  const activeDetailTab = ref<"room" | "rent" | "track">("room");
 
   const roomDetail = computed(() => {
     const r = currentRoom.value;
@@ -235,26 +235,26 @@
 
   // ── 跟进记录 ──────────────────────────────────────
   // 本地追加的记录（不触发整体 reload），与后端返回的 roomTracks 合并展示
-  const localFollowRecords = ref<RoomTrackVo[]>([]);
-  const followRecords = computed<RoomTrackVo[]>(() => [...localFollowRecords.value, ...(currentRoom.value?.roomTracks ?? [])]);
-  const followInput = ref("");
-  const followLoading = ref(false);
+  const localTrackRecords = ref<RoomTrackVo[]>([]);
+  const trackRecords = computed<RoomTrackVo[]>(() => [...localTrackRecords.value, ...(currentRoom.value?.roomTracks ?? [])]);
+  const trackInput = ref("");
+  const trackLoading = ref(false);
   // 切换房间时清空本地追加列表和输入框
   watch(
     () => currentRoom.value?.id,
     () => {
-      localFollowRecords.value = [];
-      followInput.value = "";
+      localTrackRecords.value = [];
+      trackInput.value = "";
     },
     { immediate: true }
   );
 
-  const handleAddFollow = async () => {
-    if (!followInput.value.trim()) return message("请输入跟进内容", { type: "warning" });
+  const handleAddTrack = async () => {
+    if (!trackInput.value.trim()) return message("请输入跟进内容", { type: "warning" });
     const roomId = currentRoom.value?.id;
     if (!roomId) return message("房间ID缺失", { type: "warning" });
-    const content = followInput.value.trim();
-    followLoading.value = true;
+    const content = trackInput.value.trim();
+    trackLoading.value = true;
     try {
       const res = await addRoomTrack({ roomId, trackContent: content });
       if (res.code === 0) {
@@ -262,14 +262,14 @@
         const now = new Date();
         const pad = (n: number) => String(n).padStart(2, "0");
         const timeStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-        localFollowRecords.value.unshift({
+        localTrackRecords.value.unshift({
           id: String(Date.now()),
           roomId,
           trackContent: content,
           createTime: timeStr,
           updateByName: props.detail?.salesman?.nickname || props.detail?.salesmanName || "当前用户"
         });
-        followInput.value = "";
+        trackInput.value = "";
         message("跟进记录已保存", { type: "success" });
       } else {
         message(res.message || "保存失败", { type: "error" });
@@ -277,7 +277,7 @@
     } catch {
       message("保存失败", { type: "error" });
     } finally {
-      followLoading.value = false;
+      trackLoading.value = false;
     }
   };
 </script>
@@ -548,7 +548,7 @@
                       <el-dropdown-item @click="handleRenew">续签</el-dropdown-item>
                       <el-dropdown-item @click="handleCheckout">退租</el-dropdown-item>
                       <el-dropdown-item divided @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
-                      <el-dropdown-item @click="activeDetailTab = 'follow'">添加跟进</el-dropdown-item>
+                      <el-dropdown-item @click="activeDetailTab = 'track'">添加跟进</el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
@@ -569,7 +569,7 @@
                     <el-dropdown-menu>
                       <el-dropdown-item @click="emit('booking', currentRoom!)">添加预定</el-dropdown-item>
                       <el-dropdown-item divided @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
-                      <el-dropdown-item @click="activeDetailTab = 'follow'">添加跟进</el-dropdown-item>
+                      <el-dropdown-item @click="activeDetailTab = 'track'">添加跟进</el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
@@ -589,7 +589,7 @@
                   <template #dropdown>
                     <el-dropdown-menu>
                       <el-dropdown-item @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
-                      <el-dropdown-item @click="activeDetailTab = 'follow'">添加跟进</el-dropdown-item>
+                      <el-dropdown-item @click="activeDetailTab = 'track'">添加跟进</el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
@@ -605,7 +605,7 @@
                   <template #dropdown>
                     <el-dropdown-menu>
                       <el-dropdown-item @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
-                      <el-dropdown-item @click="activeDetailTab = 'follow'">添加跟进</el-dropdown-item>
+                      <el-dropdown-item @click="activeDetailTab = 'track'">添加跟进</el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
@@ -617,7 +617,7 @@
           <div class="hv-tabs">
             <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'room' }" @click="activeDetailTab = 'room'">房间信息</button>
             <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'rent' }" @click="activeDetailTab = 'rent'">租金配置</button>
-            <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'follow' }" @click="activeDetailTab = 'follow'">跟进记录</button>
+            <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'track' }" @click="activeDetailTab = 'track'">跟进记录</button>
           </div>
 
           <!-- Tab 内容 -->
@@ -768,15 +768,15 @@
             </template>
 
             <!-- ── 跟进记录 ── -->
-            <template v-if="activeDetailTab === 'follow'">
+            <template v-if="activeDetailTab === 'track'">
               <!-- 输入区 -->
-              <div class="hv-follow-compose">
-                <div class="hv-follow-compose__avatar">{{ houseMeta.salesmanName.slice(0, 1) }}</div>
-                <div class="hv-follow-compose__right">
-                  <el-input v-model="followInput" type="textarea" :rows="3" placeholder="记录跟进情况，支持描述客户意向、看房情况、沟通进展…" resize="none" />
-                  <div class="hv-follow-compose__footer">
-                    <span class="hv-follow-compose__hint">{{ followInput.length }} 字</span>
-                    <el-button type="primary" size="small" :loading="followLoading" :disabled="!followInput.trim()" @click="handleAddFollow">
+              <div class="hv-track-compose">
+                <div class="hv-track-compose__avatar">{{ houseMeta.salesmanName.slice(0, 1) }}</div>
+                <div class="hv-track-compose__right">
+                  <el-input v-model="trackInput" type="textarea" :rows="3" placeholder="记录跟进情况，支持描述客户意向、看房情况、沟通进展…" resize="none" />
+                  <div class="hv-track-compose__footer">
+                    <span class="hv-track-compose__hint">{{ trackInput.length }} 字</span>
+                    <el-button type="primary" size="small" :loading="trackLoading" :disabled="!trackInput.trim()" @click="handleAddTrack">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 3px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
                       提交记录
                     </el-button>
@@ -786,15 +786,15 @@
 
               <!-- 时间轴列表 -->
               <div class="hv-timeline">
-                <div v-if="!followRecords.length" class="hv-timeline__empty">
+                <div v-if="!trackRecords.length" class="hv-timeline__empty">
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
                     <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" fill="currentColor" opacity=".2" />
                   </svg>
                   <p>暂无跟进记录</p>
                   <span>记录每一次跟进，把握租客意向</span>
                 </div>
-                <div v-for="(rec, idx) in followRecords" :key="rec.id" class="hv-timeline__item">
-                  <div class="hv-timeline__line" v-if="idx < followRecords.length - 1" />
+                <div v-for="(rec, idx) in trackRecords" :key="rec.id" class="hv-timeline__item">
+                  <div class="hv-timeline__line" v-if="idx < trackRecords.length - 1" />
                   <div class="hv-timeline__dot" />
                   <div class="hv-timeline__card">
                     <div class="hv-timeline__meta">
@@ -907,7 +907,7 @@
           <!-- 跟进记录 -->
           <div class="hv-pcard hv-pcard--remark">
             <div class="hv-pcard__hd">
-              <div class="hv-pcard__ico hv-pcard__ico--follow">
+              <div class="hv-pcard__ico hv-pcard__ico--track">
                 <el-icon :size="13"><Edit /></el-icon>
               </div>
               <span class="hv-pcard__title">房间备注</span>
@@ -2246,7 +2246,7 @@
       min-height: 0;
     }
 
-    &--follow {
+    &--track {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -2276,7 +2276,7 @@
         background: var(--warning-bg);
         color: var(--warning);
       }
-      &--follow {
+      &--track {
         background: #faf5ff;
         color: #7c3aed;
       }
@@ -2290,7 +2290,7 @@
 
     &__body {
       padding: 0 14px 12px;
-      &--follow {
+      &--track {
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -2469,7 +2469,7 @@
   // ════════════════════════════════════════
   //  跟进记录 - 输入区
   // ════════════════════════════════════════
-  .hv-follow-compose {
+  .hv-track-compose {
     display: flex;
     gap: 12px;
     padding: 18px 20px 14px;
@@ -2640,8 +2640,8 @@
     }
   }
 
-  // 旧 follow 样式保留兼容
-  .hv-follow-input {
+  // 旧 track 样式保留兼容
+  .hv-track-input {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -2649,10 +2649,10 @@
       align-self: flex-end;
     }
   }
-  .hv-follow-list {
+  .hv-track-list {
     display: none;
   }
-  .hv-follow-item {
+  .hv-track-item {
     display: none;
   }
 
