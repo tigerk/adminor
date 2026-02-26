@@ -2,7 +2,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, ref } from "vue";
 import { message } from "@/utils/message";
-import type { OtherFeeDto, PriceConfigDto } from "@/types";
+import { OtherFeeDto, PriceConfigDto, PriceMethodEnum } from "@/types";
 import PriceConfigDialog from "@/views/house/components/PriceConfig/PriceConfigDialog.vue";
 
 function getDefaultOtherFee(): OtherFeeDto {
@@ -21,10 +21,17 @@ export function usePriceConfigEdit() {
   const priceConfigFormRef = ref();
 
   function openPriceConfigDialog(title = "配置", row?: PriceConfigDto, onConfirm?: (data: any) => void) {
+    // ✅ 先补默认值，再传给组件
     addDialog({
       title: `${title}租金配置`,
       props: {
-        formInline: row ?? {}
+        formInline: {
+          floorPriceMethod: PriceMethodEnum.RATIO, // 默认值兜底
+          floorPriceInput: 0,
+          otherFees: [],
+          pricePlans: [],
+          ...row // row 中有值时覆盖默认值
+        }
       },
       top: "4%",
       width: "900px",

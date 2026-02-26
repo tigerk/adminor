@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
-  import type { BookingListVo, HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo } from "@/types";
+  import { BookingListVo, HouseDetailVo, PriceConfigDto, PriceMethodEnum, RoomDetailVo, RoomTrackVo } from "@/types";
   import { getOptionByCode, LEASE_STATUS_ENUM, LEAST_STATUS_OPTIONS, ROOM_STATUS_ENUM } from "@/constants";
   import { ArrowRight, Calendar, Edit, House, Location, Plus, User, View } from "@element-plus/icons-vue";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
@@ -148,14 +148,19 @@
   const { openPriceConfigDialog } = usePriceConfigEdit();
   const priceConfig = ref<PriceConfigDto | null>(null);
 
-  const loadPriceConfig = async () => {
+  const loadPriceConfig = async (force = false) => {
     const roomId = currentRoom.value?.id;
     if (!roomId) return;
-    const inline = (currentRoom.value as any)?.priceConfig as PriceConfigDto | undefined;
-    if (inline?.price) {
-      priceConfig.value = inline;
-      return;
+
+    // force=true 时跳过缓存，直接请求接口
+    if (!force) {
+      const inline = (currentRoom.value as any)?.priceConfig as PriceConfigDto | undefined;
+      if (inline?.price) {
+        priceConfig.value = inline;
+        return;
+      }
     }
+
     try {
       const res = await getRoomPriceConfig({ roomId });
       priceConfig.value = res.code === 0 && res.data ? res.data : null;
@@ -163,6 +168,7 @@
       priceConfig.value = null;
     }
   };
+
   watch(() => currentRoom.value, loadPriceConfig, { immediate: true });
 
   const rentPrice = computed(() => priceConfig.value?.price || currentRoom.value?.price || "0");
@@ -175,7 +181,7 @@
       roomId,
       price: room.price ? Number(room.price) : 0,
       floorPrice: 0,
-      floorPriceMethod: 1,
+      floorPriceMethod: PriceMethodEnum.RATIO,
       floorPriceInput: 0,
       otherFees: [],
       pricePlans: []
@@ -185,7 +191,9 @@
         const res = await saveRoomPriceConfig({ roomId, ...result });
         if (res.code === 0) {
           message("租金配置保存成功", { type: "success" });
-          loadPriceConfig();
+          loadPriceConfig(true).then(() => {
+            // emit("priceConfigChange", priceConfig.value);
+          });
         } else message(res.message || "保存失败", { type: "error" });
       } catch {
         message("保存租金配置失败", { type: "error" });
@@ -875,29 +883,47 @@
   //  Design Tokens
   // ════════════════════════════════════════
   .hv {
-    --b: #e4e9f0; // border
-    --bl: #f0f4f9; // border-light
-    --t1: #111827; // text-primary
-    --t2: #4b5563; // text-secondary
-    --t3: #9ca3af; // text-muted
-    --bg: #f5f7fb; // page bg
-    --card: #ffffff; // card bg
-    --sub: #f8fafc; // subtle bg
-    --success: #16a34a;
-    --success-bg: #f0fdf4;
-    --success-border: #bbf7d0;
-    --warning: #d97706;
-    --warning-bg: #fffbeb;
-    --danger: #dc2626;
-    --danger-bg: #fff5f5;
-    --info: #64748b;
-    --info-bg: #f1f5f9;
+    // ── 边框（直接用 EL 变量，深色自动切换）──────────
+    --b: var(--el-border-color);
+    --bl: var(--el-border-color-lighter);
+    // ── 文字 ──────────────────────────────────────────
+    --t1: var(--el-text-color-primary);
+    --t2: var(--el-text-color-regular);
+    --t3: var(--el-text-color-placeholder);
+    // ── 背景 ──────────────────────────────────────────
+    --bg: var(--el-bg-color-page);
+    --card: var(--el-bg-color);
+    --sub: var(--el-fill-color-light);
+    // ── 状态色 ────────────────────────────────────────
+    --success: var(--el-color-success);
+    --success-bg: var(--el-color-success-light-9);
+    --success-border: var(--el-color-success-light-5);
+    --warning: var(--el-color-warning);
+    --warning-bg: var(--el-color-warning-light-9);
+    --danger: var(--el-color-danger);
+    --danger-bg: var(--el-color-danger-light-9);
+    --info: var(--el-color-info);
+    --info-bg: var(--el-color-info-light-9);
+    // ── 主色 ──────────────────────────────────────────
     --primary: var(--el-color-primary);
     --primary-light: var(--el-color-primary-light-9);
+    // ── 圆角 / 阴影 ───────────────────────────────────
     --r: 10px;
     --r-sm: 6px;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
-    --shadow-up: 0 -1px 0 rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow: var(--el-box-shadow-light);
+    --shadow-up: var(--el-box-shadow);
+    // ── 扩展 token（散落硬编码色统一替换）────────────
+    --hover-bg: var(--el-fill-color);
+    --remark-bg: var(--el-color-warning-light-9);
+    --remark-border: var(--el-color-warning-light-5);
+    --remark-text: var(--el-color-warning-dark-2);
+    --sk-base: var(--el-fill-color-light);
+    --sk-shine: var(--el-fill-color);
+    --price-main-from: var(--el-color-success-light-9);
+    --price-main-to: var(--el-color-success-light-8);
+    --track-icon-bg: var(--el-color-primary-light-9);
+    --track-icon-color: var(--el-color-primary);
+    --dot-border: var(--el-bg-color);
 
     display: flex;
     flex-direction: column;
@@ -922,7 +948,7 @@
     }
   }
   %sk {
-    background: linear-gradient(90deg, #eef1f6 25%, #e4e9f2 50%, #eef1f6 75%);
+    background: linear-gradient(90deg, var(--sk-base) 25%, var(--sk-shine) 50%, var(--sk-base) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
     border-radius: 5px;
@@ -1035,7 +1061,7 @@
 
     &__body {
       flex: 1;
-      padding: 14px 16px 20px;
+      padding: 14px 12px 20px;
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -1082,15 +1108,15 @@
     }
 
     &__remark {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
+      background: var(--remark-bg);
+      border: 1px solid var(--remark-border);
       border-radius: var(--r-sm);
       padding: 9px 12px;
 
       p {
         margin: 0;
         font-size: 12px;
-        color: #78350f;
+        color: var(--remark-text);
         line-height: 1.6;
       }
     }
@@ -1415,7 +1441,7 @@
     text-align: left;
 
     &:hover {
-      background: #eef2f8;
+      background: var(--hover-bg);
       border-color: var(--b);
     }
     &.is-active {
@@ -1773,7 +1799,7 @@
     }
 
     &--main {
-      background: linear-gradient(140deg, #f0fdf4, #dcfce7);
+      background: linear-gradient(140deg, var(--price-main-from), var(--price-main-to));
       border-color: var(--success-border);
     }
 
@@ -1828,7 +1854,7 @@
     border: 1px solid var(--bl);
     transition: background 0.12s;
     &:hover {
-      background: #eef2f8;
+      background: var(--hover-bg);
     }
     &__name {
       font-weight: 600;
@@ -2185,7 +2211,7 @@
       justify-content: center;
       flex-shrink: 0;
       &--tenant {
-        background: #f0fdf4;
+        background: var(--success-bg);
         color: var(--success);
       }
       &--booking {
@@ -2193,8 +2219,8 @@
         color: var(--warning);
       }
       &--track {
-        background: #faf5ff;
-        color: #7c3aed;
+        background: var(--track-icon-bg);
+        color: var(--track-icon-color);
       }
     }
 
@@ -2237,7 +2263,7 @@
     transition: all 0.15s;
 
     &:hover {
-      background: #eef2f8;
+      background: var(--hover-bg);
       box-shadow: var(--shadow);
       transform: translateY(-1px);
     }
@@ -2322,7 +2348,7 @@
     gap: 7px;
 
     &:hover {
-      background: #eef2f8;
+      background: var(--hover-bg);
       box-shadow: var(--shadow);
     }
 
@@ -2478,7 +2504,7 @@
       min-width: 10px;
       border-radius: 50%;
       background: var(--primary);
-      border: 2px solid #fff;
+      border: 2px solid var(--dot-border);
       box-shadow: 0 0 0 2px var(--el-color-primary-light-5);
       margin-top: 13px;
       flex-shrink: 0;
