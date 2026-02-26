@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
   import type { BookingListVo, HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo } from "@/types";
-  import { ROOM_STATUS_ENUM } from "@/constants";
+  import { getOptionByCode, LEASE_STATUS_ENUM, LEAST_STATUS_OPTIONS, ROOM_STATUS_ENUM } from "@/constants";
   import { ArrowRight, Calendar, Edit, House, Location, Plus, User, View } from "@element-plus/icons-vue";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { addRoomTrack, getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
@@ -18,6 +18,7 @@
     booking: [room: RoomDetailVo];
     tenant: [room: RoomDetailVo];
     checkout: [room: RoomDetailVo];
+    editHouse: [detail: HouseDetailVo];
     viewContract: [room: RoomDetailVo];
     openTenantDetail: [tenantId: string, leaseId: string];
     openBookingDetail: [bookingId: string];
@@ -344,18 +345,14 @@
             <!-- 右：租客/预定/空置信息（固定宽） -->
             <div class="hv-troom__right">
               <template v-if="room.lease?.tenantName">
-                <span class="hv-troom__info-line hv-troom__info-line--tenant">
-                  ♂ {{ room.lease.tenantName }}/押{{ room.lease.depositMonths ?? 1 }}付{{
-                    room.lease.paymentMethod === 2 ? 1 : room.lease.paymentMethod === 4 ? 3 : room.lease.paymentMethod === 5 ? 6 : room.lease.paymentMethod === 6 ? 12 : 1
-                  }}
-                </span>
-                <span v-if="room.lease.leaseEnd" class="hv-troom__info-line hv-troom__info-line--date">{{ formatDate(room.lease.leaseEnd) }}到期</span>
+                <span class="hv-troom__info-line hv-troom__info-line--tenant">♂ {{ room.lease.tenantName }}</span>
+                <span class="hv-troom__info-line">✭ 押 {{ room.lease.depositMonths ?? 1 }} 付 {{ room.lease.paymentMonths }}</span>
               </template>
               <template v-else-if="room.booking?.tenantName">
                 <span class="hv-troom__info-line hv-troom__info-line--booking">
                   {{ room.booking.tenantName }}
                 </span>
-                <span v-if="room.booking.expiryTime" class="hv-troom__info-line hv-troom__info-line--date">{{ formatDate(room.booking.expiryTime) }}到期</span>
+                <span class="hv-troom__info-line hv-troom__info-line✭--date">{{ formatDate(room.booking.expiryTime) }}到期</span>
               </template>
               <template v-else>
                 <span class="hv-troom__info-line hv-troom__info-line--empty">待登记租客</span>
@@ -421,7 +418,7 @@
                 <el-icon class="hv-aside__loc-icon"><Location /></el-icon>
                 {{ houseMeta.communityName }}
               </div>
-              <el-button size="small" link type="primary">
+              <el-button size="small" link type="primary" @click="emit('editHouse', detail!)">
                 <el-icon><Edit /></el-icon>
               </el-button>
             </div>
@@ -532,7 +529,7 @@
 
             <!-- 操作按钮：2个主操作 -->
             <div class="hv-room-header__actions">
-              <el-button size="small" @click="activeDetailTab = 'room'">修改房间</el-button>
+              <el-button size="small" @click="emit('editHouse', detail!)">修改房间</el-button>
               <el-button size="small" @click="activeDetailTab = 'track'">添加跟进</el-button>
             </div>
           </div>
@@ -551,7 +548,7 @@
               <div class="hv-section">
                 <div class="hv-section__hd">
                   <span class="hv-section__title">基本信息</span>
-                  <el-button size="small" link type="primary">
+                  <el-button size="small" link type="primary" @click="emit('editHouse', detail!)">
                     <el-icon><Edit /></el-icon>
                     编辑
                   </el-button>
@@ -712,7 +709,7 @@
                   <span>记录每一次跟进，把握租客意向</span>
                 </div>
                 <div v-for="(rec, idx) in trackRecords" :key="rec.id" class="hv-timeline__item">
-                  <div class="hv-timeline__line" v-if="idx < trackRecords.length - 1" />
+                  <div v-if="idx < trackRecords.length - 1" class="hv-timeline__line" />
                   <div class="hv-timeline__dot" />
                   <div class="hv-timeline__card">
                     <div class="hv-timeline__meta">
@@ -2102,6 +2099,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      text-align: center;
       gap: 3px;
       padding: 7px 10px;
       min-width: 0;

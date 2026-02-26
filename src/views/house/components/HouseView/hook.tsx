@@ -4,7 +4,7 @@ import { h, reactive } from "vue";
 import { message } from "@/utils/message";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
 import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
-import type { HouseDetailVo, RoomDetailVo, RoomListVo } from "@/types";
+import { type HouseDetailVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
 
@@ -59,6 +59,10 @@ export const useHouseView = () => {
                 tenantMateList: [],
                 otherFees: []
               });
+            },
+            // 编辑房源
+            onEditHouse: (d: HouseDetailVo) => {
+              handleEditHouse(d);
             },
             onCheckout: (r: RoomDetailVo) => {
               handleOpenCheckout(r);
@@ -173,6 +177,35 @@ export const useHouseView = () => {
     const state = reactive<HouseViewState>({ loading: true, detail: null });
     loadDetail(state, room.houseId).catch(() => undefined);
     return state;
+  }
+
+  /**
+   * 编辑房源：根据 leaseMode + rentalType 跳转到对应编辑页
+   *   leaseMode=1  → 集中式项目编辑
+   *   leaseMode=2, rentalType=1 → 分散式-整租 编辑
+   *   leaseMode=2, rentalType=2 → 分散式-合租 编辑
+   */
+  /**
+   * 编辑房源：根据 leaseMode + rentalType 跳转对应编辑页
+   *   leaseMode=1               → 集中式项目编辑
+   *   leaseMode=2, rentalType=1 → 分散式-整租编辑
+   *   leaseMode=2, rentalType=2 → 分散式-合租编辑
+   */
+  function handleEditHouse(detail: HouseDetailVo) {
+    const { leaseMode, rentalType, id, leaseModeId } = detail;
+    if (!id) return message("房源数据缺失", { type: "warning" });
+
+    if (leaseMode === LeaseModeEnum.FOCUS) {
+      message("编辑集中式", { type: "warning" });
+    } else if (leaseMode === LeaseModeEnum.SCATTER) {
+      if (rentalType === RentalTypeEnum.SHARED) {
+        message("编辑分散式合租", { type: "warning" });
+      } else {
+        message("编辑分散式整租", { type: "warning" });
+      }
+    } else {
+      message("未知房源类型，无法编辑", { type: "warning" });
+    }
   }
 
   return {

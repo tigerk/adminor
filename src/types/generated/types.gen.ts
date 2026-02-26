@@ -1783,6 +1783,14 @@ export type LeaseLiteVo = {
      */
     rentPrice?: number;
     /**
+     * 押金月数
+     */
+    depositMonths?: number;
+    /**
+     * 支付周期（月）
+     */
+    paymentMonths?: number;
+    /**
      * 租赁开始时间
      */
     leaseStart?: string;
