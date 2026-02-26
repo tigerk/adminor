@@ -133,6 +133,7 @@
   import { ElMessageBox } from "element-plus";
   import { hideLoading, showLoading } from "@/utils/yeah";
   import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
+  import { addDays, addMonth } from "@/utils/date";
 
   defineOptions({
     name: "ContractTenant"
@@ -229,6 +230,10 @@
         resp.data.otherFees = resp.data.otherFees?.filter(fee => fee.dictDataId !== "0") || [];
 
         const detail = resp.data;
+        // 续约开始时间默认是当前租约结束时间的后一天
+        const renewStart = addDays(detail.leaseEnd, 1);
+        const renewEnd = addMonth(detail.leaseEnd, 12);
+
         const renewData: TenantsCreateFormProps = {
           tenantPersonal: detail.tenantPersonal,
           tenantCompany: detail.tenantCompany,
@@ -239,9 +244,9 @@
             tenantId: detail.tenantId,
             parentLeaseId: detail.leaseId,
             contractNature: 2, // 续约
-            leaseStart: detail.leaseEnd,
-            leaseEnd: null,
-            leaseDate: [detail.leaseEnd, null],
+            leaseStart: renewStart,
+            leaseEnd: renewEnd,
+            leaseDate: [renewStart, renewEnd],
             checkDate: detail.checkOutTime ? [detail.checkOutTime, null] : undefined
           },
           otherFees: detail.otherFees || []

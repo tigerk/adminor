@@ -39,3 +39,51 @@ export const formatDate = (date?: Date | string): string => {
   if (typeof date === "string") return date;
   return new Date(date).toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).replaceAll("/", ".");
 };
+
+/**
+ * Adds a specified number of days to a date string
+ * @param dateStr - Date string in YYYY-MM-DD format
+ * @param days - Number of days to add (default: 1)
+ * @returns New date string in YYYY-MM-DD format
+ */
+export const addDays = (dateStr: string, days: number = 1): string => {
+  if (!dateStr) return dateStr;
+
+  try {
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + days);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error("日期格式错误:", error);
+    return dateStr;
+  }
+};
+
+/**
+ * Adds a specified number of months to a date string
+ * @param dateStr - Date string in YYYY-MM-DD format
+ * @param months - Number of months to add (default: 1)
+ * @returns New date string in YYYY-MM-DD format
+ */
+export const addMonth = (dateStr: string, months: number = 1): string => {
+  if (!dateStr) return dateStr;
+
+  try {
+    const date = new Date(dateStr);
+    date.setMonth(date.getMonth() + months);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error("日期格式错误:", error);
+    return dateStr;
+  }
+};

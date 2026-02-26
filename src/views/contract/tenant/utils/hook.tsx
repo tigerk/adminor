@@ -537,7 +537,7 @@ function useTenant() {
             lockScroll: true,
             alignCenter: true,
             draggable: true,
-            fullscreen: true,
+            fullscreen: false,
             fullscreenIcon: true,
             closeOnClickModal: false,
             hideFooter: true,

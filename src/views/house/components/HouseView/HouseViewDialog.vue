@@ -758,7 +758,7 @@
             </div>
             <div class="hv-pcard__body">
               <template v-if="tenantInfo">
-                <div class="hv-tenant" @click="emit('openTenantDetail', tenantInfo.id, tenantInfo.leaseId)">
+                <div class="hv-tenant" @click="emit('openTenantDetail', tenantInfo.name, tenantInfo.leaseId)">
                   <div class="hv-tenant__avatar">{{ tenantInfo.name.slice(0, 1) }}</div>
                   <div class="hv-tenant__info">
                     <div class="hv-tenant__name-row">
