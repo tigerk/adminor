@@ -1870,6 +1870,10 @@ export type PriceConfigDto = {
      * 房间租金方案表
      */
     pricePlans?: Array<PricePlanDto>;
+    /**
+     * 更新人
+     */
+    updateBy?: string;
 };
 
 /**
@@ -3616,7 +3620,7 @@ export type TenantCompanyDto = {
     /**
      * 营业执照附件
      */
-    businessLicenseUrl?: string;
+    businessLicenseUrls?: Array<string>;
     /**
      * 租客标签 (JSON 格式)
      */
@@ -3656,7 +3660,7 @@ export type TenantMateDto = {
     /**
      * 同住人ID
      */
-    id?: number;
+    id?: string;
     /**
      * 租客ID
      */
@@ -4490,7 +4494,7 @@ export type TenantMateVo = {
     /**
      * 同住人ID
      */
-    id?: number;
+    id?: string;
     /**
      * 租客ID
      */
@@ -6727,7 +6731,9 @@ export type ResetKeywordResponse = ResetKeywordResponses[keyof ResetKeywordRespo
 export type SaveRoomPriceConfigData = {
     body: PriceConfigDto;
     path?: never;
-    query?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
     url: '/saas/room/price-config/save';
 };
 

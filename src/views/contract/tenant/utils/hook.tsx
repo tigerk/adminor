@@ -659,7 +659,7 @@ function useTenant() {
       contactPhone: vo.contactPhone,
       registeredAddress: vo.registeredAddress,
       // Vo 是 businessLicenseList（数组），Dto 是 businessLicenseUrl（单个字符串）
-      businessLicenseUrl: vo.businessLicenseList?.[0],
+      businessLicenseUrls: vo.businessLicenseList,
       tags: vo.tags,
       remark: vo.remark,
       status: vo.status
