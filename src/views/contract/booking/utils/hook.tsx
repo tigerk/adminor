@@ -4,13 +4,14 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { cancelBooking, createBooking, getBookingDetail, getBookingList, getBookingTotal } from "@/api/contract/booking";
-import type { BookingCancelDto, BookingListVo, BookingQueryDto, TenantCreateDto, TenantCompanyVo, TenantPersonalVo } from "@/types";
+import type { BookingCancelDto, BookingListVo, BookingQueryDto, TenantCreateDto, TenantCompanyVo, TenantPersonalVo, LeaseDto, TenantPersonalDto, TenantCompanyDto } from "@/types";
 import { ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import BookingCreateForm from "../form/bookingCreateForm.vue";
 import BookingDetailDialog from "../view/bookingDetailDialog.vue";
 import { BOOKING_STATUS_COLOR_MAP } from "@/constants";
 import useTenant from "@/views/contract/tenant/utils/hook";
+import type { LeaseProps } from "./types";
 
 function useBooking() {
   const router = useRouter();
@@ -28,8 +29,8 @@ function useBooking() {
     tenantName: "",
     tenantPhone: "",
     bookingStatus: undefined,
-    pageSize: 15,
-    currentPage: 1
+    pageSize: "15",
+    currentPage: "1"
   });
 
   const curRow = ref();
@@ -203,8 +204,8 @@ function useBooking() {
 
   function onBookingSearch() {
     loading.value = true;
-    queryForm.currentPage = pagination.currentPage;
-    queryForm.pageSize = pagination.pageSize;
+    queryForm.currentPage = pagination.currentPage.toString();
+    queryForm.pageSize = pagination.pageSize.toString();
 
     getBookingList(toRaw(queryForm))
       .then(resp => {
@@ -333,8 +334,8 @@ function useBooking() {
       cancelButtonText: "取消",
       type: "warning"
     }).then(() => {
-      let tenantPersonal: TenantPersonalVo = undefined;
-      let tenantCompany: TenantCompanyVo = undefined;
+      let tenantPersonal: TenantPersonalDto = undefined;
+      let tenantCompany: TenantCompanyDto = undefined;
       if (row.tenantType === 0) {
         tenantPersonal = {
           name: row.tenantName,
@@ -352,7 +353,7 @@ function useBooking() {
         };
       }
 
-      const lease: TenantCreateDto = {
+      const lease: LeaseProps = {
         contractNature: undefined,
         roomIds: row.roomIds,
         contractTemplateId: undefined,

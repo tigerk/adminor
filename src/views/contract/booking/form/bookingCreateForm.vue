@@ -117,13 +117,17 @@
 <script setup lang="ts">
   import { onMounted, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
-  import type { BookingCreateDto } from "@/types";
+  import type { BookingCreateDto, RoomListVo } from "@/types";
   import { getOptionByCode, RENTAL_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import RoomPicker from "@/components/Business/RoomPicker.vue";
   import { Plus } from "@element-plus/icons-vue";
 
+  interface BookingCreateProps extends BookingCreateDto {
+    roomList: RoomListVo[];
+  }
+
   interface FormProps {
-    formInline: BookingCreateDto;
+    formInline: BookingCreateProps;
   }
 
   const props = defineProps<FormProps>();
@@ -132,7 +136,7 @@
   const roomPickerRef = ref();
   const roomSelection = ref([]);
 
-  const formInline = reactive<BookingCreateDto>({
+  const formInline = reactive<BookingCreateProps>({
     id: props.formInline?.id || null,
     roomIds: props.formInline?.roomIds || [],
     roomList: props.formInline?.roomList || [],
@@ -144,16 +148,8 @@
     expectedLeaseStart: props.formInline?.expectedLeaseStart || null,
     expectedLeaseEnd: props.formInline?.expectedLeaseEnd || null,
     expectedRentPrice: props.formInline?.expectedRentPrice || null,
-    companyId: props.formInline?.companyId || null,
-    salesmanId: props.formInline?.salesmanId || null,
     bookingStatus: props.formInline?.bookingStatus ?? 1,
-    bookingStatusName: props.formInline?.bookingStatusName || "",
-    tenantId: props.formInline?.tenantId || null,
-    remark: props.formInline?.remark || "",
-    createBy: props.formInline?.createBy || null,
-    createTime: props.formInline?.createTime || null,
-    updateBy: props.formInline?.updateBy || null,
-    updateTime: props.formInline?.updateTime || null
+    remark: props.formInline?.remark || ""
   });
 
   const rules = reactive<FormRules>({
@@ -182,7 +178,7 @@
 
   const tenantTypeOptions = [...TENANT_TYPE_OPTIONS];
 
-  const formatRoomSelectName = (item: any) => {
+  const formatRoomSelectName = (item: RoomListVo) => {
     const rentalTypeName = getOptionByCode([...RENTAL_TYPE_OPTIONS], item.rentalType) || "";
     if (item.rentalType === 1) {
       return "【" + rentalTypeName.label + "】" + item.houseName;
