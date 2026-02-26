@@ -530,86 +530,10 @@
               </button>
             </div>
 
-            <!-- 操作按钮：2个主操作 + 更多下拉 -->
+            <!-- 操作按钮：2个主操作 -->
             <div class="hv-room-header__actions">
-              <!-- 已租：查看合同 + 更多(续签/退租/修改/跟进) -->
-              <template v-if="isLeased">
-                <el-button size="small" @click="emit('viewContract', currentRoom!)">
-                  <el-icon><View /></el-icon>
-                  查看合同
-                </el-button>
-                <el-dropdown trigger="click" size="small">
-                  <el-button size="small" plain>
-                    更多
-                    <el-icon style="margin-left: 3px"><ArrowRight /></el-icon>
-                  </el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item @click="handleRenew">续签</el-dropdown-item>
-                      <el-dropdown-item @click="handleCheckout">退租</el-dropdown-item>
-                      <el-dropdown-item divided @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
-                      <el-dropdown-item @click="activeDetailTab = 'track'">添加跟进</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </template>
-
-              <!-- 空置：录入租客 + 更多(添加预定/修改/跟进) -->
-              <template v-else-if="isAvailable">
-                <el-button size="small" type="primary" @click="emit('tenant', currentRoom!)">
-                  <el-icon><User /></el-icon>
-                  录入租客
-                </el-button>
-                <el-dropdown trigger="click" size="small">
-                  <el-button size="small" plain>
-                    更多
-                    <el-icon style="margin-left: 3px"><ArrowRight /></el-icon>
-                  </el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item @click="emit('booking', currentRoom!)">添加预定</el-dropdown-item>
-                      <el-dropdown-item divided @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
-                      <el-dropdown-item @click="activeDetailTab = 'track'">添加跟进</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </template>
-
-              <!-- 已预定：转为租客 + 更多(修改/跟进) -->
-              <template v-else-if="isBooked">
-                <el-button size="small" type="primary" @click="emit('tenant', currentRoom!)">
-                  <el-icon><ArrowRight /></el-icon>
-                  转为租客
-                </el-button>
-                <el-dropdown trigger="click" size="small">
-                  <el-button size="small" plain>
-                    更多
-                    <el-icon style="margin-left: 3px"><ArrowRight /></el-icon>
-                  </el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
-                      <el-dropdown-item @click="activeDetailTab = 'track'">添加跟进</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </template>
-
-              <!-- 其他状态（锁房等）：仅修改/跟进下拉 -->
-              <template v-else>
-                <el-dropdown trigger="click" size="small">
-                  <el-button size="small" plain>
-                    操作
-                    <el-icon style="margin-left: 3px"><ArrowRight /></el-icon>
-                  </el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
-                      <el-dropdown-item @click="activeDetailTab = 'track'">添加跟进</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </template>
+              <el-button size="small" @click="activeDetailTab = 'room'">修改房间</el-button>
+              <el-button size="small" @click="activeDetailTab = 'track'">添加跟进</el-button>
             </div>
           </div>
 
@@ -713,10 +637,6 @@
                       <span v-else class="hv-price-card__nil">未设置</span>
                     </div>
                   </div>
-                  <div class="hv-price-card">
-                    <div class="hv-price-card__lbl">佣金</div>
-                    <div class="hv-price-card__val"><span class="hv-price-card__nil">—</span></div>
-                  </div>
                 </div>
               </div>
 
@@ -747,14 +667,12 @@
                 <template v-if="priceConfig?.pricePlans?.length">
                   <div class="hv-plan-table">
                     <div class="hv-plan-table__head">
-                      <span>方案名称</span>
-                      <span>类型</span>
+                      <span>租金方案</span>
                       <span>价格</span>
                       <span>比例</span>
                     </div>
                     <div v-for="(plan, i) in priceConfig.pricePlans" :key="i" class="hv-plan-table__row">
-                      <span>{{ plan.planName || "-" }}</span>
-                      <span>{{ plan.planType || "-" }}</span>
+                      <span>{{ plan.planName || "-" }} {{ plan.defaultPlan ? "(默认)" : "" }}</span>
                       <span class="c-primary fw-600">{{ plan.price ?? "-" }} 元</span>
                       <span>{{ plan.priceRatio ? plan.priceRatio + "%" : "-" }}</span>
                     </div>
@@ -1934,7 +1852,7 @@
     &__head,
     &__row {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr 1fr 0.6fr;
+      grid-template-columns: 1.4fr 1fr 0.8fr;
     }
     &__head {
       background: var(--sub);

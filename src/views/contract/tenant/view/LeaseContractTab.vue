@@ -24,7 +24,7 @@
             <div class="info-item">
               <span class="info-label">签约状态：</span>
               <el-tag :type="leaseContract.signStatus === 0 ? 'danger' : 'success'" size="small">
-                {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === leaseContract.signStatus)?.label || "未知" }}
+                {{ LEASE_SIGN_STATUS_OPTIONS.find(item => item.value === leaseContract.signStatus)?.label || "未知" }}
               </el-tag>
             </div>
             <div class="info-item">
@@ -73,7 +73,7 @@
   // 监听 props 变化更新本地状态
   import { computed, h, ref, watch } from "vue";
   import { Checked, Document, Download } from "@element-plus/icons-vue";
-  import { TENANT_SIGN_STATUS_OPTIONS, TENANT_STATUS_ENUM } from "@/constants";
+  import { LEASE_SIGN_STATUS_OPTIONS, LEASE_STATUS_ENUM } from "@/constants";
   import { message } from "@/utils/message";
   import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
@@ -118,7 +118,7 @@
     if (props.readonly) {
       return false;
     }
-    return props.tenantStatus === TENANT_STATUS_ENUM.TO_SIGN.code;
+    return props.tenantStatus === LEASE_STATUS_ENUM.TO_SIGN.code;
   });
 
   // 下载合同

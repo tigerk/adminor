@@ -1892,6 +1892,10 @@ export type PricePlanDto = {
      * 其他费用
      */
     otherFees?: Array<OtherFeeDto>;
+    /**
+     * 是否默认方案
+     */
+    defaultPlan?: boolean;
 };
 
 export type ResponseResultHouseDetailVo = {

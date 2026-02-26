@@ -113,7 +113,7 @@
 
 <script setup lang="ts">
   import { ref, watch } from "vue";
-  import { TENANT_STATUS_ENUM, TENANT_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import { LEASE_STATUS_ENUM, LEAST_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import View from "~icons/ep/view";
@@ -159,7 +159,7 @@
   } = useTenant();
 
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
-  const statusOptions = [{ label: "全部", value: undefined }, ...TENANT_STATUS_OPTIONS];
+  const statusOptions = [{ label: "全部", value: undefined }, ...LEAST_STATUS_OPTIONS];
 
   const handleConfirmDelete = row => {
     ElMessageBox.confirm("确认作废该租客吗？", "作废", {
@@ -191,7 +191,7 @@
   };
 
   /** 可退租的状态：待签字(1)、在租中(2) */
-  const canCheckoutStatus: number[] = [TENANT_STATUS_ENUM.TO_SIGN.code, TENANT_STATUS_ENUM.EFFECTIVE.code];
+  const canCheckoutStatus: number[] = [LEASE_STATUS_ENUM.TO_SIGN.code, LEASE_STATUS_ENUM.EFFECTIVE.code];
 
   /** 租客退租 */
   const handleTenantCheckout = (row: LeaseListVo) => {

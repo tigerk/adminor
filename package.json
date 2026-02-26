@@ -1,6 +1,6 @@
 {
-  "name": "vue-pure-admin-max",
-  "version": "6.3.0",
+  "name": "adminor",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "main": "dist-electron/main.js",

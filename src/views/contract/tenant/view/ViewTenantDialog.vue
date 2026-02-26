@@ -306,7 +306,8 @@
               <el-icon><Document /></el-icon>
               <span>合同信息</span>
               <el-tag :type="localFormInline.leaseContract?.signStatus === 0 ? 'danger' : 'success'" size="default">
-                {{ TENANT_SIGN_STATUS_OPTIONS.find(item => item.value === localFormInline?.leaseContract?.signStatus)?.label || "未知" }}
+                {{ LEASE_SIGN_STATUS_OPTIONS.find(item => item.value === localFormInline?.leaseContract?.signStatus)?.label || "未知"
+                }}
               </el-tag>
             </el-space>
           </template>
@@ -359,8 +360,8 @@
     LEASE_CONTRACT_NATURE_OPTIONS,
     PAYMENT_METHOD_OPTIONS,
     PRICE_METHOD_OPTIONS,
-    TENANT_SIGN_STATUS_OPTIONS,
-    TENANT_STATUS_ENUM
+    LEASE_SIGN_STATUS_OPTIONS,
+    LEASE_STATUS_ENUM
   } from "@/constants";
   import { Document, Edit, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
@@ -402,7 +403,7 @@
   }>();
 
   const activeTab = ref("tenant");
-  const isTerminated = computed(() => localFormInline.value.status === TENANT_STATUS_ENUM.TERMINATED.code);
+  const isTerminated = computed(() => localFormInline.value.status === LEASE_STATUS_ENUM.TERMINATED.code);
   const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
   const checkoutLoading = ref(false);
 
@@ -436,7 +437,7 @@
   watch(
     () => localFormInline.value.status,
     status => {
-      if (status === TENANT_STATUS_ENUM.TERMINATED.code && activeTab.value === "checkout") {
+      if (status === LEASE_STATUS_ENUM.TERMINATED.code && activeTab.value === "checkout") {
         fetchCheckoutDetail();
       }
     }
@@ -545,7 +546,7 @@
     if (props.readonly) {
       return false;
     }
-    return !(status === TENANT_STATUS_ENUM.TERMINATED.code || status === TENANT_STATUS_ENUM.EFFECTIVE.code);
+    return !(status === LEASE_STATUS_ENUM.TERMINATED.code || status === LEASE_STATUS_ENUM.EFFECTIVE.code);
   };
 
   const allowChangeSignStatus = (status: number) => {
@@ -553,7 +554,7 @@
     if (props.readonly) {
       return false;
     }
-    return status === TENANT_STATUS_ENUM.TO_SIGN.code;
+    return status === LEASE_STATUS_ENUM.TO_SIGN.code;
   };
 
   const editLease = (row: LeaseDetailVo) => {

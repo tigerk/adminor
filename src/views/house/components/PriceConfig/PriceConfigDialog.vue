@@ -22,11 +22,18 @@
   const priceMethodOptions = PRICE_METHOD_OPTIONS;
   const pricePlantOptions = PRICE_PLANT_OPTIONS;
 
-  // 当前选中的方案索引
-  const selectedPlans = ref<number[]>([]);
+  // 当前选中的方案索引 —— 从已有的 pricePlans 中反向映射，避免 watch immediate 时将传入数据清空
+  const selectedPlans = ref<number[]>(
+    (priceConfig.value.pricePlans || []).map(plan => pricePlantOptions.findIndex(opt => String(opt.value) === plan.planType)).filter(idx => idx !== -1)
+  );
 
-  // 当前选中的默认方案索引
-  const defaultPlanIndex = ref<number>(0);
+  // 当前选中的默认方案索引 —— 从已有数据中读取
+  const defaultPlanIndex = ref<number>(
+    Math.max(
+      0,
+      (priceConfig.value.pricePlans || []).findIndex(p => p.defaultPlan)
+    )
+  );
 
   // 底价方式标签
   const floorPriceMethodLabel = computed(() => {
@@ -154,13 +161,13 @@
                 <span class="plan-type-text">{{ plan.planName }}</span>
               </td>
               <td class="text-center">
-                <el-space style="align-items: center; gap: 8px" class="text-center">
+                <el-space style="align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center" class="text-center">
                   <span>出租价格</span>
                   <span>X</span>
                   <el-input-number v-model="plan.priceRatio" :min="0" :max="100" :precision="2" :controls="false">
                     <template #suffix>%</template>
                   </el-input-number>
-                  <span style="margin-left: 8px">( 即:{{ Math.round((priceConfig.price || 0) * (plan.priceRatio / 100)) }} 元/月)</span>
+                  <span>( 即:{{ Math.round((priceConfig.price || 0) * (plan.priceRatio / 100)) }} 元/月)</span>
                 </el-space>
               </td>
             </tr>
@@ -181,6 +188,7 @@
     padding: 0px;
     max-height: 70vh;
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .section {
@@ -298,5 +306,13 @@
 
   :deep(.el-input-number .el-input__inner) {
     text-align: left;
+  }
+
+  :deep(.el-space__item) {
+    flex-shrink: 0;
+  }
+
+  :deep(.el-space) {
+    flex-wrap: wrap;
   }
 </style>
