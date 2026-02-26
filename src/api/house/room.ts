@@ -1,9 +1,9 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, PriceConfigDto, RoomGridDto, RoomIdDto, RoomQueryDto, RoomTotalVo, RoomTrackDto } from "@/types";
+import type { ApiResponse, PaginationResponse, PriceConfigDto, RoomGridDto, RoomIdDto, RoomListVo, RoomQueryDto, RoomTotalVo, RoomTrackDto } from "@/types";
 
 export const getRoomList = (data?: RoomQueryDto) => {
-  return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("room/list"), { data });
+  return http.request<ApiResponse<PaginationResponse<RoomListVo>>>("post", baseUrlApi("room/list"), { data });
 };
 
 /**

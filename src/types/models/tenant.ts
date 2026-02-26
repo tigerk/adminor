@@ -1,8 +1,8 @@
 import type { LeaseDto, RoomListVo, TenantCreateDto, BookingListVo } from "@/types";
 
 export interface LeaseProps extends LeaseDto {
-  leaseDate: string[];
-  checkDate: string[];
+  leaseDate?: string[];
+  checkDate?: string[];
   roomList?: Array<RoomListVo>;
 }
 

@@ -1810,6 +1810,14 @@ export type LeaseLiteVo = {
      * 合同状态：0=未生效，1=生效中，2=已退租，3=已逾期，4=已作废
      */
     status?: number;
+    /**
+     * 房间 ids
+     */
+    roomIds?: Array<string>;
+    /**
+     * 合同房间列表
+     */
+    roomList?: Array<RoomListVo>;
 };
 
 /**
@@ -3869,10 +3877,6 @@ export type LeaseListVo = {
     deptId?: string;
     deptName?: string;
     /**
-     * 房间 ids
-     */
-    roomIds?: string;
-    /**
      * 租客类型关联ID
      */
     tenantTypeId?: string;
@@ -3888,6 +3892,10 @@ export type LeaseListVo = {
      * 租客企业信息
      */
     tenantCompany?: TenantCompanyVo;
+    /**
+     * 房间 ids
+     */
+    roomIds?: Array<string>;
     /**
      * 合同房间列表
      */
@@ -4326,7 +4334,7 @@ export type LeaseDetailVo = {
     /**
      * 房间 ids
      */
-    roomIds?: string;
+    roomIds?: Array<string>;
     /**
      * 租客类型关联ID
      */

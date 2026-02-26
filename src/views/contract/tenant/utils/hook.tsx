@@ -18,7 +18,8 @@ import type {
   LeaseDto,
   TenantCompanyDto,
   TenantCompanyVo,
-  TenantPersonalDto
+  TenantPersonalDto,
+  LeaseProps
 } from "@/types";
 import { getDictDataByDictCode } from "@/api/sys/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
@@ -667,13 +668,14 @@ function useTenant() {
   }
 
   /** LeaseDetailVo（铺展形式）→ LeaseDto 的基础字段（续约专用） */
-  function toLeaseDto(vo: LeaseDetailVo): LeaseDto {
+  function toLeaseDto(vo: LeaseDetailVo): LeaseProps {
     return {
       tenantId: vo.tenantId,
       companyId: vo.companyId,
       deptId: vo.deptId,
       // Vo 中 roomIds 是逗号拼接的字符串，Dto 需要数组
-      roomIds: vo.roomIds ? vo.roomIds.split(",").filter(Boolean) : undefined,
+      roomIds: vo.roomIds,
+      roomList: vo.roomList || [],
       tenantType: vo.tenantType,
       rentPrice: vo.rentPrice,
       depositMonths: vo.depositMonths,
