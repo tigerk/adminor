@@ -61,5 +61,5 @@ export const getRoomPriceConfig = (data?: RoomIdDto) => {
 };
 
 export const addRoomTrack = (data?: RoomTrackDto) => {
-  return http.request<ApiResponse<string>>("post", baseUrlApi("track/add"), { data });
+  return http.request<ApiResponse<string>>("post", baseUrlApi("room/track/add"), { data });
 };

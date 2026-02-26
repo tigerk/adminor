@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
-  import type { BookingListVo, HouseDetailVo, PriceConfigDto, RoomDetailVo } from "@/types";
+  import type { BookingListVo, HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo } from "@/types";
   import { ROOM_STATUS_ENUM } from "@/constants";
   import { ArrowRight, Calendar, Edit, House, Location, Plus, User, View } from "@element-plus/icons-vue";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
-  import { getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
+  import { addRoomTrack, getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
   import { message } from "@/utils/message";
   import { getDecorationLabel, getDirectionLabel, getElectricityTypeLabel, getRentalTypeLabel, getWaterTypeLabel } from "@/utils/house";
   import { formatDate } from "@/utils/date";
@@ -234,19 +234,16 @@
   };
 
   // ── 跟进记录 ──────────────────────────────────────
-  interface FollowRecord {
-    id: string;
-    content: string;
-    time: string;
-    author: string;
-  }
-  const followRecords = ref<FollowRecord[]>([]);
+  // 本地追加的记录（不触发整体 reload），与后端返回的 roomTracks 合并展示
+  const localFollowRecords = ref<RoomTrackVo[]>([]);
+  const followRecords = computed<RoomTrackVo[]>(() => [...localFollowRecords.value, ...(currentRoom.value?.roomTracks ?? [])]);
   const followInput = ref("");
   const followLoading = ref(false);
+  // 切换房间时清空本地追加列表和输入框
   watch(
-    () => currentRoom.value,
+    () => currentRoom.value?.id,
     () => {
-      followRecords.value = [];
+      localFollowRecords.value = [];
       followInput.value = "";
     },
     { immediate: true }
@@ -254,19 +251,29 @@
 
   const handleAddFollow = async () => {
     if (!followInput.value.trim()) return message("请输入跟进内容", { type: "warning" });
+    const roomId = currentRoom.value?.id;
+    if (!roomId) return message("房间ID缺失", { type: "warning" });
+    const content = followInput.value.trim();
     followLoading.value = true;
     try {
-      await new Promise(r => setTimeout(r, 400));
-      const now = new Date();
-      const pad = (n: number) => String(n).padStart(2, "0");
-      followRecords.value.unshift({
-        id: String(Date.now()),
-        content: followInput.value.trim(),
-        time: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`,
-        author: houseMeta.value.salesmanName || "当前用户"
-      });
-      followInput.value = "";
-      message("跟进记录已保存", { type: "success" });
+      const res = await addRoomTrack({ roomId, trackContent: content });
+      if (res.code === 0) {
+        // 本地即时插入，不刷新整个弹窗
+        const now = new Date();
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const timeStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        localFollowRecords.value.unshift({
+          id: String(Date.now()),
+          roomId,
+          trackContent: content,
+          createTime: timeStr,
+          updateByName: props.detail?.salesman?.nickname || props.detail?.salesmanName || "当前用户"
+        });
+        followInput.value = "";
+        message("跟进记录已保存", { type: "success" });
+      } else {
+        message(res.message || "保存失败", { type: "error" });
+      }
     } catch {
       message("保存失败", { type: "error" });
     } finally {
@@ -491,12 +498,11 @@
 
           <!-- 负责人：固定在左侧底部 -->
           <div class="hv-owner hv-owner--fixed">
-            <div class="hv-owner__avatar">{{ houseMeta.salesmanName.slice(0, 1) }}</div>
             <div class="hv-owner__info">
-              <div class="hv-owner__label">负责人</div>
-              <div class="hv-owner__name">{{ houseMeta.salesmanName }}</div>
+              <div class="hv-owner__name">{{ detail?.salesman?.nickname || houseMeta.salesmanName }}</div>
+              <div v-if="detail?.salesman?.phone" class="hv-owner__phone">{{ detail.salesman.phone }}</div>
             </div>
-            <div class="hv-owner__dept-badge">{{ houseMeta.deptId }}</div>
+            <div class="hv-owner__dept-badge">{{ detail?.deptName || houseMeta.deptId }}</div>
           </div>
         </aside>
 
@@ -524,49 +530,86 @@
               </button>
             </div>
 
-            <!-- 操作按钮（唯一操作区，右侧面板不再重复） -->
+            <!-- 操作按钮：2个主操作 + 更多下拉 -->
             <div class="hv-room-header__actions">
+              <!-- 已租：查看合同 + 更多(续签/退租/修改/跟进) -->
               <template v-if="isLeased">
                 <el-button size="small" @click="emit('viewContract', currentRoom!)">
                   <el-icon><View /></el-icon>
                   查看合同
                 </el-button>
-                <el-button size="small" type="warning" plain @click="handleRenew">续签</el-button>
-                <el-button size="small" type="danger" plain @click="handleCheckout">退租</el-button>
+                <el-dropdown trigger="click" size="small">
+                  <el-button size="small" plain>
+                    更多
+                    <el-icon style="margin-left: 3px"><ArrowRight /></el-icon>
+                  </el-button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item @click="handleRenew">续签</el-dropdown-item>
+                      <el-dropdown-item @click="handleCheckout">退租</el-dropdown-item>
+                      <el-dropdown-item divided @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
+                      <el-dropdown-item @click="activeDetailTab = 'follow'">添加跟进</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
               </template>
+
+              <!-- 空置：录入租客 + 更多(添加预定/修改/跟进) -->
               <template v-else-if="isAvailable">
-                <el-button size="small" plain @click="emit('booking', currentRoom!)">
-                  <el-icon><Calendar /></el-icon>
-                  添加预定
-                </el-button>
                 <el-button size="small" type="primary" @click="emit('tenant', currentRoom!)">
                   <el-icon><User /></el-icon>
                   录入租客
                 </el-button>
+                <el-dropdown trigger="click" size="small">
+                  <el-button size="small" plain>
+                    更多
+                    <el-icon style="margin-left: 3px"><ArrowRight /></el-icon>
+                  </el-button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item @click="emit('booking', currentRoom!)">添加预定</el-dropdown-item>
+                      <el-dropdown-item divided @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
+                      <el-dropdown-item @click="activeDetailTab = 'follow'">添加跟进</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
               </template>
+
+              <!-- 已预定：转为租客 + 更多(修改/跟进) -->
               <template v-else-if="isBooked">
-                <el-button size="small" plain disabled>
-                  <el-icon><User /></el-icon>
-                  录入租客
-                </el-button>
                 <el-button size="small" type="primary" @click="emit('tenant', currentRoom!)">
                   <el-icon><ArrowRight /></el-icon>
                   转为租客
                 </el-button>
+                <el-dropdown trigger="click" size="small">
+                  <el-button size="small" plain>
+                    更多
+                    <el-icon style="margin-left: 3px"><ArrowRight /></el-icon>
+                  </el-button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
+                      <el-dropdown-item @click="activeDetailTab = 'follow'">添加跟进</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
               </template>
 
-              <!-- 通用操作：所有状态都显示 -->
-              <div class="hv-room-header__divider" />
-              <el-button size="small" plain @click="activeDetailTab = 'room'">
-                <el-icon><Edit /></el-icon>
-                修改信息
-              </el-button>
-              <el-button size="small" plain @click="activeDetailTab = 'follow'">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 3px">
-                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
-                </svg>
-                添加跟进
-              </el-button>
+              <!-- 其他状态（锁房等）：仅修改/跟进下拉 -->
+              <template v-else>
+                <el-dropdown trigger="click" size="small">
+                  <el-button size="small" plain>
+                    操作
+                    <el-icon style="margin-left: 3px"><ArrowRight /></el-icon>
+                  </el-button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item @click="activeDetailTab = 'room'">修改信息</el-dropdown-item>
+                      <el-dropdown-item @click="activeDetailTab = 'follow'">添加跟进</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </template>
             </div>
           </div>
 
@@ -756,12 +799,12 @@
                   <div class="hv-timeline__card">
                     <div class="hv-timeline__meta">
                       <div class="hv-timeline__author-wrap">
-                        <div class="hv-timeline__author-avatar">{{ rec.author.slice(0, 1) }}</div>
-                        <span class="hv-timeline__author">{{ rec.author }}</span>
+                        <div class="hv-timeline__author-avatar">{{ (rec.updateByName || rec.updateBy || "?").slice(0, 1) }}</div>
+                        <span class="hv-timeline__author">{{ rec.updateByName || rec.updateBy || "未知" }}</span>
                       </div>
-                      <span class="hv-timeline__time">{{ rec.time }}</span>
+                      <span class="hv-timeline__time">{{ rec.createTime }}</span>
                     </div>
-                    <p class="hv-timeline__body">{{ rec.content }}</p>
+                    <p class="hv-timeline__body">{{ rec.trackContent }}</p>
                   </div>
                 </div>
               </div>
@@ -778,6 +821,10 @@
                 <el-icon :size="13"><User /></el-icon>
               </div>
               <span class="hv-pcard__title">租客信息</span>
+              <div v-if="isLeased" style="margin-left: auto; display: flex; gap: 4px; align-items: center">
+                <el-button size="small" type="warning" plain @click="handleRenew">续约</el-button>
+                <el-button size="small" type="danger" plain @click="handleCheckout">退租</el-button>
+              </div>
             </div>
             <div class="hv-pcard__body">
               <template v-if="tenantInfo">
@@ -822,6 +869,12 @@
                 <el-icon :size="13"><Calendar /></el-icon>
               </div>
               <span class="hv-pcard__title">预定信息</span>
+              <div v-if="isBooked" style="margin-left: auto">
+                <el-button size="small" type="primary" @click="emit('tenant', currentRoom!)">
+                  <el-icon><ArrowRight /></el-icon>
+                  转为租客
+                </el-button>
+              </div>
             </div>
             <div class="hv-pcard__body">
               <template v-if="bookingInfo">
@@ -1165,16 +1218,19 @@
     }
 
     &__footer {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 4px;
-      padding: 5px 0;
-      background: var(--sub);
-      border-top: 1px solid var(--bl);
+      padding: 3px 8px;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      border-radius: 20px;
       font-size: 11px;
-      color: var(--t3);
-      flex-shrink: 0;
+      color: #fff;
+      pointer-events: none;
     }
   }
 
@@ -1248,7 +1304,6 @@
     // 固定在左侧底部
     &--fixed {
       border-radius: 0;
-      border: none;
       border-top: 1px solid var(--b);
       background: var(--card);
       flex-shrink: 0;
@@ -1294,6 +1349,12 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    &__phone {
+      font-size: 11px;
+      color: var(--t3);
+      margin-top: 1px;
     }
 
     &__dept {
