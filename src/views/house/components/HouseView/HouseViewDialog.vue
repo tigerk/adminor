@@ -169,7 +169,14 @@
     }
   };
 
-  watch(() => currentRoom.value, loadPriceConfig, { immediate: true });
+  // 改后 - 包一层，不传任何参数，force 使用默认值 false
+  watch(
+    () => {
+      return currentRoom.value;
+    },
+    () => loadPriceConfig(),
+    { immediate: true }
+  );
 
   const rentPrice = computed(() => priceConfig.value?.price || currentRoom.value?.price || "0");
 
