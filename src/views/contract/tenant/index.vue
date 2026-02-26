@@ -86,7 +86,7 @@
             <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="handleTenantRenew(row)">
+                <el-dropdown-item @click="openTenantRenewDialog(row)">
                   <el-button link :icon="useRenderIcon(EpCollection)">租客续约</el-button>
                 </el-dropdown-item>
                 <el-dropdown-item @click="handleTenantCheckout(row)">
@@ -133,7 +133,6 @@
   import { ElMessageBox } from "element-plus";
   import { hideLoading, showLoading } from "@/utils/yeah";
   import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
-  import { addDays, addMonth } from "@/utils/date";
 
   defineOptions({
     name: "ContractTenant"
@@ -156,7 +155,8 @@
     tenantList,
     handleSizeChange,
     handleCurrentChange,
-    resetQueryForm
+    resetQueryForm,
+    openTenantRenewDialog
   } = useTenant();
 
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
@@ -211,51 +211,6 @@
     // 刷新列表
     onTenantSearch();
     message("退租提交成功");
-  };
-
-  /** 租客续约 */
-  const handleTenantRenew = (row: LeaseListVo) => {
-    if (!row?.leaseId || !row?.tenantId) {
-      message("租约信息不完整，无法续约", { type: "warning" });
-      return;
-    }
-    getTenantDetail({ leaseId: row.leaseId })
-      .then(resp => {
-        if (resp.code !== 0) {
-          message(resp.message || "获取租约详情失败", { type: "error" });
-          return;
-        }
-
-        // 续约时过滤掉预定租金
-        resp.data.otherFees = resp.data.otherFees?.filter(fee => fee.dictDataId !== "0") || [];
-
-        const detail = resp.data;
-        // 续约开始时间默认是当前租约结束时间的后一天
-        const renewStart = addDays(detail.leaseEnd, 1);
-        const renewEnd = addMonth(detail.leaseEnd, 12);
-
-        const renewData: TenantsCreateFormProps = {
-          tenantPersonal: detail.tenantPersonal,
-          tenantCompany: detail.tenantCompany,
-          tenantMateList: detail.tenantMateList || [],
-          lease: {
-            ...detail,
-            id: undefined,
-            tenantId: detail.tenantId,
-            parentLeaseId: detail.leaseId,
-            contractNature: 2, // 续约
-            leaseStart: renewStart,
-            leaseEnd: renewEnd,
-            leaseDate: [renewStart, renewEnd],
-            checkDate: detail.checkOutTime ? [detail.checkOutTime, null] : undefined
-          },
-          otherFees: detail.otherFees || []
-        };
-        openTenantDialog("续签租约 " + detail.tenantName, renewData);
-      })
-      .catch(() => {
-        message("获取租约详情失败", { type: "error" });
-      });
   };
 
   const previewVisible = ref(false);

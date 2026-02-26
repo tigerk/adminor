@@ -4,7 +4,7 @@ import { h, reactive } from "vue";
 import { message } from "@/utils/message";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
 import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
-import { type HouseDetailVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo } from "@/types";
+import { type HouseDetailVo, LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
 
@@ -15,7 +15,7 @@ export interface HouseViewState {
 }
 
 export const useHouseView = () => {
-  const { openTenantDialog, openTenantViewDialog } = useTenant();
+  const { openTenantDialog, openTenantViewDialog, openTenantRenewDialog } = useTenant();
 
   // CheckoutDialog ref 由每次 openHouseViewDialog 内部持有，避免多弹窗冲突
   let checkoutDialogRef: any = null;
@@ -78,8 +78,8 @@ export const useHouseView = () => {
             onOpenBookingDetail: (bookingId: string) => {
               console.log("打开预定详情", bookingId);
             },
-            onRenewLease: (r: RoomDetailVo) => {
-              handleRenewLease(r);
+            onRenewLease: (lease: LeaseLiteVo) => {
+              handleRenewLease(lease);
             },
             onAddRoom: () => {
               console.log("添加房间");
@@ -122,26 +122,13 @@ export const useHouseView = () => {
   /**
    * 续签 → openTenantDialog(contractNature=2)
    */
-  function handleRenewLease(room: RoomDetailVo) {
-    if (!room.lease) {
+  function handleRenewLease(lease: LeaseLiteVo) {
+    if (!lease) {
       message("当前房间没有在租租客", { type: "warning" });
       return;
     }
-    openTenantDialog("续签", {
-      lease: {
-        roomIds: [room.id],
-        contractNature: 2,
-        rentPrice: room.price ? Number(room.price) : undefined
-      } as any,
-      tenantPersonal: {
-        name: room.lease.tenantName || "",
-        phone: room.lease.tenantPhone || ""
-      } as any,
-      tenantCompany: {} as any,
-      tenantMateList: [],
-      otherFees: [],
-      isEdit: false
-    });
+
+    openTenantRenewDialog({ leaseId: lease.leaseId || "" });
   }
 
   /**

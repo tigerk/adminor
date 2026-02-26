@@ -22,7 +22,7 @@
     viewContract: [room: RoomDetailVo];
     openTenantDetail: [tenantId: string, leaseId: string];
     openBookingDetail: [bookingId: string];
-    renewLease: [room: RoomDetailVo];
+    renewLease: [lease: LeaseLiteVo];
     addRoom: [];
     reload: [];
   }>();
@@ -220,7 +220,7 @@
   };
   const handleRenew = () => {
     if (!currentRoom.value?.lease) return message("当前房间没有在租租客", { type: "warning" });
-    emit("renewLease", currentRoom.value!);
+    emit("renewLease", currentRoom.value.lease);
   };
 
   // ── 房间备注 ──────────────────────────────────────

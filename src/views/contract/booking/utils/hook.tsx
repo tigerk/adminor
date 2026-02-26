@@ -11,7 +11,7 @@ import BookingCreateForm from "../form/bookingCreateForm.vue";
 import BookingDetailDialog from "../view/bookingDetailDialog.vue";
 import { BOOKING_STATUS_COLOR_MAP } from "@/constants";
 import useTenant from "@/views/contract/tenant/utils/hook";
-import type { LeaseProps } from "./types";
+import type { LeaseProps } from "@/types";
 
 function useBooking() {
   const router = useRouter();

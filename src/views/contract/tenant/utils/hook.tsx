@@ -8,13 +8,25 @@ import { createTenant, deleteTenant, getTenantDetail, getTenantList, getTenantTo
 import { getOptionByCode, LEASE_CONTRACT_NATURE_ENUM, LEASE_SIGN_STATUS_OPTIONS, LEAST_STATUS_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
-import type { TenantMateVo, TenantPersonalVo, TenantQueryDto, LeaseListVo, TenantsCreateFormProps } from "@/types";
+import type {
+  TenantMateVo,
+  TenantPersonalVo,
+  TenantQueryDto,
+  LeaseListVo,
+  TenantsCreateFormProps,
+  LeaseDetailVo,
+  LeaseDto,
+  TenantCompanyDto,
+  TenantCompanyVo,
+  TenantPersonalDto
+} from "@/types";
 import { getDictDataByDictCode } from "@/api/sys/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
 import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
 import ViewTenantDialog from "@/views/contract/tenant/view/ViewTenantDialog.vue";
 import { calculateMonthsDifference } from "@/utils/yeah";
 import { convertImage2string } from "@/utils/image";
+import { addDays, addMonth } from "@/utils/date";
 
 function useTenant() {
   const pagination = reactive<PaginationProps>({
@@ -568,6 +580,117 @@ function useTenant() {
     }
   }
 
+  /** 租客续约 */
+  const openTenantRenewDialog = (row: LeaseListVo) => {
+    if (!row?.leaseId) {
+      message("租约信息不完整，无法续约", { type: "warning" });
+      return;
+    }
+    getTenantDetail({ leaseId: row.leaseId })
+      .then(resp => {
+        if (resp.code !== 0) {
+          message(resp.message || "获取租约详情失败", { type: "error" });
+          return;
+        }
+
+        // 续约时过滤掉预定租金
+        resp.data.otherFees = resp.data.otherFees?.filter(fee => fee.dictDataId !== "0") || [];
+
+        const detail = resp.data;
+        // 续约开始时间默认是当前租约结束时间的后一天
+        const renewStart = addDays(detail.leaseEnd, 1);
+        const renewEnd = addMonth(detail.leaseEnd, 12);
+
+        const renewData: TenantsCreateFormProps = {
+          tenantPersonal: toTenantPersonalDto(detail.tenantPersonal), // Vo → Dto
+          tenantCompany: toTenantCompanyDto(detail.tenantCompany), // Vo → Dto
+          tenantMateList: detail.tenantMateList || [],
+          lease: {
+            ...toLeaseDto(detail), // Vo → Dto 基础字段
+            id: undefined,
+            tenantId: detail.tenantId,
+            parentLeaseId: detail.leaseId,
+            contractNature: 2, // 续约
+            leaseStart: renewStart,
+            leaseEnd: renewEnd,
+            leaseDate: [renewStart, renewEnd],
+            checkDate: detail.checkOutTime ? [detail.checkOutTime, null] : undefined
+          },
+          otherFees: detail.otherFees || []
+        };
+        openTenantDialog("续签租约 " + detail.tenantName, renewData);
+      })
+      .catch(() => {
+        message("获取租约详情失败", { type: "error" });
+      });
+  };
+
+  /** TenantPersonalVo → TenantPersonalDto */
+  function toTenantPersonalDto(vo?: TenantPersonalVo): TenantPersonalDto | undefined {
+    if (!vo) return undefined;
+    return {
+      id: vo.id,
+      companyId: vo.companyId ? Number(vo.companyId) : undefined,
+      name: vo.name,
+      gender: vo.gender,
+      idType: vo.idType,
+      idNo: vo.idNo,
+      phone: vo.phone,
+      tags: vo.tags,
+      remark: vo.remark,
+      idCardFrontList: vo.idCardFrontList,
+      idCardBackList: vo.idCardBackList,
+      idCardInHandList: vo.idCardInHandList,
+      otherImageList: vo.otherImageList
+    };
+  }
+
+  /** TenantCompanyVo → TenantCompanyDto */
+  function toTenantCompanyDto(vo?: TenantCompanyVo): TenantCompanyDto | undefined {
+    if (!vo) return undefined;
+    return {
+      id: vo.id,
+      companyName: vo.companyName,
+      uscc: vo.uscc,
+      legalPerson: vo.legalPerson,
+      legalPersonIdType: vo.legalPersonIdType,
+      legalPersonIdNo: vo.legalPersonIdNo,
+      contactName: vo.contactName,
+      contactPhone: vo.contactPhone,
+      registeredAddress: vo.registeredAddress,
+      // Vo 是 businessLicenseList（数组），Dto 是 businessLicenseUrl（单个字符串）
+      businessLicenseUrl: vo.businessLicenseList?.[0],
+      tags: vo.tags,
+      remark: vo.remark,
+      status: vo.status
+    };
+  }
+
+  /** LeaseDetailVo（铺展形式）→ LeaseDto 的基础字段（续约专用） */
+  function toLeaseDto(vo: LeaseDetailVo): LeaseDto {
+    return {
+      tenantId: vo.tenantId,
+      companyId: vo.companyId,
+      deptId: vo.deptId,
+      // Vo 中 roomIds 是逗号拼接的字符串，Dto 需要数组
+      roomIds: vo.roomIds ? vo.roomIds.split(",").filter(Boolean) : undefined,
+      tenantType: vo.tenantType,
+      rentPrice: vo.rentPrice,
+      depositMonths: vo.depositMonths,
+      paymentMonths: vo.paymentMonths,
+      // firstBillDay: vo.firstBillDay,
+      rentDueType: vo.rentDueType,
+      rentDueDay: vo.rentDueDay,
+      rentDueOffsetDays: vo.rentDueOffsetDays,
+      salesmanId: vo.salesmanId,
+      helperId: vo.helperId,
+      tenantSource: vo.tenantSource,
+      dealChannel: vo.dealChannel,
+      remark: vo.remark
+      // leaseStart/leaseEnd/checkDate 由续约逻辑单独覆盖，不在这里设置
+    };
+  }
+
   return {
     resetQueryForm,
     queryForm,
@@ -588,7 +711,8 @@ function useTenant() {
     handleDeleteTenant,
     handleSizeChange,
     handleCurrentChange,
-    openTenantMateDialog
+    openTenantMateDialog,
+    openTenantRenewDialog
   };
 }
 

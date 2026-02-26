@@ -3580,7 +3580,7 @@ export type TenantCompanyDto = {
     /**
      * 企业租客ID
      */
-    id?: number;
+    id?: string;
     /**
      * 企业名称
      */
@@ -3715,7 +3715,7 @@ export type TenantPersonalDto = {
     /**
      * 租户ID
      */
-    id?: number;
+    id?: string;
     /**
      * 公司ID
      */
