@@ -73,7 +73,6 @@
   // ── 图片 ──────────────────────────────────────────────────
   const allImages = computed(() => {
     const set = new Set<string>();
-    props.detail?.houseLayout?.imageList?.forEach(i => i && set.add(i));
     currentRoom.value?.imageList?.forEach(i => i && set.add(i));
     set.delete("");
     return [...set];

@@ -74,30 +74,98 @@
 
 <template>
   <main class="hv-main">
-    <!-- 房间头部 -->
+    <!-- ════════════════════════════════════════
+         房间头部 — 仿截图横向卡片布局
+         ════════════════════════════════════════ -->
     <div class="hv-room-header">
-      <div class="hv-room-header__left">
-        <h2 class="hv-room-header__name">
-          {{ currentRoom?.roomNumber ? `${currentRoom.roomNumber} 号房间` : "房间详情" }}
-        </h2>
-        <span class="hv-badge" :class="`hv-badge--${currentStatus.cls}`">
-          <span class="hv-badge__dot" />
-          {{ currentStatus.text }}
-        </span>
+      <!-- 左侧缩略图 -->
+      <div class="hv-rh-thumb">
+        <el-image v-if="allImages.length" :src="allImages[0]" fit="cover" :preview-src-list="allImages" :initial-index="0" :preview-teleported="true" class="hv-rh-thumb__img" />
+        <div v-else class="hv-rh-thumb__empty">
+          <el-icon :size="22"><House /></el-icon>
+          <span>暂无图片</span>
+        </div>
+        <!-- 图片数量角标 -->
+        <div v-if="allImages.length" class="hv-rh-thumb__badge">
+          <el-icon :size="10"><View /></el-icon>
+          {{ allImages.length }}
+        </div>
       </div>
 
-      <div class="hv-room-header__price">
-        <span class="hv-room-header__amount">{{ rentPrice }}</span>
-        <span class="hv-room-header__unit">元/月</span>
-        <button class="hv-room-header__price-edit" @click="emit('openPriceConfig')">
-          <el-icon :size="11"><Edit /></el-icon>
-          调价
-        </button>
-      </div>
+      <!-- 右侧主体 -->
+      <div class="hv-rh-body">
+        <!-- 第一行：状态 + 价格 + 操作 -->
+        <div class="hv-rh-top">
+          <!-- 状态徽章组 -->
+          <div class="hv-rh-badges">
+            <span class="hv-rh-badge" :class="`hv-rh-badge--${currentStatus.cls}`">
+              <span class="hv-rh-badge__dot" />
+              {{ currentStatus.text }}
+            </span>
+            <span v-if="currentRoom?.roomNumber" class="hv-rh-badge hv-rh-badge--room">{{ currentRoom.roomNumber }} 号</span>
+          </div>
 
-      <div class="hv-room-header__actions">
-        <el-button size="small" type="primary" @click="emit('editHouse', detail)">修改房间</el-button>
-        <el-button size="small" type="danger" @click="activeDetailTab = 'track'">添加跟进</el-button>
+          <!-- 分隔 -->
+          <span class="hv-rh-divider" />
+          <!-- 价格区 -->
+          <div class="hv-rh-price">
+            <span class="hv-rh-price__amount">{{ rentPrice }}</span>
+            <span class="hv-rh-price__unit">元/月</span>
+            <span class="hv-rh-sub-price">
+              底价：
+              <em>{{ priceConfig?.floorPrice ?? "-" }}</em>
+              <span class="hv-rh-price__unit">元/月</span>
+            </span>
+            <button class="hv-rh-price__edit" @click="emit('openPriceConfig')">
+              <el-icon :size="10"><Edit /></el-icon>
+              调价
+            </button>
+          </div>
+
+          <!-- 右侧操作按钮 -->
+          <div class="hv-rh-actions">
+            <el-button size="small" type="primary" plain @click="emit('editHouse', detail)">修改房间</el-button>
+            <el-button size="small" type="danger" plain @click="activeDetailTab = 'track'">添加跟进</el-button>
+          </div>
+        </div>
+
+        <!-- 第二行：属性列表（value 上 / label 下） -->
+        <div class="hv-rh-info">
+          <div class="hv-rh-col">
+            <span class="hv-rh-col__val">{{ houseMeta.layoutName || "-" }}</span>
+            <span class="hv-rh-col__lbl">所属房型</span>
+          </div>
+          <div class="hv-rh-col">
+            <span class="hv-rh-col__val">{{ roomDetail.direction || "-" }} / {{ houseMeta.decoration || "-" }}</span>
+            <span class="hv-rh-col__lbl">朝向 / 装修</span>
+          </div>
+          <div class="hv-rh-col">
+            <span class="hv-rh-col__val">{{ roomDetail.innerArea || "-" }}</span>
+            <span class="hv-rh-col__lbl">套内面积</span>
+          </div>
+          <div class="hv-rh-col">
+            <span class="hv-rh-col__val" :class="houseMeta.hasElevator === '有' ? 'hv-rh-col__val--green' : 'hv-rh-col__val--muted'">
+              {{ houseMeta.hasElevator === "有" ? "有电梯" : "无电梯" }}
+            </span>
+            <span class="hv-rh-col__lbl">电梯</span>
+          </div>
+          <div class="hv-rh-col">
+            <span class="hv-rh-col__val">{{ houseMeta.floor }} / {{ houseMeta.floorTotal }}</span>
+            <span class="hv-rh-col__lbl">楼层</span>
+          </div>
+          <div class="hv-rh-col">
+            <span class="hv-rh-col__val">{{ roomDetail.firstAvailDate || "-" }}</span>
+            <span class="hv-rh-col__lbl">首次可租</span>
+          </div>
+          <div class="hv-rh-col hv-rh-col--owner">
+            <span class="hv-rh-col__val hv-rh-col__val--owner">
+              {{ detail.salesman?.nickname || houseMeta.salesmanName || "-" }}
+              <span v-if="detail.salesman?.phone" class="hv-rh-col__phone">({{ detail.salesman.phone }})</span>
+              <el-icon :size="10" style="cursor: pointer; color: var(--primary); margin-left: 3px" @click="emit('editHouse', detail)"><Edit /></el-icon>
+            </span>
+            <span class="hv-rh-col__lbl">{{ detail.deptName || houseMeta.deptId || "-" }} / 负责人</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -193,33 +261,10 @@
 
       <!-- ── 房源信息 ── -->
       <template v-if="activeDetailTab === 'house'">
-        <!-- 图片 -->
-        <div class="hv-section">
-          <div class="hv-section__hd">
-            <span class="hv-section__title">房源图片</span>
-          </div>
-          <div v-if="allImages.length" class="hv-house-images">
-            <el-image
-              v-for="(img, i) in allImages"
-              :key="img"
-              :src="img"
-              fit="cover"
-              :preview-src-list="allImages"
-              :initial-index="i"
-              :preview-teleported="true"
-              class="hv-house-images__item"
-            />
-          </div>
-          <div v-else class="hv-empty-tip">
-            <span class="hv-empty-tip__ico">🖼️</span>
-            暂无图片
-          </div>
-        </div>
-
         <!-- 基本属性 -->
         <div class="hv-section">
           <div class="hv-section__hd">
-            <span class="hv-section__title">房源档案</span>
+            <span class="hv-section__title">房源信息</span>
             <el-button size="small" link type="primary" @click="emit('editHouse', detail)">
               <el-icon><Edit /></el-icon>
               编辑
@@ -442,90 +487,119 @@
     background: var(--card);
   }
 
+  // ════════════════════════════════════════
+  //  房间头部 — 横向卡片
+  // ════════════════════════════════════════
   .hv-room-header {
     display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 10px;
+    align-items: stretch;
+    gap: 0;
     border-bottom: 1px solid var(--bl);
     flex-shrink: 0;
     background: var(--card);
+    min-height: 0;
+  }
 
-    &__left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 0 0 auto;
-    }
-    &__name {
-      font-size: 16px;
-      font-weight: 800;
-      margin: 0;
-      color: var(--t1);
-    }
+  // 缩略图
+  .hv-rh-thumb {
+    position: relative;
+    width: 96px;
+    min-width: 140px;
+    height: 100px; // 固定高度，切换房间时不跟随图片尺寸变化
+    flex-shrink: 0;
+    background: var(--sub);
+    overflow: hidden;
+    border-right: 1px solid var(--bl);
 
-    &__price {
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-      padding: 0 16px;
-      border-left: 1px solid var(--bl);
-      border-right: none;
-      flex: 0 0 auto;
-    }
-    &__amount {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--success);
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
-    &__unit {
-      font-size: 12px;
-      color: var(--t3);
-    }
-    &__price-edit {
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-      margin-left: 6px;
-      padding: 2px 7px;
-      border-radius: 4px;
-      border: 1px solid var(--b);
-      background: transparent;
-      color: var(--t3);
-      font-size: 11px;
+    &__img {
+      width: 100%;
+      height: 100%;
+      display: block;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: transform 0.3s ease;
+      :deep(img) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
       &:hover {
-        color: var(--primary);
-        border-color: var(--primary);
-        background: var(--primary-light);
+        transform: scale(1.05);
       }
     }
-    &__actions {
+
+    &__empty {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      color: var(--t3);
+      font-size: 10px;
+    }
+
+    &__badge {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      z-index: 2;
       display: flex;
       align-items: center;
-      gap: 1px;
-      margin-left: auto;
-      flex-shrink: 0;
+      gap: 3px;
+      padding: 2px 6px;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(3px);
+      border-radius: 20px;
+      font-size: 10px;
+      color: #fff;
+      pointer-events: none;
     }
   }
 
-  .hv-badge {
+  // 右侧主体
+  .hv-rh-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  // 第一行：状态 + 价格 + 操作
+  .hv-rh-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px 7px;
+    border-bottom: 1px solid var(--bl);
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .hv-rh-badges {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .hv-rh-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 9px;
-    border-radius: 20px;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 700;
+
     &__dot {
       width: 5px;
       height: 5px;
       border-radius: 50%;
       background: currentColor;
+      flex-shrink: 0;
     }
+
     &--leased {
       background: var(--success-bg);
       color: var(--success);
@@ -542,12 +616,166 @@
       background: var(--info-bg);
       color: var(--info);
     }
+    &--room {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--el-color-primary-light-7);
+    }
   }
 
+  .hv-rh-price {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    flex-shrink: 0;
+
+    &__amount {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--success);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    &__unit {
+      font-size: 11px;
+      color: var(--t3);
+    }
+    &__edit {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: 4px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--b);
+      background: transparent;
+      color: var(--t3);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      &:hover {
+        color: var(--primary);
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+    }
+  }
+
+  .hv-rh-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--bl);
+    flex-shrink: 0;
+  }
+
+  .hv-rh-sub-prices {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .hv-rh-sub-price {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    color: var(--t3);
+    white-space: nowrap;
+    em {
+      font-style: normal;
+      color: var(--t2);
+      font-weight: 600;
+    }
+  }
+
+  .hv-rh-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  // 第二行：属性列
+  .hv-rh-info {
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+    overflow-x: auto;
+    &::-webkit-scrollbar {
+      height: 0;
+    }
+  }
+
+  .hv-rh-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 14px;
+    border-right: 1px solid var(--bl);
+    min-width: 80px;
+    flex-shrink: 0;
+    transition: background 0.12s;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &:hover {
+      background: var(--sub);
+    }
+
+    &--owner {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    &__val {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--t1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      &--green {
+        color: var(--success);
+      }
+      &--muted {
+        color: var(--t3);
+        font-weight: 400;
+      }
+
+      &--owner {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 12px;
+      }
+    }
+
+    &__lbl {
+      font-size: 10px;
+      color: var(--t3);
+      white-space: nowrap;
+    }
+
+    &__phone {
+      font-size: 10px;
+      color: var(--t3);
+      font-weight: 400;
+    }
+  }
+
+  // ════════════════════════════════════════
+  //  Tabs
+  // ════════════════════════════════════════
   .hv-tabs {
     display: flex;
     border-bottom: 1px solid var(--bl);
-    padding: 0 10px;
     flex-shrink: 0;
     background: var(--card);
   }
@@ -592,6 +820,9 @@
     }
   }
 
+  // ════════════════════════════════════════
+  //  Sections & KV grid（Tab 内容）
+  // ════════════════════════════════════════
   .hv-section {
     padding: 18px 0;
     border-bottom: 1px solid var(--bl);
@@ -803,7 +1034,7 @@
     font-weight: 600;
   }
 
-  // 房源信息 Tab 样式
+  // 房源信息 Tab — 图片网格
   .hv-house-images {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -956,6 +1187,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    padding: 14px 2px;
   }
 
   .hv-tag {
