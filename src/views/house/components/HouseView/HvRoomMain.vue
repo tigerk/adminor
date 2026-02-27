@@ -336,7 +336,7 @@
     &__actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 1px;
       margin-left: auto;
       flex-shrink: 0;
     }
