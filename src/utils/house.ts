@@ -1,5 +1,7 @@
 import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, RENTAL_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
-import { HouseLayoutDto } from "@/types";
+import type { HouseLayoutDto } from "@/types";
+import { ROOM_STATUS_ENUM } from "@/constants";
+import type { RoomDetailVo } from "@/types";
 
 /**
  * 显示装修类型的label
@@ -67,4 +69,29 @@ export const calcLeaseDuration = (start?: Date | string, end?: Date | string) =>
     return months > 0 ? `(${years}年${months}月)` : `(${years}年)`;
   }
   return diffMonths > 0 ? `(${diffMonths}月)` : "";
+};
+
+/**
+ * 获取房间状态的 text、class color ，用于 TopBar / RoomMain 共用
+ * @param room
+ */
+export const getRoomStatus = (room: RoomDetailVo) => {
+  const entry = Object.entries(ROOM_STATUS_ENUM).find(([, s]) => s.code === room.roomStatus);
+  if (!entry) return { text: "-", cls: "locked", color: "#8C8C8C" };
+  const [key, s] = entry;
+  // key: "AVAILABLE" → cls: "available"
+  return { text: s.name, cls: key.toLowerCase(), color: s.color };
+};
+
+// ── 付款方式标签（RentTab / Panel 共用）─────────────────────
+export const payMethodLabel = (m?: number): string => {
+  const map: Record<number, string> = {
+    0: "随房租付",
+    1: "一次性",
+    2: "月付",
+    4: "季付",
+    5: "半年付",
+    6: "年付"
+  };
+  return m !== undefined ? (map[m] ?? "其他") : "";
 };

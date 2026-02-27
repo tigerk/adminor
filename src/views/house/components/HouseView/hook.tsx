@@ -1,10 +1,10 @@
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { h, reactive } from "vue";
+import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
 import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
-import { type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo } from "@/types";
+import { type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo, type RoomTrackVo } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
 import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
@@ -15,6 +15,22 @@ import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 export interface HouseViewState {
   loading: boolean;
   detail: HouseDetailVo | null;
+}
+
+/**
+ * 生成本地跟进记录（提交成功后即时插入，无需整体 reload）
+ */
+export function buildLocalTrackRecord(roomId: string, content: string, operatorName: string): RoomTrackVo {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const timeStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  return {
+    id: String(Date.now()),
+    roomId,
+    trackContent: content,
+    createTime: timeStr,
+    updateByName: operatorName
+  };
 }
 
 export const useHouseView = () => {
@@ -66,7 +82,6 @@ export const useHouseView = () => {
                 otherFees: []
               });
             },
-            // 编辑房源
             onEditHouse: (d: HouseDetailVo) => {
               handleEditHouse(d);
             },
@@ -78,7 +93,7 @@ export const useHouseView = () => {
             },
             onOpenTenantDetail: (tenantName: string, leaseId: string) => {
               if (tenantName || leaseId) {
-                openTenantViewDialog("查看", { tenantName: tenantName, leaseId });
+                openTenantViewDialog("查看", { tenantName, leaseId });
               }
             },
             onOpenBookingDetail: (bookingId: string) => {
@@ -133,7 +148,6 @@ export const useHouseView = () => {
       message("当前房间没有在租租客", { type: "warning" });
       return;
     }
-
     openTenantRenewDialog({ leaseId: lease.leaseId || "" });
   }
 
@@ -173,19 +187,13 @@ export const useHouseView = () => {
   }
 
   /**
-   * 编辑房源：根据 leaseMode + rentalType 跳转到对应编辑页
-   *   leaseMode=1  → 集中式项目编辑
-   *   leaseMode=2, rentalType=1 → 分散式-整租 编辑
-   *   leaseMode=2, rentalType=2 → 分散式-合租 编辑
-   */
-  /**
    * 编辑房源：根据 leaseMode + rentalType 跳转对应编辑页
    *   leaseMode=1               → 集中式项目编辑
    *   leaseMode=2, rentalType=1 → 分散式-整租编辑
    *   leaseMode=2, rentalType=2 → 分散式-合租编辑
    */
   function handleEditHouse(detail: HouseDetailVo) {
-    const { leaseMode, rentalType, id, leaseModeId } = detail;
+    const { leaseMode, rentalType, id } = detail;
     if (!id) {
       return message("房源数据缺失", { type: "warning" });
     }
@@ -194,14 +202,12 @@ export const useHouseView = () => {
       handleEditFocus(detail.leaseModeId);
     } else if (leaseMode === LeaseModeEnum.SCATTER) {
       if (rentalType === RentalTypeEnum.SHARED) {
-        openShareEditDialog("修改" + detail.houseName, id).then(r => {
-          const state = reactive<HouseViewState>({ loading: true, detail: null });
-          loadDetail(state, id).catch(() => undefined);
+        openShareEditDialog("修改" + detail.houseName, id).then(() => {
+          // 编辑完成后的刷新逻辑由调用方通过 onReload 处理
         });
       } else if (rentalType === RentalTypeEnum.ENTIRE) {
-        openEntireEditDialog("修改" + detail.houseName, id).then(r => {
-          const state = reactive<HouseViewState>({ loading: true, detail: null });
-          loadDetail(state, id).catch(() => undefined);
+        openEntireEditDialog("修改" + detail.houseName, id).then(() => {
+          // 同上
         });
       } else {
         message("未知分散式房源类型，无法编辑", { type: "warning" });

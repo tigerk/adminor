@@ -19,6 +19,11 @@ export function getOptionByCode(options: any[], code: any) {
   return options.find(item => item.value === code);
 }
 
+export function getOptionNameByCode(options: readonly { label: string; value: any }[], code: any) {
+  if (!code) return "";
+  return options.find(item => item.value === code)?.label || "";
+}
+
 /**
  * 性别选项：1-男，2-女
  */
