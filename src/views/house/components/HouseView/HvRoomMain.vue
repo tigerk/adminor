@@ -3,6 +3,7 @@
   import { Edit, House, Location, View } from "@element-plus/icons-vue";
   import { HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo } from "@/types";
   import { getRoomStatus, payMethodLabel, getWaterTypeLabel, getElectricityTypeLabel } from "@/utils/house";
+  import { getOptionNameByCode, ROOM_TYPE_OPTIONS } from "@/constants";
 
   const props = defineProps<{
     detail: HouseDetailVo;
@@ -193,6 +194,10 @@
             <div class="hv-kv">
               <span class="hv-kv__k">房间号</span>
               <span class="hv-kv__v hv-kv__v--bold">{{ roomDetail.roomNumber }}</span>
+            </div>
+            <div class="hv-kv">
+              <span class="hv-kv__k">房型</span>
+              <span class="hv-kv__v hv-kv__v--bold">{{ getOptionNameByCode(ROOM_TYPE_OPTIONS, currentRoom.roomType) }}</span>
             </div>
             <div class="hv-kv">
               <span class="hv-kv__k">朝向</span>
