@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from "vue";
-  import { FocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
+  import { LocalFocusBuildingDto, LocalFocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
   import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
@@ -10,10 +10,10 @@
   import PoiSearch from "@/components/Business/PoiSearch.vue";
   import EpCircleClose from "~icons/ep/circle-close";
   import { message } from "@/utils/message";
-  import { FocusBuildingDto, FocusHouseDto } from "@/types";
+  import { FocusHouseDto } from "@/types";
 
   // 获取 FocusCreateForm 中的form数据
-  const form = defineModel<FocusCreateDto>();
+  const form = defineModel<LocalFocusCreateDto>();
 
   // 定义 emits
   const emit = defineEmits<{
@@ -26,11 +26,11 @@
 
   // 判断是否处于编辑模式
   const isEditMode = computed(() => {
-    return form.value?.id && form.value.id !== 0;
+    return !!form.value?.id;
   });
 
   // 判断特定楼栋是否可编辑（新添加的楼栋在编辑模式下也可以编辑）
-  const isBuildingEditable = (building: FocusBuildingDto) => {
+  const isBuildingEditable = (building: LocalFocusBuildingDto) => {
     // 如果不是编辑模式，所有楼栋都可编辑
     if (!isEditMode.value) {
       return false; // 返回false表示不禁用
@@ -60,7 +60,7 @@
 
   // 添加新楼栋 - 修复版本
   const addBuilding = () => {
-    const newBuilding: FocusBuildingDto = {
+    const newBuilding: LocalFocusBuildingDto = {
       building: "",
       unit: "",
       floorTotal: 2,

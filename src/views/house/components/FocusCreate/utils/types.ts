@@ -22,3 +22,11 @@ export type LocalFocusBuildingDto = Omit<FocusBuildingDto, "housesStatusOfFloors
    */
   housesStatusOfFloors?: Map<number, Map<string, FocusHouseDto>>;
 };
+
+/**
+ * 前端运行时使用的 FocusCreateDto，buildings 字段替换为 LocalFocusBuildingDto[]
+ * 以确保 housesStatusOfFloors 的 Map 类型在组件中被正确推断
+ */
+export type LocalFocusCreateDto = Omit<FocusCreateDto, "buildings"> & {
+  buildings: LocalFocusBuildingDto[];
+};

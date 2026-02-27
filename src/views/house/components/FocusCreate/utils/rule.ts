@@ -16,7 +16,7 @@ export const createFocusBasicInfoRules = (form: any) => {
     console.log("项目名称:", form.focusName);
 
     try {
-      const res = await checkFocusCodeExist({ id: form.value.id, focusCode: value });
+      const res = await checkFocusCodeExist({ id: form.id, focusCode: value });
       if (res.data) {
         callback(new Error("项目编号已存在"));
       } else {
@@ -36,12 +36,10 @@ export const createFocusBasicInfoRules = (form: any) => {
     focusName: [{ required: true, message: "项目名称为必填项", trigger: "blur" }],
     ["community.name"]: [{ required: true, message: "项目地址为必填项", trigger: "blur" }],
     deptId: [
-      { required: true, message: "归属部门为必填项", trigger: "change" },
-      { type: "number", message: "请选择归属部门", trigger: "change", transform: value => Number(value) }
+      { required: true, message: "归属部门为必填项", trigger: "change" }
     ],
     salesmanId: [
-      { required: true, message: "负责人为必填项", trigger: "change" },
-      { type: "number", message: "请选择负责人", trigger: "change", transform: value => Number(value) }
+      { required: true, message: "负责人为必填项", trigger: "change" }
     ]
   });
 };

@@ -51,7 +51,7 @@
 
   const props = defineProps({
     name: String,
-    cityId: Number
+    cityId: String
   });
 
   const emit = defineEmits(["poi-selected"]);

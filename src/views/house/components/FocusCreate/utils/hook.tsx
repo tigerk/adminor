@@ -4,7 +4,7 @@ import { addDialog, closeAllDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import type { FocusCreateDto, FocusHouseDto } from "@/types";
-import { LocalFocusBuildingDto } from "@/views/house/components/FocusCreate/utils/types";
+import type { LocalFocusBuildingDto } from "@/views/house/components/FocusCreate/utils/types";
 
 export function useFocusEdit() {
   const form = reactive({

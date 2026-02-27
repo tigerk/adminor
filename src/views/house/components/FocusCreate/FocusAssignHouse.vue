@@ -4,13 +4,13 @@
   import { CircleCheckFilled, Delete, Edit, InfoFilled, Lock, Plus, QuestionFilled, Unlock } from "@element-plus/icons-vue";
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
-  import { FocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
+  import { LocalFocusBuildingDto, LocalFocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { useHouseLayoutManage } from "@/views/house/components/HouseLayout/HouseLayoutManage/useHouseLayoutManage";
   import { FocusHouseDto, HouseLayoutDto } from "@/types"; // 获取 FocusCreateForm 中的form数据
 
   // 获取 FocusCreateForm 中的form数据
-  const form = defineModel<FocusCreateDto>();
+  const form = defineModel<LocalFocusCreateDto>();
 
   // 使用房型管理 hook
   const { openHouseLayoutManageDialog } = useHouseLayoutManage();
@@ -701,7 +701,7 @@
 
       houseStatusMap.set(houseNum, {
         cursor: `${building.building}-${building.unit || "0"}-${floor}-${i}`,
-        houseIndex: i,
+        houseIndex: i.toString(),
         doorNumber: doorNumber,
         floor: floor,
         building: building.building,
