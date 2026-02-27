@@ -4,6 +4,7 @@ import { deviceDetection } from "@pureadmin/utils";
 import { message } from "@/utils/message";
 import HouseLayoutManageDialog from "./HouseLayoutManageDialog.vue";
 import type { FacilityItemDto, HouseLayoutDto } from "@/types";
+import type { HouseLayoutManageFormProps } from "./types";
 
 export function useHouseLayoutManage() {
   const layoutManageFormRef = ref();
@@ -16,7 +17,7 @@ export function useHouseLayoutManage() {
    */
   function openHouseLayoutManageDialog(title: "创建" | "编辑" = "创建", row?: HouseLayoutDto, onConfirm?: (data: HouseLayoutDto) => void) {
     // 将 HouseLayoutDto 转换为表单需要的格式
-    const formInline = row
+    const formInline: HouseLayoutManageFormProps["formInline"] = row
       ? {
           id: row.id || "",
           name: row.layoutName || "",
@@ -27,7 +28,7 @@ export function useHouseLayoutManage() {
       : {
           id: "",
           name: "",
-          layout: "",
+          layout: undefined, // 使用 undefined 代替空字符串
           tags: [],
           facilities: []
         };
@@ -40,6 +41,8 @@ export function useHouseLayoutManage() {
       top: "1%",
       width: "800px",
       draggable: true,
+      lockScroll: true,
+      alignCenter: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,

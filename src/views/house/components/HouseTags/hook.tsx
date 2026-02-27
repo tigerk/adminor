@@ -10,7 +10,7 @@ export function useHouseTagsEdit() {
   function openHouseTagsEditDialog(
     title = "新增",
     row?: any[],
-    onConfirm?: (tags: any[]) => void // 添加回调函数参数
+    onConfirm?: (tags: Array<string>) => void // 添加回调函数参数
   ) {
     addDialog({
       title: `${title}房源特色`,

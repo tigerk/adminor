@@ -1,6 +1,14 @@
 /**
  * 租赁类型选项
  */
+export const LEASE_MODE_OPTIONS = [
+  { label: "集中式", value: 1 },
+  { label: "分散式", value: 2 }
+] as const;
+
+/**
+ * 租赁类型选项
+ */
 export const RENTAL_TYPE_OPTIONS = [
   { label: "整租", value: 1 },
   { label: "合租", value: 2 }

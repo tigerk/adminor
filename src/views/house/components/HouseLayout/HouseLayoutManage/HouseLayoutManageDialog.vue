@@ -5,24 +5,14 @@
   import HouseTagsDialog from "@/views/house/components/HouseTags/HouseTagsDialog.vue";
   import HouseFacilityDialog from "@/views/house/components/HouseFacility/HouseFacilityDialog.vue";
   import type { FacilityItemDto, HouseLayoutDto } from "@/types";
-
-  // 定义 props 接口 - layout 可以是字符串或 HouseLayoutDto 对象
-  interface HouseLayoutManageFormProps {
-    formInline?: {
-      id?: string;
-      name?: string;
-      layout?: string | HouseLayoutDto;
-      tags?: number[];
-      facilities?: FacilityItemDto[];
-    };
-  }
+  import type { HouseLayoutManageFormProps } from "./types";
 
   const props = withDefaults(defineProps<HouseLayoutManageFormProps>(), {
     formInline: () => ({
       id: "",
       name: "",
-      layout: "",
-      tags: [],
+      layout: undefined,
+      tags: [] as Array<string>,
       facilities: []
     })
   });
@@ -33,17 +23,11 @@
   const facilityDialogRef = ref();
 
   // 表单数据 - 明确类型定义
-  const formData = reactive<{
-    id: string;
-    name: string;
-    layout: string | HouseLayoutDto;
-    tags: number[];
-    facilities: FacilityItemDto[];
-  }>({
+  const formData = reactive<HouseLayoutManageFormProps["formInline"]>({
     id: "",
     name: "",
-    layout: "",
-    tags: [],
+    layout: undefined,
+    tags: [] as Array<string>,
     facilities: []
   });
 
@@ -70,7 +54,7 @@
           // 如果是对象，直接使用
           formData.layout = newVal.layout;
         } else {
-          formData.layout = "";
+          formData.layout = null;
         }
 
         formData.tags = newVal.tags || [];
@@ -94,9 +78,9 @@
     const selectedFacilities = facilityDialogRef.value?.getRef() || {};
 
     // 将 facilities 对象转换为数组
-    const facilitiesArray: FacilityItemDto[] = Object.entries(selectedFacilities).map(([name, count]) => ({
+    const facilitiesArray: Array<FacilityItemDto> = Object.entries(selectedFacilities).map(([name, count]) => ({
       name,
-      count: Number(count)
+      count: count.toString()
     }));
 
     // 返回完整的 HouseLayoutDto 数据

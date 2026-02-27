@@ -6,8 +6,8 @@
   const props = withDefaults(defineProps<TagsFormProps>(), {});
 
   // 存储选中的配置及其数量
-  const selectedTags = ref<any[]>([]);
-  const tagsOptions = reactive<any[]>([]);
+  const selectedTags = ref<Array<string>>([]);
+  const tagsOptions = reactive<Array<{ label: string; value: string }>>([]);
 
   // 计算是否全选
   const isAllSelected = computed(() => {
@@ -47,7 +47,7 @@
   };
 
   // 切换选中状态
-  const toggleTag = (value: number) => {
+  const toggleTag = (value: string) => {
     if (selectedTags.value.includes(value)) {
       // 找到要删除的值的索引
       const index = selectedTags.value.indexOf(value);
@@ -62,7 +62,7 @@
   };
 
   // 判断是否选中
-  const isSelected = (value: number) => {
+  const isSelected = (value: string) => {
     return selectedTags.value.includes(value);
   };
 

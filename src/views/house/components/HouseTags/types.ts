@@ -1,6 +1,6 @@
 // 表单
 interface TagsFormProps {
-  formInline: number[];
+  formInline: Array<string>;
 }
 
 export type { TagsFormProps };

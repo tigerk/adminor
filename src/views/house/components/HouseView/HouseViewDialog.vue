@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
-  import { BookingListVo, HouseDetailVo, PriceConfigDto, PriceMethodEnum, RoomDetailVo, RoomTrackVo } from "@/types";
-  import { getOptionByCode, LEASE_STATUS_ENUM, LEAST_STATUS_OPTIONS, ROOM_STATUS_ENUM } from "@/constants";
+  import { BookingListVo, HouseDetailVo, PriceConfigDto, PriceMethodEnum, RoomDetailVo, RoomTrackVo, LeaseLiteVo, LeaseModeEnum } from "@/types";
+  import { getOptionByCode, LEASE_MODE_OPTIONS, LEASE_STATUS_ENUM, LEAST_STATUS_OPTIONS, ROOM_STATUS_ENUM } from "@/constants";
   import { ArrowRight, Calendar, Edit, House, Location, Plus, User, View } from "@element-plus/icons-vue";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { addRoomTrack, getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
@@ -47,6 +47,7 @@
   const houseMeta = computed(() => {
     const d = props.detail;
     return {
+      leaseModeName: getOptionByCode([...LEASE_MODE_OPTIONS], d?.leaseMode).label || "-",
       rentalType: getRentalTypeLabel(d?.rentalType),
       decoration: getDecorationLabel(d?.decorationType),
       area: d?.area || "-",
@@ -439,6 +440,7 @@
             </div>
             <!-- 属性 chips -->
             <div class="hv-chips">
+              <span class="hv-chip hv-chip--blue">{{ houseMeta.leaseModeName }}</span>
               <span class="hv-chip hv-chip--blue">{{ houseMeta.rentalType }}</span>
               <span class="hv-chip">{{ houseMeta.area }} m²</span>
               <span class="hv-chip">{{ houseMeta.floor }}/{{ houseMeta.floorTotal }}层</span>
