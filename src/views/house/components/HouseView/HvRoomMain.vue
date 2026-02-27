@@ -21,6 +21,10 @@
       firstAvailDate: string;
       vacancyStart: string;
     };
+    /** house_tags 字典：value/id → label */
+    tagsMap?: Record<string, string>;
+    /** house_facilities 字典：value → label */
+    facilitiesMap?: Record<string, string>;
   }>();
 
   const emit = defineEmits<{
@@ -71,8 +75,8 @@
       </div>
 
       <div class="hv-room-header__actions">
-        <el-button size="small" @click="emit('editHouse', detail)">修改房间</el-button>
-        <el-button size="small" @click="activeDetailTab = 'track'">添加跟进</el-button>
+        <el-button size="small" type="primary" @click="emit('editHouse', detail)">修改房间</el-button>
+        <el-button size="small" type="danger" @click="activeDetailTab = 'track'">添加跟进</el-button>
       </div>
     </div>
 
@@ -131,15 +135,38 @@
           </div>
         </div>
 
+        <!-- 房间特色 -->
+        <div class="hv-section">
+          <div class="hv-section__hd">
+            <span class="hv-section__title">房间特色</span>
+          </div>
+          <div v-if="currentRoom?.tags?.length" class="hv-tag-list">
+            <span v-for="tag in currentRoom.tags" :key="tag" class="hv-tag hv-tag--feature">
+              {{ tagsMap?.[String(tag)] || tag }}
+            </span>
+          </div>
+          <div v-else class="hv-empty-tip">
+            <span class="hv-empty-tip__ico">🏷️</span>
+            暂无房间特色
+          </div>
+        </div>
+
+        <!-- 房间配置 -->
         <div class="hv-section">
           <div class="hv-section__hd">
             <span class="hv-section__title">房间配置</span>
-            <el-button size="small" link type="primary">
-              <el-icon><View /></el-icon>
-              物资明细
-            </el-button>
+<!--            <el-button size="small" link type="primary">-->
+<!--              <el-icon><View /></el-icon>-->
+<!--              物资明细-->
+<!--            </el-button>-->
           </div>
-          <div class="hv-empty-tip">
+          <div v-if="currentRoom?.facilities?.length" class="hv-tag-list">
+            <span v-for="f in currentRoom.facilities" :key="f.name" class="hv-tag hv-tag--facility">
+              {{ (f.name && facilitiesMap?.[f.name]) || f.name }}
+              <em v-if="f.count">×{{ f.count }}</em>
+            </span>
+          </div>
+          <div v-else class="hv-empty-tip">
             <span class="hv-empty-tip__ico">📦</span>
             暂无配置信息
           </div>
@@ -627,6 +654,42 @@
   }
   .fw-600 {
     font-weight: 600;
+  }
+
+  // tags & facilities
+  .hv-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .hv-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.5;
+
+    em {
+      font-style: normal;
+      font-size: 11px;
+      opacity: 0.75;
+    }
+
+    &--feature {
+      background: var(--el-color-primary-light-9, #ecf5ff);
+      color: var(--primary);
+      border: 1px solid var(--el-color-primary-light-7, #c6e2ff);
+    }
+
+    &--facility {
+      background: var(--sub, #f8f9fa);
+      color: var(--t2);
+      border: 1px solid var(--bl);
+    }
   }
 
   // 跟进记录

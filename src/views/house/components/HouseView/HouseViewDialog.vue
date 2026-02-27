@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref, watch } from "vue";
+  import { computed, onMounted, ref, watch } from "vue";
   import { BookingListVo, HouseDetailVo, LeaseLiteVo, PriceMethodEnum, RoomDetailVo, RoomTrackVo, type PriceConfigDto } from "@/types";
   import { getOptionByCode, LEASE_MODE_OPTIONS, ROOM_STATUS_ENUM } from "@/constants";
   import { calcLeaseDuration, getDecorationLabel, getDirectionLabel, getHouseLayoutName, getRentalTypeLabel } from "@/utils/house";
@@ -14,6 +14,7 @@
   import HvAside from "./HvAside.vue";
   import HvRoomMain from "./HvRoomMain.vue";
   import HvPanel from "./HvPanel.vue";
+  import { getDictDataByDictCode } from "@/api/sys/dict";
 
   const props = defineProps<{
     loading: boolean;
@@ -186,6 +187,29 @@
     });
   };
 
+  // ── 字典：房间特色 & 房间配置 ─────────────────────────────
+  /** value → label 映射，供 HvRoomMain 展示时翻译 */
+  const tagsMap = ref<Record<string, string>>({});
+  const facilitiesMap = ref<Record<string, string>>({});
+
+  onMounted(() => {
+    getDictDataByDictCode({ dictCode: "house_tags" }).then(res => {
+      const map: Record<string, string> = {};
+      res.data?.forEach((item: any) => {
+        map[String(item.id ?? item.value)] = item.name;
+      });
+      tagsMap.value = map;
+    });
+
+    getDictDataByDictCode({ dictCode: "house_facilities" }).then(res => {
+      const map: Record<string, string> = {};
+      res.data?.forEach((item: any) => {
+        map[String(item.value)] = item.name;
+      });
+      facilitiesMap.value = map;
+    });
+  });
+
   // ── 跟进记录 ──────────────────────────────────────────────
   const localTrackRecords = ref<RoomTrackVo[]>([]);
   const trackLoading = ref(false);
@@ -262,6 +286,8 @@
           :track-loading="trackLoading"
           :salesman-name="houseMeta.salesmanName"
           :room-detail="roomDetail"
+          :tags-map="tagsMap"
+          :facilities-map="facilitiesMap"
           @edit-house="emit('editHouse', $event)"
           @open-price-config="handleOpenPriceConfig"
           @add-track="handleAddTrack"

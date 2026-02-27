@@ -15,8 +15,8 @@
       floorTotal: string | number;
       hasElevator: string;
       hasGas: string;
-      water: string | number;
-      electricity: string | number;
+      water: string;
+      electricity: string;
       propertyFee: string | number;
       communityName: string;
       salesmanName: string;
@@ -150,9 +150,11 @@
     background: var(--card);
     border-right: 1px solid var(--b);
     overflow: hidden;
+    min-height: 0; // grid 子项必须有此项才能收缩
 
     &__body {
       flex: 1;
+      min-height: 0; // flex 子项也需要，否则内容撑开后不会出现滚动条
       padding: 14px 12px 20px;
       display: flex;
       flex-direction: column;
