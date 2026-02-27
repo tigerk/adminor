@@ -190,7 +190,7 @@
         </div>
       </div>
       <div class="hv-pcard__body hv-pcard__body--remark">
-        <el-input v-if="remarkEditing" v-model="remarkText" type="textarea" :rows="4" placeholder="输入房间备注…" resize="none" size="small" />
+        <el-input v-if="remarkEditing" v-model="remarkText" type="textarea" :rows="5" placeholder="输入房间备注…" resize="none" size="small" />
         <p v-else-if="remarkText" style="margin: 0; padding: 0 14px 14px; font-size: 13px; color: var(--t2); line-height: 1.7">{{ remarkText }}</p>
         <div v-else class="hv-panel-empty" style="padding: 14px">
           <span style="font-size: 18px">✏️</span>
@@ -206,7 +206,7 @@
   .hv-panel {
     display: flex;
     flex-direction: column;
-    border-left: 1px solid var(--bl);
+    border: 1px solid var(--bl);
     background: var(--bg);
     overflow-y: auto;
     &::-webkit-scrollbar {
