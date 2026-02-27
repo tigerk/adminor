@@ -446,8 +446,8 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--b);
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--bl);
     flex-shrink: 0;
     background: var(--card);
 
@@ -470,7 +470,7 @@
       gap: 4px;
       padding: 0 16px;
       border-left: 1px solid var(--bl);
-      border-right: 1px solid var(--bl);
+      border-right: none;
       flex: 0 0 auto;
     }
     &__amount {
@@ -546,8 +546,8 @@
 
   .hv-tabs {
     display: flex;
-    border-bottom: 1px solid var(--b);
-    padding: 0 20px;
+    border-bottom: 1px solid var(--bl);
+    padding: 0 10px;
     flex-shrink: 0;
     background: var(--card);
   }
@@ -582,7 +582,7 @@
   .hv-tab-body {
     flex: 1;
     overflow-y: auto;
-    padding: 0 20px 24px;
+    padding: 0 10px 24px;
     &::-webkit-scrollbar {
       width: 3px;
     }
@@ -602,11 +602,12 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     &__title {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
+      color: var(--t1);
       display: flex;
       align-items: center;
       gap: 7px;
@@ -614,9 +615,10 @@
         content: "";
         display: inline-block;
         width: 3px;
-        height: 14px;
+        height: 13px;
         background: var(--primary);
         border-radius: 2px;
+        opacity: 0.8;
       }
     }
   }
@@ -624,9 +626,10 @@
   .hv-kv-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    border: 1px solid var(--b);
+    border: 1px solid var(--bl);
     border-radius: var(--r-sm);
     overflow: hidden;
+    background: var(--sub);
   }
   .hv-kv {
     display: flex;
@@ -636,8 +639,9 @@
     border-right: 1px solid var(--bl);
     border-bottom: 1px solid var(--bl);
     transition: background 0.1s;
+    background: transparent;
     &:hover {
-      background: var(--sub);
+      background: var(--hover-bg);
     }
     &:nth-child(4n) {
       border-right: none;
@@ -675,7 +679,7 @@
   }
   .hv-price-card {
     padding: 14px 15px;
-    border: 1px solid var(--b);
+    border: 1px solid var(--bl);
     border-radius: var(--r-sm);
     background: var(--sub);
     transition: box-shadow 0.15s;
@@ -748,7 +752,7 @@
   }
 
   .hv-plan-table {
-    border: 1px solid var(--b);
+    border: 1px solid var(--bl);
     border-radius: var(--r-sm);
     overflow: hidden;
     font-size: 12px;
@@ -947,6 +951,7 @@
       line-height: 1.7;
     }
   }
+
   .hv-tag-list {
     display: flex;
     flex-wrap: wrap;

@@ -102,7 +102,7 @@
     gap: 0;
     padding: 0 8px 14px 0;
     background: var(--card);
-    border-bottom: 1px solid var(--b);
+    border-bottom: 1px solid var(--bl);
     flex-shrink: 0;
     overflow-x: auto;
     &::-webkit-scrollbar {
@@ -118,7 +118,7 @@
     gap: 4px;
     flex-shrink: 0;
     background: var(--sub);
-    border: 1px solid var(--b);
+    border: 1px solid var(--bl);
     border-radius: 8px;
     padding: 6px 14px;
     margin-right: 10px;
@@ -150,7 +150,7 @@
     display: flex;
     align-items: stretch;
     border-radius: 8px;
-    border: 1.5px solid var(--b);
+    border: 1px solid var(--bl);
     background: var(--sub);
     cursor: pointer;
     transition: all 0.15s;
@@ -190,7 +190,7 @@
 
     &--add {
       border-style: dashed;
-      border-color: var(--b);
+      border-color: var(--bl);
       color: var(--t3);
       font-size: 12px;
       align-items: center;
@@ -282,7 +282,7 @@
   .hv-topbar__occ {
     flex-shrink: 0;
     padding-left: 14px;
-    border-left: 1px solid var(--b);
+    border-left: 1px solid var(--bl);
     min-width: 120px;
   }
 

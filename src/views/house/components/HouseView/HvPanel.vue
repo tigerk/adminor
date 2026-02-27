@@ -206,21 +206,21 @@
   .hv-panel {
     display: flex;
     flex-direction: column;
-    border-left: 1px solid var(--b);
+    border-left: 1px solid var(--bl);
     background: var(--bg);
     overflow-y: auto;
     &::-webkit-scrollbar {
       width: 3px;
     }
     &::-webkit-scrollbar-thumb {
-      background: var(--b);
+      background: var(--bl);
       border-radius: 2px;
     }
   }
 
   .hv-pcard {
     background: var(--card);
-    border-bottom: 1px solid var(--b);
+    border-bottom: 1px solid var(--bl);
     flex-shrink: 0;
 
     &--remark {
