@@ -1,4 +1,4 @@
-import type { FacilityItemDto } from "@/types/models";
+import type { FacilityItemDto } from "@/types";
 
 interface FacilityFormProps {
   formInline: FacilityItemDto[];

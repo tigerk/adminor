@@ -186,7 +186,7 @@
 
 <style scoped>
   .property-form {
-    padding: 15px 20px;
+    padding: 15px 10px;
     margin: 0 auto;
   }
 
