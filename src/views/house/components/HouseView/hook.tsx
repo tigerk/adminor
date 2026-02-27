@@ -4,9 +4,10 @@ import { h, reactive } from "vue";
 import { message } from "@/utils/message";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
 import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
-import { type HouseDetailVo, LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo } from "@/types";
+import { type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
+import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
 
 /** 弹窗内部使用的状态包装（loading + 数据） */
 export interface HouseViewState {
@@ -16,6 +17,7 @@ export interface HouseViewState {
 
 export const useHouseView = () => {
   const { openTenantDialog, openTenantViewDialog, openTenantRenewDialog } = useTenant();
+  const { handleEditFocus } = useFocusHouse();
 
   // CheckoutDialog ref 由每次 openHouseViewDialog 内部持有，避免多弹窗冲突
   let checkoutDialogRef: any = null;
@@ -180,10 +182,12 @@ export const useHouseView = () => {
    */
   function handleEditHouse(detail: HouseDetailVo) {
     const { leaseMode, rentalType, id, leaseModeId } = detail;
-    if (!id) return message("房源数据缺失", { type: "warning" });
+    if (!id) {
+      return message("房源数据缺失", { type: "warning" });
+    }
 
     if (leaseMode === LeaseModeEnum.FOCUS) {
-      message("编辑集中式", { type: "warning" });
+      handleEditFocus(detail.leaseModeId);
     } else if (leaseMode === LeaseModeEnum.SCATTER) {
       if (rentalType === RentalTypeEnum.SHARED) {
         message("编辑分散式合租", { type: "warning" });

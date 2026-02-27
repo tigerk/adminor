@@ -375,7 +375,7 @@
               </template>
             </div>
           </button>
-          <button v-if="isShareRental" class="hv-troom hv-troom--add" @click="emit('addRoom')">
+          <button v-if="isShareRental" class="hv-troom hv-troom--add" @click="emit('editHouse', detail!)">
             <el-icon :size="14"><Plus /></el-icon>
             <span>添加房间</span>
           </button>
