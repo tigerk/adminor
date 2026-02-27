@@ -55,7 +55,8 @@
 
             <!-- 房间网格 -->
             <div class="room-grid">
-              <div v-for="room in floor.rooms" :key="room.roomId.toString()" class="room-card" :class="getRoomCardClass(room)" :style="getRoomCardStyle(room)">
+              <!-- roomId 为 string | undefined，使用 ?? '' 防止 toString() 报错 -->
+              <div v-for="room in floor.rooms" :key="room.roomId ?? room.roomNumber ?? ''" class="room-card" :class="getRoomCardClass(room)" :style="getRoomCardStyle(room)">
                 <!-- 房间状态标签（右上角） -->
                 <div class="room-status-label" :style="{ color: room.roomStatusColor }">
                   {{ room.roomStatusName }}
@@ -88,12 +89,13 @@
                   <div v-if="room.roomStatus === 1 || room.roomStatus === 2">
                     {{ formatDateRange(room.leaseInfo?.leaseStartDate, room.leaseInfo?.leaseEndDate) }}
                   </div>
-                  <div v-else-if="room.roomStatus === 0 && room?.availableDate">
+                  <!-- room.price 为 number | undefined，用 !room.price 即可判断 0 / undefined / null -->
+                  <div v-else-if="room.roomStatus === 0 && room.availableDate">
                     <span class="lease-label">可租日：</span>
-                    {{ formatDate(room?.availableDate) }}
-                    <span class="lease-days">空 {{ getDaysDifference(room?.vacancyStartTime) }} 天</span>
+                    {{ formatDate(room.availableDate) }}
+                    <span class="lease-days">空 {{ getDaysDifference(room.vacancyStartTime) }} 天</span>
                   </div>
-                  <div v-else-if="!room.price || room.price === '0'">
+                  <div v-else-if="!room.price">
                     <span class="lease-label">暂未定价</span>
                   </div>
                   <div v-else>
@@ -157,7 +159,7 @@
       <el-empty v-if="!loading && processedRoomGroups.length === 0" description="暂无房间数据" />
     </div>
 
-    <!-- 加载更多触发器 - 关键：这个元素用于 IntersectionObserver 观察 -->
+    <!-- 加载更多触发器 -->
     <div v-if="hasMore && !loading" ref="loadMoreTrigger" class="loading-more">
       <el-icon v-if="loadingMore" class="is-loading">
         <Loading />
@@ -177,13 +179,13 @@
   import { CloseBold, EditPen, Loading, Location, Lock, OfficeBuilding, Open, Setting, Unlock, User } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
-  import { getDaysDifference } from "@/utils/date"; // 获取父组件的查询表单数据
+  import { getDaysDifference } from "@/utils/date";
 
   // 获取父组件的查询表单数据
   const queryForm = defineModel<QueryFormItemProps>("modelValue", { default: () => ({}) });
 
   const scrollContainer = ref<HTMLElement>();
-  const loadMoreTrigger = ref<HTMLElement>(); // 加载更多触发器
+  const loadMoreTrigger = ref<HTMLElement>();
 
   // ==================== 使用 Hook ====================
   const {
@@ -216,7 +218,6 @@
     { deep: true }
   );
 
-  // ==================== 生命周期 ====================
   // 监听 hasMore 变化，重新设置 observer
   watch([hasMore, () => processedRoomGroups.value.length], () => {
     nextTick(() => {
@@ -322,7 +323,6 @@
           color: var(--el-text-color-primary);
           transition: color 0.3s;
 
-          // 出租率使用成功色
           &.occupancy-rate {
             color: var(--el-color-success);
           }
@@ -444,7 +444,6 @@
     }
   }
 
-  // 深色模式下的房间卡片增强
   .dark .room-card {
     background: var(--el-fill-color-dark);
     border-color: var(--el-border-color-darker);

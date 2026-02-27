@@ -2,7 +2,7 @@ import EntireCreateForm from "./EntireCreateForm.vue";
 import { addDialog, closeAllDialog, closeDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
-import type { ScatterCreateDto, HouseDetailVo } from "@/types";
+import type { ScatterCreateDto, ScatterHouseDto, HouseDetailVo, RoomDetailVo, RoomCreateDto } from "@/types";
 import { createEntireHouse, getEntireHouseDetailById } from "@/api/house/scatter";
 import { message } from "@/utils/message";
 
@@ -16,10 +16,67 @@ export function useEntireEdit() {
 
   const entireFormRef = ref();
 
-  // 将 HouseDetailVo 转换为 ScatterCreateDto
-  const convertToScatterCreateForm = (data: HouseDetailVo): ScatterCreateDto => {
+  /**
+   * 将 RoomDetailVo 转换为 RoomCreateDto
+   */
+  const convertRoomDetailToCreateDto = (room: RoomDetailVo): RoomCreateDto => {
+    return {
+      id: room.id,
+      roomNumber: room.roomNumber,
+      roomType: room.roomType,
+      area: room.area,
+      direction: room.direction,
+      price: room.price,
+      availableDate: room.availableDate,
+      vacancyStartTime: room.vacancyStartTime,
+      roomStatus: room.roomStatus,
+      remark: room.remark,
+      facilities: room.facilities ?? [],
+      tags: room.tags ?? [],
+      imageList: room.imageList ?? [],
+      videoList: room.videoList ?? [],
+      priceConfig: room.priceConfig
+    };
+  };
+
+  /**
+   * 将 HouseDetailVo 转换为 ScatterHouseDto（单个房源）
+   */
+  const convertToScatterHouseDto = (data: HouseDetailVo): ScatterHouseDto => {
     return {
       id: data.id,
+      houseCode: data.houseCode,
+      rentalType: data.rentalType,
+      building: data.building,
+      unit: data.unit,
+      doorNumber: data.doorNumber,
+      floor: data.floor,
+      floorTotal: data.floorTotal,
+      direction: data.direction,
+      area: data.area, // number | undefined，类型一致
+      decorationType: data.decorationType, // number | undefined，类型一致
+      propertyFee: data.propertyFee,
+      houseLayout: data.houseLayout ?? {
+        livingRoom: 0,
+        bedroom: 0,
+        bathroom: 0,
+        kitchen: 0,
+        imageList: [],
+        tags: [],
+        facilities: []
+      },
+      roomList: (data.roomList ?? []).map(convertRoomDetailToCreateDto),
+      locked: data.locked,
+      closed: data.closed
+    };
+  };
+
+  /**
+   * 将 HouseDetailVo 转换为 ScatterCreateDto（整租表单数据）
+   * 注意：ScatterCreateDto 本身不含 id 字段，id 保存在 houseList[0].id 中
+   */
+  const convertToScatterCreateDto = (data: HouseDetailVo): ScatterCreateDto => {
+    return {
       leaseMode: data.leaseMode,
       rentalType: data.rentalType,
       community: data.community,
@@ -30,68 +87,39 @@ export function useEntireEdit() {
       heating: data.heating,
       hasGas: data.hasGas,
       hasElevator: data.hasElevator,
-      // 将完整的房源详情转换为 ScatterHouseDto 并放入 houseList
-      houseList: [
-        {
-          id: data.id,
-          companyId: data.companyId,
-          leaseMode: data.leaseMode,
-          rentalType: data.rentalType,
-          community: data.community,
-          houseCode: data.houseCode,
-          building: data.building,
-          unit: data.unit,
-          doorNumber: data.doorNumber,
-          floor: data.floor,
-          floorTotal: data.floorTotal,
-          direction: data.direction,
-          area: data.area,
-          decorationType: data.decorationType,
-          propertyFee: data.propertyFee,
-          water: data.water,
-          electricity: data.electricity,
-          heating: data.heating,
-          hasElevator: data.hasElevator,
-          hasGas: data.hasGas,
-          houseLayout: data.houseLayout,
-          deptId: data.deptId,
-          salesmanId: data.salesmanId,
-          roomList: data.roomList
-        }
-      ]
+      houseList: [convertToScatterHouseDto(data)]
     };
   };
 
+  /** 默认的整租表单初始值 */
+  const getDefaultFormData = (): ScatterCreateDto => ({
+    leaseMode: 2, // 分散式
+    rentalType: 1, // 整租
+    community: undefined,
+    water: "residential",
+    electricity: "residential",
+    heating: "central",
+    hasGas: true,
+    hasElevator: false,
+    deptId: undefined,
+    salesmanId: undefined,
+    houseList: []
+  });
+
   /**
-   * 打开整租房源编辑对话框
+   * 打开整租房源新增/编辑对话框
    * @param title 对话框标题（"新增" 或 "编辑"）
-   * @param row 房源数据（如果是编辑模式则传入，新增模式则不传）
+   * @param id    房源 ID（可选）。传入则进入编辑模式，从后端拉取数据；不传则初始化空表单。
    */
-  async function openEntireEditDialog(title = "新增", row?: { id?: string } | ScatterCreateDto) {
-    let formInlineData: Partial<ScatterCreateDto> = {
-      id: undefined,
-      leaseMode: 2, // 分散式
-      rentalType: 1, // 整租
-      community: null,
-      water: "residential",
-      electricity: "residential",
-      heating: "central",
-      hasGas: true,
-      hasElevator: false,
-      deptId: undefined,
-      salesmanId: undefined,
-      houseList: []
-    };
+  async function openEntireEditDialog(title = "新增", id?: string) {
+    let formInlineData: ScatterCreateDto = getDefaultFormData();
 
-    // 如果是编辑模式（传入了 row 且有 id）
-    if (row && "id" in row && row.id) {
+    // 编辑模式：通过 id 从后端获取完整数据
+    if (id) {
       try {
-        // 从后端获取完整数据
-        const { data, code } = await getEntireHouseDetailById({ id: row.id });
-
+        const { data, code } = await getEntireHouseDetailById({ id });
         if (code === 0 && data) {
-          // 使用转换函数将 HouseDetailVo 转换为 ScatterCreateDto
-          formInlineData = convertToScatterCreateForm(data);
+          formInlineData = convertToScatterCreateDto(data);
         } else {
           message("获取房源数据失败", { type: "error" });
           return;
@@ -101,13 +129,6 @@ export function useEntireEdit() {
         message("获取房源数据失败", { type: "error" });
         return;
       }
-    } else if (row && "houseList" in row) {
-      // 如果传入了完整的数据对象（比如复制功能），直接使用
-      formInlineData = {
-        ...formInlineData,
-        ...row,
-        id: undefined // 新增时清除 id
-      };
     }
 
     // 打开对话框
@@ -132,37 +153,33 @@ export function useEntireEdit() {
           <el-button
             type="primary"
             onClick={async () => {
-              // 调用表单验证
-              if (entireFormRef.value) {
-                const isValid = await entireFormRef.value.validateForm();
-                if (isValid) {
-                  // 整租：门牌号作为房间号
-                  entireFormRef.value.houseList.forEach(house => {
-                    house.roomList.forEach(room => {
-                      room.roomNumber = house.doorNumber;
-                      room.area = house.area;
-                      room.direction = house.direction;
-                    });
-                  });
+              if (!entireFormRef.value) return;
 
-                  // 验证通过，执行保存逻辑
-                  const formData = entireFormRef.value.entireForm;
-                  const houseList = entireFormRef.value.houseList;
+              const isValid = await entireFormRef.value.validateForm();
+              if (!isValid) return;
 
-                  console.log("整租房源的表单数据:", formData);
-                  console.log("整租房源的房源列表:", houseList);
+              // 整租：将门牌号/面积/朝向同步到房间信息
+              const houseList: ScatterHouseDto[] = entireFormRef.value.houseList;
+              houseList.forEach(house => {
+                house.roomList?.forEach(room => {
+                  room.roomNumber = house.doorNumber;
+                  room.area = house.area;
+                  room.direction = house.direction;
+                });
+              });
 
-                  // 调用API保存数据
-                  await createEntireHouse({ ...formData, houseList }).then(resp => {
-                    if (resp.code === 0) {
-                      message(title === "新增" ? "新增成功" : "修改成功", { type: "success" });
-                      closeDialog(options, index);
-                    } else {
-                      message(resp.message, { type: "error" });
-                    }
-                  });
+              const formData: ScatterCreateDto = entireFormRef.value.entireForm;
+              console.log("整租房源的表单数据:", formData);
+              console.log("整租房源的房源列表:", houseList);
+
+              await createEntireHouse({ ...formData, houseList }).then(resp => {
+                if (resp.code === 0) {
+                  message(title === "新增" ? "新增成功" : "修改成功", { type: "success" });
+                  closeDialog(options, index);
+                } else {
+                  message(resp.message, { type: "error" });
                 }
-              }
+              });
             }}
           >
             保存并关闭

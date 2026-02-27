@@ -1,4 +1,5 @@
 import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, RENTAL_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
+import { HouseLayoutDto } from "@/types";
 
 /**
  * 显示装修类型的label
@@ -24,6 +25,14 @@ export const getRentalTypeLabel = (val?: number) => {
 export const getWaterTypeLabel = (val?: string) => {
   if (val == null) return "-";
   return WATER_TYPE_OPTIONS.find(item => item.value === val)?.label || "-";
+};
+
+export const getHouseLayoutName = (houseLayout?: HouseLayoutDto) => {
+  if (houseLayout == null) return "-";
+
+  const { bedroom, livingRoom, kitchen, bathroom } = houseLayout;
+
+  return `${bedroom}室${livingRoom}厅${kitchen}厨${bathroom}卫`;
 };
 
 /**

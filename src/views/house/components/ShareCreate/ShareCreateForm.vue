@@ -15,26 +15,45 @@
   import { ShareFormProps } from "@/views/house/components/ShareCreate/types";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
-  import type { FacilityItemDto } from "@/types";
+  import type { FacilityItemDto, PriceConfigDto, ScatterHouseDto } from "@/types";
 
   // 使用hook中的方法
   const { openFacilityEditDialog } = useFacilityEdit();
   const { openHouseTagsEditDialog } = useHouseTagsEdit();
   const { openHouseImageEditDialog } = useHouseImageEdit();
   const { openPriceConfigDialog } = usePriceConfigEdit();
-  const { shareFormRef, openShareEditDialog, getScatterDefaultHouseItem, getDefaultRoomItem } = useShareEdit();
+  const { getScatterDefaultHouseItem, getDefaultRoomItem } = useShareEdit();
 
   const props = withDefaults(defineProps<ShareFormProps>(), {});
   const emit = defineEmits(["onSave"]);
 
-  // 将 entireForm 和 houseList 合并到一个响应式对象中
+  // 合并 props.formInline 到响应式对象，houseList 若为空则初始化默认值
   const shareForm = reactive({
     ...props.formInline,
-    houseList: props.formInline.houseList ? props.formInline.houseList : [getScatterDefaultHouseItem()]
+    houseList: props.formInline?.houseList?.length ? props.formInline.houseList : [getScatterDefaultHouseItem()]
   });
 
-  // 使用 entireForm.houseList 替代独立的 houseList
-  const houseList = shareForm.houseList;
+  // 确保每个 house 的 houseLayout 和 roomList 均已初始化（兼容从后端加载的数据）
+  shareForm.houseList.forEach((house: ScatterHouseDto) => {
+    if (!house.houseLayout) {
+      house.houseLayout = { imageList: [], tags: [], facilities: [] };
+    }
+    house.houseLayout.imageList = house.houseLayout.imageList ?? [];
+    house.houseLayout.tags = house.houseLayout.tags ?? [];
+    house.houseLayout.facilities = house.houseLayout.facilities ?? [];
+
+    if (!house.roomList || house.roomList.length === 0) {
+      house.roomList = [getDefaultRoomItem()];
+    }
+    house.roomList.forEach(room => {
+      room.imageList = room.imageList ?? [];
+      room.facilities = room.facilities ?? [];
+      room.tags = room.tags ?? [];
+    });
+  });
+
+  // 直接引用 shareForm.houseList，保持响应性
+  const houseList = shareForm.houseList as ScatterHouseDto[];
 
   // 表单引用
   const ruleFormRef = ref<FormInstance>();
@@ -58,10 +77,7 @@
 
   // 朝向选项
   const directionOptions = DIRECTION_OPTIONS;
-
   const decorationTypeOptions = DECORATION_TYPE_OPTIONS;
-
-  // 房间类型选项
   const roomTypeOptions = ROOM_TYPE_OPTIONS;
 
   // 添加新房源
@@ -71,13 +87,14 @@
 
   // 添加新房间
   const addNewRoom = (houseIndex: number) => {
-    shareForm.houseList[houseIndex].roomList.push(getDefaultRoomItem());
+    shareForm.houseList[houseIndex].roomList!.push(getDefaultRoomItem());
   };
 
   // 删除房间
   const removeRoom = (houseIndex: number, roomIndex: number) => {
-    if (shareForm.houseList[houseIndex].roomList.length > 1) {
-      shareForm.houseList[houseIndex].roomList.splice(roomIndex, 1);
+    const roomList = shareForm.houseList[houseIndex].roomList!;
+    if (roomList.length > 1) {
+      roomList.splice(roomIndex, 1);
     } else {
       ElMessage.warning("至少保留一个房间");
     }
@@ -91,7 +108,12 @@
 
   const copyHouse = (index: number) => {
     const houseToCopy = shareForm.houseList[index];
-    const newHouse = JSON.parse(JSON.stringify(houseToCopy));
+    const newHouse: ScatterHouseDto = JSON.parse(JSON.stringify(houseToCopy));
+    newHouse.id = undefined;
+    newHouse.roomList?.forEach(room => (room.id = undefined));
+    if (newHouse.houseLayout) {
+      newHouse.houseLayout.id = undefined;
+    }
     shareForm.houseList.splice(index + 1, 0, newHouse);
   };
 
@@ -103,117 +125,84 @@
   };
 
   /**
-   * 房源配置对话框 start
+   * 公区配置对话框
    */
   const openFacilitiesDialog = (index: number) => {
     const currentHouse = shareForm.houseList[index];
-
-    openFacilityEditDialog("", currentHouse.houseLayout.facilities, (facilities: FacilityItemDto[]) => {
-      shareForm.houseList[index].houseLayout.facilities = facilities;
+    openFacilityEditDialog("", currentHouse.houseLayout!.facilities, (facilities: FacilityItemDto[]) => {
+      shareForm.houseList[index].houseLayout!.facilities = facilities;
     });
   };
 
-  // 获取房源配置状态文本
   const getFacilitiesStatusText = (features: any[]) => {
     return features && features.length > 0 ? "已设置" : "未设置";
   };
-  /**
-   * 房源配置对话框 end
-   */
 
   /**
-   * 房间配置对话框 start
+   * 房间配置对话框
    */
   const openRoomFacilitiesDialog = (houseIndex: number, roomIndex: number) => {
-    const currentRoom = shareForm.houseList[houseIndex].roomList[roomIndex];
-
+    const currentRoom = shareForm.houseList[houseIndex].roomList![roomIndex];
     openFacilityEditDialog("", currentRoom.facilities, (facilities: FacilityItemDto[]) => {
-      shareForm.houseList[houseIndex].roomList[roomIndex].facilities = facilities;
+      shareForm.houseList[houseIndex].roomList![roomIndex].facilities = facilities;
     });
   };
-  /**
-   * 房间配置对话框 end
-   */
 
   /**
-   * 房源特色对话框 start
+   * 公区特色对话框
    */
   const openHouseTagsDialog = (index: number) => {
     const currentHouse = shareForm.houseList[index];
-
-    openHouseTagsEditDialog("", currentHouse.houseLayout.tags, (tags: any[]) => {
-      shareForm.houseList[index].houseLayout.tags = tags;
+    openHouseTagsEditDialog("", currentHouse.houseLayout!.tags, (tags: any[]) => {
+      shareForm.houseList[index].houseLayout!.tags = tags;
     });
   };
-  /**
-   * 房源特色对话框 end
-   */
 
   /**
-   * 房间特色对话框 start
+   * 房间特色对话框
    */
   const openRoomTagsDialog = (houseIndex: number, roomIndex: number) => {
-    const currentRoom = shareForm.houseList[houseIndex].roomList[roomIndex];
-
+    const currentRoom = shareForm.houseList[houseIndex].roomList![roomIndex];
     openHouseTagsEditDialog("", currentRoom.tags, (tags: any[]) => {
-      shareForm.houseList[houseIndex].roomList[roomIndex].tags = tags;
+      shareForm.houseList[houseIndex].roomList![roomIndex].tags = tags;
     });
   };
-  /**
-   * 房间特色对话框 end
-   */
 
   /**
-   * 房源图片对话框 start
+   * 公区图片对话框
    */
   const openImageListDialog = (index: number) => {
     const currentHouse = shareForm.houseList[index];
-
-    openHouseImageEditDialog("", currentHouse.houseLayout.imageList, (imageList: any[]) => {
-      shareForm.houseList[index].houseLayout.imageList = imageList;
+    openHouseImageEditDialog("", currentHouse.houseLayout!.imageList, (imageList: any[]) => {
+      shareForm.houseList[index].houseLayout!.imageList = imageList;
     });
   };
-  /**
-   * 房源图片对话框 end
-   */
 
   /**
-   * 房间图片对话框 start
+   * 房间图片对话框
    */
   const openRoomImageListDialog = (houseIndex: number, roomIndex: number) => {
-    const currentRoom = shareForm.houseList[houseIndex].roomList[roomIndex];
-
+    const currentRoom = shareForm.houseList[houseIndex].roomList![roomIndex];
     openHouseImageEditDialog("", currentRoom.imageList, (imageList: any[]) => {
-      shareForm.houseList[houseIndex].roomList[roomIndex].imageList = imageList;
+      shareForm.houseList[houseIndex].roomList![roomIndex].imageList = imageList;
     });
   };
-  /**
-   * 房间图片对话框 end
-   */
 
   /**
-   * 租金配置对话框 start
+   * 租金配置对话框
    */
   const openRoomPriceConfigDialog = (houseIndex: number, roomIndex: number) => {
-    const currentRoom = shareForm.houseList[houseIndex].roomList[roomIndex];
-
-    openPriceConfigDialog("", currentRoom?.priceConfig, (priceConfig: any) => {
-      shareForm.houseList[houseIndex].roomList[roomIndex].priceConfig = priceConfig;
-      shareForm.houseList[houseIndex].roomList[roomIndex].price = priceConfig.price;
+    const currentRoom = shareForm.houseList[houseIndex].roomList![roomIndex];
+    openPriceConfigDialog("", currentRoom.priceConfig, (priceConfig: PriceConfigDto) => {
+      shareForm.houseList[houseIndex].roomList![roomIndex].priceConfig = priceConfig;
+      shareForm.houseList[houseIndex].roomList![roomIndex].price = priceConfig.price;
     });
   };
-  /**
-   * 租金配置对话框 end
-   */
 
-  const validateForm = async () => {
-    if (!ruleFormRef.value) {
-      return false;
-    }
-
+  const validateForm = async (): Promise<boolean> => {
+    if (!ruleFormRef.value) return false;
     try {
-      // 验证整个表单（包括小区信息、负责人信息和所有房源）
-      await ruleFormRef.value?.validate();
+      await ruleFormRef.value.validate();
       return true;
     } catch (error) {
       console.error("表单验证失败", error);
@@ -233,7 +222,7 @@
   <div class="entier-create-container">
     <div>
       <el-form ref="ruleFormRef" :model="shareForm" :rules="rules" label-width="100px" label-position="top">
-        <!-- 项目信息 -->
+        <!-- 小区信息 -->
         <h3 class="pb-4">小区信息</h3>
         <el-row :gutter="20">
           <el-col :span="10">
@@ -312,7 +301,7 @@
                     :prop="`houseList.${index}.floor`"
                     :rules="[
                       { required: true, message: '请输入所在楼层', trigger: 'blur' },
-                      { type: 'number', message: '所在楼层必须是数字', trigger: 'blur', transform: value => Number(value) }
+                      { type: 'number', message: '所在楼层必须是数字', trigger: 'blur', transform: (value: any) => Number(value) }
                     ]"
                   >
                     <el-input v-model.number="house.floor" placeholder="请输入楼层" type="number" />
@@ -324,7 +313,7 @@
                     :prop="`houseList.${index}.floorTotal`"
                     :rules="[
                       { required: true, message: '请输入总楼层数', trigger: 'blur' },
-                      { type: 'number', message: '总楼层数必须是数字', trigger: 'blur', transform: value => Number(value) }
+                      { type: 'number', message: '总楼层数必须是数字', trigger: 'blur', transform: (value: any) => Number(value) }
                     ]"
                   >
                     <el-input v-model.number="house.floorTotal" placeholder="请输入总楼层数" type="number" />
@@ -355,14 +344,16 @@
                 </el-col>
                 <el-col :span="4">
                   <el-form-item label="面积">
-                    <el-input v-model="house.area" placeholder="请输入面积">
+                    <!-- 使用 .number 修饰符，与 area: number | undefined 类型一致 -->
+                    <el-input v-model.number="house.area" placeholder="请输入面积" type="number">
                       <template #suffix>m²</template>
                     </el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="4">
                   <el-form-item label="物业费">
-                    <el-input v-model="house.propertyFee" placeholder="请输入物业费">
+                    <!-- 使用 .number 修饰符，与 propertyFee: number | undefined 类型一致 -->
+                    <el-input v-model.number="house.propertyFee" placeholder="请输入物业费" type="number">
                       <template #suffix>元/月</template>
                     </el-input>
                   </el-form-item>
@@ -377,13 +368,11 @@
                   <el-form-item label="公区图片">
                     <el-button
                       class="status-btn"
-                      :type="house.houseLayout.imageList && house.houseLayout.imageList.length > 0 ? 'success' : 'default'"
+                      :type="house.houseLayout?.imageList && house.houseLayout.imageList.length > 0 ? 'success' : 'default'"
                       @click="openImageListDialog(index)"
                     >
-                      <el-icon>
-                        <CircleCheck />
-                      </el-icon>
-                      <span>{{ house.houseLayout.imageList && house.houseLayout.imageList.length > 0 ? "已设置" : "未设置" }}</span>
+                      <el-icon><CircleCheck /></el-icon>
+                      <span>{{ house.houseLayout?.imageList && house.houseLayout.imageList.length > 0 ? "已设置" : "未设置" }}</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
@@ -391,22 +380,18 @@
                   <el-form-item label="公区配置">
                     <el-button
                       class="status-btn"
-                      :type="house.houseLayout.facilities && house.houseLayout.facilities.length > 0 ? 'success' : 'default'"
+                      :type="house.houseLayout?.facilities && house.houseLayout.facilities.length > 0 ? 'success' : 'default'"
                       @click="openFacilitiesDialog(index)"
                     >
-                      <el-icon>
-                        <CircleCheck />
-                      </el-icon>
-                      <span>{{ getFacilitiesStatusText(house.houseLayout.facilities) }}</span>
+                      <el-icon><CircleCheck /></el-icon>
+                      <span>{{ getFacilitiesStatusText(house.houseLayout?.facilities ?? []) }}</span>
                     </el-button>
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
                   <el-form-item label="产权信息">
                     <el-button class="status-btn" disabled>
-                      <el-icon>
-                        <CircleCheck />
-                      </el-icon>
+                      <el-icon><CircleCheck /></el-icon>
                       <span>开发中</span>
                     </el-button>
                   </el-form-item>
@@ -416,9 +401,7 @@
                 <el-col :span="8">
                   <el-form-item label="更多信息">
                     <el-button class="status-btn" disabled>
-                      <el-icon>
-                        <CircleCheck />
-                      </el-icon>
+                      <el-icon><CircleCheck /></el-icon>
                       <span>开发中</span>
                     </el-button>
                   </el-form-item>
@@ -432,9 +415,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px">
               <h4>房间信息</h4>
               <el-button type="primary" plain size="small" @click="addNewRoom(index)">
-                <el-icon>
-                  <Plus />
-                </el-icon>
+                <el-icon><Plus /></el-icon>
                 添加房间
               </el-button>
             </div>
@@ -479,7 +460,8 @@
                         </td>
                         <td>
                           <el-form-item label-width="0" class="table-form-item" :prop="`houseList.${index}.roomList.${roomIndex}.area`">
-                            <el-input v-model="room.area" placeholder="面积" class="table-input">
+                            <!-- 使用 .number 修饰符，与 area: number | undefined 类型一致 -->
+                            <el-input v-model.number="room.area" placeholder="面积" class="table-input" type="number">
                               <template #suffix>m²</template>
                             </el-input>
                           </el-form-item>
@@ -487,7 +469,8 @@
                         <td>
                           <el-form-item label-width="0" class="table-form-item" :prop="`houseList.${index}.roomList.${roomIndex}.price`">
                             <el-space>
-                              <el-input v-model="room.price" placeholder="租金" class="table-input">
+                              <!-- 使用 .number 修饰符，与 price: number | undefined 类型一致 -->
+                              <el-input v-model.number="room.price" placeholder="租金" class="table-input" type="number">
                                 <template #suffix>元/月</template>
                               </el-input>
                               <el-icon class="mr-2 text-blue-700 background-bl" @click="openRoomPriceConfigDialog(index, roomIndex)">
@@ -499,9 +482,7 @@
                         <td class="text-center">
                           <el-form-item label-width="0" class="table-form-item text-center">
                             <el-button :type="room.imageList && room.imageList.length > 0 ? 'primary' : ''" link size="small" @click="openRoomImageListDialog(index, roomIndex)">
-                              <el-icon>
-                                <Picture />
-                              </el-icon>
+                              <el-icon><Picture /></el-icon>
                               {{ room.imageList && room.imageList.length > 0 ? "已设置" : "暂无图片" }}
                             </el-button>
                           </el-form-item>
@@ -509,9 +490,7 @@
                         <td class="text-center">
                           <el-form-item label-width="0" class="table-form-item">
                             <el-button :type="room.facilities && room.facilities.length > 0 ? 'primary' : ''" link size="small" @click="openRoomFacilitiesDialog(index, roomIndex)">
-                              <el-icon>
-                                <Setting />
-                              </el-icon>
+                              <el-icon><Setting /></el-icon>
                               {{ room.facilities && room.facilities.length > 0 ? "已设置" : "暂无配置" }}
                             </el-button>
                           </el-form-item>
@@ -519,19 +498,15 @@
                         <td class="text-center">
                           <el-form-item label-width="0" class="table-form-item">
                             <el-button :type="room.tags && room.tags.length > 0 ? 'primary' : ''" link size="small" @click="openRoomTagsDialog(index, roomIndex)">
-                              <el-icon>
-                                <Setting />
-                              </el-icon>
+                              <el-icon><Setting /></el-icon>
                               {{ room.tags && room.tags.length > 0 ? "已设置" : "暂无特色" }}
                             </el-button>
                           </el-form-item>
                         </td>
                         <td class="text-center">
                           <el-form-item label-width="0" class="table-form-item">
-                            <el-button type="danger" link size="small" :disabled="house.roomList.length <= 1" @click="removeRoom(index, roomIndex)">
-                              <el-icon>
-                                <Delete />
-                              </el-icon>
+                            <el-button type="danger" link size="small" :disabled="house.roomList!.length <= 1" @click="removeRoom(index, roomIndex)">
+                              <el-icon><Delete /></el-icon>
                               删除
                             </el-button>
                           </el-form-item>
@@ -544,12 +519,11 @@
             </el-row>
           </div>
         </div>
+
         <!-- 添加新房源按钮 -->
         <div class="add-button-wrapper">
           <el-button type="primary" plain @click="addNewHouse">
-            <el-icon>
-              <Plus />
-            </el-icon>
+            <el-icon><Plus /></el-icon>
             添加新房源
           </el-button>
         </div>
@@ -821,7 +795,7 @@
     font-size: 13px;
   }
 
-  /* 验证错误状态 - 保持 Element Plus 默认的错误颜色 */
+  /* 验证错误状态 */
   :deep(.share-room-section .table-form-item.is-error .el-input__wrapper),
   :deep(.share-room-section .table-form-item.is-error .el-select__wrapper) {
     background-color: var(--el-color-error-light-9) !important;

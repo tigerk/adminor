@@ -8,6 +8,8 @@ import { type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, ty
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
 import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
+import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
+import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 
 /** 弹窗内部使用的状态包装（loading + 数据） */
 export interface HouseViewState {
@@ -18,6 +20,8 @@ export interface HouseViewState {
 export const useHouseView = () => {
   const { openTenantDialog, openTenantViewDialog, openTenantRenewDialog } = useTenant();
   const { handleEditFocus } = useFocusHouse();
+  const { openEntireEditDialog } = useEntireEdit();
+  const { openShareEditDialog } = useShareEdit();
 
   // CheckoutDialog ref 由每次 openHouseViewDialog 内部持有，避免多弹窗冲突
   let checkoutDialogRef: any = null;
@@ -190,9 +194,17 @@ export const useHouseView = () => {
       handleEditFocus(detail.leaseModeId);
     } else if (leaseMode === LeaseModeEnum.SCATTER) {
       if (rentalType === RentalTypeEnum.SHARED) {
-        message("编辑分散式合租", { type: "warning" });
+        openShareEditDialog("修改" + detail.houseName, id).then(r => {
+          const state = reactive<HouseViewState>({ loading: true, detail: null });
+          loadDetail(state, id).catch(() => undefined);
+        });
+      } else if (rentalType === RentalTypeEnum.ENTIRE) {
+        openEntireEditDialog("修改" + detail.houseName, id).then(r => {
+          const state = reactive<HouseViewState>({ loading: true, detail: null });
+          loadDetail(state, id).catch(() => undefined);
+        });
       } else {
-        message("编辑分散式整租", { type: "warning" });
+        message("未知分散式房源类型，无法编辑", { type: "warning" });
       }
     } else {
       message("未知房源类型，无法编辑", { type: "warning" });

@@ -6,7 +6,8 @@
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { addRoomTrack, getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
   import { message } from "@/utils/message";
-  import { getDecorationLabel, getDirectionLabel, getElectricityTypeLabel, getRentalTypeLabel, getWaterTypeLabel } from "@/utils/house";
+  import { getDecorationLabel, getDirectionLabel, getElectricityTypeLabel,
+    getHouseLayoutName, getRentalTypeLabel, getWaterTypeLabel } from "@/utils/house";
   import { formatDate } from "@/utils/date";
 
   const props = defineProps<{
@@ -47,6 +48,7 @@
   const houseMeta = computed(() => {
     const d = props.detail;
     return {
+      layoutName: getHouseLayoutName(d?.houseLayout),
       leaseModeName: getOptionByCode([...LEASE_MODE_OPTIONS], d?.leaseMode).label || "-",
       rentalType: getRentalTypeLabel(d?.rentalType),
       decoration: getDecorationLabel(d?.decorationType),
@@ -443,7 +445,7 @@
               <span class="hv-chip hv-chip--blue">{{ houseMeta.leaseModeName }}</span>
               <span class="hv-chip hv-chip--blue">{{ houseMeta.rentalType }}</span>
               <span class="hv-chip">{{ houseMeta.area }} m²</span>
-              <span class="hv-chip">{{ houseMeta.floor }}/{{ houseMeta.floorTotal }}层</span>
+              <span class="hv-chip">{{ houseMeta.floor }}层 / {{ houseMeta.floorTotal }}层</span>
               <span class="hv-chip">{{ houseMeta.decoration }}</span>
               <span class="hv-chip" :class="houseMeta.hasElevator === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasElevator }}电梯</span>
               <span class="hv-chip" :class="houseMeta.hasGas === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasGas }}燃气</span>
@@ -451,6 +453,12 @@
 
             <!-- 费用列：物业/水/电 -->
             <div class="hv-aside__costs">
+              <div class="hv-cost-row">
+                <span class="hv-cost-row__label">房型</span>
+                <span class="hv-cost-row__val">
+                  {{ houseMeta.layoutName }}
+                </span>
+              </div>
               <div class="hv-cost-row">
                 <span class="hv-cost-row__label">楼层</span>
                 <span class="hv-cost-row__val">

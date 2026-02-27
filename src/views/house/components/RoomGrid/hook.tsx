@@ -7,55 +7,62 @@ import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { useHouseView } from "@/views/house/components/HouseView/hook";
-import { getShareHouseDetailById } from "@/api/house/scatter";
-import type { RoomGridItemVo, RoomGridDto, RoomListVo, ScatterCreateDto, ScatterHouseDto } from "@/types";
+import type { HouseDetailVo, RoomCreateDto, RoomGridItemVo, RoomGridDto, RoomListVo, ScatterCreateDto, ScatterHouseDto } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { ROOM_STATUS_ENUM } from "@/constants";
-import { message } from "@/utils/message"; // ==================== Hook 特有的类型定义 ====================
+import { message } from "@/utils/message";
 
 // ==================== Hook 特有的类型定义 ====================
+// 说明：以下三个 Processed* 接口是必须保留的前端展示层类型。
+// 后端已有 CompoundGroup / BuildingGroup / FloorGroup，但它们只携带原始数字统计字段，
+// 缺少格式化展示字段（floorName、buildingUnitName）和聚合关联数据（floors、buildingUnits、rooms），
+// 无法直接用于模板渲染，因此前端需要在 computed 中将原始数据处理成这三个结构后再使用。
 
 /**
- * 处理后的楼层分组
+ * 处理后的楼层分组（前端展示层）
+ * 对应后端 FloorGroup + RoomGridItemVo.rooms，补充 floorName 格式化字段和 rooms 关联列表
  */
 interface ProcessedFloorGroup {
   floor: number;
-  floorName: string;
+  floorName: string; // 格式化楼层名，如 "3层"（后端 FloorGroup 无此字段）
   roomCount: number;
   leasedCount: number;
-  occupancyRate: string;
-  rooms: RoomListVo[];
+  occupancyRate: string; // 格式化百分比字符串（后端 FloorGroup.occupancyRate 为 number）
+  rooms: RoomListVo[]; // 关联的房间列表（后端 FloorGroup 无此字段）
 }
 
 /**
- * 楼栋单元分组
+ * 楼栋单元分组（前端展示层）
+ * 对应后端 BuildingGroup，补充 buildingUnitName 格式化字段和 floors 聚合数组
  */
 interface ProcessedBuildingUnit {
   building: string;
   unit: string;
-  buildingUnitName: string;
+  buildingUnitName: string; // 格式化名称，如 "1栋2单元"（后端 BuildingGroup 无此字段）
   totalRooms: number;
   leasedCount: number;
   occupancyRate: string;
   floorCount: number;
-  floors: ProcessedFloorGroup[];
+  floors: ProcessedFloorGroup[]; // 聚合后的楼层列表（后端 BuildingGroup 无此字段）
 }
 
 /**
- * 处理后的小区分组
+ * 处理后的小区分组（前端展示层）
+ * 对应后端 CompoundGroup，leaseModeId/communityId 修正为 string（与后端一致），
+ * 补充 buildingUnits 聚合数组
  */
 interface ProcessedCompoundGroup {
-  leaseModeId: number;
+  leaseModeId: string; // 后端 CompoundGroup.leaseModeId 为 string，原代码误写为 number
   leaseMode: number;
   displayName: string;
-  communityId: number;
+  communityId: string; // 后端 CompoundGroup.communityId 为 string，原代码误写为 number
   communityName: string;
   communityAddress: string;
   totalRooms: number;
   leasedCount: number;
   occupancyRate: string;
-  buildingUnits: ProcessedBuildingUnit[];
+  buildingUnits: ProcessedBuildingUnit[]; // 聚合后的楼栋单元列表（后端 CompoundGroup 无此字段）
 }
 
 // ==================== Hook 定义 ====================
@@ -74,7 +81,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const roomGridData = ref<RoomGridDto | null>(null);
   const hasMore = ref(false);
   const currentPage = ref(1);
-  const pageSize = ref(3); // 可根据需要调整每页大小
+  const pageSize = ref(3);
 
   // 存储所有原始数据项
   const allRoomGridItems = ref<RoomGridItemVo[]>([]);
@@ -83,22 +90,28 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const processedRoomGroups: ComputedRef<ProcessedCompoundGroup[]> = computed(() => {
     if (!allRoomGridItems.value.length) return [];
 
-    // 按小区分组，但保持原始顺序
-    const compoundMap = new Map<number, ProcessedCompoundGroup>();
-    const compoundOrder: number[] = []; // 记录小区出现的顺序
+    // key 使用 string，与后端 CompoundGroup.leaseModeId: string 类型一致
+    const compoundMap = new Map<string, ProcessedCompoundGroup>();
+    const compoundOrder: string[] = [];
 
     allRoomGridItems.value.forEach((item: RoomGridItemVo) => {
-      const leaseModeId = item.compoundGroup.leaseModeId || 0;
+      // compoundGroup / buildingGroup / floorGroup 均为后端可选字段，需防护
+      const compoundGroup = item.compoundGroup;
+      const buildingGroup = item.buildingGroup;
+      const floorGroup = item.floorGroup;
+      if (!compoundGroup || !buildingGroup || !floorGroup) return;
+
+      const leaseModeId = compoundGroup.leaseModeId ?? "";
 
       if (!compoundMap.has(leaseModeId)) {
-        compoundOrder.push(leaseModeId); // 记录顺序
+        compoundOrder.push(leaseModeId);
         compoundMap.set(leaseModeId, {
-          leaseModeId: item.compoundGroup.leaseModeId ?? 0,
-          leaseMode: item.compoundGroup.leaseMode,
-          displayName: item.compoundGroup.displayName || "未知小区",
-          communityId: leaseModeId,
-          communityName: item.compoundGroup.communityName || "未知小区",
-          communityAddress: item.compoundGroup.communityAddress || "未知地址",
+          leaseModeId,
+          leaseMode: compoundGroup.leaseMode ?? 0,
+          displayName: compoundGroup.displayName ?? "未知小区",
+          communityId: compoundGroup.communityId ?? "",
+          communityName: compoundGroup.communityName ?? "未知小区",
+          communityAddress: compoundGroup.communityAddress ?? "未知地址",
           totalRooms: 0,
           leasedCount: 0,
           occupancyRate: "0",
@@ -109,8 +122,8 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       const compound = compoundMap.get(leaseModeId)!;
 
       // 查找或创建楼栋单元
-      const building = item.buildingGroup.building || "";
-      const unit = item.buildingGroup.unit || "";
+      const building = buildingGroup.building ?? "";
+      const unit = buildingGroup.unit ?? "";
       let buildingUnit = compound.buildingUnits.find(bu => bu.building === building && bu.unit === unit);
 
       if (!buildingUnit) {
@@ -128,91 +141,76 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       }
 
       // 排序房间
-      const sortedRooms = [...item.rooms].sort((a, b) => {
-        const numA = parseInt((a.roomNumber || "").replace(/\D/g, "")) || 0;
-        const numB = parseInt((b.roomNumber || "").replace(/\D/g, "")) || 0;
-        return numA === numB ? (a.roomNumber || "").localeCompare(b.roomNumber || "") : numA - numB;
+      const sortedRooms = [...(item.rooms ?? [])].sort((a, b) => {
+        const numA = parseInt((a.roomNumber ?? "").replace(/\D/g, "")) || 0;
+        const numB = parseInt((b.roomNumber ?? "").replace(/\D/g, "")) || 0;
+        return numA === numB ? (a.roomNumber ?? "").localeCompare(b.roomNumber ?? "") : numA - numB;
       });
 
       // 添加楼层数据
-      const floorGroup: ProcessedFloorGroup = {
-        floor: item.floorGroup.floor || 0,
-        floorName: `${item.floorGroup.floor}层`,
-        roomCount: item.floorGroup.roomCount || 0,
-        leasedCount: item.floorGroup.leasedCount || 0,
-        occupancyRate: item.floorGroup.occupancyRate || "0",
+      const floorNum = floorGroup.floor ?? 0;
+      const floorGroupData: ProcessedFloorGroup = {
+        floor: floorNum,
+        floorName: `${floorNum}层`,
+        roomCount: floorGroup.roomCount ?? 0,
+        leasedCount: floorGroup.leasedCount ?? 0,
+        // 后端 FloorGroup.occupancyRate 为 number，格式化为百分比字符串
+        occupancyRate: floorGroup.occupancyRate != null ? String(floorGroup.occupancyRate) : "0",
         rooms: sortedRooms
       };
 
-      buildingUnit.floors.push(floorGroup);
+      buildingUnit.floors.push(floorGroupData);
 
       // 更新楼栋单元统计
-      buildingUnit.totalRooms += floorGroup.roomCount;
-      buildingUnit.leasedCount += floorGroup.leasedCount;
+      buildingUnit.totalRooms += floorGroupData.roomCount;
+      buildingUnit.leasedCount += floorGroupData.leasedCount;
       buildingUnit.floorCount = buildingUnit.floors.length;
 
       // 更新小区统计
-      compound.totalRooms += floorGroup.roomCount;
-      compound.leasedCount += floorGroup.leasedCount;
+      compound.totalRooms += floorGroupData.roomCount;
+      compound.leasedCount += floorGroupData.leasedCount;
     });
 
-    // 处理每个小区的数据
     const result: ProcessedCompoundGroup[] = [];
 
-    // 按照原始顺序处理小区
     compoundOrder.forEach(leaseModeId => {
       const compound = compoundMap.get(leaseModeId)!;
 
-      // 计算小区出租率
       if (compound.totalRooms > 0) {
         compound.occupancyRate = ((compound.leasedCount / compound.totalRooms) * 100).toFixed(1);
       }
 
-      // 对每个楼栋单元进行处理
       compound.buildingUnits.forEach(buildingUnit => {
-        // 计算楼栋单元出租率
         if (buildingUnit.totalRooms > 0) {
           buildingUnit.occupancyRate = ((buildingUnit.leasedCount / buildingUnit.totalRooms) * 100).toFixed(1);
         }
-
-        // 对楼层进行排序
         buildingUnit.floors.sort((a, b) => a.floor - b.floor);
       });
 
-      // 对楼栋单元进行排序（按楼栋号和单元号）
       compound.buildingUnits.sort((a, b) => {
         const buildingA = parseInt(a.building.replace(/\D/g, "")) || 0;
         const buildingB = parseInt(b.building.replace(/\D/g, "")) || 0;
-        if (buildingA !== buildingB) {
-          return buildingA - buildingB;
-        }
-        return (a.unit || "").localeCompare(b.unit || "");
+        if (buildingA !== buildingB) return buildingA - buildingB;
+        return (a.unit ?? "").localeCompare(b.unit ?? "");
       });
 
       result.push(compound);
     });
 
-    // 不再按小区名称排序，保持原始顺序
     return result;
   });
 
   // 加载房间数据
   const loadRoomGrid = async (isLoadMore = false) => {
-    // 如果正在加载，则不重复请求
     if (loading.value || loadingMore.value) return;
 
-    // 如果是加载更多且没有更多数据，直接返回
-    if (isLoadMore && !hasMore.value) {
-      return;
-    }
+    if (isLoadMore && !hasMore.value) return;
 
-    // 设置加载状态
     if (isLoadMore) {
       loadingMore.value = true;
-      currentPage.value++; // ⚠️ 在请求前增加页码
+      currentPage.value++;
     } else {
       loading.value = true;
-      // 如果不是加载更多，重置分页
       currentPage.value = 1;
       allRoomGridItems.value = [];
     }
@@ -220,21 +218,17 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     try {
       const { data } = await getRoomGrid({
         ...queryForm.value,
-        pageSize: pageSize.value,
-        currentPage: currentPage.value
+        pageSize: pageSize.value.toString(),
+        currentPage: currentPage.value.toString()
       });
 
       if (data) {
         roomGridData.value = data;
-        hasMore.value = data.hasMore || false;
+        hasMore.value = data.hasMore ?? false;
 
-        // 临时模拟租期信息（后端添加后删除）
         if (data.roomGridItemList) {
-          const processedItems = data.roomGridItemList.map((item: RoomGridItemVo) => ({
-            ...item
-          }));
+          const processedItems = data.roomGridItemList.map((item: RoomGridItemVo) => ({ ...item }));
 
-          // 追加或替换数据
           if (isLoadMore) {
             allRoomGridItems.value.push(...processedItems);
           } else {
@@ -246,7 +240,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       console.error("加载房间数据失败:", error);
       ElMessage.error("加载数据失败");
       if (isLoadMore) {
-        currentPage.value--; // 失败时回滚页码
+        currentPage.value--;
       }
     } finally {
       loading.value = false;
@@ -254,21 +248,15 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     }
   };
 
-  // 加载更多数据
   const loadMore = async () => {
     await loadRoomGrid(true);
   };
 
-  // 处理滚动事件（可在组件中使用）
   const handleScroll = (event: Event) => {
     const target = event.target as HTMLElement;
     if (!target) return;
 
-    // 计算是否接近底部（距离底部小于100px时触发）
-    const scrollTop = target.scrollTop;
-    const scrollHeight = target.scrollHeight;
-    const clientHeight = target.clientHeight;
-
+    const { scrollTop, scrollHeight, clientHeight } = target;
     if (scrollHeight - scrollTop - clientHeight < 100) {
       if (!loadingMore.value && hasMore.value) {
         loadMore();
@@ -276,7 +264,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     }
   };
 
-  // 重置并重新加载
   const resetAndReload = async () => {
     currentPage.value = 1;
     allRoomGridItems.value = [];
@@ -284,39 +271,27 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     await loadRoomGrid(false);
   };
 
-  // 处理快速操作
   const handleQuickAction = (room: RoomListVo, action: string) => {
     switch (action) {
       case "booking":
-        openBookingDialog(
-          "添加",
-          {
-            roomIds: [room.roomId],
-            roomList: [room]
-          },
-          bookingId => {
-            room.roomStatus = ROOM_STATUS_ENUM.BOOKED.code;
-            room.roomStatusName = ROOM_STATUS_ENUM.BOOKED.name;
-            room.roomStatusColor = ROOM_STATUS_ENUM.BOOKED.color;
-          }
-        );
+        openBookingDialog("添加", { roomIds: [room.roomId], roomList: [room] }, () => {
+          room.roomStatus = ROOM_STATUS_ENUM.BOOKED.code;
+          room.roomStatusName = ROOM_STATUS_ENUM.BOOKED.name;
+          room.roomStatusColor = ROOM_STATUS_ENUM.BOOKED.color;
+        });
         break;
       case "tenant":
         openTenantDialog(
           "添加",
           {
-            // 借用 booking 来初始化 租客选择的房间。
-            booking: {
-              roomIds: [room.roomId],
-              roomList: [room]
-            },
+            booking: { roomIds: [room.roomId], roomList: [room] },
             lease: undefined,
             tenantPersonal: undefined,
             tenantCompany: undefined,
             tenantMateList: undefined,
             otherFees: undefined
           },
-          tenantId => {
+          () => {
             room.roomStatus = ROOM_STATUS_ENUM.LEASED.code;
             room.roomStatusName = ROOM_STATUS_ENUM.LEASED.name;
             room.roomStatusColor = ROOM_STATUS_ENUM.LEASED.color;
@@ -328,94 +303,44 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         openHouseViewDialog(room);
         break;
       default:
-        message(`未知操作：${action}`, {
-          type: "error"
-        });
+        message(`未知操作：${action}`, { type: "error" });
     }
   };
 
-  // 管理小区
+  // 管理小区（集中式项目）
   const handleManageCompound = (community: ProcessedCompoundGroup) => {
-    console.log(`点击项目编辑：${community}`);
+    console.log(`点击项目编辑：${community.displayName}`);
     if (community.leaseModeId) {
-      getFocusById({
-        id: community.leaseModeId
-      }).then(res => {
+      getFocusById({ id: community.leaseModeId }).then(res => {
         openFocusEditDialog("更新", res.data);
       });
     }
   };
 
-  // 获取房间卡片样式类
   const getRoomCardClass = (room: RoomListVo) => {
     const classes: string[] = [];
-
-    if (room.closed) {
-      classes.push("room-disabled");
-    }
-
+    if (room.closed) classes.push("room-disabled");
     return classes;
   };
 
-  // 辅助函数：将hex颜色转换为rgba
-  const hexToRgba = (hex: string, alpha: number = 1) => {
-    // 移除#号
-    hex = hex.replace("#", "");
-
-    // 处理3位或6位的hex
-    if (hex.length === 3) {
-      hex = hex
-        .split("")
-        .map(char => char + char)
-        .join("");
-    }
-
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
-
-  // 获取房间卡片动态样式
   const getRoomCardStyle = (room: RoomListVo) => {
-    const style: any = {};
-
+    const style: Record<string, string> = {};
     if (room.roomStatusColor) {
-      // 使用接口返回的颜色
       style.borderColor = room.roomStatusColor;
-
-      // 根据状态设置背景渐变
-      const colorHex = room.roomStatusColor;
     }
-
     return style;
   };
 
-  // 获取房型标签
   const getRoomTypeLabel = (room: RoomListVo) => {
     const layout = room.houseLayout;
-    if (!layout) {
-      return "未分配";
-    }
+    if (!layout) return "未分配";
+    if (layout.layoutName) return layout.layoutName;
 
-    if (layout.layoutName) {
-      return layout.layoutName;
-    }
-
-    const bedroom = layout.bedroom || 0;
-    const labels: Record<number, string> = {
-      0: "单间",
-      1: "一室",
-      2: "两室",
-      3: "三室",
-      4: "四室"
-    };
-
-    return labels[bedroom] || `${bedroom}室`;
+    const bedroom = layout.bedroom ?? 0;
+    const labels: Record<number, string> = { 0: "单间", 1: "一室", 2: "两室", 3: "三室", 4: "四室" };
+    return labels[bedroom] ?? `${bedroom}室`;
   };
 
-  // 格式化日期
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "--";
     const date = new Date(dateStr);
@@ -425,19 +350,17 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     return `${year}.${month}.${day}`;
   };
 
-  // 格式化日期范围
   const formatDateRange = (startDate?: string, endDate?: string) => {
     if (!startDate || !endDate) return "未知";
     return `${formatDate(startDate)} ~ ${formatDate(endDate)}`;
   };
 
-  // 格式化价格
   const formatPrice = (price?: string | number) => {
     if (!price) return "0";
     return typeof price === "number" ? price.toLocaleString() : parseFloat(price).toLocaleString();
   };
 
-  // 添加 IntersectionObserver 相关
+  // IntersectionObserver
   let observer: IntersectionObserver | null = null;
 
   const setupLoadMore = (triggerElement?: HTMLElement) => {
@@ -445,10 +368,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       console.warn("IntersectionObserver: 触发元素不存在");
       return;
     }
-
-    if (observer) {
-      observer.disconnect();
-    }
+    if (observer) observer.disconnect();
 
     console.log("初始化 IntersectionObserver");
 
@@ -462,18 +382,13 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
             loading: loading.value,
             currentPage: currentPage.value
           });
-
           if (entry.isIntersecting && hasMore.value && !loadingMore.value && !loading.value) {
             console.log("开始加载更多数据");
             loadMore();
           }
         });
       },
-      {
-        root: null, // ⚠️ 使用 null 表示相对于视口
-        rootMargin: "100px",
-        threshold: 0.1
-      }
+      { root: null, rootMargin: "100px", threshold: 0.1 }
     );
 
     observer.observe(triggerElement);
@@ -493,10 +408,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       closeRoom({ roomId: room.roomId }).then(res => {
         if (res.code === 0) {
           ElMessage.success(`已关闭房间 ${room.roomNumber}`);
-          // 刷新当前房间数据
           resetAndReload();
         } else {
-          ElMessage.error(res.message || "关闭失败");
+          ElMessage.error(res.message ?? "关闭失败");
         }
       });
     }
@@ -505,21 +419,21 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       openRoom({ roomId: room.roomId }).then(res => {
         if (res.code === 0) {
           ElMessage.success(`已开启房间 ${room.roomNumber}`);
-          // 刷新当前房间数据
           resetAndReload();
         } else {
-          ElMessage.error(res.message || "打开失败");
+          ElMessage.error(res.message ?? "打开失败");
         }
       });
     }
 
     switch (command) {
       case "edit":
-        if (room.leaseMode == 2 && room.rentalType == 1) {
-          openEntireEditDialog("编辑", { id: room.houseId }).then(() => {
-            resetAndReload();
+        if (room.leaseMode === 2 && room.rentalType === 1) {
+          // openEntireEditDialog 签名已更新为 (title, id?)，直接传 houseId
+          openEntireEditDialog("编辑", room.houseId).then(() => {
+            resetAndReload().then();
           });
-        } else if (room.leaseMode == 2 && room.rentalType == 2) {
+        } else if (room.leaseMode === 2 && room.rentalType === 2) {
           editShareHouse("编辑", room);
         }
         break;
@@ -541,52 +455,14 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     }
   };
 
+  /**
+   * 编辑合租房源
+   */
   function editShareHouse(title: string, room: RoomListVo) {
-    getShareHouseDetailById({ id: room.houseId }).then(res => {
-      if (res.code !== 0) {
-        return;
-      }
-      const ScatterCreateDto = convertToScatterCreateDto(res.data);
-      openShareEditDialog(title, ScatterCreateDto).then(() => {
-        resetAndReload();
-      });
+    openShareEditDialog(title, room.houseId).then(() => {
+      resetAndReload().then();
     });
   }
-
-  // 将 ScatterHouseResponse 转换为 ScatterCreateDto
-  const convertToScatterCreateDto = (resp: ScatterHouseDto): ScatterCreateDto => {
-    return {
-      id: resp.id,
-      leaseMode: resp.leaseMode,
-      rentalType: resp.rentalType,
-      community: resp.community,
-      deptId: resp.deptId,
-      salesmanId: resp.salesmanId,
-      water: resp.water,
-      electricity: resp.electricity,
-      heating: resp.heating,
-      hasElevator: resp.hasElevator,
-      hasGas: resp.hasGas,
-      houseList: [
-        {
-          id: resp.id,
-          houseLayout: resp.houseLayout,
-          rentalType: resp.rentalType,
-          decorationType: resp.decorationType,
-          propertyFee: resp.propertyFee,
-          houseCode: resp.houseCode,
-          building: resp.building,
-          unit: resp.unit,
-          doorNumber: resp.doorNumber,
-          floor: resp.floor,
-          floorTotal: resp.floorTotal,
-          direction: resp.direction,
-          area: resp.area,
-          roomList: resp.roomList || [] // 如果 roomList 为空，则初始化为空数组
-        }
-      ]
-    };
-  };
 
   const handleLockRoom = (room: RoomListVo) => {
     ElMessageBox.confirm(`确认锁定 ${room.houseName}-房间 ${room.roomNumber}？`, "提示", {
@@ -594,12 +470,10 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       cancelButtonText: "取消",
       type: "warning"
     }).then(() => {
-      // 确认锁定房间
       lockRoom({ roomId: room.roomId }).then(res => {
         if (res.code === 0) {
           ElMessage.success(`房间 ${room.roomNumber} 已锁定`);
-          // 刷新当前房间状态
-          resetAndReload();
+          resetAndReload().then();
         } else {
           ElMessage.error(`锁定房间 ${room.roomNumber} 失败：${res.message}`);
         }
@@ -613,11 +487,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       cancelButtonText: "取消",
       type: "warning"
     }).then(() => {
-      // 确认解锁房间
       unlockRoom({ roomId: room.roomId }).then(res => {
         if (res.code === 0) {
           ElMessage.success(`房间 ${room.roomNumber} 已解锁`);
-          // 刷新当前房间状态
           resetAndReload();
         } else {
           ElMessage.error(`解锁房间 ${room.roomNumber} 失败：${res.message}`);
@@ -627,7 +499,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   };
 
   return {
-    // 响应式数据
     loading,
     loadingMore,
     roomGridData,
@@ -635,7 +506,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     hasMore,
     currentPage,
     pageSize,
-    // 方法
     loadRoomGrid,
     loadMore,
     handleScroll,
