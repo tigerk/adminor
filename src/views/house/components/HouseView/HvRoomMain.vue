@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { ref, computed } from "vue";
-  import { Edit, View } from "@element-plus/icons-vue";
+  import { Edit, House, Location, View } from "@element-plus/icons-vue";
   import { HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo } from "@/types";
-  import { getRoomStatus, payMethodLabel } from "@/utils/house";
+  import { getRoomStatus, payMethodLabel, getWaterTypeLabel, getElectricityTypeLabel } from "@/utils/house";
 
   const props = defineProps<{
     detail: HouseDetailVo;
@@ -25,16 +25,37 @@
     tagsMap?: Record<string, string>;
     /** house_facilities 字典：value → label */
     facilitiesMap?: Record<string, string>;
+    /** 房源基本信息（来自原 HvAside） */
+    houseMeta: {
+      layoutName: string;
+      leaseModeName: string;
+      rentalType: string;
+      decoration: string;
+      area: string | number;
+      floor: string | number;
+      floorTotal: string | number;
+      hasElevator: string;
+      hasGas: string;
+      water: string;
+      electricity: string;
+      propertyFee: string | number;
+      communityName: string;
+      salesmanName: string;
+      deptId: string | number;
+      houseRemark: string;
+    };
+    /** 房源/房间图片列表 */
+    allImages: string[];
   }>();
 
   const emit = defineEmits<{
     editHouse: [detail: HouseDetailVo];
     openPriceConfig: [];
     addTrack: [content: string];
-    "update:activeTab": [tab: "room" | "rent" | "track"];
+    "update:activeTab": [tab: "room" | "house" | "rent" | "track"];
   }>();
 
-  const activeDetailTab = ref<"room" | "rent" | "track">("room");
+  const activeDetailTab = ref<"room" | "house" | "rent" | "track">("room");
   const trackInput = ref("");
 
   const handleAddTrack = () => {
@@ -83,6 +104,7 @@
     <!-- Tab 切换 -->
     <div class="hv-tabs">
       <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'room' }" @click="activeDetailTab = 'room'">房间信息</button>
+      <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'house' }" @click="activeDetailTab = 'house'">房源信息</button>
       <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'rent' }" @click="activeDetailTab = 'rent'">租金配置</button>
       <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'track' }" @click="activeDetailTab = 'track'">跟进记录</button>
     </div>
@@ -155,10 +177,6 @@
         <div class="hv-section">
           <div class="hv-section__hd">
             <span class="hv-section__title">房间配置</span>
-<!--            <el-button size="small" link type="primary">-->
-<!--              <el-icon><View /></el-icon>-->
-<!--              物资明细-->
-<!--            </el-button>-->
           </div>
           <div v-if="currentRoom?.facilities?.length" class="hv-tag-list">
             <span v-for="f in currentRoom.facilities" :key="f.name" class="hv-tag hv-tag--facility">
@@ -173,7 +191,132 @@
         </div>
       </template>
 
-      <!-- ── 租金配置 ── -->
+      <!-- ── 房源信息 ── -->
+      <template v-if="activeDetailTab === 'house'">
+        <!-- 图片 -->
+        <div class="hv-section">
+          <div class="hv-section__hd">
+            <span class="hv-section__title">房源图片</span>
+          </div>
+          <div v-if="allImages.length" class="hv-house-images">
+            <el-image
+              v-for="(img, i) in allImages"
+              :key="img"
+              :src="img"
+              fit="cover"
+              :preview-src-list="allImages"
+              :initial-index="i"
+              :preview-teleported="true"
+              class="hv-house-images__item"
+            />
+          </div>
+          <div v-else class="hv-empty-tip">
+            <span class="hv-empty-tip__ico">🖼️</span>
+            暂无图片
+          </div>
+        </div>
+
+        <!-- 基本属性 -->
+        <div class="hv-section">
+          <div class="hv-section__hd">
+            <span class="hv-section__title">房源档案</span>
+            <el-button size="small" link type="primary" @click="emit('editHouse', detail)">
+              <el-icon><Edit /></el-icon>
+              编辑
+            </el-button>
+          </div>
+          <!-- Chips -->
+          <div class="hv-chips" style="margin-bottom: 12px">
+            <span class="hv-chip hv-chip--blue">{{ houseMeta.leaseModeName }}</span>
+            <span class="hv-chip hv-chip--blue">{{ houseMeta.rentalType }}</span>
+            <span class="hv-chip">{{ houseMeta.area }} m²</span>
+            <span class="hv-chip">{{ houseMeta.floor }}层 / {{ houseMeta.floorTotal }}层</span>
+            <span class="hv-chip">{{ houseMeta.decoration }}</span>
+            <span class="hv-chip" :class="houseMeta.hasElevator === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasElevator }}电梯</span>
+            <span class="hv-chip" :class="houseMeta.hasGas === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasGas }}燃气</span>
+          </div>
+          <!-- KV 表格 -->
+          <div class="hv-aside-costs">
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">小区</span>
+              <span class="hv-cost-row__val">{{ houseMeta.communityName }}</span>
+            </div>
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">房型</span>
+              <span class="hv-cost-row__val">{{ houseMeta.layoutName }}</span>
+            </div>
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">楼层</span>
+              <span class="hv-cost-row__val">
+                {{ houseMeta.floor }}
+                <em>层</em>
+                <em>共</em>
+                {{ houseMeta.floorTotal }}
+                <em>层</em>
+              </span>
+            </div>
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">面积</span>
+              <span class="hv-cost-row__val">
+                {{ houseMeta.area }}
+                <em>m²</em>
+              </span>
+            </div>
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">装修</span>
+              <span class="hv-cost-row__val">{{ houseMeta.decoration }}</span>
+            </div>
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">电梯</span>
+              <span class="hv-cost-row__val">
+                <span class="hv-chip hv-chip--sm" :class="houseMeta.hasElevator === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasElevator }}电梯</span>
+              </span>
+            </div>
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">燃气</span>
+              <span class="hv-cost-row__val">
+                <span class="hv-chip hv-chip--sm" :class="houseMeta.hasGas === '有' ? 'hv-chip--green' : ''">{{ houseMeta.hasGas }}燃气</span>
+              </span>
+            </div>
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">水费</span>
+              <span class="hv-cost-row__val">{{ getWaterTypeLabel(houseMeta.water) }}</span>
+            </div>
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">电费</span>
+              <span class="hv-cost-row__val">{{ getElectricityTypeLabel(houseMeta.electricity) }}</span>
+            </div>
+            <div class="hv-cost-row">
+              <span class="hv-cost-row__label">物业费</span>
+              <span class="hv-cost-row__val">
+                {{ houseMeta.propertyFee }}
+                <em>元/月</em>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 负责人 -->
+        <div class="hv-section">
+          <div class="hv-section__hd"><span class="hv-section__title">负责人</span></div>
+          <div class="hv-owner-card">
+            <div class="hv-owner-card__avatar">{{ (detail.salesman?.nickname || houseMeta.salesmanName || "?").slice(0, 1) }}</div>
+            <div class="hv-owner-card__info">
+              <div class="hv-owner-card__name">{{ detail.salesman?.nickname || houseMeta.salesmanName }}</div>
+              <div v-if="detail.salesman?.phone" class="hv-owner-card__phone">{{ detail.salesman.phone }}</div>
+            </div>
+            <div class="hv-owner-card__dept">{{ detail.deptName || houseMeta.deptId }}</div>
+          </div>
+        </div>
+
+        <!-- 备注 -->
+        <div v-if="houseMeta.houseRemark" class="hv-section">
+          <div class="hv-section__hd"><span class="hv-section__title">房源备注</span></div>
+          <div class="hv-remark-box">
+            <p>{{ houseMeta.houseRemark }}</p>
+          </div>
+        </div>
+      </template>
       <template v-if="activeDetailTab === 'rent'">
         <div class="hv-section">
           <div class="hv-section__hd">
@@ -656,7 +799,154 @@
     font-weight: 600;
   }
 
-  // tags & facilities
+  // 房源信息 Tab 样式
+  .hv-house-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+
+    &__item {
+      width: 100%;
+      height: 90px;
+      border-radius: var(--r-sm);
+      overflow: hidden;
+      cursor: pointer;
+      :deep(img) {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+      }
+      &:hover :deep(img) {
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  .hv-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .hv-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--sub);
+    color: var(--t2);
+    border: 1px solid var(--bl);
+    white-space: nowrap;
+    &--sm {
+      font-size: 11px;
+      padding: 1px 6px;
+    }
+    &--blue {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--el-color-primary-light-7);
+    }
+    &--green {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: var(--success-border);
+    }
+  }
+
+  .hv-aside-costs {
+    border: 1px solid var(--bl);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+  }
+  .hv-cost-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 11px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--bl);
+    &:last-child {
+      border-bottom: none;
+    }
+    &__label {
+      color: var(--t3);
+      font-weight: 500;
+    }
+    &__val {
+      font-weight: 600;
+      em {
+        font-style: normal;
+        font-size: 10px;
+        color: var(--t3);
+        font-weight: 400;
+        margin-left: 2px;
+      }
+    }
+  }
+
+  .hv-owner-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--sub);
+    border: 1px solid var(--bl);
+    border-radius: var(--r-sm);
+
+    &__avatar {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--primary));
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    &__info {
+      flex: 1;
+      min-width: 0;
+    }
+    &__name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--t1);
+    }
+    &__phone {
+      font-size: 12px;
+      color: var(--t3);
+      margin-top: 2px;
+    }
+    &__dept {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--primary-light);
+      border: 1px solid var(--el-color-primary-light-7);
+      border-radius: 6px;
+      padding: 3px 9px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
+
+  .hv-remark-box {
+    background: var(--remark-bg);
+    border: 1px solid var(--remark-border);
+    border-radius: var(--r-sm);
+    padding: 10px 13px;
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--remark-text);
+      line-height: 1.7;
+    }
+  }
   .hv-tag-list {
     display: flex;
     flex-wrap: wrap;

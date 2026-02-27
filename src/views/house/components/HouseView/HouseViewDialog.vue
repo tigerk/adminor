@@ -11,7 +11,6 @@
 
   import HvLoadingSkeleton from "./HvLoadingSkeleton.vue";
   import HvTopBar from "./HvTopBar.vue";
-  import HvAside from "./HvAside.vue";
   import HvRoomMain from "./HvRoomMain.vue";
   import HvPanel from "./HvPanel.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
@@ -272,10 +271,7 @@
       />
 
       <div class="hv-layout">
-        <!-- 左侧：房源档案 -->
-        <HvAside :detail="detail" :house-meta="houseMeta" :all-images="allImages" @edit-house="emit('editHouse', $event)" />
-
-        <!-- 中间：房间详情 -->
+        <!-- 中间：房间详情（含房源信息Tab） -->
         <HvRoomMain
           :detail="detail"
           :current-room="currentRoom"
@@ -288,6 +284,8 @@
           :room-detail="roomDetail"
           :tags-map="tagsMap"
           :facilities-map="facilitiesMap"
+          :house-meta="houseMeta"
+          :all-images="allImages"
           @edit-house="emit('editHouse', $event)"
           @open-price-config="handleOpenPriceConfig"
           @add-track="handleAddTrack"
@@ -378,7 +376,7 @@
   // ════════════════════════════════════════
   .hv-layout {
     display: grid;
-    grid-template-columns: 256px 1fr 280px;
+    grid-template-columns: 1fr 280px;
     flex: 1;
     min-height: 0;
     overflow: hidden;
@@ -414,14 +412,8 @@
   // ════════════════════════════════════════
   @media (width <= 1280px) {
     .hv-layout {
-      grid-template-columns: 240px 1fr 260px;
-    }
-  }
-  @media (width <= 1100px) {
-    .hv-layout {
       grid-template-columns: 1fr 260px;
     }
-    // HvAside 隐藏由 HvAside 自身处理，或通过 :deep 控制
   }
   @media (width <= 900px) {
     .hv-layout {
