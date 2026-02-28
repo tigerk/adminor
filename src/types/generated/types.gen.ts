@@ -2310,6 +2310,10 @@ export type RoomTotalVo = {
  */
 export type RoomSaveRemarkDto = {
     /**
+     * 房间 ID
+     */
+    roomId?: string;
+    /**
      * 备注内容
      */
     remark?: string;

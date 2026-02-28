@@ -6,6 +6,7 @@
   import { calcLeaseDuration } from "@/utils/house";
   import { formatDate } from "@/utils/date";
   import { message } from "@/utils/message";
+  import { addRoomRemark } from "@/api/house/room";
 
   const props = defineProps<{
     currentRoom: RoomDetailVo | null;
@@ -59,9 +60,13 @@
   const handleSaveRemark = async () => {
     remarkLoading.value = true;
     try {
-      await new Promise(r => setTimeout(r, 600));
-      message("备注保存成功", { type: "success" });
-      remarkEditing.value = false;
+      await addRoomRemark({
+        roomId: props.currentRoom?.id || "",
+        remark: remarkText.value
+      }).then(() => {
+        remarkEditing.value = false;
+        message("备注保存成功", { type: "success" });
+      });
     } catch {
       message("备注保存失败", { type: "error" });
     } finally {
@@ -278,6 +283,8 @@
         display: flex;
         flex-direction: column;
         min-height: 0;
+        overflow-y: auto;
+        background: var(--card);
         padding: 0 14px 14px;
       }
     }
