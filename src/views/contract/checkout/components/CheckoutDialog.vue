@@ -433,7 +433,9 @@
     FEE_DIRECTION_ENUM,
     SETTLEMENT_METHOD_ENUM
   } from "@/constants";
-  import type { LeaseCheckoutVo, CheckoutFeeProps, LeaseCheckoutDto, LeaseCheckoutInitVo } from "@/types";
+  // FIX: 移除不再使用的 CheckoutFeeProps，改用 CheckoutFeeFormItem / CheckoutDialogFormData
+  import type { LeaseCheckoutVo, LeaseCheckoutInitVo } from "@/types";
+  import type { CheckoutFeeFormItem, CheckoutDialogFormData } from "@/types/models/checkout";
   import { getCheckoutByTenantId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import { getDictDataByParentCode } from "@/api/sys/dict";
@@ -506,7 +508,8 @@
   });
 
   /** 级联选择变更时，回填 feeType / feeSubName */
-  function handleFeeTypeCascadeChange(val: [string, string] | null, fee: any) {
+  // FIX: fee 参数改用 CheckoutFeeFormItem 替换 any
+  function handleFeeTypeCascadeChange(val: [string, string] | null, fee: CheckoutFeeFormItem) {
     if (!val || val.length < 2) {
       fee.feeType = null;
       fee.feeSubName = "";
@@ -524,7 +527,8 @@
   /**
    * FIX #2: 根据 feeSubName 自动匹配级联选择值
    */
-  function resolveFeeCascadeValue(fee: CheckoutFeeProps): [string, string] | null {
+  // FIX: 参数类型从 CheckoutFeeProps 改为 CheckoutFeeFormItem
+  function resolveFeeCascadeValue(fee: CheckoutFeeFormItem): [string, string] | null {
     if (!feeTypeDictList.value.length || !fee.feeSubName) return null;
 
     for (const group of feeTypeDictList.value) {
@@ -561,8 +565,8 @@
     return null;
   }
 
-  // 表单数据
-  const form = reactive<LeaseCheckoutDto & { badDebtReason: string }>({
+  // FIX: 改用前端专属类型 CheckoutDialogFormData，内含 feeList/attachmentFiles/badDebtReason 等扩展字段
+  const form = reactive<CheckoutDialogFormData>({
     id: undefined,
     tenantId: "",
     leaseId: "",
@@ -666,7 +670,8 @@
     return `${y}-${m}-${dd}`;
   }
 
-  function toggleDirection(fee: CheckoutFeeProps) {
+  // FIX: 参数类型从 CheckoutFeeProps 改为 CheckoutFeeFormItem
+  function toggleDirection(fee: CheckoutFeeFormItem) {
     fee.feeDirection = fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? FEE_DIRECTION_ENUM.REFUND : FEE_DIRECTION_ENUM.DEDUCTION;
   }
 
@@ -677,12 +682,13 @@
     } else if (val === CHECKOUT_TYPE_ENUM.NORMAL) {
       form.breachReason = "";
       const hasDepositRefund = form.feeList.some(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
-      if (!hasDepositRefund && initData.value && initData.value.depositAmount > 0) {
-        const newFee: CheckoutFeeProps = {
+      if (!hasDepositRefund && initData.value && initData.value.depositAmount && initData.value.depositAmount > 0) {
+        // FIX: 类型改为 CheckoutFeeFormItem
+        const newFee: CheckoutFeeFormItem = {
           feeDirection: FEE_DIRECTION_ENUM.REFUND,
           feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
           feeSubName: "房屋押金",
-          feeAmount: initData.value.depositAmount,
+          feeAmount: initData.value.depositAmount ?? null,
           feePeriodStart: formatDate(initData.value.leaseStart).replace(/\./g, "-"),
           feePeriodEnd: formatDate(initData.value.leaseEnd).replace(/\./g, "-"),
           remark: "",
@@ -730,7 +736,8 @@
   // 添加费用行
   function handleAddFee() {
     const today = getTodayStr();
-    form.feeList.push({
+    // FIX: feeType 初始为 null（符合 CheckoutFeeFormItem），feeAmount 初始为 null
+    const newFee: CheckoutFeeFormItem = {
       feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
       feeType: null,
       feeSubName: "",
@@ -739,7 +746,8 @@
       feePeriodEnd: today,
       remark: "",
       feeTypeCascade: null
-    });
+    };
+    form.feeList.push(newFee);
   }
 
   function handleRemoveFee(index: number) {
@@ -814,16 +822,17 @@
       form.confirmationTemplate = confirmationTemplateOptions.value[0].id;
     }
 
-    if (res.data.presetFees?.length > 0) {
-      form.feeList = res.data.presetFees.map(pf => {
-        const fee: CheckoutFeeProps = {
-          feeDirection: pf.feeDirection,
-          feeType: pf.feeType,
-          feeSubName: pf.feeSubName || "",
-          feeAmount: pf.feeAmount,
-          feePeriodStart: pf.feePeriodStart?.split("T")[0] || getTodayStr(),
-          feePeriodEnd: pf.feePeriodEnd?.split("T")[0] || getTodayStr(),
-          remark: pf.remark || "",
+    // FIX: presetFees 元素为 PresetFeeVo（字段均可选），映射到 CheckoutFeeFormItem 时补全默认值
+    if (res.data.presetFees && res.data.presetFees.length > 0) {
+      form.feeList = res.data.presetFees.map<CheckoutFeeFormItem>(pf => {
+        const fee: CheckoutFeeFormItem = {
+          feeDirection: pf.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
+          feeType: pf.feeType ?? null,
+          feeSubName: pf.feeSubName ?? "",
+          feeAmount: pf.feeAmount ?? null,
+          feePeriodStart: pf.feePeriodStart?.split("T")[0] ?? getTodayStr(),
+          feePeriodEnd: pf.feePeriodEnd?.split("T")[0] ?? getTodayStr(),
+          remark: pf.remark ?? "",
           billId: pf.billId,
           feeTypeCascade: null
         };
@@ -836,36 +845,50 @@
   async function loadCheckoutDetail(detail: LeaseCheckoutVo) {
     checkoutDetail.value = detail;
     form.id = detail.id;
-    form.tenantId = detail.tenantId;
-    form.leaseId = detail.leaseId || "";
-    form.checkoutType = detail.checkoutType;
-    form.actualCheckoutDate = detail.actualCheckoutDate;
-    form.breachReason = detail.breachReason || "";
-    form.expectedPaymentDate = detail.expectedPaymentDate;
-    form.settlementMethod = detail.settlementMethod;
-    form.remark = detail.remark;
+    form.tenantId = detail.tenantId ?? "";
+    form.leaseId = detail.leaseId ?? "";
+    // FIX: LeaseCheckoutVo.checkoutType 为 number | undefined，与 CheckoutDialogFormData 兼容
+    form.checkoutType = detail.checkoutType ?? null;
+    form.actualCheckoutDate = detail.actualCheckoutDate ?? "";
+    form.breachReason = detail.breachReason ?? "";
+    form.expectedPaymentDate = detail.expectedPaymentDate ?? "";
+    form.settlementMethod = detail.settlementMethod ?? SETTLEMENT_METHOD_ENUM.GENERATE_BILL;
+    form.remark = detail.remark ?? "";
 
     if (!form.confirmationTemplate && confirmationTemplateOptions.value.length > 0) {
       form.confirmationTemplate = confirmationTemplateOptions.value[0].id;
     }
 
-    form.feeList = detail.feeList.map(f => {
-      const fee = { ...f, feeTypeCascade: null as [string, string] | null };
+    // FIX: detail.feeList 为 LeaseCheckoutFeeVo[]，显式映射为 CheckoutFeeFormItem[]
+    form.feeList = (detail.feeList ?? []).map<CheckoutFeeFormItem>(f => {
+      const fee: CheckoutFeeFormItem = {
+        id: f.id,
+        feeDirection: f.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
+        feeType: f.feeType ?? null,
+        feeSubName: f.feeSubName,
+        feeAmount: f.feeAmount ?? null,
+        feePeriodStart: f.feePeriodStart,
+        feePeriodEnd: f.feePeriodEnd,
+        remark: f.remark,
+        billId: f.billId,
+        feeTypeCascade: null
+      };
       fee.feeTypeCascade = resolveFeeCascadeValue(fee);
       return fee;
     });
 
-    form.payeeName = detail.payeeName || "";
-    form.payeePhone = detail.payeePhone || "";
-    form.payeeIdType = detail.payeeIdType || "ID_CARD";
-    form.payeeIdNumber = detail.payeeIdNumber || "";
-    form.bankType = detail.bankType || "UNIONPAY";
-    form.bankCardType = detail.bankCardType || "DEBIT";
-    form.bankAccount = detail.bankAccount || "";
-    form.bankName = detail.bankName || "";
-    form.bankBranch = detail.bankBranch || "";
+    form.payeeName = detail.payeeName ?? "";
+    form.payeePhone = detail.payeePhone ?? "";
+    form.payeeIdType = detail.payeeIdType ?? "ID_CARD";
+    form.payeeIdNumber = detail.payeeIdNumber ?? "";
+    form.bankType = detail.bankType ?? "UNIONPAY";
+    form.bankCardType = detail.bankCardType ?? "DEBIT";
+    form.bankAccount = detail.bankAccount ?? "";
+    form.bankName = detail.bankName ?? "";
+    form.bankBranch = detail.bankBranch ?? "";
 
-    if (detail.attachmentUrls?.length > 0) {
+    // FIX: attachmentUrls 为 string[] | undefined，直接赋值给 attachmentFiles
+    if (detail.attachmentUrls && detail.attachmentUrls.length > 0) {
       form.attachmentFiles = detail.attachmentUrls;
     }
 
@@ -909,6 +932,7 @@
         return;
       }
 
+      // FIX: 处理附件 URL 列表
       const attachmentIds: string[] = [];
       if (form.attachmentFiles?.length > 0) {
         for (const file of form.attachmentFiles) {
@@ -922,10 +946,25 @@
 
       submitting.value = true;
       try {
+        // FIX: 构建提交 DTO，剔除纯前端字段（feeTypeCascade、attachmentFiles），转换 feeType 为 number
         const submitData = {
           ...form,
+          // FIX: checkoutType 已由表单验证保证非 null
+          checkoutType: form.checkoutType as number,
           attachmentIds,
-          remark: form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT ? `${form.remark || ""}${form.remark ? "\n" : ""}【坏账原因】${form.badDebtReason}` : form.remark
+          remark: form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT ? `${form.remark || ""}${form.remark ? "\n" : ""}【坏账原因】${form.badDebtReason}` : form.remark,
+          feeList: form.feeList.map(f => ({
+            id: f.id,
+            feeDirection: f.feeDirection,
+            // FIX: feeType 统一转为 number 提交
+            feeType: Number(f.feeType),
+            feeSubName: f.feeSubName,
+            feeAmount: f.feeAmount ?? 0,
+            feePeriodStart: f.feePeriodStart,
+            feePeriodEnd: f.feePeriodEnd,
+            remark: f.remark,
+            billId: f.billId
+          }))
         };
         const res = await saveCheckout(submitData);
         form.id = res.data;
@@ -1629,16 +1668,16 @@
   }
 
   /* ================================================================
- * 改动3: 深色主题适配
- *
- * vue-pure-admin 暗色模式会在 <html> 加 class="dark"，
- * 同时 Element Plus 的 CSS 变量会自动切换（如 --el-bg-color、
- * --el-text-color-primary 等），所以上面使用 var(--el-xxx) 的部分
- * 已经自动适配。
- *
- * 下面仅针对「写死了具体色值」或「Element Plus 暗色变量对比度不够」
- * 的地方做补充覆盖，保持最小改动量。
- * ================================================================ */
+* 改动3: 深色主题适配
+*
+* vue-pure-admin 暗色模式会在 <html> 加 class="dark"，
+* 同时 Element Plus 的 CSS 变量会自动切换（如 --el-bg-color、
+* --el-text-color-primary 等），所以上面使用 var(--el-xxx) 的部分
+* 已经自动适配。
+*
+* 下面仅针对「写死了具体色值」或「Element Plus 暗色变量对比度不够」
+* 的地方做补充覆盖，保持最小改动量。
+* ================================================================ */
   :global(html.dark) {
     .checkout-dialog {
       :deep(.el-dialog) {

@@ -99,8 +99,8 @@
     checkoutType: undefined,
     status: undefined,
     approvalStatus: undefined,
-    currentPage: 1,
-    pageSize: 10
+    currentPage: "1",
+    pageSize: "10"
   });
 
   const approvalOptions = [
@@ -149,8 +149,8 @@
     try {
       const res = await queryCheckoutList({
         ...queryForm,
-        currentPage: pagination.currentPage,
-        pageSize: pagination.pageSize
+        currentPage: pagination.currentPage.toString(),
+        pageSize: pagination.pageSize.toString()
       });
 
       if (res.code === 0) {
