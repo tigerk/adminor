@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, computed, watch } from "vue";
   import { ArrowRight, Calendar, Edit, User } from "@element-plus/icons-vue";
-  import { LeaseLiteVo, RoomDetailVo } from "@/types";
+  import { BookingListVo, LeaseLiteVo, RoomDetailVo } from "@/types";
   import { ROOM_STATUS_ENUM } from "@/constants";
   import { calcLeaseDuration } from "@/utils/house";
   import { formatDate } from "@/utils/date";
@@ -38,7 +38,7 @@
     renewLease: [lease: LeaseLiteVo];
     viewContract: [room: RoomDetailVo];
     openTenantDetail: [leaseId: string];
-    openBookingDetail: [bookingId: string];
+    openBookingDetail: [booking: BookingListVo];
     booking: [room: RoomDetailVo];
   }>();
 
@@ -145,7 +145,7 @@
       </div>
       <div class="hv-pcard__body">
         <template v-if="bookingInfo">
-          <div class="hv-booking" @click="() => emit('openBookingDetail', bookingInfo.id || '')">
+          <div class="hv-booking" @click="() => emit('openBookingDetail', bookingInfo)">
             <div class="hv-booking__name">{{ bookingInfo.tenantName || "-" }}</div>
             <div class="hv-booking__rows">
               <div class="hv-booking__row">

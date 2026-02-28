@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from "vue";
-  import { HouseDetailVo, LeaseLiteVo, PriceMethodEnum, RoomDetailVo, RoomTrackVo, type PriceConfigDto } from "@/types";
+  import { HouseDetailVo, LeaseLiteVo, PriceMethodEnum, RoomDetailVo, RoomTrackVo, type PriceConfigDto, BookingListVo } from "@/types";
   import { ROOM_STATUS_ENUM } from "@/constants";
 
   import { message } from "@/utils/message";
@@ -25,8 +25,8 @@
     checkout: [room: RoomDetailVo];
     editHouse: [detail: HouseDetailVo];
     viewContract: [room: RoomDetailVo];
-    openTenantDetail: [tenantId: string, leaseId: string];
-    openBookingDetail: [bookingId: string];
+    openTenantDetail: [leaseId: string];
+    openBookingDetail: [booking: BookingListVo];
     renewLease: [lease: LeaseLiteVo];
     addRoom: [];
     reload: [];

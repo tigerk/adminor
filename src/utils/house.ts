@@ -1,5 +1,5 @@
 import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, RENTAL_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
-import type { HouseLayoutDto } from "@/types";
+import type { HouseLayoutDto, RoomListVo } from "@/types";
 import { ROOM_STATUS_ENUM } from "@/constants";
 import type { RoomDetailVo } from "@/types";
 

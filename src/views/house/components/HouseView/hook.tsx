@@ -4,13 +4,15 @@ import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
 import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
-import { type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo, type RoomTrackVo } from "@/types";
+import { BookingListVo, type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo, type RoomTrackVo } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
 import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
+import useBooking from "@/views/contract/booking/utils/hook";
+import { ROOM_STATUS_ENUM } from "@/constants";
 
 /** 弹窗内部使用的状态包装（loading + 数据） */
 export interface HouseViewState {
@@ -40,6 +42,7 @@ export const useHouseView = () => {
   const { openEntireEditDialog } = useEntireEdit();
   const { openShareEditDialog } = useShareEdit();
   const { openLeaseCheckoutDialog } = useCheckoutDialog();
+  const { openBookingDialog, handleViewBooking } = useBooking();
 
   /**
    * 以弹窗形式打开房源详情
@@ -67,7 +70,13 @@ export const useHouseView = () => {
             loading: state.loading,
             detail: state.detail,
             onBooking: (r: RoomDetailVo) => {
-              console.log("添加预定", r);
+              openBookingDialog("添加", { roomIds: [room.roomId] }, () => {
+                const state = reactive<HouseViewState>({
+                  loading: true,
+                  detail: null
+                });
+                loadDetail(state, room?.houseId).catch(() => message("退租操作完成", { type: "success" }));
+              });
             },
             onTenant: (r: RoomDetailVo) => {
               openTenantDialog("添加", {
@@ -95,8 +104,8 @@ export const useHouseView = () => {
                 openTenantViewDialog("查看", { leaseId });
               }
             },
-            onOpenBookingDetail: (bookingId: string) => {
-              console.log("打开预定详情", bookingId);
+            onOpenBookingDetail: (booking: BookingListVo) => {
+              handleViewBooking(booking);
             },
             onRenewLease: (lease: LeaseLiteVo) => {
               handleRenewLease(lease);
@@ -128,8 +137,7 @@ export const useHouseView = () => {
         loading: true,
         detail: null
       });
-      loadDetail(state, room?.houseId).catch(() => undefined);
-      message("退租操作完成", { type: "success" });
+      loadDetail(state, room?.houseId).catch(() => message("退租操作完成", { type: "success" }));
     });
   }
 

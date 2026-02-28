@@ -12,6 +12,7 @@ import BookingDetailDialog from "../view/bookingDetailDialog.vue";
 import { BOOKING_STATUS_COLOR_MAP } from "@/constants";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import type { LeaseProps } from "@/types";
+import { getRoomList } from "@/api/house/room";
 
 function useBooking() {
   const router = useRouter();
@@ -247,8 +248,21 @@ function useBooking() {
       });
     });
   });
-
   function openBookingDialog(title = "添加", row?: any, onSuccess?: (data: any) => void) {
+    // 如果只有 roomIds, 但是没有 roomList 时，从接口先获取 roomList，然后再调用 addDialog
+    if (row?.roomIds && !row?.roomList) {
+      getRoomList({ roomIds: row.roomIds, currentPage: "1", pageSize: "1000" }).then(res => {
+        if (res.code === 0) {
+          row.roomList = res.data.list;
+          innerOpenBookingDialog(title, row, onSuccess);
+        }
+      });
+    } else {
+      innerOpenBookingDialog(title, row, onSuccess);
+    }
+  }
+
+  function innerOpenBookingDialog(title = "添加", row?: any, onSuccess?: (data: any) => void) {
     addDialog({
       title: `${title}预定`,
       props: {

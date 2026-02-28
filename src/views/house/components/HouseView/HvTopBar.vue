@@ -51,7 +51,7 @@
           </template>
           <template v-else-if="room.booking?.tenantName">
             <span class="hv-troom__info-line hv-troom__info-line--booking">{{ room.booking.tenantName }}</span>
-            <span class="hv-troom__info-line hv-troom__info-line--date">{{ formatDate(room.booking.expiryTime) }}到期</span>
+            <span class="hv-troom__info-line hv-troom__info-line--date">{{ formatDate(room.booking.tenantPhone) }}</span>
           </template>
           <template v-else>
             <span class="hv-troom__info-line hv-troom__info-line--empty">待登记租客</span>

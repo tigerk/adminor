@@ -28,6 +28,7 @@ import ViewTenantDialog from "@/views/contract/tenant/view/ViewTenantDialog.vue"
 import { calculateMonthsDifference } from "@/utils/yeah";
 import { convertImage2string } from "@/utils/image";
 import { addDays, addMonth } from "@/utils/date";
+import { getRoomList } from "@/api/house/room";
 
 function useTenant() {
   const pagination = reactive<PaginationProps>({
@@ -342,6 +343,21 @@ function useTenant() {
   });
 
   function openTenantDialog(title = "添加租客", row?: TenantsCreateFormProps, onSuccess?: (leaseId: string) => void) {
+    // 如果只有 roomIds, 但是没有 roomList 时，从接口先获取 roomList，然后再调用 addDialog
+    if (row?.lease?.roomIds && !row?.lease?.roomList) {
+      getRoomList({ roomIds: row.lease.roomIds, currentPage: "1", pageSize: "1000" }).then(res => {
+        if (res.code === 0) {
+          row.lease.roomList = res.data.list;
+          innerOpenTenantDialog(title, row, onSuccess);
+        }
+      });
+    } else {
+      innerOpenTenantDialog(title, row, onSuccess);
+    }
+  }
+
+  // 内部方法，不对外暴露
+  function innerOpenTenantDialog(title = "添加租客", row?: TenantsCreateFormProps, onSuccess?: (leaseId: string) => void) {
     addDialog({
       title: `${title}`,
       props: {
