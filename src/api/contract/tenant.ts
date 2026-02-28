@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, LeaseBillListVo, LeaseContractVo, LeaseDetailVo, LeaseListVo, TenantQueryDto } from "@/types";
+import type { ApiResponse, PaginationResponse, LeaseBillListVo, LeaseContractVo, LeaseDetailVo, LeaseListVo, LeaseQueryDto } from "@/types";
 
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
@@ -8,7 +8,7 @@ export const getTenantTotal = (data?: object) => {
 };
 
 /** 获取租客列表 */
-export const getTenantList = (data?: TenantQueryDto) => {
+export const getTenantList = (data?: LeaseQueryDto) => {
   return http.request<ApiResponse<PaginationResponse<LeaseListVo>>>("post", baseUrlApi("contract/lease/list"), { data });
 };
 

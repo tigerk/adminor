@@ -3778,7 +3778,7 @@ export type TenantPersonalDto = {
     otherImageList?: Array<string>;
 };
 
-export type TenantQueryDto = {
+export type LeaseQueryDto = {
     currentPage?: string;
     pageSize?: string;
     /**
@@ -7320,7 +7320,7 @@ export type UpdateTenantResponses = {
 export type UpdateTenantResponse = UpdateTenantResponses[keyof UpdateTenantResponses];
 
 export type GetTenantTotalData = {
-    body: TenantQueryDto;
+    body: LeaseQueryDto;
     path?: never;
     query?: never;
     url: '/saas/contract/tenant/total';
@@ -7354,7 +7354,7 @@ export type RenewLeaseResponses = {
 export type RenewLeaseResponse = RenewLeaseResponses[keyof RenewLeaseResponses];
 
 export type GetTenantListData = {
-    body: TenantQueryDto;
+    body: LeaseQueryDto;
     path?: never;
     query?: never;
     url: '/saas/contract/tenant/list';
@@ -7370,7 +7370,7 @@ export type GetTenantListResponses = {
 export type GetTenantListResponse = GetTenantListResponses[keyof GetTenantListResponses];
 
 export type GetTenantDetailData = {
-    body: TenantQueryDto;
+    body: LeaseQueryDto;
     path?: never;
     query?: never;
     url: '/saas/contract/tenant/detail';
@@ -7420,7 +7420,7 @@ export type UpdateSignStatusResponses = {
 export type UpdateSignStatusResponse = UpdateSignStatusResponses[keyof UpdateSignStatusResponses];
 
 export type PreviewLeaseContractData = {
-    body: TenantQueryDto;
+    body: LeaseQueryDto;
     path?: never;
     query?: never;
     url: '/saas/contract/tenant/contract/preview';
@@ -7452,7 +7452,7 @@ export type Generate1Responses = {
 export type Generate1Response = Generate1Responses[keyof Generate1Responses];
 
 export type DownloadData = {
-    body: TenantQueryDto;
+    body: LeaseQueryDto;
     path?: never;
     query?: never;
     url: '/saas/contract/tenant/contract/download';
@@ -7484,7 +7484,7 @@ export type DeleteContractResponses = {
 export type DeleteContractResponse = DeleteContractResponses[keyof DeleteContractResponses];
 
 export type CancelTenantData = {
-    body: TenantQueryDto;
+    body: LeaseQueryDto;
     path?: never;
     query?: never;
     url: '/saas/contract/tenant/cancel';
@@ -7500,7 +7500,7 @@ export type CancelTenantResponses = {
 export type CancelTenantResponse = CancelTenantResponses[keyof CancelTenantResponses];
 
 export type GetBillListData = {
-    body: TenantQueryDto;
+    body: LeaseQueryDto;
     path?: never;
     query: {
         arg1: UserLoginVo;
@@ -7518,7 +7518,7 @@ export type GetBillListResponses = {
 export type GetBillListResponse = GetBillListResponses[keyof GetBillListResponses];
 
 export type GetBillInvalidListData = {
-    body: TenantQueryDto;
+    body: LeaseQueryDto;
     path?: never;
     query: {
         arg1: UserLoginVo;

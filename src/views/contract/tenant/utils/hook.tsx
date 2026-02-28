@@ -11,7 +11,7 @@ import { ElMessageBox } from "element-plus";
 import type {
   TenantMateVo,
   TenantPersonalVo,
-  TenantQueryDto,
+  LeaseQueryDto,
   LeaseListVo,
   TenantsCreateFormProps,
   LeaseDetailVo,
@@ -37,7 +37,7 @@ function useTenant() {
     background: true
   });
 
-  const queryForm = reactive<TenantQueryDto>({
+  const queryForm = reactive<LeaseQueryDto>({
     name: "",
     phone: "",
     tenantType: undefined,
