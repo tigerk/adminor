@@ -101,19 +101,17 @@
         </template>
       </pure-table>
     </el-row>
+
     <!-- 合同预览对话框 -->
     <el-dialog v-model="previewVisible" top="10px" title="租客合同预览" width="80%" height="100vh" :destroy-on-close="true" align-center :lock-scroll="true">
       <iframe title="租客合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
     </el-dialog>
-
-    <!-- 退租对话框 -->
-    <CheckoutDialog ref="checkoutDialogRef" @success="onCheckoutSuccess" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { ref, watch } from "vue";
-  import { LEASE_STATUS_ENUM, LEAST_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import { LEAST_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import View from "~icons/ep/view";
@@ -127,19 +125,20 @@
   import EpCollection from "~icons/ep/collection";
   import EpRemove from "~icons/ep/remove";
   import More from "~icons/ep/more-filled";
-  import { LeaseListVo, TenantsCreateFormProps } from "@/types";
-  import { cancelTenant, getLeaseDetail, previewLeaseContract } from "@/api/contract/tenant";
+  import { LeaseListVo } from "@/types";
+  import { cancelTenant, previewLeaseContract } from "@/api/contract/tenant";
   import { message } from "@/utils/message";
   import { ElMessageBox } from "element-plus";
   import { hideLoading, showLoading } from "@/utils/yeah";
-  import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
+  import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
+
+  const { openLeaseCheckoutDialog } = useCheckoutDialog();
 
   defineOptions({
     name: "ContractTenant"
   });
 
   const queryFormRef = ref();
-  const checkoutDialogRef = ref<InstanceType<typeof CheckoutDialog>>();
 
   const {
     queryForm,
@@ -168,12 +167,8 @@
       cancelButtonText: "取消",
       type: "warning"
     })
-      .then(() => {
-        handleCancelTenant(row);
-      })
-      .catch(() => {
-        // 取消操作
-      });
+      .then(() => handleCancelTenant(row))
+      .catch(() => {});
   };
 
   const handleCancelTenant = (row: LeaseListVo) => {
@@ -191,30 +186,17 @@
       });
   };
 
-  /** 可退租的状态：待签字(1)、在租中(2) */
-  const canCheckoutStatus: number[] = [LEASE_STATUS_ENUM.TO_SIGN.code, LEASE_STATUS_ENUM.EFFECTIVE.code];
-
-  /** 租客退租 */
+  /** 租客退租 —— 委托给 useCheckout.openLeaseCheckoutDialog */
   const handleTenantCheckout = (row: LeaseListVo) => {
-    // 检查租客状态是否允许退租（状态1=待签字 或 2=在租中）
-    if (!canCheckoutStatus.includes(row.status)) {
-      message("当前租客状态不允许退租，只有待签字或在租中的租客才能退租", { type: "warning" });
-      return;
-    }
-
-    // 打开退租对话框
-    checkoutDialogRef.value?.open(row.tenantId, row.leaseId);
-  };
-
-  /** 退租成功回调 */
-  const onCheckoutSuccess = () => {
-    // 刷新列表
-    onTenantSearch();
-    message("退租提交成功");
+    openLeaseCheckoutDialog(row, () => {
+      onTenantSearch();
+      message("退租提交成功");
+    });
   };
 
   const previewVisible = ref(false);
   const pdfUrl = ref("");
+
   function handlePreview(row: any) {
     showLoading();
     previewLeaseContract({ leaseId: row.leaseId })
@@ -224,12 +206,12 @@
         previewVisible.value = true;
         hideLoading();
       })
-      .catch(error => {
+      .catch(() => {
         message("预览失败", { type: "error" });
         hideLoading();
       });
   }
-  // 关闭弹窗时释放 URL
+
   watch(previewVisible, newVal => {
     if (!newVal && pdfUrl.value) {
       URL.revokeObjectURL(pdfUrl.value);
@@ -237,6 +219,7 @@
     }
   });
 </script>
+
 <style lang="scss" scoped>
   .search-form {
     :deep(.el-form-item) {

@@ -1,429 +1,395 @@
 <template>
-  <el-dialog
-    v-model="visible"
-    :show-close="false"
-    width="1020px"
-    :close-on-click-modal="false"
-    :lock-scroll="true"
-    :align-center="true"
-    :destroy-on-close="true"
-    class="checkout-dialog"
-    @close="handleClose"
-  >
-    <!-- 自定义头部 -->
-    <template #header>
-      <div class="dialog-header">
-        <div class="header-left">
-          <div>
-            <span class="header-title">租客退租</span>
-            <span v-if="checkoutDetail?.checkoutCode" class="header-code">{{ checkoutDetail.checkoutCode }}</span>
-          </div>
-        </div>
-        <el-button class="close-btn" :icon="Close" circle size="small" @click="handleClose" />
+  <div v-loading="loading" class="checkout-body">
+    <!-- ====== 步骤指示器 ====== -->
+    <div class="steps-bar">
+      <div class="step" :class="{ active: currentStep >= 1, done: currentStep > 1 }" @click="scrollToSection('contract')">
+        <span class="step-num">1</span>
+        <span class="step-label">合同信息</span>
       </div>
-    </template>
+      <div class="step-line" />
+      <div class="step" :class="{ active: currentStep >= 2, done: currentStep > 2 }" @click="scrollToSection('checkout')">
+        <span class="step-num">2</span>
+        <span class="step-label">退租信息</span>
+      </div>
+      <div class="step-line" />
+      <div class="step" :class="{ active: currentStep >= 3, done: currentStep > 3 }" @click="scrollToSection('fees')">
+        <span class="step-num">3</span>
+        <span class="step-label">费用清算</span>
+      </div>
+      <div class="step-line" />
+      <div class="step" :class="{ active: currentStep >= 4 }" @click="scrollToSection('payee')">
+        <span class="step-num">4</span>
+        <span class="step-label">收款信息</span>
+      </div>
+    </div>
 
-    <div v-loading="loading" class="checkout-body">
-      <!-- ====== 步骤指示器 ====== -->
-      <div class="steps-bar">
-        <div class="step" :class="{ active: currentStep >= 1, done: currentStep > 1 }" @click="scrollToSection('contract')">
-          <span class="step-num">1</span>
-          <span class="step-label">合同信息</span>
+    <div ref="scrollContainerRef" class="scroll-container" @scroll="handleScroll">
+      <!-- ====== 合同信息 ====== -->
+      <div ref="contractRef" class="section-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot" />
+            <span class="card-title">合同信息</span>
+          </div>
         </div>
-        <div class="step-line" />
-        <div class="step" :class="{ active: currentStep >= 2, done: currentStep > 2 }" @click="scrollToSection('checkout')">
-          <span class="step-num">2</span>
-          <span class="step-label">退租信息</span>
-        </div>
-        <div class="step-line" />
-        <div class="step" :class="{ active: currentStep >= 3, done: currentStep > 3 }" @click="scrollToSection('fees')">
-          <span class="step-num">3</span>
-          <span class="step-label">费用清算</span>
-        </div>
-        <div class="step-line" />
-        <div class="step" :class="{ active: currentStep >= 4 }" @click="scrollToSection('payee')">
-          <span class="step-num">4</span>
-          <span class="step-label">收款信息</span>
+        <div class="contract-grid">
+          <div class="contract-cell full-width">
+            <span class="cell-label">房源地址</span>
+            <span class="cell-value address-value">{{ initData?.roomAddress || "-" }}</span>
+          </div>
+          <div class="contract-cell">
+            <span class="cell-label">合同周期</span>
+            <span class="cell-value">{{ formatDate(initData?.leaseStart) }} ~ {{ formatDate(initData?.leaseEnd) }}</span>
+          </div>
+          <div class="contract-cell">
+            <span class="cell-label">承租人</span>
+            <span class="cell-value">
+              {{ initData?.tenantName || "-" }}
+              <span v-if="initData?.agentInfo" class="agent-tag">委托：{{ initData.agentInfo }}</span>
+            </span>
+          </div>
+          <div class="contract-cell">
+            <span class="cell-label">租金</span>
+            <span class="cell-value highlight-value">
+              {{ formatMoney(initData?.rentPrice) }}
+              <span class="unit">元/月</span>
+            </span>
+          </div>
+          <div class="contract-cell">
+            <span class="cell-label">押金</span>
+            <span class="cell-value highlight-value">
+              {{ formatMoney(initData?.depositAmount) }}
+              <span class="unit">元</span>
+            </span>
+          </div>
         </div>
       </div>
 
-      <div ref="scrollContainerRef" class="scroll-container" @scroll="handleScroll">
-        <!-- ====== 合同信息 ====== -->
-        <div ref="contractRef" class="section-card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <span class="card-dot" />
-              <span class="card-title">合同信息</span>
-            </div>
+      <!-- ====== 退租信息 ====== -->
+      <div ref="checkoutRef" class="section-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot" />
+            <span class="card-title">退租信息</span>
           </div>
-          <div class="contract-grid">
-            <div class="contract-cell full-width">
-              <span class="cell-label">房源地址</span>
-              <span class="cell-value address-value">{{ initData?.roomAddress || "-" }}</span>
-            </div>
-            <div class="contract-cell">
-              <span class="cell-label">合同周期</span>
-              <span class="cell-value">{{ formatDate(initData?.leaseStart) }} ~ {{ formatDate(initData?.leaseEnd) }}</span>
-            </div>
-            <div class="contract-cell">
-              <span class="cell-label">承租人</span>
-              <span class="cell-value">
-                {{ initData?.tenantName || "-" }}
-                <span v-if="initData?.agentInfo" class="agent-tag">委托：{{ initData.agentInfo }}</span>
-              </span>
-            </div>
-            <div class="contract-cell">
-              <span class="cell-label">租金</span>
-              <span class="cell-value highlight-value">
-                {{ formatMoney(initData?.rentPrice) }}
-                <span class="unit">元/月</span>
-              </span>
-            </div>
-            <div class="contract-cell">
-              <span class="cell-label">押金</span>
-              <span class="cell-value highlight-value">
-                {{ formatMoney(initData?.depositAmount) }}
-                <span class="unit">元</span>
-              </span>
-            </div>
-          </div>
+          <el-button type="primary" plain size="small" @click="handleOpenDelivery">
+            <el-icon class="mr-1"><Plus /></el-icon>
+            退房交割单
+          </el-button>
         </div>
-
-        <!-- ====== 退租信息 ====== -->
-        <div ref="checkoutRef" class="section-card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <span class="card-dot" />
-              <span class="card-title">退租信息</span>
-            </div>
-            <el-button type="primary" plain size="small" @click="handleOpenDelivery">
-              <el-icon class="mr-1"><Plus /></el-icon>
-              退房交割单
-            </el-button>
-          </div>
-          <el-form ref="formRef" :model="form" :rules="formRules" label-position="top" :disabled="!canEdit" class="checkout-form">
-            <el-row>
-              <el-col :span="6">
-                <el-form-item label="实际离房日期" prop="actualCheckoutDate">
-                  <el-date-picker v-model="form.actualCheckoutDate" type="date" placeholder="请选择日期" value-format="YYYY-MM-DD" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="18">
-                <el-form-item label="退租类型" prop="checkoutType">
-                  <el-radio-group v-model="form.checkoutType" @change="handleCheckoutTypeChange">
-                    <el-radio-button :value="CHECKOUT_TYPE_ENUM.NORMAL">
-                      <el-icon class="mr-1"><CircleCheck /></el-icon>
-                      正常退
-                    </el-radio-button>
-                    <el-radio-button :value="CHECKOUT_TYPE_ENUM.BREACH">
-                      <el-icon class="mr-1"><Warning /></el-icon>
-                      违约退
-                    </el-radio-button>
-                  </el-radio-group>
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <!-- 违约退时显示解约原因 -->
-            <transition name="slide-fade">
-              <el-form-item v-if="form.checkoutType === CHECKOUT_TYPE_ENUM.BREACH" label="解约原因">
-                <el-input v-model="form.breachReason" type="textarea" :rows="2" placeholder="请输入解约原因（选填）" maxlength="300" show-word-limit :disabled="!canEdit" />
+        <el-form ref="formRef" :model="form" :rules="formRules" label-position="top" :disabled="!canEdit" class="checkout-form">
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="实际离房日期" prop="actualCheckoutDate">
+                <el-date-picker v-model="form.actualCheckoutDate" type="date" placeholder="请选择日期" value-format="YYYY-MM-DD" />
               </el-form-item>
-            </transition>
-          </el-form>
+            </el-col>
+            <el-col :span="18">
+              <el-form-item label="退租类型" prop="checkoutType">
+                <el-radio-group v-model="form.checkoutType" @change="handleCheckoutTypeChange">
+                  <el-radio-button :value="CHECKOUT_TYPE_ENUM.NORMAL">
+                    <el-icon class="mr-1"><CircleCheck /></el-icon>
+                    正常退
+                  </el-radio-button>
+                  <el-radio-button :value="CHECKOUT_TYPE_ENUM.BREACH">
+                    <el-icon class="mr-1"><Warning /></el-icon>
+                    违约退
+                  </el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <!-- 违约退时显示解约原因 -->
+          <transition name="slide-fade">
+            <el-form-item v-if="form.checkoutType === CHECKOUT_TYPE_ENUM.BREACH" label="解约原因">
+              <el-input v-model="form.breachReason" type="textarea" :rows="2" placeholder="请输入解约原因（选填）" maxlength="300" show-word-limit :disabled="!canEdit" />
+            </el-form-item>
+          </transition>
+        </el-form>
+      </div>
+
+      <!-- ====== 退租费用清算 ====== -->
+      <div ref="feesRef" class="section-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot" />
+            <span class="card-title">退租费用清算</span>
+          </div>
+        </div>
+        <!-- 清洁费选项 -->
+        <div class="cleaning-fee-bar">
+          <span class="cleaning-label">加收房屋清洁费</span>
+          <el-switch v-model="form.addCleaningFee" :disabled="!canEdit" @change="handleCleaningFeeChange" />
+          <transition name="slide-fade">
+            <div v-if="form.addCleaningFee" class="cleaning-amount">
+              <el-input-number v-model="form.cleaningFeeAmount" :min="0" :precision="2" :disabled="!canEdit" controls-position="right" placeholder="金额" style="width: 160px">
+                <template #prefix>
+                  <span>￥</span>
+                </template>
+              </el-input-number>
+              <span class="unit-text">元</span>
+            </div>
+          </transition>
         </div>
 
-        <!-- ====== 退租费用清算 ====== -->
-        <div ref="feesRef" class="section-card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <span class="card-dot" />
-              <span class="card-title">退租费用清算</span>
-            </div>
-            <!-- 改动1: 原按钮位置移除 -->
-          </div>
-          <!-- 清洁费选项 -->
-          <div class="cleaning-fee-bar">
-            <span class="cleaning-label">加收房屋清洁费</span>
-            <el-switch v-model="form.addCleaningFee" :disabled="!canEdit" @change="handleCleaningFeeChange" />
-            <transition name="slide-fade">
-              <div v-if="form.addCleaningFee" class="cleaning-amount">
-                <el-input-number v-model="form.cleaningFeeAmount" :min="0" :precision="2" :disabled="!canEdit" controls-position="right" placeholder="金额" style="width: 160px">
-                  <template #prefix>
-                    <span>￥</span>
-                  </template>
-                </el-input-number>
-                <span class="unit-text">元</span>
-              </div>
-            </transition>
-          </div>
-
-          <!-- 费用表格 -->
-          <div class="fee-table-wrapper">
-            <table class="fee-table">
-              <thead>
-                <tr>
-                  <th style="width: 70px">收支</th>
-                  <th style="width: 180px">
-                    费用类型
-                    <span class="required">*</span>
-                  </th>
-                  <th style="width: 160px">
-                    金额(元)
-                    <span class="required">*</span>
-                  </th>
-                  <th style="width: 280px">
-                    费用周期
-                    <span class="required">*</span>
-                  </th>
-                  <th>备注</th>
-                  <th style="width: 40px" />
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="form.feeList.length === 0" class="empty-row">
-                  <td colspan="6">
-                    <div class="empty-state">
-                      <el-icon :size="28"><Tickets /></el-icon>
-                      <span>暂无费用明细，点击下方"添加费用"新增</span>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-for="(fee, index) in form.feeList" :key="index" class="fee-row">
-                  <!-- 收支类型 -->
-                  <td>
-                    <div
-                      class="direction-chip"
-                      :class="fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? 'chip-income' : 'chip-expense'"
-                      @click="canEdit && toggleDirection(fee)"
-                    >
-                      {{ fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? "收入" : "支出" }}
-                    </div>
-                  </td>
-                  <!-- 费用类型（级联） -->
-                  <td>
-                    <el-cascader
-                      v-model="fee.feeTypeCascade"
-                      :options="feeTypeCascadeOptions"
-                      :props="{ expandTrigger: 'hover' }"
-                      placeholder="请选择费用类型"
+        <!-- 费用表格 -->
+        <div class="fee-table-wrapper">
+          <table class="fee-table">
+            <thead>
+              <tr>
+                <th style="width: 70px">收支</th>
+                <th style="width: 180px">
+                  费用类型
+                  <span class="required">*</span>
+                </th>
+                <th style="width: 160px">
+                  金额(元)
+                  <span class="required">*</span>
+                </th>
+                <th style="width: 280px">
+                  费用周期
+                  <span class="required">*</span>
+                </th>
+                <th>备注</th>
+                <th style="width: 40px" />
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="form.feeList.length === 0" class="empty-row">
+                <td colspan="6">
+                  <div class="empty-state">
+                    <el-icon :size="28"><Tickets /></el-icon>
+                    <span>暂无费用明细，点击下方"添加费用"新增</span>
+                  </div>
+                </td>
+              </tr>
+              <tr v-for="(fee, index) in form.feeList" :key="index" class="fee-row">
+                <!-- 收支类型 -->
+                <td>
+                  <div class="direction-chip" :class="fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? 'chip-income' : 'chip-expense'" @click="canEdit && toggleDirection(fee)">
+                    {{ fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? "收入" : "支出" }}
+                  </div>
+                </td>
+                <!-- 费用类型（级联） -->
+                <td>
+                  <el-cascader
+                    v-model="fee.feeTypeCascade"
+                    :options="feeTypeCascadeOptions"
+                    :props="{ expandTrigger: 'hover' }"
+                    placeholder="请选择费用类型"
+                    :disabled="!canEdit"
+                    clearable
+                    size="default"
+                    class="w-full"
+                    @change="(val: any) => handleFeeTypeCascadeChange(val, fee)"
+                  />
+                </td>
+                <!-- 金额 -->
+                <td>
+                  <el-input-number v-model="fee.feeAmount" :min="0" :precision="2" :disabled="!canEdit" controls-position="right" placeholder="0.00" class="w-full">
+                    <template #prefix>
+                      <span>￥</span>
+                    </template>
+                  </el-input-number>
+                </td>
+                <!-- 费用周期 -->
+                <td>
+                  <div class="period-picker">
+                    <el-date-picker
+                      v-model="fee.feePeriodStart"
+                      type="date"
+                      placeholder="开始日期"
+                      value-format="YYYY-MM-DD"
+                      format="YYYY-MM-DD"
                       :disabled="!canEdit"
-                      clearable
-                      size="default"
-                      class="w-full"
-                      @change="(val: any) => handleFeeTypeCascadeChange(val, fee)"
+                      style="width: 130px"
                     />
-                  </td>
-                  <!-- 金额 -->
-                  <td>
-                    <el-input-number v-model="fee.feeAmount" :min="0" :precision="2" :disabled="!canEdit" controls-position="right" placeholder="0.00" class="w-full">
-                      <template #prefix>
-                        <span>￥</span>
-                      </template>
-                    </el-input-number>
-                  </td>
-                  <!-- 费用周期 -->
-                  <td>
-                    <div class="period-picker">
-                      <el-date-picker
-                        v-model="fee.feePeriodStart"
-                        type="date"
-                        placeholder="开始日期"
-                        value-format="YYYY-MM-DD"
-                        format="YYYY-MM-DD"
-                        :disabled="!canEdit"
-                        style="width: 130px"
-                      />
-                      <span class="period-sep">至</span>
-                      <el-date-picker
-                        v-model="fee.feePeriodEnd"
-                        type="date"
-                        placeholder="结束日期"
-                        value-format="YYYY-MM-DD"
-                        format="YYYY-MM-DD"
-                        :disabled="!canEdit"
-                        style="width: 130px"
-                      />
-                    </div>
-                  </td>
-                  <!-- 备注 -->
-                  <td>
-                    <el-input v-model="fee.remark" placeholder="选填" :disabled="!canEdit" />
-                  </td>
-                  <!-- 操作 -->
-                  <td class="text-center">
-                    <el-button v-if="canEdit" type="danger" link :icon="Delete" size="small" @click="handleRemoveFee(index)" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                    <span class="period-sep">至</span>
+                    <el-date-picker
+                      v-model="fee.feePeriodEnd"
+                      type="date"
+                      placeholder="结束日期"
+                      value-format="YYYY-MM-DD"
+                      format="YYYY-MM-DD"
+                      :disabled="!canEdit"
+                      style="width: 130px"
+                    />
+                  </div>
+                </td>
+                <!-- 备注 -->
+                <td>
+                  <el-input v-model="fee.remark" placeholder="选填" :disabled="!canEdit" />
+                </td>
+                <!-- 操作 -->
+                <td class="text-center">
+                  <el-button v-if="canEdit" type="danger" link :icon="Delete" size="small" @click="handleRemoveFee(index)" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <!-- 改动1: 添加费用按钮移到表格下方 -->
-          <div v-if="canEdit" class="add-fee-bar">
-            <el-button type="primary" text size="small" @click="handleAddFee">
-              <el-icon class="mr-1"><CirclePlus /></el-icon>
-              添加费用
-            </el-button>
-          </div>
+        <div v-if="canEdit" class="add-fee-bar">
+          <el-button type="primary" text size="small" @click="handleAddFee">
+            <el-icon class="mr-1"><CirclePlus /></el-icon>
+            添加费用
+          </el-button>
+        </div>
 
-          <!-- 改动2: 费用汇总卡片 — 上下两行布局 -->
-          <div class="summary-card">
-            <!-- 第一行: 收支计算 -->
-            <div class="summary-row">
-              <div class="summary-item">
-                <span class="summary-label">收入合计</span>
-                <span class="summary-val income-color">+{{ formatMoney(incomeTotal) }}</span>
-              </div>
-              <span class="summary-op">−</span>
-              <div class="summary-item">
-                <span class="summary-label">支出合计</span>
-                <span class="summary-val expense-color">−{{ formatMoney(expenseTotal) }}</span>
-              </div>
-              <span class="summary-eq">=</span>
-              <div class="summary-item result">
-                <span class="summary-label">结算金额</span>
-                <span class="summary-val" :class="finalAmount >= 0 ? 'income-color' : 'expense-color'">
-                  {{ finalAmount >= 0 ? "+" : "−" }}{{ formatMoney(Math.abs(finalAmount)) }}元
-                </span>
-                <span class="summary-hint">{{ finalAmount >= 0 ? "租客补缴" : "应退租客" }}</span>
-              </div>
+        <!-- 费用汇总卡片 -->
+        <div class="summary-card">
+          <!-- 第一行: 收支计算 -->
+          <div class="summary-row">
+            <div class="summary-item">
+              <span class="summary-label">收入合计</span>
+              <span class="summary-val income-color">+{{ formatMoney(incomeTotal) }}</span>
             </div>
-            <!-- 第二行: 付款时间 + 账单方式 -->
-            <div class="summary-row-2">
-              <div class="summary-field">
+            <span class="summary-op">−</span>
+            <div class="summary-item">
+              <span class="summary-label">支出合计</span>
+              <span class="summary-val expense-color">−{{ formatMoney(expenseTotal) }}</span>
+            </div>
+            <span class="summary-eq">=</span>
+            <div class="summary-item result">
+              <span class="summary-label">结算金额</span>
+              <span class="summary-val" :class="finalAmount >= 0 ? 'income-color' : 'expense-color'">
+                {{ finalAmount >= 0 ? "+" : "−" }}{{ formatMoney(Math.abs(finalAmount)) }}元
+              </span>
+              <span class="summary-hint">{{ finalAmount >= 0 ? "租客补缴" : "应退租客" }}</span>
+            </div>
+          </div>
+          <!-- 第二行: 付款时间 + 账单方式 -->
+          <div class="summary-row-2">
+            <div class="summary-field">
+              <span class="field-label">
+                预计收/付款时间
+                <span class="required">*</span>
+              </span>
+              <el-date-picker v-model="form.expectedPaymentDate" type="date" placeholder="请选择" value-format="YYYY-MM-DD" :disabled="!canEdit" style="width: 160px" />
+            </div>
+            <div class="summary-field">
+              <span class="field-label">账单处理方式</span>
+              <el-radio-group v-model="form.settlementMethod" :disabled="!canEdit" @change="handleSettlementMethodChange">
+                <el-radio :value="SETTLEMENT_METHOD_ENUM.GENERATE_BILL">生成待付账单</el-radio>
+                <el-radio :value="SETTLEMENT_METHOD_ENUM.OFFLINE_PAYMENT">线下付款</el-radio>
+                <el-radio :value="SETTLEMENT_METHOD_ENUM.APPLY_PAYMENT">申请付款</el-radio>
+                <el-radio :value="SETTLEMENT_METHOD_ENUM.BAD_DEBT">标记坏账</el-radio>
+              </el-radio-group>
+            </div>
+          </div>
+
+          <!-- 标记坏账时必须录入坏账原因 -->
+          <transition name="slide-fade">
+            <div v-if="form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT" class="bad-debt-reason">
+              <el-icon class="bad-debt-icon"><Warning /></el-icon>
+              <div class="bad-debt-input">
                 <span class="field-label">
-                  预计收/付款时间
+                  坏账原因
                   <span class="required">*</span>
                 </span>
-                <el-date-picker v-model="form.expectedPaymentDate" type="date" placeholder="请选择" value-format="YYYY-MM-DD" :disabled="!canEdit" style="width: 160px" />
-              </div>
-              <div class="summary-field">
-                <span class="field-label">账单处理方式</span>
-                <el-radio-group v-model="form.settlementMethod" :disabled="!canEdit" @change="handleSettlementMethodChange">
-                  <el-radio :value="SETTLEMENT_METHOD_ENUM.GENERATE_BILL">生成待付账单</el-radio>
-                  <el-radio :value="SETTLEMENT_METHOD_ENUM.OFFLINE_PAYMENT">线下付款</el-radio>
-                  <el-radio :value="SETTLEMENT_METHOD_ENUM.APPLY_PAYMENT">申请付款</el-radio>
-                  <el-radio :value="SETTLEMENT_METHOD_ENUM.BAD_DEBT">标记坏账</el-radio>
-                </el-radio-group>
+                <el-input v-model="form.badDebtReason" type="textarea" :rows="2" placeholder="请输入坏账原因（必填）" maxlength="300" show-word-limit :disabled="!canEdit" />
               </div>
             </div>
+          </transition>
+        </div>
+      </div>
 
-            <!-- 标记坏账时必须录入坏账原因 -->
-            <transition name="slide-fade">
-              <div v-if="form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT" class="bad-debt-reason">
-                <el-icon class="bad-debt-icon"><Warning /></el-icon>
-                <div class="bad-debt-input">
-                  <span class="field-label">
-                    坏账原因
-                    <span class="required">*</span>
-                  </span>
-                  <el-input v-model="form.badDebtReason" type="textarea" :rows="2" placeholder="请输入坏账原因（必填）" maxlength="300" show-word-limit :disabled="!canEdit" />
-                </div>
-              </div>
-            </transition>
+      <!-- ====== 退租备注 & 凭证 ====== -->
+      <div class="section-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot" />
+            <span class="card-title">退租备注 & 凭证</span>
+          </div>
+        </div>
+        <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入退租备注信息（选填）" maxlength="500" show-word-limit :disabled="!canEdit" class="mb-3" />
+        <div class="upload-area">
+          <span class="upload-label">退租凭证</span>
+          <UploadImage v-model="form.attachmentFiles" :limit="3" :width="90" :height="90">
+            <template #tip="{ limit }">最多{{ limit }}张，单个≤2MB，jpg/png/gif</template>
+          </UploadImage>
+        </div>
+      </div>
+
+      <!-- ====== 收款人信息 ====== -->
+      <div ref="payeeRef" class="section-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot" />
+            <span class="card-title">退租租客收款人信息</span>
           </div>
         </div>
 
-        <!-- ====== 退租备注 & 凭证 ====== -->
-        <div class="section-card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <span class="card-dot" />
-              <span class="card-title">退租备注 & 凭证</span>
-            </div>
+        <div class="payee-grid">
+          <div class="payee-cell">
+            <span class="cell-label">收款人姓名</span>
+            <span class="cell-value">{{ form.payeeName || "-" }}</span>
           </div>
-          <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入退租备注信息（选填）" maxlength="500" show-word-limit :disabled="!canEdit" class="mb-3" />
-          <div class="upload-area">
-            <span class="upload-label">退租凭证</span>
-            <UploadImage v-model="form.attachmentFiles" :limit="3" :width="90" :height="90">
-              <template #tip="{ limit }">最多{{ limit }}张，单个≤2MB，jpg/png/gif</template>
-            </UploadImage>
+          <div class="payee-cell">
+            <span class="cell-label">收款人电话</span>
+            <span class="cell-value">{{ form.payeePhone || "-" }}</span>
           </div>
-        </div>
-
-        <!-- ====== 收款人信息 ====== -->
-        <div ref="payeeRef" class="section-card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <span class="card-dot" />
-              <span class="card-title">退租租客收款人信息</span>
-            </div>
-          </div>
-
-          <div class="payee-grid">
-            <div class="payee-cell">
-              <span class="cell-label">收款人姓名</span>
-              <span class="cell-value">{{ form.payeeName || "-" }}</span>
-            </div>
-            <div class="payee-cell">
-              <span class="cell-label">收款人电话</span>
-              <span class="cell-value">{{ form.payeePhone || "-" }}</span>
-            </div>
-            <div class="payee-cell">
-              <span class="cell-label">证件信息</span>
-              <div class="inline-fields">
-                <el-select v-model="form.payeeIdType" placeholder="身份证" :disabled="!canEdit" style="width: 100px" size="default">
-                  <el-option label="身份证" value="ID_CARD" />
-                  <el-option label="护照" value="PASSPORT" />
-                  <el-option label="营业执照" value="BUSINESS_LICENSE" />
-                </el-select>
-                <el-input v-model="form.payeeIdNumber" placeholder="证件号码" :disabled="!canEdit" style="width: 200px" />
-              </div>
-            </div>
-          </div>
-
-          <!-- 收款银行 -->
-          <div class="bank-section">
-            <span class="bank-section-title">收款银行及账号</span>
-            <div class="bank-fields">
-              <el-select v-model="form.bankType" placeholder="银联" :disabled="!canEdit" style="width: 100px" @change="handleBankTypeChange">
-                <el-option label="银联" value="UNIONPAY" />
-                <el-option label="支付宝" value="ALIPAY" />
-                <el-option label="微信" value="WECHAT" />
+          <div class="payee-cell">
+            <span class="cell-label">证件信息</span>
+            <div class="inline-fields">
+              <el-select v-model="form.payeeIdType" placeholder="身份证" :disabled="!canEdit" style="width: 100px" size="default">
+                <el-option label="身份证" value="ID_CARD" />
+                <el-option label="护照" value="PASSPORT" />
+                <el-option label="营业执照" value="BUSINESS_LICENSE" />
               </el-select>
-              <template v-if="form.bankType === 'UNIONPAY'">
-                <el-select v-model="form.bankCardType" placeholder="借记卡" :disabled="!canEdit" style="width: 96px">
-                  <el-option label="借记卡" value="DEBIT" />
-                  <el-option label="信用卡" value="CREDIT" />
-                </el-select>
-                <el-input v-model="form.bankAccount" placeholder="银行账号" :disabled="!canEdit" style="width: 200px" />
-                <el-input v-model="form.bankName" placeholder="银行名称" :disabled="!canEdit" style="width: 140px" />
-                <el-input v-model="form.bankBranch" placeholder="支行名称" :disabled="!canEdit" style="width: 140px" />
-              </template>
-              <template v-else>
-                <el-input v-model="form.bankAccount" :placeholder="form.bankType === 'ALIPAY' ? '支付宝账号' : '微信账号'" :disabled="!canEdit" style="width: 260px" />
-              </template>
+              <el-input v-model="form.payeeIdNumber" placeholder="证件号码" :disabled="!canEdit" style="width: 200px" />
             </div>
+          </div>
+        </div>
+
+        <!-- 收款银行 -->
+        <div class="bank-section">
+          <span class="bank-section-title">收款银行及账号</span>
+          <div class="bank-fields">
+            <el-select v-model="form.bankType" placeholder="银联" :disabled="!canEdit" style="width: 100px" @change="handleBankTypeChange">
+              <el-option label="银联" value="UNIONPAY" />
+              <el-option label="支付宝" value="ALIPAY" />
+              <el-option label="微信" value="WECHAT" />
+            </el-select>
+            <template v-if="form.bankType === 'UNIONPAY'">
+              <el-select v-model="form.bankCardType" placeholder="借记卡" :disabled="!canEdit" style="width: 96px">
+                <el-option label="借记卡" value="DEBIT" />
+                <el-option label="信用卡" value="CREDIT" />
+              </el-select>
+              <el-input v-model="form.bankAccount" placeholder="银行账号" :disabled="!canEdit" style="width: 200px" />
+              <el-input v-model="form.bankName" placeholder="银行名称" :disabled="!canEdit" style="width: 140px" />
+              <el-input v-model="form.bankBranch" placeholder="支行名称" :disabled="!canEdit" style="width: 140px" />
+            </template>
+            <template v-else>
+              <el-input v-model="form.bankAccount" :placeholder="form.bankType === 'ALIPAY' ? '支付宝账号' : '微信账号'" :disabled="!canEdit" style="width: 260px" />
+            </template>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 底部 -->
-    <template #footer>
-      <div class="dialog-footer">
-        <div class="footer-left">
-          <el-checkbox v-model="form.sendConfirmation" :disabled="!canEdit">发送退租确认单给租客</el-checkbox>
-          <el-select v-if="form.sendConfirmation" v-model="form.confirmationTemplate" :disabled="!canEdit" style="width: 160px" size="small">
-            <el-option v-for="item in confirmationTemplateOptions" :key="item.id" :label="item.templateName" :value="item.id" />
-          </el-select>
-        </div>
-        <div class="footer-right">
-          <el-button @click="handleClose">取 消</el-button>
-          <el-button v-if="canEdit" type="primary" :loading="submitting" @click="handleSubmit">
-            <el-icon v-if="!submitting" class="mr-1"><Check /></el-icon>
-            确 定
-          </el-button>
-        </div>
+    <!-- ====== 底部操作栏 ====== -->
+    <div class="dialog-footer">
+      <div class="footer-left">
+        <el-checkbox v-model="form.sendConfirmation" :disabled="!canEdit">发送退租确认单给租客</el-checkbox>
+        <el-select v-if="form.sendConfirmation" v-model="form.confirmationTemplate" :disabled="!canEdit" style="width: 160px" size="small">
+          <el-option v-for="item in confirmationTemplateOptions" :key="item.id" :label="item.templateName" :value="item.id" />
+        </el-select>
       </div>
-    </template>
-  </el-dialog>
+      <div class="footer-right">
+        <el-button v-if="canEdit" type="primary" :loading="submitting" @click="() => handleSubmit()">
+          <el-icon v-if="!submitting" class="mr-1"><Check /></el-icon>
+          确 定
+        </el-button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
   import { computed, reactive, ref } from "vue";
   import { ElMessage, type FormInstance, type FormRules } from "element-plus";
-  import { Check, CircleCheck, CirclePlus, Close, Delete, Plus, Tickets, Warning } from "@element-plus/icons-vue";
+  import { Check, CircleCheck, CirclePlus, Delete, Plus, Tickets, Warning } from "@element-plus/icons-vue";
   import {
     APPROVAL_STATUS_ENUM,
     CHECKOUT_FEE_TYPE_ENUM,
@@ -433,7 +399,6 @@
     FEE_DIRECTION_ENUM,
     SETTLEMENT_METHOD_ENUM
   } from "@/constants";
-  // FIX: 移除不再使用的 CheckoutFeeProps，改用 CheckoutFeeFormItem / CheckoutDialogFormData
   import type { LeaseCheckoutVo, LeaseCheckoutInitVo } from "@/types";
   import type { CheckoutFeeFormItem, CheckoutDialogFormData } from "@/types/models/checkout";
   import { getCheckoutByLeaseId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
@@ -441,9 +406,14 @@
   import { getDictDataByParentCode } from "@/api/sys/dict";
   import UploadImage from "@/components/Business/UploadImage.vue";
 
+  // ──────────────────────────────────────────────
+  // 注意：此组件不再自己管理 el-dialog，
+  // 由外部通过 addDialog 的 contentRenderer 渲染，
+  // 提交逻辑通过 addDialog 的 beforeSure 调用 handleSubmit()
+  // ──────────────────────────────────────────────
+
   const emit = defineEmits<(e: "success") => void>();
 
-  const visible = ref(false);
   const loading = ref(false);
   const submitting = ref(false);
   const formRef = ref<FormInstance>();
@@ -483,7 +453,6 @@
     }
   }
 
-  /** 从字典接口加载费用类型 */
   async function loadFeeTypeDict() {
     try {
       const res = await getDictDataByParentCode({ dictCode: "fee_type" });
@@ -495,7 +464,6 @@
     }
   }
 
-  /** 构建级联选项：大类 → 子类 */
   const feeTypeCascadeOptions = computed(() => {
     return feeTypeDictList.value.map(group => ({
       value: group.dictCode,
@@ -507,8 +475,6 @@
     }));
   });
 
-  /** 级联选择变更时，回填 feeType / feeSubName */
-  // FIX: fee 参数改用 CheckoutFeeFormItem 替换 any
   function handleFeeTypeCascadeChange(val: [string, string] | null, fee: CheckoutFeeFormItem) {
     if (!val || val.length < 2) {
       fee.feeType = null;
@@ -524,10 +490,6 @@
     }
   }
 
-  /**
-   * FIX #2: 根据 feeSubName 自动匹配级联选择值
-   */
-  // FIX: 参数类型从 CheckoutFeeProps 改为 CheckoutFeeFormItem
   function resolveFeeCascadeValue(fee: CheckoutFeeFormItem): [string, string] | null {
     if (!feeTypeDictList.value.length || !fee.feeSubName) return null;
 
@@ -565,7 +527,6 @@
     return null;
   }
 
-  // FIX: 改用前端专属类型 CheckoutDialogFormData，内含 feeList/attachmentFiles/badDebtReason 等扩展字段
   const form = reactive<CheckoutDialogFormData>({
     id: undefined,
     tenantId: "",
@@ -600,7 +561,6 @@
     actualCheckoutDate: [{ required: true, message: "请选择实际离房日期", trigger: "change" }]
   });
 
-  // 计算属性
   const incomeTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
   const expenseTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
   const finalAmount = computed(() => incomeTotal.value - expenseTotal.value);
@@ -610,7 +570,6 @@
     return checkoutDetail.value.status === CHECKOUT_STATUS_ENUM.DRAFT || checkoutDetail.value.approvalStatus === APPROVAL_STATUS_ENUM.REJECTED;
   });
 
-  // Scroll tracking for step indicator
   function handleScroll() {
     const container = scrollContainerRef.value;
     if (!container) return;
@@ -642,7 +601,6 @@
     }
   }
 
-  // 工具函数
   function formatDate(dateStr: string | undefined | null): string {
     if (!dateStr) return "-";
     try {
@@ -670,12 +628,10 @@
     return `${y}-${m}-${dd}`;
   }
 
-  // FIX: 参数类型从 CheckoutFeeProps 改为 CheckoutFeeFormItem
   function toggleDirection(fee: CheckoutFeeFormItem) {
     fee.feeDirection = fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? FEE_DIRECTION_ENUM.REFUND : FEE_DIRECTION_ENUM.DEDUCTION;
   }
 
-  // 退租类型变更
   function handleCheckoutTypeChange(val: number) {
     if (val === CHECKOUT_TYPE_ENUM.BREACH) {
       form.feeList = form.feeList.filter(f => !(f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND));
@@ -683,7 +639,6 @@
       form.breachReason = "";
       const hasDepositRefund = form.feeList.some(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
       if (!hasDepositRefund && initData.value && initData.value.depositAmount && initData.value.depositAmount > 0) {
-        // FIX: 类型改为 CheckoutFeeFormItem
         const newFee: CheckoutFeeFormItem = {
           feeDirection: FEE_DIRECTION_ENUM.REFUND,
           feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
@@ -700,7 +655,6 @@
     }
   }
 
-  // 清洁费变更
   function handleCleaningFeeChange(val: boolean) {
     if (val && form.cleaningFeeAmount && form.cleaningFeeAmount > 0) {
       addCleaningFeeRow();
@@ -726,17 +680,14 @@
     }
   }
 
-  // 账单处理方式变更
   function handleSettlementMethodChange(val: number) {
     if (val !== SETTLEMENT_METHOD_ENUM.BAD_DEBT) {
       form.badDebtReason = "";
     }
   }
 
-  // 添加费用行
   function handleAddFee() {
     const today = getTodayStr();
-    // FIX: feeType 初始为 null（符合 CheckoutFeeFormItem），feeAmount 初始为 null
     const newFee: CheckoutFeeFormItem = {
       feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
       feeType: null,
@@ -768,9 +719,8 @@
     }
   }
 
-  // 打开对话框
-  async function open(tenantId: string | number, leaseId?: string | number) {
-    visible.value = true;
+  // ── 对外暴露的初始化方法，由 addDialog 调用前先 open ──
+  async function open(leaseId: string | number) {
     loading.value = true;
     currentStep.value = 1;
     resetForm();
@@ -781,16 +731,16 @@
     await loadConfirmationTemplates();
 
     try {
-      const existRes = await getCheckoutByLeaseId(String(tenantId), leaseId ? String(leaseId) : undefined);
+      const existRes = await getCheckoutByLeaseId(String(leaseId));
       if (existRes.data?.id) {
         await loadCheckoutDetail(existRes.data);
       } else {
-        await loadInitData(String(tenantId), leaseId ? String(leaseId) : undefined);
+        await loadInitData(String(leaseId));
       }
     } catch (error: any) {
       if (error?.response?.status === 404 || error?.code === 404 || !error?.data?.id) {
         try {
-          await loadInitData(String(tenantId), leaseId ? String(leaseId) : undefined);
+          await loadInitData(String(leaseId));
         } catch (initError) {
           console.error("加载初始化数据失败", initError);
           ElMessage.error("加载数据失败");
@@ -804,11 +754,11 @@
     }
   }
 
-  async function loadInitData(tenantId: string, leaseId?: string) {
-    const res = await getCheckoutInitData(tenantId, leaseId);
+  async function loadInitData(leaseId: string) {
+    const res = await getCheckoutInitData(leaseId);
     initData.value = res.data;
-    form.tenantId = tenantId;
-    form.leaseId = leaseId || res.data.leaseId || "";
+    form.tenantId = res.data.tenantId ?? "";
+    form.leaseId = leaseId;
     form.actualCheckoutDate = getTodayStr();
     form.expectedPaymentDate = getTodayStr();
     form.checkoutType = CHECKOUT_TYPE_ENUM.NORMAL;
@@ -822,7 +772,6 @@
       form.confirmationTemplate = confirmationTemplateOptions.value[0].id;
     }
 
-    // FIX: presetFees 元素为 PresetFeeVo（字段均可选），映射到 CheckoutFeeFormItem 时补全默认值
     if (res.data.presetFees && res.data.presetFees.length > 0) {
       form.feeList = res.data.presetFees.map<CheckoutFeeFormItem>(pf => {
         const fee: CheckoutFeeFormItem = {
@@ -847,7 +796,6 @@
     form.id = detail.id;
     form.tenantId = detail.tenantId ?? "";
     form.leaseId = detail.leaseId ?? "";
-    // FIX: LeaseCheckoutVo.checkoutType 为 number | undefined，与 CheckoutDialogFormData 兼容
     form.checkoutType = detail.checkoutType ?? null;
     form.actualCheckoutDate = detail.actualCheckoutDate ?? "";
     form.breachReason = detail.breachReason ?? "";
@@ -859,7 +807,6 @@
       form.confirmationTemplate = confirmationTemplateOptions.value[0].id;
     }
 
-    // FIX: detail.feeList 为 LeaseCheckoutFeeVo[]，显式映射为 CheckoutFeeFormItem[]
     form.feeList = (detail.feeList ?? []).map<CheckoutFeeFormItem>(f => {
       const fee: CheckoutFeeFormItem = {
         id: f.id,
@@ -887,7 +834,6 @@
     form.bankName = detail.bankName ?? "";
     form.bankBranch = detail.bankBranch ?? "";
 
-    // FIX: attachmentUrls 为 string[] | undefined，直接赋值给 attachmentFiles
     if (detail.attachmentUrls && detail.attachmentUrls.length > 0) {
       form.attachmentFiles = detail.attachmentUrls;
     }
@@ -913,8 +859,10 @@
     };
   }
 
-  async function handleSubmit() {
+  // ── 提交逻辑：由 addDialog beforeSure 调用，done() 关闭弹框 ──
+  async function handleSubmit(done?: () => void) {
     if (!formRef.value) return;
+
     formRef.value.validate(async valid => {
       if (!valid) return;
 
@@ -926,13 +874,11 @@
         ElMessage.warning("请至少添加一条费用明细");
         return;
       }
-
       if (form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT && !form.badDebtReason?.trim()) {
         ElMessage.warning("标记坏账时必须填写坏账原因");
         return;
       }
 
-      // FIX: 处理附件 URL 列表
       const attachmentIds: string[] = [];
       if (form.attachmentFiles?.length > 0) {
         for (const file of form.attachmentFiles) {
@@ -946,17 +892,14 @@
 
       submitting.value = true;
       try {
-        // FIX: 构建提交 DTO，剔除纯前端字段（feeTypeCascade、attachmentFiles），转换 feeType 为 number
         const submitData = {
           ...form,
-          // FIX: checkoutType 已由表单验证保证非 null
           checkoutType: form.checkoutType as number,
           attachmentIds,
           remark: form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT ? `${form.remark || ""}${form.remark ? "\n" : ""}【坏账原因】${form.badDebtReason}` : form.remark,
           feeList: form.feeList.map(f => ({
             id: f.id,
             feeDirection: f.feeDirection,
-            // FIX: feeType 统一转为 number 提交
             feeType: Number(f.feeType),
             feeSubName: f.feeSubName,
             feeAmount: f.feeAmount ?? 0,
@@ -970,8 +913,9 @@
         form.id = res.data;
         await submitCheckout(form.id!);
         ElMessage.success("退租并结账提交成功");
-        visible.value = false;
         emit("success");
+        // 由 addDialog 的 beforeSure 传入 done，关闭弹框
+        done?.();
       } catch (error) {
         console.error("提交失败", error);
         ElMessage.error("提交失败");
@@ -1012,70 +956,11 @@
     checkoutDetail.value = null;
   }
 
-  function handleClose() {
-    visible.value = false;
-    resetForm();
-  }
-
-  defineExpose({ open });
+  // 暴露给外部（addDialog contentRenderer 中的 ref）
+  defineExpose({ open, handleSubmit });
 </script>
 
 <style lang="scss" scoped>
-  /* ===== Dialog Shell ===== */
-  .checkout-dialog {
-    :deep(.el-dialog) {
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    }
-    :deep(.el-dialog__header) {
-      padding: 0;
-      margin: 0;
-    }
-    :deep(.el-dialog__body) {
-      padding: 0;
-    }
-    :deep(.el-dialog__footer) {
-      padding: 0;
-      border-top: none;
-    }
-  }
-
-  /* ===== Header ===== */
-  .dialog-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 7px;
-    border-bottom: 1px solid var(--el-border-color-lighter);
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .header-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-    }
-
-    .header-code {
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
-      margin-left: 8px;
-      background: var(--el-fill-color);
-      padding: 1px 8px;
-      border-radius: 4px;
-    }
-
-    .close-btn {
-      border: none;
-      background: transparent;
-    }
-  }
-
   /* ===== Steps Bar ===== */
   .steps-bar {
     display: flex;
@@ -1125,6 +1010,7 @@
         background: var(--el-color-primary);
         color: #fff;
       }
+
       .step-label {
         color: var(--el-color-primary);
         font-weight: 500;
@@ -1150,7 +1036,7 @@
     margin: 0 4px;
   }
 
-  /* ===== Scroll Container ===== */
+  /* ===== Body & Scroll ===== */
   .checkout-body {
     display: flex;
     flex-direction: column;
@@ -1168,16 +1054,20 @@
     &::-webkit-scrollbar {
       width: 5px;
     }
+
     &::-webkit-scrollbar-track {
       background: transparent;
     }
+
     &::-webkit-scrollbar-thumb {
       background-color: var(--el-border-color);
       border-radius: 3px;
+
       &:hover {
         background-color: var(--el-border-color-darker);
       }
     }
+
     scrollbar-width: thin;
     scrollbar-color: var(--el-border-color) transparent;
   }
@@ -1283,11 +1173,12 @@
     margin-left: 6px;
   }
 
-  /* ===== Checkout Form ===== */
+  /* ===== Form ===== */
   .checkout-form {
     :deep(.el-form-item) {
       margin-bottom: 10px;
     }
+
     :deep(.el-form-item__label) {
       font-size: 13px;
       font-weight: 500;
@@ -1296,33 +1187,22 @@
     }
   }
 
-  .form-row {
-    display: flex;
-    gap: 24px;
-
-    > .el-form-item {
-      flex: 1;
-      min-width: 0;
-    }
-  }
-
-  /* ===== Transition ===== */
+  /* ===== Transitions ===== */
   .slide-fade-enter-active {
     transition: all 0.25s ease-out;
   }
+
   .slide-fade-leave-active {
     transition: all 0.15s ease-in;
   }
-  .slide-fade-enter-from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
+
+  .slide-fade-enter-from,
   .slide-fade-leave-to {
     opacity: 0;
     transform: translateY(-6px);
   }
 
-  /* ===== Fee Section ===== */
+  /* ===== Cleaning Fee ===== */
   .cleaning-fee-bar {
     display: flex;
     align-items: center;
@@ -1353,7 +1233,6 @@
   /* ===== Fee Table ===== */
   .fee-table-wrapper {
     overflow-x: auto;
-    margin-bottom: 0;
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 8px;
   }
@@ -1402,15 +1281,16 @@
 
   .fee-row {
     transition: background 0.15s;
+
     &:hover {
       background: var(--el-fill-color-lighter);
     }
+
     &:last-child td {
       border-bottom: none;
     }
   }
 
-  /* ===== 改动1: 添加费用按钮移至表格下方、右对齐 ===== */
   .add-fee-bar {
     display: flex;
     justify-content: flex-end;
@@ -1460,14 +1340,13 @@
     }
   }
 
-  /* ===== 改动2: Summary Card — 上下两行布局 ===== */
+  /* ===== Summary Card ===== */
   .summary-card {
     background: var(--el-fill-color-lighter);
     border-radius: 10px;
     padding: 16px;
   }
 
-  /* 第一行：收支计算公式 */
   .summary-row {
     display: flex;
     align-items: center;
@@ -1520,7 +1399,6 @@
     color: var(--el-text-color-placeholder);
   }
 
-  /* 第二行：付款时间 + 账单处理方式 */
   .summary-row-2 {
     display: flex;
     align-items: flex-start;
@@ -1543,7 +1421,7 @@
     }
   }
 
-  /* ===== Bad Debt Reason ===== */
+  /* ===== Bad Debt ===== */
   .bad-debt-reason {
     display: flex;
     align-items: flex-start;
@@ -1577,7 +1455,7 @@
     color: var(--el-color-danger);
   }
 
-  /* ===== Upload Area ===== */
+  /* ===== Upload ===== */
   .upload-area {
     .upload-label {
       font-size: 13px;
@@ -1667,30 +1545,12 @@
     text-align: center;
   }
 
-  /* ================================================================
-* 改动3: 深色主题适配
-*
-* vue-pure-admin 暗色模式会在 <html> 加 class="dark"，
-* 同时 Element Plus 的 CSS 变量会自动切换（如 --el-bg-color、
-* --el-text-color-primary 等），所以上面使用 var(--el-xxx) 的部分
-* 已经自动适配。
-*
-* 下面仅针对「写死了具体色值」或「Element Plus 暗色变量对比度不够」
-* 的地方做补充覆盖，保持最小改动量。
-* ================================================================ */
+  /* ===== Dark mode ===== */
   :global(html.dark) {
-    .checkout-dialog {
-      :deep(.el-dialog) {
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
-      }
-    }
-
-    /* section-card hover 阴影适配暗色 */
     .section-card:hover {
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
     }
 
-    /* 添加费用按钮在暗色下边框加强可见性 */
     .add-fee-bar {
       :deep(.el-button--text) {
         border: 1px dashed var(--el-border-color);
@@ -1703,12 +1563,10 @@
       }
     }
 
-    /* 汇总卡片 result 项边框 */
     .summary-item.result {
       border-color: var(--el-border-color);
     }
 
-    /* 第二行分割线 */
     .summary-row-2 {
       border-top-color: var(--el-border-color);
     }

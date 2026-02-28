@@ -10,6 +10,7 @@ import { getHouseDetail } from "@/api/house/house";
 import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
+import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
 
 /** 弹窗内部使用的状态包装（loading + 数据） */
 export interface HouseViewState {
@@ -38,9 +39,7 @@ export const useHouseView = () => {
   const { handleEditFocus } = useFocusHouse();
   const { openEntireEditDialog } = useEntireEdit();
   const { openShareEditDialog } = useShareEdit();
-
-  // CheckoutDialog ref 由每次 openHouseViewDialog 内部持有，避免多弹窗冲突
-  let checkoutDialogRef: any = null;
+  const { openLeaseCheckoutDialog } = useCheckoutDialog();
 
   /**
    * 以弹窗形式打开房源详情
@@ -108,16 +107,6 @@ export const useHouseView = () => {
             onReload: () => {
               loadDetail(state, room.houseId).catch(() => undefined);
             }
-          }),
-          // 退租弹窗挂在同一层
-          h(CheckoutDialog, {
-            ref: (el: any) => {
-              checkoutDialogRef = el;
-            },
-            onSuccess: () => {
-              loadDetail(state, room.houseId).catch(() => undefined);
-              message("退租操作完成", { type: "success" });
-            }
           })
         ])
     });
@@ -133,11 +122,15 @@ export const useHouseView = () => {
       message("当前房间没有在租租客", { type: "warning" });
       return;
     }
-    if (checkoutDialogRef?.open) {
-      checkoutDialogRef.open(room.lease.tenantId || "", room.lease.leaseId || "");
-    } else {
-      message("退租组件未就绪，请稍后重试", { type: "warning" });
-    }
+
+    openLeaseCheckoutDialog(room.lease, () => {
+      const state = reactive<HouseViewState>({
+        loading: true,
+        detail: null
+      });
+      loadDetail(state, room?.houseId).catch(() => undefined);
+      message("退租操作完成", { type: "success" });
+    });
   }
 
   /**

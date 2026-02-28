@@ -34,11 +34,9 @@ export function useCheckout() {
     tenantId: "",
     leaseId: "",
     checkoutType: null,
-    // FIX: 原 checkoutReason 字段不在 LeaseCheckoutDto 中，正确字段名为 breachReason
     breachReason: "",
     actualCheckoutDate: "",
     settlementMethod: 0,
-    // FIX: depositAmount 作为前端编辑字段，定义在 CheckoutPageFormData 中
     depositAmount: 0,
     feeList: [],
     remark: ""
@@ -94,19 +92,16 @@ export function useCheckout() {
 
     loading.value = true;
     try {
-      const res = await getCheckoutInitData(tenantId.value, leaseId.value || undefined);
+      const res = await getCheckoutInitData(leaseId.value || undefined);
       initData.value = res.data;
 
-      // 设置表单默认值
       form.tenantId = tenantId.value;
       form.leaseId = res.data.leaseId ?? leaseId.value;
       form.depositAmount = res.data.depositAmount ?? 0;
       form.actualCheckoutDate = new Date().toISOString().split("T")[0];
 
-      // 自动添加押金退还
       syncDepositRefundFee(res.data.depositAmount ?? 0);
 
-      // 自动添加未付账单作为扣款
       if (res.data.unpaidBills && res.data.unpaidBills.length > 0) {
         res.data.unpaidBills.forEach(bill => {
           addFee({
@@ -135,23 +130,18 @@ export function useCheckout() {
       const res = await getCheckoutDetail(checkoutId.value);
       checkoutDetail.value = res.data;
 
-      // 填充表单
       form.id = res.data.id;
       form.tenantId = res.data.tenantId ?? "";
       form.leaseId = res.data.leaseId ?? "";
-      // FIX: LeaseCheckoutVo.checkoutType 为 number | undefined，与 CheckoutPageFormData 兼容
       form.checkoutType = res.data.checkoutType ?? null;
       form.breachReason = res.data.breachReason ?? "";
       form.actualCheckoutDate = res.data.actualCheckoutDate ?? "";
       form.depositAmount = res.data.depositAmount ?? 0;
       form.remark = res.data.remark ?? "";
 
-      // 填充费用列表
-      // FIX: LeaseCheckoutVo.feeList 为 LeaseCheckoutFeeVo[]，映射到 CheckoutFeeFormItem[]
       form.feeList = (res.data.feeList ?? []).map<CheckoutFeeFormItem>(f => ({
         id: f.id,
         feeType: f.feeType ?? null,
-        // FIX: LeaseCheckoutFeeVo に feeName フィールドは存在しない。feeSubName を表示名として使用
         feeSubName: f.feeSubName,
         feeAmount: f.feeAmount ?? null,
         feeDirection: f.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
@@ -162,7 +152,6 @@ export function useCheckout() {
         feeTypeCascade: null
       }));
 
-      // 设置初始化数据
       initData.value = {
         tenantId: res.data.tenantId,
         leaseId: res.data.leaseId,
@@ -208,17 +197,14 @@ export function useCheckout() {
     form.feeList.splice(index, 1);
   }
 
-  /** 构建提交用的 DTO（剔除纯前端字段） */
+  /** 构建提交用的 DTO */
   function buildSubmitDto(): LeaseCheckoutDto {
-    // FIX: checkoutType 提交前已由 canSubmit 保证非 null，此处断言安全
     return {
       ...form,
       checkoutType: form.checkoutType as number,
       feeList: form.feeList.map(f => ({
         id: f.id,
-        // FIX: 转换为 number（提交前由表单验证保证非空）
         feeType: Number(f.feeType),
-        // feeName は LeaseCheckoutFeeDto に存在しないため除外
         feeSubName: f.feeSubName,
         feeAmount: f.feeAmount ?? 0,
         feeDirection: f.feeDirection,
@@ -247,9 +233,8 @@ export function useCheckout() {
     }
   }
 
-  /** 提交审批 */
+  /** 提交审批（页面模式专用） */
   async function handleSubmit() {
-    // 先保存
     const savedId = await handleSave();
     if (!savedId) return;
 
@@ -279,7 +264,7 @@ export function useCheckout() {
     router.back();
   }
 
-  /** 初始化 */
+  /** 初始化（页面模式） */
   onMounted(() => {
     if (isEdit.value) {
       loadCheckoutDetail();

@@ -145,228 +145,6 @@ export type TokenRefreshDto = {
     refreshToken?: string;
 };
 
-export type LeaseCheckoutQueryDto = {
-    currentPage?: string;
-    pageSize?: string;
-    companyId?: string;
-    tenantId?: string;
-    /**
-     * 租约ID
-     */
-    leaseId?: string;
-    /**
-     * 退租单ID
-     */
-    checkoutId?: string;
-    checkoutCode?: string;
-    tenantName?: string;
-    checkoutType?: number;
-    status?: number;
-    approvalStatus?: number;
-};
-
-export type ResponseResultVoid = {
-    code?: number;
-    message?: string;
-    data?: unknown;
-};
-
-export type LeaseCheckoutDto = {
-    id?: string;
-    tenantId: string;
-    leaseId?: string;
-    checkoutType: number;
-    actualCheckoutDate: string;
-    breachReason?: string;
-    addCleaningFee?: boolean;
-    cleaningFeeAmount?: number;
-    feeList?: Array<LeaseCheckoutFeeDto>;
-    expectedPaymentDate?: string;
-    settlementMethod: number;
-    badDebtReason?: string;
-    remark?: string;
-    attachmentIds?: Array<string>;
-    payeeName?: string;
-    payeePhone?: string;
-    payeeIdType?: string;
-    payeeIdNumber?: string;
-    bankType?: string;
-    bankCardType?: string;
-    bankAccount?: string;
-    bankName?: string;
-    bankBranch?: string;
-    sendConfirmation?: boolean;
-    confirmationTemplate?: string;
-    operatorId?: string;
-};
-
-export type LeaseCheckoutFeeDto = {
-    id?: string;
-    feeDirection: number;
-    feeType: number;
-    feeSubName?: string;
-    feeAmount: number;
-    feePeriodStart?: string;
-    feePeriodEnd?: string;
-    remark?: string;
-    billId?: string;
-};
-
-export type LeaseCheckoutFeeVo = {
-    id?: string;
-    checkoutId?: string;
-    feeDirection?: number;
-    feeDirectionName?: string;
-    feeType?: number;
-    feeTypeName?: string;
-    feeSubName?: string;
-    feeAmount?: number;
-    feePeriodStart?: string;
-    feePeriodEnd?: string;
-    remark?: string;
-    billId?: string;
-};
-
-export type LeaseCheckoutVo = {
-    id?: string;
-    checkoutCode?: string;
-    companyId?: string;
-    tenantId?: string;
-    leaseId?: string;
-    roomAddress?: string;
-    leaseStart?: string;
-    leaseEnd?: string;
-    tenantName?: string;
-    tenantPhone?: string;
-    agentInfo?: string;
-    rentPrice?: number;
-    depositAmount?: number;
-    deliveryId?: string;
-    checkoutType?: number;
-    checkoutTypeName?: string;
-    actualCheckoutDate?: string;
-    breachReason?: string;
-    incomeAmount?: number;
-    expenseAmount?: number;
-    finalAmount?: number;
-    expectedPaymentDate?: string;
-    settlementMethod?: number;
-    settlementMethodName?: string;
-    feeList?: Array<LeaseCheckoutFeeVo>;
-    remark?: string;
-    attachmentUrls?: Array<string>;
-    payeeName?: string;
-    payeePhone?: string;
-    payeeIdType?: string;
-    payeeIdNumber?: string;
-    bankType?: string;
-    bankCardType?: string;
-    bankAccount?: string;
-    bankName?: string;
-    bankBranch?: string;
-    status?: number;
-    statusName?: string;
-    approvalStatus?: number;
-    approvalStatusName?: string;
-    settlementTime?: string;
-    createBy?: string;
-    createByName?: string;
-    createTime?: string;
-};
-
-export type PageVoLeaseCheckoutVo = {
-    currentPage?: string;
-    pageSize?: string;
-    total?: string;
-    pages?: string;
-    list?: Array<LeaseCheckoutVo>;
-};
-
-export type ResponseResultPageVoLeaseCheckoutVo = {
-    code?: number;
-    message?: string;
-    data?: PageVoLeaseCheckoutVo;
-};
-
-/**
- * 退租初始化数据 VO
- */
-export type LeaseCheckoutInitVo = {
-    /**
-     * 租客ID
-     */
-    tenantId?: string;
-    /**
-     * 租约ID
-     */
-    leaseId?: string;
-    /**
-     * 房源地址（如"12312栋12单元-104室"）
-     */
-    roomAddress?: string;
-    /**
-     * 合同开始日
-     */
-    leaseStart?: string;
-    /**
-     * 合同到期日
-     */
-    leaseEnd?: string;
-    tenantName?: string;
-    tenantPhone?: string;
-    agentInfo?: string;
-    rentPrice?: number;
-    depositAmount?: number;
-    depositMonths?: number;
-    unpaidBills?: Array<UnpaidBillVo>;
-    unpaidAmount?: number;
-    presetFees?: Array<PresetFeeVo>;
-    payeeInfo?: PayeeInfoVo;
-};
-
-export type PayeeInfoVo = {
-    payeeName?: string;
-    payeePhone?: string;
-    payeeIdType?: string;
-    payeeIdNumber?: string;
-};
-
-export type PresetFeeVo = {
-    feeDirection?: number;
-    feeType?: number;
-    feeSubName?: string;
-    feeAmount?: number;
-    feePeriodStart?: string;
-    feePeriodEnd?: string;
-    remark?: string;
-    billId?: string;
-};
-
-export type ResponseResultLeaseCheckoutInitVo = {
-    code?: number;
-    message?: string;
-    data?: LeaseCheckoutInitVo;
-};
-
-export type UnpaidBillVo = {
-    billId?: string;
-    billCode?: string;
-    billType?: number;
-    billTypeName?: string;
-    billPeriod?: string;
-    periodStart?: string;
-    periodEnd?: string;
-    totalAmount?: number;
-    payAmount?: number;
-    unpaidAmount?: number;
-};
-
-export type ResponseResultLeaseCheckoutVo = {
-    code?: number;
-    message?: string;
-    data?: LeaseCheckoutVo;
-};
-
 /**
  * 角色用户解绑DTO
  */
@@ -1105,6 +883,12 @@ export type MenuCreateDto = {
     updateTime?: string;
 };
 
+export type ResponseResultVoid = {
+    code?: number;
+    message?: string;
+    data?: unknown;
+};
+
 /**
  * 字典数据项创建对象
  */
@@ -1728,6 +1512,8 @@ export type HouseLayoutDto = {
  * 房间的租约信息，包括预定
  */
 export type LeaseInfoVo = {
+    leaseId?: string;
+    bookingId?: string;
     /**
      * 租约开始日期
      */
@@ -1932,6 +1718,10 @@ export type RoomDetailVo = {
      * 房间id
      */
     id?: string;
+    /**
+     * 房源id
+     */
+    houseId?: string;
     /**
      * 房间号
      */
@@ -2935,6 +2725,222 @@ export type ResponseResultUserProfileUpdateDto = {
     data?: UserProfileUpdateDto;
 };
 
+export type LeaseCheckoutQueryDto = {
+    currentPage?: string;
+    pageSize?: string;
+    companyId?: string;
+    tenantId?: string;
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 退租单ID
+     */
+    checkoutId?: string;
+    checkoutCode?: string;
+    tenantName?: string;
+    checkoutType?: number;
+    status?: number;
+    approvalStatus?: number;
+};
+
+export type LeaseCheckoutDto = {
+    id?: string;
+    tenantId: string;
+    leaseId?: string;
+    checkoutType: number;
+    actualCheckoutDate: string;
+    breachReason?: string;
+    addCleaningFee?: boolean;
+    cleaningFeeAmount?: number;
+    feeList?: Array<LeaseCheckoutFeeDto>;
+    expectedPaymentDate?: string;
+    settlementMethod: number;
+    badDebtReason?: string;
+    remark?: string;
+    attachmentIds?: Array<string>;
+    payeeName?: string;
+    payeePhone?: string;
+    payeeIdType?: string;
+    payeeIdNumber?: string;
+    bankType?: string;
+    bankCardType?: string;
+    bankAccount?: string;
+    bankName?: string;
+    bankBranch?: string;
+    sendConfirmation?: boolean;
+    confirmationTemplate?: string;
+    operatorId?: string;
+};
+
+export type LeaseCheckoutFeeDto = {
+    id?: string;
+    feeDirection: number;
+    feeType: number;
+    feeSubName?: string;
+    feeAmount: number;
+    feePeriodStart?: string;
+    feePeriodEnd?: string;
+    remark?: string;
+    billId?: string;
+};
+
+export type LeaseCheckoutFeeVo = {
+    id?: string;
+    checkoutId?: string;
+    feeDirection?: number;
+    feeDirectionName?: string;
+    feeType?: number;
+    feeTypeName?: string;
+    feeSubName?: string;
+    feeAmount?: number;
+    feePeriodStart?: string;
+    feePeriodEnd?: string;
+    remark?: string;
+    billId?: string;
+};
+
+export type LeaseCheckoutVo = {
+    id?: string;
+    checkoutCode?: string;
+    companyId?: string;
+    tenantId?: string;
+    leaseId?: string;
+    roomAddress?: string;
+    leaseStart?: string;
+    leaseEnd?: string;
+    tenantName?: string;
+    tenantPhone?: string;
+    agentInfo?: string;
+    rentPrice?: number;
+    depositAmount?: number;
+    deliveryId?: string;
+    checkoutType?: number;
+    checkoutTypeName?: string;
+    actualCheckoutDate?: string;
+    breachReason?: string;
+    incomeAmount?: number;
+    expenseAmount?: number;
+    finalAmount?: number;
+    expectedPaymentDate?: string;
+    settlementMethod?: number;
+    settlementMethodName?: string;
+    feeList?: Array<LeaseCheckoutFeeVo>;
+    remark?: string;
+    attachmentUrls?: Array<string>;
+    payeeName?: string;
+    payeePhone?: string;
+    payeeIdType?: string;
+    payeeIdNumber?: string;
+    bankType?: string;
+    bankCardType?: string;
+    bankAccount?: string;
+    bankName?: string;
+    bankBranch?: string;
+    status?: number;
+    statusName?: string;
+    approvalStatus?: number;
+    approvalStatusName?: string;
+    settlementTime?: string;
+    createBy?: string;
+    createByName?: string;
+    createTime?: string;
+};
+
+export type PageVoLeaseCheckoutVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<LeaseCheckoutVo>;
+};
+
+export type ResponseResultPageVoLeaseCheckoutVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoLeaseCheckoutVo;
+};
+
+/**
+ * 退租初始化数据 VO
+ */
+export type LeaseCheckoutInitVo = {
+    /**
+     * 租客ID
+     */
+    tenantId?: string;
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 房源地址（如"12312栋12单元-104室"）
+     */
+    roomAddress?: string;
+    /**
+     * 合同开始日
+     */
+    leaseStart?: string;
+    /**
+     * 合同到期日
+     */
+    leaseEnd?: string;
+    tenantName?: string;
+    tenantPhone?: string;
+    agentInfo?: string;
+    rentPrice?: number;
+    depositAmount?: number;
+    depositMonths?: number;
+    unpaidBills?: Array<UnpaidBillVo>;
+    unpaidAmount?: number;
+    presetFees?: Array<PresetFeeVo>;
+    payeeInfo?: PayeeInfoVo;
+};
+
+export type PayeeInfoVo = {
+    payeeName?: string;
+    payeePhone?: string;
+    payeeIdType?: string;
+    payeeIdNumber?: string;
+};
+
+export type PresetFeeVo = {
+    feeDirection?: number;
+    feeType?: number;
+    feeSubName?: string;
+    feeAmount?: number;
+    feePeriodStart?: string;
+    feePeriodEnd?: string;
+    remark?: string;
+    billId?: string;
+};
+
+export type ResponseResultLeaseCheckoutInitVo = {
+    code?: number;
+    message?: string;
+    data?: LeaseCheckoutInitVo;
+};
+
+export type UnpaidBillVo = {
+    billId?: string;
+    billCode?: string;
+    billType?: number;
+    billTypeName?: string;
+    billPeriod?: string;
+    periodStart?: string;
+    periodEnd?: string;
+    totalAmount?: number;
+    payAmount?: number;
+    unpaidAmount?: number;
+};
+
+export type ResponseResultLeaseCheckoutVo = {
+    code?: number;
+    message?: string;
+    data?: LeaseCheckoutVo;
+};
+
 /**
  * 集中式查询 DTO
  */
@@ -3500,6 +3506,189 @@ export type DeliveryCreateDto = {
     items?: Array<DeliveryItemDto>;
     imageList?: Array<string>;
     createBy?: string;
+};
+
+export type ContractTemplateStatusDto = {
+    /**
+     * 合同模板ID
+     */
+    id?: string;
+    /**
+     * 合同状态：0=未生效，1=生效中
+     */
+    status: number;
+    /**
+     * 修改人ID
+     */
+    updateBy?: string;
+    /**
+     * 修改时间
+     */
+    updateTime?: string;
+};
+
+export type ContractTemplateQueryDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 合同模板 ID
+     */
+    id?: string;
+    /**
+     * 合同类型
+     */
+    contractType?: number;
+    /**
+     * 合同模板名称
+     */
+    templateName?: string;
+    /**
+     * 合同状态
+     */
+    status?: number;
+};
+
+export type PairStringString = {
+    key?: string;
+    value?: string;
+};
+
+export type ResponseResultListPairStringString = {
+    code?: number;
+    message?: string;
+    data?: Array<PairStringString>;
+};
+
+/**
+ * 合同模板列表VO
+ */
+export type ContractTemplateListVo = {
+    /**
+     * 合同模板ID
+     */
+    id?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 合同模板类型：1=租客、2=业主、3=预定
+     */
+    contractType?: number;
+    /**
+     * 合同模板名称
+     */
+    templateName?: string;
+    /**
+     * 合同模板内容，包含模板变量占位符
+     */
+    templateContent?: string;
+    /**
+     * 生效部门json，格式：[1,2,3]
+     */
+    deptIds?: Array<string>;
+    /**
+     * 合同状态：0=未生效，1=生效中，-1=已作废
+     */
+    status?: number;
+    /**
+     * 合同模板备注
+     */
+    remark?: string;
+    /**
+     * 创建人ID
+     */
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 修改人ID
+     */
+    updateBy?: string;
+    /**
+     * 修改时间
+     */
+    updateTime?: string;
+};
+
+export type ResponseResultListContractTemplateListVo = {
+    code?: number;
+    message?: string;
+    data?: Array<ContractTemplateListVo>;
+};
+
+export type PageVoContractTemplateListVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<ContractTemplateListVo>;
+};
+
+export type ResponseResultPageVoContractTemplateListVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoContractTemplateListVo;
+};
+
+export type ContractTemplateDeleteDto = {
+    /**
+     * 合同模板ID
+     */
+    id: string;
+};
+
+export type ContractTemplateCreateDto = {
+    /**
+     * 合同模板ID
+     */
+    id?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 合同模板类型：1=租客、2=业主、3=预定
+     */
+    contractType: number;
+    /**
+     * 合同模板名称
+     */
+    templateName: string;
+    /**
+     * 合同模板内容，包含模板变量占位符
+     */
+    templateContent: string;
+    /**
+     * 生效部门json，格式：[1,2,3]
+     */
+    deptIds: Array<string>;
+    /**
+     * 合同状态：0=未生效，1=生效中
+     */
+    status?: number;
+    /**
+     * 合同模板备注
+     */
+    remark?: string;
+    /**
+     * 创建人ID
+     */
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 修改人ID
+     */
+    updateBy?: string;
+    /**
+     * 修改时间
+     */
+    updateTime?: string;
 };
 
 /**
@@ -4615,189 +4804,6 @@ export type ResponseResultListLeaseBillListVo = {
     data?: Array<LeaseBillListVo>;
 };
 
-export type ContractTemplateStatusDto = {
-    /**
-     * 合同模板ID
-     */
-    id?: string;
-    /**
-     * 合同状态：0=未生效，1=生效中
-     */
-    status: number;
-    /**
-     * 修改人ID
-     */
-    updateBy?: string;
-    /**
-     * 修改时间
-     */
-    updateTime?: string;
-};
-
-export type ContractTemplateQueryDto = {
-    currentPage?: string;
-    pageSize?: string;
-    /**
-     * 合同模板 ID
-     */
-    id?: string;
-    /**
-     * 合同类型
-     */
-    contractType?: number;
-    /**
-     * 合同模板名称
-     */
-    templateName?: string;
-    /**
-     * 合同状态
-     */
-    status?: number;
-};
-
-export type PairStringString = {
-    key?: string;
-    value?: string;
-};
-
-export type ResponseResultListPairStringString = {
-    code?: number;
-    message?: string;
-    data?: Array<PairStringString>;
-};
-
-/**
- * 合同模板列表VO
- */
-export type ContractTemplateListVo = {
-    /**
-     * 合同模板ID
-     */
-    id?: string;
-    /**
-     * 公司ID
-     */
-    companyId?: string;
-    /**
-     * 合同模板类型：1=租客、2=业主、3=预定
-     */
-    contractType?: number;
-    /**
-     * 合同模板名称
-     */
-    templateName?: string;
-    /**
-     * 合同模板内容，包含模板变量占位符
-     */
-    templateContent?: string;
-    /**
-     * 生效部门json，格式：[1,2,3]
-     */
-    deptIds?: Array<string>;
-    /**
-     * 合同状态：0=未生效，1=生效中，-1=已作废
-     */
-    status?: number;
-    /**
-     * 合同模板备注
-     */
-    remark?: string;
-    /**
-     * 创建人ID
-     */
-    createBy?: string;
-    /**
-     * 创建时间
-     */
-    createTime?: string;
-    /**
-     * 修改人ID
-     */
-    updateBy?: string;
-    /**
-     * 修改时间
-     */
-    updateTime?: string;
-};
-
-export type ResponseResultListContractTemplateListVo = {
-    code?: number;
-    message?: string;
-    data?: Array<ContractTemplateListVo>;
-};
-
-export type PageVoContractTemplateListVo = {
-    currentPage?: string;
-    pageSize?: string;
-    total?: string;
-    pages?: string;
-    list?: Array<ContractTemplateListVo>;
-};
-
-export type ResponseResultPageVoContractTemplateListVo = {
-    code?: number;
-    message?: string;
-    data?: PageVoContractTemplateListVo;
-};
-
-export type ContractTemplateDeleteDto = {
-    /**
-     * 合同模板ID
-     */
-    id: string;
-};
-
-export type ContractTemplateCreateDto = {
-    /**
-     * 合同模板ID
-     */
-    id?: string;
-    /**
-     * 公司ID
-     */
-    companyId?: string;
-    /**
-     * 合同模板类型：1=租客、2=业主、3=预定
-     */
-    contractType: number;
-    /**
-     * 合同模板名称
-     */
-    templateName: string;
-    /**
-     * 合同模板内容，包含模板变量占位符
-     */
-    templateContent: string;
-    /**
-     * 生效部门json，格式：[1,2,3]
-     */
-    deptIds: Array<string>;
-    /**
-     * 合同状态：0=未生效，1=生效中
-     */
-    status?: number;
-    /**
-     * 合同模板备注
-     */
-    remark?: string;
-    /**
-     * 创建人ID
-     */
-    createBy?: string;
-    /**
-     * 创建时间
-     */
-    createTime?: string;
-    /**
-     * 修改人ID
-     */
-    updateBy?: string;
-    /**
-     * 修改时间
-     */
-    updateTime?: string;
-};
-
 /**
  * 预定查询参数
  */
@@ -5833,126 +5839,6 @@ export type GenerateResponses = {
 };
 
 export type GenerateResponse = GenerateResponses[keyof GenerateResponses];
-
-export type SubmitCheckoutData = {
-    body: LeaseCheckoutQueryDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/tenant/checkout/submit';
-};
-
-export type SubmitCheckoutResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultVoid;
-};
-
-export type SubmitCheckoutResponse = SubmitCheckoutResponses[keyof SubmitCheckoutResponses];
-
-export type SaveCheckoutData = {
-    body: LeaseCheckoutDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/tenant/checkout/save';
-};
-
-export type SaveCheckoutResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLong;
-};
-
-export type SaveCheckoutResponse = SaveCheckoutResponses[keyof SaveCheckoutResponses];
-
-export type QueryCheckoutListData = {
-    body: LeaseCheckoutQueryDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/tenant/checkout/list';
-};
-
-export type QueryCheckoutListResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultPageVoLeaseCheckoutVo;
-};
-
-export type QueryCheckoutListResponse = QueryCheckoutListResponses[keyof QueryCheckoutListResponses];
-
-export type GetCheckoutInitDataData = {
-    body: LeaseCheckoutQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/tenant/checkout/init';
-};
-
-export type GetCheckoutInitDataResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLeaseCheckoutInitVo;
-};
-
-export type GetCheckoutInitDataResponse = GetCheckoutInitDataResponses[keyof GetCheckoutInitDataResponses];
-
-export type GetCheckoutByTenantIdData = {
-    body: LeaseCheckoutQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/tenant/checkout/getByTenant';
-};
-
-export type GetCheckoutByTenantIdResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLeaseCheckoutVo;
-};
-
-export type GetCheckoutByTenantIdResponse = GetCheckoutByTenantIdResponses[keyof GetCheckoutByTenantIdResponses];
-
-export type GetCheckoutDetailData = {
-    body: LeaseCheckoutQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/tenant/checkout/detail';
-};
-
-export type GetCheckoutDetailResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLeaseCheckoutVo;
-};
-
-export type GetCheckoutDetailResponse = GetCheckoutDetailResponses[keyof GetCheckoutDetailResponses];
-
-export type CancelCheckoutData = {
-    body: LeaseCheckoutQueryDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/tenant/checkout/cancel';
-};
-
-export type CancelCheckoutResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultVoid;
-};
-
-export type CancelCheckoutResponse = CancelCheckoutResponses[keyof CancelCheckoutResponses];
 
 export type UnbindRoleCompanyUserData = {
     body: RoleUserUnbindDto;
@@ -7125,6 +7011,126 @@ export type GetCurrentUserResponses = {
 
 export type GetCurrentUserResponse = GetCurrentUserResponses[keyof GetCurrentUserResponses];
 
+export type SubmitCheckoutData = {
+    body: LeaseCheckoutQueryDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/lease/checkout/submit';
+};
+
+export type SubmitCheckoutResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultVoid;
+};
+
+export type SubmitCheckoutResponse = SubmitCheckoutResponses[keyof SubmitCheckoutResponses];
+
+export type SaveCheckoutData = {
+    body: LeaseCheckoutDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/lease/checkout/save';
+};
+
+export type SaveCheckoutResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type SaveCheckoutResponse = SaveCheckoutResponses[keyof SaveCheckoutResponses];
+
+export type QueryCheckoutListData = {
+    body: LeaseCheckoutQueryDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/lease/checkout/list';
+};
+
+export type QueryCheckoutListResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoLeaseCheckoutVo;
+};
+
+export type QueryCheckoutListResponse = QueryCheckoutListResponses[keyof QueryCheckoutListResponses];
+
+export type GetCheckoutInitDataData = {
+    body: LeaseCheckoutQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/lease/checkout/init';
+};
+
+export type GetCheckoutInitDataResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLeaseCheckoutInitVo;
+};
+
+export type GetCheckoutInitDataResponse = GetCheckoutInitDataResponses[keyof GetCheckoutInitDataResponses];
+
+export type GetCheckoutByLeaseIdData = {
+    body: LeaseCheckoutQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/lease/checkout/getByLease';
+};
+
+export type GetCheckoutByLeaseIdResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLeaseCheckoutVo;
+};
+
+export type GetCheckoutByLeaseIdResponse = GetCheckoutByLeaseIdResponses[keyof GetCheckoutByLeaseIdResponses];
+
+export type GetCheckoutDetailData = {
+    body: LeaseCheckoutQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/lease/checkout/detail';
+};
+
+export type GetCheckoutDetailResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLeaseCheckoutVo;
+};
+
+export type GetCheckoutDetailResponse = GetCheckoutDetailResponses[keyof GetCheckoutDetailResponses];
+
+export type CancelCheckoutData = {
+    body: LeaseCheckoutQueryDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/lease/checkout/cancel';
+};
+
+export type CancelCheckoutResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultVoid;
+};
+
+export type CancelCheckoutResponse = CancelCheckoutResponses[keyof CancelCheckoutResponses];
+
 export type GetHouseDetailData = {
     body: HouseIdDto;
     path?: never;
@@ -7301,240 +7307,6 @@ export type Create1Responses = {
 
 export type Create1Response = Create1Responses[keyof Create1Responses];
 
-export type UpdateTenantData = {
-    body: TenantCreateDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/contract/tenant/update';
-};
-
-export type UpdateTenantResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLong;
-};
-
-export type UpdateTenantResponse = UpdateTenantResponses[keyof UpdateTenantResponses];
-
-export type GetTenantTotalData = {
-    body: LeaseQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/tenant/total';
-};
-
-export type GetTenantTotalResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultTenantTotalVo;
-};
-
-export type GetTenantTotalResponse = GetTenantTotalResponses[keyof GetTenantTotalResponses];
-
-export type RenewLeaseData = {
-    body: TenantCreateDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/contract/tenant/renew';
-};
-
-export type RenewLeaseResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLong;
-};
-
-export type RenewLeaseResponse = RenewLeaseResponses[keyof RenewLeaseResponses];
-
-export type GetTenantListData = {
-    body: LeaseQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/tenant/list';
-};
-
-export type GetTenantListResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultPageVoLeaseListVo;
-};
-
-export type GetTenantListResponse = GetTenantListResponses[keyof GetTenantListResponses];
-
-export type GetTenantDetailData = {
-    body: LeaseQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/tenant/detail';
-};
-
-export type GetTenantDetailResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLeaseDetailVo;
-};
-
-export type GetTenantDetailResponse = GetTenantDetailResponses[keyof GetTenantDetailResponses];
-
-export type CreateTenantData = {
-    body: TenantCreateDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/contract/tenant/create';
-};
-
-export type CreateTenantResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLong;
-};
-
-export type CreateTenantResponse = CreateTenantResponses[keyof CreateTenantResponses];
-
-export type UpdateSignStatusData = {
-    body: LeaseContractSignStatusUpdateDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/tenant/contract/sign/status/update';
-};
-
-export type UpdateSignStatusResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultBoolean;
-};
-
-export type UpdateSignStatusResponse = UpdateSignStatusResponses[keyof UpdateSignStatusResponses];
-
-export type PreviewLeaseContractData = {
-    body: LeaseQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/tenant/contract/preview';
-};
-
-export type PreviewLeaseContractResponses = {
-    /**
-     * OK
-     */
-    200: string;
-};
-
-export type PreviewLeaseContractResponse = PreviewLeaseContractResponses[keyof PreviewLeaseContractResponses];
-
-export type Generate1Data = {
-    body: LeaseContractGenerateDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/tenant/contract/generate';
-};
-
-export type Generate1Responses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLeaseContractVo;
-};
-
-export type Generate1Response = Generate1Responses[keyof Generate1Responses];
-
-export type DownloadData = {
-    body: LeaseQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/tenant/contract/download';
-};
-
-export type DownloadResponses = {
-    /**
-     * OK
-     */
-    200: string;
-};
-
-export type DownloadResponse = DownloadResponses[keyof DownloadResponses];
-
-export type DeleteContractData = {
-    body: LeaseContractDeleteDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/tenant/contract/delete';
-};
-
-export type DeleteContractResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultBoolean;
-};
-
-export type DeleteContractResponse = DeleteContractResponses[keyof DeleteContractResponses];
-
-export type CancelTenantData = {
-    body: LeaseQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/tenant/cancel';
-};
-
-export type CancelTenantResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultInteger;
-};
-
-export type CancelTenantResponse = CancelTenantResponses[keyof CancelTenantResponses];
-
-export type GetBillListData = {
-    body: LeaseQueryDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/contract/tenant/bill/list';
-};
-
-export type GetBillListResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultListLeaseBillListVo;
-};
-
-export type GetBillListResponse = GetBillListResponses[keyof GetBillListResponses];
-
-export type GetBillInvalidListData = {
-    body: LeaseQueryDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/contract/tenant/bill/invalid/list';
-};
-
-export type GetBillInvalidListResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultListLeaseBillListVo;
-};
-
-export type GetBillInvalidListResponse = GetBillInvalidListResponses[keyof GetBillInvalidListResponses];
-
 export type UpdateContractTemplateStatusData = {
     body: ContractTemplateStatusDto;
     path?: never;
@@ -7647,21 +7419,255 @@ export type CreateContractTemplateResponses = {
 
 export type CreateContractTemplateResponse = CreateContractTemplateResponses[keyof CreateContractTemplateResponses];
 
-export type GetTenantTotal1Data = {
+export type UpdateLeaseData = {
+    body: TenantCreateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/update';
+};
+
+export type UpdateLeaseResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type UpdateLeaseResponse = UpdateLeaseResponses[keyof UpdateLeaseResponses];
+
+export type GetLeaseTotalData = {
+    body: LeaseQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/total';
+};
+
+export type GetLeaseTotalResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultTenantTotalVo;
+};
+
+export type GetLeaseTotalResponse = GetLeaseTotalResponses[keyof GetLeaseTotalResponses];
+
+export type RenewData = {
+    body: TenantCreateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/renew';
+};
+
+export type RenewResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type RenewResponse = RenewResponses[keyof RenewResponses];
+
+export type GetLeaseListData = {
+    body: LeaseQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/list';
+};
+
+export type GetLeaseListResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoLeaseListVo;
+};
+
+export type GetLeaseListResponse = GetLeaseListResponses[keyof GetLeaseListResponses];
+
+export type GetTenantDetailData = {
+    body: LeaseQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/detail';
+};
+
+export type GetTenantDetailResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLeaseDetailVo;
+};
+
+export type GetTenantDetailResponse = GetTenantDetailResponses[keyof GetTenantDetailResponses];
+
+export type CreateLeaseData = {
+    body: TenantCreateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/create';
+};
+
+export type CreateLeaseResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type CreateLeaseResponse = CreateLeaseResponses[keyof CreateLeaseResponses];
+
+export type UpdateSignStatusData = {
+    body: LeaseContractSignStatusUpdateDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/contract/sign/status/update';
+};
+
+export type UpdateSignStatusResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type UpdateSignStatusResponse = UpdateSignStatusResponses[keyof UpdateSignStatusResponses];
+
+export type PreviewLeaseContractData = {
+    body: LeaseQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/contract/preview';
+};
+
+export type PreviewLeaseContractResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type PreviewLeaseContractResponse = PreviewLeaseContractResponses[keyof PreviewLeaseContractResponses];
+
+export type Generate1Data = {
+    body: LeaseContractGenerateDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/contract/generate';
+};
+
+export type Generate1Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLeaseContractVo;
+};
+
+export type Generate1Response = Generate1Responses[keyof Generate1Responses];
+
+export type DownloadData = {
+    body: LeaseQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/contract/download';
+};
+
+export type DownloadResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type DownloadResponse = DownloadResponses[keyof DownloadResponses];
+
+export type DeleteContractData = {
+    body: LeaseContractDeleteDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/contract/delete';
+};
+
+export type DeleteContractResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type DeleteContractResponse = DeleteContractResponses[keyof DeleteContractResponses];
+
+export type CancelTenantData = {
+    body: LeaseQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/cancel';
+};
+
+export type CancelTenantResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultInteger;
+};
+
+export type CancelTenantResponse = CancelTenantResponses[keyof CancelTenantResponses];
+
+export type GetBillListData = {
+    body: LeaseQueryDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/bill/list';
+};
+
+export type GetBillListResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListLeaseBillListVo;
+};
+
+export type GetBillListResponse = GetBillListResponses[keyof GetBillListResponses];
+
+export type GetBillInvalidListData = {
+    body: LeaseQueryDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/bill/invalid/list';
+};
+
+export type GetBillInvalidListResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListLeaseBillListVo;
+};
+
+export type GetBillInvalidListResponse = GetBillInvalidListResponses[keyof GetBillInvalidListResponses];
+
+export type GetTenantTotalData = {
     body: BookingQueryDto;
     path?: never;
     query?: never;
     url: '/saas/contract/booking/total';
 };
 
-export type GetTenantTotal1Responses = {
+export type GetTenantTotalResponses = {
     /**
      * OK
      */
     200: ResponseResultBookingTotalVo;
 };
 
-export type GetTenantTotal1Response = GetTenantTotal1Responses[keyof GetTenantTotal1Responses];
+export type GetTenantTotalResponse = GetTenantTotalResponses[keyof GetTenantTotalResponses];
 
 export type GetBookingListData = {
     body: BookingQueryDto;

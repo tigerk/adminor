@@ -4,8 +4,8 @@ import { baseUrlApi } from "@/api/utils";
 import type { ApiResponse, LeaseCheckoutVo, LeaseCheckoutDto, LeaseCheckoutInitVo, LeaseCheckoutQueryDto } from "@/types";
 
 /** 获取退租初始化数据（合同信息+未付账单+预填费用） */
-export const getCheckoutInitData = (tenantId: string, leaseId?: string) => {
-  return http.request<ApiResponse<LeaseCheckoutInitVo>>("post", baseUrlApi("lease/checkout/init"), { data: { tenantId, leaseId } });
+export const getCheckoutInitData = (leaseId?: string) => {
+  return http.request<ApiResponse<LeaseCheckoutInitVo>>("post", baseUrlApi("lease/checkout/init"), { data: { leaseId } });
 };
 
 /** 保存退租单（退租并结账） */
@@ -29,8 +29,8 @@ export const getCheckoutDetail = (checkoutId: string) => {
 };
 
 /** 根据租客ID获取退租单 */
-export const getCheckoutByLeaseId = (tenantId: string, leaseId?: string) => {
-  return http.request<ApiResponse<LeaseCheckoutVo>>("post", baseUrlApi("lease/checkout/getByLease"), { data: { tenantId, leaseId } });
+export const getCheckoutByLeaseId = (leaseId?: string) => {
+  return http.request<ApiResponse<LeaseCheckoutVo>>("post", baseUrlApi("lease/checkout/getByLease"), { data: { leaseId } });
 };
 
 /** 查询退租单列表 */
