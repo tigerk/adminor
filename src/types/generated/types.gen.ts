@@ -2305,6 +2305,16 @@ export type RoomTotalVo = {
     statusList?: Array<RoomTotalItemVo>;
 };
 
+/**
+ * 房间备注记录DTO
+ */
+export type RoomSaveRemarkDto = {
+    /**
+     * 备注内容
+     */
+    remark?: string;
+};
+
 export type ResponseResultPriceConfigDto = {
     code?: number;
     message?: string;
@@ -6621,6 +6631,24 @@ export type ResetKeywordResponses = {
 };
 
 export type ResetKeywordResponse = ResetKeywordResponses[keyof ResetKeywordResponses];
+
+export type SaveRoomRemarkData = {
+    body: RoomSaveRemarkDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/room/remark/save';
+};
+
+export type SaveRoomRemarkResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type SaveRoomRemarkResponse = SaveRoomRemarkResponses[keyof SaveRoomRemarkResponses];
 
 export type SaveRoomPriceConfigData = {
     body: PriceConfigDto;

@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, PriceConfigDto, RoomGridDto, RoomIdDto, RoomListVo, RoomQueryDto, RoomTotalVo, RoomTrackDto } from "@/types";
+import type { ApiResponse, PaginationResponse, PriceConfigDto, RoomGridDto, RoomIdDto, RoomListVo, RoomQueryDto, RoomSaveRemarkDto, RoomTotalVo, RoomTrackDto } from "@/types";
 
 export const getRoomList = (data?: RoomQueryDto) => {
   return http.request<ApiResponse<PaginationResponse<RoomListVo>>>("post", baseUrlApi("room/list"), { data });
@@ -62,4 +62,15 @@ export const getRoomPriceConfig = (data?: RoomIdDto) => {
 
 export const addRoomTrack = (data?: RoomTrackDto) => {
   return http.request<ApiResponse<string>>("post", baseUrlApi("room/track/add"), { data });
+};
+
+/**
+ * 保存房间备注
+ * POST /saas/room/remark/save
+ *
+ * 入参: RoomSaveRemarkDto { roomId, remark }
+ * 出参: string
+ */
+export const addRoomRemark = (data?: RoomSaveRemarkDto) => {
+  return http.request<ApiResponse<string>>("post", baseUrlApi("room/remark/save"), { data });
 };
