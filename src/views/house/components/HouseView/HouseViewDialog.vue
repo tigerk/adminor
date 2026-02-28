@@ -1,9 +1,8 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from "vue";
-  import { BookingListVo, HouseDetailVo, LeaseLiteVo, PriceMethodEnum, RoomDetailVo, RoomTrackVo, type PriceConfigDto } from "@/types";
+  import { HouseDetailVo, LeaseLiteVo, PriceMethodEnum, RoomDetailVo, RoomTrackVo, type PriceConfigDto } from "@/types";
   import { ROOM_STATUS_ENUM } from "@/constants";
-  import { calcLeaseDuration } from "@/utils/house";
-  import { formatDate } from "@/utils/date";
+
   import { message } from "@/utils/message";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { addRoomTrack, getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
@@ -71,26 +70,6 @@
 
   // ── 房间状态 ──────────────────────────────────────────────
   const currentStatus = computed(() => getRoomStatus(currentRoom.value!));
-  const isLeased = computed(() => currentRoom.value?.roomStatus === ROOM_STATUS_ENUM.LEASED.code);
-  const isAvailable = computed(() => currentRoom.value?.roomStatus === ROOM_STATUS_ENUM.AVAILABLE.code);
-  const isBooked = computed(() => currentRoom.value?.roomStatus === ROOM_STATUS_ENUM.BOOKED.code);
-
-  // ── 租客 & 预定信息 ───────────────────────────────────────
-  const tenantInfo = computed(() => {
-    const li = currentRoom.value?.lease;
-    if (!li?.tenantName) return null;
-    return {
-      id: li.tenantId || "",
-      leaseId: li.leaseId || "",
-      name: li.tenantName,
-      phone: li.tenantPhone || "-",
-      rentPrice: li.rentPrice ?? currentRoom.value?.price ?? "-",
-      leaseStart: formatDate(li.leaseStart),
-      leaseEnd: formatDate(li.leaseEnd),
-      duration: calcLeaseDuration(li.leaseStart, li.leaseEnd)
-    };
-  });
-  const bookingInfo = computed<BookingListVo | null>(() => currentRoom.value?.booking ?? null);
 
   // ── 租金配置 ──────────────────────────────────────────────
   const { openPriceConfigDialog } = usePriceConfigEdit();
@@ -256,11 +235,6 @@
         <!-- 右侧：租客/预定/备注 -->
         <HvPanel
           :current-room="currentRoom"
-          :tenant-info="tenantInfo"
-          :booking-info="bookingInfo"
-          :is-leased="isLeased"
-          :is-available="isAvailable"
-          :is-booked="isBooked"
           @tenant="emit('tenant', $event)"
           @checkout="emit('checkout', $event)"
           @renew-lease="emit('renewLease', $event)"

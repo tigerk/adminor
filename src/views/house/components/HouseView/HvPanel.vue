@@ -1,27 +1,36 @@
 <script setup lang="ts">
-  import { ref, watch } from "vue";
+  import { ref, computed, watch } from "vue";
   import { ArrowRight, Calendar, Edit, User } from "@element-plus/icons-vue";
-  import { BookingListVo, LeaseLiteVo, RoomDetailVo } from "@/types";
+  import { LeaseLiteVo, RoomDetailVo } from "@/types";
+  import { ROOM_STATUS_ENUM } from "@/constants";
+  import { calcLeaseDuration } from "@/utils/house";
   import { formatDate } from "@/utils/date";
   import { message } from "@/utils/message";
 
   const props = defineProps<{
     currentRoom: RoomDetailVo | null;
-    tenantInfo: {
-      id: string;
-      leaseId: string;
-      name: string;
-      phone: string;
-      rentPrice: string | number;
-      leaseStart: string;
-      leaseEnd: string;
-      duration: string;
-    } | null;
-    bookingInfo: BookingListVo | null;
-    isLeased: boolean;
-    isAvailable: boolean;
-    isBooked: boolean;
   }>();
+
+  const isLeased = computed(() => props.currentRoom?.roomStatus === ROOM_STATUS_ENUM.LEASED.code);
+  const isAvailable = computed(() => props.currentRoom?.roomStatus === ROOM_STATUS_ENUM.AVAILABLE.code);
+  const isBooked = computed(() => props.currentRoom?.roomStatus === ROOM_STATUS_ENUM.BOOKED.code);
+
+  const tenantInfo = computed(() => {
+    const li = props.currentRoom?.lease;
+    if (!li?.tenantName) return null;
+    return {
+      tenantId: li.tenantId || "",
+      leaseId: li.leaseId || "",
+      name: li.tenantName,
+      phone: li.tenantPhone || "-",
+      rentPrice: li.rentPrice ?? props.currentRoom?.price ?? "-",
+      leaseStart: formatDate(li.leaseStart),
+      leaseEnd: formatDate(li.leaseEnd),
+      duration: calcLeaseDuration(li.leaseStart, li.leaseEnd)
+    };
+  });
+
+  const bookingInfo = computed(() => props.currentRoom?.booking ?? null);
 
   const emit = defineEmits<{
     tenant: [room: RoomDetailVo];
@@ -86,7 +95,7 @@
       </div>
       <div class="hv-pcard__body">
         <template v-if="tenantInfo">
-          <div class="hv-tenant" @click="emit('openTenantDetail', tenantInfo.name, tenantInfo.leaseId)">
+          <div class="hv-tenant" @click="emit('openTenantDetail', tenantInfo.tenantId, tenantInfo.leaseId)">
             <div class="hv-tenant__avatar">{{ tenantInfo.name.slice(0, 1) }}</div>
             <div class="hv-tenant__info">
               <div class="hv-tenant__name-row">
@@ -276,7 +285,7 @@
 
   .hv-tenant {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     padding: 10px;
     border-radius: var(--r-sm);
@@ -348,6 +357,7 @@
       gap: 4px;
       font-size: 11px;
       color: var(--t3);
+      white-space: nowrap;
     }
     &__arrow {
       color: var(--t3);

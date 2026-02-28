@@ -134,7 +134,7 @@ export const useHouseView = () => {
       return;
     }
     if (checkoutDialogRef?.open) {
-      checkoutDialogRef.open(room.id, room.lease.leaseId || "");
+      checkoutDialogRef.open(room.lease.tenantId || "", room.lease.leaseId || "");
     } else {
       message("退租组件未就绪，请稍后重试", { type: "warning" });
     }
