@@ -436,7 +436,7 @@
   // FIX: 移除不再使用的 CheckoutFeeProps，改用 CheckoutFeeFormItem / CheckoutDialogFormData
   import type { LeaseCheckoutVo, LeaseCheckoutInitVo } from "@/types";
   import type { CheckoutFeeFormItem, CheckoutDialogFormData } from "@/types/models/checkout";
-  import { getCheckoutByTenantId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
+  import { getCheckoutByLeaseId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import { getDictDataByParentCode } from "@/api/sys/dict";
   import UploadImage from "@/components/Business/UploadImage.vue";
@@ -781,7 +781,7 @@
     await loadConfirmationTemplates();
 
     try {
-      const existRes = await getCheckoutByTenantId(String(tenantId), leaseId ? String(leaseId) : undefined);
+      const existRes = await getCheckoutByLeaseId(String(tenantId), leaseId ? String(leaseId) : undefined);
       if (existRes.data?.id) {
         await loadCheckoutDetail(existRes.data);
       } else {

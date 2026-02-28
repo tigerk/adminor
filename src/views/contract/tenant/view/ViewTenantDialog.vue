@@ -366,7 +366,7 @@
   import { Document, Edit, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
-  import { getCheckoutByTenantId } from "@/api/contract/checkout";
+  import { getCheckoutByLeaseId } from "@/api/contract/checkout";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
@@ -414,7 +414,7 @@
     if (!tenantId) return;
     checkoutLoading.value = true;
     try {
-      const res = await getCheckoutByTenantId(tenantId, leaseId);
+      const res = await getCheckoutByLeaseId(tenantId, leaseId);
       if (res.code === 0) {
         checkoutDetail.value = res.data || null;
       } else {
