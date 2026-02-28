@@ -1,9 +1,10 @@
 <script setup lang="ts">
   import { type EventType, type ButtonProps, type DialogOptions, closeDialog, dialogStore } from "./index";
-  import { ref, computed } from "vue";
+  import { ref, computed, h } from "vue";
   import { isFunction } from "@pureadmin/utils";
   import Fullscreen from "~icons/ri/fullscreen-fill";
   import ExitFullscreen from "~icons/ri/fullscreen-exit-fill";
+  import { IconifyIconOffline } from "@/components/ReIcon";
 
   defineOptions({
     name: "ReDialog"
@@ -66,6 +67,10 @@
     return ["el-icon", "el-dialog__close", "-translate-x-2", "cursor-pointer", "hover:text-[red]!"];
   });
 
+  // 全屏图标组件，复用原有 Iconify 图标
+  const FullscreenIconComp = computed(() => h(IconifyIconOffline, { class: "pure-dialog-svg", icon: Fullscreen }));
+  const ExitFullscreenIconComp = computed(() => h(IconifyIconOffline, { class: "pure-dialog-svg", icon: ExitFullscreen }));
+
   function eventsCallBack(event: EventType, options: DialogOptions, index: number, isClickFullScreen = false) {
     if (!isClickFullScreen) fullscreen.value = options?.fullscreen ?? false;
     if (options?.[event] && isFunction(options?.[event])) {
@@ -94,11 +99,17 @@
   >
     <!-- header -->
     <template v-if="options?.fullscreenIcon || options?.headerRenderer" #header="{ close, titleId, titleClass }">
-      <div v-if="options?.fullscreenIcon" class="flex items-center justify-between">
-        <span :id="titleId" :class="titleClass">{{ options?.title }}</span>
-        <i
+      <!-- 全屏图标模式：改造为新样式 -->
+      <div v-if="options?.fullscreenIcon" class="dialog-header">
+        <div class="header-left">
+          <span :id="titleId" class="header-title">{{ options?.title }}</span>
+        </div>
+        <!-- 全屏切换按钮，保留原有功能，仅样式换成 el-button circle -->
+        <el-button
           v-if="!options?.fullscreen"
-          :class="fullscreenClass"
+          class="close-btn"
+          circle
+          size="small"
           @click="
             () => {
               fullscreen = !fullscreen;
@@ -107,11 +118,14 @@
           "
         >
           <IconifyIconOffline class="pure-dialog-svg" :icon="options?.fullscreen ? ExitFullscreen : fullscreen ? ExitFullscreen : Fullscreen" />
-        </i>
+        </el-button>
       </div>
+      <!-- 自定义 headerRenderer 模式，不改变 -->
       <component :is="options?.headerRenderer({ close, titleId, titleClass })" v-else />
     </template>
+
     <component v-bind="options?.props" :is="options.contentRenderer({ options, index })" @close="args => handleClose(options, index, args)" />
+
     <!-- footer -->
     <template v-if="!options?.hideFooter" #footer>
       <template v-if="options?.footerRenderer">
@@ -151,3 +165,31 @@
     </template>
   </el-dialog>
 </template>
+
+<style scoped>
+  /* ===== 改造后的 Dialog Header 样式 ===== */
+  .dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .close-btn {
+    border: none;
+    background: transparent;
+  }
+</style>
