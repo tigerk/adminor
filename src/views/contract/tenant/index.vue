@@ -80,7 +80,7 @@
         @page-current-change="handleCurrentChange"
       >
         <template #operation="{ row }">
-          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="openTenantViewDialog('查看租客', row)">查看</el-button>
+          <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="openTenantViewDialog('查看租客', { leaseId: row.leaseId })">查看</el-button>
           <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(Printer)" @click="handlePreview(row)">预览合同</el-button>
           <el-dropdown :hide-on-click="false" popper-class="action-dropdown">
             <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
@@ -128,7 +128,7 @@
   import EpRemove from "~icons/ep/remove";
   import More from "~icons/ep/more-filled";
   import { LeaseListVo, TenantsCreateFormProps } from "@/types";
-  import { cancelTenant, getTenantDetail, previewLeaseContract } from "@/api/contract/tenant";
+  import { cancelTenant, getLeaseDetail, previewLeaseContract } from "@/api/contract/tenant";
   import { message } from "@/utils/message";
   import { ElMessageBox } from "element-plus";
   import { hideLoading, showLoading } from "@/utils/yeah";

@@ -100,7 +100,7 @@
     if (!detail.value) return;
     const { bizType, bizId } = detail.value;
     if (APPROVAL_BIZ_TYPE_HELPER.isTenantCheckin(bizType)) {
-      openTenantViewDialog("查看", { id: bizId, tenantName: "" }, { readonly: true });
+      openTenantViewDialog("查看", { leaseId: bizId }, { readonly: true });
     } else if (APPROVAL_BIZ_TYPE_HELPER.isTenantCheckout(bizType)) {
       ElMessage.warning("退租详情功能开发中");
     } else if (APPROVAL_BIZ_TYPE_HELPER.isHouseCreate(bizType)) {

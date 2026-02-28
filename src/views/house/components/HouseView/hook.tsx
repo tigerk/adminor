@@ -91,9 +91,9 @@ export const useHouseView = () => {
             onViewContract: (r: RoomDetailVo) => {
               console.log("查看合同", r);
             },
-            onOpenTenantDetail: (tenantName: string, leaseId: string) => {
-              if (tenantName || leaseId) {
-                openTenantViewDialog("查看", { tenantName, leaseId });
+            onOpenTenantDetail: (leaseId: string) => {
+              if (leaseId) {
+                openTenantViewDialog("查看", { leaseId });
               }
             },
             onOpenBookingDetail: (bookingId: string) => {

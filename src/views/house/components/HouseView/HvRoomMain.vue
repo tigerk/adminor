@@ -126,7 +126,7 @@
               <em>{{ priceConfig?.floorPrice ?? "-" }}</em>
               <span class="hv-rh-price__unit">元/月</span>
             </span>
-            <button class="hv-rh-price__edit" @click="emit('openPriceConfig')">
+            <button class="hv-rh-price__edit" @click="() => emit('openPriceConfig')">
               <el-icon :size="10"><Edit /></el-icon>
               调价
             </button>
@@ -134,7 +134,7 @@
 
           <!-- 右侧操作按钮 -->
           <div class="hv-rh-actions">
-            <el-button size="small" type="primary" plain @click="emit('editHouse', detail)">修改房间</el-button>
+            <el-button size="small" type="primary" plain @click="() => emit('editHouse', detail)">修改房间</el-button>
             <el-button size="small" type="danger" plain @click="activeDetailTab = 'track'">添加跟进</el-button>
           </div>
         </div>
@@ -171,7 +171,7 @@
             <span class="hv-rh-col__val hv-rh-col__val--owner">
               {{ detail.salesman?.nickname || houseMeta.salesmanName || "-" }}
               <span v-if="detail.salesman?.phone" class="hv-rh-col__phone">({{ detail.salesman.phone }})</span>
-              <el-icon :size="10" style="cursor: pointer; color: var(--primary); margin-left: 3px" @click="emit('editHouse', detail)"><Edit /></el-icon>
+              <el-icon :size="10" style="cursor: pointer; color: var(--primary); margin-left: 3px" @click="() => emit('editHouse', detail)"><Edit /></el-icon>
             </span>
             <span class="hv-rh-col__lbl">{{ detail.deptName || houseMeta.deptId || "-" }} / 负责人</span>
           </div>
@@ -194,7 +194,7 @@
         <div class="hv-section">
           <div class="hv-section__hd">
             <span class="hv-section__title">基本信息</span>
-            <el-button size="small" link type="primary" @click="emit('editHouse', detail)">
+            <el-button size="small" link type="primary" @click="() => emit('editHouse', detail)">
               <el-icon><Edit /></el-icon>
               编辑
             </el-button>
@@ -279,7 +279,7 @@
         <div class="hv-section">
           <div class="hv-section__hd">
             <span class="hv-section__title">房源信息</span>
-            <el-button size="small" link type="primary" @click="emit('editHouse', detail)">
+            <el-button size="small" link type="primary" @click="() => emit('editHouse', detail)">
               <el-icon><Edit /></el-icon>
               编辑
             </el-button>
@@ -380,7 +380,7 @@
         <div class="hv-section">
           <div class="hv-section__hd">
             <span class="hv-section__title">租金明细</span>
-            <el-button size="small" link type="primary" @click="emit('openPriceConfig')">
+            <el-button size="small" link type="primary" @click="() => emit('openPriceConfig')">
               <el-icon><Edit /></el-icon>
               编辑配置
             </el-button>
@@ -426,7 +426,7 @@
         <div class="hv-section">
           <div class="hv-section__hd">
             <span class="hv-section__title">租金方案</span>
-            <el-button link size="small" type="primary" @click="emit('openPriceConfig')">查看 / 编辑</el-button>
+            <el-button link size="small" type="primary" @click="() => emit('openPriceConfig')">查看 / 编辑</el-button>
           </div>
           <template v-if="priceConfig?.pricePlans?.length">
             <div class="hv-plan-table">

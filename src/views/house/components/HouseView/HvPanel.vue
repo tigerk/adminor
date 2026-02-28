@@ -37,7 +37,7 @@
     checkout: [room: RoomDetailVo];
     renewLease: [lease: LeaseLiteVo];
     viewContract: [room: RoomDetailVo];
-    openTenantDetail: [tenantName: string, leaseId: string];
+    openTenantDetail: [leaseId: string];
     openBookingDetail: [bookingId: string];
     booking: [room: RoomDetailVo];
   }>();
@@ -95,7 +95,7 @@
       </div>
       <div class="hv-pcard__body">
         <template v-if="tenantInfo">
-          <div class="hv-tenant" @click="emit('openTenantDetail', tenantInfo.tenantId, tenantInfo.leaseId)">
+          <div class="hv-tenant" @click="() => emit('openTenantDetail', tenantInfo.leaseId)">
             <div class="hv-tenant__avatar">{{ tenantInfo.name.slice(0, 1) }}</div>
             <div class="hv-tenant__info">
               <div class="hv-tenant__name-row">
@@ -124,7 +124,7 @@
             </svg>
           </span>
           <span>暂无租客</span>
-          <el-button v-if="isAvailable" size="small" type="primary" plain @click="emit('tenant', currentRoom!)">立即录入</el-button>
+          <el-button v-if="isAvailable" size="small" type="primary" plain @click="() => emit('tenant', currentRoom!)">立即录入</el-button>
         </div>
       </div>
     </div>
@@ -137,7 +137,7 @@
         </div>
         <span class="hv-pcard__title">预定信息</span>
         <div v-if="isBooked" style="margin-left: auto">
-          <el-button size="small" type="primary" @click="emit('tenant', currentRoom!)">
+          <el-button size="small" type="primary" @click="() => emit('tenant', currentRoom!)">
             <el-icon><ArrowRight /></el-icon>
             转为租客
           </el-button>
@@ -145,7 +145,7 @@
       </div>
       <div class="hv-pcard__body">
         <template v-if="bookingInfo">
-          <div class="hv-booking" @click="emit('openBookingDetail', bookingInfo.id || '')">
+          <div class="hv-booking" @click="() => emit('openBookingDetail', bookingInfo.id || '')">
             <div class="hv-booking__name">{{ bookingInfo.tenantName || "-" }}</div>
             <div class="hv-booking__rows">
               <div class="hv-booking__row">
@@ -166,7 +166,7 @@
         <div v-else class="hv-panel-empty">
           <span class="hv-panel-empty__ico">📅</span>
           <span>暂无预定</span>
-          <el-button v-if="isAvailable" size="small" plain @click="emit('booking', currentRoom!)">添加预定</el-button>
+          <el-button v-if="isAvailable" size="small" plain @click="() => emit('booking', currentRoom!)">添加预定</el-button>
         </div>
       </div>
     </div>

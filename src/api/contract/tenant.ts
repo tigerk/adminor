@@ -38,7 +38,7 @@ export const updateTenantStatus = (data?: object) => {
 };
 
 /** 获取租客详情 */
-export const getTenantDetail = (data?: object) => {
+export const getLeaseDetail = (data?: object) => {
   return http.request<ApiResponse<LeaseDetailVo>>("post", baseUrlApi("contract/lease/detail"), { data });
 };
 

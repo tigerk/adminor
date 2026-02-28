@@ -209,8 +209,8 @@
         :is-share-rental="isShareRental"
         :room-stats="roomStats"
         :occupancy-rate="occupancyRate"
-        @update:active-room-index="activeRoomIndex = $event"
-        @edit-house="emit('editHouse', $event)"
+        @update:active-room-index="idx => (activeRoomIndex = idx)"
+        @edit-house="d => emit('editHouse', d)"
       />
 
       <div class="hv-layout">
@@ -227,21 +227,21 @@
           :tags-map="tagsMap"
           :facilities-map="facilitiesMap"
           :all-images="allImages"
-          @edit-house="emit('editHouse', $event)"
-          @open-price-config="handleOpenPriceConfig"
-          @add-track="handleAddTrack"
+          @edit-house="d => emit('editHouse', d)"
+          @open-price-config="() => handleOpenPriceConfig()"
+          @add-track="content => handleAddTrack(content)"
         />
 
         <!-- 右侧：租客/预定/备注 -->
         <HvPanel
           :current-room="currentRoom"
-          @tenant="emit('tenant', $event)"
-          @checkout="emit('checkout', $event)"
-          @renew-lease="emit('renewLease', $event)"
-          @view-contract="emit('viewContract', $event)"
-          @open-tenant-detail="emit('openTenantDetail', $event[0], $event[1])"
-          @open-booking-detail="emit('openBookingDetail', $event)"
-          @booking="emit('booking', $event)"
+          @tenant="r => emit('tenant', r)"
+          @checkout="r => emit('checkout', r)"
+          @renew-lease="lease => emit('renewLease', lease)"
+          @view-contract="r => emit('viewContract', r)"
+          @open-tenant-detail="leaseId => emit('openTenantDetail', leaseId)"
+          @open-booking-detail="bookingId => emit('openBookingDetail', bookingId)"
+          @booking="r => emit('booking', r)"
         />
       </div>
     </template>
@@ -251,7 +251,7 @@
       <div class="hv-empty__ico">🏚️</div>
       <p class="hv-empty__title">房源数据加载失败</p>
       <p class="hv-empty__sub">请关闭弹窗后重试</p>
-      <el-button type="primary" plain @click="emit('reload')">重新加载</el-button>
+      <el-button type="primary" plain @click="() => emit('reload')">重新加载</el-button>
     </div>
   </div>
 </template>

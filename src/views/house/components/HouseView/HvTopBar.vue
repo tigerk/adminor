@@ -35,7 +35,7 @@
         :key="room.id || idx"
         class="hv-troom"
         :class="[`hv-troom--${getRoomStatus(room).cls}`, { 'is-active': activeRoomIndex === idx }]"
-        @click="emit('update:activeRoomIndex', idx)"
+        @click="() => emit('update:activeRoomIndex', idx)"
       >
         <div class="hv-troom__left">
           <span class="hv-troom__num">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
@@ -59,7 +59,7 @@
         </div>
       </button>
 
-      <button v-if="isShareRental" class="hv-troom hv-troom--add" @click="emit('editHouse', detail)">
+      <button v-if="isShareRental" class="hv-troom hv-troom--add" @click="() => emit('editHouse', detail)">
         <el-icon :size="14"><Plus /></el-icon>
         <span>添加房间</span>
       </button>

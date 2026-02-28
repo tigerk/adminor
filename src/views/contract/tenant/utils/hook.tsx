@@ -4,7 +4,7 @@ import type { PaginationProps } from "@pureadmin/table";
 import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { createTenant, deleteTenant, getTenantDetail, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
+import { createTenant, deleteTenant, getLeaseDetail, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
 import { getOptionByCode, LEASE_CONTRACT_NATURE_ENUM, LEASE_SIGN_STATUS_OPTIONS, LEAST_STATUS_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
@@ -511,14 +511,14 @@ function useTenant() {
    */
   function openTenantViewDialog(
     title = "查看",
-    row?: LeaseListVo | any,
+    row?: { leaseId: string },
     options?: { readonly?: boolean; onContractSigned?: (leaseId: string) => void; onContractUpdated?: () => void }
   ) {
     // 设置 loading 状态为 true
     loading.value = true;
 
     // 从 API 获取租客详情
-    getTenantDetail({ leaseId: row.leaseId })
+    getLeaseDetail({ leaseId: row.leaseId })
       .then(resp => {
         loading.value = false;
 
@@ -526,7 +526,7 @@ function useTenant() {
           const tenantDetail = resp.data;
           // 合并 row 数据和 API 返回的详情数据
           addDialog({
-            title: `${title} ${row?.tenantName}`,
+            title: `${title} ${tenantDetail?.tenantName}`,
             props: {
               formInline: {
                 title,
@@ -587,7 +587,7 @@ function useTenant() {
       message("租约信息不完整，无法续约", { type: "warning" });
       return;
     }
-    getTenantDetail({ leaseId: row.leaseId })
+    getLeaseDetail({ leaseId: row.leaseId })
       .then(resp => {
         if (resp.code !== 0) {
           message(resp.message || "获取租约详情失败", { type: "error" });
