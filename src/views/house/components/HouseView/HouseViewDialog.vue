@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from "vue";
   import { BookingListVo, HouseDetailVo, LeaseLiteVo, PriceMethodEnum, RoomDetailVo, RoomTrackVo, type PriceConfigDto } from "@/types";
-  import { getOptionByCode, LEASE_MODE_OPTIONS, ROOM_STATUS_ENUM } from "@/constants";
-  import { calcLeaseDuration, getDecorationLabel, getDirectionLabel, getHouseLayoutName, getRentalTypeLabel } from "@/utils/house";
+  import { ROOM_STATUS_ENUM } from "@/constants";
+  import { calcLeaseDuration } from "@/utils/house";
   import { formatDate } from "@/utils/date";
   import { message } from "@/utils/message";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
@@ -35,28 +35,6 @@
 
   // ── 房源级信息 ────────────────────────────────────────────
   const isShareRental = computed(() => props.detail?.rentalType === 2);
-
-  const houseMeta = computed(() => {
-    const d = props.detail;
-    return {
-      layoutName: getHouseLayoutName(d?.houseLayout),
-      leaseModeName: getOptionByCode([...LEASE_MODE_OPTIONS], d?.leaseMode).label || "-",
-      rentalType: getRentalTypeLabel(d?.rentalType),
-      decoration: getDecorationLabel(d?.decorationType),
-      area: d?.area || "-",
-      floor: d?.floor || "-",
-      floorTotal: d?.floorTotal || "-",
-      hasElevator: d?.hasElevator ? "有" : "无",
-      hasGas: d?.hasGas ? "有" : "无",
-      water: d?.water || "-",
-      electricity: d?.electricity || "-",
-      propertyFee: d?.propertyFee ?? "-",
-      communityName: d?.community?.name ?? d?.houseName ?? "-",
-      salesmanName: d?.salesmanName || "-",
-      deptId: d?.deptId || "-",
-      houseRemark: d?.remark || ""
-    };
-  });
 
   // ── 房间列表 & 选中 ───────────────────────────────────────
   const roomTabs = computed<RoomDetailVo[]>(() => props.detail?.roomList ?? []);
@@ -113,19 +91,6 @@
     };
   });
   const bookingInfo = computed<BookingListVo | null>(() => currentRoom.value?.booking ?? null);
-
-  // ── 房间详情 ──────────────────────────────────────────────
-  const roomDetail = computed(() => {
-    const r = currentRoom.value;
-    return {
-      roomNumber: r?.roomNumber || "-",
-      direction: getDirectionLabel(r?.direction),
-      innerArea: r?.area ? `${r.area} m²` : "-",
-      floorInfo: `第 ${houseMeta.value.floor} 层 / 共 ${houseMeta.value.floorTotal} 层`,
-      firstAvailDate: r?.availableDate || "-",
-      vacancyStart: r?.vacancyStartTime || "-"
-    };
-  });
 
   // ── 租金配置 ──────────────────────────────────────────────
   const { openPriceConfigDialog } = usePriceConfigEdit();
@@ -279,11 +244,9 @@
           :price-config="priceConfig"
           :track-records="trackRecords"
           :track-loading="trackLoading"
-          :salesman-name="houseMeta.salesmanName"
-          :room-detail="roomDetail"
+          :salesman-name="detail.salesman?.nickname || detail.salesmanName || '-'"
           :tags-map="tagsMap"
           :facilities-map="facilitiesMap"
-          :house-meta="houseMeta"
           :all-images="allImages"
           @edit-house="emit('editHouse', $event)"
           @open-price-config="handleOpenPriceConfig"

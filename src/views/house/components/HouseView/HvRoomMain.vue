@@ -2,8 +2,8 @@
   import { ref, computed } from "vue";
   import { Edit, House, Location, View } from "@element-plus/icons-vue";
   import { HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo } from "@/types";
-  import { getRoomStatus, payMethodLabel, getWaterTypeLabel, getElectricityTypeLabel } from "@/utils/house";
-  import { getOptionNameByCode, ROOM_TYPE_OPTIONS } from "@/constants";
+  import { payMethodLabel, getWaterTypeLabel, getElectricityTypeLabel, getDecorationLabel, getDirectionLabel, getHouseLayoutName, getRentalTypeLabel } from "@/utils/house";
+  import { getOptionNameByCode, ROOM_TYPE_OPTIONS, getOptionByCode, LEASE_MODE_OPTIONS } from "@/constants";
 
   const props = defineProps<{
     detail: HouseDetailVo;
@@ -14,40 +14,49 @@
     trackRecords: RoomTrackVo[];
     trackLoading: boolean;
     salesmanName: string;
-    roomDetail: {
-      roomNumber: string;
-      direction: string;
-      innerArea: string;
-      floorInfo: string;
-      firstAvailDate: string;
-      vacancyStart: string;
-    };
     /** house_tags 字典：value/id → label */
     tagsMap?: Record<string, string>;
     /** house_facilities 字典：value → label */
     facilitiesMap?: Record<string, string>;
-    /** 房源基本信息（来自原 HvAside） */
-    houseMeta: {
-      layoutName: string;
-      leaseModeName: string;
-      rentalType: string;
-      decoration: string;
-      area: string | number;
-      floor: string | number;
-      floorTotal: string | number;
-      hasElevator: string;
-      hasGas: string;
-      water: string;
-      electricity: string;
-      propertyFee: string | number;
-      communityName: string;
-      salesmanName: string;
-      deptId: string | number;
-      houseRemark: string;
-    };
     /** 房源/房间图片列表 */
     allImages: string[];
   }>();
+
+  /** 由 detail 派生的房源基本信息 */
+  const houseMeta = computed(() => {
+    const d = props.detail;
+    return {
+      layoutName: getHouseLayoutName(d?.houseLayout),
+      leaseModeName: getOptionByCode([...LEASE_MODE_OPTIONS], d?.leaseMode).label || "-",
+      rentalType: getRentalTypeLabel(d?.rentalType),
+      decoration: getDecorationLabel(d?.decorationType),
+      area: d?.area || "-",
+      floor: d?.floor || "-",
+      floorTotal: d?.floorTotal || "-",
+      hasElevator: d?.hasElevator ? "有" : "无",
+      hasGas: d?.hasGas ? "有" : "无",
+      water: d?.water || "-",
+      electricity: d?.electricity || "-",
+      propertyFee: d?.propertyFee ?? "-",
+      communityName: d?.community?.name ?? d?.houseName ?? "-",
+      salesmanName: d?.salesmanName || "-",
+      deptId: d?.deptId || "-",
+      houseRemark: d?.remark || ""
+    };
+  });
+
+  /** 由 currentRoom 派生的房间详情 */
+  const roomDetail = computed(() => {
+    const r = props.currentRoom;
+    return {
+      roomNumber: r?.roomNumber || "-",
+      direction: getDirectionLabel(r?.direction),
+      innerArea: r?.area ? `${r.area} m²` : "-",
+      floorInfo: `第 ${houseMeta.value.floor} 层 / 共 ${houseMeta.value.floorTotal} 层`,
+      firstAvailDate: r?.availableDate || "-",
+      vacancyStart: r?.vacancyStartTime || "-"
+    };
+  });
 
   const emit = defineEmits<{
     editHouse: [detail: HouseDetailVo];
