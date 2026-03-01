@@ -99,6 +99,24 @@
           </el-form-item>
         </el-col>
       </el-row>
+      <!-- 快速租期选项 -->
+      <el-row :gutter="20">
+        <el-col :span="16">
+          <div class="quick-lease-options">
+            <span class="quick-label">快捷方式</span>
+            <el-button
+              v-for="option in quickLeaseOptions"
+              :key="option.months"
+              size="small"
+              :type="activeQuickOption === option.months ? 'primary' : 'default'"
+              round
+              @click="applyQuickLease(option.months)"
+            >
+              {{ option.label }}
+            </el-button>
+          </div>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 备注信息 -->
@@ -115,12 +133,13 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from "vue";
+  import { computed, onMounted, reactive, ref, watch } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
   import type { BookingCreateDto, RoomListVo } from "@/types";
   import { getOptionByCode, RENTAL_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import RoomPicker from "@/components/Business/RoomPicker.vue";
   import { Plus } from "@element-plus/icons-vue";
+  import { formatDate } from "@/utils/date";
 
   interface BookingCreateProps extends BookingCreateDto {
     roomList: RoomListVo[];
@@ -218,6 +237,51 @@
     }
   };
 
+  // 快速租期选项
+  const quickLeaseOptions = [
+    { label: "3 个月", months: 3 },
+    { label: "6 个月", months: 6 },
+    { label: "12 个月", months: 12 }
+  ];
+
+  // 当前激活的快速选项（用于高亮）
+  const activeQuickOption = ref<number | null>(null);
+
+  // 点击快速租期
+  const applyQuickLease = (months: number) => {
+    // 开始时间：明天
+    const start = new Date();
+    start.setDate(start.getDate() + 1);
+    start.setHours(0, 0, 0, 0);
+
+    // 结束时间：开始时间往后加 N 个月，再减一天（整租期）
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + months);
+    end.setDate(end.getDate() - 1);
+
+    formInline.expectedLeaseStart = formatDate(start);
+    formInline.expectedLeaseEnd = formatDate(end);
+    activeQuickOption.value = months;
+  };
+
+  // 手动修改日期时取消快速选项高亮
+  watch(
+    () => [formInline.expectedLeaseStart, formInline.expectedLeaseEnd],
+    () => {
+      if (activeQuickOption.value === null) return;
+      // 重新计算当前快速选项对应的结束日期，若不匹配则取消高亮
+      const option = quickLeaseOptions.find(o => o.months === activeQuickOption.value);
+      if (!option) return;
+      const start = new Date(formInline.expectedLeaseStart + "T00:00:00");
+      const expectedEnd = new Date(start);
+      expectedEnd.setMonth(expectedEnd.getMonth() + option.months);
+      expectedEnd.setDate(expectedEnd.getDate() - 1);
+      if (formInline.expectedLeaseEnd !== formatDate(expectedEnd) || formInline.expectedLeaseStart !== formatDate(start)) {
+        activeQuickOption.value = null;
+      }
+    }
+  );
+
   const getRef = () => {
     return ruleFormRef.value;
   };
@@ -245,6 +309,7 @@
   :deep(.el-form-item__label) {
     font-weight: 500;
   }
+
   /* 修复 type="number" 时 prefix 插槽间距异常 */
   :deep(.el-input__prefix) {
     .el-input__prefix-inner {
@@ -259,6 +324,21 @@
     &::-webkit-inner-spin-button {
       -webkit-appearance: none;
       margin: 0;
+    }
+  }
+
+  .quick-lease-options {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: -8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+
+    .quick-label {
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+      white-space: nowrap;
     }
   }
 </style>
