@@ -3,8 +3,7 @@ import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
-import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
-import { BookingListVo, type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo, type RoomTrackVo } from "@/types";
+import { type BookingListVo, type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
 import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
@@ -18,22 +17,6 @@ import { ROOM_STATUS_ENUM } from "@/constants";
 export interface HouseViewState {
   loading: boolean;
   detail: HouseDetailVo | null;
-}
-
-/**
- * 生成本地跟进记录（提交成功后即时插入，无需整体 reload）
- */
-export function buildLocalTrackRecord(roomId: string, content: string, operatorName: string): RoomTrackVo {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const timeStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-  return {
-    id: String(Date.now()),
-    roomId,
-    trackContent: content,
-    createTime: timeStr,
-    updateByName: operatorName
-  };
 }
 
 export const useHouseView = () => {
@@ -71,10 +54,6 @@ export const useHouseView = () => {
             detail: state.detail,
             onBooking: (r: RoomDetailVo) => {
               openBookingDialog("添加", { roomIds: [room.roomId] }, () => {
-                const state = reactive<HouseViewState>({
-                  loading: true,
-                  detail: null
-                });
                 loadDetail(state, room?.houseId).catch(() => message("退租操作完成", { type: "success" }));
               });
             },
@@ -94,7 +73,7 @@ export const useHouseView = () => {
               handleEditHouse(d);
             },
             onCheckout: (r: RoomDetailVo) => {
-              handleOpenCheckout(r);
+              handleOpenCheckout(state, r);
             },
             onViewContract: (r: RoomDetailVo) => {
               console.log("查看合同", r);
@@ -126,17 +105,13 @@ export const useHouseView = () => {
   /**
    * 退租 → CheckoutDialog.open(roomId, leaseId)
    */
-  function handleOpenCheckout(room: RoomDetailVo) {
+  function handleOpenCheckout(state: HouseViewState, room: RoomDetailVo) {
     if (!room.lease) {
       message("当前房间没有在租租客", { type: "warning" });
       return;
     }
 
     openLeaseCheckoutDialog(room.lease, () => {
-      const state = reactive<HouseViewState>({
-        loading: true,
-        detail: null
-      });
       loadDetail(state, room?.houseId).catch(() => message("退租操作完成", { type: "success" }));
     });
   }
@@ -179,15 +154,6 @@ export const useHouseView = () => {
   }
 
   /**
-   * 创建 reactive 状态（供 Tab 页复用）并触发加载
-   */
-  function createDetail(room: RoomListVo): HouseViewState {
-    const state = reactive<HouseViewState>({ loading: true, detail: null });
-    loadDetail(state, room.houseId).catch(() => undefined);
-    return state;
-  }
-
-  /**
    * 编辑房源：根据 leaseMode + rentalType 跳转对应编辑页
    *   leaseMode=1               → 集中式项目编辑
    *   leaseMode=2, rentalType=1 → 分散式-整租编辑
@@ -219,8 +185,6 @@ export const useHouseView = () => {
   }
 
   return {
-    openHouseViewDialog,
-    loadDetail,
-    createDetail
+    openHouseViewDialog
   };
 };

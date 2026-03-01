@@ -245,4 +245,20 @@
   :deep(.el-form-item__label) {
     font-weight: 500;
   }
+  /* 修复 type="number" 时 prefix 插槽间距异常 */
+  :deep(.el-input__prefix) {
+    .el-input__prefix-inner {
+      padding-right: 8px;
+    }
+  }
+
+  /* 去除 number 类型输入框的原生 spin 按钮（可选，更美观） */
+  :deep(input[type="number"]) {
+    -moz-appearance: textfield;
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
 </style>
