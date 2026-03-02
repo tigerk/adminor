@@ -1,6 +1,6 @@
 import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, RENTAL_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
 import type { HouseLayoutDto, RoomListVo } from "@/types";
-import { ROOM_STATUS_ENUM } from "@/constants";
+import { OCCUPANCY_STATUS_ENUM } from "@/constants";
 import type { RoomDetailVo } from "@/types";
 
 /**
@@ -76,7 +76,7 @@ export const calcLeaseDuration = (start?: Date | string, end?: Date | string) =>
  * @param room
  */
 export const getRoomStatus = (room: RoomDetailVo) => {
-  const entry = Object.entries(ROOM_STATUS_ENUM).find(([, s]) => s.code === room.roomStatus);
+  const entry = Object.entries(OCCUPANCY_STATUS_ENUM).find(([, s]) => s.code === room.roomStatus);
   if (!entry) return { text: "-", cls: "locked", color: "#8C8C8C" };
   const [key, s] = entry;
   // key: "AVAILABLE" → cls: "available"

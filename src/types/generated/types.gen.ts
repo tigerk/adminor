@@ -1904,15 +1904,15 @@ export type RoomListVo = {
     /**
      * 房间状态
      */
-    roomStatus?: number;
+    occupancyStatus?: number;
     /**
-     * 房间状态，参考：RoomStatusEnum
+     * 房间状态，参考：OccupancyStatusEnum
      */
-    roomStatusName?: string;
+    occupancyStatusName?: string;
     /**
-     * 房间状态颜色，参考：RoomStatusEnum
+     * 房间状态颜色，参考：OccupancyStatusEnum
      */
-    roomStatusColor?: string;
+    occupancyStatusColor?: string;
     /**
      * 锁定状态
      */
@@ -2182,12 +2182,6 @@ export type RoomIdDto = {
     roomId?: string;
 };
 
-export type ResponseResultInteger = {
-    code?: number;
-    message?: string;
-    data?: number;
-};
-
 /**
  * 房间跟进记录DTO
  */
@@ -2234,7 +2228,7 @@ export type RoomAggregatedVo = {
 };
 
 /**
- * 集中式房源创建DTO
+ * 房间查询DTO
  */
 export type RoomQueryDto = {
     currentPage?: string;
@@ -2256,7 +2250,7 @@ export type RoomQueryDto = {
      */
     spatialQuery?: Array<RoomAggregatedVo>;
     /**
-     * 房源租赁类型：1、集中式；2、分散式
+     * 房源租赁类型：1=集中式，2=分散式
      */
     leaseMode?: number;
     /**
@@ -2268,9 +2262,17 @@ export type RoomQueryDto = {
      */
     keywords?: string;
     /**
-     * 房间状态
+     * 出租占用状态：0=空置，1=已租，2=已预定，3=配置中。locked=true 或 closed=true 时此字段无效
      */
     roomStatus?: number;
+    /**
+     * 管理锁定状态：true=只查锁定房间。与 roomStatus 互斥，locked=true 时忽略 roomStatus
+     */
+    locked?: boolean;
+    /**
+     * 关闭状态：true=只查已关闭房间。优先级高于 locked 和 roomStatus
+     */
+    closed?: boolean;
 };
 
 export type ResponseResultRoomTotalVo = {
@@ -2280,25 +2282,18 @@ export type ResponseResultRoomTotalVo = {
 };
 
 export type RoomTotalItemVo = {
-    /**
-     * 房间状态
-     */
-    roomStatus?: number;
-    /**
-     * 房间状态，参考：RoomStatusEnum
-     */
     roomStatusName?: string;
-    /**
-     * 房间状态颜色，参考：RoomStatusEnum
-     */
     roomStatusColor?: string;
-    /**
-     * 数量
-     */
     total?: number;
+    /**
+     * 0：按业务状态筛选；1：按锁定状态筛选；2：按关闭状态筛选
+     */
+    filterType?: number;
+    roomStatus?: number;
 };
 
 export type RoomTotalVo = {
+    total?: number;
     /**
      * 房间状态统计
      */
@@ -4812,6 +4807,12 @@ export type LeaseContractDeleteDto = {
     leaseContractId?: string;
 };
 
+export type ResponseResultInteger = {
+    code?: number;
+    message?: string;
+    data?: number;
+};
+
 export type ResponseResultListLeaseBillListVo = {
     code?: number;
     message?: string;
@@ -6581,7 +6582,7 @@ export type UnlockRoomResponses = {
     /**
      * OK
      */
-    200: ResponseResultInteger;
+    200: ResponseResultBoolean;
 };
 
 export type UnlockRoomResponse = UnlockRoomResponses[keyof UnlockRoomResponses];
@@ -6699,7 +6700,7 @@ export type OpenRoomResponses = {
     /**
      * OK
      */
-    200: ResponseResultInteger;
+    200: ResponseResultBoolean;
 };
 
 export type OpenRoomResponse = OpenRoomResponses[keyof OpenRoomResponses];
@@ -6715,7 +6716,7 @@ export type LockRoomResponses = {
     /**
      * OK
      */
-    200: ResponseResultInteger;
+    200: ResponseResultBoolean;
 };
 
 export type LockRoomResponse = LockRoomResponses[keyof LockRoomResponses];
@@ -6763,7 +6764,7 @@ export type CloseRoomResponses = {
     /**
      * OK
      */
-    200: ResponseResultInteger;
+    200: ResponseResultBoolean;
 };
 
 export type CloseRoomResponse = CloseRoomResponses[keyof CloseRoomResponses];

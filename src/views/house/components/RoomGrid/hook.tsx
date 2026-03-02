@@ -10,7 +10,7 @@ import { useHouseView } from "@/views/house/components/HouseView/hook";
 import type { HouseDetailVo, RoomCreateDto, RoomGridItemVo, RoomGridDto, RoomListVo, ScatterCreateDto, ScatterHouseDto } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
-import { ROOM_STATUS_ENUM } from "@/constants";
+import { OCCUPANCY_STATUS_ENUM } from "@/constants";
 import { message } from "@/utils/message";
 
 // ==================== Hook 特有的类型定义 ====================
@@ -275,9 +275,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     switch (action) {
       case "booking":
         openBookingDialog("添加", { roomIds: [room.roomId], roomList: [room] }, () => {
-          room.roomStatus = ROOM_STATUS_ENUM.BOOKED.code;
-          room.roomStatusName = ROOM_STATUS_ENUM.BOOKED.name;
-          room.roomStatusColor = ROOM_STATUS_ENUM.BOOKED.color;
+          room.roomStatus = OCCUPANCY_STATUS_ENUM.BOOKED.code;
+          room.roomStatusName = OCCUPANCY_STATUS_ENUM.BOOKED.name;
+          room.roomStatusColor = OCCUPANCY_STATUS_ENUM.BOOKED.color;
         });
         break;
       case "tenant":
@@ -292,9 +292,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
             otherFees: undefined
           },
           () => {
-            room.roomStatus = ROOM_STATUS_ENUM.LEASED.code;
-            room.roomStatusName = ROOM_STATUS_ENUM.LEASED.name;
-            room.roomStatusColor = ROOM_STATUS_ENUM.LEASED.color;
+            room.roomStatus = OCCUPANCY_STATUS_ENUM.LEASED.code;
+            room.roomStatusName = OCCUPANCY_STATUS_ENUM.LEASED.name;
+            room.roomStatusColor = OCCUPANCY_STATUS_ENUM.LEASED.color;
           }
         );
         ElMessage.success(`准备为房间 ${room.roomNumber} 签约`);

@@ -25,8 +25,8 @@ export const ROOM_STATUS_OPTIONS = [
 ] as const;
 
 /* 房间状态枚举 */
-export const ROOM_STATUS_ENUM = {
-  AVAILABLE: {
+export const OCCUPANCY_STATUS_ENUM = {
+  VACANT: {
     code: 0,
     name: "空置",
     color: "#FF2800"
@@ -45,16 +45,6 @@ export const ROOM_STATUS_ENUM = {
     code: 3,
     name: "配置中",
     color: "#4B50AD"
-  },
-  CLOSED: {
-    code: 4,
-    name: "已关闭",
-    color: "#DBDBDB"
-  },
-  LOCKED: {
-    code: 5,
-    name: "锁房",
-    color: "#8C8C8C"
   }
 } as const;
 
