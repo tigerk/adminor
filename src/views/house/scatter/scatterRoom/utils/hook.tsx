@@ -21,7 +21,7 @@ export function useScatterRoom() {
     leaseModeId: null,
     leaseMode: 2, // 整/合租
     // 三个独立维度，初始全部为空（表示"全部"）
-    roomStatus: undefined,
+    occupancyStatus: undefined,
     locked: undefined,
     closed: undefined,
     pageSize: "15",
@@ -166,7 +166,7 @@ export function useScatterRoom() {
    */
   function handleStatusClick(item: RoomTotalItemVo & { filterType?: number; roomStatus?: number }) {
     // 先清空三个维度
-    queryForm.roomStatus = undefined;
+    queryForm.occupancyStatus = undefined;
     queryForm.locked = undefined;
     queryForm.closed = undefined;
 
@@ -175,7 +175,7 @@ export function useScatterRoom() {
       activeStatusKey.value = "all";
     } else if (item.filterType === FILTER_TYPE.BY_STATUS) {
       // 按出租占用状态
-      queryForm.roomStatus = item.roomStatus ?? undefined;
+      queryForm.occupancyStatus = item.roomStatus ?? undefined;
       activeStatusKey.value = `status-${item.roomStatus}`;
     } else if (item.filterType === FILTER_TYPE.BY_LOCKED) {
       // 锁房
@@ -189,7 +189,7 @@ export function useScatterRoom() {
 
     // 回到第一页后重新查询
     pagination.currentPage = 1;
-    onSearch();
+    onSearch().then();
   }
 
   /**
@@ -213,17 +213,17 @@ export function useScatterRoom() {
 
   function handleDelete(row: any) {
     message(`您删除了角色名称为${row.name}的这条数据`, { type: "success" });
-    onSearch();
+    onSearch().then();
   }
 
   function handleSizeChange(val: number) {
     pagination.pageSize = val;
-    onSearch();
+    onSearch().then();
   }
 
   function handleCurrentChange(val: number) {
     pagination.currentPage = val;
-    onSearch();
+    onSearch().then();
   }
 
   async function onSearch() {
@@ -260,11 +260,11 @@ export function useScatterRoom() {
     if (!formEl) return;
     formEl.resetFields();
     // 重置时也清空状态筛选
-    queryForm.roomStatus = undefined;
+    queryForm.occupancyStatus = undefined;
     queryForm.locked = undefined;
     queryForm.closed = undefined;
     activeStatusKey.value = "all";
-    onSearch();
+    onSearch().then();
   };
 
   function rowStyle({ row: { id } }) {
@@ -279,7 +279,7 @@ export function useScatterRoom() {
   };
 
   onMounted(async () => {
-    onSearch();
+    onSearch().then();
     onFocusOptions();
   });
 

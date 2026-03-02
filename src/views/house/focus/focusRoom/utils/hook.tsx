@@ -21,7 +21,7 @@ export function userFocusRoom() {
     leaseModeId: null,
     leaseMode: 1, // 集中式
     // 三个独立维度，初始全部为空（表示"全部"）
-    roomStatus: undefined,
+    occupancyStatus: undefined,
     locked: undefined,
     closed: undefined,
     pageSize: "15",
@@ -149,7 +149,7 @@ export function userFocusRoom() {
    */
   function handleStatusClick(item: RoomTotalItemVo & { filterType?: number; roomStatus?: number }) {
     // 先清空三个维度
-    queryForm.roomStatus = undefined;
+    queryForm.occupancyStatus = undefined;
     queryForm.locked = undefined;
     queryForm.closed = undefined;
 
@@ -158,7 +158,7 @@ export function userFocusRoom() {
       activeStatusKey.value = "all";
     } else if (item.filterType === FILTER_TYPE.BY_STATUS) {
       // 按出租占用状态
-      queryForm.roomStatus = item.roomStatus ?? undefined;
+      queryForm.occupancyStatus = item.roomStatus ?? undefined;
       activeStatusKey.value = `status-${item.roomStatus}`;
     } else if (item.filterType === FILTER_TYPE.BY_LOCKED) {
       // 锁房
@@ -172,7 +172,7 @@ export function userFocusRoom() {
 
     // 回到第一页后重新查询
     pagination.currentPage = 1;
-    onSearch();
+    onSearch().then();
   }
 
   /**
@@ -243,7 +243,7 @@ export function userFocusRoom() {
     if (!formEl) return;
     formEl.resetFields();
     // 重置时也清空状态筛选
-    queryForm.roomStatus = undefined;
+    queryForm.occupancyStatus = undefined;
     queryForm.locked = undefined;
     queryForm.closed = undefined;
     activeStatusKey.value = "all";
