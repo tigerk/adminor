@@ -26,6 +26,9 @@
     handleCurrentChange,
     focusOptions,
     roomStatusTotal,
+    activeStatusKey,
+    handleStatusClick,
+    isStatusActive,
     displayModeToList,
     displayModeText,
     handleDisplayClick
@@ -37,7 +40,6 @@
   const treeHeight = ref();
   const tableSize = ref("default");
 
-  // 初始化加载
   onMounted(() => {
     useResizeObserver(contentRef, async () => {
       await nextTick();
@@ -46,8 +48,6 @@
       });
     });
   });
-
-  const statusRadio = ref("all");
 </script>
 
 <template>
@@ -82,24 +82,36 @@
         </el-dropdown>
       </el-col>
     </el-row>
+
     <el-row class="search-form bg-bg_color w-full px-4 overflow-auto">
       <el-col :span="18">
         <div class="grid-content ep-bg-purple" style="align-items: flex-start">
           <el-space>
             <el-form-item>
-              <el-radio-group v-model="queryForm.roomStatus" @change="onSearch">
-                <el-radio-button
+              <!--
+                状态栏改为手动点击分发，不再用 v-model 绑定 queryForm.roomStatus。
+                原因：锁房(BY_LOCKED) 和 已关闭(BY_CLOSED) 不是 roomStatus 的枚举值，
+                而是独立的 locked / closed 字段，无法通过单一 v-model 表达。
+                后端 filterType 决定用哪个字段查询：
+                  0 = BY_STATUS  → queryForm.roomStatus
+                  1 = BY_LOCKED  → queryForm.locked = true
+                  2 = BY_CLOSED  → queryForm.closed = true
+              -->
+              <div class="status-bar">
+                <button
                   v-for="item in roomStatusTotal"
-                  :key="item.roomStatus"
-                  :value="item.roomStatus"
-                  :class="['room-status-button', `status-${item.roomStatus || 'all'}`]"
+                  :key="item.filterType !== undefined ? `${item.filterType}-${item.roomStatus}` : 'all'"
+                  type="button"
+                  class="status-btn"
+                  :class="{ 'is-active': isStatusActive(item) }"
+                  @click="handleStatusClick(item)"
                 >
                   <span class="status-content">
-                    <span class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
+                    <span v-if="item.roomStatusColor" class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
                     {{ item.roomStatusName }}（{{ item.total }}）
                   </span>
-                </el-radio-button>
-              </el-radio-group>
+                </button>
+              </div>
             </el-form-item>
           </el-space>
         </div>
@@ -112,7 +124,8 @@
         </el-input>
       </el-col>
     </el-row>
-    <!--项目列表-->
+
+    <!-- 列表模式 -->
     <el-row v-if="displayModeToList" class="bg-bg_color w-full p-4 pt-[12px] overflow-auto">
       <pure-table
         border
@@ -135,8 +148,10 @@
         @page-current-change="handleCurrentChange"
       />
     </el-row>
+
+    <!-- 房态模式 -->
     <el-row v-if="!displayModeToList">
-      <el-col :span="24" class="text-right">
+      <el-col :span="24">
         <RoomStatusGrid v-model="queryForm" />
       </el-col>
     </el-row>
@@ -154,12 +169,39 @@
     }
   }
 
-  .dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    margin-right: 6px;
-    border-radius: 50%;
+  /* ========== 状态栏 ========== */
+  .status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .status-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+    background: var(--el-fill-color-blank);
+    border: 1px solid var(--el-border-color);
+    border-radius: 4px;
+    outline: none;
+    transition: all 0.2s;
+
+    &:hover {
+      color: var(--el-color-primary);
+      border-color: var(--el-color-primary-light-5);
+      background: var(--el-color-primary-light-9);
+    }
+
+    &.is-active {
+      color: var(--el-color-primary);
+      background: var(--el-color-primary-light-9);
+      border-color: var(--el-color-primary);
+    }
   }
 
   .status-content {
@@ -174,30 +216,5 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-  }
-
-  /* 特定状态的自定义样式（如果需要） */
-  .status-all {
-    /* 全部状态的特殊样式 */
-  }
-
-  .status-0 {
-    /* 空置状态的特殊样式 */
-  }
-
-  .status-1 {
-    /* 已租状态的特殊样式 */
-  }
-
-  .status-2 {
-    /* 锁房状态的特殊样式 */
-  }
-
-  .status-3 {
-    /* 配置中状态的特殊样式 */
-  }
-
-  .status-4 {
-    /* 下架状态的特殊样式 */
   }
 </style>

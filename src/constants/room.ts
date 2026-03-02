@@ -76,3 +76,10 @@ export const PRICE_PLANT_OPTIONS = [
   { label: "半年付", value: 3 },
   { label: "年付", value: 4 }
 ] as const;
+
+// filterType 常量，与后端 RoomFilterTypeEnum 对应
+export const FILTER_TYPE = {
+  BY_STATUS: 0, // 按出租占用状态筛选（roomStatus）
+  BY_LOCKED: 1, // 按锁定状态筛选（locked=true）
+  BY_CLOSED: 2 // 按关闭状态筛选（closed=true）
+} as const;

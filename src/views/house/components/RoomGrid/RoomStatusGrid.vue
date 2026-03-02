@@ -58,8 +58,8 @@
               <!-- roomId 为 string | undefined，使用 ?? '' 防止 toString() 报错 -->
               <div v-for="room in floor.rooms" :key="room.roomId ?? room.roomNumber ?? ''" class="room-card" :class="getRoomCardClass(room)" :style="getRoomCardStyle(room)">
                 <!-- 房间状态标签（右上角） -->
-                <div class="room-status-label" :style="{ color: room.roomStatusColor }">
-                  {{ room.roomStatusName }}
+                <div class="room-status-label" :style="{ color: room.occupancyStatusColor }">
+                  {{ room.occupancyStatusName }}
                 </div>
 
                 <!-- 房间头部信息 -->
@@ -86,11 +86,11 @@
 
                 <!-- 租期信息 -->
                 <div class="room-lease-info">
-                  <div v-if="room.roomStatus === 1 || room.roomStatus === 2">
+                  <div v-if="room.occupancyStatus === 1 || room.occupancyStatus === 2">
                     {{ formatDateRange(room.leaseInfo?.leaseStartDate, room.leaseInfo?.leaseEndDate) }}
                   </div>
                   <!-- room.price 为 number | undefined，用 !room.price 即可判断 0 / undefined / null -->
-                  <div v-else-if="room.roomStatus === 0 && room.availableDate">
+                  <div v-else-if="room.occupancyStatus === 0 && room.availableDate">
                     <span class="lease-label">可租日：</span>
                     {{ formatDate(room.availableDate) }}
                     <span class="lease-days">空 {{ getDaysDifference(room.vacancyStartTime) }} 天</span>
@@ -107,8 +107,8 @@
                 <div class="room-action-bar">
                   <!-- 左侧按钮组 -->
                   <div class="action-left">
-                    <el-button size="small" plain :disabled="room.roomStatus !== 0" @click.stop="handleQuickAction(room, 'booking')">预约</el-button>
-                    <el-button size="small" plain :disabled="room.roomStatus !== 0" @click.stop="handleQuickAction(room, 'tenant')">签约</el-button>
+                    <el-button size="small" plain :disabled="room.occupancyStatus !== 0" @click.stop="handleQuickAction(room, 'booking')">预约</el-button>
+                    <el-button size="small" plain :disabled="room.occupancyStatus !== 0" @click.stop="handleQuickAction(room, 'tenant')">签约</el-button>
                   </div>
                   <!-- 右侧按钮组 -->
                   <div class="action-right">

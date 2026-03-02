@@ -370,13 +370,11 @@ export enum PlatformUserTypeEnum {
 // ==================== 房间相关 ====================
 
 /** 房间状态枚举 */
-export enum RoomStatusEnum {
+export enum OccupancyStatusEnum {
   AVAILABLE = 0, // 空置
   LEASED = 1, // 已租
   BOOKED = 2, // 已预定
-  PREPARING = 3, // 配置中
-  CLOSED = 4, // 已关闭
-  LOCKED = 5 // 锁房
+  PREPARING = 3 // 配置中
 }
 
 /** 房间类型枚举 */

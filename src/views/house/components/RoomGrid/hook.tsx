@@ -7,7 +7,7 @@ import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { useHouseView } from "@/views/house/components/HouseView/hook";
-import type { HouseDetailVo, RoomCreateDto, RoomGridItemVo, RoomGridDto, RoomListVo, ScatterCreateDto, ScatterHouseDto } from "@/types";
+import type { RoomGridItemVo, RoomGridDto, RoomListVo } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { OCCUPANCY_STATUS_ENUM } from "@/constants";
@@ -53,16 +53,16 @@ interface ProcessedBuildingUnit {
  * 补充 buildingUnits 聚合数组
  */
 interface ProcessedCompoundGroup {
-  leaseModeId: string; // 后端 CompoundGroup.leaseModeId 为 string，原代码误写为 number
+  leaseModeId: string; // 后端 CompoundGroup.leaseModeId 为 string
   leaseMode: number;
   displayName: string;
-  communityId: string; // 后端 CompoundGroup.communityId 为 string，原代码误写为 number
+  communityId: string; // 后端 CompoundGroup.communityId 为 string
   communityName: string;
   communityAddress: string;
   totalRooms: number;
   leasedCount: number;
   occupancyRate: string;
-  buildingUnits: ProcessedBuildingUnit[]; // 聚合后的楼栋单元列表（后端 CompoundGroup 无此字段）
+  buildingUnits: ProcessedBuildingUnit[]; // 聚合后的楼栋单元列表
 }
 
 // ==================== Hook 定义 ====================
@@ -90,12 +90,10 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const processedRoomGroups: ComputedRef<ProcessedCompoundGroup[]> = computed(() => {
     if (!allRoomGridItems.value.length) return [];
 
-    // key 使用 string，与后端 CompoundGroup.leaseModeId: string 类型一致
     const compoundMap = new Map<string, ProcessedCompoundGroup>();
     const compoundOrder: string[] = [];
 
     allRoomGridItems.value.forEach((item: RoomGridItemVo) => {
-      // compoundGroup / buildingGroup / floorGroup 均为后端可选字段，需防护
       const compoundGroup = item.compoundGroup;
       const buildingGroup = item.buildingGroup;
       const floorGroup = item.floorGroup;
@@ -121,7 +119,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 
       const compound = compoundMap.get(leaseModeId)!;
 
-      // 查找或创建楼栋单元
       const building = buildingGroup.building ?? "";
       const unit = buildingGroup.unit ?? "";
       let buildingUnit = compound.buildingUnits.find(bu => bu.building === building && bu.unit === unit);
@@ -147,26 +144,22 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         return numA === numB ? (a.roomNumber ?? "").localeCompare(b.roomNumber ?? "") : numA - numB;
       });
 
-      // 添加楼层数据
       const floorNum = floorGroup.floor ?? 0;
       const floorGroupData: ProcessedFloorGroup = {
         floor: floorNum,
         floorName: `${floorNum}层`,
         roomCount: floorGroup.roomCount ?? 0,
         leasedCount: floorGroup.leasedCount ?? 0,
-        // 后端 FloorGroup.occupancyRate 为 number，格式化为百分比字符串
         occupancyRate: floorGroup.occupancyRate != null ? String(floorGroup.occupancyRate) : "0",
         rooms: sortedRooms
       };
 
       buildingUnit.floors.push(floorGroupData);
 
-      // 更新楼栋单元统计
       buildingUnit.totalRooms += floorGroupData.roomCount;
       buildingUnit.leasedCount += floorGroupData.leasedCount;
       buildingUnit.floorCount = buildingUnit.floors.length;
 
-      // 更新小区统计
       compound.totalRooms += floorGroupData.roomCount;
       compound.leasedCount += floorGroupData.leasedCount;
     });
@@ -203,7 +196,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   // 加载房间数据
   const loadRoomGrid = async (isLoadMore = false) => {
     if (loading.value || loadingMore.value) return;
-
     if (isLoadMore && !hasMore.value) return;
 
     if (isLoadMore) {
@@ -275,9 +267,10 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     switch (action) {
       case "booking":
         openBookingDialog("添加", { roomIds: [room.roomId], roomList: [room] }, () => {
-          room.roomStatus = OCCUPANCY_STATUS_ENUM.BOOKED.code;
-          room.roomStatusName = OCCUPANCY_STATUS_ENUM.BOOKED.name;
-          room.roomStatusColor = OCCUPANCY_STATUS_ENUM.BOOKED.color;
+          // [修正] 乐观更新：RoomListVo 上是 occupancyStatus 三件套，不是 roomStatus
+          room.occupancyStatus = OCCUPANCY_STATUS_ENUM.BOOKED.code;
+          room.occupancyStatusName = OCCUPANCY_STATUS_ENUM.BOOKED.name;
+          room.occupancyStatusColor = OCCUPANCY_STATUS_ENUM.BOOKED.color;
         });
         break;
       case "tenant":
@@ -292,9 +285,10 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
             otherFees: undefined
           },
           () => {
-            room.roomStatus = OCCUPANCY_STATUS_ENUM.LEASED.code;
-            room.roomStatusName = OCCUPANCY_STATUS_ENUM.LEASED.name;
-            room.roomStatusColor = OCCUPANCY_STATUS_ENUM.LEASED.color;
+            // [修正] 乐观更新：RoomListVo 上是 occupancyStatus 三件套，不是 roomStatus
+            room.occupancyStatus = OCCUPANCY_STATUS_ENUM.LEASED.code;
+            room.occupancyStatusName = OCCUPANCY_STATUS_ENUM.LEASED.name;
+            room.occupancyStatusColor = OCCUPANCY_STATUS_ENUM.LEASED.color;
           }
         );
         ElMessage.success(`准备为房间 ${room.roomNumber} 签约`);
@@ -309,7 +303,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 
   // 管理小区（集中式项目）
   const handleManageCompound = (community: ProcessedCompoundGroup) => {
-    console.log(`点击项目编辑：${community.displayName}`);
     if (community.leaseModeId) {
       getFocusById({ id: community.leaseModeId }).then(res => {
         openFocusEditDialog("更新", res.data);
@@ -325,8 +318,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
 
   const getRoomCardStyle = (room: RoomListVo) => {
     const style: Record<string, string> = {};
-    if (room.roomStatusColor) {
-      style.borderColor = room.roomStatusColor;
+    // [修正] 边框颜色使用 occupancyStatusColor，不再使用已废弃的 roomStatusColor
+    if (room.occupancyStatusColor) {
+      style.borderColor = room.occupancyStatusColor;
     }
     return style;
   };
@@ -370,20 +364,10 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     }
     if (observer) observer.disconnect();
 
-    console.log("初始化 IntersectionObserver");
-
     observer = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
-          console.log("IntersectionObserver 触发:", {
-            isIntersecting: entry.isIntersecting,
-            hasMore: hasMore.value,
-            loadingMore: loadingMore.value,
-            loading: loading.value,
-            currentPage: currentPage.value
-          });
           if (entry.isIntersecting && hasMore.value && !loadingMore.value && !loading.value) {
-            console.log("开始加载更多数据");
             loadMore();
           }
         });
@@ -392,7 +376,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     );
 
     observer.observe(triggerElement);
-    console.log("开始观察触发元素");
   };
 
   const cleanupObserver = () => {
@@ -429,7 +412,6 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     switch (command) {
       case "edit":
         if (room.leaseMode === 2 && room.rentalType === 1) {
-          // openEntireEditDialog 签名已更新为 (title, id?)，直接传 houseId
           openEntireEditDialog("编辑", room.houseId).then(() => {
             resetAndReload().then();
           });
