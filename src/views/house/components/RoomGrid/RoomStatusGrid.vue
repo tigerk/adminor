@@ -65,7 +65,8 @@
                     :style="{
                       color: getRoomDisplayStatus(room).primary.color,
                       backgroundColor: getRoomDisplayStatus(room).primary.bgColor,
-                      borderColor: getRoomDisplayStatus(room).primary.bgColor
+                      borderColor: getRoomDisplayStatus(room).primary.bgColor,
+                      fontSize: '14px'
                     }"
                   >
                     <el-icon v-if="room.closed" style="margin-right: 2px; vertical-align: -1px"><CircleClose /></el-icon>
@@ -73,7 +74,7 @@
                     {{ getRoomDisplayStatus(room).primary.label }}
                   </el-tag>
                   <span v-if="getRoomDisplayStatus(room).secondary" class="status-secondary" :style="{ color: getRoomDisplayStatus(room).secondary!.color }">
-                    · {{ getRoomDisplayStatus(room).secondary!.label }}
+                    {{ getRoomDisplayStatus(room).secondary!.label }}
                   </span>
                 </div>
 
@@ -479,14 +480,27 @@
     flex-direction: column; // 两行叠放，空间更充裕
     align-items: flex-end;
     gap: 2px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     line-height: 1.4;
 
     .status-secondary {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 400;
+      margin-right: 3px;
       opacity: 0.85;
+    }
+
+    :deep(.el-tag) {
+      white-space: nowrap;
+    }
+
+    :deep(.el-tag .el-tag__content) {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      word-break: keep-all;
+      line-height: 1;
     }
   }
 
