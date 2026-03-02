@@ -326,30 +326,30 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     return style;
   };
 
-  // 返回两个标签：管理状态 + 占用状态
   const getRoomDisplayStatus = (room: RoomListVo) => {
     const occupancy = {
       label: room.occupancyStatusName ?? "",
-      color: room.occupancyStatusColor ?? ""
+      color: room.occupancyStatusColor ?? "",
+      bgColor: "transparent"
     };
 
     if (room.closed) {
       return {
-        primary: { label: "已关闭", color: "#909399" },
-        secondary: occupancy // 同时显示占用状态
+        primary: { label: "已关闭", color: "#909399", bgColor: "rgba(144, 147, 153, 0.1)" },
+        secondary: occupancy
       };
     }
 
     if (room.locked) {
       return {
-        primary: { label: "已锁定", color: "#E6A23C" },
-        secondary: occupancy // 同时显示占用状态
+        primary: { label: "已锁定", color: "#E6A23C", bgColor: "rgba(230, 162, 60, 0.1)" },
+        secondary: occupancy
       };
     }
 
     return {
       primary: occupancy,
-      secondary: null // 正常状态只显示一个
+      secondary: null
     };
   };
 

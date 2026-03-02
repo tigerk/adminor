@@ -59,9 +59,19 @@
               <div v-for="room in floor.rooms" :key="room.roomId ?? room.roomNumber ?? ''" class="room-card" :class="getRoomCardClass(room)" :style="getRoomCardStyle(room)">
                 <!-- 修改后：支持双标签 -->
                 <div class="room-status-label">
-                  <span :style="{ color: getRoomDisplayStatus(room).primary.color }">
+                  <el-tag
+                    size="small"
+                    effect="light"
+                    :style="{
+                      color: getRoomDisplayStatus(room).primary.color,
+                      backgroundColor: getRoomDisplayStatus(room).primary.bgColor,
+                      borderColor: getRoomDisplayStatus(room).primary.bgColor
+                    }"
+                  >
+                    <el-icon v-if="room.closed" style="margin-right: 2px; vertical-align: -1px"><CircleClose /></el-icon>
+                    <el-icon v-else-if="room.locked" style="margin-right: 2px; vertical-align: -1px"><Lock /></el-icon>
                     {{ getRoomDisplayStatus(room).primary.label }}
-                  </span>
+                  </el-tag>
                   <span v-if="getRoomDisplayStatus(room).secondary" class="status-secondary" :style="{ color: getRoomDisplayStatus(room).secondary!.color }">
                     · {{ getRoomDisplayStatus(room).secondary!.label }}
                   </span>
@@ -181,7 +191,7 @@
 
 <script setup lang="ts">
   import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-  import { CloseBold, EditPen, Loading, Location, Lock, OfficeBuilding, Open, Setting, Unlock, User } from "@element-plus/icons-vue";
+  import { CircleClose, CloseBold, EditPen, Loading, Location, Lock, OfficeBuilding, Open, Setting, Unlock, User } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
   import { getDaysDifference } from "@/utils/date";
@@ -474,7 +484,7 @@
     line-height: 1.4;
 
     .status-secondary {
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 400;
       opacity: 0.85;
     }
