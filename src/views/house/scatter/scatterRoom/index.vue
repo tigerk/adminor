@@ -97,12 +97,12 @@
                   1 = BY_LOCKED  → queryForm.locked = true
                   2 = BY_CLOSED  → queryForm.closed = true
               -->
-              <div class="status-bar">
-                <button
+              <el-button-group class="status-bar">
+                <el-button
                   v-for="item in roomStatusTotal"
                   :key="item.filterType !== undefined ? `${item.filterType}-${item.roomStatus}` : 'all'"
-                  type="button"
                   class="status-btn"
+                  type="default"
                   :class="{ 'is-active': isStatusActive(item) }"
                   @click="handleStatusClick(item)"
                 >
@@ -110,8 +110,8 @@
                     <span v-if="item.roomStatusColor" class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
                     {{ item.roomStatusName }}（{{ item.total }}）
                   </span>
-                </button>
-              </div>
+                </el-button>
+              </el-button-group>
             </el-form-item>
           </el-space>
         </div>
@@ -171,24 +171,17 @@
 
   /* ========== 状态栏 ========== */
   .status-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
   }
 
-  .status-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 5px 12px;
-    font-size: 13px;
-    line-height: 1.5;
+  :deep(.status-btn) {
+    margin: 0 !important;
+    padding: 8px 16px;
+    font-size: 14px;
     color: var(--el-text-color-regular);
-    cursor: pointer;
-    background: var(--el-fill-color-blank);
-    border: 1px solid var(--el-border-color);
-    border-radius: 4px;
-    outline: none;
+    border-color: var(--el-border-color) !important;
     transition: all 0.2s;
 
     &:hover {

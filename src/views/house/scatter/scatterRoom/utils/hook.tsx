@@ -226,34 +226,47 @@ export function useScatterRoom() {
     onSearch().then();
   }
 
+  async function loadRoomStatusTotal() {
+    try {
+      const totalQuery = {
+        ...toRaw(queryForm),
+        occupancyStatus: undefined,
+        locked: undefined,
+        closed: undefined,
+        currentPage: undefined,
+        pageSize: undefined
+      };
+
+      const res = await getRoomTotalVo(totalQuery);
+      if (!res.data) return;
+
+      const statusList = res.data.statusList ?? [];
+      const allTotal = res.data.total ?? statusList.reduce((sum, item) => sum + (item.total ?? 0), 0);
+
+      roomStatusTotal.value = [{ roomStatusName: "全部", total: allTotal, filterType: undefined, roomStatus: undefined, roomStatusColor: undefined }, ...statusList];
+    } catch {
+      // 忽略统计接口异常，不影响列表查询
+    }
+  }
+
   async function onSearch() {
     loading.value = true;
     queryForm.currentPage = pagination.currentPage.toString();
     queryForm.pageSize = pagination.pageSize.toString();
 
-    const { data, code } = await getRoomList(toRaw(queryForm));
-    if (code === 0) {
-      roomTableList.value = data.list;
-      pagination.total = Number(data.total);
-      pagination.pageSize = Number(data.pageSize);
-      pagination.currentPage = Number(data.currentPage);
+    try {
+      const [{ data, code }] = await Promise.all([getRoomList(toRaw(queryForm)), loadRoomStatusTotal()]);
+      if (code === 0) {
+        roomTableList.value = data.list;
+        pagination.total = Number(data.total);
+        pagination.pageSize = Number(data.pageSize);
+        pagination.currentPage = Number(data.currentPage);
+      }
+    } finally {
+      setTimeout(() => {
+        loading.value = false;
+      }, 500);
     }
-
-    setTimeout(() => {
-      loading.value = false;
-    }, 500);
-
-    // 刷新状态统计。注意：统计接口不传 roomStatus/locked/closed，
-    // 始终返回全量分组统计，前端只需更新数字，不重置当前激活项。
-    getRoomTotalVo(toRaw(queryForm)).then(res => {
-      if (!res.data) return;
-
-      const statusList = res.data.statusList ?? [];
-
-      // 插入"全部"项（filterType 不设置，表示不筛选）
-      const allTotal = res.data.total ?? statusList.reduce((sum, item) => sum + (item.total ?? 0), 0);
-      roomStatusTotal.value = [{ roomStatusName: "全部", total: allTotal, filterType: undefined, roomStatus: undefined, roomStatusColor: undefined }, ...statusList];
-    });
   }
 
   const resetForm = formEl => {
