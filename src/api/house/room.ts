@@ -15,7 +15,7 @@ export const getRoomGrid = (data?: RoomQueryDto) => {
 };
 
 export const getRoomTotalVo = (data?: RoomQueryDto) => {
-  return http.request<RoomTotalVo>("post", baseUrlApi("room/total"), { data });
+  return http.request<ApiResponse<RoomTotalVo>>("post", baseUrlApi("room/total"), { data });
 };
 
 /**

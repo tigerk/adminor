@@ -5,7 +5,7 @@ import { onMounted, reactive, ref, toRaw } from "vue";
 import router from "@/router";
 import { getRoomList, getRoomTotalVo } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
-import { HouseLayoutDto } from "@/types";
+import type { HouseLayoutDto, RoomQueryDto } from "@/types";
 
 export function useScatterRoom() {
   const pagination = reactive<PaginationProps>({
@@ -15,13 +15,13 @@ export function useScatterRoom() {
     background: true
   });
 
-  const queryForm = reactive({
+  const queryForm = reactive<RoomQueryDto>({
     keywords: "",
     leaseModeId: null,
     leaseMode: 2, // 整合租
     roomStatus: null,
-    pageSize: 15,
-    currentPage: 1
+    pageSize: "15",
+    currentPage: "1"
   });
 
   const curRow = ref();
@@ -164,11 +164,11 @@ export function useScatterRoom() {
 
   async function onSearch() {
     loading.value = true;
-    queryForm.currentPage = pagination.currentPage;
-    queryForm.pageSize = pagination.pageSize;
+    queryForm.currentPage = pagination.currentPage.toString();
+    queryForm.pageSize = pagination.pageSize.toString();
 
-    const { data } = await getRoomList(toRaw(queryForm));
-    if (data) {
+    const { data, code } = await getRoomList(queryForm);
+    if (code === 0) {
       roomTableList.value = data.list;
       pagination.total = Number(data.total);
       pagination.pageSize = Number(data.pageSize);
@@ -179,7 +179,7 @@ export function useScatterRoom() {
       loading.value = false;
     }, 500);
 
-    getRoomTotalVo(toRaw(queryForm)).then(res => {
+    getRoomTotalVo(queryForm).then(res => {
       roomStatusTotal.value = res.data.statusList;
 
       let total = 0;

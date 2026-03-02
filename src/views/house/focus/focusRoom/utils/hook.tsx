@@ -147,8 +147,8 @@ export function userFocusRoom() {
 
   async function onSearch() {
     loading.value = true;
-    queryForm.currentPage = pagination.currentPage + "";
-    queryForm.pageSize = pagination.pageSize + "";
+    queryForm.currentPage = pagination.currentPage.toString();
+    queryForm.pageSize = pagination.pageSize.toString();
 
     const { data } = await getRoomList(toRaw(queryForm));
     if (data) {
