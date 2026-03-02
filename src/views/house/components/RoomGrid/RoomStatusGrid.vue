@@ -57,9 +57,14 @@
             <div class="room-grid">
               <!-- roomId 为 string | undefined，使用 ?? '' 防止 toString() 报错 -->
               <div v-for="room in floor.rooms" :key="room.roomId ?? room.roomNumber ?? ''" class="room-card" :class="getRoomCardClass(room)" :style="getRoomCardStyle(room)">
-                <!-- 房间状态标签（右上角） -->
-                <div class="room-status-label" :style="{ color: room.occupancyStatusColor }">
-                  {{ room.occupancyStatusName }}
+                <!-- 修改后：支持双标签 -->
+                <div class="room-status-label">
+                  <span :style="{ color: getRoomDisplayStatus(room).primary.color }">
+                    {{ getRoomDisplayStatus(room).primary.label }}
+                  </span>
+                  <span v-if="getRoomDisplayStatus(room).secondary" class="status-secondary" :style="{ color: getRoomDisplayStatus(room).secondary!.color }">
+                    · {{ getRoomDisplayStatus(room).secondary!.label }}
+                  </span>
                 </div>
 
                 <!-- 房间头部信息 -->
@@ -204,7 +209,8 @@
     getRoomCardStyle,
     setupLoadMore,
     cleanupObserver,
-    handleDropdownAction
+    handleDropdownAction,
+    getRoomDisplayStatus
   } = useRoomGrid(queryForm);
 
   // 监听查询条件变化
@@ -459,8 +465,19 @@
     position: absolute;
     top: 12px;
     right: 12px;
+    display: flex;
+    flex-direction: column; // 两行叠放，空间更充裕
+    align-items: flex-end;
+    gap: 2px;
     font-size: 13px;
     font-weight: 500;
+    line-height: 1.4;
+
+    .status-secondary {
+      font-size: 11px;
+      font-weight: 400;
+      opacity: 0.85;
+    }
   }
 
   // 房间头部信息

@@ -12,6 +12,7 @@ import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { OCCUPANCY_STATUS_ENUM } from "@/constants";
 import { message } from "@/utils/message";
+import { formatDate, formatDateByDot } from "@/utils/date";
 
 // ==================== Hook 特有的类型定义 ====================
 // 说明：以下三个 Processed* 接口是必须保留的前端展示层类型。
@@ -325,6 +326,33 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     return style;
   };
 
+  // 返回两个标签：管理状态 + 占用状态
+  const getRoomDisplayStatus = (room: RoomListVo) => {
+    const occupancy = {
+      label: room.occupancyStatusName ?? "",
+      color: room.occupancyStatusColor ?? ""
+    };
+
+    if (room.closed) {
+      return {
+        primary: { label: "已关闭", color: "#909399" },
+        secondary: occupancy // 同时显示占用状态
+      };
+    }
+
+    if (room.locked) {
+      return {
+        primary: { label: "已锁定", color: "#E6A23C" },
+        secondary: occupancy // 同时显示占用状态
+      };
+    }
+
+    return {
+      primary: occupancy,
+      secondary: null // 正常状态只显示一个
+    };
+  };
+
   const getRoomTypeLabel = (room: RoomListVo) => {
     const layout = room.houseLayout;
     if (!layout) return "未分配";
@@ -335,18 +363,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     return labels[bedroom] ?? `${bedroom}室`;
   };
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "--";
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}.${month}.${day}`;
-  };
-
   const formatDateRange = (startDate?: string, endDate?: string) => {
     if (!startDate || !endDate) return "未知";
-    return `${formatDate(startDate)} ~ ${formatDate(endDate)}`;
+    return `${formatDateByDot(startDate)} ~ ${formatDateByDot(endDate)}`;
   };
 
   const formatPrice = (price?: string | number) => {
@@ -502,7 +521,8 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
     formatPrice,
     setupLoadMore,
     cleanupObserver,
-    handleDropdownAction
+    handleDropdownAction,
+    getRoomDisplayStatus
   };
 };
 

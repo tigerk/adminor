@@ -78,7 +78,7 @@ export function useScatterRoom() {
       )
     },
     {
-      label: "出租方式",
+      label: "房源类型",
       prop: "rentalType",
       width: 100,
       cellRenderer: ({ row }) => (
@@ -135,6 +135,18 @@ export function useScatterRoom() {
       label: "朝向",
       prop: "direction",
       width: 80
+    },
+    {
+      label: "锁房状态",
+      prop: " locked",
+      width: 100,
+      cellRenderer: ({ row }) => <div>{row.locked ? "已锁房" : "未锁房"}</div>
+    },
+    {
+      label: "关闭状态",
+      prop: " closed",
+      width: 100,
+      cellRenderer: ({ row }) => <div>{row.closed ? "已关闭" : "未关闭"}</div>
     },
     {
       label: "所属门店",
