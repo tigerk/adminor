@@ -1,7 +1,7 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { FocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
 import type { ApiListResponse, ApiResponse, PaginationResponse } from "@/types/common";
+import { FocusCreateDto } from "@/types";
 
 type ResultList = {
   code: number;
