@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from "vue";
+  import { getDictDataByDictCode } from "@/api/sys/dict";
   import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
   import type { FormInstance } from "element-plus";
   import { ElEmpty, ElImage, ElSkeleton, ElTag } from "element-plus";
@@ -20,6 +21,7 @@
   // 滚动容器引用
   const scrollContainer = ref<HTMLElement>();
   const loadingMore = ref(false);
+  const tagLabelMap = ref<Record<string, string>>({});
   const noMore = computed(() => {
     return pagination.currentPage * pagination.pageSize >= pagination.total;
   });
@@ -58,6 +60,10 @@
     return facility;
   };
 
+  const getTagLabel = (tag: string) => {
+    return tagLabelMap.value[String(tag)] || tag;
+  };
+
   // 获取水电类型文本
   const getWaterLabel = (type: string) => {
     const option = getOptionByCode([...WATER_TYPE_OPTIONS], type);
@@ -75,7 +81,15 @@
     return option?.label || type;
   };
 
-  onMounted(() => {
+  onMounted(async () => {
+    const resp = await getDictDataByDictCode({ dictCode: "focus_tags" });
+    if (resp.code === 0) {
+      const map: Record<string, string> = {};
+      (resp.data || []).forEach((item: any) => {
+        map[String(item.value ?? item.id ?? item.name)] = item.name;
+      });
+      tagLabelMap.value = map;
+    }
     handleSearch();
   });
 </script>
@@ -185,7 +199,7 @@
             <div class="tags-row">
               <el-tag v-if="!item.tags || item.tags.length == 0" class="empty-tag">暂无标签</el-tag>
               <el-tag v-for="tag in item.tags" :key="tag" size="small" type="primary" effect="plain">
-                {{ tag }}
+                {{ getTagLabel(tag) }}
               </el-tag>
             </div>
 

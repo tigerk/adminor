@@ -1024,7 +1024,7 @@ export type DictDataCreateDto = {
      * 数据项值
      */
     value?: string;
-    sort: number;
+    sortOrder: number;
     color?: string;
     status: number;
     remark?: string;

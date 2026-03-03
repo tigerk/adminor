@@ -132,6 +132,7 @@
   // ── 字典：房间特色 & 房间配置 ─────────────────────────────
   /** value → label 映射，供 HvRoomMain 展示时翻译 */
   const tagsMap = ref<Record<string, string>>({});
+  const focusTagsMap = ref<Record<string, string>>({});
   const facilitiesMap = ref<Record<string, string>>({});
 
   onMounted(() => {
@@ -141,6 +142,14 @@
         map[String(item.id ?? item.value)] = item.name;
       });
       tagsMap.value = map;
+    });
+
+    getDictDataByDictCode({ dictCode: "focus_tags" }).then(res => {
+      const map: Record<string, string> = {};
+      res.data?.forEach((item: any) => {
+        map[String(item.value ?? item.id)] = item.name;
+      });
+      focusTagsMap.value = map;
     });
 
     getDictDataByDictCode({ dictCode: "house_facilities" }).then(res => {
@@ -225,6 +234,7 @@
           :track-loading="trackLoading"
           :salesman-name="detail.salesman?.nickname || detail.salesmanName || '-'"
           :tags-map="tagsMap"
+          :focus-tags-map="focusTagsMap"
           :facilities-map="facilitiesMap"
           :all-images="allImages"
           @edit-house="d => emit('editHouse', d)"

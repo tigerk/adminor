@@ -137,26 +137,30 @@
     "to-create-house": [];
   }>();
 
-  // 预设标签选项
-  const tagOptions = ref([
-    { label: "精装修", value: "精装修" },
-    { label: "近地铁", value: "近地铁" },
-    { label: "商圈核心", value: "商圈核心" },
-    { label: "拎包入住", value: "拎包入住" },
-    { label: "高性价比", value: "高性价比" }
-  ]);
+  // 预设标签选项（从字典获取：focus_tags）
+  const tagOptions = ref<Array<{ label: string; value: string }>>([]);
 
   const facilitiesOptions = ref([]);
 
-  onMounted(() => {
-    getDictDataByDictCode({
-      dictCode: "house_facilities"
-    }).then(res => {
-      facilitiesOptions.value = res.data.map(item => ({
-        label: item.name,
-        value: item.value
-      }));
-    });
+  onMounted(async () => {
+    const [facilitiesResp, focusTagsResp] = await Promise.all([
+      getDictDataByDictCode({
+        dictCode: "house_facilities"
+      }),
+      getDictDataByDictCode({
+        dictCode: "focus_tags"
+      })
+    ]);
+
+    facilitiesOptions.value = (facilitiesResp.data || []).map((item: any) => ({
+      label: item.name,
+      value: item.value
+    }));
+
+    tagOptions.value = (focusTagsResp.data || []).map((item: any) => ({
+      label: item.name,
+      value: String(item.value ?? item.id ?? item.name)
+    }));
   });
 
   async function stepPrevious() {

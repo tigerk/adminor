@@ -17,6 +17,8 @@
     salesmanName: string;
     /** house_tags 字典：value/id → label */
     tagsMap?: Record<string, string>;
+    /** focus_tags 字典：value/id → label */
+    focusTagsMap?: Record<string, string>;
     /** house_facilities 字典：value → label */
     facilitiesMap?: Record<string, string>;
     /** 房源/房间图片列表 */
@@ -511,7 +513,7 @@
             <div class="hv-section__hd"><span class="hv-section__title">项目标签</span></div>
             <div v-if="focusTags.length" class="hv-tag-list">
               <span v-for="tag in focusTags" :key="tag" class="hv-tag hv-tag--feature">
-                {{ tagsMap?.[String(tag)] || tag }}
+                {{ focusTagsMap?.[String(tag)] || tagsMap?.[String(tag)] || tag }}
               </span>
             </div>
             <div v-else class="hv-empty-tip">
