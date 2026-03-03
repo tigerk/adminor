@@ -5,6 +5,7 @@
   import AntDesignPlusCircleOutlined from "~icons/ant-design/plus-circle-outlined";
   import AntDesignLockFilled from "~icons/ant-design/lock-filled";
   import { LocalFocusBuildingDto, LocalFocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
+  import { DIRECTION_OPTIONS } from "@/constants/house";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { useHouseLayoutManage } from "@/views/house/components/HouseLayout/HouseLayoutManage/useHouseLayoutManage";
   import { FocusHouseDto, HouseLayoutDto } from "@/types"; // 获取 FocusCreateForm 中的form数据
@@ -1012,14 +1013,7 @@
 
                 <div class="col-span-2">
                   <el-select v-model="batchConfig.direction" placeholder="朝向" class="w-full">
-                    <el-option label="东" value="东" />
-                    <el-option label="南" value="南" />
-                    <el-option label="西" value="西" />
-                    <el-option label="北" value="北" />
-                    <el-option label="东南" value="东南" />
-                    <el-option label="西南" value="西南" />
-                    <el-option label="东北" value="东北" />
-                    <el-option label="西北" value="西北" />
+                    <el-option v-for="item in DIRECTION_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
                 </div>
 
