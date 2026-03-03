@@ -407,13 +407,19 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   // 处理下拉菜单操作
   const handleDropdownAction = (room: RoomListVo, command: string) => {
     function handleCloseRoom(room: RoomListVo) {
-      closeRoom({ roomId: room.roomId }).then(res => {
-        if (res.code === 0) {
-          ElMessage.success(`已关闭房间 ${room.roomNumber}`);
-          resetAndReload();
-        } else {
-          ElMessage.error(res.message ?? "关闭失败");
-        }
+      ElMessageBox.confirm(`确认关闭 ${room.houseName}-房间 ${room.roomNumber}？`, "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        closeRoom({ roomId: room.roomId }).then(res => {
+          if (res.code === 0) {
+            ElMessage.success(`已关闭房间 ${room.roomNumber}`);
+            resetAndReload().then();
+          } else {
+            ElMessage.error(res.message ?? "关闭失败");
+          }
+        });
       });
     }
 
@@ -421,7 +427,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       openRoom({ roomId: room.roomId }).then(res => {
         if (res.code === 0) {
           ElMessage.success(`已开启房间 ${room.roomNumber}`);
-          resetAndReload();
+          resetAndReload().then();
         } else {
           ElMessage.error(res.message ?? "打开失败");
         }
