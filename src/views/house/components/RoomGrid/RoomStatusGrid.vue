@@ -73,7 +73,7 @@
                     <el-icon v-else-if="room.locked" style="margin-right: 2px; vertical-align: -1px"><Lock /></el-icon>
                     {{ getRoomDisplayStatus(room).primary.label }}
                   </el-tag>
-                  <span v-if="getRoomDisplayStatus(room).secondary" class="status-secondary" :style="{ color: getRoomDisplayStatus(room).secondary!.color }">
+                  <span v-if="getRoomDisplayStatus(room).secondary" class="status-secondary mt-2" :style="{ color: getRoomDisplayStatus(room).secondary!.color }">
                     {{ getRoomDisplayStatus(room).secondary!.label }}
                   </span>
                 </div>
