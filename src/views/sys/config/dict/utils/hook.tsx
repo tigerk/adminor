@@ -30,18 +30,12 @@ export function useDict() {
     {
       label: "字典标签",
       prop: "name",
-      minWidth: 130,
+      width: 200,
       cellRenderer: scope => (
         <el-button size="small" color={scope.row.color}>
           {scope.row.name}
         </el-button>
       )
-    },
-    {
-      sortable: true,
-      label: "排序",
-      minWidth: 90,
-      prop: "sortOrder"
     },
     {
       label: "备注",
@@ -67,6 +61,12 @@ export function useDict() {
           onChange={() => onChange(scope as any)}
         />
       )
+    },
+    {
+      sortable: true,
+      label: "排序",
+      width: 90,
+      prop: "sortOrder"
     },
     {
       label: "创建时间",
