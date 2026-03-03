@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
 import { message } from "@/utils/message";
-import { createDept, deleteDept, getDeptList } from "@/api/sys/dept";
+import { createDept, deleteDept, getDeptList, getDeptUserList } from "@/api/sys/dept";
 import { addDialog } from "@/components/ReDialog";
 import { h, onMounted, reactive, ref } from "vue";
 import type { FormItemProps } from "../utils/types";
@@ -17,6 +17,7 @@ export function useDept() {
 
   const formRef = ref();
   const dataList = ref([]);
+  const supervisorOptions = ref<Array<{ label: string; value: string }>>([]);
   const loading = ref(true);
   const { tagStyle } = usePublicHooks();
 
@@ -28,15 +29,16 @@ export function useDept() {
       align: "left"
     },
     {
+      label: "部门负责人",
+      prop: "supervisorName",
+      minWidth: 180,
+      formatter: ({ supervisorName }) => supervisorName || "-"
+    },
+    {
       label: "是否门店",
       prop: "isStore",
       width: 180,
       formatter: ({ isStore }) => <el-tag style={tagStyle.value(isStore ? 1 : 0)}>{isStore ? "是" : "否"}</el-tag>
-    },
-    {
-      label: "排序",
-      prop: "sortOrder",
-      minWidth: 70
     },
     {
       label: "状态",
@@ -58,6 +60,11 @@ export function useDept() {
       label: "备注",
       prop: "remark",
       minWidth: 320
+    },
+    {
+      label: "排序",
+      prop: "sortOrder",
+      minWidth: 70
     },
     {
       label: "操作",
@@ -96,6 +103,23 @@ export function useDept() {
     }, 500);
   }
 
+  async function loadSupervisorOptions() {
+    const resp = await getDeptUserList();
+    if (resp.code !== 0) {
+      message(resp.message || "获取部门主管列表失败", { type: "error" });
+      return;
+    }
+
+    supervisorOptions.value = (resp.data ?? []).map((item: any) => {
+      const userId = String(item.userId ?? item.id ?? "");
+      const displayName = item.nickname || item.realName || item.username || item.phone || userId;
+      return {
+        value: userId,
+        label: displayName
+      };
+    });
+  }
+
   function formatHigherDeptOptions(treeList) {
     // 根据返回数据的status字段值判断追加是否禁用disabled字段，
     // 返回处理后的树结构，用于上级部门级联选择器的展示（实际开发中也是如此，不可能前端需要的每个字段后端都会返回，
@@ -103,7 +127,7 @@ export function useDept() {
     if (!treeList?.length) return;
     const newTreeList = [];
     for (const element of treeList) {
-      element.disabled = element.status === 0 ? true : false;
+      element.disabled = element.status === 0;
       formatHigherDeptOptions(element.children);
       newTreeList.push(element);
     }
@@ -119,9 +143,9 @@ export function useDept() {
           higherDeptOptions: formatHigherDeptOptions(cloneDeep(dataList.value)),
           parentId: row?.parentId ?? 0,
           name: row?.name ?? "",
-          principal: row?.principal ?? "",
-          phone: row?.phone ?? "",
-          email: row?.email ?? "",
+          supervisorId: row?.supervisorId ? String(row.supervisorId) : "",
+          supervisorOptions: supervisorOptions.value,
+          supervisorName: row?.supervisorName ?? "",
           sortOrder: row?.sortOrder ?? 0,
           status: row?.status ?? 1,
           remark: row?.remark ?? "",
@@ -139,7 +163,11 @@ export function useDept() {
         const curData = options.props.formInline as FormItemProps;
 
         function chores() {
-          createDept(curData).then(resp => {
+          const payload = {
+            ...curData,
+            supervisorId: curData.supervisorId || null
+          };
+          createDept(payload).then(resp => {
             if (resp.code === 0) {
               message(`您${title}了部门名称为${curData.name}的这条数据`, {
                 type: "success"
@@ -174,6 +202,7 @@ export function useDept() {
   }
 
   onMounted(() => {
+    loadSupervisorOptions();
     onSearch();
   });
 

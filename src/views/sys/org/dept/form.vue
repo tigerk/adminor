@@ -11,9 +11,8 @@
       higherDeptOptions: [],
       parentId: 0,
       name: "",
-      principal: "",
-      phone: "",
-      email: "",
+      supervisorId: "",
+      supervisorOptions: [],
       sortOrder: 0,
       status: 1,
       isStore: 0,
@@ -66,18 +65,9 @@
       </re-col>
       <re-col :value="12" :xs="24" :sm="24">
         <el-form-item label="部门负责人">
-          <el-input v-model="newFormInline.principal" clearable placeholder="请输入部门负责人" />
-        </el-form-item>
-      </re-col>
-
-      <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="newFormInline.phone" clearable placeholder="请输入手机号" />
-        </el-form-item>
-      </re-col>
-      <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="newFormInline.email" clearable placeholder="请输入邮箱" />
+          <el-select v-model="newFormInline.supervisorId" class="w-full" clearable filterable placeholder="请选择部门主管">
+            <el-option v-for="item in newFormInline.supervisorOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
       </re-col>
 

@@ -1040,34 +1040,13 @@ export type DictCreateDto = {
     remark?: string;
 };
 
-/**
- * 部门查询对象
- */
-export type DeptQueryDto = {
-    currentPage?: string;
-    pageSize?: string;
-    /**
-     * 部门ID
-     */
-    deptId?: string;
-    /**
-     * 部门名称
-     */
-    name?: string;
-    /**
-     * 状态，1：启用，0：禁用
-     */
-    status?: number;
-};
-
 export type DeptVo = {
     id?: string;
     companyId?: string;
     name?: string;
     parentId?: string;
-    principal?: string;
-    phone?: string;
-    email?: string;
+    supervisorId?: string;
+    supervisorName?: string;
     treePath?: string;
     sortOrder?: number;
     status?: number;
@@ -1103,21 +1082,17 @@ export type DeptCreateDto = {
      */
     parentId?: string;
     /**
-     * 部门负责人
+     * 部门负责人ID
      */
-    principal?: string;
+    supervisorId?: string;
     /**
-     * 部门负责人手机号
+     * 显示顺序（兼容旧字段）
      */
-    phone?: string;
-    /**
-     * 邮箱
-     */
-    email?: string;
+    sort?: number;
     /**
      * 显示顺序
      */
-    sort?: number;
+    sortOrder?: number;
     /**
      * 状态（1，0不启用）
      */
@@ -6458,7 +6433,7 @@ export type InsertResponses = {
 export type InsertResponse = InsertResponses[keyof InsertResponses];
 
 export type GetDeptUserListData = {
-    body: DeptQueryDto;
+    body?: never;
     path?: never;
     query?: never;
     url: '/saas/sys/dept/user/list';

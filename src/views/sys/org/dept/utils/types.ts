@@ -3,9 +3,9 @@ interface FormItemProps {
   higherDeptOptions: Record<string, unknown>[];
   parentId: number;
   name: string;
-  principal: string;
-  phone: string | number;
-  email: string;
+  supervisorId: string;
+  supervisorOptions: Array<{ label: string; value: string }>;
+  supervisorName?: string;
   sortOrder: number;
   status: number;
   remark: string;
