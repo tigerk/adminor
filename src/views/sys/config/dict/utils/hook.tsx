@@ -170,7 +170,7 @@ export function useDict() {
           name: row?.name ?? "",
           value: row?.value ?? "",
           color: row?.color ?? "#6abe39",
-          sort: row?.sortOrder ?? 1,
+          sortOrder: row?.sortOrder ?? 1,
           status: row?.status ?? 1,
           remark: row?.remark ?? ""
         }

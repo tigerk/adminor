@@ -24,12 +24,7 @@
 </script>
 
 <template>
-  <el-form
-    ref="ruleFormRef"
-    label-width="auto"
-    :model="newFormInline"
-    :rules="dictFormRules"
-  >
+  <el-form ref="ruleFormRef" label-width="auto" :model="newFormInline" :rules="dictFormRules">
     <el-row :gutter="30">
       <re-col>
         <el-form-item label="名称" prop="name">
@@ -38,21 +33,12 @@
       </re-col>
       <re-col>
         <el-form-item label="编码" prop="code">
-          <el-input
-            v-model="newFormInline.code"
-            :disabled="newFormInline.title === '修改' ? true : false"
-          />
+          <el-input v-model="newFormInline.code" :disabled="newFormInline.title === '修改' ? true : false" />
         </el-form-item>
       </re-col>
       <re-col>
         <el-form-item label="描述" prop="remark">
-          <el-input
-            v-model="newFormInline.remark"
-            maxlength="200"
-            :rows="3"
-            show-word-limit
-            type="textarea"
-          />
+          <el-input v-model="newFormInline.remark" maxlength="200" :rows="3" show-word-limit type="textarea" />
         </el-form-item>
       </re-col>
     </el-row>
