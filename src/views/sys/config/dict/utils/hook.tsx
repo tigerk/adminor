@@ -169,7 +169,7 @@ export function useDict() {
           dictId: dictId.value,
           name: row?.name ?? "",
           value: row?.value ?? "",
-          color: row?.color ?? "#6abe39",
+          color: row?.color ?? "#e84749",
           sortOrder: row?.sortOrder ?? 1,
           status: row?.status ?? 1,
           remark: row?.remark ?? ""
