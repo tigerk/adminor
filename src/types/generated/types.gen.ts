@@ -5207,6 +5207,244 @@ export type UserCreateVo = {
     existed?: boolean;
 };
 
+/**
+ * 企业订购记录分页查询参数
+ */
+export type CompanyOrderPageDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 商品编码
+     */
+    productCode?: string;
+};
+
+/**
+ * 企业订购记录
+ */
+export type CompanyOrderRecordVo = {
+    /**
+     * 订单ID
+     */
+    id?: string;
+    /**
+     * 订单号
+     */
+    orderNo?: string;
+    /**
+     * 商品ID
+     */
+    productId?: string;
+    /**
+     * 商品编码
+     */
+    productCode?: string;
+    /**
+     * 商品名称
+     */
+    productName?: string;
+    /**
+     * 单价
+     */
+    unitPrice?: number;
+    /**
+     * 购买数量
+     */
+    quantity?: number;
+    /**
+     * 总金额
+     */
+    totalAmount?: number;
+    /**
+     * 状态：1待支付，2已支付，3已取消，4已退款
+     */
+    status?: number;
+    /**
+     * 状态名称
+     */
+    statusName?: string;
+    /**
+     * 购买时间（已支付取支付时间，否则取创建时间）
+     */
+    purchaseTime?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+export type PageVoCompanyOrderRecordVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<CompanyOrderRecordVo>;
+};
+
+export type ResponseResultPageVoCompanyOrderRecordVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoCompanyOrderRecordVo;
+};
+
+/**
+ * 企业可订购服务项
+ */
+export type CompanyProductOrderVo = {
+    /**
+     * 商品ID
+     */
+    id?: string;
+    /**
+     * 商品编码
+     */
+    productCode?: string;
+    /**
+     * 商品名称
+     */
+    productName?: string;
+    /**
+     * 单位
+     */
+    unit?: string;
+    /**
+     * 单价
+     */
+    unitPrice?: number;
+    /**
+     * 最小购买数量
+     */
+    minQuantity?: number;
+    /**
+     * 介绍
+     */
+    description?: string;
+    /**
+     * 剩余可用配额
+     */
+    remainQuota?: number;
+    /**
+     * 总配额
+     */
+    totalQuota?: number;
+    /**
+     * 已使用配额
+     */
+    usedQuota?: number;
+    /**
+     * 冻结配额
+     */
+    frozenQuota?: number;
+};
+
+export type ResponseResultListCompanyProductOrderVo = {
+    code?: number;
+    message?: string;
+    data?: Array<CompanyProductOrderVo>;
+};
+
+/**
+ * 企业服务订购参数
+ */
+export type CompanyOrderCreateDto = {
+    /**
+     * 商品ID
+     */
+    productId: string;
+    /**
+     * 购买数量
+     */
+    quantity: number;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
+ * 企业服务使用记录分页查询参数
+ */
+export type CompanyConsumePageDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 商品编码
+     */
+    productCode?: string;
+};
+
+/**
+ * 企业服务使用记录
+ */
+export type CompanyConsumeRecordVo = {
+    /**
+     * 记录ID
+     */
+    id?: string;
+    /**
+     * 消费流水号
+     */
+    consumeNo?: string;
+    /**
+     * 关联订单ID
+     */
+    orderId?: string;
+    /**
+     * 商品编码
+     */
+    productCode?: string;
+    /**
+     * 商品名称
+     */
+    productName?: string;
+    /**
+     * 业务类型
+     */
+    bizType?: string;
+    /**
+     * 业务ID
+     */
+    bizId?: string;
+    /**
+     * 业务单号
+     */
+    bizNo?: string;
+    /**
+     * 使用数量
+     */
+    quantity?: number;
+    /**
+     * 状态：1成功，2失败，3已退还
+     */
+    status?: number;
+    /**
+     * 状态名称
+     */
+    statusName?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 记录时间
+     */
+    createTime?: string;
+};
+
+export type PageVoCompanyConsumeRecordVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<CompanyConsumeRecordVo>;
+};
+
+export type ResponseResultPageVoCompanyConsumeRecordVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoCompanyConsumeRecordVo;
+};
+
 export type ApprovalQueryDto = {
     currentPage?: string;
     pageSize?: string;
@@ -7986,6 +8224,70 @@ export type Create2Responses = {
 };
 
 export type Create2Response = Create2Responses[keyof Create2Responses];
+
+export type GetOrderPageData = {
+    body: CompanyOrderPageDto;
+    path?: never;
+    query?: never;
+    url: '/saas/company/order/record/page';
+};
+
+export type GetOrderPageResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoCompanyOrderRecordVo;
+};
+
+export type GetOrderPageResponse = GetOrderPageResponses[keyof GetOrderPageResponses];
+
+export type GetProductListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/saas/company/order/product/list';
+};
+
+export type GetProductListResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListCompanyProductOrderVo;
+};
+
+export type GetProductListResponse = GetProductListResponses[keyof GetProductListResponses];
+
+export type CreateOrderData = {
+    body: CompanyOrderCreateDto;
+    path?: never;
+    query?: never;
+    url: '/saas/company/order/create';
+};
+
+export type CreateOrderResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type CreateOrderResponse = CreateOrderResponses[keyof CreateOrderResponses];
+
+export type GetConsumePageData = {
+    body: CompanyConsumePageDto;
+    path?: never;
+    query?: never;
+    url: '/saas/company/order/consume/page';
+};
+
+export type GetConsumePageResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoCompanyConsumeRecordVo;
+};
+
+export type GetConsumePageResponse = GetConsumePageResponses[keyof GetConsumePageResponses];
 
 export type WithdrawApprovalData = {
     body: ApprovalQueryDto;
