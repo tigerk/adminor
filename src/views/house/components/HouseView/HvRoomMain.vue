@@ -692,51 +692,108 @@
 
       <!-- ── 锁房记录 ── -->
       <template v-if="activeDetailTab === 'lock'">
-        <div class="hv-section">
+        <div class="hv-section hv-lock-section">
           <div class="hv-section__hd">
             <span class="hv-section__title">锁房记录</span>
             <span v-if="roomLockRecords?.length" class="hv-section__count">{{ roomLockRecords.length }} 条</span>
           </div>
 
-          <div v-loading="roomLockLoading">
-            <el-table v-if="roomLockRecords?.length" :data="roomLockRecords" stripe class="hv-lock-table">
-              <el-table-column label="状态" width="100" align="center">
-                <template #default="{ row }">
-                  <el-tag :type="row.lockStatus === 1 ? 'success' : 'info'" size="small">
-                    {{ row.lockStatusName || (row.lockStatus === 1 ? "生效中" : "已失效") }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column prop="lockReasonName" label="锁房原因" min-width="120" />
-              <el-table-column label="锁定时间" min-width="280">
-                <template #default="{ row }">
-                  <div class="hv-lock-time">
-                    <div>开始：{{ row.startTime || "-" }}</div>
-                    <div>结束：{{ row.endTime || "永久锁定" }}</div>
+          <div v-loading="roomLockLoading" class="hv-lock-wrapper">
+            <!-- 空状态 -->
+            <div v-if="!roomLockLoading && !roomLockRecords?.length" class="hv-lock-empty">
+              <div class="hv-lock-empty__icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                  <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5" />
+                  <path d="M8 11V7a4 4 0 118 0v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+              </div>
+              <p class="hv-lock-empty__title">暂无锁房记录</p>
+              <p class="hv-lock-empty__sub">该房间目前没有任何锁房操作记录</p>
+            </div>
+
+            <!-- 卡片列表 -->
+            <div v-else class="hv-lock-list">
+              <div v-for="(row, idx) in roomLockRecords" :key="idx" class="hv-lock-card" :class="row.lockStatus === 1 ? 'hv-lock-card--active' : 'hv-lock-card--expired'">
+                <!-- 卡片头部：状态 + 原因 + 序号 -->
+                <div class="hv-lock-card__header">
+                  <div class="hv-lock-card__header-left">
+                    <span class="hv-lock-status-badge" :class="row.lockStatus === 1 ? 'hv-lock-status-badge--active' : 'hv-lock-status-badge--expired'">
+                      <span class="hv-lock-status-badge__dot" />
+                      {{ row.lockStatusName || (row.lockStatus === 1 ? "生效中" : "已失效") }}
+                    </span>
+                    <span class="hv-lock-card__reason">
+                      <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" style="opacity: 0.6; flex-shrink: 0">
+                        <path d="M8 1a2 2 0 012 2v4H6V3a2 2 0 012-2zm3 6V3a3 3 0 10-6 0v4a2 2 0 00-2 2v5a2 2 0 002 2h6a2 2 0 002-2V9a2 2 0 00-2-2z" />
+                      </svg>
+                      {{ row.lockReasonName || "-" }}
+                    </span>
                   </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="remark" label="锁房备注" min-width="220" show-overflow-tooltip />
-              <el-table-column label="创建信息" min-width="220">
-                <template #default="{ row }">
-                  <div class="hv-lock-meta">
-                    <div>创建人：{{ row.createByName || row.createBy || "-" }}</div>
-                    <div>创建时间：{{ row.createTime || "-" }}</div>
+                  <span class="hv-lock-card__index"># {{ idx + 1 }}</span>
+                </div>
+
+                <!-- 卡片主体：时段 + 备注 -->
+                <div class="hv-lock-card__body">
+                  <!-- 锁定时段 -->
+                  <div class="hv-lock-card__col">
+                    <div class="hv-lock-card__col-label">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
+                      锁定时段
+                    </div>
+                    <div class="hv-lock-card__time-range">
+                      <div class="hv-lock-card__time-item">
+                        <span class="hv-lock-card__time-label">开始</span>
+                        <span class="hv-lock-card__time-val">{{ row.startTime || "-" }}</span>
+                      </div>
+                      <div class="hv-lock-card__time-item">
+                        <span class="hv-lock-card__time-label">结束</span>
+                        <span class="hv-lock-card__time-val" :class="!row.endTime ? 'hv-lock-card__time-val--forever' : ''">
+                          {{ row.endTime || "永久锁定" }}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </template>
-              </el-table-column>
-              <el-table-column label="更新信息" min-width="220">
-                <template #default="{ row }">
-                  <div class="hv-lock-meta">
-                    <div>更新人：{{ row.updateByName || row.updateBy || "-" }}</div>
-                    <div>更新时间：{{ row.updateTime || "-" }}</div>
+
+                  <!-- 锁房备注 -->
+                  <div class="hv-lock-card__col hv-lock-card__col--remark">
+                    <div class="hv-lock-card__col-label">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                      </svg>
+                      备注
+                    </div>
+                    <p class="hv-lock-card__remark-text">{{ row.remark || "无备注" }}</p>
                   </div>
-                </template>
-              </el-table-column>
-            </el-table>
-            <div v-else class="hv-empty-tip">
-              <span class="hv-empty-tip__ico">🔒</span>
-              暂无锁房记录
+                </div>
+
+                <!-- 卡片底部：操作人信息 -->
+                <div class="hv-lock-card__footer">
+                  <div class="hv-lock-card__meta-item">
+                    <span class="hv-lock-card__meta-label">创建人</span>
+                    <span class="hv-lock-card__meta-val">
+                      <span class="hv-lock-card__avatar">{{ String(row.createByName || row.createBy || "?").slice(0, 1) }}</span>
+                      {{ row.createByName || row.createBy || "-" }}
+                    </span>
+                  </div>
+                  <div class="hv-lock-card__meta-sep" />
+                  <div class="hv-lock-card__meta-item">
+                    <span class="hv-lock-card__meta-label">创建时间</span>
+                    <span class="hv-lock-card__meta-val">{{ row.createTime || "-" }}</span>
+                  </div>
+                  <div class="hv-lock-card__meta-sep" />
+                  <div class="hv-lock-card__meta-item">
+                    <span class="hv-lock-card__meta-label">更新人</span>
+                    <span class="hv-lock-card__meta-val">{{ row.updateByName || row.updateBy || "-" }}</span>
+                  </div>
+                  <div class="hv-lock-card__meta-sep" />
+                  <div class="hv-lock-card__meta-item">
+                    <span class="hv-lock-card__meta-label">更新时间</span>
+                    <span class="hv-lock-card__meta-val">{{ row.updateTime || "-" }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1792,16 +1849,265 @@
     }
   }
 
-  .hv-lock-table {
-    :deep(.el-table__cell) {
-      vertical-align: top;
+  // ════════════════════════════════════════
+  //  锁房记录
+  // ════════════════════════════════════════
+  .hv-lock-section {
+    padding-bottom: 0;
+  }
+
+  .hv-lock-wrapper {
+    min-height: 80px;
+  }
+
+  .hv-lock-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0 36px;
+    gap: 10px;
+
+    &__icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: var(--info-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--info);
+      margin-bottom: 4px;
+    }
+    &__title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--t2);
+    }
+    &__sub {
+      margin: 0;
+      font-size: 12px;
+      color: var(--t3);
     }
   }
 
-  .hv-lock-time,
-  .hv-lock-meta {
-    font-size: 12px;
-    line-height: 1.7;
-    color: var(--t2);
+  .hv-lock-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .hv-lock-card {
+    border-radius: 10px;
+    border: 1px solid var(--bl);
+    background: var(--card);
+    overflow: hidden;
+    transition:
+      box-shadow 0.15s,
+      border-color 0.15s;
+
+    &:hover {
+      box-shadow: var(--shadow);
+    }
+
+    // 生效中：左侧有彩色竖条
+    &--active {
+      border-left: 3px solid var(--success);
+    }
+    &--expired {
+      border-left: 3px solid var(--bl);
+      opacity: 0.85;
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px 9px;
+      border-bottom: 1px solid var(--bl);
+      background: var(--sub);
+
+      &-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+    }
+
+    &__reason {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--t1);
+    }
+
+    &__index {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--t3);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.3px;
+    }
+
+    &__body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--bl);
+    }
+
+    &__col {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      &--remark {
+        border-left: 1px solid var(--bl);
+      }
+    }
+
+    &__col-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--t3);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    &__time-range {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    &__time-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+
+    &__time-label {
+      font-size: 10px;
+      color: var(--t3);
+    }
+
+    &__time-val {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--t1);
+      font-variant-numeric: tabular-nums;
+
+      &--forever {
+        color: var(--danger);
+      }
+    }
+
+    &__time-arrow {
+      font-size: 13px;
+      color: var(--t3);
+      flex-shrink: 0;
+      margin-top: 12px;
+    }
+
+    &__remark-text {
+      margin: 0;
+      font-size: 12px;
+      color: var(--t2);
+      line-height: 1.6;
+    }
+
+    &__footer {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 8px 14px;
+      background: var(--bg);
+      flex-wrap: wrap;
+      row-gap: 4px;
+    }
+
+    &__meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 12px;
+      &:first-child {
+        padding-left: 0;
+      }
+    }
+
+    &__meta-label {
+      font-size: 11px;
+      color: var(--t3);
+      white-space: nowrap;
+    }
+
+    &__meta-val {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--t2);
+      white-space: nowrap;
+    }
+
+    &__avatar {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--primary));
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    &__meta-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--bl);
+      flex-shrink: 0;
+    }
+  }
+
+  .hv-lock-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+
+    &__dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    &--active {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+    &--expired {
+      background: var(--info-bg);
+      color: var(--info);
+      border: 1px solid var(--el-color-info-light-5, #d3d3d3);
+    }
   }
 </style>
