@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from "vue";
-  import { HouseDetailVo, LeaseLiteVo, PriceMethodEnum, RoomDetailVo, RoomTrackVo, type PriceConfigDto, BookingListVo } from "@/types";
+  import { HouseDetailVo, LeaseLiteVo, PriceMethodEnum, RoomDetailVo, RoomTrackVo, type PriceConfigDto, BookingListVo, RoomLockRecordProps } from "@/types";
   import { OCCUPANCY_STATUS_ENUM } from "@/constants";
 
   import { message } from "@/utils/message";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
-  import { addRoomTrack, getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
+  import { addRoomTrack, getRoomLockRecords, getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
   import { getRoomStatus } from "@/utils/house";
 
   import HvLoadingSkeleton from "./HvLoadingSkeleton.vue";
@@ -58,9 +58,9 @@
   // ── 出租统计 ──────────────────────────────────────────────
   const roomStats = computed(() => {
     const tabs = roomTabs.value;
-    const leased = tabs.filter(r => r.roomStatus === OCCUPANCY_STATUS_ENUM.LEASED.code).length;
-    const available = tabs.filter(r => r.roomStatus === OCCUPANCY_STATUS_ENUM.VACANT.code).length;
-    const booked = tabs.filter(r => r.roomStatus === OCCUPANCY_STATUS_ENUM.BOOKED.code).length;
+    const leased = tabs.filter(r => r.occupancyStatus === OCCUPANCY_STATUS_ENUM.LEASED.code).length;
+    const available = tabs.filter(r => r.occupancyStatus === OCCUPANCY_STATUS_ENUM.AVAILABLE.code).length;
+    const booked = tabs.filter(r => r.occupancyStatus === OCCUPANCY_STATUS_ENUM.BOOKED.code).length;
     return { total: tabs.length, leased, available, booked };
   });
   const occupancyRate = computed(() => {
@@ -201,6 +201,35 @@
       trackLoading.value = false;
     }
   };
+
+  // ── 锁房记录 ──────────────────────────────────────────────
+  const roomLockRecords = ref<RoomLockRecordProps[]>([]);
+  const roomLockLoading = ref(false);
+
+  const loadRoomLockRecords = async () => {
+    const roomId = currentRoom.value?.id;
+    if (!roomId) {
+      roomLockRecords.value = [];
+      return;
+    }
+    roomLockLoading.value = true;
+    try {
+      const res = await getRoomLockRecords({ roomId });
+      roomLockRecords.value = res.code === 0 ? (res.data ?? []) : [];
+    } catch {
+      roomLockRecords.value = [];
+    } finally {
+      roomLockLoading.value = false;
+    }
+  };
+
+  watch(
+    () => currentRoom.value?.id,
+    () => {
+      loadRoomLockRecords();
+    },
+    { immediate: true }
+  );
 </script>
 
 <template>
@@ -232,6 +261,8 @@
           :price-config="priceConfig"
           :track-records="trackRecords"
           :track-loading="trackLoading"
+          :room-lock-records="roomLockRecords"
+          :room-lock-loading="roomLockLoading"
           :salesman-name="detail.salesman?.nickname || detail.salesmanName || '-'"
           :tags-map="tagsMap"
           :focus-tags-map="focusTagsMap"

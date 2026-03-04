@@ -10,6 +10,7 @@ import type {
   RoomLockDto,
   RoomQueryDto,
   RoomSaveRemarkDto,
+  RoomLockRecordProps,
   RoomTotalVo,
   RoomTrackDto
 } from "@/types";
@@ -40,6 +41,10 @@ export const lockRoom = (data?: RoomLockDto) => {
 
 export const unlockRoom = (data?: RoomIdDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("room/unlock"), { data });
+};
+
+export const getRoomLockRecords = (data?: RoomIdDto) => {
+  return http.request<ApiResponse<RoomLockRecordProps[]>>("post", baseUrlApi("room/lock/records"), { data });
 };
 
 export const closeRoom = (data?: RoomIdDto) => {

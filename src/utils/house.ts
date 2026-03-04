@@ -72,15 +72,29 @@ export const calcLeaseDuration = (start?: Date | string, end?: Date | string) =>
 };
 
 /**
- * 获取房间状态的 text、class color ，用于 TopBar / RoomMain 共用
+ * 获取房间状态（业务状态 + 管理状态）的 text、class、color
+ * 优先级：closed > locked > occupancyStatus
  * @param room
  */
 export const getRoomStatus = (room: RoomDetailVo) => {
-  const entry = Object.entries(OCCUPANCY_STATUS_ENUM).find(([, s]) => s.code === room.roomStatus);
+  if (room?.closed) {
+    return { text: "已关闭", cls: "locked", color: "#8C8C8C" };
+  }
+
+  if (room?.locked) {
+    return { text: "锁房", cls: "locked", color: "#8C8C8C" };
+  }
+
+  const entry = Object.entries(OCCUPANCY_STATUS_ENUM).find(([, s]) => s.code === room.occupancyStatus);
   if (!entry) return { text: "-", cls: "locked", color: "#8C8C8C" };
   const [key, s] = entry;
-  // key: "AVAILABLE" → cls: "available"
-  return { text: s.name, cls: key.toLowerCase(), color: s.color };
+  const clsMap: Record<string, string> = {
+    AVAILABLE: "available",
+    LEASED: "leased",
+    BOOKED: "booked",
+    PREPARING: "locked"
+  };
+  return { text: s.name, cls: clsMap[key] || "locked", color: s.color };
 };
 
 // ── 付款方式标签（RentTab / Panel 共用）─────────────────────

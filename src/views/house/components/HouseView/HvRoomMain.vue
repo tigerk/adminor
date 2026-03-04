@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, computed, watch } from "vue";
   import { Edit, House, Location, View, VideoPlay } from "@element-plus/icons-vue";
-  import { HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo, LeaseModeEnum, FocusCreateDto } from "@/types";
+  import { HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo, LeaseModeEnum, FocusCreateDto, RoomLockRecordProps } from "@/types";
   import { payMethodLabel, getWaterTypeLabel, getElectricityTypeLabel, getDecorationLabel, getDirectionLabel, getHouseLayoutName, getRentalTypeLabel } from "@/utils/house";
   import { getOptionNameByCode, ROOM_TYPE_OPTIONS, getOptionByCode, LEASE_MODE_OPTIONS } from "@/constants";
   import { getFocusById } from "@/api/house/focus";
@@ -14,6 +14,8 @@
     priceConfig: PriceConfigDto | null;
     trackRecords: RoomTrackVo[];
     trackLoading: boolean;
+    roomLockRecords: RoomLockRecordProps[];
+    roomLockLoading: boolean;
     salesmanName: string;
     /** house_tags 字典：value/id → label */
     tagsMap?: Record<string, string>;
@@ -70,10 +72,10 @@
     editHouse: [detail: HouseDetailVo];
     openPriceConfig: [];
     addTrack: [content: string];
-    "update:activeTab": [tab: "room" | "house" | "focus" | "rent" | "track"];
+    "update:activeTab": [tab: "room" | "house" | "focus" | "rent" | "track" | "lock"];
   }>();
 
-  const activeDetailTab = ref<"room" | "house" | "focus" | "rent" | "track">("room");
+  const activeDetailTab = ref<"room" | "house" | "focus" | "rent" | "track" | "lock">("room");
   const trackInput = ref("");
 
   const handleAddTrack = () => {
@@ -249,6 +251,7 @@
       <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'house' }" @click="activeDetailTab = 'house'">房源信息</button>
       <button v-if="isFocus" class="hv-tab" :class="{ 'is-active': activeDetailTab === 'focus' }" @click="activeDetailTab = 'focus'">集中式信息</button>
       <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'track' }" @click="activeDetailTab = 'track'">跟进记录</button>
+      <button class="hv-tab" :class="{ 'is-active': activeDetailTab === 'lock' }" @click="activeDetailTab = 'lock'">锁房记录</button>
     </div>
 
     <!-- Tab 内容 -->
@@ -682,6 +685,58 @@
                 <span class="hv-timeline__time">{{ rec.createTime }}</span>
               </div>
               <p class="hv-timeline__body">{{ rec.trackContent }}</p>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ── 锁房记录 ── -->
+      <template v-if="activeDetailTab === 'lock'">
+        <div class="hv-section">
+          <div class="hv-section__hd">
+            <span class="hv-section__title">锁房记录</span>
+            <span v-if="roomLockRecords?.length" class="hv-section__count">{{ roomLockRecords.length }} 条</span>
+          </div>
+
+          <div v-loading="roomLockLoading">
+            <el-table v-if="roomLockRecords?.length" :data="roomLockRecords" stripe class="hv-lock-table">
+              <el-table-column label="状态" width="100" align="center">
+                <template #default="{ row }">
+                  <el-tag :type="row.lockStatus === 1 ? 'success' : 'info'" size="small">
+                    {{ row.lockStatusName || (row.lockStatus === 1 ? "生效中" : "已失效") }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="lockReasonName" label="锁房原因" min-width="120" />
+              <el-table-column label="锁定时间" min-width="280">
+                <template #default="{ row }">
+                  <div class="hv-lock-time">
+                    <div>开始：{{ row.startTime || "-" }}</div>
+                    <div>结束：{{ row.endTime || "永久锁定" }}</div>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="remark" label="锁房备注" min-width="220" show-overflow-tooltip />
+              <el-table-column label="创建信息" min-width="220">
+                <template #default="{ row }">
+                  <div class="hv-lock-meta">
+                    <div>创建人：{{ row.createByName || row.createBy || "-" }}</div>
+                    <div>创建时间：{{ row.createTime || "-" }}</div>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column label="更新信息" min-width="220">
+                <template #default="{ row }">
+                  <div class="hv-lock-meta">
+                    <div>更新人：{{ row.updateByName || row.updateBy || "-" }}</div>
+                    <div>更新时间：{{ row.updateTime || "-" }}</div>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+            <div v-else class="hv-empty-tip">
+              <span class="hv-empty-tip__ico">🔒</span>
+              暂无锁房记录
             </div>
           </div>
         </div>
@@ -1735,5 +1790,18 @@
       color: var(--t2);
       line-height: 1.7;
     }
+  }
+
+  .hv-lock-table {
+    :deep(.el-table__cell) {
+      vertical-align: top;
+    }
+  }
+
+  .hv-lock-time,
+  .hv-lock-meta {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--t2);
   }
 </style>

@@ -4,3 +4,4 @@
 export * from "./tenant";
 export * from "./delivery";
 export * from "./checkout";
+export * from "./room.props";

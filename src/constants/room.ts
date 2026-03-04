@@ -26,7 +26,7 @@ export const ROOM_STATUS_OPTIONS = [
 
 /* 房间状态枚举 */
 export const OCCUPANCY_STATUS_ENUM = {
-  VACANT: {
+  AVAILABLE: {
     code: 0,
     name: "空置",
     color: "#FF2800"

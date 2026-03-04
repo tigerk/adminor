@@ -1744,7 +1744,15 @@ export type RoomDetailVo = {
     /**
      * 房间状态
      */
-    roomStatus?: number;
+    occupancyStatus?: number;
+    /**
+     * 锁定状态
+     */
+    locked?: boolean;
+    /**
+     * 禁用状态：是否已禁用
+     */
+    closed?: boolean;
     /**
      * 房间备注
      */
@@ -2016,7 +2024,7 @@ export type RoomCreateDto = {
     /**
      * 房间状态
      */
-    roomStatus?: number;
+    occupancyStatus?: number;
     /**
      * 房间备注
      */
@@ -2257,11 +2265,11 @@ export type RoomQueryDto = {
      */
     occupancyStatus?: number;
     /**
-     * 管理锁定状态：true=只查锁定房间。与 roomStatus 互斥，locked=true 时忽略 roomStatus
+     * 管理锁定状态：true=只查锁定房间。与 occupancyStatus 互斥，locked=true 时忽略 occupancyStatus
      */
     locked?: boolean;
     /**
-     * 关闭状态：true=只查已关闭房间。优先级高于 locked 和 roomStatus
+     * 关闭状态：true=只查已关闭房间。优先级高于 locked 和 occupancyStatus
      */
     closed?: boolean;
 };
@@ -2335,6 +2343,78 @@ export type RoomLockDto = {
      * 备注
      */
     remark?: string;
+};
+
+export type ResponseResultListRoomLockRecordVo = {
+    code?: number;
+    message?: string;
+    data?: Array<RoomLockRecordVo>;
+};
+
+/**
+ * 房间锁房记录
+ */
+export type RoomLockRecordVo = {
+    /**
+     * 锁房记录ID
+     */
+    id?: string;
+    /**
+     * 房间ID
+     */
+    roomId?: string;
+    /**
+     * 锁房原因: 1-永久锁房, 2-指定时间
+     */
+    lockReason?: number;
+    /**
+     * 锁房原因名称
+     */
+    lockReasonName?: string;
+    /**
+     * 开始时间
+     */
+    startTime?: string;
+    /**
+     * 结束时间
+     */
+    endTime?: string;
+    /**
+     * 锁房备注
+     */
+    remark?: string;
+    /**
+     * 锁房状态: 1-生效中, 0-已失效
+     */
+    lockStatus?: number;
+    /**
+     * 锁房状态名称
+     */
+    lockStatusName?: string;
+    /**
+     * 创建人ID
+     */
+    createBy?: string;
+    /**
+     * 创建人名称
+     */
+    createByName?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 更新人ID
+     */
+    updateBy?: string;
+    /**
+     * 更新人名称
+     */
+    updateByName?: string;
+    /**
+     * 更新时间
+     */
+    updateTime?: string;
 };
 
 export type PageVoRoomListVo = {
@@ -6591,7 +6671,9 @@ export type CreateHouseResponse = CreateHouseResponses[keyof CreateHouseResponse
 export type UnlockRoomData = {
     body: RoomIdDto;
     path?: never;
-    query?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
     url: '/saas/room/unlock';
 };
 
@@ -6739,6 +6821,22 @@ export type LockRoomResponses = {
 };
 
 export type LockRoomResponse = LockRoomResponses[keyof LockRoomResponses];
+
+export type GetRoomLockRecordsData = {
+    body: RoomIdDto;
+    path?: never;
+    query?: never;
+    url: '/saas/room/lock/records';
+};
+
+export type GetRoomLockRecordsResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListRoomLockRecordVo;
+};
+
+export type GetRoomLockRecordsResponse = GetRoomLockRecordsResponses[keyof GetRoomLockRecordsResponses];
 
 export type GetRoomListData = {
     body: RoomQueryDto;
