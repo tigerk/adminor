@@ -1,6 +1,18 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, PriceConfigDto, RoomGridDto, RoomIdDto, RoomListVo, RoomQueryDto, RoomSaveRemarkDto, RoomTotalVo, RoomTrackDto } from "@/types";
+import type {
+  ApiResponse,
+  PaginationResponse,
+  PriceConfigDto,
+  RoomGridDto,
+  RoomIdDto,
+  RoomListVo,
+  RoomLockDto,
+  RoomQueryDto,
+  RoomSaveRemarkDto,
+  RoomTotalVo,
+  RoomTrackDto
+} from "@/types";
 
 export const getRoomList = (data?: RoomQueryDto) => {
   return http.request<ApiResponse<PaginationResponse<RoomListVo>>>("post", baseUrlApi("room/list"), { data });
@@ -22,7 +34,7 @@ export const getRoomTotalVo = (data?: RoomQueryDto) => {
  * 锁定房间
  * @param data
  */
-export const lockRoom = (data?: RoomIdDto) => {
+export const lockRoom = (data?: RoomLockDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("room/lock"), { data });
 };
 

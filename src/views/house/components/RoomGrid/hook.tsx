@@ -1,12 +1,13 @@
 import { computed, type ComputedRef, type Ref, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { closeRoom, getRoomGrid, lockRoom, openRoom, unlockRoom } from "@/api/house/room";
+import { closeRoom, getRoomGrid, openRoom, unlockRoom } from "@/api/house/room";
 import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 import { getFocusById } from "@/api/house/focus";
 import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { useHouseView } from "@/views/house/components/HouseView/hook";
+import { useRoomLock } from "@/views/house/components/RoomLock/hook";
 import type { RoomGridItemVo, RoomGridDto, RoomListVo } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
@@ -73,6 +74,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const { openEntireEditDialog } = useEntireEdit();
   const { openShareEditDialog } = useShareEdit();
   const { openHouseViewDialog } = useHouseView();
+  const { openRoomLockDialog } = useRoomLock();
   const { openBookingDialog } = useBooking();
   const { openTenantDialog } = useTenant();
 
@@ -387,7 +389,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting && hasMore.value && !loadingMore.value && !loading.value) {
-            loadMore();
+            loadMore().then();
           }
         });
       },
@@ -472,19 +474,8 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   }
 
   const handleLockRoom = (room: RoomListVo) => {
-    ElMessageBox.confirm(`确认锁定 ${room.houseName}-房间 ${room.roomNumber}？`, "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning"
-    }).then(() => {
-      lockRoom({ roomId: room.roomId }).then(res => {
-        if (res.code === 0) {
-          ElMessage.success(`房间 ${room.roomNumber} 已锁定`);
-          resetAndReload().then();
-        } else {
-          ElMessage.error(`锁定房间 ${room.roomNumber} 失败：${res.message}`);
-        }
-      });
+    openRoomLockDialog(room, () => {
+      resetAndReload().then();
     });
   };
 

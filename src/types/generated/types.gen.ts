@@ -956,6 +956,22 @@ export type DictData = {
      */
     deletable?: boolean;
     /**
+     * 是否来自模板（1是 0否）
+     */
+    fromTemplate?: boolean;
+    /**
+     * 是否锁定不被模板覆盖（1是 0否）
+     */
+    locked?: boolean;
+    /**
+     * 最后同步模板版本
+     */
+    templateVer?: number;
+    /**
+     * 最后模板同步时间
+     */
+    syncTime?: string;
+    /**
      * 备注
      */
     remark?: string;
@@ -2293,6 +2309,32 @@ export type ResponseResultPriceConfigDto = {
     code?: number;
     message?: string;
     data?: PriceConfigDto;
+};
+
+/**
+ * 房间锁房 DTO
+ */
+export type RoomLockDto = {
+    /**
+     * 房间ID
+     */
+    roomId?: string;
+    /**
+     * 锁房原因: 1-永久锁房, 2-指定时间
+     */
+    lockReason?: number;
+    /**
+     * 开始时间
+     */
+    startTime?: string;
+    /**
+     * 结束时间
+     */
+    endTime?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
 };
 
 export type PageVoRoomListVo = {
@@ -6681,9 +6723,11 @@ export type OpenRoomResponses = {
 export type OpenRoomResponse = OpenRoomResponses[keyof OpenRoomResponses];
 
 export type LockRoomData = {
-    body: RoomIdDto;
+    body: RoomLockDto;
     path?: never;
-    query?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
     url: '/saas/room/lock';
 };
 
