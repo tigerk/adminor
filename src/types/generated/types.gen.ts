@@ -5264,9 +5264,33 @@ export type CompanyOrderRecordVo = {
      */
     statusName?: string;
     /**
+     * 支付方式：1线上支付，2线下转账，3后台代付
+     */
+    payMethod?: number;
+    /**
+     * 支付方式名称
+     */
+    payMethodName?: string;
+    /**
+     * 支付渠道：alipay/wechat/bank
+     */
+    payChannel?: string;
+    /**
+     * 第三方交易流水号
+     */
+    transactionNo?: string;
+    /**
      * 购买时间（已支付取支付时间，否则取创建时间）
      */
     purchaseTime?: string;
+    /**
+     * 支付完成时间
+     */
+    payTime?: string;
+    /**
+     * 支付回调通知时间
+     */
+    notifyTime?: string;
     /**
      * 备注
      */
@@ -5355,6 +5379,14 @@ export type CompanyOrderCreateDto = {
      * 购买数量
      */
     quantity: number;
+    /**
+     * 支付方式：1线上支付，2线下转账，3后台代付
+     */
+    payMethod?: number;
+    /**
+     * 支付渠道：alipay/wechat/bank
+     */
+    payChannel?: string;
     /**
      * 备注
      */
