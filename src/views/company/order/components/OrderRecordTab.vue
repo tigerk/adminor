@@ -24,20 +24,30 @@
     { label: "购买数量", prop: "quantity", minWidth: 90 },
     { label: "总金额（元）", prop: "totalAmount", minWidth: 110 },
     { label: "状态", prop: "statusName", minWidth: 90, slot: "statusName" },
+    { label: "支付方式", prop: "payMethodName", minWidth: 100 },
+    { label: "支付渠道", prop: "payChannel", minWidth: 100 },
+    { label: "交易流水号", prop: "transactionNo", minWidth: 180, showOverflowTooltip: true },
     {
       label: "购买时间",
       prop: "purchaseTime",
       minWidth: 160,
       formatter: ({ purchaseTime }) => (purchaseTime ? dayjs(purchaseTime).format("YYYY-MM-DD HH:mm:ss") : "-")
     },
+    {
+      label: "支付时间",
+      prop: "payTime",
+      minWidth: 160,
+      formatter: ({ payTime }) => (payTime ? dayjs(payTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+    },
     { label: "备注", prop: "remark", minWidth: 200, showOverflowTooltip: true }
   ];
 
   // 状态标签映射
-  const statusTagMap: Record<string, "success" | "warning" | "danger" | "info"> = {
-    success: "success",
-    pending: "warning",
-    failed: "danger"
+  const statusTagMap: Record<number, "success" | "warning" | "danger" | "info"> = {
+    1: "warning",
+    2: "success",
+    3: "info",
+    4: "danger"
   };
 
   async function fetchList() {

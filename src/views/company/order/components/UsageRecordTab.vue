@@ -33,10 +33,10 @@
     { label: "备注", prop: "remark", minWidth: 200, showOverflowTooltip: true }
   ];
 
-  const statusTagMap: Record<string, "success" | "warning" | "danger" | "info"> = {
-    success: "success",
-    pending: "warning",
-    failed: "danger"
+  const statusTagMap: Record<number, "success" | "warning" | "danger" | "info"> = {
+    1: "success",
+    2: "danger",
+    3: "warning"
   };
 
   async function fetchList() {
