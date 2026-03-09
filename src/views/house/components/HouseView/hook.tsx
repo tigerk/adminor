@@ -3,7 +3,7 @@ import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
-import { type BookingListVo, type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo } from "@/types";
+import { type BookingListVo, type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo, TenantTypeEnum } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
 import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
@@ -58,10 +58,11 @@ export const useHouseView = () => {
               });
             },
             onTenant: (r: RoomDetailVo) => {
-              openTenantDialog("添加", {
+              openTenantDialog("添加租客", {
                 lease: {
                   roomIds: [r.id],
-                  contractNature: 1
+                  contractNature: 1,
+                  tenantType: TenantTypeEnum.PERSONAL
                 } as any,
                 tenantPersonal: {} as any,
                 tenantCompany: {} as any,

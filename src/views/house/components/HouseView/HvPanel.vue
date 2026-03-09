@@ -12,9 +12,9 @@
     currentRoom: RoomDetailVo | null;
   }>();
 
-  const isLeased = computed(() => props.currentRoom?.roomStatus === OCCUPANCY_STATUS_ENUM.LEASED.code);
-  const isAvailable = computed(() => props.currentRoom?.roomStatus === OCCUPANCY_STATUS_ENUM.AVAILABLE.code);
-  const isBooked = computed(() => props.currentRoom?.roomStatus === OCCUPANCY_STATUS_ENUM.BOOKED.code);
+  const isLeased = computed(() => props.currentRoom?.occupancyStatus === OCCUPANCY_STATUS_ENUM.LEASED.code);
+  const isAvailable = computed(() => props.currentRoom?.occupancyStatus === OCCUPANCY_STATUS_ENUM.AVAILABLE.code);
+  const isBooked = computed(() => props.currentRoom?.occupancyStatus === OCCUPANCY_STATUS_ENUM.BOOKED.code);
 
   const tenantInfo = computed(() => {
     const li = props.currentRoom?.lease;

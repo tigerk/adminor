@@ -2,15 +2,11 @@
   <div class="function-menu-container">
     <!-- 触发按钮 -->
     <el-dropdown trigger="click" popper-class="function-menu-popper" @visible-change="handleVisibleChange">
-      <el-button class="function-menu-trigger">
-        <el-icon class="trigger-icon add-icon">
+      <div class="function-menu-trigger">
+        <el-icon class="plus-icon">
           <Plus />
         </el-icon>
-        <span class="trigger-text">添加</span>
-        <el-icon class="trigger-icon arrow-icon">
-          <ArrowDown />
-        </el-icon>
-      </el-button>
+      </div>
 
       <!-- 下拉菜单 -->
       <template #dropdown>
@@ -145,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ArrowDown, Brush, Calendar, Document, Edit, House, List, OfficeBuilding, Plus, Tickets, Tools, User, UserFilled, Van } from "@element-plus/icons-vue";
+  import { Brush, Calendar, Document, Edit, House, List, OfficeBuilding, Plus, Tickets, Tools, User, UserFilled, Van } from "@element-plus/icons-vue";
   import { ElMessage } from "element-plus";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import useTenant from "@/views/contract/tenant/utils/hook";
@@ -282,17 +278,15 @@
   .function-menu-trigger {
     display: flex;
     align-items: center;
-    gap: 4px;
-    height: 33px;
-    padding: 0 14px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #fff;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     background: var(--el-color-primary);
-    border: none;
-    border-radius: 8px;
     box-shadow: 0 2px 8px color-mix(in srgb, var(--el-color-primary) 40%, transparent);
+    cursor: pointer;
     transition: all 0.25s ease;
+    flex-shrink: 0;
 
     &:hover {
       background: var(--el-color-primary-dark-2);
@@ -305,21 +299,22 @@
       box-shadow: 0 2px 8px color-mix(in srgb, var(--el-color-primary) 40%, transparent);
     }
 
-    .trigger-icon {
-      font-size: 14px;
+    .plus-icon {
+      font-size: 16px;
+      color: #fff;
       transition: transform 0.25s ease;
-    }
-
-    .trigger-text {
-      margin: 0 2px;
     }
   }
 
-  // 触发器获得焦点或下拉展开时箭头旋转
+  // 展开时 + 号旋转为 ×
   .el-dropdown:focus-within,
   .el-dropdown[aria-expanded="true"] {
-    .arrow-icon {
-      transform: rotate(180deg);
+    .function-menu-trigger {
+      background: var(--el-color-primary-dark-2);
+
+      .plus-icon {
+        transform: rotate(45deg);
+      }
     }
   }
 </style>
