@@ -259,7 +259,7 @@
           <div class="sd-field-group">
             <label class="sd-label sd-label--required">电子印章图片</label>
             <div class="sd-upload">
-              <UploadImage v-model="form.sealUrls" :limit="1" :width="100" :height="100">
+              <UploadImage v-model="sealImageList" :limit="1" :width="100" :height="100">
                 <!-- 使用自定义提示 -->
                 <template #tip="">
                   <div>上传企业印章图片</div>
@@ -295,7 +295,7 @@
   import type { ContractSealCreateDto, ContractSealVo, IdNameVo } from "@/types/generated";
   import { ContractSealSourceEnum, ContractSealTypeEnum } from "@/types/enums";
   import { Stamp, Warning, OfficeBuilding, User, CircleCheckFilled, ArrowRight, Edit } from "@element-plus/icons-vue";
-  import { convertImage2string } from "@/utils/image";
+  import type { UploadFile } from "element-plus";
 
   const idTypeOptions = ID_TYPE_OPTIONS;
   const signList = ref<ContractSealVo[]>([]);
@@ -305,6 +305,22 @@
 
   /** null = 新增模式；有值 = 编辑模式（存当前记录 id） */
   const editingId = ref<string | null>(null);
+
+  /**
+   * 专门给 UploadImage 组件绑定，与 form 完全解耦。
+   * UploadImage 内部会将其改写为 UploadFile[]，保存时统一用 getSealUrls() 提取 url。
+   */
+  const sealImageList = ref<UploadFile[] | string[]>([]);
+
+  /** 从 sealImageList 中提取已上传成功的 URL */
+  const getSealUrls = (): string[] => {
+    return (sealImageList.value as any[]).map(item => (typeof item === "string" ? item : ((item as UploadFile).url ?? ""))).filter(url => !!url);
+  };
+
+  /** 是否有图片正在上传中 */
+  const hasUploadingItem = (): boolean => {
+    return (sealImageList.value as any[]).some(item => typeof item === "object" && item.status && item.status !== "success");
+  };
 
   const form = reactive({
     sealType: 1,
@@ -318,8 +334,7 @@
     operatorIdTypeLabel: "",
     operatorIdNo: "",
     operatorPhone: "",
-    status: 1,
-    sealUrls: [] as string[]
+    status: 1
   });
 
   function getCardTypeLabel(item: ContractSealVo) {
@@ -371,9 +386,10 @@
       operatorIdTypeLabel: item.operatorIdType != null ? (idTypeOptions.find(i => String(i.value) === String(item.operatorIdType))?.label ?? "") : "",
       operatorIdNo: item.operatorIdNo ?? "",
       operatorPhone: item.operatorPhone ?? "",
-      status: item.status ?? 1,
-      sealUrls: (item.sealUrls ?? []).filter(Boolean)
+      status: item.status ?? 1
     });
+    // 回填图片：直接给 sealImageList 赋 string[]，UploadImage 组件自己会转成 UploadFile[]
+    sealImageList.value = (item.sealUrls ?? []).filter(Boolean) as string[];
     dialogVisible.value = true;
   };
 
@@ -390,9 +406,9 @@
       operatorIdTypeLabel: "",
       operatorIdNo: "",
       operatorPhone: "",
-      status: 1,
-      sealUrls: []
+      status: 1
     });
+    sealImageList.value = [];
   };
 
   const handleSourceChange = (source: ContractSealSourceEnum) => {
@@ -402,7 +418,7 @@
     form.operatorIdTypeLabel = "";
     form.operatorIdNo = "";
     form.operatorPhone = "";
-    form.sealUrls = [];
+    sealImageList.value = [];
   };
 
   const handleOperatorChange = async (userId: string) => {
@@ -420,25 +436,6 @@
     form.operatorIdTypeLabel = "";
     form.operatorIdNo = "";
     form.operatorPhone = "";
-  };
-
-  const getSealUrlList = () => {
-    const list = form.sealUrls || [];
-    const urls = list
-      .map(item => {
-        if (!item) return "";
-        if (typeof item === "string") return item;
-        if (item.status && item.status !== "success") return "";
-        if (item.url) return item.url;
-        const resp = item.response || item?.raw?.response || item?.raw;
-        return resp?.url || resp?.fileUrl || resp?.path || resp?.data?.url || "";
-      })
-      .filter(Boolean);
-    return urls;
-  };
-
-  const hasUploadingSeal = () => {
-    return (form.sealUrls || []).some(item => typeof item === "object" && item?.status && item.status !== "success");
   };
 
   const validateForm = (): string => {
@@ -459,20 +456,19 @@
       if (!form.companyUscc) return "请输入统一社会信用代码";
       if (!form.legalPerson) return "请输入法人姓名";
       if (!form.legalPersonIdNo) return "请输入法人证件号";
-      if (hasUploadingSeal()) return "图片正在上传中，请稍后再保存";
-      if (getSealUrlList().length === 0) return "请上传电子印章";
+      if (hasUploadingItem()) return "图片正在上传中，请稍后再保存";
+      if (getSealUrls().length === 0) return "请上传电子印章";
     }
     return "";
   };
 
   const buildPayload = (): ContractSealCreateDto => {
-    const sealUrlList = getSealUrlList();
-    const firstSealUrl = sealUrlList[0];
+    const sealUrls = getSealUrls();
     const payload: ContractSealCreateDto = {
       sealType: form.source === ContractSealSourceEnum.FADADA ? form.sealType : ContractSealTypeEnum.COMPANY,
       source: form.source,
       status: form.status,
-      sealUrls: form.source === ContractSealSourceEnum.SELF && firstSealUrl ? [firstSealUrl] : []
+      sealUrls: form.source === ContractSealSourceEnum.SELF ? sealUrls : []
     };
     if (form.source === ContractSealSourceEnum.FADADA && form.sealType === 1) {
       Object.assign(payload, {
