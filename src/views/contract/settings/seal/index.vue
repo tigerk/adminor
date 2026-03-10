@@ -40,7 +40,7 @@
             </span>
             <span v-else class="seal-card__warn">
               <el-icon :size="10" class="warn-icon"><Warning /></el-icon>
-              无法律效应
+              企业签章不具备法律效应
             </span>
           </div>
         </div>
@@ -372,7 +372,7 @@
       operatorIdNo: item.operatorIdNo ?? "",
       operatorPhone: item.operatorPhone ?? "",
       status: item.status ?? 1,
-      sealUrls: item.sealUrls ?? []
+      sealUrls: (item.sealUrls ?? []).filter(Boolean)
     });
     dialogVisible.value = true;
   };
@@ -422,6 +422,25 @@
     form.operatorPhone = "";
   };
 
+  const getSealUrlList = () => {
+    const list = form.sealUrls || [];
+    const urls = list
+      .map(item => {
+        if (!item) return "";
+        if (typeof item === "string") return item;
+        if (item.status && item.status !== "success") return "";
+        if (item.url) return item.url;
+        const resp = item.response || item?.raw?.response || item?.raw;
+        return resp?.url || resp?.fileUrl || resp?.path || resp?.data?.url || "";
+      })
+      .filter(Boolean);
+    return urls;
+  };
+
+  const hasUploadingSeal = () => {
+    return (form.sealUrls || []).some(item => typeof item === "object" && item?.status && item.status !== "success");
+  };
+
   const validateForm = (): string => {
     if (!form.source) return "请选择签章来源";
     if (form.source === ContractSealSourceEnum.FADADA) {
@@ -440,14 +459,15 @@
       if (!form.companyUscc) return "请输入统一社会信用代码";
       if (!form.legalPerson) return "请输入法人姓名";
       if (!form.legalPersonIdNo) return "请输入法人证件号";
-      if (!form.sealUrls?.length) return "请上传电子印章";
+      if (hasUploadingSeal()) return "图片正在上传中，请稍后再保存";
+      if (getSealUrlList().length === 0) return "请上传电子印章";
     }
     return "";
   };
 
   const buildPayload = (): ContractSealCreateDto => {
-    let image2strings = convertImage2string(form.sealUrls);
-    const firstSealUrl = Array.isArray(image2strings) ? image2strings[0] : undefined;
+    const sealUrlList = getSealUrlList();
+    const firstSealUrl = sealUrlList[0];
     const payload: ContractSealCreateDto = {
       sealType: form.source === ContractSealSourceEnum.FADADA ? form.sealType : ContractSealTypeEnum.COMPANY,
       source: form.source,
