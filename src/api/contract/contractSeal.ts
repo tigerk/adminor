@@ -10,3 +10,7 @@ export const getContractSealList = (data?: ContractSealQueryDto) => {
 export const createContractSeal = (data: ContractSealCreateDto) => {
   return http.request<ApiResponse<string>>("post", baseUrlApi("contract/seal/create"), { data });
 };
+
+export const updateContractSeal = (data: ContractSealCreateDto) => {
+  return http.request<ApiResponse<string>>("post", baseUrlApi("contract/seal/update"), { data });
+};
