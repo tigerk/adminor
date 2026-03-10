@@ -4,15 +4,16 @@
       <el-col :span="12">
         <div class="grid-content ep-bg-purple w-full" style="align-items: flex-start">
           <el-form-item>
-            <el-radio-group v-model="queryForm.contractType" @change="onContractTemplateSearch">
+            <el-radio-group v-model="queryForm.contractType" @change="handleContractTypeChange">
               <el-radio-button v-for="item in contractTypeOptions" :key="item.value" :value="item.value">
                 {{ item.label }}
               </el-radio-button>
             </el-radio-group>
+            <el-button color="#626aef" class="ml-4" :disabled="viewMode === 'digital-sign'" @click="openDigitalSign">电子签章</el-button>
           </el-form-item>
         </div>
       </el-col>
-      <el-col :span="12" class="text-right">
+      <el-col v-if="viewMode === 'template'" :span="12" class="text-right">
         <el-space>
           <el-radio-group v-model="queryForm.status" @change="onContractTemplateSearch">
             <el-radio-button v-for="item in statusOptions" :key="item.value" :value="item.value">
@@ -29,7 +30,7 @@
       </el-col>
     </el-row>
     <!--项目列表-->
-    <el-row class="bg-bg_color w-full px-4 pt-0 overflow-auto">
+    <el-row v-if="viewMode === 'template'" class="bg-bg_color w-full px-4 pt-0 overflow-auto">
       <pure-table
         border
         row-key="id"
@@ -61,6 +62,9 @@
         </template>
       </pure-table>
     </el-row>
+    <el-row v-else class="bg-bg_color w-full px-4 pt-0 overflow-auto">
+      <DigitalSign />
+    </el-row>
     <el-dialog v-model="previewVisible" top="10px" title="合同预览" width="80%" height="100vh" :destroy-on-close="true" align-center :lock-scroll="true">
       <iframe title="合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
     </el-dialog>
@@ -76,7 +80,9 @@
   import Printer from "~icons/ep/printer";
   import { getContractTemplatePdf } from "@/api/contract/template";
   import { ref, watch } from "vue";
+  import { useRoute, useRouter } from "vue-router";
   import { message } from "@/utils/message";
+  import DigitalSign from "@/views/contract/settings/digital-sign/index.vue";
 
   defineOptions({
     name: "ContractTenant"
@@ -114,6 +120,31 @@
 
   const previewVisible = ref(false);
   const pdfUrl = ref("");
+  const route = useRoute();
+  const router = useRouter();
+  const viewMode = ref(route.query.view === "digital-sign" ? "digital-sign" : "template");
+
+  watch(
+    () => route.query.view,
+    val => {
+      viewMode.value = val === "digital-sign" ? "digital-sign" : "template";
+    },
+    { immediate: true }
+  );
+
+  watch(
+    () => route.query.contractType,
+    val => {
+      const nextType = Number(val);
+      if (nextType && nextType !== queryForm.contractType) {
+        queryForm.contractType = nextType as any;
+        if (viewMode.value === "template") {
+          onContractTemplateSearch();
+        }
+      }
+    },
+    { immediate: true }
+  );
 
   function handlePreview(row: any) {
     getContractTemplatePdf({ id: row.id })
@@ -134,6 +165,22 @@
       pdfUrl.value = "";
     }
   });
+
+  function openDigitalSign() {
+    router.push({ path: route.path, query: { ...route.query, view: "digital-sign" } });
+  }
+
+  function handleContractTypeChange(val: number) {
+    if (viewMode.value === "digital-sign") {
+      const nextQuery = { ...route.query, contractType: String(val) } as any;
+      delete nextQuery.view;
+      router.push({ path: route.path, query: nextQuery });
+      return;
+    }
+
+    router.replace({ path: route.path, query: { ...route.query, contractType: String(val) } });
+    onContractTemplateSearch();
+  }
 </script>
 
 <style lang="scss" scoped>

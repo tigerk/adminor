@@ -4917,6 +4917,166 @@ export type ResponseResultListLeaseBillListVo = {
 };
 
 /**
+ * 企业电子签章查询DTO
+ */
+export type CompanyDigitalSignQueryDto = {
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 签章类型：1=企业，2=个人
+     */
+    signType?: number;
+};
+
+/**
+ * 企业电子签章VO
+ */
+export type CompanyDigitalSignVo = {
+    /**
+     * 主键ID
+     */
+    id?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 签章类型：1=企业，2=个人
+     */
+    signType?: number;
+    /**
+     * 公司名称
+     */
+    name?: string;
+    /**
+     * 公司社会统一信用代码
+     */
+    uscc?: string;
+    /**
+     * 法人姓名
+     */
+    legalPerson?: string;
+    /**
+     * 法人证件类型
+     */
+    legalPersonIdType?: string;
+    /**
+     * 法人证件号
+     */
+    legalPersonIdNo?: string;
+    /**
+     * 操作人ID
+     */
+    operatorId?: string;
+    /**
+     * 操作人姓名
+     */
+    operatorName?: string;
+    /**
+     * 操作人联系电话
+     */
+    operatorPhone?: string;
+    /**
+     * 操作人证件类型
+     */
+    operatorIdType?: number;
+    /**
+     * 操作人证件号
+     */
+    operatorIdNo?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 电子印章图片URL列表
+     */
+    sealUrls?: Array<string>;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 更新时间
+     */
+    updateTime?: string;
+};
+
+export type ResponseResultListCompanyDigitalSignVo = {
+    code?: number;
+    message?: string;
+    data?: Array<CompanyDigitalSignVo>;
+};
+
+/**
+ * 企业电子签章创建/更新DTO
+ */
+export type CompanyDigitalSignCreateDto = {
+    /**
+     * 主键ID
+     */
+    id?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 签章类型：1=企业，2=个人
+     */
+    signType: number;
+    /**
+     * 公司名称
+     */
+    name?: string;
+    /**
+     * 公司社会统一信用代码
+     */
+    uscc?: string;
+    /**
+     * 法人姓名
+     */
+    legalPerson?: string;
+    /**
+     * 法人证件类型
+     */
+    legalPersonIdType?: string;
+    /**
+     * 法人证件号
+     */
+    legalPersonIdNo?: string;
+    /**
+     * 操作人ID
+     */
+    operatorId?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 电子印章图片URL列表
+     */
+    sealUrls?: Array<string>;
+    /**
+     * 创建人ID
+     */
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 修改人ID
+     */
+    updateBy?: string;
+    /**
+     * 修改时间
+     */
+    updateTime?: string;
+};
+
+/**
  * 预定查询参数
  */
 export type BookingQueryDto = {
@@ -8073,6 +8233,38 @@ export type GetBillInvalidListResponses = {
 
 export type GetBillInvalidListResponse = GetBillInvalidListResponses[keyof GetBillInvalidListResponses];
 
+export type List3Data = {
+    body?: CompanyDigitalSignQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/digital-sign/list';
+};
+
+export type List3Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListCompanyDigitalSignVo;
+};
+
+export type List3Response = List3Responses[keyof List3Responses];
+
+export type Create2Data = {
+    body: CompanyDigitalSignCreateDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/digital-sign/create';
+};
+
+export type Create2Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type Create2Response = Create2Responses[keyof Create2Responses];
+
 export type GetTenantTotalData = {
     body: BookingQueryDto;
     path?: never;
@@ -8191,21 +8383,21 @@ export type AssignUserRoleResponses = {
 
 export type AssignUserRoleResponse = AssignUserRoleResponses[keyof AssignUserRoleResponses];
 
-export type List3Data = {
+export type List4Data = {
     body: UserQueryDto;
     path?: never;
     query?: never;
     url: '/saas/company/user/list';
 };
 
-export type List3Responses = {
+export type List4Responses = {
     /**
      * OK
      */
     200: ResponseResultPageVoUserVo;
 };
 
-export type List3Response = List3Responses[keyof List3Responses];
+export type List4Response = List4Responses[keyof List4Responses];
 
 export type ListRoleIdsData = {
     body: CompanyUserIdDto;
@@ -8239,7 +8431,7 @@ export type Delete5Responses = {
 
 export type Delete5Response = Delete5Responses[keyof Delete5Responses];
 
-export type Create2Data = {
+export type Create3Data = {
     body: UserCreateDto;
     path?: never;
     query: {
@@ -8248,14 +8440,14 @@ export type Create2Data = {
     url: '/saas/company/user/create';
 };
 
-export type Create2Responses = {
+export type Create3Responses = {
     /**
      * OK
      */
     200: ResponseResultUserCreateVo;
 };
 
-export type Create2Response = Create2Responses[keyof Create2Responses];
+export type Create3Response = Create3Responses[keyof Create3Responses];
 
 export type GetOrderPageData = {
     body: CompanyOrderPageDto;
@@ -8272,6 +8464,22 @@ export type GetOrderPageResponses = {
 };
 
 export type GetOrderPageResponse = GetOrderPageResponses[keyof GetOrderPageResponses];
+
+export type GenPayQrcodeForDemoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/saas/company/order/qrcode/mock';
+};
+
+export type GenPayQrcodeForDemoResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultString;
+};
+
+export type GenPayQrcodeForDemoResponse = GenPayQrcodeForDemoResponses[keyof GenPayQrcodeForDemoResponses];
 
 export type GetProductListData = {
     body?: never;
@@ -8755,7 +8963,7 @@ export type SelectOneResponses = {
 
 export type SelectOneResponse = SelectOneResponses[keyof SelectOneResponses];
 
-export type List4Data = {
+export type List5Data = {
     body?: never;
     path?: never;
     query: {
@@ -8764,14 +8972,14 @@ export type List4Data = {
     url: '/saas/sys/dict/list';
 };
 
-export type List4Responses = {
+export type List5Responses = {
     /**
      * OK
      */
     200: ResponseResultListDictVo;
 };
 
-export type List4Response = List4Responses[keyof List4Responses];
+export type List5Response = List5Responses[keyof List5Responses];
 
 export type GetDictData = {
     body?: never;
@@ -8842,21 +9050,21 @@ export type PoiTipsResponses = {
 
 export type PoiTipsResponse = PoiTipsResponses[keyof PoiTipsResponses];
 
-export type List5Data = {
+export type List6Data = {
     body?: never;
     path?: never;
     query?: never;
     url: '/saas/region/list';
 };
 
-export type List5Responses = {
+export type List6Responses = {
     /**
      * OK
      */
     200: ResponseResultListRegionVo;
 };
 
-export type List5Response = List5Responses[keyof List5Responses];
+export type List6Response = List6Responses[keyof List6Responses];
 
 export type ThreeListData = {
     body?: never;

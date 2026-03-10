@@ -1,10 +1,12 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
+import { IdNameVo, ResponseResultListIdNameVo, ResponseResultUserVo, UserVo } from "@/types/generated";
+import { ApiResponse } from "@/types";
 
 type Result = {
   code: number;
   message: string;
-  data?: Array<any>;
+  data?: any;
 };
 
 type ResultTable = {
@@ -24,7 +26,12 @@ type ResultTable = {
 
 /** 获取所有用户下拉数据 */
 export const getCompanyUserOptions = () => {
-  return http.request<Result>("get", baseUrlApi("company/userOptions"), {});
+  return http.request<ApiResponse<Array<IdNameVo>>>("get", baseUrlApi("company/userOptions"), {});
+};
+
+/** 获取公司用户详情 */
+export const getCompanyUserDetail = (userId: string) => {
+  return http.request<ApiResponse<UserVo>>("get", baseUrlApi(`company/user/detail/${userId}`), {});
 };
 
 /** 获取公司管理-公司列表 */

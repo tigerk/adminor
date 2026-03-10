@@ -26,6 +26,7 @@ function useContractSettings() {
   const queryForm = reactive<ContractTemplateQueryFormProps>({
     templateName: "",
     status: "",
+    contractType: 1,
     pageSize: 15,
     currentPage: 1
   });
