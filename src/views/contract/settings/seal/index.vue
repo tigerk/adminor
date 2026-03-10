@@ -13,11 +13,6 @@
           <span class="seal-topbar__count">{{ signList.length }} 个签章</span>
         </div>
 
-        <!-- 添加入口（紧靠标题行右端） -->
-        <button class="seal-add-entry" @click="openDialog">
-          <el-icon :size="13" color="#4f6ef7"><Plus /></el-icon>
-          <span class="seal-add-entry__title">添加电子签章</span>
-        </button>
       </div>
 
       <!-- 第二行：法律提示 -->
@@ -271,7 +266,7 @@
   import { createContractSeal, getContractSealList } from "@/api/contract/contractSeal";
   import type { ContractSealCreateDto, ContractSealVo, IdNameVo } from "@/types/generated";
   import { ContractSealSourceEnum, ContractSealTypeEnum } from "@/types/enums";
-  import { Stamp, Warning, OfficeBuilding, User, CircleCheckFilled, Plus, ArrowRight } from "@element-plus/icons-vue";
+  import { Stamp, Warning, OfficeBuilding, User, CircleCheckFilled, ArrowRight } from "@element-plus/icons-vue";
   import { convertImage2string } from "@/utils/image";
 
   const idTypeOptions = ID_TYPE_OPTIONS;
@@ -450,6 +445,8 @@
   onMounted(() => {
     fetchList();
   });
+
+  defineExpose({ openDialog });
 </script>
 
 <style lang="scss" scoped>
@@ -537,43 +534,6 @@
     border-radius: 5px;
     padding: 4px 10px;
     width: fit-content;
-  }
-
-  /* ── 添加入口按钮（紧凑横向，贴标题行右侧） ── */
-  .seal-add-entry {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 10px 0 7px;
-    height: 28px;
-    background: #eef1ff;
-    border: 1px solid #c7d2fe;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    flex-shrink: 0;
-
-    &:hover {
-      background: #4f6ef7;
-      border-color: #4f6ef7;
-      box-shadow: 0 2px 8px rgba(79, 110, 247, 0.3);
-
-      .seal-add-entry__title {
-        color: #fff;
-      }
-
-      :deep(.el-icon) {
-        color: #fff !important;
-      }
-    }
-  }
-
-  .seal-add-entry__title {
-    font-size: 13px;
-    font-weight: 500;
-    color: #4f6ef7;
-    white-space: nowrap;
-    transition: color 0.15s;
   }
 
   /* =============================================

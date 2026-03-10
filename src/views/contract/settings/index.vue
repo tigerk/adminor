@@ -27,11 +27,11 @@
         </button>
       </div>
 
-      <!-- 右侧操作区（仅模板列表模式显示） -->
+      <!-- 右侧操作区 -->
       <transition name="toolbar-fade">
-        <div v-if="viewMode === 'template'" class="toolbar-right">
+        <div v-show="viewMode === 'template' || viewMode === 'seal'" class="toolbar-right">
           <!-- 状态筛选 -->
-          <div class="status-filter">
+          <div v-if="viewMode === 'template'" class="status-filter">
             <button
               v-for="item in statusOptions"
               :key="item.value"
@@ -45,6 +45,7 @@
 
           <!-- 搜索框 -->
           <el-input
+            v-if="viewMode === 'template'"
             v-model="queryForm.templateName"
             placeholder="搜索模板名称"
             clearable
@@ -58,9 +59,15 @@
           </el-input>
 
           <!-- 添加按钮 -->
-          <el-button type="primary" class="add-btn" @click="openContractTemplateDialog()">
+          <el-button v-if="viewMode === 'template'" type="primary" class="add-btn" @click="openContractTemplateDialog()">
             <el-icon class="mr-1"><Plus /></el-icon>
             添加模板
+          </el-button>
+
+          <!-- 电子签章添加按钮 -->
+          <el-button v-else type="primary" class="add-btn" @click="openSealDialog">
+            <el-icon class="mr-1"><Plus /></el-icon>
+            添加电子签章
           </el-button>
         </div>
       </transition>
@@ -102,7 +109,7 @@
 
     <!-- 电子签章视图 -->
     <el-row v-else class="bg-bg_color w-full px-4 pt-0 overflow-auto">
-      <Seal />
+      <Seal ref="sealRef" />
     </el-row>
 
     <!-- 合同预览弹窗 -->
@@ -154,6 +161,7 @@
   const route = useRoute();
   const router = useRouter();
   const viewMode = ref(route.query.view === "seal" ? "seal" : "template");
+  const sealRef = ref<InstanceType<typeof Seal> | null>(null);
 
   watch(
     () => route.query.view,
@@ -201,6 +209,10 @@
 
   function openSeal() {
     router.push({ path: route.path, query: { ...route.query, view: "seal" } });
+  }
+
+  function openSealDialog() {
+    sealRef.value?.openDialog?.();
   }
 
   function handleContractTypeChange(val: number) {
@@ -424,3 +436,6 @@
     margin: 0;
   }
 </style>
+/* 电子签章添加按钮（右侧） */ .seal-add-entry { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 8px; border: 1px solid #d4dcff; background:
+linear-gradient(135deg, #eef1ff, #dde4ff); color: #4f6ef7; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; } .seal-add-entry:hover { background:
+linear-gradient(135deg, #e6ebff, #d2dbff); border-color: #c5d0ff; } .seal-add-entry__title { line-height: 1; }
