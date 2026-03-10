@@ -3798,6 +3798,238 @@ export type ContractTemplateCreateDto = {
 };
 
 /**
+ * 企业电子印章查询DTO
+ */
+export type CompanySealQueryDto = {
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 印章类型:1=企业,2=个人
+     */
+    sealType?: number;
+    /**
+     * 来源:1=自有图片,2=法大大,3=E签宝,4=其他第三方
+     */
+    source?: number;
+    /**
+     * 状态:0=待审核,1=正常,2=已禁用,3=审核失败
+     */
+    status?: number;
+};
+
+/**
+ * 企业电子印章VO
+ */
+export type CompanySealVo = {
+    /**
+     * 主键ID
+     */
+    id?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 印章类型:1=企业,2=个人
+     */
+    sealType?: number;
+    /**
+     * 来源:1=自有图片,2=法大大,3=E签宝,4=其他第三方
+     */
+    source?: number;
+    /**
+     * 公司名称
+     */
+    companyName?: string;
+    /**
+     * 公司社会统一信用代码
+     */
+    companyUscc?: string;
+    /**
+     * 法人姓名
+     */
+    legalPerson?: string;
+    /**
+     * 法人证件类型
+     */
+    legalPersonIdType?: string;
+    /**
+     * 法人证件号
+     */
+    legalPersonIdNo?: string;
+    /**
+     * 操作人ID
+     */
+    operatorId?: string;
+    /**
+     * 操作人姓名
+     */
+    operatorName?: string;
+    /**
+     * 操作人联系电话
+     */
+    operatorPhone?: string;
+    /**
+     * 操作人证件类型
+     */
+    operatorIdType?: number;
+    /**
+     * 操作人证件号
+     */
+    operatorIdNo?: string;
+    /**
+     * 状态:0=待审核,1=正常,2=已禁用,3=审核失败
+     */
+    status?: number;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 电子印章图片URL列表
+     */
+    sealUrls?: Array<string>;
+    /**
+     * 服务商平台的账号/企业ID
+     */
+    providerAccountId?: string;
+    /**
+     * 服务商平台的印章ID
+     */
+    providerSealId?: string;
+    /**
+     * 认证状态:0=未认证,1=认证中,2=已认证,3=失败
+     */
+    authStatus?: number;
+    /**
+     * 认证完成时间
+     */
+    authTime?: string;
+    /**
+     * 授权到期时间
+     */
+    expireTime?: string;
+    /**
+     * 各服务商差异化字段,JSON存储
+     */
+    providerExtra?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 更新时间
+     */
+    updateTime?: string;
+};
+
+export type ResponseResultListCompanySealVo = {
+    code?: number;
+    message?: string;
+    data?: Array<CompanySealVo>;
+};
+
+/**
+ * 企业电子印章创建/更新DTO
+ */
+export type CompanySealCreateDto = {
+    /**
+     * 主键ID
+     */
+    id?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 印章类型:1=企业,2=个人
+     */
+    sealType: number;
+    /**
+     * 来源:1=自有图片,2=法大大,3=E签宝,4=其他第三方
+     */
+    source?: number;
+    /**
+     * 公司名称
+     */
+    companyName?: string;
+    /**
+     * 公司社会统一信用代码
+     */
+    companyUscc?: string;
+    /**
+     * 法人姓名
+     */
+    legalPerson?: string;
+    /**
+     * 法人证件类型
+     */
+    legalPersonIdType?: string;
+    /**
+     * 法人证件号
+     */
+    legalPersonIdNo?: string;
+    /**
+     * 操作人ID
+     */
+    operatorId?: string;
+    /**
+     * 状态:0=待审核,1=正常,2=已禁用,3=审核失败
+     */
+    status?: number;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 电子印章图片URL列表
+     */
+    sealUrls?: Array<string>;
+    /**
+     * 服务商平台的账号/企业ID
+     */
+    providerAccountId?: string;
+    /**
+     * 服务商平台的印章ID
+     */
+    providerSealId?: string;
+    /**
+     * 认证状态:0=未认证,1=认证中,2=已认证,3=失败
+     */
+    authStatus?: number;
+    /**
+     * 认证完成时间
+     */
+    authTime?: string;
+    /**
+     * 授权到期时间
+     */
+    expireTime?: string;
+    /**
+     * 各服务商差异化字段,JSON存储
+     */
+    providerExtra?: string;
+    /**
+     * 创建人ID
+     */
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 修改人ID
+     */
+    updateBy?: string;
+    /**
+     * 修改时间
+     */
+    updateTime?: string;
+};
+
+/**
  * 预定ID查询 DTO
  */
 export type BookingIdDto = {
@@ -4914,166 +5146,6 @@ export type ResponseResultListLeaseBillListVo = {
     code?: number;
     message?: string;
     data?: Array<LeaseBillListVo>;
-};
-
-/**
- * 企业电子签章查询DTO
- */
-export type CompanyDigitalSignQueryDto = {
-    /**
-     * 公司ID
-     */
-    companyId?: string;
-    /**
-     * 签章类型：1=企业，2=个人
-     */
-    signType?: number;
-};
-
-/**
- * 企业电子签章VO
- */
-export type CompanyDigitalSignVo = {
-    /**
-     * 主键ID
-     */
-    id?: string;
-    /**
-     * 公司ID
-     */
-    companyId?: string;
-    /**
-     * 签章类型：1=企业，2=个人
-     */
-    signType?: number;
-    /**
-     * 公司名称
-     */
-    name?: string;
-    /**
-     * 公司社会统一信用代码
-     */
-    uscc?: string;
-    /**
-     * 法人姓名
-     */
-    legalPerson?: string;
-    /**
-     * 法人证件类型
-     */
-    legalPersonIdType?: string;
-    /**
-     * 法人证件号
-     */
-    legalPersonIdNo?: string;
-    /**
-     * 操作人ID
-     */
-    operatorId?: string;
-    /**
-     * 操作人姓名
-     */
-    operatorName?: string;
-    /**
-     * 操作人联系电话
-     */
-    operatorPhone?: string;
-    /**
-     * 操作人证件类型
-     */
-    operatorIdType?: number;
-    /**
-     * 操作人证件号
-     */
-    operatorIdNo?: string;
-    /**
-     * 备注
-     */
-    remark?: string;
-    /**
-     * 电子印章图片URL列表
-     */
-    sealUrls?: Array<string>;
-    /**
-     * 创建时间
-     */
-    createTime?: string;
-    /**
-     * 更新时间
-     */
-    updateTime?: string;
-};
-
-export type ResponseResultListCompanyDigitalSignVo = {
-    code?: number;
-    message?: string;
-    data?: Array<CompanyDigitalSignVo>;
-};
-
-/**
- * 企业电子签章创建/更新DTO
- */
-export type CompanyDigitalSignCreateDto = {
-    /**
-     * 主键ID
-     */
-    id?: string;
-    /**
-     * 公司ID
-     */
-    companyId?: string;
-    /**
-     * 签章类型：1=企业，2=个人
-     */
-    signType: number;
-    /**
-     * 公司名称
-     */
-    name?: string;
-    /**
-     * 公司社会统一信用代码
-     */
-    uscc?: string;
-    /**
-     * 法人姓名
-     */
-    legalPerson?: string;
-    /**
-     * 法人证件类型
-     */
-    legalPersonIdType?: string;
-    /**
-     * 法人证件号
-     */
-    legalPersonIdNo?: string;
-    /**
-     * 操作人ID
-     */
-    operatorId?: string;
-    /**
-     * 备注
-     */
-    remark?: string;
-    /**
-     * 电子印章图片URL列表
-     */
-    sealUrls?: Array<string>;
-    /**
-     * 创建人ID
-     */
-    createBy?: string;
-    /**
-     * 创建时间
-     */
-    createTime?: string;
-    /**
-     * 修改人ID
-     */
-    updateBy?: string;
-    /**
-     * 修改时间
-     */
-    updateTime?: string;
 };
 
 /**
@@ -7999,6 +8071,38 @@ export type CreateContractTemplateResponses = {
 
 export type CreateContractTemplateResponse = CreateContractTemplateResponses[keyof CreateContractTemplateResponses];
 
+export type List3Data = {
+    body?: CompanySealQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/seal/list';
+};
+
+export type List3Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListCompanySealVo;
+};
+
+export type List3Response = List3Responses[keyof List3Responses];
+
+export type Create2Data = {
+    body: CompanySealCreateDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/seal/create';
+};
+
+export type Create2Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type Create2Response = Create2Responses[keyof Create2Responses];
+
 export type UpdateLeaseData = {
     body: TenantCreateDto;
     path?: never;
@@ -8232,38 +8336,6 @@ export type GetBillInvalidListResponses = {
 };
 
 export type GetBillInvalidListResponse = GetBillInvalidListResponses[keyof GetBillInvalidListResponses];
-
-export type List3Data = {
-    body?: CompanyDigitalSignQueryDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/digital-sign/list';
-};
-
-export type List3Responses = {
-    /**
-     * OK
-     */
-    200: ResponseResultListCompanyDigitalSignVo;
-};
-
-export type List3Response = List3Responses[keyof List3Responses];
-
-export type Create2Data = {
-    body: CompanyDigitalSignCreateDto;
-    path?: never;
-    query?: never;
-    url: '/saas/contract/digital-sign/create';
-};
-
-export type Create2Responses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLong;
-};
-
-export type Create2Response = Create2Responses[keyof Create2Responses];
 
 export type GetTenantTotalData = {
     body: BookingQueryDto;
