@@ -90,6 +90,13 @@
             </div>
           </template>
           <!-- 编辑按钮，绝对定位到右下角 -->
+          <el-popconfirm title="确认删除该电子签章？" @confirm="handleDelete(item)">
+            <template #reference>
+              <button class="seal-card__delete-btn" @click.stop>
+                <el-icon :size="14"><Delete /></el-icon>
+              </button>
+            </template>
+          </el-popconfirm>
           <button class="seal-card__edit-btn" @click.stop="openEditDialog(item)">
             <el-icon :size="14"><Edit /></el-icon>
           </button>
@@ -291,10 +298,10 @@
   import { ID_TYPE_OPTIONS } from "@/constants";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getCompanyUserOptions, getCompanyUserDetail } from "@/api/company";
-  import { createContractSeal, updateContractSeal, getContractSealList } from "@/api/contract/contractSeal";
+  import { createContractSeal, updateContractSeal, deleteContractSeal, getContractSealList } from "@/api/contract/contractSeal";
   import type { ContractSealCreateDto, ContractSealVo, IdNameVo } from "@/types/generated";
   import { ContractSealSourceEnum, ContractSealTypeEnum } from "@/types/enums";
-  import { Stamp, Warning, OfficeBuilding, User, CircleCheckFilled, ArrowRight, Edit } from "@element-plus/icons-vue";
+  import { Stamp, Warning, OfficeBuilding, User, CircleCheckFilled, ArrowRight, Edit, Delete } from "@element-plus/icons-vue";
   import type { UploadFile } from "element-plus";
 
   const idTypeOptions = ID_TYPE_OPTIONS;
@@ -519,6 +526,17 @@
       fetchList().then();
     } else {
       message(resp.message || "保存失败", { type: "error" });
+    }
+  };
+
+  const handleDelete = async (item: ContractSealVo) => {
+    if (!item.id) return;
+    const resp = await deleteContractSeal({ id: item.id });
+    if (resp.code === 0) {
+      message("删除电子签章成功", { type: "success" });
+      fetchList();
+    } else {
+      message(resp.message || "删除失败", { type: "error" });
     }
   };
 
@@ -1274,6 +1292,27 @@ scoped 样式用 :global(.dark) 触发
 
     &:hover {
       color: var(--el-color-primary);
+    }
+  }
+
+  .seal-card__delete-btn {
+    position: absolute;
+    right: 28px;
+    bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--el-text-color-placeholder);
+    cursor: pointer;
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--el-color-danger);
     }
   }
 </style>

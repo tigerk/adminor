@@ -3798,6 +3798,104 @@ export type ContractTemplateCreateDto = {
 };
 
 /**
+ * 合同电子印章创建/更新DTO
+ */
+export type ContractSealCreateDto = {
+    /**
+     * 主键ID
+     */
+    id?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 印章类型:1=企业,2=个人
+     */
+    sealType: number;
+    /**
+     * 来源:1=自有图片,2=法大大,3=E签宝,4=其他第三方
+     */
+    source?: number;
+    /**
+     * 公司名称
+     */
+    companyName?: string;
+    /**
+     * 公司社会统一信用代码
+     */
+    companyUscc?: string;
+    /**
+     * 法人姓名
+     */
+    legalPerson?: string;
+    /**
+     * 法人证件类型
+     */
+    legalPersonIdType?: string;
+    /**
+     * 法人证件号
+     */
+    legalPersonIdNo?: string;
+    /**
+     * 操作人ID
+     */
+    operatorId?: string;
+    /**
+     * 状态:0=待审核,1=正常,2=已禁用,3=审核失败
+     */
+    status?: number;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 电子印章图片URL列表
+     */
+    sealUrls?: Array<string>;
+    /**
+     * 服务商平台的账号/企业ID
+     */
+    providerAccountId?: string;
+    /**
+     * 服务商平台的印章ID
+     */
+    providerSealId?: string;
+    /**
+     * 认证状态:0=未认证,1=认证中,2=已认证,3=失败
+     */
+    authStatus?: number;
+    /**
+     * 认证完成时间
+     */
+    authTime?: string;
+    /**
+     * 授权到期时间
+     */
+    expireTime?: string;
+    /**
+     * 各服务商差异化字段,JSON存储
+     */
+    providerExtra?: string;
+    /**
+     * 创建人ID
+     */
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 修改人ID
+     */
+    updateBy?: string;
+    /**
+     * 修改时间
+     */
+    updateTime?: string;
+};
+
+/**
  * 合同电子印章查询DTO
  */
 export type ContractSealQueryDto = {
@@ -3931,102 +4029,11 @@ export type ResponseResultListContractSealVo = {
     data?: Array<ContractSealVo>;
 };
 
-/**
- * 合同电子印章创建/更新DTO
- */
-export type ContractSealCreateDto = {
+export type ContractSealDeleteDto = {
     /**
-     * 主键ID
+     * 合同电子印章ID
      */
-    id?: string;
-    /**
-     * 公司ID
-     */
-    companyId?: string;
-    /**
-     * 印章类型:1=企业,2=个人
-     */
-    sealType: number;
-    /**
-     * 来源:1=自有图片,2=法大大,3=E签宝,4=其他第三方
-     */
-    source?: number;
-    /**
-     * 公司名称
-     */
-    companyName?: string;
-    /**
-     * 公司社会统一信用代码
-     */
-    companyUscc?: string;
-    /**
-     * 法人姓名
-     */
-    legalPerson?: string;
-    /**
-     * 法人证件类型
-     */
-    legalPersonIdType?: string;
-    /**
-     * 法人证件号
-     */
-    legalPersonIdNo?: string;
-    /**
-     * 操作人ID
-     */
-    operatorId?: string;
-    /**
-     * 状态:0=待审核,1=正常,2=已禁用,3=审核失败
-     */
-    status?: number;
-    /**
-     * 备注
-     */
-    remark?: string;
-    /**
-     * 电子印章图片URL列表
-     */
-    sealUrls?: Array<string>;
-    /**
-     * 服务商平台的账号/企业ID
-     */
-    providerAccountId?: string;
-    /**
-     * 服务商平台的印章ID
-     */
-    providerSealId?: string;
-    /**
-     * 认证状态:0=未认证,1=认证中,2=已认证,3=失败
-     */
-    authStatus?: number;
-    /**
-     * 认证完成时间
-     */
-    authTime?: string;
-    /**
-     * 授权到期时间
-     */
-    expireTime?: string;
-    /**
-     * 各服务商差异化字段,JSON存储
-     */
-    providerExtra?: string;
-    /**
-     * 创建人ID
-     */
-    createBy?: string;
-    /**
-     * 创建时间
-     */
-    createTime?: string;
-    /**
-     * 修改人ID
-     */
-    updateBy?: string;
-    /**
-     * 修改时间
-     */
-    updateTime?: string;
+    id: string;
 };
 
 /**
@@ -8071,6 +8078,22 @@ export type CreateContractTemplateResponses = {
 
 export type CreateContractTemplateResponse = CreateContractTemplateResponses[keyof CreateContractTemplateResponses];
 
+export type Update2Data = {
+    body: ContractSealCreateDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/seal/update';
+};
+
+export type Update2Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type Update2Response = Update2Responses[keyof Update2Responses];
+
 export type List3Data = {
     body?: ContractSealQueryDto;
     path?: never;
@@ -8086,6 +8109,22 @@ export type List3Responses = {
 };
 
 export type List3Response = List3Responses[keyof List3Responses];
+
+export type Delete5Data = {
+    body: ContractSealDeleteDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/seal/delete';
+};
+
+export type Delete5Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type Delete5Response = Delete5Responses[keyof Delete5Responses];
 
 export type Create2Data = {
     body: ContractSealCreateDto;
@@ -8487,21 +8526,21 @@ export type ListRoleIdsResponses = {
 
 export type ListRoleIdsResponse = ListRoleIdsResponses[keyof ListRoleIdsResponses];
 
-export type Delete5Data = {
+export type Delete6Data = {
     body: Array<string>;
     path?: never;
     query?: never;
     url: '/saas/company/user/delete';
 };
 
-export type Delete5Responses = {
+export type Delete6Responses = {
     /**
      * OK
      */
     200: ResponseResultInteger;
 };
 
-export type Delete5Response = Delete5Responses[keyof Delete5Responses];
+export type Delete6Response = Delete6Responses[keyof Delete6Responses];
 
 export type Create3Data = {
     body: UserCreateDto;
@@ -9324,21 +9363,21 @@ export type CaptchaResponses = {
     200: unknown;
 };
 
-export type Delete6Data = {
+export type Delete7Data = {
     body?: never;
     path?: never;
     query?: never;
     url: '/saas/sys/dict/delete/{id}';
 };
 
-export type Delete6Responses = {
+export type Delete7Responses = {
     /**
      * OK
      */
     200: ResponseResultBoolean;
 };
 
-export type Delete6Response = Delete6Responses[keyof Delete6Responses];
+export type Delete7Response = Delete7Responses[keyof Delete7Responses];
 
 export type Index3Data = {
     body?: never;
