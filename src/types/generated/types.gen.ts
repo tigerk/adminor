@@ -3694,6 +3694,18 @@ export type ContractTemplateListVo = {
      */
     deptIds?: Array<string>;
     /**
+     * 电子签章ID
+     */
+    sealId?: string;
+    /**
+     * 电子签章名称
+     */
+    sealName?: string;
+    /**
+     * 电子签章来源
+     */
+    sealSource?: number;
+    /**
      * 合同状态：0=未生效，1=生效中，-1=已作废
      */
     status?: number;
@@ -3771,6 +3783,10 @@ export type ContractTemplateCreateDto = {
      * 生效部门json，格式：[1,2,3]
      */
     deptIds: Array<string>;
+    /**
+     * 电子签章ID
+     */
+    sealId?: string;
     /**
      * 合同状态：0=未生效，1=生效中
      */

@@ -11,6 +11,7 @@ import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { ContractTemplateQueryFormProps } from "@/views/contract/settings/utils/types";
 import type { ContractTemplateListVo } from "@/types";
+import { ContractSealSourceEnum } from "@/types/enums";
 import { doc } from "prettier";
 import { handleTree } from "@/utils/tree";
 import { getDeptList } from "@/api/sys/dept";
@@ -32,7 +33,7 @@ function useContractSettings() {
   });
 
   const curRow = ref();
-  const contractTemplateList = ref([]);
+  const contractTemplateList = ref<ContractTemplateListVo[]>([]);
   const houseOptions = ref([]);
   const tenantStatusTotal = ref([]);
   const deptData = ref([]);
@@ -47,6 +48,20 @@ function useContractSettings() {
 
   const mutableContractTemplateStatusOptions = [...CONTRACT_TEMPLATE_STATUS_OPTIONS] as any[];
   const mutableContractTypeOptions = [...CONTRACT_TYPE_OPTIONS] as any[];
+  const getSealSourceLabel = (source?: number) => {
+    switch (source) {
+      case ContractSealSourceEnum.SELF:
+        return "企业章";
+      case ContractSealSourceEnum.FADADA:
+        return "法大大";
+      case ContractSealSourceEnum.EQIBAO:
+        return "E签宝";
+      case ContractSealSourceEnum.OTHER:
+        return "其他";
+      default:
+        return "—";
+    }
+  };
 
   // 计算当前页的起始索引
   const startIndex = computed(() => (pagination.currentPage - 1) * pagination.pageSize + 1);
@@ -97,6 +112,18 @@ function useContractSettings() {
       label: "模板名称",
       prop: "templateName",
       minWidth: 250
+    },
+    {
+      label: "电子签章",
+      prop: "sealName",
+      minWidth: 140,
+      cellRenderer: ({ row }) => <span>{row.sealName || "—"}</span>
+    },
+    {
+      label: "签章来源",
+      prop: "sealSource",
+      minWidth: 120,
+      cellRenderer: ({ row }) => <span>{getSealSourceLabel(row.sealSource)}</span>
     },
     {
       label: "生效部门",

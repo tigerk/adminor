@@ -68,6 +68,12 @@
               </template>
             </el-tree-select>
           </el-form-item>
+          <el-form-item label="电子签章">
+            <el-select v-model="formInline.sealId" placeholder="选择电子签章（可选）" class="w-full" clearable filterable :loading="sealLoading">
+              <el-option v-for="item in sealOptions" :key="item.id" :label="getSealOptionLabel(item)" :value="item.id" />
+            </el-select>
+            <el-text type="info" size="small" class="seal-tip">请先在“电子签章”中创建</el-text>
+          </el-form-item>
         </el-col>
       </el-row>
     </el-form>
@@ -114,6 +120,9 @@
   import { getDeptList } from "@/api/sys/dept";
   import { handleTree } from "@/utils/tree";
   import { getContractTemplateParams } from "@/api/contract/template";
+  import { getContractSealList } from "@/api/contract/contractSeal";
+  import type { ContractSealVo } from "@/types/generated";
+  import { ContractSealSourceEnum, ContractSealTypeEnum } from "@/types/enums";
 
   interface FormProps {
     formInline: ContractTemplateListVo;
@@ -131,6 +140,7 @@
     templateContent: props.formInline?.templateContent || "",
     status: props.formInline?.status ?? 1,
     deptIds: props.formInline?.deptIds || [],
+    sealId: props.formInline?.sealId || undefined,
     ...props.formInline
   });
 
@@ -158,12 +168,21 @@
 
   // 合同参数列表
   const contractParams = ref([]);
+  const sealOptions = ref<ContractSealVo[]>([]);
+  const sealLoading = ref(false);
 
   // 过滤参数
   const filteredParams = computed(() => {
     if (!paramSearch.value) return contractParams.value;
     return contractParams.value.filter(param => param.label.includes(paramSearch.value));
   });
+
+  const getSealOptionLabel = (item: ContractSealVo) => {
+    if (item.source === ContractSealSourceEnum.FADADA && item.sealType === ContractSealTypeEnum.PERSONAL) {
+      return item.operatorName || "个人签章";
+    }
+    return item.companyName || "企业签章";
+  };
 
   // 加载合同参数
   async function loadContractParams() {
@@ -193,6 +212,18 @@
       ElMessage.error("获取部门数据失败");
     } finally {
       deptLoading.value = false;
+    }
+  }
+
+  async function fetchSealOptions() {
+    sealLoading.value = true;
+    try {
+      const resp = await getContractSealList({});
+      if (resp.code === 0) {
+        sealOptions.value = resp.data || [];
+      }
+    } finally {
+      sealLoading.value = false;
     }
   }
 
@@ -344,6 +375,7 @@
   onMounted(async () => {
     await fetchDeptData();
     loadContractParams();
+    fetchSealOptions();
   });
 </script>
 
@@ -427,6 +459,11 @@
       display: flex;
       justify-content: flex-end;
     }
+  }
+
+  .seal-tip {
+    margin-top: 4px;
+    display: inline-block;
   }
 
   .preview-container {
