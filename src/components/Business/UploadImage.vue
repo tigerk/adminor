@@ -10,110 +10,65 @@
   import { uploadFile } from "@/api/upload";
   import { isStringArray } from "@/utils/yeah";
 
-  defineOptions({
-    name: "UploadImage"
-  });
+  defineOptions({ name: "UploadImage" });
 
   const rawFileList = defineModel<UploadFile[] | string[]>();
 
   const props = defineProps({
-    limit: {
-      type: Number,
-      default: 1
-    },
-    width: {
-      type: [Number, String],
-      default: undefined // 不设置默认值，使用 Element Plus 默认大小
-    },
-    height: {
-      type: [Number, String],
-      default: undefined
-    }
+    limit: { type: Number, default: 1 },
+    width: { type: [Number, String], default: undefined },
+    height: { type: [Number, String], default: undefined }
   });
 
-  // 生成唯一的组件ID
   const instance = getCurrentInstance();
   const componentId = `upload-image-${instance?.uid || Date.now()}`;
 
-  const convertUrlsToUploadFiles = (urls: string[]): UploadFile[] => {
-    return urls.map((url, index) => {
-      const fileName = url.split("/").pop() || `image-${index + 1}`;
-      const fileExtension = fileName.split(".").pop()?.toLowerCase() || "jpeg";
-
-      let mimeType = "image/jpeg";
-      switch (fileExtension) {
-        case "png":
-          mimeType = "image/png";
-          break;
-        case "gif":
-          mimeType = "image/gif";
-          break;
-        case "jpg":
-        case "jpeg":
-          mimeType = "image/jpeg";
-          break;
-        default:
-          mimeType = "image/jpeg";
-      }
-
-      return {
-        uid: Date.now() + Math.random() * 1000 + index,
-        name: fileName,
-        status: "success" as const,
-        url: url,
-        size: 0,
-        type: mimeType,
-        percentage: 100,
-        raw: undefined
-      } as UploadFile;
-    });
-  };
-
+  // ─── fileList 由 el-upload 通过 v-model 自行维护 ─────────────────────
+  // 我们只在两种情况主动写入：1.外部回填  2.删除
   const fileList = ref<UploadFile[]>([]);
 
+  const urlToUploadFile = (url: string, index: number): UploadFile =>
+    ({
+      uid: -(Date.now() + index), // 负数 uid，区别于 el-upload 自增的正数 uid
+      name: url.split("/").pop() || `image-${index + 1}`,
+      status: "success" as const,
+      url,
+      size: 0,
+      type: "image/jpeg",
+      percentage: 100,
+      raw: undefined
+    }) as UploadFile;
+
+  // ─── 对外 emit：只在明确时机手动调用，不用 watch 监听 fileList ────────
+  const emitUrls = () => {
+    const urls = fileList.value.filter(f => f.status === "success" && f.url).map(f => f.url!);
+    rawFileList.value = urls;
+  };
+
+  // ─── 回填：外部传入 string[] 时同步到 fileList ──────────────────────
+  // 严格只处理 string[]；我们自己 emit 出去的 string[] 也会触发这里，
+  // 所以用 URL 内容对比跳过"自己 emit 引起的回流"
   watch(
     () => rawFileList.value,
-    newValue => {
-      if (!newValue) {
-        fileList.value = [];
-        return;
-      }
-
-      if (isStringArray(newValue)) {
-        fileList.value = convertUrlsToUploadFiles(newValue);
-      } else {
-        fileList.value = newValue as UploadFile[];
-      }
+    newVal => {
+      if (!isStringArray(newVal)) return;
+      const urls = (newVal as string[]).filter(Boolean);
+      const curUrls = fileList.value.filter(f => f.status === "success" && f.url).map(f => f.url!);
+      // 内容相同则跳过，防止自己 emit 引起的回流重置 fileList
+      if (urls.length === curUrls.length && urls.every((u, i) => u === curUrls[i])) return;
+      fileList.value = urls.map(urlToUploadFile);
     },
-    { immediate: true, deep: true }
+    { immediate: true }
   );
 
-  watch(
-    fileList,
-    newValue => {
-      rawFileList.value = newValue;
-    },
-    { deep: true }
-  );
-
-  const curOpenImgIndex = ref(0);
-  const dialogVisible = ref(false);
-  const uploadRef = ref();
-
-  const urlList = computed(() => {
-    const validFiles = fileList.value.filter(file => file && file.url && file.status === "success");
-    console.log("有效图片列表:", validFiles);
-    return validFiles.map(file => file.url as string);
-  });
-
-  const onBefore = file => {
+  // ─── 上传 ──────────────────────────────────────────────────────────
+  const onBefore = (file: File) => {
     if (!["image/jpeg", "image/png", "image/gif"].includes(file.type)) {
       message("只能上传图片");
       return false;
     }
-    const isExceed = file.size / 1024 / 1024 > 10;
-    if (isExceed) {
-      message(`单个图片大小不能超过10MB`);
+    if (file.size / 1024 / 1024 > 10) {
+      message("单个图片大小不能超过10MB");
       return false;
     }
     return true;
@@ -121,64 +76,40 @@
 
   const customUpload = async (options: UploadRequestOptions) => {
     const { file, onProgress, onSuccess, onError } = options;
-
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await uploadFile(formData, progress => {
+      const response = await uploadFile(formData, (progress: number) => {
         onProgress({ percent: progress } as UploadProgressEvent);
       });
 
-      console.log("上传响应:", response);
+      if (response?.code === 0 && response.data) {
+        const imageUrl: string = response.data;
 
-      if (response.data && response?.code === 0) {
-        onSuccess(response.data);
-        message("上传成功", { type: "success" });
+        // 先把 url 写进 fileList 对应项，再调 onSuccess
+        // el-upload 通过 raw 字段关联 options.file 和 fileList 里的项
+        const fileItem = fileList.value.find(f => f.raw === file);
+        if (fileItem) fileItem.url = imageUrl;
+
+        // onSuccess 会把 fileItem.status 改为 'success'
+        onSuccess(imageUrl);
+
+        // nextTick 保证 status 已是 success 后再 emit
+        nextTick(() => {
+          emitUrls();
+          message("上传成功", { type: "success" });
+        });
       } else {
         throw new Error(response?.message || "上传失败");
       }
-    } catch (error) {
-      console.error("上传失败:", error);
+    } catch (error: any) {
       onError(error);
       message(error.message || "上传失败", { type: "error" });
     }
   };
 
-  const onUploadSuccess = (response: any, uploadFile: UploadFile) => {
-    console.log("onUploadSuccess - response:", response);
-    console.log("onUploadSuccess - uploadFile:", uploadFile);
-
-    const fileItem = fileList.value.find(item => item.uid === uploadFile.uid);
-
-    if (fileItem && response) {
-      let imageUrl: string | undefined;
-
-      if (typeof response === "string") {
-        imageUrl = response;
-      } else if (response.url) {
-        imageUrl = response.url;
-      } else if (response.fileUrl) {
-        imageUrl = response.fileUrl;
-      } else if (response.path) {
-        imageUrl = response.path;
-      } else if (response.data && response.data.url) {
-        imageUrl = response.data.url;
-      }
-
-      if (imageUrl) {
-        fileItem.url = imageUrl;
-        fileItem.status = "success";
-        console.log("图片URL设置成功:", imageUrl);
-      } else {
-        console.error("无法从响应中提取URL:", response);
-        message("上传成功但无法获取图片URL", { type: "warning" });
-      }
-    }
-  };
-
-  const onUploadError = (error: any, file: UploadFile) => {
-    console.error("上传失败:", error);
+  const onUploadError = (_error: any, file: UploadFile) => {
     handleRemove(file);
   };
 
@@ -186,167 +117,95 @@
     message(`最多上传${props.limit}张图片，请先删除再上传`);
   };
 
+  // ─── 删除 ──────────────────────────────────────────────────────────
   const handleRemove = (file: UploadFile) => {
-    console.log("删除文件:", file);
-    const index = fileList.value.findIndex(item => item.uid === file.uid);
+    const index = fileList.value.findIndex(item => item.uid === file.uid || (file.url && item.url === file.url));
     if (index > -1) {
       fileList.value.splice(index, 1);
-      console.log("文件已删除，当前列表:", fileList.value);
+      emitUrls();
     }
   };
 
-  const handlePictureCardPreview = (file: UploadFile) => {
-    console.log("预览文件:", file);
-    console.log("当前文件列表:", fileList.value);
-    console.log("URL列表:", urlList.value);
+  // ─── 预览 ──────────────────────────────────────────────────────────
+  const curOpenImgIndex = ref(0);
+  const dialogVisible = ref(false);
+  const uploadRef = ref();
 
+  const urlList = computed(() => fileList.value.filter(f => f.url && f.status === "success").map(f => f.url!));
+
+  const handlePictureCardPreview = (file: UploadFile) => {
     if (!file.url) {
       message("图片URL不存在，无法预览", { type: "warning" });
       return;
     }
-
     if (file.status !== "success") {
       message("图片正在上传中，请稍候", { type: "warning" });
       return;
     }
-
-    const validFiles = fileList.value.filter(f => f && f.url && f.status === "success");
-    const index = validFiles.findIndex(img => img.uid === file.uid);
-
-    console.log("有效文件列表:", validFiles);
-    console.log("当前文件索引:", index);
-
+    const validFiles = fileList.value.filter(f => f.url && f.status === "success");
+    const index = validFiles.findIndex(f => f.uid === file.uid || f.url === file.url);
     if (index >= 0) {
       curOpenImgIndex.value = index;
       dialogVisible.value = true;
-      console.log("打开预览，索引:", index);
     } else {
       message("无法找到图片，请重试", { type: "warning" });
     }
   };
 
+  // ─── 拖拽排序 ──────────────────────────────────────────────────────
   let sortableInstance: Sortable | null = null;
 
-  /** 初始化拖拽排序 */
   const initSortable = () => {
-    console.log("初始化拖拽，当前文件数:", fileList.value.length);
-
-    // 销毁之前的实例
-    if (sortableInstance) {
-      console.log("销毁旧的 Sortable 实例");
-      sortableInstance.destroy();
-      sortableInstance = null;
-    }
-
-    // 只有多个文件时才初始化拖拽
-    if (fileList.value.length <= 1) {
-      console.log("文件数量不足，跳过拖拽初始化");
-      return;
-    }
-
+    sortableInstance?.destroy();
+    sortableInstance = null;
+    if (fileList.value.length <= 1) return;
     nextTick(() => {
-      // 使用唯一的组件ID选择器，确保只操作当前组件的元素
-      const componentWrapper = document.getElementById(componentId);
-      if (!componentWrapper) {
-        console.error("未找到组件容器");
-        return;
-      }
-
-      const wrapper = componentWrapper.querySelector(".el-upload-list.el-upload-list--picture-card") as HTMLElement;
-
-      console.log("找到的容器元素:", wrapper);
-
-      if (wrapper) {
-        const items = wrapper.querySelectorAll(".el-upload-list__item");
-        console.log("找到的图片项数量:", items.length);
-
-        sortableInstance = Sortable.create(wrapper, {
-          animation: 200,
-          ghostClass: "sortable-ghost",
-          chosenClass: "sortable-chosen",
-          dragClass: "sortable-drag",
-          filter: ".el-upload--picture-card",
-          draggable: ".el-upload-list__item",
-          forceFallback: true,
-          fallbackClass: "sortable-fallback",
-          fallbackOnBody: true,
-          swapThreshold: 0.65,
-
-          onStart: evt => {
-            console.log("开始拖拽，索引:", evt.oldIndex);
-            document.body.style.cursor = "grabbing";
-          },
-
-          onEnd: evt => {
-            console.log("拖拽结束，从", evt.oldIndex, "到", evt.newIndex);
-            document.body.style.cursor = "";
-
-            const { newIndex, oldIndex } = evt;
-
-            if (
-              typeof newIndex === "number" &&
-              typeof oldIndex === "number" &&
-              newIndex !== oldIndex &&
-              newIndex >= 0 &&
-              oldIndex >= 0 &&
-              oldIndex < fileList.value.length &&
-              newIndex < fileList.value.length
-            ) {
-              console.log("执行排序调整");
-              const movedItem = fileList.value[oldIndex];
-              fileList.value.splice(oldIndex, 1);
-              fileList.value.splice(newIndex, 0, movedItem);
-              console.log("排序后的列表:", fileList.value);
-              message("排序已更新", { type: "success" });
-            }
-          },
-
-          onMove: evt => {
-            return evt.related.className.indexOf("el-upload--picture-card") === -1;
+      const wrapper = document.getElementById(componentId)?.querySelector(".el-upload-list.el-upload-list--picture-card") as HTMLElement | null;
+      if (!wrapper) return;
+      sortableInstance = Sortable.create(wrapper, {
+        animation: 200,
+        ghostClass: "sortable-ghost",
+        chosenClass: "sortable-chosen",
+        dragClass: "sortable-drag",
+        filter: ".el-upload--picture-card",
+        draggable: ".el-upload-list__item",
+        forceFallback: true,
+        fallbackClass: "sortable-fallback",
+        fallbackOnBody: true,
+        swapThreshold: 0.65,
+        onStart: () => {
+          document.body.style.cursor = "grabbing";
+        },
+        onEnd: evt => {
+          document.body.style.cursor = "";
+          const { newIndex, oldIndex } = evt;
+          if (typeof newIndex === "number" && typeof oldIndex === "number" && newIndex !== oldIndex && oldIndex < fileList.value.length && newIndex < fileList.value.length) {
+            const moved = fileList.value.splice(oldIndex, 1)[0];
+            fileList.value.splice(newIndex, 0, moved);
+            emitUrls();
+            message("排序已更新", { type: "success" });
           }
-        });
-
-        console.log("Sortable 实例创建成功:", sortableInstance);
-      } else {
-        console.error("未找到 el-upload-list 容器");
-      }
+        },
+        onMove: evt => evt.related.className.indexOf("el-upload--picture-card") === -1
+      });
     });
   };
 
-  // 监听文件列表变化，重新初始化拖拽
   watch(
     () => fileList.value.length,
-    (newLength, oldLength) => {
-      console.log("文件列表长度变化:", oldLength, "->", newLength);
-      setTimeout(() => {
-        initSortable();
-      }, 300);
+    () => {
+      setTimeout(initSortable, 300);
     }
   );
+  onMounted(initSortable);
 
-  // 组件挂载后初始化
-  onMounted(() => {
-    console.log("组件已挂载，组件ID:", componentId);
-    initSortable();
-  });
+  // ─── 样式 ──────────────────────────────────────────────────────────
+  const showUploadButton = computed(() => fileList.value.length < props.limit);
 
-  // 在 script setup 中添加
-  const showUploadButton = computed(() => {
-    return fileList.value.length < props.limit;
-  });
-
-  // 处理尺寸值，支持数字和字符串
   const uploadBoxStyle = computed(() => {
     const style: Record<string, string> = {};
-
-    if (props.width !== undefined) {
-      style["--upload-width"] = typeof props.width === "number" ? `${props.width}px` : props.width;
-    }
-
-    if (props.height !== undefined) {
-      style["--upload-height"] = typeof props.height === "number" ? `${props.height}px` : props.height;
-    }
-
+    if (props.width !== undefined) style["--upload-width"] = typeof props.width === "number" ? `${props.width}px` : props.width;
+    if (props.height !== undefined) style["--upload-height"] = typeof props.height === "number" ? `${props.height}px` : props.height;
     return style;
   });
 </script>
@@ -366,10 +225,8 @@
       :http-request="customUpload"
       :on-exceed="onExceed"
       :before-upload="onBefore"
-      :on-success="onUploadSuccess"
       :on-error="onUploadError"
     >
-      <!-- 移除外层 div，直接使用 EpPlus -->
       <EpPlus />
 
       <template #file="{ file }">
@@ -404,9 +261,7 @@
 
     <teleport to="body">
       <div v-if="fileList[curOpenImgIndex] && dialogVisible" class="img-name">
-        <p class="text-[#fff] dark:text-black">
-          {{ fileList[curOpenImgIndex].name }}
-        </p>
+        <p class="text-[#fff] dark:text-black">{{ fileList[curOpenImgIndex].name }}</p>
       </div>
     </teleport>
 
@@ -419,6 +274,7 @@
     </p>
   </div>
 </template>
+
 <style lang="scss" scoped>
   :deep(.card-header) {
     display: flex;
@@ -432,7 +288,6 @@
   }
 
   :deep(.pure-upload) {
-    // 修复 el-upload-dragger 导致的间距问题
     .el-upload-dragger {
       background-color: transparent;
       border: none;
@@ -441,7 +296,6 @@
       min-height: auto;
     }
 
-    // 自定义上传框尺寸
     .el-upload--picture-card {
       width: var(--upload-width, 148px);
       height: var(--upload-height, 148px);
@@ -449,9 +303,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      margin: 0 8px 8px 0; // 统一外边距
-
-      // 确保图标居中
+      margin: 0 8px 8px 0;
       svg {
         width: 30px;
         height: 30px;
@@ -463,24 +315,22 @@
       width: var(--upload-width, 148px);
       height: var(--upload-height, 148px);
       padding: 0;
-      margin: 0 8px 8px 0; // 统一外边距，与上传按钮保持一致
+      margin: 0 8px 8px 0;
       border: 1px solid var(--el-border-color);
       border-radius: 6px;
       overflow: hidden;
     }
 
-    // 确保上传列表正常显示，统一布局
     .el-upload-list--picture-card {
-      display: inline-flex; // 改为 inline-flex
+      display: inline-flex;
       flex-wrap: wrap;
       margin: 0;
       padding: 0;
-      line-height: 0; // 消除行内元素间隙
-      vertical-align: top; // 顶部对齐
+      line-height: 0;
+      vertical-align: top;
     }
   }
 
-  // 上传进度容器 - 居中显示
   .upload-progress-wrapper {
     position: absolute;
     top: 50%;
@@ -511,7 +361,6 @@
     justify-content: center;
     overflow: hidden;
 
-    // 修复图片显示问题
     .el-upload-list__item-thumbnail {
       width: 100%;
       height: 100%;
@@ -519,7 +368,6 @@
       display: block;
     }
 
-    // 操作按钮悬浮层
     .el-upload-list__item-actions {
       position: absolute;
       top: 0;
@@ -532,7 +380,6 @@
       background-color: rgba(0, 0, 0, 0.5);
       opacity: 0;
       transition: opacity 0.3s;
-
       &:hover {
         opacity: 1;
       }
@@ -555,17 +402,13 @@
     transition: all 0.3s ease;
     position: relative;
     user-select: none;
-
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
-
     &:active {
       cursor: grabbing !important;
     }
-
-    // 确保图片容器填满
     .el-upload-list__item-thumbnail {
       width: 100%;
       height: 100%;
@@ -577,17 +420,14 @@
     opacity: 0.4 !important;
     background: #f0f0f0 !important;
   }
-
   :deep(.sortable-chosen) {
     cursor: grabbing !important;
     opacity: 0.8 !important;
   }
-
   :deep(.sortable-drag) {
     opacity: 0.8 !important;
     transform: rotate(5deg) !important;
   }
-
   :deep(.sortable-fallback) {
     opacity: 0.8 !important;
     cursor: grabbing !important;
@@ -597,26 +437,21 @@
     display: none;
   }
 
-  // 关键修复：统一提示文字的间距
   .el-upload__tip {
-    margin-top: 7px !important; // 使用 !important 确保优先级
+    margin-top: 7px !important;
     margin-bottom: 0;
     line-height: 1.5;
     display: block;
-    clear: both; // 清除浮动影响
+    clear: both;
   }
 
-  // 额外修复：确保 el-upload 容器本身没有多余间距
   :deep(.el-upload) {
     margin: 0;
     vertical-align: top;
   }
 
-  // 修复：统一整个上传区域的布局
   :deep(.pure-upload) {
     display: block;
-
-    // 确保上传区域容器没有多余的 margin
     > .el-upload-list {
       margin-bottom: 0;
     }

@@ -319,6 +319,7 @@
 
   /** 是否有图片正在上传中 */
   const hasUploadingItem = (): boolean => {
+    console.log("upload sealImageList", JSON.stringify(sealImageList.value));
     return (sealImageList.value as any[]).some(item => typeof item === "object" && item.status && item.status !== "success");
   };
 
@@ -494,6 +495,8 @@
   };
 
   const handleSave = async () => {
+    console.log("sealImageList", JSON.stringify(sealImageList.value));
+
     const err = validateForm();
     if (err) {
       message(err, { type: "warning" });
@@ -513,7 +516,7 @@
     if (resp.code === 0) {
       message(editingId.value ? "编辑电子签章成功" : "新增电子签章成功", { type: "success" });
       dialogVisible.value = false;
-      fetchList();
+      fetchList().then();
     } else {
       message(resp.message || "保存失败", { type: "error" });
     }
