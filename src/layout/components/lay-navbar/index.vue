@@ -8,12 +8,14 @@
   import LaySidebarFullScreen from "../lay-sidebar/components/SidebarFullScreen.vue";
   import LaySidebarBreadCrumb from "../lay-sidebar/components/SidebarBreadCrumb.vue";
   import LaySidebarTopCollapse from "../lay-sidebar/components/SidebarTopCollapse.vue";
+  import { useRouter } from "vue-router";
 
   import GlobalizationIcon from "@/assets/svg/globalization.svg?component";
   import AccountSettingsIcon from "~icons/ri/user-settings-line";
   import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
   import Setting from "~icons/ri/settings-3-line";
   import Check from "~icons/ep/check";
+  import ShoppingCartIcon from "~icons/ri/shopping-cart-line";
 
   import CompanySwitcher from "./components/CompanySwitcher.vue"; // 引入公司切换组件
   import FunctionMenu from "./components/FunctionMenu.vue";
@@ -21,6 +23,11 @@
   const { layout, device, logout, onPanel, pureApp, username, userAvatar, avatarsStyle, toggleSideBar, toAccountSettings, getDropdownItemStyle, getDropdownItemClass } = useNav();
 
   const { t, locale, translationCh, translationTw, translationEn, translationJa, translationKo } = useTranslationLang();
+  const router = useRouter();
+
+  function goToOrder() {
+    router.push("/company/order");
+  }
 </script>
 
 <template>
@@ -37,7 +44,6 @@
 
       <!-- 功能菜单 -->
       <FunctionMenu :style="{ marginLeft: '15px' }" />
-
       <!-- 菜单搜索 -->
       <LaySearch v-if="false" id="header-search" />
       <!-- 国际化 -->
@@ -80,6 +86,9 @@
       <LaySidebarThemeMode id="header-theme-mode" />
       <!-- 消息通知 -->
       <LayNotice id="header-notice" />
+      <el-button class="order-btn" @click="goToOrder">
+        ✦ 服务订购
+      </el-button>
       <!-- 退出登录 -->
       <el-dropdown trigger="click">
         <span class="el-dropdown-link navbar-bg-hover select-none">
@@ -88,11 +97,17 @@
         </span>
         <template #dropdown>
           <el-dropdown-menu class="logout">
+            <!-- 立即订购 -->
+<!--            <el-dropdown-item class="order-menu-item" @click="goToOrder">-->
+<!--              <IconifyIconOffline :icon="ShoppingCartIcon" style="margin: 5px" />-->
+<!--              服务订购-->
+<!--            </el-dropdown-item>-->
+<!--            <el-divider style="margin: 4px 0" />-->
             <el-dropdown-item @click="toAccountSettings">
               <IconifyIconOffline :icon="AccountSettingsIcon" style="margin: 5px" />
               {{ t("buttons.pureAccountSettings") }}
             </el-dropdown-item>
-            <el-dropdown-item @click="logout">
+            <el-dropdown-item class="logout-item" @click="logout">
               <IconifyIconOffline :icon="LogoutCircleRLine" style="margin: 5px" />
               {{ t("buttons.pureLoginOut") }}
             </el-dropdown-item>
@@ -152,6 +167,57 @@
       float: left;
       margin-left: 16px;
     }
+
+    .order-btn {
+      position: relative;
+      height: 28px;
+      padding: 0 8px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #fff !important;
+      border: none !important;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #ff4757, #ff6b81) !important;
+      box-shadow: 0 2px 10px rgba(255, 71, 87, 0.5);
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.3s ease;
+
+      // 流光扫过动画
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shine 2.5s infinite;
+      }
+
+      &:hover {
+        transform: translateY(-1px) scale(1.03);
+        box-shadow: 0 5px 16px rgba(255, 71, 87, 0.6);
+        background: linear-gradient(90deg, #ff3347, #ff5a73) !important;
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
+    }
+
+    @keyframes shine {
+      0% {
+        left: -100%;
+      }
+      50% {
+        left: 150%;
+      }
+      100% {
+        left: 150%;
+      }
+    }
   }
 
   .translation {
@@ -167,11 +233,57 @@
 
   .logout {
     width: 120px;
+    padding: 6px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    overflow: hidden;
 
     ::v-deep(.el-dropdown-menu__item) {
       display: inline-flex;
+      align-items: center;
       flex-wrap: wrap;
       min-width: 100%;
+      height: 38px;
+      padding: 0 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #333;
+      transition:
+        background 0.18s ease,
+        color 0.18s ease;
+
+      &:hover {
+        background: #f5f5f5 !important;
+        color: #111 !important;
+      }
+    }
+
+    // 分割线
+    ::v-deep(.el-divider) {
+      margin: 4px 0;
+      border-color: rgba(0, 0, 0, 0.06);
+    }
+
+    // 订购项单独高亮
+    .order-menu-item {
+      color: #e53935;
+      font-weight: 500;
+
+      &:hover {
+        color: #e53935 !important;
+        background: rgba(229, 57, 53, 0.06) !important;
+      }
+    }
+
+    // 退出登录项
+    .logout-item {
+      color: #999;
+
+      &:hover {
+        color: #ff4d4f !important;
+        background: rgba(255, 77, 79, 0.06) !important;
+      }
     }
   }
 </style>
