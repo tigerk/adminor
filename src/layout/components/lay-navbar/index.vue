@@ -86,9 +86,6 @@
       <LaySidebarThemeMode id="header-theme-mode" />
       <!-- 消息通知 -->
       <LayNotice id="header-notice" />
-      <el-button class="order-btn" @click="goToOrder">
-        ✦ 服务订购
-      </el-button>
       <!-- 退出登录 -->
       <el-dropdown trigger="click">
         <span class="el-dropdown-link navbar-bg-hover select-none">
@@ -98,11 +95,11 @@
         <template #dropdown>
           <el-dropdown-menu class="logout">
             <!-- 立即订购 -->
-<!--            <el-dropdown-item class="order-menu-item" @click="goToOrder">-->
-<!--              <IconifyIconOffline :icon="ShoppingCartIcon" style="margin: 5px" />-->
-<!--              服务订购-->
-<!--            </el-dropdown-item>-->
-<!--            <el-divider style="margin: 4px 0" />-->
+            <el-dropdown-item class="order-menu-item" @click="goToOrder">
+              <IconifyIconOffline :icon="ShoppingCartIcon" style="margin: 5px" />
+              服务订购
+            </el-dropdown-item>
+            <el-divider style="margin: 4px 0" />
             <el-dropdown-item @click="toAccountSettings">
               <IconifyIconOffline :icon="AccountSettingsIcon" style="margin: 5px" />
               {{ t("buttons.pureAccountSettings") }}
@@ -265,14 +262,41 @@
       border-color: rgba(0, 0, 0, 0.06);
     }
 
-    // 订购项单独高亮
-    .order-menu-item {
-      color: #e53935;
-      font-weight: 500;
+    // 订购项 — 移植 order-btn 流光渐变风格
+    ::v-deep(.order-menu-item) {
+      position: relative;
+      margin-bottom: 2px;
+      border-radius: 6px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #fff !important;
+      background: linear-gradient(90deg, #ff4757, #ff6b81) !important;
+      box-shadow: 0 2px 10px rgba(255, 71, 87, 0.4);
+      overflow: hidden;
+      transition: all 0.3s ease;
+
+      // 流光动画
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shine 2.5s infinite;
+      }
 
       &:hover {
-        color: #e53935 !important;
-        background: rgba(229, 57, 53, 0.06) !important;
+        background: linear-gradient(90deg, #ff3347, #ff5a73) !important;
+        box-shadow: 0 4px 14px rgba(255, 71, 87, 0.55) !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: scale(0.97);
+        box-shadow: none !important;
       }
     }
 
