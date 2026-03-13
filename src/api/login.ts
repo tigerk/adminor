@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "./utils";
-import type { ApiResponse, CompanySwitchDto, PaginationResponse } from "@/types";
+import type { ApiResponse, CompanySwitchDto, OperationLog, PaginationResponse, UserProfileUpdateDto } from "@/types";
 
 export type UserResult = {
   code: number;
@@ -111,15 +111,15 @@ export const updateAccountEmail = (data?: { email: string; verifyCode: string })
 
 /** 获取当前账户的个人信息 */
 export const getUserProfile = (data?: object) => {
-  return http.request<ApiResponse>("post", baseUrlApi("login/profile/get"), { data });
+  return http.request<ApiResponse<UserProfileUpdateDto>>("post", baseUrlApi("login/profile/get"), { data });
 };
 
 /** 更新当前账户的个人信息 */
 export const updateUserProfile = (data?: object) => {
-  return http.request<ApiResponse>("post", baseUrlApi("login/profile/update"), { data });
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("login/profile/update"), { data });
 };
 
 /** 账户设置-个人安全日志 */
 export const getMineLogs = (data?: { currentPage?: number; pageSize?: number }) => {
-  return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("monitor/operation/log/mine"), { data });
+  return http.request<ApiResponse<PaginationResponse<OperationLog>>>("post", baseUrlApi("monitor/operation/log/mine"), { data });
 };

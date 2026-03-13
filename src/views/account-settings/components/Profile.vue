@@ -9,6 +9,7 @@
   import { uploadFile } from "@/api/upload";
   import { useUserStoreHook } from "@/store/modules/user";
   import { GENDER_OPTIONS } from "@/constants";
+  import { UserProfileUpdateDto } from "@/types";
 
   defineOptions({
     name: "Profile"
@@ -30,10 +31,10 @@
   const loading = ref(false);
   const userInfoFormRef = ref<FormInstance>();
 
-  const userInfos = reactive<UserInfoProps>({
+  const userInfos = reactive<UserProfileUpdateDto>({
     avatar: "",
     nickname: "",
-    gender: "",
+    gender: undefined,
     birthday: "",
     remark: ""
   });
