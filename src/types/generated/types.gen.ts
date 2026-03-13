@@ -1127,6 +1127,18 @@ export type DeptCreateDto = {
     updateBy?: string;
 };
 
+/**
+ * 公司查询对象
+ */
+export type CompanySwitchDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+};
+
 export type HouseIdDto = {
     /**
      * 房源ID
@@ -7144,11 +7156,9 @@ export type CreateDeptResponses = {
 export type CreateDeptResponse = CreateDeptResponses[keyof CreateDeptResponses];
 
 export type SwitchCompanyData = {
-    body?: never;
+    body: CompanySwitchDto;
     path?: never;
-    query: {
-        companyId: string;
-    };
+    query?: never;
     url: '/saas/switchCompany';
 };
 

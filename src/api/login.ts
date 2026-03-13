@@ -1,6 +1,6 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "./utils";
-import type { ApiResponse, PaginationResponse } from "@/types";
+import type { ApiResponse, CompanySwitchDto, PaginationResponse } from "@/types";
 
 export type UserResult = {
   code: number;
@@ -73,7 +73,7 @@ export const refreshTokenApi = (data?: object) => {
   return http.request<RefreshTokenResult>("post", baseUrlApi("token/refresh"), { data });
 };
 
-export const switchCompany = (data?: object) => {
+export const switchCompany = (data?: CompanySwitchDto) => {
   return http.request<UserResult>("post", baseUrlApi("switchCompany"), { data });
 };
 
