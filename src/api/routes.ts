@@ -8,5 +8,5 @@ type Result = {
 
 /** 获取异步路由 */
 export const getAsyncRoutes = () => {
-  return http.request<Result>("get", baseUrlApi("get-async-routes"));
+  return http.request<Result>("post", baseUrlApi("get-async-routes"), {});
 };
