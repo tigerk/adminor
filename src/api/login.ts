@@ -74,7 +74,7 @@ export const refreshTokenApi = (data?: object) => {
 };
 
 export const switchCompany = (data?: object) => {
-  return http.request<UserResult>("post", baseUrlApi("switchCompany"), { params: data });
+  return http.request<UserResult>("post", baseUrlApi("switchCompany"), { data });
 };
 
 export const sendSmsCode = (data?: object) => {
