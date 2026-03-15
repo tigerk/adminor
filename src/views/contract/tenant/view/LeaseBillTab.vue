@@ -18,7 +18,17 @@
 
       <!-- 当前账单表格 -->
       <div class="bill-table-wrapper">
-        <el-table v-if="billList && billList.length > 0" v-loading="loading" :data="billList" border stripe class="bill-table" :expand-row-keys="expandedBillRows" row-key="id">
+        <el-table
+          v-if="billList && billList.length > 0"
+          v-loading="loading"
+          :data="billList"
+          border
+          stripe
+          class="bill-table"
+          :expand-row-keys="expandedBillRows"
+          row-key="id"
+          @row-click="openBillDetail"
+        >
           <el-table-column type="expand">
             <template #default="{ row }">
               <div v-if="row.otherFees && row.otherFees.length === 0" class="text-center">没有其他费用</div>
@@ -110,6 +120,28 @@
           </el-table-column>
 
           <el-table-column prop="remark" label="备注" align="center" min-width="250" show-overflow-tooltip />
+
+          <el-table-column label="操作" fixed="right" align="center" width="120">
+            <template #default="{ row }">
+              <el-dropdown trigger="click" @command="cmd => handleAction(cmd, row)">
+                <el-button size="small" link type="primary" @click.stop>操作</el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <template v-if="row.payStatus === 0">
+                      <el-dropdown-item command="collect">收款</el-dropdown-item>
+                      <el-dropdown-item command="split">账单拆分</el-dropdown-item>
+                      <el-dropdown-item command="free">免收</el-dropdown-item>
+                      <el-dropdown-item command="badDebt">标记坏账</el-dropdown-item>
+                      <el-dropdown-item command="void">作废账单</el-dropdown-item>
+                    </template>
+                    <template v-else-if="row.payStatus === 1">
+                      <el-dropdown-item command="void">作废账单</el-dropdown-item>
+                    </template>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </template>
+          </el-table-column>
         </el-table>
 
         <el-empty v-else-if="!loading" description="暂无当前账单" :image-size="180">
@@ -135,7 +167,16 @@
 
       <!-- 历史无效账单表格 -->
       <div class="bill-table-wrapper">
-        <el-table v-loading="invalidLoading" :data="invalidBillList" border stripe class="bill-table invalid-bill-table" :expand-row-keys="expandedInvalidBillRows" row-key="id">
+        <el-table
+          v-loading="invalidLoading"
+          :data="invalidBillList"
+          border
+          stripe
+          class="bill-table invalid-bill-table"
+          :expand-row-keys="expandedInvalidBillRows"
+          row-key="id"
+          @row-click="openBillDetail"
+        >
           <el-table-column type="expand">
             <template #default="{ row }">
               <div v-if="row.otherFees && row.otherFees.length === 0" class="text-center">没有其他费用</div>
@@ -234,10 +275,13 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, ref, watch } from "vue";
+  import { h, onMounted, ref, watch } from "vue";
   import { Refresh } from "@element-plus/icons-vue";
   import { LeaseBillListVo } from "@/types";
   import { getLeaseBillInvalidList, getLeaseBillList } from "@/api/contract/tenant";
+  import { addDialog } from "@/components/ReDialog";
+  import { message } from "@/utils/message";
+  import LeaseBillDetailDialog from "@/views/contract/tenant/view/LeaseBillDetailDialog.vue";
 
   interface Props {
     leaseId: string;
@@ -254,6 +298,46 @@
   const invalidBillList = ref<LeaseBillListVo[]>([]);
   const invalidLoading = ref(false);
   const expandedInvalidBillRows = ref<string[]>([]);
+
+  const openBillDetail = (row: LeaseBillListVo) => {
+    let billId = row.id as string;
+    if (!billId) return;
+    addDialog({
+      title: "账单详情",
+      width: "720px",
+      top: "8%",
+      closeOnClickModal: true,
+      contentRenderer: () => h(LeaseBillDetailDialog, { billId })
+    });
+  };
+
+  const handleAction = (action: string, row: LeaseBillListVo) => {
+    if (action === "collect") return handleCollect(row);
+    if (action === "split") return handleSplit(row);
+    if (action === "free") return handleFree(row);
+    if (action === "badDebt") return handleBadDebt(row);
+    if (action === "void") return handleVoid(row);
+  };
+
+  const handleCollect = (row: LeaseBillListVo) => {
+    message(`收款：第${row.sortOrder}期`, { type: "info" });
+  };
+
+  const handleSplit = (row: LeaseBillListVo) => {
+    message(`账单拆分：第${row.sortOrder}期`, { type: "info" });
+  };
+
+  const handleFree = (row: LeaseBillListVo) => {
+    message(`免收：第${row.sortOrder}期`, { type: "info" });
+  };
+
+  const handleBadDebt = (row: LeaseBillListVo) => {
+    message(`标记坏账：第${row.sortOrder}期`, { type: "info" });
+  };
+
+  const handleVoid = (row: LeaseBillListVo) => {
+    message(`作废账单：第${row.sortOrder}期`, { type: "warning" });
+  };
 
   // 获取当前账单数据
   const fetchBillList = async () => {

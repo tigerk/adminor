@@ -76,6 +76,14 @@ export type UserCompanyListDto = {
      */
     companyName?: string;
     /**
+     * 部门ID
+     */
+    deptId?: string;
+    /**
+     * 部门名称
+     */
+    deptName?: string;
+    /**
      * 公司用户类型：20=管理员、21=员工
      */
     userType?: number;
@@ -3059,6 +3067,12 @@ export type ResponseResultLeaseCheckoutVo = {
     data?: LeaseCheckoutVo;
 };
 
+export type ResponseResultListAsyncRoutesVo = {
+    code?: number;
+    message?: string;
+    data?: Array<AsyncRoutesVo>;
+};
+
 /**
  * 集中式查询 DTO
  */
@@ -4710,6 +4724,96 @@ export type TenantPersonalVo = {
 };
 
 /**
+ * 财务流水简要信息
+ */
+export type FinanceFlowVo = {
+    /**
+     * 财务流水号
+     */
+    flowNo?: string;
+    /**
+     * 业务类型
+     */
+    bizType?: string;
+    /**
+     * 业务单据ID
+     */
+    bizId?: string;
+    /**
+     * 业务单据编号
+     */
+    bizNo?: string;
+    /**
+     * 流水类型
+     */
+    flowType?: string;
+    /**
+     * 资金方向
+     */
+    flowDirection?: string;
+    /**
+     * 金额（分）
+     */
+    amount?: string;
+    /**
+     * 币种
+     */
+    currency?: string;
+    /**
+     * 状态
+     */
+    status?: string;
+    /**
+     * 退款关联原始流水ID
+     */
+    refundFlowId?: string;
+    /**
+     * 父流水ID
+     */
+    parentId?: string;
+    /**
+     * 是否已拆分：0 否，1 是
+     */
+    isSplit?: number;
+    /**
+     * 费用类型
+     */
+    feeType?: string;
+    /**
+     * 关联费用ID
+     */
+    feeRefId?: string;
+    /**
+     * 费用名称
+     */
+    feeName?: string;
+    /**
+     * 流水发生时间
+     */
+    flowTime?: string;
+    /**
+     * 付款方姓名
+     */
+    payerName?: string;
+    /**
+     * 付款方手机号
+     */
+    payerPhone?: string;
+    /**
+     * 收款方名称
+     */
+    receiverName?: string;
+    /**
+     * 操作员工姓名
+     */
+    operatorName?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
  * 租客账单VO
  */
 export type LeaseBillListVo = {
@@ -4793,6 +4897,14 @@ export type LeaseBillListVo = {
      * 备注信息
      */
     remark?: string;
+    /**
+     * 财务流水信息
+     */
+    financeFlowList?: Array<FinanceFlowVo>;
+    /**
+     * 支付流水信息
+     */
+    paymentFlow?: PaymentFlowVo;
     /**
      * 其他费用明细列表
      */
@@ -5054,6 +5166,44 @@ export type LeaseDetailVo = {
     otherFees?: Array<OtherFeeDto>;
 };
 
+/**
+ * 支付流水简要信息
+ */
+export type PaymentFlowVo = {
+    /**
+     * 系统支付流水号
+     */
+    paymentNo?: string;
+    /**
+     * 业务类型
+     */
+    bizType?: string;
+    /**
+     * 业务单据ID
+     */
+    bizId?: string;
+    /**
+     * 支付渠道
+     */
+    channel?: string;
+    /**
+     * 支付状态
+     */
+    status?: string;
+    /**
+     * 第三方单号
+     */
+    thirdTradeNo?: string;
+    /**
+     * 支付金额（分）
+     */
+    amount?: string;
+    /**
+     * 支付完成时间
+     */
+    payTime?: string;
+};
+
 export type ResponseResultLeaseDetailVo = {
     code?: number;
     message?: string;
@@ -5181,6 +5331,19 @@ export type ResponseResultListLeaseBillListVo = {
     code?: number;
     message?: string;
     data?: Array<LeaseBillListVo>;
+};
+
+export type LeaseBillDetailDto = {
+    /**
+     * 账单ID
+     */
+    billId?: string;
+};
+
+export type ResponseResultLeaseBillListVo = {
+    code?: number;
+    message?: string;
+    data?: LeaseBillListVo;
 };
 
 /**
@@ -6367,12 +6530,6 @@ export type ResponseResultListLoginLog = {
     code?: number;
     message?: string;
     data?: Array<LoginLog>;
-};
-
-export type ResponseResultListAsyncRoutesVo = {
-    code?: number;
-    message?: string;
-    data?: Array<AsyncRoutesVo>;
 };
 
 export type ResponseResultListIdNameVo = {
@@ -7832,6 +7989,22 @@ export type GetHouseDetailResponses = {
 
 export type GetHouseDetailResponse = GetHouseDetailResponses[keyof GetHouseDetailResponses];
 
+export type GetUserRoutesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/saas/get-async-routes';
+};
+
+export type GetUserRoutesResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListAsyncRoutesVo;
+};
+
+export type GetUserRoutesResponse = GetUserRoutesResponses[keyof GetUserRoutesResponses];
+
 export type GetFocusListData = {
     body: FocusQueryDto;
     path?: never;
@@ -8401,6 +8574,22 @@ export type GetBillInvalidListResponses = {
 };
 
 export type GetBillInvalidListResponse = GetBillInvalidListResponses[keyof GetBillInvalidListResponses];
+
+export type GetBillDetailData = {
+    body: LeaseBillDetailDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/bill/detail';
+};
+
+export type GetBillDetailResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLeaseBillListVo;
+};
+
+export type GetBillDetailResponse = GetBillDetailResponses[keyof GetBillDetailResponses];
 
 export type GetTenantTotalData = {
     body: BookingQueryDto;
@@ -9269,22 +9458,6 @@ export type GetOnlineUsersResponses = {
 };
 
 export type GetOnlineUsersResponse = GetOnlineUsersResponses[keyof GetOnlineUsersResponses];
-
-export type GetUserRoutesData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/saas/get-async-routes';
-};
-
-export type GetUserRoutesResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultListAsyncRoutesVo;
-};
-
-export type GetUserRoutesResponse = GetUserRoutesResponses[keyof GetUserRoutesResponses];
 
 export type FocusOptionsData = {
     body?: never;

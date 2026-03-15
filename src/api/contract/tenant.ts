@@ -52,6 +52,11 @@ export const getLeaseBillInvalidList = (data?: object) => {
   return http.request<ApiResponse<LeaseBillListVo[]>>("post", baseUrlApi("contract/lease/bill/invalid/list"), { data });
 };
 
+/** 获取租客账单详情 */
+export const getLeaseBillDetail = (data?: { billId: string }) => {
+  return http.request<ApiResponse<LeaseBillListVo>>("post", baseUrlApi("contract/lease/bill/detail"), { data });
+};
+
 /** 生成租客合同 */
 export const generateLeaseContract = (data?: object) => {
   return http.request<ApiResponse<LeaseContractVo>>("post", baseUrlApi("contract/lease/contract/generate"), { data });
