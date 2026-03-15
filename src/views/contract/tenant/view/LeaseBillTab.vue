@@ -304,7 +304,7 @@
     if (!billId) return;
     addDialog({
       title: "账单详情",
-      width: "720px",
+      width: "70%",
       top: "8%",
       alignCenter: true,
       lockScroll: true,
