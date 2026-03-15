@@ -28,7 +28,7 @@
     "prepare": "command -v husky >/dev/null 2>&1 && husky || echo 'Husky not found, skipping'",
     "preinstall": "npx only-allow pnpm",
     "postinstall": "electron-builder install-app-deps",
-    "api:update": "curl -s http://localhost:8887/v3/api-docs > swagger.json && npx @hey-api/openapi-ts && rm swagger.json"
+    "api:update": "curl -s http://localhost:8887/v3/api-docs > swagger.json && npx @hey-api/openapi-ts && npx tsx scripts/genEnumMeta.ts && rm swagger.json"
   },
   "build": {
     "appId": "com.pureadmin.app",

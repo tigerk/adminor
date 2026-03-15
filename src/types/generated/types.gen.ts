@@ -6550,6 +6550,1448 @@ export type ResponseResultUserVo = {
     data?: UserVo;
 };
 
+export enum BooleanEnum {
+    /**
+     * FALSE
+     */
+    FALSE = 'FALSE',
+    /**
+     * TRUE
+     */
+    TRUE = 'TRUE'
+}
+
+export enum DeletedEnum {
+    /**
+     * NOT_DELETED
+     */
+    NOT_DELETED = 'NOT_DELETED',
+    /**
+     * DELETED
+     */
+    DELETED = 'DELETED'
+}
+
+export enum GenderEnum {
+    /**
+     * UNKNOWN
+     */
+    UNKNOWN = 'UNKNOWN',
+    /**
+     * MALE
+     */
+    MALE = 'MALE',
+    /**
+     * FEMALE
+     */
+    FEMALE = 'FEMALE'
+}
+
+export enum IdTypeEnum {
+    /**
+     * ID_CARD
+     */
+    ID_CARD = 'ID_CARD',
+    /**
+     * PASSPORT
+     */
+    PASSPORT = 'PASSPORT',
+    /**
+     * HONGKONG_MACAO
+     */
+    HONGKONG_MACAO = 'HONGKONG_MACAO',
+    /**
+     * TAIWAN
+     */
+    TAIWAN = 'TAIWAN'
+}
+
+export enum LimitType {
+    DEFAULT = 'DEFAULT',
+    IP = 'IP'
+}
+
+export enum MenuTypeEnum {
+    /**
+     * MENU
+     */
+    MENU = 'MENU',
+    /**
+     * IFRAME
+     */
+    IFRAME = 'IFRAME',
+    /**
+     * EXTERNAL_LINK
+     */
+    EXTERNAL_LINK = 'EXTERNAL_LINK',
+    /**
+     * BUTTON
+     */
+    BUTTON = 'BUTTON'
+}
+
+export enum NoticeTypeEnum {
+    /**
+     * NOTIFICATION
+     */
+    NOTIFICATION = 'NOTIFICATION',
+    /**
+     * PUBLIC
+     */
+    PUBLIC = 'PUBLIC'
+}
+
+export enum OperationTypeEnum {
+    /**
+     * OTHER
+     */
+    OTHER = 'OTHER',
+    /**
+     * INSERT
+     */
+    INSERT = 'INSERT',
+    /**
+     * UPDATE
+     */
+    UPDATE = 'UPDATE',
+    /**
+     * DELETE
+     */
+    DELETE = 'DELETE',
+    /**
+     * GRANT
+     */
+    GRANT = 'GRANT',
+    /**
+     * EXPORT
+     */
+    EXPORT = 'EXPORT',
+    /**
+     * IMPORT
+     */
+    IMPORT = 'IMPORT',
+    /**
+     * FORCE
+     */
+    FORCE = 'FORCE',
+    /**
+     * CLEAR
+     */
+    CLEAR = 'CLEAR'
+}
+
+export enum OperatorTypeEnum {
+    /**
+     * OTHER
+     */
+    OTHER = 'OTHER',
+    /**
+     * MANAGE
+     */
+    MANAGE = 'MANAGE'
+}
+
+export enum ReadStatusEnum {
+    /**
+     * UNREAD
+     */
+    UNREAD = 'UNREAD',
+    /**
+     * READ
+     */
+    READ = 'READ'
+}
+
+export enum RoleDefaultEnum {
+    /**
+     * PLATFORM_SUPER_ADMIN
+     */
+    PLATFORM_SUPER_ADMIN = 'PLATFORM_SUPER_ADMIN',
+    /**
+     * COMPANY_ADMIN
+     */
+    COMPANY_ADMIN = 'COMPANY_ADMIN',
+    /**
+     * USER
+     */
+    USER = 'USER'
+}
+
+export enum SaasUserTypeEnum {
+    /**
+     * COMPANY_ADMIN
+     */
+    COMPANY_ADMIN = 'COMPANY_ADMIN',
+    /**
+     * COMPANY_USER
+     */
+    COMPANY_USER = 'COMPANY_USER'
+}
+
+export enum StatusEnum {
+    /**
+     * ACTIVE
+     */
+    ACTIVE = 'ACTIVE',
+    /**
+     * DISABLED
+     */
+    DISABLED = 'DISABLED'
+}
+
+export enum ZoneEnum {
+    /**
+     * SHANGHAI
+     */
+    SHANGHAI = 'SHANGHAI'
+}
+
+export enum ApprovalActionStatusEnum {
+    /**
+     * PENDING
+     */
+    PENDING = 'PENDING',
+    /**
+     * APPROVED
+     */
+    APPROVED = 'APPROVED',
+    /**
+     * SKIPPED
+     */
+    SKIPPED = 'SKIPPED'
+}
+
+export enum ApprovalActionTypeEnum {
+    /**
+     * APPROVE
+     */
+    APPROVE = 'APPROVE',
+    /**
+     * REJECT
+     */
+    REJECT = 'REJECT',
+    /**
+     * TRANSFER
+     */
+    TRANSFER = 'TRANSFER'
+}
+
+export enum ApprovalBizTypeEnum {
+    /**
+     * TENANT_CHECKIN
+     */
+    TENANT_CHECKIN = 'TENANT_CHECKIN',
+    /**
+     * TENANT_CHECKOUT
+     */
+    TENANT_CHECKOUT = 'TENANT_CHECKOUT',
+    /**
+     * HOUSE_CREATE
+     */
+    HOUSE_CREATE = 'HOUSE_CREATE'
+}
+
+export enum ApprovalInstanceStatusEnum {
+    /**
+     * DRAFT
+     */
+    DRAFT = 'DRAFT',
+    /**
+     * PENDING
+     */
+    PENDING = 'PENDING',
+    /**
+     * APPROVED
+     */
+    APPROVED = 'APPROVED',
+    /**
+     * REJECTED
+     */
+    REJECTED = 'REJECTED',
+    /**
+     * WITHDRAWN
+     */
+    WITHDRAWN = 'WITHDRAWN',
+    /**
+     * CANCELLED
+     */
+    CANCELLED = 'CANCELLED'
+}
+
+export enum ApproverTypeEnum {
+    /**
+     * SPECIFIC_USER
+     */
+    SPECIFIC_USER = 'SPECIFIC_USER',
+    /**
+     * SPECIFIC_ROLE
+     */
+    SPECIFIC_ROLE = 'SPECIFIC_ROLE',
+    /**
+     * DEPARTMENT_SUPERVISOR
+     */
+    DEPARTMENT_SUPERVISOR = 'DEPARTMENT_SUPERVISOR',
+    /**
+     * SELF_OPTION
+     */
+    SELF_OPTION = 'SELF_OPTION'
+}
+
+export enum BizApprovalStatusEnum {
+    /**
+     * PENDING
+     */
+    PENDING = 'PENDING',
+    /**
+     * APPROVED
+     */
+    APPROVED = 'APPROVED',
+    /**
+     * REJECTED
+     */
+    REJECTED = 'REJECTED',
+    /**
+     * WITHDRAWN
+     */
+    WITHDRAWN = 'WITHDRAWN'
+}
+
+export enum MultiApproveEnum {
+    /**
+     * OR_SIGN
+     */
+    OR_SIGN = 'OR_SIGN',
+    /**
+     * AND_SIGN
+     */
+    AND_SIGN = 'AND_SIGN'
+}
+
+export enum BookingStatusEnum {
+    /**
+     * BOOKING
+     */
+    BOOKING = 'BOOKING',
+    /**
+     * CONTRACTED
+     */
+    CONTRACTED = 'CONTRACTED',
+    /**
+     * TENANT_DEFAULTED
+     */
+    TENANT_DEFAULTED = 'TENANT_DEFAULTED',
+    /**
+     * OWNER_DEFAULTED
+     */
+    OWNER_DEFAULTED = 'OWNER_DEFAULTED',
+    /**
+     * CANCELLED_EXPIRED
+     */
+    CANCELLED_EXPIRED = 'CANCELLED_EXPIRED'
+}
+
+export enum CheckoutFeeTypeEnum {
+    /**
+     * RENT
+     */
+    RENT = 'RENT',
+    /**
+     * DEPOSIT
+     */
+    DEPOSIT = 'DEPOSIT',
+    /**
+     * WATER
+     */
+    WATER = 'WATER',
+    /**
+     * ELECTRIC
+     */
+    ELECTRIC = 'ELECTRIC',
+    /**
+     * GAS
+     */
+    GAS = 'GAS',
+    /**
+     * PROPERTY_FEE
+     */
+    PROPERTY_FEE = 'PROPERTY_FEE',
+    /**
+     * CLEANING
+     */
+    CLEANING = 'CLEANING',
+    /**
+     * DAMAGE
+     */
+    DAMAGE = 'DAMAGE',
+    /**
+     * PENALTY
+     */
+    PENALTY = 'PENALTY',
+    /**
+     * OTHER
+     */
+    OTHER = 'OTHER',
+    /**
+     * RENT_REFUND
+     */
+    RENT_REFUND = 'RENT_REFUND',
+    /**
+     * DEPOSIT_REFUND
+     */
+    DEPOSIT_REFUND = 'DEPOSIT_REFUND',
+    /**
+     * OTHER_REFUND
+     */
+    OTHER_REFUND = 'OTHER_REFUND'
+}
+
+export enum CheckoutSettlementMethodEnum {
+    /**
+     * GENERATE_BILL
+     */
+    GENERATE_BILL = 'GENERATE_BILL',
+    /**
+     * OFFLINE_PAYMENT
+     */
+    OFFLINE_PAYMENT = 'OFFLINE_PAYMENT',
+    /**
+     * APPLY_PAYMENT
+     */
+    APPLY_PAYMENT = 'APPLY_PAYMENT',
+    /**
+     * BAD_DEBT
+     */
+    BAD_DEBT = 'BAD_DEBT'
+}
+
+export enum CheckoutStatusEnum {
+    /**
+     * DRAFT
+     */
+    DRAFT = 'DRAFT',
+    /**
+     * PENDING
+     */
+    PENDING = 'PENDING',
+    /**
+     * COMPLETED
+     */
+    COMPLETED = 'COMPLETED',
+    /**
+     * CANCELLED
+     */
+    CANCELLED = 'CANCELLED'
+}
+
+export enum CheckoutTypeEnum {
+    /**
+     * NORMAL
+     */
+    NORMAL = 'NORMAL',
+    /**
+     * BREACH
+     */
+    BREACH = 'BREACH'
+}
+
+export enum CompanyNatureEnum {
+    /**
+     * ENTERPRISE
+     */
+    ENTERPRISE = 'ENTERPRISE',
+    /**
+     * PERSONAL
+     */
+    PERSONAL = 'PERSONAL'
+}
+
+export enum BookingParamsEnum {
+    /**
+     * CONTRACT_NUMBER
+     */
+    CONTRACT_NUMBER = 'CONTRACT_NUMBER',
+    /**
+     * HOUSE_ADDRESS
+     */
+    HOUSE_ADDRESS = 'HOUSE_ADDRESS',
+    /**
+     * PROJECT_NAME
+     */
+    PROJECT_NAME = 'PROJECT_NAME',
+    /**
+     * BUILDING_NUMBER
+     */
+    BUILDING_NUMBER = 'BUILDING_NUMBER',
+    /**
+     * UNIT_NUMBER
+     */
+    UNIT_NUMBER = 'UNIT_NUMBER',
+    /**
+     * HOUSE_NUMBER
+     */
+    HOUSE_NUMBER = 'HOUSE_NUMBER',
+    /**
+     * SHARED_ROOM_NUMBER
+     */
+    SHARED_ROOM_NUMBER = 'SHARED_ROOM_NUMBER',
+    /**
+     * SIGNED_HOUSE_LIST
+     */
+    SIGNED_HOUSE_LIST = 'SIGNED_HOUSE_LIST',
+    /**
+     * HOUSE_PROPERTY_NUMBER
+     */
+    HOUSE_PROPERTY_NUMBER = 'HOUSE_PROPERTY_NUMBER',
+    /**
+     * HOUSE_TYPE
+     */
+    HOUSE_TYPE = 'HOUSE_TYPE',
+    /**
+     * PROPERTY_TYPE
+     */
+    PROPERTY_TYPE = 'PROPERTY_TYPE',
+    /**
+     * TOTAL_AREA
+     */
+    TOTAL_AREA = 'TOTAL_AREA',
+    /**
+     * SIGNED_AREA
+     */
+    SIGNED_AREA = 'SIGNED_AREA',
+    /**
+     * TENANT_NAME
+     */
+    TENANT_NAME = 'TENANT_NAME'
+}
+
+export enum ContractNatureEnum {
+    /**
+     * NEW_SIGN
+     */
+    NEW_SIGN = 'NEW_SIGN',
+    /**
+     * RENEWAL
+     */
+    RENEWAL = 'RENEWAL',
+    /**
+     * SUBLET
+     */
+    SUBLET = 'SUBLET',
+    /**
+     * RELOCATION
+     */
+    RELOCATION = 'RELOCATION'
+}
+
+export enum ContractSealSourceEnum {
+    /**
+     * SELF
+     */
+    SELF = 'SELF',
+    /**
+     * FADADA
+     */
+    FADADA = 'FADADA',
+    /**
+     * EQIBAO
+     */
+    EQIBAO = 'EQIBAO',
+    /**
+     * OTHER
+     */
+    OTHER = 'OTHER'
+}
+
+export enum ContractSealTypeEnum {
+    /**
+     * COMPANY
+     */
+    COMPANY = 'COMPANY',
+    /**
+     * PERSONAL
+     */
+    PERSONAL = 'PERSONAL'
+}
+
+export enum ContractTemplateStatusEnum {
+    /**
+     * UNEFFECTIVE
+     */
+    UNEFFECTIVE = 'UNEFFECTIVE',
+    /**
+     * EFFECTIVE
+     */
+    EFFECTIVE = 'EFFECTIVE'
+}
+
+export enum ContractTypeEnum {
+    /**
+     * TENANT
+     */
+    TENANT = 'TENANT',
+    /**
+     * OWNER
+     */
+    OWNER = 'OWNER',
+    /**
+     * BOOKING
+     */
+    BOOKING = 'BOOKING',
+    /**
+     * CHECKOUT
+     */
+    CHECKOUT = 'CHECKOUT'
+}
+
+export enum LandlordParamsEnum {
+    /**
+     * CONTRACT_NUMBER
+     */
+    CONTRACT_NUMBER = 'CONTRACT_NUMBER',
+    /**
+     * HOUSE_ADDRESS
+     */
+    HOUSE_ADDRESS = 'HOUSE_ADDRESS',
+    /**
+     * PROJECT_NAME
+     */
+    PROJECT_NAME = 'PROJECT_NAME',
+    /**
+     * BUILDING_NUMBER
+     */
+    BUILDING_NUMBER = 'BUILDING_NUMBER',
+    /**
+     * UNIT_NUMBER
+     */
+    UNIT_NUMBER = 'UNIT_NUMBER',
+    /**
+     * HOUSE_NUMBER
+     */
+    HOUSE_NUMBER = 'HOUSE_NUMBER',
+    /**
+     * SHARED_ROOM_NUMBER
+     */
+    SHARED_ROOM_NUMBER = 'SHARED_ROOM_NUMBER',
+    /**
+     * SIGNED_HOUSE_LIST
+     */
+    SIGNED_HOUSE_LIST = 'SIGNED_HOUSE_LIST',
+    /**
+     * HOUSE_PROPERTY_NUMBER
+     */
+    HOUSE_PROPERTY_NUMBER = 'HOUSE_PROPERTY_NUMBER',
+    /**
+     * HOUSE_TYPE
+     */
+    HOUSE_TYPE = 'HOUSE_TYPE',
+    /**
+     * PROPERTY_TYPE
+     */
+    PROPERTY_TYPE = 'PROPERTY_TYPE',
+    /**
+     * TOTAL_AREA
+     */
+    TOTAL_AREA = 'TOTAL_AREA',
+    /**
+     * SIGNED_AREA
+     */
+    SIGNED_AREA = 'SIGNED_AREA',
+    /**
+     * TENANT_NAME
+     */
+    TENANT_NAME = 'TENANT_NAME'
+}
+
+export enum TenantParamsEnum {
+    /**
+     * CONTRACT_CODE
+     */
+    CONTRACT_CODE = 'CONTRACT_CODE',
+    /**
+     * SIGNED_HOUSE_LIST
+     */
+    SIGNED_HOUSE_LIST = 'SIGNED_HOUSE_LIST',
+    /**
+     * TOTAL_AREA
+     */
+    TOTAL_AREA = 'TOTAL_AREA',
+    /**
+     * OWNER_NAME
+     */
+    OWNER_NAME = 'OWNER_NAME',
+    /**
+     * OWNER_PHONE
+     */
+    OWNER_PHONE = 'OWNER_PHONE',
+    /**
+     * OWNER_ID_CARD
+     */
+    OWNER_ID_CARD = 'OWNER_ID_CARD',
+    /**
+     * TENANT_NAME
+     */
+    TENANT_NAME = 'TENANT_NAME',
+    /**
+     * TENANT_PHONE
+     */
+    TENANT_PHONE = 'TENANT_PHONE',
+    /**
+     * TENANT_ID_CARD
+     */
+    TENANT_ID_CARD = 'TENANT_ID_CARD',
+    /**
+     * LEASE_START
+     */
+    LEASE_START = 'LEASE_START',
+    /**
+     * LEASE_END
+     */
+    LEASE_END = 'LEASE_END',
+    /**
+     * LEASE_DAYS
+     */
+    LEASE_DAYS = 'LEASE_DAYS',
+    /**
+     * RENT_PRICE
+     */
+    RENT_PRICE = 'RENT_PRICE',
+    /**
+     * PAYMENT_MONTHS
+     */
+    PAYMENT_MONTHS = 'PAYMENT_MONTHS',
+    /**
+     * DEPOSIT_MONTHS
+     */
+    DEPOSIT_MONTHS = 'DEPOSIT_MONTHS',
+    /**
+     * TENANT_REMARK
+     */
+    TENANT_REMARK = 'TENANT_REMARK',
+    /**
+     * OWNER_SIGNATURE
+     */
+    OWNER_SIGNATURE = 'OWNER_SIGNATURE',
+    /**
+     * TENANT_SIGNATURE
+     */
+    TENANT_SIGNATURE = 'TENANT_SIGNATURE',
+    /**
+     * COMPANY_SEAL
+     */
+    COMPANY_SEAL = 'COMPANY_SEAL',
+    /**
+     * CONTRACT_DATE
+     */
+    CONTRACT_DATE = 'CONTRACT_DATE'
+}
+
+export enum DeliveryStatusEnum {
+    /**
+     * CANCELLED
+     */
+    CANCELLED = 'CANCELLED',
+    /**
+     * DRAFT
+     */
+    DRAFT = 'DRAFT',
+    /**
+     * COMPLETED
+     */
+    COMPLETED = 'COMPLETED',
+    /**
+     * SIGNED
+     */
+    SIGNED = 'SIGNED'
+}
+
+export enum FileAttachBizTypeEnum {
+    /**
+     * USER_AVATAR
+     */
+    USER_AVATAR = 'USER_AVATAR',
+    /**
+     * HOUSE_IMAGE
+     */
+    HOUSE_IMAGE = 'HOUSE_IMAGE',
+    /**
+     * ROOM_IMAGE
+     */
+    ROOM_IMAGE = 'ROOM_IMAGE',
+    /**
+     * TENANT_ID_CARD_FRONT
+     */
+    TENANT_ID_CARD_FRONT = 'TENANT_ID_CARD_FRONT',
+    /**
+     * TENANT_ID_CARD_BACK
+     */
+    TENANT_ID_CARD_BACK = 'TENANT_ID_CARD_BACK',
+    /**
+     * TENANT_ID_CARD_IN_HAND
+     */
+    TENANT_ID_CARD_IN_HAND = 'TENANT_ID_CARD_IN_HAND',
+    /**
+     * TENANT_OTHER_IMAGE
+     */
+    TENANT_OTHER_IMAGE = 'TENANT_OTHER_IMAGE',
+    /**
+     * CONTRACT_FILE
+     */
+    CONTRACT_FILE = 'CONTRACT_FILE',
+    /**
+     * TENANT_IMAGE
+     */
+    TENANT_IMAGE = 'TENANT_IMAGE',
+    /**
+     * BUSINESS_LICENSE
+     */
+    BUSINESS_LICENSE = 'BUSINESS_LICENSE',
+    /**
+     * TENANT_MATE_ID_CARD_FRONT
+     */
+    TENANT_MATE_ID_CARD_FRONT = 'TENANT_MATE_ID_CARD_FRONT',
+    /**
+     * TENANT_MATE_ID_CARD_BACK
+     */
+    TENANT_MATE_ID_CARD_BACK = 'TENANT_MATE_ID_CARD_BACK',
+    /**
+     * TENANT_MATE_ID_CARD_IN_HAND
+     */
+    TENANT_MATE_ID_CARD_IN_HAND = 'TENANT_MATE_ID_CARD_IN_HAND',
+    /**
+     * TENANT_MATE_OTHER_IMAGE
+     */
+    TENANT_MATE_OTHER_IMAGE = 'TENANT_MATE_OTHER_IMAGE',
+    /**
+     * DELIVERY_IMAGE
+     */
+    DELIVERY_IMAGE = 'DELIVERY_IMAGE',
+    /**
+     * CONTRACT_SEAL_IMAGE
+     */
+    CONTRACT_SEAL_IMAGE = 'CONTRACT_SEAL_IMAGE'
+}
+
+export enum FileTypeEnum {
+    /**
+     * IMAGE
+     */
+    IMAGE = 'IMAGE',
+    /**
+     * VIDEO
+     */
+    VIDEO = 'VIDEO',
+    /**
+     * PDF
+     */
+    PDF = 'PDF'
+}
+
+export enum FinanceBizTypeEnum {
+    /**
+     * LEASE_BILL
+     */
+    LEASE_BILL = 'LEASE_BILL'
+}
+
+export enum FinanceFlowDirectionEnum {
+    /**
+     * IN
+     */
+    IN = 'IN',
+    /**
+     * OUT
+     */
+    OUT = 'OUT'
+}
+
+export enum FinanceFlowStatusEnum {
+    /**
+     * PENDING
+     */
+    PENDING = 'PENDING',
+    /**
+     * SUCCESS
+     */
+    SUCCESS = 'SUCCESS',
+    /**
+     * FAILED
+     */
+    FAILED = 'FAILED',
+    /**
+     * VOIDED
+     */
+    VOIDED = 'VOIDED'
+}
+
+export enum FinanceFlowTypeEnum {
+    /**
+     * RECEIVE
+     */
+    RECEIVE = 'RECEIVE',
+    /**
+     * PAY
+     */
+    PAY = 'PAY',
+    /**
+     * REFUND
+     */
+    REFUND = 'REFUND',
+    /**
+     * VOID
+     */
+    VOID = 'VOID',
+    /**
+     * ADJUST
+     */
+    ADJUST = 'ADJUST'
+}
+
+export enum PaymentFlowBizTypeEnum {
+    /**
+     * LEASE_BILL
+     */
+    LEASE_BILL = 'LEASE_BILL'
+}
+
+export enum PaymentFlowChannelEnum {
+    /**
+     * CASH
+     */
+    CASH = 'CASH',
+    /**
+     * TRANSFER
+     */
+    TRANSFER = 'TRANSFER',
+    /**
+     * ALIPAY
+     */
+    ALIPAY = 'ALIPAY',
+    /**
+     * WECHAT
+     */
+    WECHAT = 'WECHAT',
+    /**
+     * POS
+     */
+    POS = 'POS',
+    /**
+     * OTHER
+     */
+    OTHER = 'OTHER'
+}
+
+export enum PaymentFlowDirectionEnum {
+    /**
+     * IN
+     */
+    IN = 'IN',
+    /**
+     * OUT
+     */
+    OUT = 'OUT'
+}
+
+export enum PaymentFlowStatusEnum {
+    /**
+     * PENDING
+     */
+    PENDING = 'PENDING',
+    /**
+     * SUCCESS
+     */
+    SUCCESS = 'SUCCESS',
+    /**
+     * FAILED
+     */
+    FAILED = 'FAILED',
+    /**
+     * CLOSED
+     */
+    CLOSED = 'CLOSED',
+    /**
+     * REFUNDING
+     */
+    REFUNDING = 'REFUNDING',
+    /**
+     * REFUNDED
+     */
+    REFUNDED = 'REFUNDED'
+}
+
+export enum DecorationTypeEnum {
+    /**
+     * LUXURY
+     */
+    LUXURY = 'LUXURY',
+    /**
+     * SIMPLE
+     */
+    SIMPLE = 'SIMPLE',
+    /**
+     * DETAILED
+     */
+    DETAILED = 'DETAILED',
+    /**
+     * RAW
+     */
+    RAW = 'RAW',
+    /**
+     * WATER
+     */
+    WATER = 'WATER',
+    /**
+     * SIMPLEST
+     */
+    SIMPLEST = 'SIMPLEST',
+    /**
+     * UNDECORATED
+     */
+    UNDECORATED = 'UNDECORATED'
+}
+
+export enum LeaseModeEnum {
+    /**
+     * UNKNOWN
+     */
+    UNKNOWN = 'UNKNOWN',
+    /**
+     * FOCUS
+     */
+    FOCUS = 'FOCUS',
+    /**
+     * SCATTER
+     */
+    SCATTER = 'SCATTER'
+}
+
+export enum RentalTypeEnum {
+    /**
+     * ENTIRE
+     */
+    ENTIRE = 'ENTIRE',
+    /**
+     * SHARED
+     */
+    SHARED = 'SHARED'
+}
+
+export enum LeaseBillTypeEnum {
+    /**
+     * RENT
+     */
+    RENT = 'RENT',
+    /**
+     * DEPOSIT
+     */
+    DEPOSIT = 'DEPOSIT',
+    /**
+     * OTHER_FEE
+     */
+    OTHER_FEE = 'OTHER_FEE',
+    /**
+     * RELEASE
+     */
+    RELEASE = 'RELEASE',
+    /**
+     * DEPOSIT_CARRY_IN
+     */
+    DEPOSIT_CARRY_IN = 'DEPOSIT_CARRY_IN',
+    /**
+     * DEPOSIT_CARRY_OUT
+     */
+    DEPOSIT_CARRY_OUT = 'DEPOSIT_CARRY_OUT'
+}
+
+export enum LeaseCheckOutStatusEnum {
+    /**
+     * UN_CHECK_OUT
+     */
+    UN_CHECK_OUT = 'UN_CHECK_OUT',
+    /**
+     * NORMAL_CHECK_OUT
+     */
+    NORMAL_CHECK_OUT = 'NORMAL_CHECK_OUT',
+    /**
+     * BREAK_CHECK_OUT
+     */
+    BREAK_CHECK_OUT = 'BREAK_CHECK_OUT',
+    /**
+     * RENEW_CHECK_OUT
+     */
+    RENEW_CHECK_OUT = 'RENEW_CHECK_OUT',
+    /**
+     * RELOCATION_CHECK_OUT
+     */
+    RELOCATION_CHECK_OUT = 'RELOCATION_CHECK_OUT',
+    /**
+     * SUBLET_CHECK_OUT
+     */
+    SUBLET_CHECK_OUT = 'SUBLET_CHECK_OUT'
+}
+
+export enum LeaseFirstBillDayEnum {
+    /**
+     * FOLLOW_CONTRACT_START
+     */
+    FOLLOW_CONTRACT_START = 'FOLLOW_CONTRACT_START',
+    /**
+     * FOLLOW_CONTRACT_CREATE
+     */
+    FOLLOW_CONTRACT_CREATE = 'FOLLOW_CONTRACT_CREATE'
+}
+
+export enum LeaseRentDueTypeEnum {
+    /**
+     * EARLY
+     */
+    EARLY = 'EARLY',
+    /**
+     * FIXED
+     */
+    FIXED = 'FIXED',
+    /**
+     * LATE
+     */
+    LATE = 'LATE'
+}
+
+export enum LeaseStatusEnum {
+    /**
+     * PENDING_APPROVAL
+     */
+    PENDING_APPROVAL = 'PENDING_APPROVAL',
+    /**
+     * TO_SIGN
+     */
+    TO_SIGN = 'TO_SIGN',
+    /**
+     * EFFECTIVE
+     */
+    EFFECTIVE = 'EFFECTIVE',
+    /**
+     * TERMINATED
+     */
+    TERMINATED = 'TERMINATED',
+    /**
+     * CANCELLED
+     */
+    CANCELLED = 'CANCELLED'
+}
+
+export enum PayChannelEnum {
+    /**
+     * YEEPAY
+     */
+    YEEPAY = 'YEEPAY',
+    /**
+     * ALIPAY
+     */
+    ALIPAY = 'ALIPAY',
+    /**
+     * WECHAT
+     */
+    WECHAT = 'WECHAT'
+}
+
+export enum PayStatusEnum {
+    /**
+     * UNPAID
+     */
+    UNPAID = 'UNPAID',
+    /**
+     * PARTIALLY_PAID
+     */
+    PARTIALLY_PAID = 'PARTIALLY_PAID',
+    /**
+     * PAID
+     */
+    PAID = 'PAID'
+}
+
+export enum PlatformUserTypeEnum {
+    /**
+     * SUPER_USER
+     */
+    SUPER_USER = 'SUPER_USER',
+    /**
+     * REGULAR_USER
+     */
+    REGULAR_USER = 'REGULAR_USER'
+}
+
+export enum PaymentMethodEnum {
+    /**
+     * RENT
+     */
+    RENT = 'RENT',
+    /**
+     * ALL
+     */
+    ALL = 'ALL',
+    /**
+     * MONTH
+     */
+    MONTH = 'MONTH',
+    /**
+     * BI_MONTH
+     */
+    BI_MONTH = 'BI_MONTH',
+    /**
+     * QUARTER
+     */
+    QUARTER = 'QUARTER',
+    /**
+     * HALF_YEAR
+     */
+    HALF_YEAR = 'HALF_YEAR',
+    /**
+     * YEAR
+     */
+    YEAR = 'YEAR'
+}
+
+export enum PriceMethodEnum {
+    /**
+     * FIXED
+     */
+    FIXED = 'FIXED',
+    /**
+     * RATIO
+     */
+    RATIO = 'RATIO'
+}
+
+export enum PricePlanEnum {
+    /**
+     * MONTH
+     */
+    MONTH = 'MONTH',
+    /**
+     * TWO_MONTH
+     */
+    TWO_MONTH = 'TWO_MONTH',
+    /**
+     * QUARTER
+     */
+    QUARTER = 'QUARTER',
+    /**
+     * HALF_YEAR
+     */
+    HALF_YEAR = 'HALF_YEAR',
+    /**
+     * YEAR
+     */
+    YEAR = 'YEAR'
+}
+
+export enum OccupancyStatusEnum {
+    /**
+     * AVAILABLE
+     */
+    AVAILABLE = 'AVAILABLE',
+    /**
+     * LEASED
+     */
+    LEASED = 'LEASED',
+    /**
+     * BOOKED
+     */
+    BOOKED = 'BOOKED',
+    /**
+     * PREPARING
+     */
+    PREPARING = 'PREPARING'
+}
+
+export enum RoomFilterTypeEnum {
+    /**
+     * BY_STATUS
+     */
+    BY_STATUS = 'BY_STATUS',
+    /**
+     * BY_LOCKED
+     */
+    BY_LOCKED = 'BY_LOCKED',
+    /**
+     * BY_CLOSED
+     */
+    BY_CLOSED = 'BY_CLOSED'
+}
+
+/**
+ * 锁房原因: 1-永久锁房, 2-指定时间
+ */
+export enum RoomLockReasonEnum {
+    /**
+     * PERMANENT
+     */
+    PERMANENT = 'PERMANENT',
+    /**
+     * SPECIFIED_TIME
+     */
+    SPECIFIED_TIME = 'SPECIFIED_TIME'
+}
+
+export enum RoomTypeEnum {
+    /**
+     * MASTER_BEDROOM
+     */
+    MASTER_BEDROOM = 'MASTER_BEDROOM',
+    /**
+     * SECOND_BEDROOM
+     */
+    SECOND_BEDROOM = 'SECOND_BEDROOM',
+    /**
+     * BREAK
+     */
+    BREAK = 'BREAK',
+    /**
+     * HALF_LIVING
+     */
+    HALF_LIVING = 'HALF_LIVING',
+    /**
+     * SINGLE_SUIT
+     */
+    SINGLE_SUIT = 'SINGLE_SUIT',
+    /**
+     * SINGLE
+     */
+    SINGLE = 'SINGLE',
+    /**
+     * DOUBLE
+     */
+    DOUBLE = 'DOUBLE',
+    /**
+     * MULTI
+     */
+    MULTI = 'MULTI'
+}
+
+export enum SysMessageTypeEnum {
+    /**
+     * SYSTEM
+     */
+    SYSTEM = 'SYSTEM',
+    /**
+     * CONTRACT_REMIND
+     */
+    CONTRACT_REMIND = 'CONTRACT_REMIND',
+    /**
+     * BILL_REMIND
+     */
+    BILL_REMIND = 'BILL_REMIND',
+    /**
+     * REPAIR_NOTIFY
+     */
+    REPAIR_NOTIFY = 'REPAIR_NOTIFY',
+    /**
+     * PRIVATE_CHAT
+     */
+    PRIVATE_CHAT = 'PRIVATE_CHAT'
+}
+
+export enum SysNoticeTargetScopeEnum {
+    /**
+     * ALL
+     */
+    ALL = 'ALL',
+    /**
+     * LANDLORD
+     */
+    LANDLORD = 'LANDLORD',
+    /**
+     * TENANT
+     */
+    TENANT = 'TENANT',
+    /**
+     * SPECIFIED_ROLE
+     */
+    SPECIFIED_ROLE = 'SPECIFIED_ROLE'
+}
+
+export enum SysNoticeTypeEnum {
+    /**
+     * SYSTEM
+     */
+    SYSTEM = 'SYSTEM',
+    /**
+     * OPERATION
+     */
+    OPERATION = 'OPERATION'
+}
+
+export enum SysTodoTypeEnum {
+    /**
+     * CONTRACT_EXPIRE
+     */
+    CONTRACT_EXPIRE = 'CONTRACT_EXPIRE',
+    /**
+     * BILL_COLLECTION
+     */
+    BILL_COLLECTION = 'BILL_COLLECTION',
+    /**
+     * REPAIR_HANDLE
+     */
+    REPAIR_HANDLE = 'REPAIR_HANDLE',
+    /**
+     * CONTRACT_RENEW
+     */
+    CONTRACT_RENEW = 'CONTRACT_RENEW',
+    /**
+     * CHECKOUT_HANDLE
+     */
+    CHECKOUT_HANDLE = 'CHECKOUT_HANDLE',
+    /**
+     * OTHER
+     */
+    OTHER = 'OTHER'
+}
+
+export enum SysTodoPriorityEnum {
+    /**
+     * HIGH
+     */
+    HIGH = 'HIGH',
+    /**
+     * MEDIUM
+     */
+    MEDIUM = 'MEDIUM',
+    /**
+     * LOW
+     */
+    LOW = 'LOW'
+}
+
+export enum SysTodoStatusEnum {
+    /**
+     * PENDING
+     */
+    PENDING = 'PENDING',
+    /**
+     * DONE
+     */
+    DONE = 'DONE',
+    /**
+     * IGNORED
+     */
+    IGNORED = 'IGNORED',
+    /**
+     * EXPIRED
+     */
+    EXPIRED = 'EXPIRED'
+}
+
+export enum TenantTypeEnum {
+    /**
+     * PERSONAL
+     */
+    PERSONAL = 'PERSONAL',
+    /**
+     * ENTERPRISE
+     */
+    ENTERPRISE = 'ENTERPRISE'
+}
+
 export type UpdateData = {
     body: DictUpdateDto;
     path?: never;

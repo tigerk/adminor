@@ -80,7 +80,7 @@
             <el-descriptions-item label="财务流水号">{{ flow.flowNo || "-" }}</el-descriptions-item>
             <el-descriptions-item label="流水类型">{{ flow.flowType || "-" }}</el-descriptions-item>
             <el-descriptions-item label="资金方向">{{ flow.flowDirection || "-" }}</el-descriptions-item>
-            <el-descriptions-item label="状态">{{ flow.status || "-" }}</el-descriptions-item>
+            <el-descriptions-item label="状态">{{ flowStatusText(flow.status) }}</el-descriptions-item>
             <el-descriptions-item label="业务单号">{{ flow.bizNo || "-" }}</el-descriptions-item>
             <el-descriptions-item label="流水时间">{{ formatDateTime(flow.flowTime) }}</el-descriptions-item>
             <el-descriptions-item label="金额">¥{{ formatAmount(flow.amount) }}</el-descriptions-item>
@@ -97,8 +97,8 @@
         <div class="section-title">支付流水</div>
         <el-descriptions v-if="paymentFlow" :column="2" size="default" border>
           <el-descriptions-item label="支付流水号">{{ paymentFlow.paymentNo || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="支付渠道">{{ paymentFlow.channel || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="支付状态">{{ paymentFlow.status || "-" }}</el-descriptions-item>
+          <el-descriptions-item label="支付渠道">{{ paymentChannelText(paymentFlow.channel) }}</el-descriptions-item>
+          <el-descriptions-item label="支付状态">{{ paymentStatusText(paymentFlow.status) }}</el-descriptions-item>
           <el-descriptions-item label="第三方单号">{{ paymentFlow.thirdTradeNo || "-" }}</el-descriptions-item>
           <el-descriptions-item label="支付金额">¥{{ formatAmount(paymentFlow.amount) }}</el-descriptions-item>
           <el-descriptions-item label="支付时间">{{ formatDateTime(paymentFlow.payTime) }}</el-descriptions-item>
@@ -124,32 +124,8 @@
 
 <script setup lang="ts">
   import { computed, onMounted, ref } from "vue";
-  import type { LeaseBillListVo } from "@/types";
+  import type { FinanceFlowVo, LeaseBillListVo, PaymentFlowVo } from "@/types";
   import { getLeaseBillDetail } from "@/api/contract/tenant";
-
-  interface FinanceFlowLite {
-    flowNo?: string;
-    bizNo?: string;
-    flowType?: string;
-    flowDirection?: string;
-    status?: string;
-    amount?: number;
-    flowTime?: string;
-    payerName?: string;
-    payerPhone?: string;
-    receiverName?: string;
-    operatorName?: string;
-    remark?: string;
-  }
-
-  interface PaymentFlowLite {
-    paymentNo?: string;
-    channel?: string;
-    status?: string;
-    thirdTradeNo?: string;
-    amount?: number;
-    payTime?: string;
-  }
 
   interface Props {
     billId: string;
@@ -203,15 +179,9 @@
 
   const hasFlow = computed(() => Boolean(bill.value.payTime || bill.value.payAmount || bill.value.payChannel));
 
-  const financeFlowList = computed(() => {
-    const data = bill.value as LeaseBillListVo & { financeFlowList?: FinanceFlowLite[] };
-    return data.financeFlowList || [];
-  });
+  const financeFlowList = computed(() => bill.value.financeFlowList || []);
 
-  const paymentFlow = computed(() => {
-    const data = bill.value as LeaseBillListVo & { paymentFlow?: PaymentFlowLite };
-    return data.paymentFlow;
-  });
+  const paymentFlow = computed(() => bill.value.paymentFlow);
 
   const payerInfo = computed(() => {
     const tenantId = bill.value.tenantId ?? "-";
@@ -236,15 +206,47 @@
 
   const formatDate = (val?: string) => (val ? val.substring(0, 10) : "-");
   const formatDateTime = (val?: string) => (val ? val.substring(0, 19).replace("T", " ") : "-");
-  const formatAmount = (val?: number) => {
+  const formatAmount = (val?: string | number) => {
     if (val === undefined || val === null) return "-";
-    return (val / 100).toFixed(2);
+    const amount = typeof val === "string" ? Number(val) : val;
+    if (Number.isNaN(amount)) return "-";
+    return (amount / 100).toFixed(2);
   };
 
-  const formatPayer = (flow?: FinanceFlowLite) => {
+  const formatPayer = (flow?: FinanceFlowVo) => {
     if (!flow) return "-";
     if (flow.payerName && flow.payerPhone) return `${flow.payerName}（${flow.payerPhone}）`;
     return flow.payerName || flow.payerPhone || "-";
+  };
+
+  const flowStatusText = (status?: number) => {
+    if (status === 0) return "入账中";
+    if (status === 1) return "已入账";
+    if (status === 2) return "失败";
+    if (status === 3) return "已作废";
+    return "-";
+  };
+
+  const paymentStatusText = (status?: number) => {
+    if (status === 0) return "支付中";
+    if (status === 1) return "支付成功";
+    if (status === 2) return "支付失败";
+    if (status === 3) return "已关闭";
+    if (status === 4) return "退款中";
+    if (status === 5) return "已退款";
+    return "-";
+  };
+
+  const paymentChannelText = (channel?: string) => {
+    if (!channel) return "-";
+    const normalized = channel.toUpperCase();
+    if (normalized === "CASH") return "现金";
+    if (normalized === "TRANSFER") return "转账";
+    if (normalized === "ALIPAY") return "支付宝";
+    if (normalized === "WECHAT") return "微信";
+    if (normalized === "POS") return "POS";
+    if (normalized === "OTHER") return "其他";
+    return channel;
   };
 </script>
 
