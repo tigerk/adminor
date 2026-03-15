@@ -306,6 +306,8 @@
       title: "账单详情",
       width: "720px",
       top: "8%",
+      alignCenter: true,
+      lockScroll: true,
       closeOnClickModal: true,
       contentRenderer: () => h(LeaseBillDetailDialog, { billId })
     });

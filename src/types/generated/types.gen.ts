@@ -4760,9 +4760,9 @@ export type FinanceFlowVo = {
      */
     currency?: string;
     /**
-     * 状态
+     * 状态：0=入账中、1=已入账、2=失败、3=已作废
      */
-    status?: string;
+    status?: number;
     /**
      * 退款关联原始流水ID
      */
@@ -4774,7 +4774,7 @@ export type FinanceFlowVo = {
     /**
      * 是否已拆分：0 否，1 是
      */
-    isSplit?: number;
+    split?: boolean;
     /**
      * 费用类型
      */
@@ -5187,9 +5187,9 @@ export type PaymentFlowVo = {
      */
     channel?: string;
     /**
-     * 支付状态
+     * 状态：0=支付中、1=支付成功、2=支付失败、3=已关闭、4=退款中、5=已退款
      */
-    status?: string;
+    status?: number;
     /**
      * 第三方单号
      */
