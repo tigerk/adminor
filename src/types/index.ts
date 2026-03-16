@@ -4,6 +4,7 @@ export * from "./common";
 export * from "./enums";
 export * from "./models";
 export * from "./generated";
+export * from "./generated/enum.meta";
 
 // ==================== 类型管理原则总结 ====================
 /**

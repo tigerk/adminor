@@ -36,6 +36,6 @@ for (const [enumName, schema] of Object.entries(schemas) as any) {
 }
 
 const output = `// AUTO GENERATED - DO NOT EDIT\n\n${enumEntries.join("\n")}`;
-const outPath = path.resolve("./src/types/generated/enumMeta.ts");
+const outPath = path.resolve("./src/types/generated/enum.meta.ts");
 fs.writeFileSync(outPath, output, "utf-8");
-console.log(`✅ enumMeta.ts generated with ${enumEntries.length} enums`);
+console.log(`✅ enum.meta.ts generated with ${enumEntries.length} enums`);
