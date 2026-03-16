@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, computed, watch } from "vue";
   import { Edit, House, Location, View, VideoPlay } from "@element-plus/icons-vue";
-  import { HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo, LeaseModeEnum, FocusCreateDto, RoomLockRecordProps } from "@/types";
+  import { HouseDetailVo, PriceConfigDto, RoomDetailVo, RoomTrackVo, LeaseModeEnumMeta, FocusCreateDto, RoomLockRecordProps } from "@/types";
   import { payMethodLabel, getWaterTypeLabel, getElectricityTypeLabel, getDecorationLabel, getDirectionLabel, getHouseLayoutName, getRentalTypeLabel } from "@/utils/house";
   import { getOptionNameByCode, ROOM_TYPE_OPTIONS, getOptionByCode, LEASE_MODE_OPTIONS } from "@/constants";
   import { getFocusById } from "@/api/house/focus";
@@ -92,7 +92,7 @@
   });
 
   // ── 集中式房源数据 ──────────────────────────────────────
-  const isFocus = computed(() => props.detail?.leaseMode === LeaseModeEnum.FOCUS);
+  const isFocus = computed(() => props.detail?.leaseMode === LeaseModeEnumMeta.FOCUS.code);
   const focusData = ref<FocusCreateDto | null>(null);
   const focusLoading = ref(false);
 

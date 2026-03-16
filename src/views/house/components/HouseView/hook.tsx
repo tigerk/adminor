@@ -3,7 +3,7 @@ import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
 import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
-import { type BookingListVo, type HouseDetailVo, type LeaseLiteVo, LeaseModeEnum, RentalTypeEnum, type RoomDetailVo, type RoomListVo, TenantTypeEnum } from "@/types";
+import { type BookingListVo, type HouseDetailVo, type LeaseLiteVo, LeaseModeEnumMeta, RentalTypeEnumMeta, type RoomDetailVo, type RoomListVo, TenantTypeEnumMeta } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
 import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
@@ -62,7 +62,7 @@ export const useHouseView = () => {
                 lease: {
                   roomIds: [r.id],
                   contractNature: 1,
-                  tenantType: TenantTypeEnum.PERSONAL
+                  tenantType: TenantTypeEnumMeta.PERSONAL.code
                 } as any,
                 tenantPersonal: {} as any,
                 tenantCompany: {} as any,
@@ -166,14 +166,14 @@ export const useHouseView = () => {
       return message("房源数据缺失", { type: "warning" });
     }
 
-    if (leaseMode === LeaseModeEnum.FOCUS) {
+    if (leaseMode === LeaseModeEnumMeta.FOCUS.code) {
       handleEditFocus(detail.leaseModeId);
-    } else if (leaseMode === LeaseModeEnum.SCATTER) {
-      if (rentalType === RentalTypeEnum.SHARED) {
+    } else if (leaseMode === LeaseModeEnumMeta.SCATTER.code) {
+      if (rentalType === RentalTypeEnumMeta.SHARED.code) {
         openShareEditDialog("修改" + detail.houseName, id).then(() => {
           // 编辑完成后的刷新逻辑由调用方通过 onReload 处理
         });
-      } else if (rentalType === RentalTypeEnum.ENTIRE) {
+      } else if (rentalType === RentalTypeEnumMeta.ENTIRE.code) {
         openEntireEditDialog("修改" + detail.houseName, id).then(() => {
           // 同上
         });

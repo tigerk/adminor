@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
   import type { PriceConfigFormProps } from "./types";
-  import { PriceConfigDto, PriceMethodEnum, PricePlanDto } from "@/types";
+  import { PriceConfigDto, PriceMethodEnumMeta, PricePlanDto } from "@/types";
   import { PRICE_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
@@ -13,7 +13,7 @@
   const priceConfig = ref<PriceConfigDto>({
     ...props.formInline,
     // ✅ 用 ?? 确保 null/undefined 时才用默认值（0 是有效值不处理）
-    floorPriceMethod: props.formInline?.floorPriceMethod ?? PriceMethodEnum.RATIO,
+    floorPriceMethod: props.formInline?.floorPriceMethod ?? PriceMethodEnumMeta.RATIO.code
   });
 
   // 初始化其他费用列表 - 确保每个费用项都有完整的初始值

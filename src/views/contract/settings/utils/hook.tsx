@@ -11,9 +11,7 @@ import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type { ContractTemplateQueryFormProps } from "@/views/contract/settings/utils/types";
 import type { ContractTemplateListVo } from "@/types";
-import { ContractSealSourceEnum } from "@/types/enums";
-import { doc } from "prettier";
-import { handleTree } from "@/utils/tree";
+import { ContractSealSourceEnumMeta } from "@/types";
 import { getDeptList } from "@/api/sys/dept";
 
 function useContractSettings() {
@@ -50,13 +48,13 @@ function useContractSettings() {
   const mutableContractTypeOptions = [...CONTRACT_TYPE_OPTIONS] as any[];
   const getSealSourceLabel = (source?: number) => {
     switch (source) {
-      case ContractSealSourceEnum.SELF:
+      case ContractSealSourceEnumMeta.SELF.code:
         return "企业章";
-      case ContractSealSourceEnum.FADADA:
+      case ContractSealSourceEnumMeta.FADADA.code:
         return "法大大";
-      case ContractSealSourceEnum.EQIBAO:
+      case ContractSealSourceEnumMeta.EQIBAO.code:
         return "E签宝";
-      case ContractSealSourceEnum.OTHER:
+      case ContractSealSourceEnumMeta.OTHER.code:
         return "其他";
       default:
         return "—";

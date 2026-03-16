@@ -11,7 +11,7 @@ export default defineConfig({
     {
       // 核心类型生成插件
       name: "@hey-api/typescript",
-      enums: "typescript" // 将枚举导出为真正的 TypeScript Enums
+      enums: false
       // 如果你不需要导出接口的元数据（比如每个字段的描述、默认值等），保持默认即可
     }
   ]

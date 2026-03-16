@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from "vue";
-  import { HouseDetailVo, LeaseLiteVo, PriceMethodEnum, RoomDetailVo, RoomTrackVo, type PriceConfigDto, BookingListVo, RoomLockRecordProps } from "@/types";
+  import { HouseDetailVo, LeaseLiteVo, RoomDetailVo, RoomTrackVo, type PriceConfigDto, BookingListVo, RoomLockRecordProps, PriceMethodEnumMeta } from "@/types";
   import { OCCUPANCY_STATUS_ENUM } from "@/constants";
 
   import { message } from "@/utils/message";
@@ -109,7 +109,7 @@
       roomId,
       price: room.price ? Number(room.price) : 0,
       floorPrice: 0,
-      floorPriceMethod: PriceMethodEnum.RATIO,
+      floorPriceMethod: PriceMethodEnumMeta.RATIO.code,
       floorPriceInput: 0,
       otherFees: [],
       pricePlans: []

@@ -122,7 +122,7 @@
   import { getContractTemplateParams } from "@/api/contract/template";
   import { getContractSealList } from "@/api/contract/contractSeal";
   import type { ContractSealVo } from "@/types/generated";
-  import { ContractSealSourceEnum, ContractSealTypeEnum } from "@/types/enums";
+  import { ContractSealSourceEnumMeta, ContractSealTypeEnumMeta } from "@/types";
 
   interface FormProps {
     formInline: ContractTemplateListVo;
@@ -178,7 +178,7 @@
   });
 
   const getSealOptionLabel = (item: ContractSealVo) => {
-    if (item.source === ContractSealSourceEnum.FADADA && item.sealType === ContractSealTypeEnum.PERSONAL) {
+    if (item.source === ContractSealSourceEnumMeta.FADADA.code && item.sealType === ContractSealTypeEnumMeta.PERSONAL.code) {
       return item.operatorName || "个人签章";
     }
     return item.companyName || "企业签章";

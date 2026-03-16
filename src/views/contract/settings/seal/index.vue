@@ -26,15 +26,15 @@
         <div class="seal-card__header">
           <div class="seal-card__avatar" :class="getAvatarClass(item)">
             <el-icon :size="18">
-              <OfficeBuilding v-if="item.sealType === 1 || item.source !== ContractSealSourceEnum.FADADA" />
+              <OfficeBuilding v-if="item.sealType === 1 || item.source !== ContractSealSourceEnumMeta.FADADA.code" />
               <User v-else />
             </el-icon>
           </div>
           <div class="seal-card__badges">
-            <span class="seal-card__tag" :class="item.source === ContractSealSourceEnum.FADADA ? 'tag--fadada' : 'tag--seal'">
+            <span class="seal-card__tag" :class="item.source === ContractSealSourceEnumMeta.FADADA.code ? 'tag--fadada' : 'tag--seal'">
               {{ getCardTypeLabel(item) }}
             </span>
-            <span v-if="item.source !== ContractSealSourceEnum.SELF" class="seal-card__certified">
+            <span v-if="item.source !== ContractSealSourceEnumMeta.SELF.code" class="seal-card__certified">
               <el-icon :size="10" class="certified-icon"><CircleCheckFilled /></el-icon>
               已认证
             </span>
@@ -47,13 +47,13 @@
 
         <!-- 名称 -->
         <div class="seal-card__name">
-          {{ item.source === ContractSealSourceEnum.FADADA && item.sealType === 2 ? item.operatorName || "—" : item.companyName || "—" }}
+          {{ item.source === ContractSealSourceEnumMeta.FADADA.code && item.sealType === 2 ? item.operatorName || "—" : item.companyName || "—" }}
         </div>
 
         <!-- 详情字段 -->
         <div class="seal-card__fields">
           <!-- 法大大·企业 -->
-          <template v-if="item.source === ContractSealSourceEnum.FADADA && item.sealType === 1">
+          <template v-if="item.source === ContractSealSourceEnumMeta.FADADA.code && item.sealType === 1">
             <div class="seal-card__field">
               <span class="seal-card__field-label">统一代码</span>
               <span class="seal-card__field-val">{{ item.companyUscc || "—" }}</span>
@@ -68,7 +68,7 @@
             </div>
           </template>
           <!-- 法大大·个人 -->
-          <template v-else-if="item.source === ContractSealSourceEnum.FADADA && item.sealType === 2">
+          <template v-else-if="item.source === ContractSealSourceEnumMeta.FADADA.code && item.sealType === 2">
             <div class="seal-card__field">
               <span class="seal-card__field-label">联系电话</span>
               <span class="seal-card__field-val">{{ item.operatorPhone || "—" }}</span>
@@ -134,9 +134,9 @@
           <div class="sd-source-row">
             <button
               class="sd-source-opt"
-              :class="{ 'sd-source-opt--on': form.source === ContractSealSourceEnum.SELF, 'sd-source-opt--disabled': !!editingId }"
+              :class="{ 'sd-source-opt--on': form.source === ContractSealSourceEnumMeta.SELF.code, 'sd-source-opt--disabled': !!editingId }"
               :disabled="!!editingId"
-              @click="!editingId && handleSourceChange(ContractSealSourceEnum.SELF)"
+              @click="!editingId && handleSourceChange(ContractSealSourceEnumMeta.SELF.code as number)"
             >
               <span class="sd-source-opt__badge sd-source-opt__badge--seal">
                 <el-icon :size="14"><Stamp /></el-icon>
@@ -145,22 +145,22 @@
                 <span class="sd-source-opt__name">企业章</span>
                 <span class="sd-source-opt__sub">上传实体印章图片</span>
               </div>
-              <el-icon v-if="form.source === ContractSealSourceEnum.SELF" class="sd-source-opt__check" :size="14">
+              <el-icon v-if="form.source === ContractSealSourceEnumMeta.SELF.code" class="sd-source-opt__check" :size="14">
                 <CircleCheckFilled />
               </el-icon>
             </button>
             <button
               class="sd-source-opt"
-              :class="{ 'sd-source-opt--on': form.source === ContractSealSourceEnum.FADADA, 'sd-source-opt--disabled': !!editingId }"
+              :class="{ 'sd-source-opt--on': form.source === ContractSealSourceEnumMeta.FADADA.code, 'sd-source-opt--disabled': !!editingId }"
               :disabled="!!editingId"
-              @click="!editingId && handleSourceChange(ContractSealSourceEnum.FADADA)"
+              @click="!editingId && handleSourceChange(ContractSealSourceEnumMeta.FADADA.code)"
             >
               <span class="sd-source-opt__badge sd-source-opt__badge--fadada">法</span>
               <div class="sd-source-opt__info">
                 <span class="sd-source-opt__name">法大大</span>
                 <span class="sd-source-opt__sub">电子合同 · 法律认证</span>
               </div>
-              <el-icon v-if="form.source === ContractSealSourceEnum.FADADA" class="sd-source-opt__check" :size="14">
+              <el-icon v-if="ContractSealSourceEnumMeta.FADADA.code === form.source" class="sd-source-opt__check" :size="14">
                 <CircleCheckFilled />
               </el-icon>
             </button>
@@ -168,7 +168,7 @@
         </div>
 
         <!-- 法大大：印章类型 -->
-        <template v-if="form.source === ContractSealSourceEnum.FADADA">
+        <template v-if="form.source === ContractSealSourceEnumMeta.FADADA.code">
           <div class="sd-field-group">
             <label class="sd-label sd-label--required">印章类型</label>
             <div class="sd-type-switch">
@@ -201,7 +201,7 @@
         <div class="sd-divider" />
 
         <!-- 企业信息（企业章 / 法大大·企业） -->
-        <template v-if="form.source === ContractSealSourceEnum.SELF || (form.source === ContractSealSourceEnum.FADADA && form.sealType === 1)">
+        <template v-if="form.source === ContractSealSourceEnumMeta.SELF.code || (form.source === ContractSealSourceEnumMeta.FADADA.code && form.sealType === 1)">
           <div class="sd-field-group">
             <label class="sd-label sd-label--required">公司名称</label>
             <el-input v-model="form.companyName" placeholder="请输入公司全称" />
@@ -234,7 +234,7 @@
         </template>
 
         <!-- 经办人（法大大） -->
-        <template v-if="form.source === ContractSealSourceEnum.FADADA">
+        <template v-if="form.source === ContractSealSourceEnumMeta.FADADA.code">
           <div class="sd-field-group">
             <label class="sd-label sd-label--required">经办人</label>
             <el-select v-model="form.operatorId" placeholder="搜索或选择经办人" filterable class="w-full" @change="handleOperatorChange">
@@ -262,7 +262,7 @@
         </template>
 
         <!-- 企业章：印章图片上传 -->
-        <template v-if="form.source === ContractSealSourceEnum.SELF">
+        <template v-if="form.source === ContractSealSourceEnumMeta.SELF.code">
           <div class="sd-field-group">
             <label class="sd-label sd-label--required">电子印章图片</label>
             <div class="sd-upload">
@@ -299,8 +299,7 @@
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getCompanyUserOptions, getCompanyUserDetail } from "@/api/company";
   import { createContractSeal, updateContractSeal, deleteContractSeal, getContractSealList } from "@/api/contract/contractSeal";
-  import type { ContractSealCreateDto, ContractSealVo, IdNameVo } from "@/types/generated";
-  import { ContractSealSourceEnum, ContractSealTypeEnum } from "@/types/enums";
+  import { ContractSealSourceEnumMeta, ContractSealTypeEnumMeta, ContractSealCreateDto, ContractSealVo, IdNameVo } from "@/types";
   import { Stamp, Warning, OfficeBuilding, User, CircleCheckFilled, ArrowRight, Edit, Delete } from "@element-plus/icons-vue";
   import type { UploadFile } from "element-plus";
 
@@ -332,7 +331,7 @@
 
   const form = reactive({
     sealType: 1,
-    source: ContractSealSourceEnum.SELF,
+    source: ContractSealSourceEnumMeta.SELF.code as number,
     companyName: "",
     companyUscc: "",
     legalPerson: "",
@@ -346,17 +345,17 @@
   });
 
   function getCardTypeLabel(item: ContractSealVo) {
-    if (item.source === ContractSealSourceEnum.FADADA) return item.sealType === ContractSealTypeEnum.COMPANY ? "法大大·企业" : "法大大·个人";
+    if (item.source === ContractSealSourceEnumMeta.FADADA.code) return item.sealType === ContractSealTypeEnumMeta.COMPANY.code ? "法大大·企业" : "法大大·个人";
     return "企业章";
   }
 
   function getItemClass(item: ContractSealVo) {
-    if (item.source === ContractSealSourceEnum.FADADA) return item.sealType === ContractSealTypeEnum.COMPANY ? "seal-item--fadada-ent" : "seal-item--fadada-per";
+    if (item.source === ContractSealSourceEnumMeta.FADADA.code) return item.sealType === ContractSealTypeEnumMeta.COMPANY.code ? "seal-item--fadada-ent" : "seal-item--fadada-per";
     return "seal-item--ent-seal";
   }
 
   function getAvatarClass(item: ContractSealVo) {
-    if (item.source === ContractSealSourceEnum.FADADA) return item.sealType === ContractSealTypeEnum.COMPANY ? "avatar--blue" : "avatar--green";
+    if (item.source === ContractSealSourceEnumMeta.FADADA.code) return item.sealType === ContractSealTypeEnumMeta.COMPANY.code ? "avatar--blue" : "avatar--green";
     return "avatar--orange";
   }
 
@@ -383,8 +382,8 @@
     editingId.value = item.id ?? null;
     await loadUserOptions();
     Object.assign(form, {
-      sealType: item.sealType ?? ContractSealTypeEnum.COMPANY,
-      source: item.source ?? ContractSealSourceEnum.SELF,
+      sealType: item.sealType ?? ContractSealTypeEnumMeta.COMPANY,
+      source: item.source ?? ContractSealSourceEnumMeta.SELF.code,
       companyName: item.companyName ?? "",
       companyUscc: item.companyUscc ?? "",
       legalPerson: item.legalPerson ?? "",
@@ -403,8 +402,8 @@
 
   const resetForm = () => {
     Object.assign(form, {
-      sealType: ContractSealTypeEnum.COMPANY,
-      source: ContractSealSourceEnum.SELF,
+      sealType: ContractSealTypeEnumMeta.COMPANY,
+      source: ContractSealSourceEnumMeta.SELF.code,
       companyName: "",
       companyUscc: "",
       legalPerson: "",
@@ -419,9 +418,9 @@
     sealImageList.value = [];
   };
 
-  const handleSourceChange = (source: ContractSealSourceEnum) => {
+  const handleSourceChange = (source: number) => {
     form.source = source;
-    form.sealType = ContractSealTypeEnum.COMPANY;
+    form.sealType = ContractSealTypeEnumMeta.COMPANY.code;
     form.operatorId = undefined;
     form.operatorIdTypeLabel = "";
     form.operatorIdNo = "";
@@ -448,8 +447,8 @@
 
   const validateForm = (): string => {
     if (!form.source) return "请选择签章来源";
-    if (form.source === ContractSealSourceEnum.FADADA) {
-      if (form.sealType === ContractSealTypeEnum.COMPANY) {
+    if (form.source === ContractSealSourceEnumMeta.FADADA.code) {
+      if (form.sealType === ContractSealTypeEnumMeta.COMPANY.code) {
         if (!form.companyName) return "请输入公司名称";
         if (!form.companyUscc) return "请输入统一社会信用代码";
         if (!form.legalPerson) return "请输入法人姓名";
@@ -459,7 +458,7 @@
         if (!form.operatorId) return "请选择经办人";
       }
     }
-    if (form.source === ContractSealSourceEnum.SELF) {
+    if (form.source === ContractSealSourceEnumMeta.SELF.code) {
       if (!form.companyName) return "请输入公司名称";
       if (!form.companyUscc) return "请输入统一社会信用代码";
       if (!form.legalPerson) return "请输入法人姓名";
@@ -473,12 +472,12 @@
   const buildPayload = (): ContractSealCreateDto => {
     const sealUrls = getSealUrls();
     const payload: ContractSealCreateDto = {
-      sealType: form.source === ContractSealSourceEnum.FADADA ? form.sealType : ContractSealTypeEnum.COMPANY,
+      sealType: form.source === ContractSealSourceEnumMeta.FADADA.code ? form.sealType : ContractSealTypeEnumMeta.COMPANY.code,
       source: form.source,
       status: form.status,
-      sealUrls: form.source === ContractSealSourceEnum.SELF ? sealUrls : []
+      sealUrls: form.source === ContractSealSourceEnumMeta.SELF.code ? sealUrls : []
     };
-    if (form.source === ContractSealSourceEnum.FADADA && form.sealType === 1) {
+    if (form.source === ContractSealSourceEnumMeta.FADADA.code && form.sealType === 1) {
       Object.assign(payload, {
         companyName: form.companyName,
         companyUscc: form.companyUscc,
@@ -487,9 +486,9 @@
         legalPersonIdNo: form.legalPersonIdNo,
         operatorId: form.operatorId
       });
-    } else if (form.source === ContractSealSourceEnum.FADADA && form.sealType === 2) {
+    } else if (form.source === ContractSealSourceEnumMeta.FADADA.code && form.sealType === 2) {
       payload.operatorId = form.operatorId;
-    } else if (form.source === ContractSealSourceEnum.SELF) {
+    } else if (form.source === ContractSealSourceEnumMeta.SELF.code) {
       Object.assign(payload, {
         companyName: form.companyName,
         companyUscc: form.companyUscc,
