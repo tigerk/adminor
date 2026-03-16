@@ -196,7 +196,7 @@
                 <td>
                   <div class="period-picker">
                     <el-date-picker
-                      v-model="fee.feePeriodStart"
+                      v-model="fee.feeStart"
                       type="date"
                       placeholder="开始日期"
                       value-format="YYYY-MM-DD"
@@ -206,7 +206,7 @@
                     />
                     <span class="period-sep">至</span>
                     <el-date-picker
-                      v-model="fee.feePeriodEnd"
+                      v-model="fee.feeEnd"
                       type="date"
                       placeholder="结束日期"
                       value-format="YYYY-MM-DD"
@@ -644,8 +644,8 @@
           feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
           feeSubName: "房屋押金",
           feeAmount: initData.value.depositAmount ?? null,
-          feePeriodStart: formatDate(initData.value.leaseStart).replace(/\./g, "-"),
-          feePeriodEnd: formatDate(initData.value.leaseEnd).replace(/\./g, "-"),
+          feeStart: formatDate(initData.value.leaseStart).replace(/\./g, "-"),
+          feeEnd: formatDate(initData.value.leaseEnd).replace(/\./g, "-"),
           remark: "",
           feeTypeCascade: null
         };
@@ -672,8 +672,8 @@
         feeType: CHECKOUT_FEE_TYPE_ENUM.CLEANING,
         feeSubName: "清洁费",
         feeAmount: form.cleaningFeeAmount || 0,
-        feePeriodStart: today,
-        feePeriodEnd: today,
+        feeStart: today,
+        feeEnd: today,
         remark: "",
         feeTypeCascade: null
       });
@@ -693,8 +693,8 @@
       feeType: null,
       feeSubName: "",
       feeAmount: null,
-      feePeriodStart: today,
-      feePeriodEnd: today,
+      feeStart: today,
+      feeEnd: today,
       remark: "",
       feeTypeCascade: null
     };
@@ -779,8 +779,8 @@
           feeType: pf.feeType ?? null,
           feeSubName: pf.feeSubName ?? "",
           feeAmount: pf.feeAmount ?? null,
-          feePeriodStart: pf.feePeriodStart?.split("T")[0] ?? getTodayStr(),
-          feePeriodEnd: pf.feePeriodEnd?.split("T")[0] ?? getTodayStr(),
+          feeStart: pf.feeStart?.split("T")[0] ?? getTodayStr(),
+          feeEnd: pf.feeEnd?.split("T")[0] ?? getTodayStr(),
           remark: pf.remark ?? "",
           billId: pf.billId,
           feeTypeCascade: null
@@ -814,8 +814,8 @@
         feeType: f.feeType ?? null,
         feeSubName: f.feeSubName,
         feeAmount: f.feeAmount ?? null,
-        feePeriodStart: f.feePeriodStart,
-        feePeriodEnd: f.feePeriodEnd,
+        feeStart: f.feeStart,
+        feeEnd: f.feeEnd,
         remark: f.remark,
         billId: f.billId,
         feeTypeCascade: null
@@ -903,8 +903,8 @@
             feeType: Number(f.feeType),
             feeSubName: f.feeSubName,
             feeAmount: f.feeAmount ?? 0,
-            feePeriodStart: f.feePeriodStart,
-            feePeriodEnd: f.feePeriodEnd,
+            feeStart: f.feeStart,
+            feeEnd: f.feeEnd,
             remark: f.remark,
             billId: f.billId
           }))

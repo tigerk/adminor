@@ -45,10 +45,7 @@
           <el-descriptions-item label="租客信息">{{ payerInfo }}</el-descriptions-item>
           <el-descriptions-item label="账单期数">第{{ bill.sortOrder }}期</el-descriptions-item>
           <el-descriptions-item label="账单类型">{{ billTypeText }}</el-descriptions-item>
-          <el-descriptions-item label="账期">{{ formatDate(bill.rentPeriodStart) }} ~ {{ formatDate(bill.rentPeriodEnd) }}</el-descriptions-item>
-          <el-descriptions-item label="租金">¥{{ bill.rentalAmount ?? 0 }}</el-descriptions-item>
-          <el-descriptions-item label="押金">¥{{ bill.depositAmount ?? 0 }}</el-descriptions-item>
-          <el-descriptions-item label="其他费用">¥{{ bill.otherFeeAmount ?? 0 }}</el-descriptions-item>
+          <el-descriptions-item label="账期">{{ formatDate(bill.billStart) }} ~ {{ formatDate(bill.billEnd) }}</el-descriptions-item>
           <el-descriptions-item label="应收总额">¥{{ bill.totalAmount ?? 0 }}</el-descriptions-item>
           <el-descriptions-item label="支付状态">{{ payStatusText }}</el-descriptions-item>
           <el-descriptions-item label="备注">{{ bill.remark || "-" }}</el-descriptions-item>
@@ -108,11 +105,21 @@
 
       <div class="section-card">
         <div class="section-title">账单明细</div>
-        <el-table v-if="bill.otherFees && bill.otherFees.length" :data="bill.otherFees" border size="small">
+        <el-table v-if="bill.feeList && bill.feeList.length" :data="bill.feeList" border size="small">
           <el-table-column type="index" label="序号" width="60" align="center" />
-          <el-table-column prop="name" label="费用名称" min-width="120" />
-          <el-table-column prop="amount" label="金额" width="100">
+          <el-table-column prop="feeType" label="费用类型" width="120">
+            <template #default="{ row }">
+              <el-tag v-if="row.feeType === 'RENTAL'" type="success">租金</el-tag>
+              <el-tag v-else-if="row.feeType === 'DEPOSIT'" type="warning">押金</el-tag>
+              <el-tag v-else type="info">其他费用</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="name" label="费用名称" min-width="140" />
+          <el-table-column prop="amount" label="金额" width="120">
             <template #default="{ row }">¥{{ row.amount }}</template>
+          </el-table-column>
+          <el-table-column label="费用周期" min-width="200">
+            <template #default="{ row }">{{ formatDate(row.feeStart) }} ~ {{ formatDate(row.feeEnd) }}</template>
           </el-table-column>
           <el-table-column prop="remark" label="说明" min-width="200" show-overflow-tooltip />
         </el-table>
@@ -190,9 +197,16 @@
 
   const billSummary = computed(() => {
     const items: string[] = [];
-    if ((bill.value.rentalAmount ?? 0) > 0) items.push("租金");
-    if ((bill.value.otherFeeAmount ?? 0) > 0) items.push("杂费");
-    if ((bill.value.depositAmount ?? 0) > 0) items.push("押金");
+    const feeList = bill.value.feeList || [];
+    const feeTypes = new Set<string>();
+    feeList.forEach(fee => {
+      if (fee.feeType) feeTypes.add(fee.feeType);
+    });
+    feeTypes.forEach(type => {
+      if (type === "RENTAL") items.push("租金");
+      else if (type === "DEPOSIT") items.push("押金");
+      else items.push("杂费");
+    });
     return items.length ? items.join(" / ") : "账单费用";
   });
 

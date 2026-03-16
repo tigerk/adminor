@@ -12,8 +12,8 @@ export interface CheckoutFeeProps {
   feeName?: string;
   feeSubName?: string;
   feeAmount: number | null;
-  feePeriodStart?: string;
-  feePeriodEnd?: string;
+  feeStart?: string;
+  feeEnd?: string;
   remark?: string;
   billId?: string;
   /** 级联选择器绑定值 [parentCode, childId] */

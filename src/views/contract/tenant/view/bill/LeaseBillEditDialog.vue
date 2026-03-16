@@ -38,13 +38,13 @@
 
       <el-row :gutter="16">
         <el-col :span="6">
-          <el-form-item label="账期开始" prop="rentPeriodStart">
-            <el-date-picker v-model="form.rentPeriodStart" type="date" value-format="YYYY-MM-DD" class="w-full" placeholder="选择日期" />
+          <el-form-item label="账期开始" prop="billStart">
+            <el-date-picker v-model="form.billStart" type="date" value-format="YYYY-MM-DD" class="w-full" placeholder="选择日期" />
           </el-form-item>
         </el-col>
         <el-col :span="6">
-          <el-form-item label="账期结束" prop="rentPeriodEnd">
-            <el-date-picker v-model="form.rentPeriodEnd" type="date" value-format="YYYY-MM-DD" class="w-full" placeholder="选择日期" />
+          <el-form-item label="账期结束" prop="billEnd">
+            <el-date-picker v-model="form.billEnd" type="date" value-format="YYYY-MM-DD" class="w-full" placeholder="选择日期" />
           </el-form-item>
         </el-col>
         <el-col :span="6">
@@ -61,28 +61,10 @@
 
       <el-row :gutter="16">
         <el-col :span="6">
-          <el-form-item label="租金" prop="rentalAmount">
-            <el-input-number v-model="form.rentalAmount" :min="0" :precision="2" controls-position="right" class="w-full" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="押金" prop="depositAmount">
-            <el-input-number v-model="form.depositAmount" :min="0" :precision="2" controls-position="right" class="w-full" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="其他费用">
-            <el-input-number v-model="form.otherFeeAmount" :min="0" :precision="2" controls-position="right" class="w-full" disabled />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
           <el-form-item label="应收总额">
             <el-input-number v-model="form.totalAmount" :min="0" :precision="2" controls-position="right" class="w-full" disabled />
           </el-form-item>
         </el-col>
-      </el-row>
-
-      <el-row :gutter="16">
         <el-col :span="6">
           <el-form-item label="支付金额">
             <el-input-number v-model="form.payAmount" :min="0" :precision="2" controls-position="right" class="w-full" />
@@ -99,7 +81,7 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="6">
           <el-form-item label="备注">
             <el-input v-model="form.remark" placeholder="请输入备注" />
           </el-form-item>
@@ -111,15 +93,17 @@
       <table class="fee-table">
         <thead>
           <tr>
-            <th style="width: 220px">费用名称</th>
-            <th style="width: 160px">金额(元)</th>
+            <th style="width: 120px">费用类型</th>
+            <th style="width: 200px">费用名称</th>
+            <th style="width: 140px">金额(元)</th>
+            <th style="width: 220px">费用周期</th>
             <th>备注</th>
             <th style="width: 40px" />
           </tr>
         </thead>
         <tbody>
           <tr v-if="feeList.length === 0" class="empty-row">
-            <td colspan="4">
+            <td colspan="6">
               <div class="empty-state">
                 <el-icon :size="26"><Tickets /></el-icon>
                 <span>暂无费用明细，点击下方"添加费用"新增</span>
@@ -128,11 +112,26 @@
           </tr>
           <tr v-for="(fee, index) in feeList" :key="index" class="fee-row">
             <td>
-              <el-select v-model="fee.dictDataId" class="w-full" placeholder="选择费用" filterable @change="val => handleFeeDictChange(val, fee)">
+              <el-select v-model="fee.feeType" class="w-full" placeholder="选择类型" @change="val => handleFeeTypeChange(val, fee)">
+                <el-option label="租金" value="RENTAL" />
+                <el-option label="押金" value="DEPOSIT" />
+                <el-option label="其他费用" value="OTHER_FEE" />
+              </el-select>
+            </td>
+            <td>
+              <el-select
+                v-if="fee.feeType === 'OTHER_FEE'"
+                v-model="fee.dictDataId"
+                class="w-full"
+                placeholder="选择费用"
+                filterable
+                @change="val => handleFeeDictChange(val, fee)"
+              >
                 <el-option-group v-for="group in feeTypeDictList" :key="group.dictCode" :label="group.dictName">
                   <el-option v-for="item in group.dictDataList" :key="item.id" :label="item.name" :value="item.id" />
                 </el-option-group>
               </el-select>
+              <el-input v-else v-model="fee.name" placeholder="费用名称" />
             </td>
             <td>
               <el-input-number v-model="fee.amount" :min="0" :precision="2" controls-position="right" class="w-full">
@@ -140,6 +139,13 @@
                   <span>￥</span>
                 </template>
               </el-input-number>
+            </td>
+            <td>
+              <div class="period-picker">
+                <el-date-picker v-model="fee.feeStart" type="date" value-format="YYYY-MM-DD" class="period-input" placeholder="开始" />
+                <span class="period-sep">至</span>
+                <el-date-picker v-model="fee.feeEnd" type="date" value-format="YYYY-MM-DD" class="period-input" placeholder="结束" />
+              </div>
             </td>
             <td>
               <el-input v-model="fee.remark" placeholder="备注" />
@@ -165,7 +171,7 @@
   import { computed, onMounted, reactive, ref, watch } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
   import { CirclePlus, Delete, Tickets } from "@element-plus/icons-vue";
-  import type { LeaseBillListVo, LeaseBillOtherFeeDto, LeaseBillUpdateDto } from "@/types";
+  import type { LeaseBillFeeDto, LeaseBillListVo, LeaseBillUpdateDto } from "@/types";
   import { getDictDataByParentCode } from "@/api/sys/dict";
 
   interface Props {
@@ -176,7 +182,7 @@
 
   const formRef = ref<FormInstance>();
   const form = reactive<LeaseBillUpdateDto>({} as LeaseBillUpdateDto);
-  const feeList = ref<LeaseBillOtherFeeDto[]>([]);
+  const feeList = ref<LeaseBillFeeDto[]>([]);
 
   interface DictDataItem {
     id: string;
@@ -193,17 +199,20 @@
   const rules = reactive<FormRules>({
     sortOrder: [{ required: true, message: "请输入期数", trigger: "blur" }],
     billType: [{ required: true, message: "请选择账单类型", trigger: "change" }],
-    rentPeriodStart: [{ required: true, message: "请选择账期开始", trigger: "change" }],
-    rentPeriodEnd: [{ required: true, message: "请选择账期结束", trigger: "change" }],
+    billStart: [{ required: true, message: "请选择账期开始", trigger: "change" }],
+    billEnd: [{ required: true, message: "请选择账期结束", trigger: "change" }],
     dueDate: [{ required: true, message: "请选择应收日期", trigger: "change" }]
   });
 
   const syncFromProps = () => {
     Object.assign(form, props.bill || {});
-    feeList.value = (props.bill?.otherFees || []).map(item => ({
+    feeList.value = (props.bill?.feeList || []).map(item => ({
+      feeType: item.feeType,
       dictDataId: item.dictDataId,
       name: item.name,
       amount: item.amount,
+      feeStart: item.feeStart,
+      feeEnd: item.feeEnd,
       remark: item.remark
     }));
   };
@@ -231,9 +240,12 @@
 
   const addFee = () => {
     feeList.value.push({
+      feeType: "OTHER_FEE",
       dictDataId: "",
       name: "",
       amount: 0,
+      feeStart: form.billStart,
+      feeEnd: form.billEnd,
       remark: ""
     });
   };
@@ -241,6 +253,61 @@
   const removeFee = (index: number) => {
     feeList.value.splice(index, 1);
   };
+
+  const handleFeeTypeChange = (feeType: string, fee: LeaseBillFeeDto) => {
+    fee.feeType = feeType;
+    if (feeType === "RENTAL") {
+      fee.name = "租金";
+      fee.dictDataId = "";
+      return;
+    }
+    if (feeType === "DEPOSIT") {
+      fee.name = "押金";
+      fee.dictDataId = "";
+      return;
+    }
+    if (feeType === "OTHER_FEE") {
+      fee.name = "";
+      fee.dictDataId = "";
+    }
+  };
+
+  const handleFeeDictChange = (dictDataId: string, fee: LeaseBillFeeDto) => {
+    if (!dictDataId) {
+      fee.name = "";
+      fee.dictDataId = "";
+      return;
+    }
+    for (const group of feeTypeDictList.value) {
+      const found = group.dictDataList.find(item => item.id === dictDataId);
+      if (found) {
+        fee.name = found.name;
+        fee.dictDataId = dictDataId;
+        return;
+      }
+    }
+  };
+
+  const totalAmount = computed(() => feeList.value.reduce((sum, fee) => sum + (Number(fee.amount) || 0), 0));
+
+  watch(
+    feeList,
+    () => {
+      form.totalAmount = Number(totalAmount.value.toFixed(2));
+    },
+    { deep: true, immediate: true }
+  );
+
+  watch(
+    [() => form.billStart, () => form.billEnd],
+    () => {
+      feeList.value.forEach(fee => {
+        if (!fee.feeStart) fee.feeStart = form.billStart;
+        if (!fee.feeEnd) fee.feeEnd = form.billEnd;
+      });
+    },
+    { immediate: true }
+  );
 
   const validate = async () => {
     if (!formRef.value) return false;
@@ -254,11 +321,8 @@
       billType: form.billType,
       carryOverFromBillId: form.carryOverFromBillId,
       carryOverToBillId: form.carryOverToBillId,
-      rentPeriodStart: form.rentPeriodStart,
-      rentPeriodEnd: form.rentPeriodEnd,
-      rentalAmount: form.rentalAmount,
-      depositAmount: form.depositAmount,
-      otherFeeAmount: form.otherFeeAmount,
+      billStart: form.billStart,
+      billEnd: form.billEnd,
       totalAmount: form.totalAmount,
       dueDate: form.dueDate,
       payTime: form.payTime,
@@ -267,7 +331,7 @@
       payChannel: form.payChannel,
       remark: form.remark,
       valid: form.valid,
-      otherFees: feeList.value.filter(f => f.name || f.amount || f.remark || f.dictDataId)
+      feeList: feeList.value.filter(f => f.feeType || f.name || f.amount || f.remark || f.dictDataId)
     };
     return payload;
   };
@@ -311,6 +375,20 @@
     font-weight: 600;
   }
 
+  .period-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .period-input {
+    width: 110px;
+  }
+
+  .period-sep {
+    color: var(--el-text-color-secondary);
+  }
+
   .empty-row td {
     text-align: center;
     padding: 18px;
@@ -327,34 +405,3 @@
     margin-top: 8px;
   }
 </style>
-  const handleFeeDictChange = (dictDataId: string, fee: LeaseBillOtherFeeDto) => {
-    if (!dictDataId) {
-      fee.name = "";
-      fee.dictDataId = "";
-      return;
-    }
-    for (const group of feeTypeDictList.value) {
-      const found = group.dictDataList.find(item => item.id === dictDataId);
-      if (found) {
-        fee.name = found.name;
-        fee.dictDataId = dictDataId;
-        return;
-      }
-    }
-  };
-
-  const otherFeeTotal = computed(() => feeList.value.reduce((sum, fee) => sum + (Number(fee.amount) || 0), 0));
-  const totalAmount = computed(() => {
-    const rental = Number(form.rentalAmount) || 0;
-    const deposit = Number(form.depositAmount) || 0;
-    return rental + deposit + otherFeeTotal.value;
-  });
-
-  watch(
-    [() => form.rentalAmount, () => form.depositAmount, feeList],
-    () => {
-      form.otherFeeAmount = Number(otherFeeTotal.value.toFixed(2));
-      form.totalAmount = Number(totalAmount.value.toFixed(2));
-    },
-    { deep: true, immediate: true }
-  );

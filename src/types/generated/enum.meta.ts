@@ -368,6 +368,12 @@ export const RentalTypeEnumMeta = {
   SHARED: {"value":"SHARED","code":2,"name":"合租"}
 } as const;
 
+export const LeaseBillFeeTypeEnumMeta = {
+  RENTAL: {"value":"RENTAL","code":"RENTAL","label":"租金"},
+  DEPOSIT: {"value":"DEPOSIT","code":"DEPOSIT","label":"押金"},
+  OTHER_FEE: {"value":"OTHER_FEE","code":"OTHER_FEE","label":"其他费用"}
+} as const;
+
 export const LeaseBillTypeEnumMeta = {
   RENT: {"value":"RENT","code":1,"name":"租金"},
   DEPOSIT: {"value":"DEPOSIT","code":2,"name":"押金"},

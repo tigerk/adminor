@@ -31,20 +31,32 @@
         >
           <el-table-column type="expand">
             <template #default="{ row }">
-              <div v-if="row.otherFees && row.otherFees.length === 0" class="text-center">没有其他费用</div>
-              <div v-if="row.otherFees && row.otherFees.length > 0" class="expanded-content">
+              <div v-if="row.feeList && row.feeList.length === 0" class="text-center">没有费用明细</div>
+              <div v-if="row.feeList && row.feeList.length > 0" class="expanded-content">
                 <div class="expanded-header m-1">
                   <el-space>
-                    <span class="header-title">其他费用明细</span>
-                    <el-tag type="info" size="small">共 {{ row.otherFees.length }} 项</el-tag>
+                    <span class="header-title">费用明细</span>
+                    <el-tag type="info" size="small">共 {{ row.feeList.length }} 项</el-tag>
                   </el-space>
                 </div>
-                <el-table :data="row.otherFees" border size="small" class="sub-table">
+                <el-table :data="row.feeList" border size="small" class="sub-table">
                   <el-table-column type="index" label="序号" width="60" align="center" />
-                  <el-table-column prop="name" label="费用名称" align="center" min-width="120" />
-                  <el-table-column prop="amount" label="金额" align="center" width="100">
+                  <el-table-column prop="feeType" label="费用类型" align="center" width="120">
+                    <template #default="{ row: fee }">
+                      <el-tag v-if="fee.feeType === 'RENTAL'" type="success">租金</el-tag>
+                      <el-tag v-else-if="fee.feeType === 'DEPOSIT'" type="warning">押金</el-tag>
+                      <el-tag v-else type="info">其他费用</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="name" label="费用名称" align="center" min-width="140" />
+                  <el-table-column prop="amount" label="金额" align="center" width="110">
                     <template #default="{ row: fee }">
                       <span class="fee-amount">¥{{ fee.amount }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="费用周期" align="center" min-width="200">
+                    <template #default="{ row: fee }">
+                      {{ fee.feeStart?.substring(0, 10) }} ~ {{ fee.feeEnd?.substring(0, 10) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="remark" label="说明" align="center" min-width="200" show-overflow-tooltip />
@@ -73,36 +85,12 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="rentPeriodStart" label="账期开始" align="center" width="110">
-            <template #default="{ row }">{{ row.rentPeriodStart?.substring(0, 10) }}</template>
+          <el-table-column prop="billStart" label="账期开始" align="center" width="110">
+            <template #default="{ row }">{{ row.billStart?.substring(0, 10) }}</template>
           </el-table-column>
 
-          <el-table-column prop="rentPeriodEnd" label="账期结束" align="center" width="110">
-            <template #default="{ row }">{{ row.rentPeriodEnd?.substring(0, 10) }}</template>
-          </el-table-column>
-
-          <el-table-column prop="rentalAmount" label="租金" align="center" width="100">
-            <template #default="{ row }">
-              <span v-if="row.rentalAmount > 0" class="amount-text">¥{{ row.rentalAmount }}</span>
-              <span v-else>-</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="depositAmount" label="押金" align="center" width="100">
-            <template #default="{ row }">
-              <span v-if="row.depositAmount !== 0" class="amount-text">¥{{ row.depositAmount }}</span>
-              <span v-else>-</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="otherFeeAmount" label="其他费用" align="center" width="120">
-            <template #default="{ row }">
-              <el-space v-if="row.otherFeeAmount > 0" :size="4">
-                <span class="amount-text">¥{{ row.otherFeeAmount }}</span>
-                <el-tag v-if="row.otherFees && row.otherFees.length > 0" type="info" size="small">{{ row.otherFees.length }}项</el-tag>
-              </el-space>
-              <span v-else>-</span>
-            </template>
+          <el-table-column prop="billEnd" label="账期结束" align="center" width="110">
+            <template #default="{ row }">{{ row.billEnd?.substring(0, 10) }}</template>
           </el-table-column>
 
           <el-table-column prop="totalAmount" label="应收总额" align="center" width="120">
@@ -181,20 +169,32 @@
         >
           <el-table-column type="expand">
             <template #default="{ row }">
-              <div v-if="row.otherFees && row.otherFees.length === 0" class="text-center">没有其他费用</div>
-              <div v-if="row.otherFees && row.otherFees.length > 0" class="expanded-content">
+              <div v-if="row.feeList && row.feeList.length === 0" class="text-center">没有费用明细</div>
+              <div v-if="row.feeList && row.feeList.length > 0" class="expanded-content">
                 <div class="expanded-header m-1">
                   <el-space>
-                    <span class="header-title">其他费用明细</span>
-                    <el-tag type="info" size="small">共 {{ row.otherFees.length }} 项</el-tag>
+                    <span class="header-title">费用明细</span>
+                    <el-tag type="info" size="small">共 {{ row.feeList.length }} 项</el-tag>
                   </el-space>
                 </div>
-                <el-table :data="row.otherFees" border size="small" class="sub-table">
+                <el-table :data="row.feeList" border size="small" class="sub-table">
                   <el-table-column type="index" label="序号" width="60" align="center" />
-                  <el-table-column prop="name" label="费用名称" align="center" min-width="120" />
-                  <el-table-column prop="amount" label="金额" align="center" width="100">
+                  <el-table-column prop="feeType" label="费用类型" align="center" width="120">
+                    <template #default="{ row: fee }">
+                      <el-tag v-if="fee.feeType === 'RENTAL'" type="success">租金</el-tag>
+                      <el-tag v-else-if="fee.feeType === 'DEPOSIT'" type="warning">押金</el-tag>
+                      <el-tag v-else type="info">其他费用</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="name" label="费用名称" align="center" min-width="140" />
+                  <el-table-column prop="amount" label="金额" align="center" width="110">
                     <template #default="{ row: fee }">
                       <span class="fee-amount">¥{{ fee.amount }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="费用周期" align="center" min-width="200">
+                    <template #default="{ row: fee }">
+                      {{ fee.feeStart?.substring(0, 10) }} ~ {{ fee.feeEnd?.substring(0, 10) }}
                     </template>
                   </el-table-column>
                   <el-table-column prop="remark" label="说明" align="center" min-width="200" show-overflow-tooltip />
@@ -223,36 +223,12 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="rentPeriodStart" label="账期开始" align="center" width="110">
-            <template #default="{ row }">{{ row.rentPeriodStart?.substring(0, 10) }}</template>
+          <el-table-column prop="billStart" label="账期开始" align="center" width="110">
+            <template #default="{ row }">{{ row.billStart?.substring(0, 10) }}</template>
           </el-table-column>
 
-          <el-table-column prop="rentPeriodEnd" label="账期结束" align="center" width="110">
-            <template #default="{ row }">{{ row.rentPeriodEnd?.substring(0, 10) }}</template>
-          </el-table-column>
-
-          <el-table-column prop="rentalAmount" label="租金" align="center" width="100">
-            <template #default="{ row }">
-              <span v-if="row.rentalAmount > 0" class="amount-text">¥{{ row.rentalAmount }}</span>
-              <span v-else>-</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="depositAmount" label="押金" align="center" width="100">
-            <template #default="{ row }">
-              <span v-if="row.depositAmount !== 0" class="amount-text">¥{{ row.depositAmount }}</span>
-              <span v-else>-</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column prop="otherFeeAmount" label="其他费用" align="center" width="100">
-            <template #default="{ row }">
-              <el-space v-if="row.otherFeeAmount > 0" :size="4">
-                <span class="amount-text">¥{{ row.otherFeeAmount }}</span>
-                <el-tag v-if="row.otherFees && row.otherFees.length > 0" type="info" size="small">{{ row.otherFees.length }}项</el-tag>
-              </el-space>
-              <span v-else>-</span>
-            </template>
+          <el-table-column prop="billEnd" label="账期结束" align="center" width="110">
+            <template #default="{ row }">{{ row.billEnd?.substring(0, 10) }}</template>
           </el-table-column>
 
           <el-table-column prop="totalAmount" label="应收总额" align="center" width="120">

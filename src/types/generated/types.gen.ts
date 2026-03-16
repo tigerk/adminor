@@ -2906,8 +2906,8 @@ export type LeaseCheckoutFeeDto = {
     feeType: number;
     feeSubName?: string;
     feeAmount: number;
-    feePeriodStart?: string;
-    feePeriodEnd?: string;
+    feeStart?: string;
+    feeEnd?: string;
     remark?: string;
     billId?: string;
 };
@@ -2921,8 +2921,8 @@ export type LeaseCheckoutFeeVo = {
     feeTypeName?: string;
     feeSubName?: string;
     feeAmount?: number;
-    feePeriodStart?: string;
-    feePeriodEnd?: string;
+    feeStart?: string;
+    feeEnd?: string;
     remark?: string;
     billId?: string;
 };
@@ -3036,8 +3036,8 @@ export type PresetFeeVo = {
     feeType?: number;
     feeSubName?: string;
     feeAmount?: number;
-    feePeriodStart?: string;
-    feePeriodEnd?: string;
+    feeStart?: string;
+    feeEnd?: string;
     remark?: string;
     billId?: string;
 };
@@ -4814,6 +4814,44 @@ export type FinanceFlowVo = {
 };
 
 /**
+ * 租客账单费用明细VO
+ */
+export type LeaseBillFeeVo = {
+    /**
+     * 账单ID（关联 lease_bill.id）
+     */
+    billId?: string;
+    /**
+     * 费用类型：RENTAL/DEPOSIT/OTHER_FEE
+     */
+    feeType?: string;
+    /**
+     * 费用字典 ID
+     */
+    dictDataId?: string;
+    /**
+     * 费用名称
+     */
+    name?: string;
+    /**
+     * 费用金额
+     */
+    amount?: number;
+    /**
+     * 费用周期开始日期
+     */
+    feeStart?: string;
+    /**
+     * 费用周期结束日期
+     */
+    feeEnd?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
  * 租客账单VO
  */
 export type LeaseBillListVo = {
@@ -4850,25 +4888,13 @@ export type LeaseBillListVo = {
      */
     carryOverToBillId?: string;
     /**
-     * 账单租期开始日期
+     * 账单周期开始日期
      */
-    rentPeriodStart?: string;
+    billStart?: string;
     /**
-     * 账单租期结束日期
+     * 账单周期结束日期
      */
-    rentPeriodEnd?: string;
-    /**
-     * 租金金额
-     */
-    rentalAmount?: number;
-    /**
-     * 押金金额
-     */
-    depositAmount?: number;
-    /**
-     * 其他费用（如水电、物业）
-     */
-    otherFeeAmount?: number;
+    billEnd?: string;
     /**
      * 账单合计金额
      */
@@ -4906,9 +4932,9 @@ export type LeaseBillListVo = {
      */
     paymentFlow?: PaymentFlowVo;
     /**
-     * 其他费用明细列表
+     * 账单费用明细列表
      */
-    otherFees?: Array<LeaseBillOtherFeeVo>;
+    feeList?: Array<LeaseBillFeeVo>;
     /**
      * 创建人ID
      */
@@ -4917,32 +4943,6 @@ export type LeaseBillListVo = {
      * 创建时间
      */
     createTime?: string;
-};
-
-/**
- * 租客账单其他费用VO
- */
-export type LeaseBillOtherFeeVo = {
-    /**
-     * 账单ID（关联 lease_bill.id）
-     */
-    billId?: string;
-    /**
-     * 费用字典 ID
-     */
-    dictDataId?: string;
-    /**
-     * 费用项目名称（如 租金、水费、电费）
-     */
-    name?: string;
-    /**
-     * 费用金额（计算结果）
-     */
-    amount?: number;
-    /**
-     * 备注
-     */
-    remark?: string;
 };
 
 /**
@@ -5328,21 +5328,33 @@ export type ResponseResultInteger = {
 };
 
 /**
- * 租客账单其他费用DTO
+ * 租客账单费用DTO
  */
-export type LeaseBillOtherFeeDto = {
+export type LeaseBillFeeDto = {
+    /**
+     * 费用类型：RENTAL/DEPOSIT/OTHER_FEE
+     */
+    feeType?: string;
     /**
      * 费用字典 ID
      */
     dictDataId?: string;
     /**
-     * 费用项目名称（如 租金、水费、电费）
+     * 费用名称
      */
     name?: string;
     /**
      * 费用金额
      */
     amount?: number;
+    /**
+     * 费用周期开始日期
+     */
+    feeStart?: string;
+    /**
+     * 费用周期结束日期
+     */
+    feeEnd?: string;
     /**
      * 备注
      */
@@ -5374,25 +5386,13 @@ export type LeaseBillUpdateDto = {
      */
     carryOverToBillId?: string;
     /**
-     * 账单租期开始日期
+     * 账单周期开始日期
      */
-    rentPeriodStart?: string;
+    billStart?: string;
     /**
-     * 账单租期结束日期
+     * 账单周期结束日期
      */
-    rentPeriodEnd?: string;
-    /**
-     * 租金金额
-     */
-    rentalAmount?: number;
-    /**
-     * 押金金额
-     */
-    depositAmount?: number;
-    /**
-     * 其他费用金额
-     */
-    otherFeeAmount?: number;
+    billEnd?: string;
     /**
      * 账单合计金额
      */
@@ -5426,9 +5426,9 @@ export type LeaseBillUpdateDto = {
      */
     valid?: boolean;
     /**
-     * 其他费用明细
+     * 账单费用明细
      */
-    otherFees?: Array<LeaseBillOtherFeeDto>;
+    feeList?: Array<LeaseBillFeeDto>;
 };
 
 export type ResponseResultListLeaseBillListVo = {
@@ -6751,6 +6751,8 @@ export type DecorationTypeEnum = 'LUXURY' | 'SIMPLE' | 'DETAILED' | 'RAW' | 'WAT
 export type LeaseModeEnum = 'UNKNOWN' | 'FOCUS' | 'SCATTER';
 
 export type RentalTypeEnum = 'ENTIRE' | 'SHARED';
+
+export type LeaseBillFeeTypeEnum = 'RENTAL' | 'DEPOSIT' | 'OTHER_FEE';
 
 export type LeaseBillTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'RELEASE' | 'DEPOSIT_CARRY_IN' | 'DEPOSIT_CARRY_OUT';
 
