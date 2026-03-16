@@ -129,12 +129,14 @@
                   <el-dropdown-menu>
                     <template v-if="row.payStatus === 0">
                       <el-dropdown-item command="collect">收款</el-dropdown-item>
+                      <el-dropdown-item command="edit">编辑账单</el-dropdown-item>
                       <el-dropdown-item command="split">账单拆分</el-dropdown-item>
                       <el-dropdown-item command="free">免收</el-dropdown-item>
                       <el-dropdown-item command="badDebt">标记坏账</el-dropdown-item>
                       <el-dropdown-item command="void">作废账单</el-dropdown-item>
                     </template>
                     <template v-else-if="row.payStatus === 1">
+                      <el-dropdown-item command="edit">编辑账单</el-dropdown-item>
                       <el-dropdown-item command="void">作废账单</el-dropdown-item>
                     </template>
                   </el-dropdown-menu>
@@ -278,10 +280,11 @@
   import { h, onMounted, ref, watch } from "vue";
   import { Refresh } from "@element-plus/icons-vue";
   import { LeaseBillListVo } from "@/types";
-  import { getLeaseBillInvalidList, getLeaseBillList } from "@/api/contract/tenant";
+  import { getLeaseBillDetail, getLeaseBillInvalidList, getLeaseBillList, updateLeaseBill } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { message } from "@/utils/message";
-  import LeaseBillDetailDialog from "@/views/contract/tenant/view/LeaseBillDetailDialog.vue";
+  import LeaseBillDetailDialog from "@/views/contract/tenant/view/bill/LeaseBillDetailDialog.vue";
+  import LeaseBillEditDialog from "@/views/contract/tenant/view/bill/LeaseBillEditDialog.vue";
 
   interface Props {
     leaseId: string;
@@ -315,6 +318,7 @@
 
   const handleAction = (action: string, row: LeaseBillListVo) => {
     if (action === "collect") return handleCollect(row);
+    if (action === "edit") return handleEdit(row);
     if (action === "split") return handleSplit(row);
     if (action === "free") return handleFree(row);
     if (action === "badDebt") return handleBadDebt(row);
@@ -339,6 +343,44 @@
 
   const handleVoid = (row: LeaseBillListVo) => {
     message(`作废账单：第${row.sortOrder}期`, { type: "warning" });
+  };
+
+  const handleEdit = async (row: LeaseBillListVo) => {
+    const editRef = ref<InstanceType<typeof LeaseBillEditDialog>>();
+    let billData = row;
+    if (row.id) {
+      const res = await getLeaseBillDetail({ billId: row.id });
+      if (res.code === 0 && res.data) {
+        billData = res.data;
+      } else {
+        message(res.message || "获取账单详情失败", { type: "warning" });
+        return;
+      }
+    }
+    addDialog({
+      title: "编辑账单",
+      width: "70%",
+      top: "6%",
+      alignCenter: true,
+      lockScroll: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(LeaseBillEditDialog, { ref: editRef, bill: billData }),
+      beforeSure: async done => {
+        const formInstance = editRef.value;
+        if (!formInstance) return;
+        const valid = await formInstance.validate();
+        if (!valid) return;
+        const payload = formInstance.getFormData();
+        const resp = await updateLeaseBill(payload);
+        if (resp.code === 0) {
+          message("账单更新成功", { type: "success" });
+          fetchBillData();
+          done();
+        } else {
+          message(resp.message || "账单更新失败", { type: "warning" });
+        }
+      }
+    });
   };
 
   // 获取当前账单数据

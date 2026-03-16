@@ -5327,6 +5327,110 @@ export type ResponseResultInteger = {
     data?: number;
 };
 
+/**
+ * 租客账单其他费用DTO
+ */
+export type LeaseBillOtherFeeDto = {
+    /**
+     * 费用字典 ID
+     */
+    dictDataId?: string;
+    /**
+     * 费用项目名称（如 租金、水费、电费）
+     */
+    name?: string;
+    /**
+     * 费用金额
+     */
+    amount?: number;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
+ * 租客账单更新DTO
+ */
+export type LeaseBillUpdateDto = {
+    /**
+     * 账单ID
+     */
+    id?: string;
+    /**
+     * 账单顺序
+     */
+    sortOrder?: number;
+    /**
+     * 账单类型
+     */
+    billType?: number;
+    /**
+     * 结转来源账单ID
+     */
+    carryOverFromBillId?: string;
+    /**
+     * 结转目标账单ID
+     */
+    carryOverToBillId?: string;
+    /**
+     * 账单租期开始日期
+     */
+    rentPeriodStart?: string;
+    /**
+     * 账单租期结束日期
+     */
+    rentPeriodEnd?: string;
+    /**
+     * 租金金额
+     */
+    rentalAmount?: number;
+    /**
+     * 押金金额
+     */
+    depositAmount?: number;
+    /**
+     * 其他费用金额
+     */
+    otherFeeAmount?: number;
+    /**
+     * 账单合计金额
+     */
+    totalAmount?: number;
+    /**
+     * 应收日期
+     */
+    dueDate?: string;
+    /**
+     * 实际支付日期
+     */
+    payTime?: string;
+    /**
+     * 实际支付金额
+     */
+    payAmount?: number;
+    /**
+     * 支付状态
+     */
+    payStatus?: number;
+    /**
+     * 支付方式
+     */
+    payChannel?: number;
+    /**
+     * 备注信息
+     */
+    remark?: string;
+    /**
+     * 是否有效
+     */
+    valid?: boolean;
+    /**
+     * 其他费用明细
+     */
+    otherFees?: Array<LeaseBillOtherFeeDto>;
+};
+
 export type ResponseResultListLeaseBillListVo = {
     code?: number;
     message?: string;
@@ -8683,6 +8787,24 @@ export type CancelTenantResponses = {
 };
 
 export type CancelTenantResponse = CancelTenantResponses[keyof CancelTenantResponses];
+
+export type UpdateBillData = {
+    body: LeaseBillUpdateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/bill/update';
+};
+
+export type UpdateBillResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type UpdateBillResponse = UpdateBillResponses[keyof UpdateBillResponses];
 
 export type GetBillListData = {
     body: LeaseQueryDto;
