@@ -99,9 +99,7 @@
 
           <el-table-column prop="payStatus" label="支付状态" align="center" width="100">
             <template #default="{ row }">
-              <el-tag v-if="row.payStatus === 0" type="danger">未支付</el-tag>
-              <el-tag v-else-if="row.payStatus === 1" type="success">已支付</el-tag>
-              <el-tag v-else type="warning">部分支付</el-tag>
+              <el-tag :type="getPayStatusTagType(row)">{{ getPayStatusLabel(row) }}</el-tag>
             </template>
           </el-table-column>
 
@@ -123,7 +121,12 @@
                         <el-dropdown-item command="void">作废账单</el-dropdown-item>
                       </template>
                       <template v-else-if="row.payStatus === 1">
+                        <el-dropdown-item command="collect">收款</el-dropdown-item>
                         <el-dropdown-item command="edit">编辑账单</el-dropdown-item>
+                        <el-dropdown-item command="void">作废账单</el-dropdown-item>
+                      </template>
+                      <template v-else-if="row.payStatus === 2">
+                        <el-dropdown-item command="edit" disabled>编辑账单</el-dropdown-item>
                         <el-dropdown-item command="void">作废账单</el-dropdown-item>
                       </template>
                     </el-dropdown-menu>
@@ -237,9 +240,7 @@
 
           <el-table-column prop="payStatus" label="支付状态" align="center" width="100">
             <template #default="{ row }">
-              <el-tag v-if="row.payStatus === 0" type="danger">未支付</el-tag>
-              <el-tag v-else-if="row.payStatus === 1" type="success">已支付</el-tag>
-              <el-tag v-else type="warning">部分支付</el-tag>
+              <el-tag :type="getPayStatusTagType(row)">{{ getPayStatusLabel(row) }}</el-tag>
             </template>
           </el-table-column>
 
@@ -254,11 +255,12 @@
   import { h, onMounted, ref, watch } from "vue";
   import { Refresh } from "@element-plus/icons-vue";
   import { LeaseBillListVo } from "@/types";
-  import { getLeaseBillDetail, getLeaseBillInvalidList, getLeaseBillList, updateLeaseBill } from "@/api/contract/tenant";
+  import { collectLeaseBill, getLeaseBillDetail, getLeaseBillInvalidList, getLeaseBillList, updateLeaseBill } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { message } from "@/utils/message";
   import LeaseBillDetailDialog from "@/views/contract/tenant/view/bill/LeaseBillDetailDialog.vue";
   import LeaseBillEditDialog from "@/views/contract/tenant/view/bill/LeaseBillEditDialog.vue";
+  import LeaseBillCollectDialog from "@/views/contract/tenant/view/bill/LeaseBillCollectDialog.vue";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import More from "~icons/ep/more-filled";
 
@@ -277,6 +279,25 @@
   const invalidBillList = ref<LeaseBillListVo[]>([]);
   const invalidLoading = ref(false);
   const expandedInvalidBillRows = ref<string[]>([]);
+
+  const isOverdue = (bill: LeaseBillListVo) => {
+    if (bill.payStatus === 2 || !bill.dueDate) return false;
+    return new Date(bill.dueDate).getTime() < Date.now();
+  };
+
+  const getPayStatusLabel = (bill: LeaseBillListVo) => {
+    if (bill.payStatus === 2) return "已支付";
+    if (isOverdue(bill)) return "逾期";
+    if (bill.payStatus === 1) return "部分支付";
+    return "未支付";
+  };
+
+  const getPayStatusTagType = (bill: LeaseBillListVo) => {
+    if (bill.payStatus === 2) return "success";
+    if (isOverdue(bill)) return "danger";
+    if (bill.payStatus === 1) return "warning";
+    return "danger";
+  };
 
   const openBillDetail = (row: LeaseBillListVo) => {
     let billId = row.id as string;
@@ -303,7 +324,30 @@
   };
 
   const handleCollect = (row: LeaseBillListVo) => {
-    message(`收款：第${row.sortOrder}期`, { type: "info" });
+    const collectRef = ref<InstanceType<typeof LeaseBillCollectDialog>>();
+    addDialog({
+      title: "账单收款",
+      width: "620px",
+      top: "10%",
+      alignCenter: true,
+      lockScroll: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(LeaseBillCollectDialog, { ref: collectRef, bill: row }),
+      beforeSure: async done => {
+        const formInstance = collectRef.value;
+        if (!formInstance) return;
+        const valid = await formInstance.validate();
+        if (!valid) return;
+        const resp = await collectLeaseBill(formInstance.getFormData());
+        if (resp.code === 0 && resp.data !== false) {
+          message("收款成功", { type: "success" });
+          fetchBillData();
+          done();
+        } else {
+          message(resp.message || "收款失败", { type: "warning" });
+        }
+      }
+    });
   };
 
   const handleSplit = (row: LeaseBillListVo) => {
@@ -323,6 +367,10 @@
   };
 
   const handleEdit = async (row: LeaseBillListVo) => {
+    if (row.payStatus === 2) {
+      message("账单已支付，不允许编辑", { type: "warning" });
+      return;
+    }
     const editRef = ref<InstanceType<typeof LeaseBillEditDialog>>();
     let billData = row;
     if (row.id) {
@@ -349,7 +397,7 @@
         if (!valid) return;
         const payload = formInstance.getFormData();
         const resp = await updateLeaseBill(payload);
-        if (resp.code === 0) {
+        if (resp.code === 0 && resp.data !== false) {
           message("账单更新成功", { type: "success" });
           fetchBillData();
           done();

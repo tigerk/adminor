@@ -4912,7 +4912,7 @@ export type LeaseBillListVo = {
      */
     payAmount?: number;
     /**
-     * 支付状态：0=未支付，1=部分支付，2=已支付，3=逾期
+     * 支付状态：0=未支付，1=部分支付，2=已支付
      */
     payStatus?: number;
     /**
@@ -5472,6 +5472,36 @@ export type ResponseResultLeaseBillListVo = {
     code?: number;
     message?: string;
     data?: LeaseBillListVo;
+};
+
+/**
+ * 租客账单收款DTO
+ */
+export type LeaseBillCollectDto = {
+    /**
+     * 账单ID
+     */
+    id?: string;
+    /**
+     * 支付状态：0=未支付，1=部分支付，2=已支付
+     */
+    payStatus?: number;
+    /**
+     * 实际支付金额
+     */
+    payAmount?: number;
+    /**
+     * 支付方式：1=现金，2=转账，3=支付宝，4=微信，5=其他
+     */
+    payChannel?: number;
+    /**
+     * 实际支付日期
+     */
+    payTime?: string;
+    /**
+     * 更新人ID
+     */
+    updateBy?: string;
 };
 
 /**
@@ -6764,7 +6794,7 @@ export type FinanceFlowTypeEnum = 'RECEIVE' | 'PAY' | 'REFUND' | 'VOID' | 'ADJUS
 
 export type PaymentFlowBizTypeEnum = 'LEASE_BILL';
 
-export type PaymentFlowChannelEnum = 'CASH' | 'TRANSFER' | 'ALIPAY' | 'WECHAT' | 'POS' | 'OTHER';
+export type PaymentFlowChannelEnum = 'CASH' | 'TRANSFER' | 'ALIPAY' | 'WECHAT' | 'YEEPAY' | 'POS' | 'OTHER';
 
 export type PaymentFlowDirectionEnum = 'IN' | 'OUT';
 
@@ -6787,8 +6817,6 @@ export type LeaseFirstBillDayEnum = 'FOLLOW_CONTRACT_START' | 'FOLLOW_CONTRACT_C
 export type LeaseRentDueTypeEnum = 'EARLY' | 'FIXED' | 'LATE';
 
 export type LeaseStatusEnum = 'PENDING_APPROVAL' | 'TO_SIGN' | 'EFFECTIVE' | 'TERMINATED' | 'CANCELLED';
-
-export type PayChannelEnum = 'YEEPAY' | 'ALIPAY' | 'WECHAT';
 
 export type PayStatusEnum = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID';
 
@@ -8883,6 +8911,24 @@ export type GetBillDetailResponses = {
 };
 
 export type GetBillDetailResponse = GetBillDetailResponses[keyof GetBillDetailResponses];
+
+export type CollectBillData = {
+    body: LeaseBillCollectDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/bill/collect';
+};
+
+export type CollectBillResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type CollectBillResponse = CollectBillResponses[keyof CollectBillResponses];
 
 export type GetTenantTotalData = {
     body: BookingQueryDto;

@@ -329,6 +329,7 @@ export const PaymentFlowChannelEnumMeta = {
   TRANSFER: {"value":"TRANSFER","code":"TRANSFER","label":"转账"},
   ALIPAY: {"value":"ALIPAY","code":"ALIPAY","label":"支付宝"},
   WECHAT: {"value":"WECHAT","code":"WECHAT","label":"微信"},
+  YEEPAY: {"value":"YEEPAY","code":"YEEPAY","label":"易宝"},
   POS: {"value":"POS","code":"POS","label":"POS"},
   OTHER: {"value":"OTHER","code":"OTHER","label":"其他"}
 } as const;
@@ -409,12 +410,6 @@ export const LeaseStatusEnumMeta = {
   EFFECTIVE: {"value":"EFFECTIVE","code":2,"name":"在租中","color":"#52C41A","sortOrder":2},
   TERMINATED: {"value":"TERMINATED","code":3,"name":"已退租","color":"#EAA212","sortOrder":3},
   CANCELLED: {"value":"CANCELLED","code":-1,"name":"已作废","color":"#DBDBDB","sortOrder":4}
-} as const;
-
-export const PayChannelEnumMeta = {
-  YEEPAY: {"value":"YEEPAY","code":"yeepay"},
-  ALIPAY: {"value":"ALIPAY","code":"alipay"},
-  WECHAT: {"value":"WECHAT","code":"wechat"}
 } as const;
 
 export const PayStatusEnumMeta = {
