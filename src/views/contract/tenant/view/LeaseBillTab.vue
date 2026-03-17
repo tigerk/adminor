@@ -55,9 +55,7 @@
                     </template>
                   </el-table-column>
                   <el-table-column label="费用周期" align="center" min-width="200">
-                    <template #default="{ row: fee }">
-                      {{ fee.feeStart?.substring(0, 10) }} ~ {{ fee.feeEnd?.substring(0, 10) }}
-                    </template>
+                    <template #default="{ row: fee }">{{ fee.feeStart?.substring(0, 10) }} ~ {{ fee.feeEnd?.substring(0, 10) }}</template>
                   </el-table-column>
                   <el-table-column prop="remark" label="说明" align="center" min-width="200" show-overflow-tooltip />
                 </el-table>
@@ -109,27 +107,29 @@
 
           <el-table-column prop="remark" label="备注" align="center" min-width="250" show-overflow-tooltip />
 
-          <el-table-column label="操作" fixed="right" align="center" width="120">
+          <el-table-column label="操作" fixed="right" align="center" width="70">
             <template #default="{ row }">
-              <el-dropdown trigger="click" @command="cmd => handleAction(cmd, row)">
-                <el-button size="small" link type="primary" @click.stop>操作</el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <template v-if="row.payStatus === 0">
-                      <el-dropdown-item command="collect">收款</el-dropdown-item>
-                      <el-dropdown-item command="edit">编辑账单</el-dropdown-item>
-                      <el-dropdown-item command="split">账单拆分</el-dropdown-item>
-                      <el-dropdown-item command="free">免收</el-dropdown-item>
-                      <el-dropdown-item command="badDebt">标记坏账</el-dropdown-item>
-                      <el-dropdown-item command="void">作废账单</el-dropdown-item>
-                    </template>
-                    <template v-else-if="row.payStatus === 1">
-                      <el-dropdown-item command="edit">编辑账单</el-dropdown-item>
-                      <el-dropdown-item command="void">作废账单</el-dropdown-item>
-                    </template>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
+              <div @click.stop>
+                <el-dropdown trigger="click" @command="cmd => handleAction(cmd, row)">
+                  <el-button class="ml-3! mt-[2px]!" link type="primary" size="small" :icon="useRenderIcon(More)" @click.stop />
+                  <template #dropdown>
+                    <el-dropdown-menu @click.stop>
+                      <template v-if="row.payStatus === 0">
+                        <el-dropdown-item command="collect">收款</el-dropdown-item>
+                        <el-dropdown-item command="edit">编辑账单</el-dropdown-item>
+                        <el-dropdown-item command="split">账单拆分</el-dropdown-item>
+                        <el-dropdown-item command="free">免收</el-dropdown-item>
+                        <el-dropdown-item command="badDebt">标记坏账</el-dropdown-item>
+                        <el-dropdown-item command="void">作废账单</el-dropdown-item>
+                      </template>
+                      <template v-else-if="row.payStatus === 1">
+                        <el-dropdown-item command="edit">编辑账单</el-dropdown-item>
+                        <el-dropdown-item command="void">作废账单</el-dropdown-item>
+                      </template>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -193,9 +193,7 @@
                     </template>
                   </el-table-column>
                   <el-table-column label="费用周期" align="center" min-width="200">
-                    <template #default="{ row: fee }">
-                      {{ fee.feeStart?.substring(0, 10) }} ~ {{ fee.feeEnd?.substring(0, 10) }}
-                    </template>
+                    <template #default="{ row: fee }">{{ fee.feeStart?.substring(0, 10) }} ~ {{ fee.feeEnd?.substring(0, 10) }}</template>
                   </el-table-column>
                   <el-table-column prop="remark" label="说明" align="center" min-width="200" show-overflow-tooltip />
                 </el-table>
@@ -261,6 +259,8 @@
   import { message } from "@/utils/message";
   import LeaseBillDetailDialog from "@/views/contract/tenant/view/bill/LeaseBillDetailDialog.vue";
   import LeaseBillEditDialog from "@/views/contract/tenant/view/bill/LeaseBillEditDialog.vue";
+  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+  import More from "~icons/ep/more-filled";
 
   interface Props {
     leaseId: string;
