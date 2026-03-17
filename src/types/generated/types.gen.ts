@@ -4924,6 +4924,30 @@ export type LeaseBillListVo = {
      */
     remark?: string;
     /**
+     * 房源地址
+     */
+    roomAddress?: string;
+    /**
+     * 付款人姓名
+     */
+    payerName?: string;
+    /**
+     * 付款人手机号
+     */
+    payerPhone?: string;
+    /**
+     * 付款人证件类型
+     */
+    payerIdType?: number;
+    /**
+     * 付款人证件类型名称
+     */
+    payerIdTypeName?: string;
+    /**
+     * 付款人证件号
+     */
+    payerIdNo?: string;
+    /**
      * 财务流水信息
      */
     financeFlowList?: Array<FinanceFlowVo>;

@@ -111,7 +111,7 @@
             <template #default="{ row }">
               <div @click.stop>
                 <el-dropdown trigger="click" @command="cmd => handleAction(cmd, row)">
-                  <el-button class="ml-3! mt-[2px]!" link type="primary" size="small" :icon="useRenderIcon(More)" @click.stop />
+                  <el-button class="mt-[2px]!" link type="primary" size="small" :icon="useRenderIcon(More)" @click.stop />
                   <template #dropdown>
                     <el-dropdown-menu @click.stop>
                       <template v-if="row.payStatus === 0">
@@ -288,6 +288,7 @@
       alignCenter: true,
       lockScroll: true,
       closeOnClickModal: true,
+      hideFooter: true,
       contentRenderer: () => h(LeaseBillDetailDialog, { billId })
     });
   };
