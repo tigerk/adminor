@@ -73,6 +73,13 @@
             <template #default="{ row }">{{ row.dueDate?.substring(0, 10) }}</template>
           </el-table-column>
 
+          <el-table-column label="逾期" align="center" width="90">
+            <template #default="{ row }">
+              <el-tag v-if="isOverdue(row)" type="danger">已逾期</el-tag>
+              <span v-else class="text-[var(--el-text-color-secondary)]">-</span>
+            </template>
+          </el-table-column>
+
           <el-table-column prop="billType" label="账单类型" align="center" width="110">
             <template #default="{ row }">
               <el-tag v-if="row.billType === 1" type="success">租金</el-tag>
@@ -214,6 +221,13 @@
             <template #default="{ row }">{{ row.dueDate?.substring(0, 10) }}</template>
           </el-table-column>
 
+          <el-table-column label="逾期" align="center" width="90">
+            <template #default="{ row }">
+              <el-tag v-if="isOverdue(row)" type="danger">已逾期</el-tag>
+              <span v-else class="text-[var(--el-text-color-secondary)]">-</span>
+            </template>
+          </el-table-column>
+
           <el-table-column prop="billType" label="账单类型" align="center" width="110">
             <template #default="{ row }">
               <el-tag v-if="row.billType === 1" type="success">租金</el-tag>
@@ -287,14 +301,12 @@
 
   const getPayStatusLabel = (bill: LeaseBillListVo) => {
     if (bill.payStatus === 2) return "已支付";
-    if (isOverdue(bill)) return "逾期";
     if (bill.payStatus === 1) return "部分支付";
     return "未支付";
   };
 
   const getPayStatusTagType = (bill: LeaseBillListVo) => {
     if (bill.payStatus === 2) return "success";
-    if (isOverdue(bill)) return "danger";
     if (bill.payStatus === 1) return "warning";
     return "danger";
   };

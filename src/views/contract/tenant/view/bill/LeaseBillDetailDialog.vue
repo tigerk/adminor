@@ -14,8 +14,11 @@
           <span class="address-banner__label">房源地址</span>
           <span class="address-banner__value">{{ roomAddressText }}</span>
         </div>
-        <div class="address-banner__badge" :class="statusBadgeClass">
-          {{ payStatusText }}
+        <div class="address-banner__tags">
+          <div class="address-banner__badge" :class="statusBadgeClass">
+            {{ payStatusText }}
+          </div>
+          <div v-if="isOverdue" class="address-banner__badge address-banner__badge--overdue">已逾期</div>
         </div>
       </div>
 
@@ -136,6 +139,13 @@
             <div class="info-cell__key">支付状态</div>
             <div class="info-cell__val">
               <span class="status-badge" :class="statusBadgeClass">{{ payStatusText }}</span>
+            </div>
+          </div>
+          <div class="info-cell">
+            <div class="info-cell__key">逾期状态</div>
+            <div class="info-cell__val">
+              <span v-if="isOverdue" class="status-badge badge--overdue">已逾期</span>
+              <span v-else class="tag tag--gray">未逾期</span>
             </div>
           </div>
           <div class="info-cell">
@@ -352,10 +362,9 @@
 
   const payStatusText = computed(() => {
     const status = bill.value.payStatus;
-    if (isOverdue.value) return "逾期";
-    if (status === 0) return "待收";
+    if (status === 0) return "未支付";
     if (status === 1) return "部分收款";
-    if (status === 2) return "已收";
+    if (status === 2) return "已支付";
     return "未知";
   });
 
@@ -389,7 +398,6 @@
   });
 
   const statusBadgeClass = computed(() => {
-    if (isOverdue.value) return "badge--overdue";
     if (bill.value.payStatus === 0) return "badge--unpaid";
     if (bill.value.payStatus === 1) return "badge--partial";
     if (bill.value.payStatus === 2) return "badge--paid";
@@ -641,6 +649,13 @@
     flex-shrink: 0;
   }
 
+  .address-banner__tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
   /* ===== 指标卡片行 ===== */
   .metrics-row {
     display: grid;
@@ -745,7 +760,8 @@
     border: 1px solid #bbf7d0;
   }
   .badge--overdue,
-  .status-badge.badge--overdue {
+  .status-badge.badge--overdue,
+  .address-banner__badge--overdue {
     background: #fff1f2;
     color: #dc2626;
     border: 1px solid #fecaca;
@@ -763,7 +779,7 @@
     background: #f0fdf4;
     color: #16a34a;
   }
-  .address-banner__badge.badge--overdue {
+  .address-banner__badge--overdue {
     background: #fff1f2;
     color: #dc2626;
   }
