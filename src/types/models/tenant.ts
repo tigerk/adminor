@@ -12,3 +12,9 @@ export interface TenantsCreateFormProps extends TenantCreateDto {
   booking?: BookingListVo;
   isEdit?: boolean; // 是否为编辑模式
 }
+
+/** 租客账单收款分摊项 */
+export interface LeaseBillCollectItemDto {
+  leaseBillFeeId?: string;
+  amount?: number;
+}

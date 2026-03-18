@@ -110,9 +110,7 @@
                 <div class="alloc-table__footer-label">分配合计</div>
                 <div class="alloc-table__footer-value">¥{{ moneyText(allocatedAmount) }}</div>
                 <div class="alloc-table__footer-label">剩余待收</div>
-                <div class="alloc-table__footer-value" :class="{ 'alloc-table__footer-value--warn': nextUnpaidAmount > 0 }">
-                  ¥{{ moneyText(nextUnpaidAmount) }}
-                </div>
+                <div class="alloc-table__footer-value" :class="{ 'alloc-table__footer-value--warn': nextUnpaidAmount > 0 }">¥{{ moneyText(nextUnpaidAmount) }}</div>
               </div>
             </div>
           </div>
@@ -338,9 +336,7 @@
     padding: 24px;
     border-radius: 18px;
     border: 1px solid #dbeafe;
-    background:
-      radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 36%),
-      linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%);
+    background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 36%), linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%);
   }
 
   .collect-hero__eyebrow {
