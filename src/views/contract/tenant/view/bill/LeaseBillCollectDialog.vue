@@ -1,7 +1,7 @@
 <template>
   <div class="collect-wrap">
-    <!-- ① 账单概览条：无大色块，信息清晰可读 -->
-    <div class="bill-overview mb-2">
+    <!-- ① 账单概览条 -->
+    <div class="bill-overview mb-3">
       <div class="bill-overview__left">
         <div class="bill-period-badge">第 {{ bill.sortOrder ?? "—" }} 期</div>
         <div class="bill-meta">
@@ -38,12 +38,33 @@
 
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <!-- ② 支付信息 -->
-      <div class="section-block mb-2">
-        <div class="section-block__title">
-          <IconifyIconOnline icon="ri:bank-card-line" class="section-icon" />
-          支付信息
+      <div class="section-block mb-3">
+        <!-- 标题行：左侧 icon+标题，右侧付款人信息 -->
+        <div class="section-block__header">
+          <div class="section-block__title">
+            <IconifyIconOnline icon="ri:bank-card-line" class="section-icon" />
+            支付信息
+          </div>
+          <div class="payer-inline">
+            <span class="payer-inline__item">
+              <IconifyIconOnline icon="ri:user-3-line" class="payer-icon" />
+              {{ bill.payerName ?? "—" }}
+            </span>
+            <span class="payer-sep" />
+            <span class="payer-inline__item">
+              <IconifyIconOnline icon="ri:phone-line" class="payer-icon" />
+              {{ bill.payerPhone ?? "—" }}
+            </span>
+            <span class="payer-sep" />
+            <span class="payer-inline__item payer-inline__item--addr">
+              <IconifyIconOnline icon="ri:map-pin-2-line" class="payer-icon" />
+              {{ bill.roomAddress ?? "—" }}
+            </span>
+          </div>
         </div>
+
         <div class="pay-fields">
+          <!-- 行一：支付方式 + 支付时间 -->
           <el-form-item label="支付方式" prop="payChannel" class="no-mb">
             <el-select v-model="form.payChannel" placeholder="请选择支付方式" class="w-full">
               <el-option v-for="item in payChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -52,31 +73,49 @@
           <el-form-item label="支付时间" prop="payTime" class="no-mb">
             <el-date-picker v-model="form.payTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" class="w-full" placeholder="请选择支付时间" />
           </el-form-item>
-          <el-form-item label="交易流水号" class="no-mb">
-            <el-input v-model="form.thirdTradeNo" placeholder="选填" class="w-full" />
+
+          <!-- 行二：交易流水号（独占全行） -->
+          <el-form-item label="交易流水号" class="no-mb pay-field--full">
+            <el-input v-model="form.thirdTradeNo" placeholder="选填，银行或第三方平台的交易流水号" clearable class="w-full">
+              <template #prefix>
+                <IconifyIconOnline icon="ri:barcode-line" class="input-icon" />
+              </template>
+            </el-input>
           </el-form-item>
-          <el-form-item label="支付凭证" class="no-mb">
-            <UploadImage v-model="paymentVoucherList" :limit="1" :width="96" :height="96" />
-          </el-form-item>
-          <el-form-item label="支付备注" class="no-mb pay-remark">
-            <el-input v-model="form.payRemark" type="textarea" :rows="2" maxlength="200" show-word-limit placeholder="选填，记录本次收款的补充说明" />
-          </el-form-item>
-          <!-- 付款人信息小条 -->
-          <div class="tenant-strip">
-            <span class="tenant-strip__k">付款人</span>
-            <span class="tenant-strip__v">{{ bill.payerName ?? "—" }}</span>
-            <span class="tenant-strip__sep" />
-            <span class="tenant-strip__k">联系电话</span>
-            <span class="tenant-strip__v">{{ bill.payerPhone ?? "—" }}</span>
-            <span class="tenant-strip__sep" />
-            <span class="tenant-strip__k">地址</span>
-            <span class="tenant-strip__v tenant-strip__v--addr">{{ bill.roomAddress ?? "—" }}</span>
+
+          <!-- 行三：支付凭证 + 支付备注 并排 -->
+          <div class="voucher-remark-row">
+            <el-form-item class="no-mb">
+              <template #label>
+                支付凭证
+                <span class="label-optional">选填</span>
+              </template>
+              <UploadImage v-model="paymentVoucherList" :limit="1" :width="96" :height="96">
+                <template #tip="{ limit }">请上传支付凭证图片</template>
+              </UploadImage>
+            </el-form-item>
+
+            <el-form-item class="no-mb remark-item">
+              <template #label>
+                支付备注
+                <span class="label-optional">选填</span>
+              </template>
+              <el-input
+                v-model="form.payRemark"
+                type="textarea"
+                :rows="4"
+                maxlength="200"
+                show-word-limit
+                placeholder="记录本次收款的补充说明，如付款人、特殊情况等"
+                class="remark-textarea"
+              />
+            </el-form-item>
           </div>
         </div>
       </div>
 
-      <!-- ③ 费用项分配 ─ 核心区域，充分利用宽度 -->
-      <div class="section-block section-block--table mb-2">
+      <!-- ③ 费用项分配 -->
+      <div class="section-block section-block--table mb-3">
         <div class="alloc-header">
           <div class="section-block__title" style="padding: 0">
             <IconifyIconOnline icon="ri:list-check-3" class="section-icon section-icon--indigo" />
@@ -95,7 +134,6 @@
           </div>
         </div>
 
-        <!-- 表头 -->
         <div class="fee-thead">
           <div class="fc fc-name">费用项</div>
           <div class="fc fc-cycle">费用周期</div>
@@ -105,7 +143,6 @@
           <div class="fc fc-collect text-right">本次收款</div>
         </div>
 
-        <!-- 数据行 -->
         <div class="fee-tbody">
           <div v-for="item in allocationList" :key="item.leaseBillFeeId" class="fee-row">
             <div class="fc fc-name">
@@ -137,7 +174,6 @@
           </div>
         </div>
 
-        <!-- 汇总栏 -->
         <div class="alloc-footer">
           <div class="af-item">
             <span class="af-label">本次合计</span>
@@ -156,7 +192,7 @@
         </div>
       </div>
 
-      <!-- ④ 结果预览 ─ 进度条 + 四格指标 -->
+      <!-- ④ 收款结果预览 -->
       <div class="section-block mb-2">
         <div class="section-block__title">
           <IconifyIconOnline icon="ri:pie-chart-2-line" class="section-icon section-icon--emerald" />
@@ -164,7 +200,6 @@
         </div>
 
         <div class="preview-body">
-          <!-- 状态 + 进度 -->
           <div class="prog-row">
             <div class="prog-badges">
               <span
@@ -185,7 +220,6 @@
             </div>
           </div>
 
-          <!-- 四格指标 -->
           <div class="metrics-grid">
             <div v-for="m in previewMetrics" :key="m.label" class="metric-cell">
               <span class="metric-cell__label">{{ m.label }}</span>
@@ -220,9 +254,10 @@
   const formRef = ref<FormInstance>();
   const allocationList = ref<AllocationItem[]>([]);
   const paymentVoucherList = ref<string[]>([]);
+
   function currentDateTime() {
     const now = new Date();
-    const pad = (num: number) => String(num).padStart(2, "0");
+    const pad = (n: number) => String(n).padStart(2, "0");
     return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   }
 
@@ -274,7 +309,6 @@
   });
   const collectProgressText = computed(() => `${collectProgressPercent.value}%`);
   const collectProgressColor = computed(() => ["#94a3b8", "#f59e0b", "#10b981"][resolvedPayStatus.value]);
-
   const previewMetrics = computed(() => [
     { label: "本次分配合计", value: `¥${moneyText(allocatedAmount.value)}`, warn: false },
     { label: "收款后累计已收", value: `¥${moneyText(nextPaidAmount.value)}`, warn: false },
@@ -305,14 +339,11 @@
         collectAmount: Number(i.unpaidAmount ?? 0)
       }));
       paymentVoucherList.value = form.paymentVoucherUrl ? [form.paymentVoucherUrl] : [];
-      if (!form.payTime) {
-        form.payTime = currentDateTime();
-      }
+      if (!form.payTime) form.payTime = currentDateTime();
       syncItemsToForm();
     },
     { immediate: true, deep: true }
   );
-
   watch(allocationList, syncItemsToForm, { deep: true });
   watch(
     paymentVoucherList,
@@ -349,47 +380,36 @@
     }
     return true;
   };
-
-  const getFormData = (): LeaseBillCollectDto => ({
-    id: form.id,
-    totalAmount: form.totalAmount,
-    payChannel: form.payChannel,
-    thirdTradeNo: form.thirdTradeNo,
-    paymentVoucherUrl: form.paymentVoucherUrl,
-    payRemark: form.payRemark,
-    payTime: form.payTime,
-    items: form.items
-  });
+  const getFormData = (): LeaseBillCollectDto => ({ ...form });
 
   defineExpose({ validate, getFormData });
 </script>
 
 <style scoped>
-  /* ────────── 外层 ────────── */
+  /* ── 外层 ── */
   .collect-wrap {
     display: flex;
     flex-direction: column;
     padding-bottom: 4px;
   }
 
-  /* ────────── ① 账单概览条 ────────── */
+  /* ── ① 账单概览条 ── */
   .bill-overview {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
+    gap: 12px;
     padding: 12px 16px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
   }
-
   .bill-overview__left {
     display: flex;
     flex-direction: column;
     gap: 5px;
   }
-
   .bill-period-badge {
     width: fit-content;
     padding: 2px 9px;
@@ -399,7 +419,6 @@
     font-size: 12px;
     font-weight: 700;
   }
-
   .bill-meta {
     display: flex;
     align-items: center;
@@ -425,8 +444,6 @@
     font-weight: 700;
     border: 1px solid #fecaca;
   }
-
-  /* KPI 三格 */
   .bill-kpi-row {
     display: flex;
     align-items: stretch;
@@ -465,7 +482,7 @@
     color: #d97706;
   }
 
-  /* ────────── 通用 Section Block ────────── */
+  /* ── 通用 Section ── */
   .section-block {
     border: 1px solid #e2e8f0;
     border-radius: 10px;
@@ -473,14 +490,28 @@
     overflow: hidden;
   }
 
+  /* 标题行容器：左标题 + 右付款人 */
+  .section-block__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 11px 16px 0;
+  }
   .section-block__title {
     display: flex;
     align-items: center;
     gap: 6px;
+    /* 独立使用时保留原 padding */
     padding: 12px 16px 0;
     font-size: 13px;
     font-weight: 600;
     color: #334155;
+  }
+  /* 在 header 内时，由 header 控制 padding，title 自身不加 */
+  .section-block__header > .section-block__title {
+    padding: 0;
   }
 
   .section-icon {
@@ -494,7 +525,6 @@
   .section-icon--emerald {
     color: #059669;
   }
-
   .section-sub {
     font-size: 11px;
     color: #94a3b8;
@@ -502,51 +532,78 @@
     margin-left: 2px;
   }
 
-  /* ────────── ② 支付信息 ────────── */
-  .pay-fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px 16px;
-    padding: 10px 16px 14px;
-    align-items: end;
+  /* 付款人内联 */
+  .payer-inline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .payer-inline__item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: #475569;
+  }
+  .payer-inline__item--addr {
+    color: #64748b;
+  }
+  .payer-icon {
+    color: #94a3b8;
+    font-size: 13px;
+  }
+  .payer-sep {
+    width: 1px;
+    height: 12px;
+    background: #e2e8f0;
+    flex-shrink: 0;
   }
 
+  /* ── ② 支付信息字段区 ── */
+  .pay-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px 16px;
+    padding: 10px 16px 14px;
+    align-items: start;
+  }
   .no-mb {
     margin-bottom: 0 !important;
   }
 
-  .tenant-strip {
+  /* 凭证 + 备注并排 */
+  .voucher-remark-row {
     grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 7px 12px;
-    background: #f8fafc;
-    border-radius: 6px;
-    font-size: 12px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: start;
   }
-  .tenant-strip__k {
+
+  /* input 前缀图标 */
+  .input-icon {
     color: #94a3b8;
-  }
-  .tenant-strip__v {
-    color: #334155;
-    font-weight: 500;
-  }
-  .tenant-strip__v--addr {
-    color: #475569;
-  }
-  .tenant-strip__sep {
-    width: 1px;
-    height: 12px;
-    background: #e2e8f0;
+    font-size: 14px;
   }
 
-  .pay-remark {
-    grid-column: 1 / -1;
+  /* label 里的"选填"标注 */
+  .label-optional {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 400;
+    margin-left: 3px;
   }
 
-  /* ────────── ③ 费用分配表 ────────── */
+  /* 备注撑满、禁止手动 resize */
+  .remark-item {
+    width: 100%;
+  }
+  .remark-textarea :deep(.el-textarea__inner) {
+    resize: none;
+  }
+
+  /* ── ③ 费用分配表 ── */
   .alloc-header {
     display: flex;
     align-items: center;
@@ -555,25 +612,20 @@
     gap: 8px;
     padding: 12px 16px 0;
   }
-
   .alloc-btns {
     display: flex;
     align-items: center;
     gap: 8px;
   }
 
-  /* 列宽定义 — 6列布局，确保本次收款列足够宽 */
   .fee-thead,
   .fee-row {
     display: grid;
-    /* 费用名 | 周期 | 应收 | 已收 | 待收 | 本次收款 */
     grid-template-columns: 1fr 150px 88px 88px 88px 148px;
     align-items: center;
-    text-align: center;
     gap: 0;
     padding: 0 16px;
   }
-
   .fee-thead {
     margin-top: 8px;
     padding-top: 7px;
@@ -586,7 +638,6 @@
     color: #94a3b8;
     letter-spacing: 0.03em;
   }
-
   .fee-row {
     padding-top: 10px;
     padding-bottom: 10px;
@@ -600,7 +651,6 @@
     background: #fafbff;
   }
 
-  /* 列 */
   .fc {
     display: flex;
     align-items: center;
@@ -625,7 +675,6 @@
     justify-content: flex-end;
     padding-left: 8px;
   }
-
   .text-right {
     justify-content: flex-end;
   }
@@ -641,7 +690,6 @@
     max-width: 100%;
     line-height: 1.4;
   }
-
   .fee-tag {
     display: inline-flex;
     align-items: center;
@@ -653,7 +701,6 @@
     font-size: 10px;
     font-weight: 500;
   }
-
   .cycle-date {
     font-size: 11px;
     color: #64748b;
@@ -664,7 +711,6 @@
     color: #cbd5e1;
     flex-shrink: 0;
   }
-
   .n-default {
     font-size: 13px;
     color: #475569;
@@ -681,13 +727,10 @@
     font-weight: 500;
     font-variant-numeric: tabular-nums;
   }
-
-  /* 本次收款输入框：填满列宽 */
   .collect-num {
     width: 132px !important;
   }
 
-  /* 空状态 */
   .fee-empty {
     display: flex;
     align-items: center;
@@ -701,14 +744,12 @@
     font-size: 20px;
   }
 
-  /* 汇总栏 */
   .alloc-footer {
     display: flex;
     align-items: center;
     padding: 10px 16px;
     background: #f8fafc;
     border-top: 1px solid #e8edf4;
-    gap: 0;
   }
   .af-item {
     display: flex;
@@ -740,11 +781,10 @@
     color: #059669;
   }
 
-  /* ────────── ④ 结果预览 ────────── */
+  /* ── ④ 结果预览 ── */
   .preview-body {
     padding: 12px 16px 14px;
   }
-
   .prog-row {
     margin-bottom: 12px;
   }
@@ -754,7 +794,6 @@
     gap: 6px;
     margin-bottom: 6px;
   }
-
   .status-pill {
     display: inline-flex;
     align-items: center;
@@ -791,7 +830,6 @@
     color: #dc2626;
     border: 1px solid #fecaca;
   }
-
   .prog-pct {
     margin-left: auto;
     font-size: 12px;
@@ -799,7 +837,6 @@
     color: #334155;
     font-variant-numeric: tabular-nums;
   }
-
   .prog-track {
     height: 5px;
     background: #e2e8f0;
@@ -812,13 +849,11 @@
     transition: width 0.5s ease;
   }
 
-  /* 四格指标 */
   .metrics-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
   }
-
   .metric-cell {
     display: flex;
     flex-direction: column;
@@ -842,7 +877,7 @@
     color: #d97706;
   }
 
-  /* ────────── Element Plus 覆盖 ────────── */
+  /* ── Element Plus 覆盖 ── */
   :deep(.el-input-number) {
     width: 100%;
   }
@@ -862,5 +897,13 @@
   }
   :deep(.el-form-item) {
     margin-bottom: 0;
+  }
+
+  /* 辅助间距 */
+  .mb-2 {
+    margin-bottom: 8px;
+  }
+  .mb-3 {
+    margin-bottom: 12px;
   }
 </style>
