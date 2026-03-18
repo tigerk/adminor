@@ -52,6 +52,15 @@
           <el-form-item label="支付时间" prop="payTime" class="no-mb">
             <el-date-picker v-model="form.payTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" class="w-full" placeholder="请选择支付时间" />
           </el-form-item>
+          <el-form-item label="交易流水号" class="no-mb">
+            <el-input v-model="form.thirdTradeNo" placeholder="选填" class="w-full" />
+          </el-form-item>
+          <el-form-item label="支付凭证" class="no-mb">
+            <UploadImage v-model="paymentVoucherList" :limit="1" :width="96" :height="96" />
+          </el-form-item>
+          <el-form-item label="支付备注" class="no-mb pay-remark">
+            <el-input v-model="form.payRemark" type="textarea" :rows="2" maxlength="200" show-word-limit placeholder="选填，记录本次收款的补充说明" />
+          </el-form-item>
           <!-- 付款人信息小条 -->
           <div class="tenant-strip">
             <span class="tenant-strip__k">付款人</span>
@@ -197,6 +206,7 @@
   import type { FormInstance, FormRules } from "element-plus";
   import type { LeaseBillCollectDto, LeaseBillCollectItemDto, LeaseBillFeeVo, LeaseBillListVo } from "@/types";
   import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
+  import UploadImage from "@/components/Business/UploadImage.vue";
 
   interface Props {
     bill: LeaseBillListVo;
@@ -209,12 +219,21 @@
   const props = defineProps<Props>();
   const formRef = ref<FormInstance>();
   const allocationList = ref<AllocationItem[]>([]);
+  const paymentVoucherList = ref<string[]>([]);
+  function currentDateTime() {
+    const now = new Date();
+    const pad = (num: number) => String(num).padStart(2, "0");
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
 
   const form = reactive<LeaseBillCollectDto>({
     id: props.bill.id,
     totalAmount: 0,
     payChannel: undefined,
-    payTime: undefined,
+    thirdTradeNo: undefined,
+    paymentVoucherUrl: undefined,
+    payRemark: undefined,
+    payTime: currentDateTime(),
     items: []
   });
 
@@ -285,12 +304,23 @@
         leaseBillFeeId: i.id,
         collectAmount: Number(i.unpaidAmount ?? 0)
       }));
+      paymentVoucherList.value = form.paymentVoucherUrl ? [form.paymentVoucherUrl] : [];
+      if (!form.payTime) {
+        form.payTime = currentDateTime();
+      }
       syncItemsToForm();
     },
     { immediate: true, deep: true }
   );
 
   watch(allocationList, syncItemsToForm, { deep: true });
+  watch(
+    paymentVoucherList,
+    list => {
+      form.paymentVoucherUrl = list?.[0];
+    },
+    { deep: true }
+  );
 
   const fillAllUnpaid = () =>
     allocationList.value.forEach(i => {
@@ -324,6 +354,9 @@
     id: form.id,
     totalAmount: form.totalAmount,
     payChannel: form.payChannel,
+    thirdTradeNo: form.thirdTradeNo,
+    paymentVoucherUrl: form.paymentVoucherUrl,
+    payRemark: form.payRemark,
     payTime: form.payTime,
     items: form.items
   });
@@ -507,6 +540,10 @@
     width: 1px;
     height: 12px;
     background: #e2e8f0;
+  }
+
+  .pay-remark {
+    grid-column: 1 / -1;
   }
 
   /* ────────── ③ 费用分配表 ────────── */

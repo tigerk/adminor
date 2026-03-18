@@ -76,9 +76,7 @@
               </svg>
               收款
             </button>
-            <button class="action-btn" :disabled="bill.payStatus === 2" :class="{ 'action-btn--disabled': bill.payStatus === 2 }" @click="handleEdit">
-              编辑账单
-            </button>
+            <button class="action-btn" :disabled="bill.payStatus === 2" :class="{ 'action-btn--disabled': bill.payStatus === 2 }" @click="handleEdit">编辑账单</button>
             <button v-if="bill.payStatus === 0" class="action-btn" @click="handleSplit">账单拆分</button>
             <button v-if="bill.payStatus === 0" class="action-btn" @click="handleFree">免收</button>
             <button v-if="bill.payStatus === 0" class="action-btn" @click="handleBadDebt">标记坏账</button>
@@ -295,11 +293,25 @@
               </template>
             </el-table-column>
             <el-table-column prop="thirdTradeNo" label="第三方单号" min-width="160" show-overflow-tooltip />
+            <el-table-column label="支付凭证" width="120" align="center">
+              <template #default="{ row }">
+                <el-image
+                  v-if="row.paymentVoucherUrl"
+                  :src="row.paymentVoucherUrl"
+                  :preview-src-list="[row.paymentVoucherUrl]"
+                  fit="cover"
+                  class="payment-voucher-thumb"
+                  preview-teleported
+                />
+                <span v-else>—</span>
+              </template>
+            </el-table-column>
             <el-table-column label="支付金额" width="120" align="right">
               <template #default="{ row }">
                 <span class="amount-value">¥{{ formatAmount(row.amount) }}</span>
               </template>
             </el-table-column>
+            <el-table-column prop="remark" label="支付备注" min-width="180" show-overflow-tooltip />
             <el-table-column label="支付时间" min-width="160" align="center">
               <template #default="{ row }">{{ formatDateTime(row.payTime) }}</template>
             </el-table-column>
@@ -355,11 +367,13 @@
   });
 
   const financeFlowList = computed(() => bill.value.financeFlowList || []);
-  const paymentFlowList = computed(() => (bill.value.paymentFlowList || []).slice().sort((a, b) => {
-    const aTime = a.payTime ? new Date(a.payTime).getTime() : 0;
-    const bTime = b.payTime ? new Date(b.payTime).getTime() : 0;
-    return bTime - aTime;
-  }));
+  const paymentFlowList = computed(() =>
+    (bill.value.paymentFlowList || []).slice().sort((a, b) => {
+      const aTime = a.payTime ? new Date(a.payTime).getTime() : 0;
+      const bTime = b.payTime ? new Date(b.payTime).getTime() : 0;
+      return bTime - aTime;
+    })
+  );
   const latestPaymentFlow = computed<PaymentFlowVo | undefined>(() => paymentFlowList.value[0]);
 
   const billTypeText = computed(() => {
@@ -414,7 +428,7 @@
     if (val === undefined || val === null) return "—";
     const amount = typeof val === "string" ? Number(val) : val;
     if (Number.isNaN(amount)) return "—";
-    return (amount / 100).toFixed(2);
+    return amount;
   };
 
   const moneyText = (val?: string | number) => {
@@ -770,6 +784,14 @@
   .metric-card__value--sm {
     font-size: 13px;
     word-break: break-all;
+  }
+
+  .payment-voucher-thumb {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
   }
 
   /* ===== 状态标签 ===== */

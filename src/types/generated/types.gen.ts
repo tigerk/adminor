@@ -5211,9 +5211,17 @@ export type PaymentFlowVo = {
      */
     thirdTradeNo?: string;
     /**
+     * 支付凭证图片
+     */
+    paymentVoucherUrl?: string;
+    /**
      * 支付金额（分）
      */
     amount?: string;
+    /**
+     * 支付备注
+     */
+    remark?: string;
     /**
      * 支付完成时间
      */
@@ -5508,6 +5516,18 @@ export type LeaseBillCollectDto = {
      * 支付方式：1=现金，2=转账，3=支付宝，4=微信，5=其他
      */
     payChannel?: number;
+    /**
+     * 交易流水号
+     */
+    thirdTradeNo?: string;
+    /**
+     * 支付凭证图片
+     */
+    paymentVoucherUrl?: string;
+    /**
+     * 支付备注
+     */
+    payRemark?: string;
     /**
      * 实际支付日期
      */
