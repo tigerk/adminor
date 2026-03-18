@@ -1,165 +1,240 @@
 <template>
-  <div class="bill-collect-dialog">
-    <div class="collect-hero">
-      <div class="collect-hero__main">
-        <div class="collect-hero__eyebrow">账单收款</div>
-        <div class="collect-hero__title">第{{ bill.sortOrder || "-" }}期账单</div>
-        <div class="collect-hero__meta">
-          <span>账期：{{ formatDate(bill.billStart) }} ~ {{ formatDate(bill.billEnd) }}</span>
-          <span>应缴日：{{ formatDate(bill.dueDate) }}</span>
+  <div class="flex flex-col gap-4 pb-5">
+    <!-- ───────────────── Hero Banner ───────────────── -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-700 via-blue-600 to-blue-500 p-6 text-white shadow-lg shadow-blue-200">
+      <!-- decorative circles -->
+      <div class="pointer-events-none absolute -right-12 -top-12 size-52 rounded-full bg-white/5" />
+      <div class="pointer-events-none absolute -bottom-8 right-24 size-32 rounded-full bg-white/5" />
+      <div class="pointer-events-none absolute left-1/3 top-0 h-px w-1/3 bg-white/20" />
+
+      <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <!-- Left: title + meta -->
+        <div class="flex flex-col gap-3">
+          <span class="w-fit rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-widest backdrop-blur-sm">账单收款</span>
+          <h1 class="text-3xl font-black tracking-tight">
+            第
+            <span class="opacity-90">{{ bill.sortOrder ?? "—" }}</span>
+            期账单
+          </h1>
+          <div class="flex flex-wrap gap-2">
+            <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs backdrop-blur-sm">
+              <IconifyIconOnline icon="ri:calendar-line" class="text-sm" />
+              账期 {{ formatDate(bill.billStart) }} — {{ formatDate(bill.billEnd) }}
+            </span>
+            <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs backdrop-blur-sm">
+              <IconifyIconOnline icon="ri:time-line" class="text-sm" />
+              应缴日 {{ formatDate(bill.dueDate) }}
+            </span>
+          </div>
         </div>
-      </div>
-      <div class="collect-hero__stats">
-        <div class="hero-stat">
-          <span class="hero-stat__label">账单应收</span>
-          <span class="hero-stat__value">¥{{ moneyText(bill.totalAmount) }}</span>
-        </div>
-        <div class="hero-stat hero-stat--muted">
-          <span class="hero-stat__label">累计已收</span>
-          <span class="hero-stat__value">¥{{ moneyText(bill.paidAmount) }}</span>
-        </div>
-        <div class="hero-stat hero-stat--muted">
-          <span class="hero-stat__label">当前待收</span>
-          <span class="hero-stat__value">¥{{ moneyText(bill.unpaidAmount) }}</span>
+
+        <!-- Right: KPI row -->
+        <div class="flex shrink-0 divide-x divide-white/20 overflow-hidden rounded-xl border border-white/20 bg-white/10 backdrop-blur-md">
+          <div class="flex flex-col gap-1 px-5 py-4">
+            <span class="text-[11px] font-medium tracking-wider text-white/65">账单应收</span>
+            <span class="text-xl font-bold tabular-nums">¥{{ moneyText(bill.totalAmount) }}</span>
+          </div>
+          <div class="flex flex-col gap-1 px-5 py-4 opacity-80">
+            <span class="text-[11px] font-medium tracking-wider text-white/65">累计已收</span>
+            <span class="text-xl font-bold tabular-nums">¥{{ moneyText(bill.paidAmount) }}</span>
+          </div>
+          <div class="flex flex-col gap-1 px-5 py-4 opacity-80">
+            <span class="text-[11px] font-medium tracking-wider text-white/65">当前待收</span>
+            <span class="text-xl font-bold tabular-nums text-amber-300">¥{{ moneyText(bill.unpaidAmount) }}</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="collect-form">
-      <div class="content-grid">
-        <div class="section-card">
-          <div class="section-card__title">支付信息</div>
-          <div class="payment-shell">
-            <div class="payment-amount-card">
-              <div class="payment-amount-card__label">本次收款总额</div>
-              <div class="payment-amount-card__value">¥{{ moneyText(form.totalAmount) }}</div>
-              <div class="payment-amount-card__hint">金额由下方费用项分摊自动汇总</div>
+    <!-- ───────────────── Body ───────────────── -->
+    <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
+      <div class="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_308px]">
+        <!-- ── Left column ── -->
+        <div class="flex flex-col gap-4">
+          <!-- Payment Info Card -->
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center gap-2.5">
+              <span class="inline-block size-2 rounded-full bg-blue-500 ring-[3px] ring-blue-100" />
+              <span class="text-sm font-bold text-slate-800">支付信息</span>
             </div>
 
-            <div class="form-grid">
-              <el-form-item label="支付方式" prop="payChannel" class="form-grid__item">
-                <el-select v-model="form.payChannel" class="w-full" placeholder="请选择支付方式">
-                  <el-option v-for="item in payChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="支付时间" prop="payTime" class="form-grid__item">
-                <el-date-picker v-model="form.payTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" class="w-full" placeholder="请选择支付时间" />
-              </el-form-item>
+            <!-- Amount + Fields -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-[192px_1fr]">
+              <!-- Total amount display -->
+              <div class="flex flex-col justify-center gap-1.5 rounded-xl border border-blue-100 bg-gradient-to-b from-blue-50 to-slate-50 p-4">
+                <span class="text-[11px] font-semibold uppercase tracking-widest text-blue-600">本次收款总额</span>
+                <span class="text-[28px] font-black leading-none tabular-nums text-blue-700">¥{{ moneyText(form.totalAmount) }}</span>
+                <span class="text-xs leading-relaxed text-slate-400">由下方费用项汇总自动计算</span>
+              </div>
+
+              <!-- Selectors -->
+              <div class="grid grid-cols-2 gap-x-4">
+                <el-form-item label="支付方式" prop="payChannel">
+                  <el-select v-model="form.payChannel" class="w-full" placeholder="请选择支付方式">
+                    <el-option v-for="item in payChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="支付时间" prop="payTime">
+                  <el-date-picker v-model="form.payTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" class="w-full" placeholder="请选择支付时间" />
+                </el-form-item>
+              </div>
+            </div>
+
+            <!-- Summary strip -->
+            <div class="mt-4 flex divide-x divide-slate-200 rounded-xl border border-slate-200 bg-slate-50 py-3">
+              <div class="flex flex-1 flex-col gap-1 px-5">
+                <span class="text-[11px] text-slate-400">分摊笔数</span>
+                <strong class="text-sm font-bold text-slate-800">{{ form.items?.length ?? 0 }} 笔</strong>
+              </div>
+              <div class="flex flex-1 flex-col gap-1 px-5">
+                <span class="text-[11px] text-slate-400">收款后累计已收</span>
+                <strong class="text-sm font-bold tabular-nums text-slate-800">¥{{ moneyText(nextPaidAmount) }}</strong>
+              </div>
+              <div class="flex flex-1 flex-col gap-1 px-5">
+                <span class="text-[11px] text-slate-400">收款后待收</span>
+                <strong class="text-sm font-bold tabular-nums" :class="nextUnpaidAmount > 0 ? 'text-amber-600' : 'text-slate-800'">¥{{ moneyText(nextUnpaidAmount) }}</strong>
+              </div>
             </div>
           </div>
 
-          <div class="payment-tip-bar">
-            <div class="payment-tip-bar__item">
-              <span class="payment-tip-bar__label">分摊笔数</span>
-              <strong>{{ form.items?.length || 0 }}</strong>
-            </div>
-            <div class="payment-tip-bar__item">
-              <span class="payment-tip-bar__label">本次收款后累计已收</span>
-              <strong>¥{{ moneyText(nextPaidAmount) }}</strong>
-            </div>
-            <div class="payment-tip-bar__item">
-              <span class="payment-tip-bar__label">本次收款后待收</span>
-              <strong :class="{ 'text-[#d97706]': nextUnpaidAmount > 0 }">¥{{ moneyText(nextUnpaidAmount) }}</strong>
-            </div>
-          </div>
-
-          <div class="alloc-section">
-            <div class="alloc-section__header">
-              <div>
-                <div class="alloc-section__title">费用项分配</div>
-                <div class="alloc-section__subtitle">逐项录入本次实收金额，不允许超过该费用项待收金额</div>
-              </div>
-              <div class="alloc-section__actions">
-                <el-button text @click="clearAllocation">清空分配</el-button>
-                <el-button text type="primary" @click="fillAllUnpaid">全部收清</el-button>
-              </div>
-            </div>
-
-            <div class="alloc-table">
-              <div class="alloc-table__head">
-                <div>费用项</div>
-                <div>费用周期</div>
-                <div>应收</div>
-                <div>已收</div>
-                <div>待收</div>
-                <div>本次收款</div>
-              </div>
-              <div v-for="item in allocationList" :key="item.leaseBillFeeId" class="alloc-table__row">
-                <div class="alloc-table__name">
-                  <div class="alloc-table__name-main">
-                    <span>{{ item.feeName || "-" }}</span>
-                    <small>{{ feeTypeText(item.feeType) }}</small>
-                  </div>
-                </div>
-                <div>{{ formatDate(item.feeStart) }} ~ {{ formatDate(item.feeEnd) }}</div>
-                <div>¥{{ moneyText(item.amount) }}</div>
-                <div>¥{{ moneyText(item.paidAmount) }}</div>
-                <div class="alloc-table__unpaid">¥{{ moneyText(item.unpaidAmount) }}</div>
+          <!-- Allocation Card -->
+          <div class="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+            <!-- Card header -->
+            <div class="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+              <div class="flex items-start gap-2.5">
+                <span class="mt-1 inline-block size-2 rounded-full bg-indigo-500 ring-[3px] ring-indigo-100" />
                 <div>
-                  <el-input-number
-                    v-model="item.collectAmount"
-                    :min="0"
-                    :max="Number(item.unpaidAmount || 0)"
-                    :precision="2"
-                    controls-position="right"
-                    class="w-full alloc-table__input"
-                  />
+                  <p class="text-sm font-bold text-slate-800">费用项分配</p>
+                  <p class="mt-0.5 text-xs text-slate-400">逐项录入本次实收金额，不可超过该费用项待收金额</p>
                 </div>
               </div>
-              <div class="alloc-table__footer">
-                <div class="alloc-table__footer-label">分配合计</div>
-                <div class="alloc-table__footer-value">¥{{ moneyText(allocatedAmount) }}</div>
-                <div class="alloc-table__footer-label">剩余待收</div>
-                <div class="alloc-table__footer-value" :class="{ 'alloc-table__footer-value--warn': nextUnpaidAmount > 0 }">¥{{ moneyText(nextUnpaidAmount) }}</div>
+              <div class="flex shrink-0 items-center gap-2">
+                <el-button size="small" plain @click="clearAllocation">清空分配</el-button>
+                <el-button size="small" type="primary" @click="fillAllUnpaid">全部收清</el-button>
+              </div>
+            </div>
+
+            <!-- Table head -->
+            <div
+              class="grid items-center gap-3 bg-slate-50/80 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400"
+              style="grid-template-columns: 1.4fr 1.2fr 0.85fr 0.85fr 0.85fr 1.1fr"
+            >
+              <div>费用项</div>
+              <div>费用周期</div>
+              <div class="text-right">应收</div>
+              <div class="text-right">已收</div>
+              <div class="text-right">待收</div>
+              <div class="text-right">本次收款</div>
+            </div>
+
+            <!-- Table rows -->
+            <div>
+              <div
+                v-for="item in allocationList"
+                :key="item.leaseBillFeeId"
+                class="grid items-center gap-3 border-t border-slate-100 px-5 py-3 text-sm transition-colors hover:bg-slate-50/60"
+                style="grid-template-columns: 1.4fr 1.2fr 0.85fr 0.85fr 0.85fr 1.1fr"
+              >
+                <div class="flex min-w-0 flex-col gap-1">
+                  <span class="truncate font-semibold text-slate-800">{{ item.feeName ?? "—" }}</span>
+                  <span class="w-fit rounded-full bg-slate-100 px-2 py-px text-[11px] text-slate-500">
+                    {{ feeTypeText(item.feeType) }}
+                  </span>
+                </div>
+                <div class="text-xs text-slate-400">
+                  {{ formatDate(item.feeStart) }}
+                  <br />
+                  {{ formatDate(item.feeEnd) }}
+                </div>
+                <div class="text-right tabular-nums text-slate-700">¥{{ moneyText(item.amount) }}</div>
+                <div class="text-right tabular-nums text-slate-400">¥{{ moneyText(item.paidAmount) }}</div>
+                <div class="text-right font-semibold tabular-nums text-amber-600">¥{{ moneyText(item.unpaidAmount) }}</div>
+                <div>
+                  <el-input-number v-model="item.collectAmount" :min="0" :max="Number(item.unpaidAmount ?? 0)" :precision="2" controls-position="right" class="w-full" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Table footer -->
+            <div class="flex items-center gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3 text-sm">
+              <span class="font-semibold text-slate-500">分配合计</span>
+              <span class="font-bold tabular-nums text-slate-800">¥{{ moneyText(allocatedAmount) }}</span>
+              <span class="mx-1 text-slate-300">·</span>
+              <span class="font-semibold text-slate-500">剩余待收</span>
+              <span class="font-bold tabular-nums" :class="nextUnpaidAmount > 0 ? 'text-amber-600' : 'text-slate-800'">¥{{ moneyText(nextUnpaidAmount) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Right column ── -->
+        <div class="flex flex-col gap-4">
+          <!-- Status Preview -->
+          <div class="rounded-2xl border border-slate-200/80 bg-gradient-to-b from-white to-blue-50/30 p-5 shadow-sm">
+            <div class="mb-4 flex items-center gap-2.5">
+              <span class="inline-block size-2 rounded-full bg-emerald-500 ring-[3px] ring-emerald-100" />
+              <span class="text-sm font-bold text-slate-800">结果预览</span>
+            </div>
+
+            <!-- Status pills -->
+            <div class="mb-3 flex flex-wrap items-center gap-2">
+              <span
+                class="rounded-full px-4 py-1.5 text-sm font-bold"
+                :class="{
+                  'bg-emerald-100 text-emerald-700': resolvedPayStatus === 2,
+                  'bg-amber-100 text-amber-700': resolvedPayStatus === 1,
+                  'bg-red-100 text-red-700': resolvedPayStatus === 0
+                }"
+              >
+                {{ displayStatusText }}
+              </span>
+              <span v-if="isOverdue && resolvedPayStatus !== 2" class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-600">已逾期</span>
+            </div>
+
+            <p class="mb-4 text-xs leading-relaxed text-slate-400">账单支付状态根据累计已收金额自动计算，逾期作为独立标记展示，不与支付状态混用。</p>
+
+            <!-- Progress -->
+            <div class="mb-4 rounded-xl border border-slate-200 bg-white p-3.5">
+              <div class="mb-2.5 flex items-center justify-between text-xs">
+                <span class="text-slate-500">收款进度</span>
+                <strong class="text-sm font-bold text-slate-800">{{ collectProgressText }}</strong>
+              </div>
+              <div class="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full transition-all duration-500" :style="{ width: collectProgressPercent + '%', background: collectProgressColor }" />
+              </div>
+            </div>
+
+            <!-- Metrics -->
+            <ul class="flex flex-col gap-2">
+              <li v-for="m in previewMetrics" :key="m.label" class="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3.5 py-2.5">
+                <span class="text-xs text-slate-500">{{ m.label }}</span>
+                <strong class="text-sm tabular-nums" :class="m.warn ? 'text-amber-600' : 'text-slate-800'">
+                  {{ m.value }}
+                </strong>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Payer Info -->
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center gap-2.5">
+              <span class="inline-block size-2 rounded-full bg-slate-400 ring-[3px] ring-slate-100" />
+              <span class="text-sm font-bold text-slate-800">租客信息</span>
+            </div>
+            <div class="flex flex-col divide-y divide-slate-100">
+              <div class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
+                <span class="shrink-0 text-xs text-slate-400">付款人</span>
+                <span class="text-sm font-semibold text-slate-800">{{ bill.payerName ?? "—" }}</span>
+              </div>
+              <div class="flex items-baseline justify-between gap-3 py-2.5">
+                <span class="shrink-0 text-xs text-slate-400">联系电话</span>
+                <span class="text-sm font-semibold text-slate-800">{{ bill.payerPhone ?? "—" }}</span>
+              </div>
+              <div class="flex flex-col gap-1 py-2.5 last:pb-0">
+                <span class="text-xs text-slate-400">房源地址</span>
+                <span class="text-sm font-semibold leading-relaxed text-slate-800 break-all">{{ bill.roomAddress ?? "—" }}</span>
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="preview-panel">
-          <div class="preview-panel__title">结果预览</div>
-          <div class="preview-panel__status">
-            <span class="status-badge" :class="statusClass">{{ displayStatusText }}</span>
-            <span v-if="isOverdue && resolvedPayStatus !== 2" class="overdue-badge">已逾期</span>
-          </div>
-          <div class="preview-panel__desc">账单支付状态根据累计已收金额自动计算，逾期作为独立状态展示，不与支付状态混用。</div>
-          <div class="progress-card">
-            <div class="progress-card__label">
-              <span>收款进度</span>
-              <strong>{{ collectProgressText }}</strong>
-            </div>
-            <el-progress :percentage="collectProgressPercent" :stroke-width="10" :show-text="false" :color="collectProgressColor" />
-          </div>
-          <div class="preview-metrics">
-            <div class="preview-metric">
-              <span>本次分配合计</span>
-              <strong>¥{{ moneyText(allocatedAmount) }}</strong>
-            </div>
-            <div class="preview-metric">
-              <span>收款后累计已收</span>
-              <strong>¥{{ moneyText(nextPaidAmount) }}</strong>
-            </div>
-            <div class="preview-metric">
-              <span>收款后剩余待收</span>
-              <strong :class="{ 'text-[#d97706]': nextUnpaidAmount > 0 }">¥{{ moneyText(nextUnpaidAmount) }}</strong>
-            </div>
-            <div class="preview-metric">
-              <span>逾期状态</span>
-              <strong>{{ isOverdue && resolvedPayStatus !== 2 ? "已逾期" : "未逾期" }}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="summary-grid">
-        <div class="summary-card">
-          <div class="summary-card__label">付款人</div>
-          <div class="summary-card__value">{{ bill.payerName || "—" }}</div>
-          <div class="summary-card__sub">{{ bill.payerPhone || "—" }}</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-card__label">房源地址</div>
-          <div class="summary-card__value">{{ bill.roomAddress || "—" }}</div>
         </div>
       </div>
     </el-form>
@@ -172,6 +247,8 @@
   import type { FormInstance, FormRules } from "element-plus";
   import type { LeaseBillCollectDto, LeaseBillCollectItemDto, LeaseBillFeeVo, LeaseBillListVo } from "@/types";
   import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
+
+  // ── vue-pure-admin 全局注册了 IconifyIconOnline，直接使用即可
 
   interface Props {
     bill: LeaseBillListVo;
@@ -205,7 +282,7 @@
 
   const payChannelOptions = Object.values(PaymentFlowChannelEnumMeta)
     .map(item => ({ label: item.label, value: payChannelMap[item.code] }))
-    .filter((item, index, list) => item.value != null && list.findIndex(option => option.value === item.value) === index);
+    .filter((item, index, list) => item.value != null && list.findIndex(o => o.value === item.value) === index);
 
   const rules = reactive<FormRules>({
     totalAmount: [{ required: true, message: "请输入本次收款总额", trigger: "blur" }],
@@ -213,46 +290,58 @@
     payTime: [{ required: true, message: "请选择支付时间", trigger: "change" }]
   });
 
-  const allocatedAmount = computed(() => allocationList.value.reduce((sum, item) => sum + Number(item.collectAmount || 0), 0));
-  const nextPaidAmount = computed(() => Number(props.bill.paidAmount || 0) + allocatedAmount.value);
-  const nextUnpaidAmount = computed(() => Math.max(Number(props.bill.totalAmount || 0) - nextPaidAmount.value, 0));
+  // ── Computed ──
+  const allocatedAmount = computed(() => allocationList.value.reduce((s, i) => s + Number(i.collectAmount ?? 0), 0));
+  const nextPaidAmount = computed(() => Number(props.bill.paidAmount ?? 0) + allocatedAmount.value);
+  const nextUnpaidAmount = computed(() => Math.max(Number(props.bill.totalAmount ?? 0) - nextPaidAmount.value, 0));
   const resolvedPayStatus = computed(() => {
     if (nextPaidAmount.value <= 0) return 0;
-    if (nextPaidAmount.value >= Number(props.bill.totalAmount || 0)) return 2;
+    if (nextPaidAmount.value >= Number(props.bill.totalAmount ?? 0)) return 2;
     return 1;
   });
   const isOverdue = computed(() => {
     if (!props.bill.dueDate || resolvedPayStatus.value === 2) return false;
     return new Date(props.bill.dueDate).getTime() < Date.now();
   });
-  const displayStatusText = computed(() => {
-    if (resolvedPayStatus.value === 2) return "已支付";
-    if (resolvedPayStatus.value === 1) return "部分支付";
-    return "未支付";
-  });
-  const statusClass = computed(() => {
-    if (resolvedPayStatus.value === 2) return "status-badge--paid";
-    if (resolvedPayStatus.value === 1) return "status-badge--partial";
-    return "status-badge--unpaid";
-  });
+  const displayStatusText = computed(() => ["未支付", "部分支付", "已支付"][resolvedPayStatus.value]);
   const collectProgressPercent = computed(() => {
-    const total = Number(props.bill.totalAmount || 0);
-    if (total <= 0) return 0;
-    return Number(Math.min((nextPaidAmount.value / total) * 100, 100).toFixed(2));
+    const t = Number(props.bill.totalAmount ?? 0);
+    return t <= 0 ? 0 : Number(Math.min((nextPaidAmount.value / t) * 100, 100).toFixed(2));
   });
   const collectProgressText = computed(() => `${collectProgressPercent.value}%`);
-  const collectProgressColor = computed(() => {
-    if (resolvedPayStatus.value === 2) return "#16a34a";
-    if (resolvedPayStatus.value === 1) return "#f59e0b";
-    return "#ef4444";
-  });
+  const collectProgressColor = computed(() => ["#ef4444", "#f59e0b", "#16a34a"][resolvedPayStatus.value]);
 
+  // Preview metrics list – keeps template clean
+  const previewMetrics = computed(() => [
+    {
+      label: "本次分配合计",
+      value: `¥${moneyText(allocatedAmount.value)}`,
+      warn: false
+    },
+    {
+      label: "收款后累计已收",
+      value: `¥${moneyText(nextPaidAmount.value)}`,
+      warn: false
+    },
+    {
+      label: "收款后剩余待收",
+      value: `¥${moneyText(nextUnpaidAmount.value)}`,
+      warn: nextUnpaidAmount.value > 0
+    },
+    {
+      label: "逾期状态",
+      value: isOverdue.value && resolvedPayStatus.value !== 2 ? "已逾期" : "正常",
+      warn: isOverdue.value && resolvedPayStatus.value !== 2
+    }
+  ]);
+
+  // ── Sync form items ──
   const syncItemsToForm = () => {
     form.items = allocationList.value
-      .filter(item => Number(item.collectAmount || 0) > 0)
-      .map<LeaseBillCollectItemDto>(item => ({
-        leaseBillFeeId: item.leaseBillFeeId,
-        amount: Number(item.collectAmount || 0)
+      .filter(i => Number(i.collectAmount ?? 0) > 0)
+      .map<LeaseBillCollectItemDto>(i => ({
+        leaseBillFeeId: i.leaseBillFeeId,
+        amount: Number(i.collectAmount ?? 0)
       }));
     form.totalAmount = Number(allocatedAmount.value.toFixed(2));
   };
@@ -260,9 +349,9 @@
   watch(
     () => props.bill,
     bill => {
-      allocationList.value = (bill.feeList || []).map(item => ({
-        ...item,
-        leaseBillFeeId: item.id,
+      allocationList.value = (bill.feeList ?? []).map(i => ({
+        ...i,
+        leaseBillFeeId: i.id,
         collectAmount: 0
       }));
       syncItemsToForm();
@@ -272,36 +361,33 @@
 
   watch(allocationList, syncItemsToForm, { deep: true });
 
-  const fillAllUnpaid = () => {
-    allocationList.value.forEach(item => {
-      item.collectAmount = Number(item.unpaidAmount || 0);
+  // ── Actions ──
+  const fillAllUnpaid = () =>
+    allocationList.value.forEach(i => {
+      i.collectAmount = Number(i.unpaidAmount ?? 0);
     });
-  };
 
-  const clearAllocation = () => {
-    allocationList.value.forEach(item => {
-      item.collectAmount = 0;
+  const clearAllocation = () =>
+    allocationList.value.forEach(i => {
+      i.collectAmount = 0;
     });
-  };
 
-  const feeTypeText = (feeType?: string) => {
-    if (feeType === "RENTAL") return "租金";
-    if (feeType === "DEPOSIT") return "押金";
-    return "其他费用";
-  };
+  // ── Helpers ──
+  const feeTypeText = (t?: string) => (t === "RENTAL" ? "租金" : t === "DEPOSIT" ? "押金" : "其他费用");
 
-  const moneyText = (value?: number) => Number(value || 0).toFixed(2);
-  const formatDate = (value?: string) => (value ? value.substring(0, 10) : "—");
+  const moneyText = (v?: number) => Number(v ?? 0).toFixed(2);
+  const formatDate = (v?: string) => (v ? v.substring(0, 10) : "—");
 
+  // ── Expose ──
   const validate = async () => {
     if (!formRef.value) return false;
-    const valid = await formRef.value.validate().catch(() => false);
-    if (!valid) return false;
+    const ok = await formRef.value.validate().catch(() => false);
+    if (!ok) return false;
     if (!form.items?.length) {
       ElMessage.warning("请至少分配一条费用项收款金额");
       return false;
     }
-    if (Math.abs((form.totalAmount || 0) - allocatedAmount.value) > 0.001) {
+    if (Math.abs((form.totalAmount ?? 0) - allocatedAmount.value) > 0.001) {
       ElMessage.warning("收款总额与费用项分配金额不一致");
       return false;
     }
@@ -316,449 +402,26 @@
     items: form.items
   });
 
-  defineExpose({
-    validate,
-    getFormData
-  });
+  defineExpose({ validate, getFormData });
 </script>
 
-<style scoped lang="scss">
-  .bill-collect-dialog {
-    display: grid;
-    gap: 18px;
-    padding-bottom: 16px;
+<style scoped>
+  /*
+  只在 Tailwind 无法覆盖 Element Plus 内部样式时使用少量 scoped CSS。
+  其余全部用 Tailwind 工具类完成，与 vue-pure-admin 保持一致。
+*/
+
+  /* 让 el-input-number 宽度填满单元格 */
+  :deep(.el-input-number) {
+    width: 100%;
   }
 
-  .collect-hero {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 24px;
-    border-radius: 18px;
-    border: 1px solid #dbeafe;
-    background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 36%), linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%);
+  :deep(.el-input-number .el-input__wrapper) {
+    border-radius: 8px;
   }
 
-  .collect-hero__eyebrow {
-    color: #2563eb;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-  }
-
-  .collect-hero__title {
-    margin-top: 6px;
-    color: #0f172a;
-    font-size: 24px;
-    font-weight: 700;
-  }
-
-  .collect-hero__meta {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-    color: #64748b;
-    font-size: 13px;
-  }
-
-  .collect-hero__stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(120px, 1fr));
-    gap: 10px;
-  }
-
-  .hero-stat {
-    display: grid;
-    gap: 4px;
-    padding: 14px 16px;
-    border-radius: 14px;
-    background: #fff;
-    border: 1px solid #bfdbfe;
-  }
-
-  .hero-stat--muted {
-    border-color: #e2e8f0;
-  }
-
-  .hero-stat__label {
-    color: #64748b;
-    font-size: 12px;
-  }
-
-  .hero-stat__value {
-    color: #0f172a;
-    font-size: 18px;
-    font-weight: 700;
-  }
-
-  .content-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.8fr) minmax(300px, 0.9fr);
-    gap: 14px;
-  }
-
-  .section-card,
-  .preview-panel,
-  .summary-card {
-    border-radius: 18px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04);
-  }
-
-  .section-card {
-    padding: 20px;
-  }
-
-  .section-card__title,
-  .preview-panel__title {
-    color: #111827;
-    font-size: 16px;
-    font-weight: 700;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 16px;
-  }
-
-  .form-grid__item--full {
-    grid-column: 1 / -1;
-  }
-
-  .payment-shell {
-    display: grid;
-    grid-template-columns: 220px minmax(0, 1fr);
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  .payment-amount-card {
-    display: grid;
-    align-content: center;
-    gap: 6px;
-    padding: 16px 18px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
-    border: 1px solid #bfdbfe;
-  }
-
-  .payment-amount-card__label {
-    color: #64748b;
-    font-size: 12px;
-  }
-
-  .payment-amount-card__value {
-    color: #1d4ed8;
-    font-size: 26px;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  .payment-amount-card__hint {
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
-  .payment-tip-bar {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 14px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-  }
-
-  .payment-tip-bar__item {
-    display: grid;
-    gap: 4px;
-  }
-
-  .payment-tip-bar__label {
-    color: #64748b;
-    font-size: 12px;
-  }
-
-  .payment-tip-bar__item strong {
-    color: #0f172a;
-    font-size: 14px;
-  }
-
-  .alloc-section {
-    margin-top: 12px;
-    padding-top: 14px;
-    border-top: 1px solid #eef2f7;
-  }
-
-  .alloc-section__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .alloc-section__title {
-    color: #111827;
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .alloc-section__subtitle {
-    margin-top: 2px;
-    color: #6b7280;
-    font-size: 12px;
-  }
-
-  .alloc-table {
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    overflow: hidden;
-  }
-
-  .alloc-table__head,
-  .alloc-table__row {
-    display: grid;
-    grid-template-columns: 1.3fr 1.2fr 0.8fr 0.8fr 0.8fr 1fr;
-    gap: 12px;
-    align-items: center;
-    padding: 12px 14px;
-  }
-
-  .alloc-table__head {
-    background: #f8fafc;
-    color: #64748b;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .alloc-table__row {
-    border-top: 1px solid #eef2f7;
-    font-size: 13px;
-    color: #0f172a;
-  }
-
-  .alloc-table__name {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-  }
-
-  .alloc-table__name-main {
-    display: grid;
-    gap: 2px;
-    min-width: 0;
-  }
-
-  .alloc-table__name-main span {
-    color: #0f172a;
-    font-weight: 600;
-  }
-
-  .alloc-table__name-main small {
-    color: #64748b;
-    font-size: 12px;
-  }
-
-  .alloc-table__unpaid {
-    color: #d97706;
-    font-weight: 600;
-  }
-
-  .alloc-table__input :deep(.el-input__wrapper) {
-    border-radius: 10px;
-  }
-
-  .alloc-table__footer {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr auto;
-    gap: 12px;
-    align-items: center;
-    padding: 12px 14px;
-    border-top: 1px solid #e5e7eb;
-    background: #f8fafc;
-  }
-
-  .alloc-table__footer-label {
-    color: #64748b;
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .alloc-table__footer-value {
-    color: #0f172a;
-    font-size: 14px;
-    font-weight: 700;
-  }
-
-  .alloc-table__footer-value--warn {
-    color: #d97706;
-  }
-
-  .preview-panel {
-    padding: 20px;
-    display: grid;
-    gap: 14px;
-    align-content: start;
-    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  }
-
-  .preview-panel__status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .preview-panel__desc {
-    color: #64748b;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 88px;
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-  }
-
-  .status-badge--paid {
-    background: #dcfce7;
-    color: #16a34a;
-  }
-
-  .status-badge--partial {
-    background: #fef3c7;
-    color: #d97706;
-  }
-
-  .status-badge--unpaid {
-    background: #fee2e2;
-    color: #dc2626;
-  }
-
-  .overdue-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: #fff7ed;
-    color: #d97706;
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .progress-card {
-    display: grid;
-    gap: 10px;
-    padding: 14px 16px;
-    border-radius: 14px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-  }
-
-  .progress-card__label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    color: #475569;
-    font-size: 13px;
-  }
-
-  .progress-card__label strong {
-    color: #0f172a;
-    font-size: 14px;
-  }
-
-  .preview-metrics {
-    display: grid;
-    gap: 10px;
-  }
-
-  .preview-metric {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: #fff;
-    border: 1px solid #edf2f7;
-    font-size: 13px;
-  }
-
-  .preview-metric strong {
-    color: #0f172a;
-    font-size: 14px;
-  }
-
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-  }
-
-  .summary-card {
-    padding: 18px 20px;
-  }
-
-  .summary-card__label {
-    color: #64748b;
-    font-size: 12px;
-  }
-
-  .summary-card__value {
-    margin-top: 8px;
-    color: #111827;
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1.5;
-    word-break: break-all;
-  }
-
-  .summary-card__sub {
-    margin-top: 6px;
-    color: #475569;
-    font-size: 13px;
-  }
-
-  @media (max-width: 960px) {
-    .collect-hero,
-    .content-grid,
-    .summary-grid {
-      grid-template-columns: 1fr;
-      flex-direction: column;
-    }
-
-    .collect-hero__stats,
-    .form-grid,
-    .payment-tip-bar,
-    .payment-shell {
-      grid-template-columns: 1fr;
-    }
-
-    .form-grid__item--full {
-      grid-column: auto;
-    }
-
-    .alloc-table__head,
-    .alloc-table__row {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .alloc-table__footer {
-      grid-template-columns: 1fr 1fr;
-    }
+  /* el-date-picker 宽度 */
+  :deep(.el-date-editor.el-input) {
+    width: 100%;
   }
 </style>
