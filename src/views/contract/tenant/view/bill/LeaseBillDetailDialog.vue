@@ -544,7 +544,7 @@
     const collectRef = ref<InstanceType<typeof LeaseBillCollectDialog>>();
     addDialog({
       title: "账单收款",
-      width: "60wv",
+      width: "70wv",
       top: "10%",
       alignCenter: true,
       lockScroll: true,
