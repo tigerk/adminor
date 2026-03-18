@@ -149,17 +149,23 @@
             </div>
           </div>
           <div class="info-cell">
-            <div class="info-cell__key">支付方式</div>
-            <div class="info-cell__val">{{ payChannelText }}</div>
+            <div class="info-cell__key">最近支付方式</div>
+            <div class="info-cell__val">{{ latestPaymentChannelText }}</div>
           </div>
           <div class="info-cell">
-            <div class="info-cell__key">支付时间</div>
-            <div class="info-cell__val">{{ formatDateTime(bill.payTime) }}</div>
+            <div class="info-cell__key">最近支付时间</div>
+            <div class="info-cell__val">{{ formatDateTime(latestPaymentFlow?.payTime) }}</div>
           </div>
           <div class="info-cell">
-            <div class="info-cell__key">实收金额</div>
+            <div class="info-cell__key">累计实收金额</div>
             <div class="info-cell__val info-cell__val--amount">
-              {{ bill.payAmount != null ? `¥${bill.payAmount}` : "—" }}
+              {{ bill.paidAmount != null ? `¥${moneyText(bill.paidAmount)}` : "—" }}
+            </div>
+          </div>
+          <div class="info-cell">
+            <div class="info-cell__key">当前待收金额</div>
+            <div class="info-cell__val info-cell__val--amount">
+              {{ bill.unpaidAmount != null ? `¥${moneyText(bill.unpaidAmount)}` : "—" }}
             </div>
           </div>
           <div class="info-cell info-cell--full">
@@ -195,12 +201,12 @@
               <div v-for="(row, index) in bill.feeList" :key="index" class="fee-row">
                 <div class="fee-col fee-col--idx">{{ index + 1 }}</div>
                 <div class="fee-col fee-col--type">
-                  <span class="tag tag--orange">待收</span>
+                  <span class="tag" :class="getFeePayStatusClass(row.payStatus)">{{ getFeePayStatusText(row.payStatus) }}</span>
                 </div>
-                <div class="fee-col fee-col--name">{{ row.name }}</div>
+                <div class="fee-col fee-col--name">{{ row.feeName }}</div>
                 <div class="fee-col fee-col--num fee-col--positive">+ {{ row.amount }}元</div>
-                <div class="fee-col fee-col--num">0元</div>
-                <div class="fee-col fee-col--num fee-col--positive">+ {{ row.amount }}元</div>
+                <div class="fee-col fee-col--num">{{ moneyText(row.paidAmount) }}元</div>
+                <div class="fee-col fee-col--num fee-col--positive">+ {{ moneyText(row.unpaidAmount) }}元</div>
                 <div class="fee-col fee-col--period">{{ formatDate(row.feeStart) }} ~ {{ formatDate(row.feeEnd) }}</div>
                 <div class="fee-col fee-col--remark" :title="row.remark">{{ row.remark || "—" }}</div>
               </div>
@@ -248,7 +254,11 @@
                 <span class="amount-value">¥{{ formatAmount(row.amount) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="feeName" label="费用名称" min-width="140" show-overflow-tooltip />
+            <el-table-column label="费用名称" min-width="140" show-overflow-tooltip>
+              <template #default="{ row }">
+                {{ getFinanceFlowFeeName(row.bizId) }}
+              </template>
+            </el-table-column>
             <el-table-column prop="operatorName" label="操作人" width="110" align="center" />
             <el-table-column label="流水时间" min-width="160" align="center">
               <template #default="{ row }">{{ formatDateTime(row.flowTime) }}</template>
@@ -271,33 +281,29 @@
           </div>
         </div>
 
-        <template v-if="paymentFlow">
-          <div class="payment-flow-grid">
-            <div class="payment-cell">
-              <div class="payment-cell__label">支付流水号</div>
-              <div class="payment-cell__value payment-cell__value--mono">{{ paymentFlow.paymentNo || "—" }}</div>
-            </div>
-            <div class="payment-cell">
-              <div class="payment-cell__label">支付渠道</div>
-              <div class="payment-cell__value">{{ paymentChannelText(paymentFlow.channel) }}</div>
-            </div>
-            <div class="payment-cell">
-              <div class="payment-cell__label">支付状态</div>
-              <div class="payment-cell__value">{{ paymentStatusText(paymentFlow.status) }}</div>
-            </div>
-            <div class="payment-cell">
-              <div class="payment-cell__label">第三方单号</div>
-              <div class="payment-cell__value payment-cell__value--mono">{{ paymentFlow.thirdTradeNo || "—" }}</div>
-            </div>
-            <div class="payment-cell">
-              <div class="payment-cell__label">支付金额</div>
-              <div class="payment-cell__value payment-cell__value--amount">¥{{ formatAmount(paymentFlow.amount) }}</div>
-            </div>
-            <div class="payment-cell">
-              <div class="payment-cell__label">支付时间</div>
-              <div class="payment-cell__value">{{ formatDateTime(paymentFlow.payTime) }}</div>
-            </div>
-          </div>
+        <template v-if="paymentFlowList.length">
+          <el-table :data="paymentFlowList" class="styled-table">
+            <el-table-column prop="paymentNo" label="支付流水号" min-width="180" show-overflow-tooltip />
+            <el-table-column label="支付渠道" width="120" align="center">
+              <template #default="{ row }">
+                {{ paymentChannelText(row.channel) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="支付状态" width="110" align="center">
+              <template #default="{ row }">
+                {{ paymentStatusText(row.status) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="thirdTradeNo" label="第三方单号" min-width="160" show-overflow-tooltip />
+            <el-table-column label="支付金额" width="120" align="right">
+              <template #default="{ row }">
+                <span class="amount-value">¥{{ formatAmount(row.amount) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="支付时间" min-width="160" align="center">
+              <template #default="{ row }">{{ formatDateTime(row.payTime) }}</template>
+            </el-table-column>
+          </el-table>
         </template>
         <div v-else class="empty-state">
           <div class="empty-state__icon">🧾</div>
@@ -312,7 +318,7 @@
   import { Calendar, Money, Tickets, User, Wallet } from "@element-plus/icons-vue";
   import { computed, onMounted, ref } from "vue";
   import { h } from "vue";
-  import type { LeaseBillListVo, LeaseDetailVo, PaymentFlowVo } from "@/types";
+  import type { FinanceFlowVo, LeaseBillListVo, LeaseDetailVo, PaymentFlowVo } from "@/types";
   import { collectLeaseBill, getLeaseBillDetail, getLeaseDetail, updateLeaseBill } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { message } from "@/utils/message";
@@ -349,7 +355,12 @@
   });
 
   const financeFlowList = computed(() => bill.value.financeFlowList || []);
-  const paymentFlow = computed(() => bill.value.paymentFlow as PaymentFlowVo | undefined);
+  const paymentFlowList = computed(() => (bill.value.paymentFlowList || []).slice().sort((a, b) => {
+    const aTime = a.payTime ? new Date(a.payTime).getTime() : 0;
+    const bTime = b.payTime ? new Date(b.payTime).getTime() : 0;
+    return bTime - aTime;
+  }));
+  const latestPaymentFlow = computed<PaymentFlowVo | undefined>(() => paymentFlowList.value[0]);
 
   const billTypeText = computed(() => {
     const type = bill.value.billType;
@@ -368,15 +379,7 @@
     return "未知";
   });
 
-  const payChannelText = computed(() => {
-    const channel = bill.value.payChannel;
-    if (channel === 1) return "现金";
-    if (channel === 2) return "转账";
-    if (channel === 3) return "支付宝";
-    if (channel === 4) return "微信";
-    if (channel === 5) return "其他";
-    return "—";
-  });
+  const latestPaymentChannelText = computed(() => paymentChannelText(latestPaymentFlow.value?.channel));
 
   const payerInfo = computed(() => {
     const payerName = bill.value.payerName || leaseDetail.value?.tenantName;
@@ -388,7 +391,7 @@
   });
 
   const billSummary = computed(() => {
-    const feeNames = (bill.value.feeList || []).map(item => item.name).filter(Boolean);
+    const feeNames = (bill.value.feeList || []).map(item => item.feeName).filter(Boolean);
     return feeNames.length ? Array.from(new Set(feeNames)).join("/") : billTypeText.value;
   });
 
@@ -412,6 +415,13 @@
     const amount = typeof val === "string" ? Number(val) : val;
     if (Number.isNaN(amount)) return "—";
     return (amount / 100).toFixed(2);
+  };
+
+  const moneyText = (val?: string | number) => {
+    if (val === undefined || val === null) return "0.00";
+    const amount = typeof val === "string" ? Number(val) : val;
+    if (Number.isNaN(amount)) return "0.00";
+    return amount.toFixed(2);
   };
 
   const flowStatusText = (status?: number) => {
@@ -459,6 +469,28 @@
     if (direction === "IN") return "收入";
     if (direction === "OUT") return "支出";
     return direction;
+  };
+
+  const getFeePayStatusText = (status?: number) => {
+    if (status === 0) return "未支付";
+    if (status === 1) return "部分支付";
+    if (status === 2) return "已支付";
+    return "—";
+  };
+
+  const getFeePayStatusClass = (status?: number) => {
+    if (status === 2) return "tag--green";
+    if (status === 1) return "tag--orange";
+    return "tag--orange";
+  };
+
+  const feeNameMap = computed(() => {
+    return new Map((bill.value.feeList || []).filter(item => item.id).map(item => [item.id as string, item.feeName || "—"]));
+  });
+
+  const getFinanceFlowFeeName = (bizId?: FinanceFlowVo["bizId"]) => {
+    if (!bizId) return "—";
+    return feeNameMap.value.get(String(bizId)) || "—";
   };
 
   const idTypeNameMap: Record<number, string> = {

@@ -297,7 +297,7 @@ export const FileTypeEnumMeta = {
 } as const;
 
 export const FinanceBizTypeEnumMeta = {
-  LEASE_BILL: {"value":"LEASE_BILL","code":"LEASE_BILL","label":"租金"}
+  LEASE_BILL_FEE: {"value":"LEASE_BILL_FEE","code":"LEASE_BILL_FEE","label":"租客账单费用项"}
 } as const;
 
 export const FinanceFlowDirectionEnumMeta = {

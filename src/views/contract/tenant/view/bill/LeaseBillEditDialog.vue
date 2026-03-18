@@ -92,16 +92,20 @@
           </div>
         </div>
         <div class="payment-item">
-          <div class="payment-item__label">支付金额</div>
-          <div class="payment-item__value">{{ form.payAmount != null ? `¥${moneyText(form.payAmount)}` : "-" }}</div>
+          <div class="payment-item__label">累计已收</div>
+          <div class="payment-item__value">{{ form.paidAmount != null ? `¥${moneyText(form.paidAmount)}` : "-" }}</div>
         </div>
         <div class="payment-item">
-          <div class="payment-item__label">支付方式</div>
-          <div class="payment-item__value">{{ payChannelText }}</div>
+          <div class="payment-item__label">当前待收</div>
+          <div class="payment-item__value">{{ form.unpaidAmount != null ? `¥${moneyText(form.unpaidAmount)}` : "-" }}</div>
         </div>
         <div class="payment-item">
-          <div class="payment-item__label">支付时间</div>
-          <div class="payment-item__value">{{ form.payTime || "-" }}</div>
+          <div class="payment-item__label">最近支付方式</div>
+          <div class="payment-item__value">{{ latestPaymentChannelText }}</div>
+        </div>
+        <div class="payment-item">
+          <div class="payment-item__label">最近支付时间</div>
+          <div class="payment-item__value">{{ latestPaymentTimeText }}</div>
         </div>
       </div>
     </div>
@@ -160,7 +164,7 @@
                 />
               </td>
               <td>
-                <el-input v-model="fee.name" :disabled="fee.feeType !== 'OTHER_FEE'" placeholder="费用名称" />
+                <el-input v-model="fee.feeName" :disabled="fee.feeType !== 'OTHER_FEE'" placeholder="费用名称" />
               </td>
               <td>
                 <el-input-number v-model="fee.amount" :min="0" :precision="2" controls-position="right" placeholder="0.00" class="w-full">
@@ -223,7 +227,8 @@
 
   interface DictDataItem {
     id: string;
-    name: string;
+    feeName?: string;
+    name?: string;
   }
 
   interface DictGroup {
@@ -267,26 +272,38 @@
   });
 
   const payStatusText = computed(() => {
-    if (form.payStatus !== 2 && form.dueDate && new Date(form.dueDate).getTime() < Date.now()) return "逾期";
     if (form.payStatus === 0) return "未支付";
     if (form.payStatus === 1) return "部分支付";
     if (form.payStatus === 2) return "已支付";
     return "-";
   });
 
-  const payChannelText = computed(() => {
-    if (form.payChannel === 1) return "现金";
-    if (form.payChannel === 2) return "转账";
-    if (form.payChannel === 3) return "支付宝";
-    if (form.payChannel === 4) return "微信";
-    if (form.payChannel === 5) return "其他";
+  const latestPaymentFlow = computed(() => {
+    const list = (props.bill?.paymentFlowList || []).slice();
+    list.sort((a, b) => {
+      const aTime = a.payTime ? new Date(a.payTime).getTime() : 0;
+      const bTime = b.payTime ? new Date(b.payTime).getTime() : 0;
+      return bTime - aTime;
+    });
+    return list[0];
+  });
+
+  const latestPaymentChannelText = computed(() => {
+    const channel = latestPaymentFlow.value?.channel?.toUpperCase();
+    if (channel === "CASH") return "现金";
+    if (channel === "TRANSFER") return "转账";
+    if (channel === "ALIPAY") return "支付宝";
+    if (channel === "WECHAT") return "微信";
+    if (channel === "POS") return "POS";
+    if (channel === "OTHER") return "其他";
     return "-";
   });
+
+  const latestPaymentTimeText = computed(() => latestPaymentFlow.value?.payTime || "-");
 
   const paymentBadgeClass = computed(() => {
     if (payStatusText.value === "已支付") return "payment-badge--paid";
     if (payStatusText.value === "部分支付") return "payment-badge--partial";
-    if (payStatusText.value === "逾期") return "payment-badge--overdue";
     return "payment-badge--unpaid";
   });
 
@@ -295,7 +312,7 @@
       label: group.dictName,
       value: group.dictCode,
       children: group.dictDataList.map(item => ({
-        label: item.name,
+        label: item.feeName || item.name || "",
         value: item.id
       }))
     }));
@@ -324,10 +341,14 @@
 
   const toEditableFee = (fee?: LeaseBillFeeDto): EditableFeeItem => ({
     uid: createUid(),
+    id: fee?.id,
     feeType: fee?.feeType || "OTHER_FEE",
     dictDataId: fee?.dictDataId,
-    name: fee?.name || "",
+    feeName: fee?.feeName || "",
     amount: fee?.amount ?? 0,
+    paidAmount: fee?.paidAmount,
+    unpaidAmount: fee?.unpaidAmount,
+    payStatus: fee?.payStatus,
     feeStart: fee?.feeStart || form.billStart,
     feeEnd: fee?.feeEnd || form.billEnd,
     remark: fee?.remark || "",
@@ -338,10 +359,14 @@
     Object.assign(form, props.bill || {});
     feeList.value = (props.bill?.feeList || []).map(item =>
       toEditableFee({
+        id: item.id,
         feeType: item.feeType,
         dictDataId: item.dictDataId,
-        name: item.name,
+        feeName: item.feeName,
         amount: item.amount,
+        paidAmount: item.paidAmount,
+        unpaidAmount: item.unpaidAmount,
+        payStatus: item.payStatus,
         feeStart: item.feeStart,
         feeEnd: item.feeEnd,
         remark: item.remark
@@ -397,7 +422,7 @@
     if (!value || value.length === 0) {
       fee.feeType = undefined;
       fee.dictDataId = undefined;
-      fee.name = "";
+      fee.feeName = "";
       return;
     }
 
@@ -406,25 +431,25 @@
 
     if (feeType === "RENTAL") {
       fee.dictDataId = undefined;
-      fee.name = "租金";
+      fee.feeName = "租金";
       return;
     }
 
     if (feeType === "DEPOSIT") {
       fee.dictDataId = undefined;
-      fee.name = "押金";
+      fee.feeName = "押金";
       return;
     }
 
     if (feeType === "OTHER_FEE") {
       fee.dictDataId = undefined;
-      fee.name = "";
+      fee.feeName = "";
       if (!dictCode || !dictDataId) return;
       const group = feeTypeDictList.value.find(item => item.dictCode === dictCode);
       const matched = group?.dictDataList.find(item => item.id === dictDataId);
       if (!matched) return;
       fee.dictDataId = matched.id;
-      fee.name = matched.name;
+      fee.feeName = matched.feeName || matched.name || "";
     }
   };
 

@@ -4752,9 +4752,9 @@ export type FinanceFlowVo = {
      */
     flowDirection?: string;
     /**
-     * 金额（分）
+     * 金额
      */
-    amount?: string;
+    amount?: number;
     /**
      * 币种
      */
@@ -4767,26 +4767,6 @@ export type FinanceFlowVo = {
      * 退款关联原始流水ID
      */
     refundFlowId?: string;
-    /**
-     * 父流水ID
-     */
-    parentId?: string;
-    /**
-     * 是否已拆分：0 否，1 是
-     */
-    split?: boolean;
-    /**
-     * 费用类型
-     */
-    feeType?: string;
-    /**
-     * 关联费用ID
-     */
-    feeRefId?: string;
-    /**
-     * 费用名称
-     */
-    feeName?: string;
     /**
      * 流水发生时间
      */
@@ -4818,6 +4798,10 @@ export type FinanceFlowVo = {
  */
 export type LeaseBillFeeVo = {
     /**
+     * 费用项ID
+     */
+    id?: string;
+    /**
      * 账单ID（关联 lease_bill.id）
      */
     billId?: string;
@@ -4832,11 +4816,23 @@ export type LeaseBillFeeVo = {
     /**
      * 费用名称
      */
-    name?: string;
+    feeName?: string;
     /**
      * 费用金额
      */
     amount?: number;
+    /**
+     * 已收金额
+     */
+    paidAmount?: number;
+    /**
+     * 待收金额
+     */
+    unpaidAmount?: number;
+    /**
+     * 支付状态：0=未支付，1=部分支付，2=已支付
+     */
+    payStatus?: number;
     /**
      * 费用周期开始日期
      */
@@ -4900,25 +4896,21 @@ export type LeaseBillListVo = {
      */
     totalAmount?: number;
     /**
+     * 已收金额
+     */
+    paidAmount?: number;
+    /**
+     * 待收金额
+     */
+    unpaidAmount?: number;
+    /**
      * 应收日期（根据 rent_due_xxx 计算）
      */
     dueDate?: string;
     /**
-     * 实际支付日期
-     */
-    payTime?: string;
-    /**
-     * 实际支付金额
-     */
-    payAmount?: number;
-    /**
      * 支付状态：0=未支付，1=部分支付，2=已支付
      */
     payStatus?: number;
-    /**
-     * 支付方式：1=现金，2=转账，3=支付宝，4=微信，5=其他
-     */
-    payChannel?: number;
     /**
      * 备注信息
      */
@@ -4954,7 +4946,7 @@ export type LeaseBillListVo = {
     /**
      * 支付流水信息
      */
-    paymentFlow?: PaymentFlowVo;
+    paymentFlowList?: Array<PaymentFlowVo>;
     /**
      * 账单费用明细列表
      */
@@ -5356,6 +5348,10 @@ export type ResponseResultInteger = {
  */
 export type LeaseBillFeeDto = {
     /**
+     * 费用项ID
+     */
+    id?: string;
+    /**
      * 费用类型：RENTAL/DEPOSIT/OTHER_FEE
      */
     feeType?: string;
@@ -5366,11 +5362,23 @@ export type LeaseBillFeeDto = {
     /**
      * 费用名称
      */
-    name?: string;
+    feeName?: string;
     /**
      * 费用金额
      */
     amount?: number;
+    /**
+     * 已收金额
+     */
+    paidAmount?: number;
+    /**
+     * 待收金额
+     */
+    unpaidAmount?: number;
+    /**
+     * 支付状态：0=未支付，1=部分支付，2=已支付
+     */
+    payStatus?: number;
     /**
      * 费用周期开始日期
      */
@@ -5422,25 +5430,21 @@ export type LeaseBillUpdateDto = {
      */
     totalAmount?: number;
     /**
+     * 已收金额
+     */
+    paidAmount?: number;
+    /**
+     * 待收金额
+     */
+    unpaidAmount?: number;
+    /**
      * 应收日期
      */
     dueDate?: string;
     /**
-     * 实际支付日期
-     */
-    payTime?: string;
-    /**
-     * 实际支付金额
-     */
-    payAmount?: number;
-    /**
      * 支付状态
      */
     payStatus?: number;
-    /**
-     * 支付方式
-     */
-    payChannel?: number;
     /**
      * 备注信息
      */
@@ -5475,6 +5479,20 @@ export type ResponseResultLeaseBillListVo = {
 };
 
 /**
+ * 账单费用项收款明细
+ */
+export type Item = {
+    /**
+     * 账单费用项ID
+     */
+    leaseBillFeeId?: string;
+    /**
+     * 本次收款金额
+     */
+    amount?: number;
+};
+
+/**
  * 租客账单收款DTO
  */
 export type LeaseBillCollectDto = {
@@ -5483,13 +5501,9 @@ export type LeaseBillCollectDto = {
      */
     id?: string;
     /**
-     * 支付状态：0=未支付，1=部分支付，2=已支付
+     * 本次收款总金额
      */
-    payStatus?: number;
-    /**
-     * 实际支付金额
-     */
-    payAmount?: number;
+    totalAmount?: number;
     /**
      * 支付方式：1=现金，2=转账，3=支付宝，4=微信，5=其他
      */
@@ -5498,6 +5512,10 @@ export type LeaseBillCollectDto = {
      * 实际支付日期
      */
     payTime?: string;
+    /**
+     * 本次收款分配明细
+     */
+    items?: Array<Item>;
     /**
      * 更新人ID
      */
@@ -6784,7 +6802,7 @@ export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE'
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 
-export type FinanceBizTypeEnum = 'LEASE_BILL';
+export type FinanceBizTypeEnum = 'LEASE_BILL_FEE';
 
 export type FinanceFlowDirectionEnum = 'IN' | 'OUT';
 
