@@ -206,7 +206,12 @@
                 <div class="fee-col fee-col--num">{{ moneyText(row.paidAmount) }}元</div>
                 <div class="fee-col fee-col--num fee-col--positive">+ {{ moneyText(row.unpaidAmount) }}元</div>
                 <div class="fee-col fee-col--period">{{ formatDate(row.feeStart) }} ~ {{ formatDate(row.feeEnd) }}</div>
-                <div class="fee-col fee-col--remark" :title="row.remark">{{ row.remark || "—" }}</div>
+                <div class="fee-col fee-col--remark">
+                  <el-tooltip v-if="row.remark" :content="row.remark" placement="top" :show-after="200" popper-class="remark-tooltip">
+                    <span class="remark-text">{{ row.remark }}</span>
+                  </el-tooltip>
+                  <span v-else>—</span>
+                </div>
               </div>
             </div>
           </div>
@@ -228,41 +233,45 @@
         </div>
 
         <template v-if="financeFlowList.length">
-          <el-table :data="financeFlowList" class="styled-table">
-            <el-table-column prop="flowNo" label="流水号" min-width="180" show-overflow-tooltip />
-            <el-table-column label="流水类型" width="110" align="center">
-              <template #default="{ row }">
-                <span class="flow-type-tag">{{ financeFlowTypeText(row.flowType) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="资金方向" width="110" align="center">
-              <template #default="{ row }">
-                <span class="direction-tag" :class="row.flowDirection === 'IN' ? 'direction-tag--in' : 'direction-tag--out'">
-                  {{ financeFlowDirectionText(row.flowDirection) }}
-                </span>
-              </template>
-            </el-table-column>
-            <el-table-column label="状态" width="100" align="center">
-              <template #default="{ row }">
-                <span class="flow-status" :class="`flow-status--${row.status}`">{{ flowStatusText(row.status) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="金额" width="120" align="right">
-              <template #default="{ row }">
-                <span class="amount-value">¥{{ formatAmount(row.amount) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="费用名称" min-width="140" show-overflow-tooltip>
-              <template #default="{ row }">
-                {{ getFinanceFlowFeeName(row.bizId) }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="operatorName" label="操作人" width="110" align="center" />
-            <el-table-column label="流水时间" min-width="160" align="center">
-              <template #default="{ row }">{{ formatDateTime(row.flowTime) }}</template>
-            </el-table-column>
-            <el-table-column prop="remark" label="备注" min-width="160" show-overflow-tooltip />
-          </el-table>
+          <div class="fee-table">
+            <div class="fee-table__head">
+              <div class="flow-col flow-col--no">流水号</div>
+              <div class="flow-col flow-col--type">流水类型</div>
+              <div class="flow-col flow-col--dir">资金方向</div>
+              <div class="flow-col flow-col--status">状态</div>
+              <div class="flow-col flow-col--amount">金额</div>
+              <div class="flow-col flow-col--name">费用名称</div>
+              <div class="flow-col flow-col--operator">操作人</div>
+              <div class="flow-col flow-col--time">流水时间</div>
+              <div class="flow-col flow-col--remark">备注</div>
+            </div>
+            <div class="fee-table__body">
+              <div v-for="(row, index) in financeFlowList" :key="index" class="fee-row">
+                <div class="flow-col flow-col--no flow-col--mono">{{ row.flowNo || "—" }}</div>
+                <div class="flow-col flow-col--type">
+                  <span class="flow-type-tag">{{ financeFlowTypeText(row.flowType) }}</span>
+                </div>
+                <div class="flow-col flow-col--dir">
+                  <span class="direction-tag" :class="row.flowDirection === 'IN' ? 'direction-tag--in' : 'direction-tag--out'">
+                    {{ financeFlowDirectionText(row.flowDirection) }}
+                  </span>
+                </div>
+                <div class="flow-col flow-col--status">
+                  <span class="flow-status" :class="`flow-status--${row.status}`">{{ flowStatusText(row.status) }}</span>
+                </div>
+                <div class="flow-col flow-col--amount fee-col--positive">¥{{ formatAmount(row.amount) }}</div>
+                <div class="flow-col flow-col--name">{{ getFinanceFlowFeeName(row.bizId) || "—" }}</div>
+                <div class="flow-col flow-col--operator">{{ row.operatorName || "—" }}</div>
+                <div class="flow-col flow-col--time">{{ formatDateTime(row.flowTime) }}</div>
+                <div class="flow-col flow-col--remark">
+                  <el-tooltip v-if="row.remark" :content="row.remark" placement="top" :show-after="200" popper-class="remark-tooltip">
+                    <span class="remark-text">{{ row.remark }}</span>
+                  </el-tooltip>
+                  <span v-else>—</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </template>
         <div v-else class="empty-state">
           <div class="empty-state__icon">💳</div>
@@ -280,42 +289,47 @@
         </div>
 
         <template v-if="paymentFlowList.length">
-          <el-table :data="paymentFlowList" class="styled-table">
-            <el-table-column prop="paymentNo" label="支付流水号" min-width="180" show-overflow-tooltip />
-            <el-table-column label="支付渠道" width="120" align="center">
-              <template #default="{ row }">
-                {{ paymentChannelText(row.channel) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="支付状态" width="110" align="center">
-              <template #default="{ row }">
-                {{ paymentStatusText(row.status) }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="thirdTradeNo" label="第三方单号" min-width="160" show-overflow-tooltip />
-            <el-table-column label="支付凭证" width="120" align="center">
-              <template #default="{ row }">
-                <el-image
-                  v-if="row.paymentVoucherUrl"
-                  :src="row.paymentVoucherUrl"
-                  :preview-src-list="[row.paymentVoucherUrl]"
-                  fit="cover"
-                  class="payment-voucher-thumb"
-                  preview-teleported
-                />
-                <span v-else>—</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="支付金额" width="120" align="right">
-              <template #default="{ row }">
-                <span class="amount-value">¥{{ formatAmount(row.amount) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="remark" label="支付备注" min-width="180" show-overflow-tooltip />
-            <el-table-column label="支付时间" min-width="160" align="center">
-              <template #default="{ row }">{{ formatDateTime(row.payTime) }}</template>
-            </el-table-column>
-          </el-table>
+          <div class="fee-table">
+            <div class="fee-table__head">
+              <div class="pay-col pay-col--no">支付流水号</div>
+              <div class="pay-col pay-col--channel">支付渠道</div>
+              <div class="pay-col pay-col--status">支付状态</div>
+              <div class="pay-col pay-col--third">第三方单号</div>
+              <div class="pay-col pay-col--voucher">支付凭证</div>
+              <div class="pay-col pay-col--amount">支付金额</div>
+              <div class="pay-col pay-col--remark">支付备注</div>
+              <div class="pay-col pay-col--time">支付时间</div>
+            </div>
+            <div class="fee-table__body">
+              <div v-for="(row, index) in paymentFlowList" :key="index" class="fee-row">
+                <div class="pay-col pay-col--no flow-col--mono">{{ row.paymentNo || "—" }}</div>
+                <div class="pay-col pay-col--channel">{{ paymentChannelText(row.channel) }}</div>
+                <div class="pay-col pay-col--status">
+                  <span class="pay-status-tag" :class="getPaymentStatusClass(row.status)">{{ paymentStatusText(row.status) }}</span>
+                </div>
+                <div class="pay-col pay-col--third flow-col--mono">{{ row.thirdTradeNo || "—" }}</div>
+                <div class="pay-col pay-col--voucher">
+                  <el-image
+                    v-if="row.paymentVoucherUrl"
+                    :src="row.paymentVoucherUrl"
+                    :preview-src-list="[row.paymentVoucherUrl]"
+                    fit="cover"
+                    class="payment-voucher-thumb"
+                    preview-teleported
+                  />
+                  <span v-else>—</span>
+                </div>
+                <div class="pay-col pay-col--amount fee-col--positive">¥{{ formatAmount(row.amount) }}</div>
+                <div class="pay-col pay-col--remark">
+                  <el-tooltip v-if="row.remark" :content="row.remark" placement="top" :show-after="200" popper-class="remark-tooltip">
+                    <span class="remark-text">{{ row.remark }}</span>
+                  </el-tooltip>
+                  <span v-else>—</span>
+                </div>
+                <div class="pay-col pay-col--time">{{ formatDateTime(row.payTime) }}</div>
+              </div>
+            </div>
+          </div>
         </template>
         <div v-else class="empty-state">
           <div class="empty-state__icon">🧾</div>
@@ -454,6 +468,15 @@
     if (status === 4) return "退款中";
     if (status === 5) return "已退款";
     return "—";
+  };
+
+  const getPaymentStatusClass = (status?: number) => {
+    if (status === 0) return "pay-status--processing";
+    if (status === 1) return "pay-status--success";
+    if (status === 2) return "pay-status--fail";
+    if (status === 3) return "pay-status--closed";
+    if (status === 4 || status === 5) return "pay-status--refund";
+    return "";
   };
 
   const paymentChannelText = (channel?: string) => {
@@ -1131,6 +1154,170 @@
   .fee-col--positive {
     color: #2563eb;
     font-weight: 600;
+  }
+
+  /* ===== 财务流水列 ===== */
+  .flow-col {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #4b5563;
+  }
+  .flow-col--no {
+    flex: 1.4;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .flow-col--type {
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .flow-col--dir {
+    width: 72px;
+    flex-shrink: 0;
+  }
+  .flow-col--status {
+    width: 72px;
+    flex-shrink: 0;
+  }
+  .flow-col--amount {
+    width: 90px;
+    flex-shrink: 0;
+    justify-content: flex-end;
+  }
+  .flow-col--name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 16px;
+  }
+  .flow-col--operator {
+    width: 90px;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+  .flow-col--time {
+    width: 148px;
+    flex-shrink: 0;
+    justify-content: center;
+    color: #6c7a9c;
+  }
+  .flow-col--remark {
+    flex: 1;
+    min-width: 0;
+    padding-left: 16px;
+  }
+  .flow-col--mono {
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12px;
+    color: #6c7a9c;
+    letter-spacing: 0.01em;
+  }
+
+  /* ===== 支付流水列 ===== */
+  .pay-col {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #4b5563;
+  }
+  .pay-col--no {
+    flex: 1.4;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12px;
+    color: #6c7a9c;
+  }
+  .pay-col--channel {
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .pay-col--status {
+    width: 88px;
+    flex-shrink: 0;
+  }
+  .pay-col--third {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 12px;
+    color: #6c7a9c;
+  }
+  .pay-col--voucher {
+    width: 68px;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+  .pay-col--amount {
+    width: 90px;
+    flex-shrink: 0;
+    justify-content: flex-end;
+  }
+  .pay-col--remark {
+    flex: 1.2;
+    min-width: 0;
+    padding-left: 16px;
+  }
+  .pay-col--time {
+    width: 148px;
+    flex-shrink: 0;
+    justify-content: center;
+    color: #6c7a9c;
+  }
+
+  /* ===== 备注悬浮 ===== */
+  .remark-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    cursor: default;
+    color: #8492b0;
+  }
+  .remark-text:hover {
+    color: #3b5bdb;
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+  }
+
+  /* ===== 支付状态标签 ===== */
+  .pay-status-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .pay-status--processing {
+    background: #fffbeb;
+    color: #d97706;
+  }
+  .pay-status--success {
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+  .pay-status--fail {
+    background: #fff1f2;
+    color: #e11d48;
+  }
+  .pay-status--closed {
+    background: #f4f5f9;
+    color: #8492b0;
+  }
+  .pay-status--refund {
+    background: #f5f3ff;
+    color: #7c3aed;
   }
 
   /* ===== Element Plus 表格美化 ===== */
