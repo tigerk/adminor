@@ -346,10 +346,10 @@
   import { h } from "vue";
   import type { FinanceFlowVo, LeaseBillListVo, LeaseDetailVo, PaymentFlowVo } from "@/types";
   import { collectLeaseBill, getLeaseBillDetail, getLeaseDetail, updateLeaseBill } from "@/api/contract/tenant";
-  import { addDialog } from "@/components/ReDialog";
+  import { addDialog } from "@/components/ReDialog/index";
   import { message } from "@/utils/message";
-  import LeaseBillEditDialog from "@/views/contract/tenant/view/bill/LeaseBillEditDialog.vue";
-  import LeaseBillCollectDialog from "@/views/contract/tenant/view/bill/LeaseBillCollectDialog.vue";
+  import LeaseBillEditDialog from "@/views/finance/lease-bill/form/LeaseBillEditDialog.vue";
+  import LeaseBillCollectDialog from "@/views/finance/lease-bill/form/LeaseBillCollectDialog.vue";
 
   interface Props {
     billId: string;

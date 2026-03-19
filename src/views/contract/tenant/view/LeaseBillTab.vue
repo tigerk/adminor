@@ -272,9 +272,9 @@
   import { collectLeaseBill, getLeaseBillDetail, getLeaseBillInvalidList, getLeaseBillList, updateLeaseBill } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { message } from "@/utils/message";
-  import LeaseBillDetailDialog from "@/views/contract/tenant/view/bill/LeaseBillDetailDialog.vue";
-  import LeaseBillEditDialog from "@/views/contract/tenant/view/bill/LeaseBillEditDialog.vue";
-  import LeaseBillCollectDialog from "@/views/contract/tenant/view/bill/LeaseBillCollectDialog.vue";
+  import LeaseBillDetailDialog from "@/views/finance/lease-bill/view/LeaseBillDetailDialog.vue";
+  import LeaseBillEditDialog from "@/views/finance/lease-bill/form/LeaseBillEditDialog.vue";
+  import LeaseBillCollectDialog from "@/views/finance/lease-bill/form/LeaseBillCollectDialog.vue";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import More from "~icons/ep/more-filled";
 

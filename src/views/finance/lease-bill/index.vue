@@ -6,7 +6,7 @@
   import type { LeaseBillFeeFinanceItemVo, LeaseBillFinanceItemVo, LeaseBillFinanceQueryDto, LeaseBillFinanceSummaryVo } from "@/types";
   import { getFinanceLeaseBillFeePage, getFinanceLeaseBillPage, getFinanceLeaseBillSummary } from "@/api/finance/leaseBill";
   import { addDialog } from "@/components/ReDialog";
-  import LeaseBillDetailDialog from "@/views/contract/tenant/view/bill/LeaseBillDetailDialog.vue";
+  import LeaseBillDetailDialog from "@/views/finance/lease-bill/view/LeaseBillDetailDialog.vue";
   import { Search, Wallet, Calendar, CircleCheck, TrendCharts, ArrowDown } from "@element-plus/icons-vue";
 
   defineOptions({

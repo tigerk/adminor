@@ -239,7 +239,7 @@
   import { ElMessage } from "element-plus";
   import type { FormInstance, FormRules } from "element-plus";
   import type { LeaseBillCollectDto, LeaseBillCollectItemDto, LeaseBillFeeVo, LeaseBillListVo } from "@/types";
-  import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
+  import { PaymentFlowChannelEnumMeta } from "@/types";
   import UploadImage from "@/components/Business/UploadImage.vue";
 
   interface Props {
