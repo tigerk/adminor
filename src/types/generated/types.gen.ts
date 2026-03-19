@@ -3480,6 +3480,280 @@ export type FocusHouseDto = {
     price?: number;
 };
 
+/**
+ * 租客账单财务页查询DTO
+ */
+export type LeaseBillFinanceQueryDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 支付状态：0=未支付，1=部分支付，2=已支付
+     */
+    payStatus?: number;
+    /**
+     * 是否仅查询逾期账单
+     */
+    overdueOnly?: boolean;
+    /**
+     * 租客姓名
+     */
+    tenantName?: string;
+    /**
+     * 租客电话
+     */
+    tenantPhone?: string;
+    /**
+     * 房源信息关键词
+     */
+    roomKeyword?: string;
+};
+
+/**
+ * 费用分类汇总
+ */
+export type CategoryStatVo = {
+    /**
+     * 费用类型
+     */
+    feeType?: string;
+    /**
+     * 费用类型名称
+     */
+    feeTypeLabel?: string;
+    /**
+     * 应收
+     */
+    receivableAmount?: number;
+    /**
+     * 已付
+     */
+    paidAmount?: number;
+    /**
+     * 待收
+     */
+    unpaidAmount?: number;
+};
+
+/**
+ * 租客账单财务页汇总
+ */
+export type LeaseBillFinanceSummaryVo = {
+    /**
+     * 应收
+     */
+    receivableAmount?: number;
+    /**
+     * 本日应收
+     */
+    todayReceivableAmount?: number;
+    /**
+     * 已付
+     */
+    paidAmount?: number;
+    /**
+     * 今日已付
+     */
+    todayPaidAmount?: number;
+    /**
+     * 分类汇总
+     */
+    categoryStats?: Array<CategoryStatVo>;
+};
+
+export type ResponseResultLeaseBillFinanceSummaryVo = {
+    code?: number;
+    message?: string;
+    data?: LeaseBillFinanceSummaryVo;
+};
+
+/**
+ * 租客账单财务页-账单列表项
+ */
+export type LeaseBillFinanceItemVo = {
+    /**
+     * 账单ID
+     */
+    id?: string;
+    /**
+     * 租客ID
+     */
+    tenantId?: string;
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 账单期数
+     */
+    sortOrder?: number;
+    /**
+     * 账单类型
+     */
+    billType?: number;
+    /**
+     * 租客姓名
+     */
+    tenantName?: string;
+    /**
+     * 租客电话
+     */
+    tenantPhone?: string;
+    /**
+     * 房源地址
+     */
+    roomAddress?: string;
+    /**
+     * 账单总金额
+     */
+    totalAmount?: number;
+    /**
+     * 已收金额
+     */
+    paidAmount?: number;
+    /**
+     * 待收金额
+     */
+    unpaidAmount?: number;
+    /**
+     * 支付状态
+     */
+    payStatus?: number;
+    /**
+     * 是否逾期
+     */
+    overdue?: boolean;
+    /**
+     * 账单周期开始
+     */
+    billStart?: string;
+    /**
+     * 账单周期结束
+     */
+    billEnd?: string;
+    /**
+     * 应收日期
+     */
+    dueDate?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+};
+
+export type PageVoLeaseBillFinanceItemVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<LeaseBillFinanceItemVo>;
+};
+
+export type ResponseResultPageVoLeaseBillFinanceItemVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoLeaseBillFinanceItemVo;
+};
+
+/**
+ * 租客账单财务页-账单明细列表项
+ */
+export type LeaseBillFeeFinanceItemVo = {
+    /**
+     * 账单明细ID
+     */
+    id?: string;
+    /**
+     * 账单ID
+     */
+    billId?: string;
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 租客ID
+     */
+    tenantId?: string;
+    /**
+     * 账单期数
+     */
+    sortOrder?: number;
+    /**
+     * 租客姓名
+     */
+    tenantName?: string;
+    /**
+     * 租客电话
+     */
+    tenantPhone?: string;
+    /**
+     * 房源地址
+     */
+    roomAddress?: string;
+    /**
+     * 费用类型
+     */
+    feeType?: string;
+    /**
+     * 费用名称
+     */
+    feeName?: string;
+    /**
+     * 应收金额
+     */
+    amount?: number;
+    /**
+     * 已收金额
+     */
+    paidAmount?: number;
+    /**
+     * 待收金额
+     */
+    unpaidAmount?: number;
+    /**
+     * 支付状态
+     */
+    payStatus?: number;
+    /**
+     * 是否逾期
+     */
+    overdue?: boolean;
+    /**
+     * 费用周期开始
+     */
+    feeStart?: string;
+    /**
+     * 费用周期结束
+     */
+    feeEnd?: string;
+    /**
+     * 账单应收日期
+     */
+    dueDate?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+export type PageVoLeaseBillFeeFinanceItemVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<LeaseBillFeeFinanceItemVo>;
+};
+
+export type ResponseResultPageVoLeaseBillFeeFinanceItemVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoLeaseBillFeeFinanceItemVo;
+};
+
 export type ResponseResultString = {
     code?: number;
     message?: string;
@@ -5215,9 +5489,9 @@ export type PaymentFlowVo = {
      */
     paymentVoucherUrl?: string;
     /**
-     * 支付金额（分）
+     * 支付金额
      */
-    amount?: string;
+    amount?: number;
     /**
      * 支付备注
      */
@@ -8377,6 +8651,54 @@ export type CreateHouse1Responses = {
 };
 
 export type CreateHouse1Response = CreateHouse1Responses[keyof CreateHouse1Responses];
+
+export type SummaryData = {
+    body: LeaseBillFinanceQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/lease-bill/summary';
+};
+
+export type SummaryResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLeaseBillFinanceSummaryVo;
+};
+
+export type SummaryResponse = SummaryResponses[keyof SummaryResponses];
+
+export type PageData = {
+    body: LeaseBillFinanceQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/lease-bill/page';
+};
+
+export type PageResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoLeaseBillFinanceItemVo;
+};
+
+export type PageResponse = PageResponses[keyof PageResponses];
+
+export type FeePageData = {
+    body: LeaseBillFinanceQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/lease-bill/fee/page';
+};
+
+export type FeePageResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoLeaseBillFeeFinanceItemVo;
+};
+
+export type FeePageResponse = FeePageResponses[keyof FeePageResponses];
 
 export type UploadImageData = {
     body?: {
