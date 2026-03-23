@@ -4434,6 +4434,192 @@ export type DeliveryCreateDto = {
     createBy?: string;
 };
 
+export type ResponseResultWelcomeDashboardVo = {
+    code?: number;
+    message?: string;
+    data?: WelcomeDashboardVo;
+};
+
+/**
+ * 欢迎页聚合数据
+ */
+export type WelcomeDashboardVo = {
+    /**
+     * 财务流水金额统计
+     */
+    financeSummary?: WelcomePeriodAmountVo;
+    /**
+     * 支付金额统计
+     */
+    paymentSummary?: WelcomePeriodAmountVo;
+    /**
+     * 最新公告
+     */
+    notices?: Array<WelcomeNoticeVo>;
+    /**
+     * 房源概况
+     */
+    roomOverviewList?: Array<WelcomeRoomOverviewVo>;
+    /**
+     * 租客逾期欠款分桶
+     */
+    overdueBuckets?: Array<WelcomeOverdueBucketVo>;
+    /**
+     * 租客统计
+     */
+    tenantStats?: WelcomeTenantStatsVo;
+};
+
+/**
+ * 欢迎页公告信息
+ */
+export type WelcomeNoticeVo = {
+    /**
+     * 公告ID
+     */
+    id?: string;
+    /**
+     * 公告标题
+     */
+    title?: string;
+    /**
+     * 公告类型
+     */
+    noticeType?: number;
+    /**
+     * 发布时间
+     */
+    publishTime?: string;
+    /**
+     * 创建人名称
+     */
+    createByName?: string;
+};
+
+/**
+ * 欢迎页逾期欠款分桶
+ */
+export type WelcomeOverdueBucketVo = {
+    /**
+     * 分桶键
+     */
+    key?: string;
+    /**
+     * 分桶名称
+     */
+    label?: string;
+    /**
+     * 欠款总额
+     */
+    amount?: number;
+};
+
+/**
+ * 欢迎页时间维度金额统计
+ */
+export type WelcomePeriodAmountVo = {
+    /**
+     * 今日总额
+     */
+    todayAmount?: number;
+    /**
+     * 昨日总额
+     */
+    yesterdayAmount?: number;
+    /**
+     * 本月总额
+     */
+    thisMonthAmount?: number;
+    /**
+     * 上月总额
+     */
+    lastMonthAmount?: number;
+    /**
+     * 本年总额
+     */
+    thisYearAmount?: number;
+    /**
+     * 累计总额
+     */
+    totalAmount?: number;
+};
+
+/**
+ * 欢迎页房源概况
+ */
+export type WelcomeRoomOverviewVo = {
+    /**
+     * 房源租赁类型：1=集中式，2=分散式
+     */
+    leaseMode?: number;
+    /**
+     * 房源租赁类型名称
+     */
+    leaseModeName?: string;
+    /**
+     * 房间总数
+     */
+    total?: number;
+    /**
+     * 空置数量
+     */
+    availableCount?: number;
+    /**
+     * 配置中数量
+     */
+    preparingCount?: number;
+    /**
+     * 已租数量
+     */
+    leasedCount?: number;
+    /**
+     * 即将搬入数量（30天内）
+     */
+    upcomingCheckInCount?: number;
+    /**
+     * 即将搬出数量（30天内）
+     */
+    upcomingCheckOutCount?: number;
+    /**
+     * 到期未退数量
+     */
+    overdueCheckOutCount?: number;
+    /**
+     * 出租率
+     */
+    occupancyRate?: number;
+};
+
+/**
+ * 欢迎页租客统计
+ */
+export type WelcomeTenantStatsVo = {
+    /**
+     * 今日定金租客数量
+     */
+    todayDepositCount?: number;
+    /**
+     * 本月定金租客数量
+     */
+    monthDepositCount?: number;
+    /**
+     * 今日新签数量
+     */
+    todayNewSignCount?: number;
+    /**
+     * 本月新签数量
+     */
+    monthNewSignCount?: number;
+    /**
+     * 今日续签数量
+     */
+    todayRenewCount?: number;
+    /**
+     * 本月续签数量
+     */
+    monthRenewCount?: number;
+};
+
 export type ContractTemplateStatusDto = {
     /**
      * 合同模板ID
@@ -9377,6 +9563,24 @@ export type Create1Responses = {
 };
 
 export type Create1Response = Create1Responses[keyof Create1Responses];
+
+export type GetSummaryData = {
+    body?: never;
+    path?: never;
+    query: {
+        arg0: UserLoginVo;
+    };
+    url: '/saas/dashboard/welcome/summary';
+};
+
+export type GetSummaryResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultWelcomeDashboardVo;
+};
+
+export type GetSummaryResponse = GetSummaryResponses[keyof GetSummaryResponses];
 
 export type UpdateContractTemplateStatusData = {
     body: ContractTemplateStatusDto;

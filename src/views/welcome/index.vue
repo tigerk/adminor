@@ -1,244 +1,726 @@
 <script setup lang="ts">
-  import { ref, markRaw } from "vue";
-  import ReCol from "@/components/ReCol";
-  import { useDark, randomGradient } from "./utils";
-  import WelcomeTable from "./components/table/index.vue";
-  import { ReNormalCountTo } from "@/components/ReCountTo";
-  import { useRenderFlicker } from "@/components/ReFlicker";
-  import { ChartBar, ChartLine, ChartRound } from "./components/charts";
-  import Segmented, { type OptionsType } from "@/components/ReSegmented";
-  import { chartData, barChartData, progressData, latestNewsData } from "./data";
-  import { getLocationAndCity } from "@/utils/geo";
+  import { computed, onMounted, ref } from "vue";
+  import dayjs from "dayjs";
+  import { Bell, Money, OfficeBuilding, TrendCharts, Warning } from "@element-plus/icons-vue";
+  import type { WelcomeDashboard, WelcomeOverdueBucket, WelcomePeriodAmount, WelcomeRoomOverview, WelcomeTenantStats } from "@/types";
+  import { getWelcomeDashboard } from "@/api/welcome";
 
   defineOptions({
     name: "Welcome"
   });
 
-  const { isDark } = useDark();
+  const loading = ref(false);
+  const dashboard = ref<WelcomeDashboard>({});
+  const currentLeaseMode = ref(2);
 
-  let curWeek = ref(1); // 0上周、1本周
-  const optionsBasis: Array<OptionsType> = [
-    {
-      label: "上周"
-    },
-    {
-      label: "本周"
+  const roomOverview = computed<WelcomeRoomOverview | undefined>(() => {
+    const list = dashboard.value.roomOverviewList || [];
+    return list.find(item => item.leaseMode === currentLeaseMode.value) || list[0];
+  });
+
+  const financePeriods = computed(() => buildPeriodItems(dashboard.value.financeSummary));
+  const paymentPeriods = computed(() => buildPeriodItems(dashboard.value.paymentSummary));
+  const overdueBuckets = computed<WelcomeOverdueBucket[]>(() => dashboard.value.overdueBuckets || []);
+  const tenantStats = computed<WelcomeTenantStats>(() => dashboard.value.tenantStats || {});
+
+  const roomPercentages = computed(() => {
+    const overview = roomOverview.value;
+    const total = Number(overview?.total || 0);
+    if (!total) {
+      return { leased: 0, available: 0, preparing: 0 };
     }
-  ];
+    return {
+      leased: Number((((overview?.leasedCount || 0) / total) * 100).toFixed(2)),
+      available: Number((((overview?.availableCount || 0) / total) * 100).toFixed(2)),
+      preparing: Number((((overview?.preparingCount || 0) / total) * 100).toFixed(2))
+    };
+  });
 
-  // 获取 cityId 并保存到 localStorage
-  getLocationAndCity();
-</script>
+  const roomDonutStyle = computed(() => {
+    const leased = roomPercentages.value.leased;
+    const available = roomPercentages.value.available;
+    const preparing = roomPercentages.value.preparing;
+    const leasedEnd = leased;
+    const availableEnd = leased + available;
+    const preparingEnd = leased + available + preparing;
+    return {
+      background: `conic-gradient(#2563eb 0 ${leasedEnd}%, #ff6678 ${leasedEnd}% ${availableEnd}%, #ff8a1a ${availableEnd}% ${preparingEnd}%, #e5e7eb ${preparingEnd}% 100%)`
+    };
+  });
 
-<template>
-  <div>
-    <el-row :gutter="24" justify="space-around">
-      <re-col
-        v-for="(item, index) in chartData"
-        :key="index"
-        v-motion
-        class="mb-[18px]"
-        :value="6"
-        :md="12"
-        :sm="12"
-        :xs="24"
-        :initial="{
-          opacity: 0,
-          y: 100
-        }"
-        :enter="{
-          opacity: 1,
-          y: 0,
-          transition: {
-            delay: 80 * (index + 1)
-          }
-        }"
-      >
-        <el-card class="line-card" shadow="never">
-          <div class="flex justify-between">
-            <span class="text-md font-medium">
-              {{ item.name }}
-            </span>
-            <div
-              class="w-8 h-8 flex justify-center items-center rounded-md"
-              :style="{
-                backgroundColor: isDark ? 'transparent' : item.bgColor
-              }"
-            >
-              <IconifyIconOffline :icon="item.icon" :color="item.color" width="18" height="18" />
-            </div>
-          </div>
-          <div class="flex justify-between items-start mt-3">
-            <div class="w-1/2">
-              <ReNormalCountTo :duration="item.duration" :fontSize="'1.6em'" :startVal="100" :endVal="item.value" />
-              <p class="font-medium text-green-500">{{ item.percent }}</p>
-            </div>
-            <ChartLine v-if="item.data.length > 1" class="w-1/2!" :color="item.color" :data="item.data" />
-            <ChartRound v-else class="w-1/2!" />
-          </div>
-        </el-card>
-      </re-col>
+  const roomMetricCards = computed(() => {
+    const overview = roomOverview.value || {};
+    return [
+      { key: "available", label: "空置", value: overview.availableCount || 0, accent: "text-[#ff5568]" },
+      { key: "preparing", label: "配置", value: overview.preparingCount || 0, accent: "text-[#ff8a1a]" },
+      { key: "leased", label: "已租", value: overview.leasedCount || 0, accent: "text-[#2563eb]" },
+      { key: "checkin", label: "即将搬入(30天内)", value: overview.upcomingCheckInCount || 0, accent: "text-[#10b981]" },
+      { key: "checkout", label: "即将搬出(30天内)", value: overview.upcomingCheckOutCount || 0, accent: "text-[#8b5cf6]" },
+      { key: "overdue", label: "到期未退", value: overview.overdueCheckOutCount || 0, accent: "text-[#ef4444]" }
+    ];
+  });
 
-      <re-col
-        v-motion
-        class="mb-[18px]"
-        :value="18"
-        :xs="24"
-        :initial="{
-          opacity: 0,
-          y: 100
-        }"
-        :enter="{
-          opacity: 1,
-          y: 0,
-          transition: {
-            delay: 400
-          }
-        }"
-      >
-        <el-card class="bar-card" shadow="never">
-          <div class="flex justify-between">
-            <span class="text-md font-medium">分析概览</span>
-            <Segmented v-model="curWeek" :options="optionsBasis" />
-          </div>
-          <div class="flex justify-between items-start mt-3">
-            <ChartBar :requireData="barChartData[curWeek].requireData" :questionData="barChartData[curWeek].questionData" />
-          </div>
-        </el-card>
-      </re-col>
+  const tenantStatCards = computed(() => [
+    { key: "deposit", label: "定金租客", today: tenantStats.value.todayDepositCount || 0, month: tenantStats.value.monthDepositCount || 0, accent: "bg-amber-50 text-amber-600" },
+    { key: "new", label: "新签", today: tenantStats.value.todayNewSignCount || 0, month: tenantStats.value.monthNewSignCount || 0, accent: "bg-blue-50 text-blue-600" },
+    { key: "renew", label: "续签", today: tenantStats.value.todayRenewCount || 0, month: tenantStats.value.monthRenewCount || 0, accent: "bg-emerald-50 text-emerald-600" }
+  ]);
 
-      <re-col
-        v-motion
-        class="mb-[18px]"
-        :value="6"
-        :xs="24"
-        :initial="{
-          opacity: 0,
-          y: 100
-        }"
-        :enter="{
-          opacity: 1,
-          y: 0,
-          transition: {
-            delay: 480
-          }
-        }"
-      >
-        <el-card shadow="never">
-          <div class="flex justify-between">
-            <span class="text-md font-medium">解决概率</span>
-          </div>
-          <div v-for="(item, index) in progressData" :key="index" :class="['flex', 'justify-between', 'items-start', index === 0 ? 'mt-8' : 'mt-[2.15rem]']">
-            <el-progress :text-inside="true" :percentage="item.percentage" :stroke-width="21" :color="item.color" striped striped-flow :duration="item.duration" />
-            <span class="text-nowrap ml-2 text-text_color_regular text-sm">
-              {{ item.week }}
-            </span>
-          </div>
-        </el-card>
-      </re-col>
-
-      <re-col
-        v-motion
-        class="mb-[18px]"
-        :value="18"
-        :xs="24"
-        :initial="{
-          opacity: 0,
-          y: 100
-        }"
-        :enter="{
-          opacity: 1,
-          y: 0,
-          transition: {
-            delay: 560
-          }
-        }"
-      >
-        <el-card shadow="never" class="h-[580px]">
-          <div class="flex justify-between">
-            <span class="text-md font-medium">数据统计</span>
-          </div>
-          <WelcomeTable class="mt-3" />
-        </el-card>
-      </re-col>
-
-      <re-col
-        v-motion
-        class="mb-[18px]"
-        :value="6"
-        :xs="24"
-        :initial="{
-          opacity: 0,
-          y: 100
-        }"
-        :enter="{
-          opacity: 1,
-          y: 0,
-          transition: {
-            delay: 640
-          }
-        }"
-      >
-        <el-card shadow="never">
-          <div class="flex justify-between">
-            <span class="text-md font-medium">最新动态</span>
-          </div>
-          <el-scrollbar max-height="504" class="mt-3">
-            <el-timeline>
-              <el-timeline-item
-                v-for="(item, index) in latestNewsData"
-                :key="index"
-                center
-                placement="top"
-                :icon="
-                  markRaw(
-                    useRenderFlicker({
-                      background: randomGradient({
-                        randomizeHue: true
-                      })
-                    })
-                  )
-                "
-                :timestamp="item.date"
-              >
-                <p class="text-text_color_regular text-sm">
-                  {{ `新增 ${item.requiredNumber} 条问题，${item.resolveNumber} 条已解决` }}
-                </p>
-              </el-timeline-item>
-            </el-timeline>
-          </el-scrollbar>
-        </el-card>
-      </re-col>
-    </el-row>
-  </div>
-</template>
-
-<style lang="scss" scoped>
-  :deep(.el-card) {
-    --el-card-border-color: none;
-
-    /* 解决概率进度条宽度 */
-    .el-progress--line {
-      width: 85%;
-    }
-
-    /* 解决概率进度条字体大小 */
-    .el-progress-bar__innerText {
-      font-size: 15px;
-    }
-
-    /* 隐藏 el-scrollbar 滚动条 */
-    .el-scrollbar__bar {
-      display: none;
-    }
-
-    /* el-timeline 每一项上下、左右边距 */
-    .el-timeline-item {
-      margin: 0 6px;
+  async function fetchDashboard() {
+    loading.value = true;
+    try {
+      const { data } = await getWelcomeDashboard();
+      dashboard.value = data || {};
+      if (!dashboard.value.roomOverviewList?.find(item => item.leaseMode === currentLeaseMode.value)) {
+        currentLeaseMode.value = dashboard.value.roomOverviewList?.[0]?.leaseMode || 2;
+      }
+    } finally {
+      loading.value = false;
     }
   }
 
-  .main-content {
-    margin: 20px 20px 0 !important;
+  function buildPeriodItems(period?: WelcomePeriodAmount) {
+    return [
+      { key: "today", label: "今日", value: period?.todayAmount || 0 },
+      { key: "yesterday", label: "昨日", value: period?.yesterdayAmount || 0 },
+      { key: "thisMonth", label: "本月", value: period?.thisMonthAmount || 0 },
+      { key: "lastMonth", label: "上月", value: period?.lastMonthAmount || 0 },
+      { key: "thisYear", label: "本年", value: period?.thisYearAmount || 0 },
+      { key: "total", label: "全部", value: period?.totalAmount || 0 }
+    ];
+  }
+
+  function moneyText(value?: number) {
+    const amount = Number(value || 0);
+    return `￥${amount.toLocaleString("zh-CN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+  }
+
+  function compactMoneyText(value?: number) {
+    const amount = Number(value || 0);
+    if (amount >= 100000000) {
+      return `${(amount / 100000000).toFixed(2)}亿+`;
+    }
+    if (amount >= 10000) {
+      return `${(amount / 10000).toFixed(2)}万+`;
+    }
+    return moneyText(amount);
+  }
+
+  function formatDateTime(value?: string) {
+    return value ? dayjs(value).format("YYYY-MM-DD HH:mm") : "—";
+  }
+
+  onMounted(fetchDashboard);
+</script>
+
+<template>
+  <div v-loading="loading" class="welcome-dashboard">
+    <div class="dashboard-grid">
+      <section class="hero-card hero-card--finance">
+        <div class="hero-card__header">
+          <div class="hero-card__title-wrap">
+            <div class="hero-card__icon bg-blue-50 text-blue-600">
+              <el-icon><TrendCharts /></el-icon>
+            </div>
+            <div>
+              <div class="hero-card__title">财务流水</div>
+              <div class="hero-card__subtitle">按入账成功口径统计</div>
+            </div>
+          </div>
+          <div class="hero-card__headline">{{ moneyText(dashboard.financeSummary?.totalAmount) }}</div>
+        </div>
+        <div class="period-grid">
+          <div v-for="item in financePeriods" :key="item.key" class="period-grid__item">
+            <span class="period-grid__label">{{ item.label }}</span>
+            <strong class="period-grid__value">{{ moneyText(item.value) }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="hero-card hero-card--payment">
+        <div class="hero-card__header">
+          <div class="hero-card__title-wrap">
+            <div class="hero-card__icon bg-emerald-50 text-emerald-600">
+              <el-icon><Money /></el-icon>
+            </div>
+            <div>
+              <div class="hero-card__title">支付</div>
+              <div class="hero-card__subtitle">按支付成功口径统计</div>
+            </div>
+          </div>
+          <div class="hero-card__headline">{{ moneyText(dashboard.paymentSummary?.totalAmount) }}</div>
+        </div>
+        <div class="period-grid">
+          <div v-for="item in paymentPeriods" :key="item.key" class="period-grid__item">
+            <span class="period-grid__label">{{ item.label }}</span>
+            <strong class="period-grid__value">{{ moneyText(item.value) }}</strong>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="dashboard-grid dashboard-grid--secondary">
+      <section class="board-card notices-card">
+        <div class="board-card__header">
+          <div class="board-card__title-wrap">
+            <div class="board-card__icon bg-sky-50 text-sky-600">
+              <el-icon><Bell /></el-icon>
+            </div>
+            <div>
+              <h3 class="board-card__title">最新公告</h3>
+              <p class="board-card__caption">最近发布的系统公告</p>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="dashboard.notices?.length" class="notice-list">
+          <div v-for="notice in dashboard.notices" :key="notice.id" class="notice-item">
+            <div class="notice-item__content">
+              <div class="notice-item__title">{{ notice.title || "未命名公告" }}</div>
+              <div class="notice-item__meta">
+                <span>{{ notice.createByName || "系统" }}</span>
+                <span>{{ formatDateTime(notice.publishTime) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <el-empty v-else description="暂无公告" :image-size="88" />
+      </section>
+
+      <section class="board-card tenant-card">
+        <div class="board-card__header">
+          <div class="board-card__title-wrap">
+            <div class="board-card__icon bg-violet-50 text-violet-600">
+              <el-icon><OfficeBuilding /></el-icon>
+            </div>
+            <div>
+              <h3 class="board-card__title">租客统计</h3>
+              <p class="board-card__caption">按今日和本月统计新增业务</p>
+            </div>
+          </div>
+        </div>
+        <div class="tenant-stats-grid">
+          <div v-for="item in tenantStatCards" :key="item.key" class="tenant-stat">
+            <div class="tenant-stat__badge" :class="item.accent">{{ item.label }}</div>
+            <div class="tenant-stat__values">
+              <div>
+                <span class="tenant-stat__label">今日</span>
+                <strong>{{ item.today }}</strong>
+              </div>
+              <div>
+                <span class="tenant-stat__label">本月</span>
+                <strong>{{ item.month }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="board-card room-card">
+      <div class="board-card__header board-card__header--room">
+        <div class="board-card__title-wrap">
+          <div class="board-card__icon bg-blue-50 text-blue-600">
+            <el-icon><OfficeBuilding /></el-icon>
+          </div>
+          <div>
+            <h3 class="board-card__title">房源概况</h3>
+            <p class="board-card__caption">
+              {{ roomOverview?.total || 0 }} 间
+              <span class="room-card__divider">|</span>
+              出租率 {{ Number(roomOverview?.occupancyRate || 0).toFixed(2) }}%
+            </p>
+          </div>
+        </div>
+
+        <div class="mode-switch">
+          <button
+            v-for="item in dashboard.roomOverviewList || []"
+            :key="item.leaseMode"
+            class="mode-switch__item"
+            :class="{ 'is-active': currentLeaseMode === item.leaseMode }"
+            @click="currentLeaseMode = item.leaseMode || 2"
+          >
+            {{ item.leaseModeName }}
+          </button>
+        </div>
+      </div>
+
+      <div class="room-card__body">
+        <div class="room-card__metrics">
+          <div v-for="item in roomMetricCards" :key="item.key" class="room-metric">
+            <div class="room-metric__value" :class="item.accent">{{ item.value }}</div>
+            <div class="room-metric__label">{{ item.label }}</div>
+          </div>
+        </div>
+
+        <div class="room-card__chart">
+          <div class="donut" :style="roomDonutStyle">
+            <div class="donut__inner">
+              <div class="donut__value">{{ Number(roomOverview?.occupancyRate || 0).toFixed(2) }}%</div>
+              <div class="donut__label">出租率</div>
+            </div>
+          </div>
+          <div class="donut-legend">
+            <div class="donut-legend__item">
+              <span class="dot dot-blue" />
+              <span>已租 {{ roomPercentages.leased.toFixed(2) }}%</span>
+            </div>
+            <div class="donut-legend__item">
+              <span class="dot dot-red" />
+              <span>空置 {{ roomPercentages.available.toFixed(2) }}%</span>
+            </div>
+            <div class="donut-legend__item">
+              <span class="dot dot-amber" />
+              <span>配置 {{ roomPercentages.preparing.toFixed(2) }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="board-card overdue-card">
+      <div class="board-card__header">
+        <div class="board-card__title-wrap">
+          <div class="board-card__icon bg-rose-50 text-rose-600">
+            <el-icon><Warning /></el-icon>
+          </div>
+          <div>
+            <h3 class="board-card__title">租客逾期欠款</h3>
+            <p class="board-card__caption">按逾期天数对待收金额分桶</p>
+          </div>
+        </div>
+      </div>
+      <div class="overdue-grid">
+        <div v-for="item in overdueBuckets" :key="item.key" class="overdue-item">
+          <div class="overdue-item__label">{{ item.label }}</div>
+          <div class="overdue-item__amount">{{ compactMoneyText(item.amount) }}</div>
+        </div>
+      </div>
+    </section>
+  </div>
+</template>
+
+<style scoped lang="scss">
+  .welcome-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .dashboard-grid--secondary {
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  }
+
+  .hero-card,
+  .board-card {
+    background: #fff;
+    border: 1px solid #edf1f7;
+    border-radius: 18px;
+    box-shadow: 0 8px 28px rgb(15 23 42 / 0.05);
+    min-width: 0;
+  }
+
+  .hero-card {
+    padding: 20px 22px;
+  }
+
+  .hero-card--finance {
+    background: linear-gradient(180deg, rgb(59 130 246 / 0.06), #fff 48%);
+  }
+
+  .hero-card--payment {
+    background: linear-gradient(180deg, rgb(16 185 129 / 0.06), #fff 48%);
+  }
+
+  .hero-card__header,
+  .board-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .hero-card__title-wrap,
+  .board-card__title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .hero-card__icon,
+  .board-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .hero-card__title,
+  .board-card__title {
+    color: #111827;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .hero-card__subtitle,
+  .board-card__caption {
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-top: 4px;
+  }
+
+  .hero-card__headline {
+    color: #111827;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .period-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .period-grid__item {
+    border: 1px solid #edf1f7;
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: rgb(248 250 252 / 0.9);
+    min-width: 0;
+  }
+
+  .period-grid__label {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+
+  .period-grid__value {
+    display: block;
+    color: #0f172a;
+    font-size: 18px;
+    line-height: 1.3;
+    word-break: break-all;
+  }
+
+  .board-card {
+    padding: 18px 20px;
+  }
+
+  .notice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .notice-item {
+    border: 1px solid #eef2f7;
+    background: linear-gradient(180deg, #fff, #f8fbff);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+
+  .notice-item__title {
+    color: #111827;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .notice-item__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #94a3b8;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  .tenant-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .tenant-stat {
+    border: 1px solid #edf1f7;
+    border-radius: 16px;
+    padding: 16px;
+    background: linear-gradient(180deg, #fff, #f8fafc);
+  }
+
+  .tenant-stat__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 76px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .tenant-stat__values {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .tenant-stat__label {
+    display: block;
+    color: #94a3b8;
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .tenant-stat strong {
+    color: #0f172a;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .room-card__divider {
+    padding: 0 10px;
+    color: #cbd5e1;
+  }
+
+  .mode-switch {
+    display: inline-flex;
+    padding: 4px;
+    background: #f8fafc;
+    border-radius: 999px;
+    gap: 4px;
+  }
+
+  .mode-switch__item {
+    border: 0;
+    background: transparent;
+    padding: 8px 14px;
+    border-radius: 999px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .mode-switch__item.is-active {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 8px 20px rgb(37 99 235 / 0.2);
+  }
+
+  .room-card__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+    gap: 20px;
+    margin-top: 18px;
+  }
+
+  .room-card__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .room-metric {
+    border-radius: 18px;
+    background: #f8fafc;
+    min-height: 134px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 14px;
+    border: 1px solid #eef2f7;
+  }
+
+  .room-metric__value {
+    font-size: 40px;
+    line-height: 1;
+    font-weight: 700;
+  }
+
+  .room-metric__label {
+    color: #334155;
+    font-size: 15px;
+    margin-top: 14px;
+    text-align: center;
+  }
+
+  .room-card__chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .donut {
+    width: 212px;
+    height: 212px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .donut__inner {
+    width: 122px;
+    height: 122px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px #eef2f7;
+  }
+
+  .donut__value {
+    color: #0f172a;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .donut__label {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  .donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14px;
+    color: #475569;
+  }
+
+  .donut-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  .dot-blue {
+    background: #2563eb;
+  }
+
+  .dot-red {
+    background: #ff6678;
+  }
+
+  .dot-amber {
+    background: #ff8a1a;
+  }
+
+  .overdue-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .overdue-item {
+    border: 1px solid #fee2e2;
+    background: linear-gradient(180deg, #fff, #fff7f7);
+    border-radius: 16px;
+    padding: 18px 16px;
+  }
+
+  .overdue-item__label {
+    color: #7f1d1d;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .overdue-item__amount {
+    color: #dc2626;
+    font-size: 26px;
+    line-height: 1.1;
+    font-weight: 700;
+    word-break: break-all;
+  }
+
+  @media (max-width: 1440px) {
+    .dashboard-grid,
+    .dashboard-grid--secondary,
+    .room-card__body {
+      grid-template-columns: 1fr;
+    }
+
+    .room-card__metrics,
+    .tenant-stats-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .overdue-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 960px) {
+    .period-grid,
+    .room-card__metrics,
+    .tenant-stats-grid,
+    .overdue-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-card__header,
+    .board-card__header--room {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .hero-card__headline {
+      text-align: left;
+      font-size: 24px;
+    }
+
+    .donut {
+      width: 184px;
+      height: 184px;
+    }
+
+    .donut__inner {
+      width: 106px;
+      height: 106px;
+    }
   }
 </style>
