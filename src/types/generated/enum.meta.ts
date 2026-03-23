@@ -309,8 +309,7 @@ export const FinanceFlowDirectionEnumMeta = {
 export const FinanceFlowStatusEnumMeta = {
   PENDING: {"value":"PENDING","code":0,"label":"入账中"},
   SUCCESS: {"value":"SUCCESS","code":1,"label":"已入账"},
-  FAILED: {"value":"FAILED","code":2,"label":"失败"},
-  VOIDED: {"value":"VOIDED","code":3,"label":"已作废"}
+  VOIDED: {"value":"VOIDED","code":2,"label":"已作废"}
 } as const;
 
 export const FinanceFlowTypeEnumMeta = {

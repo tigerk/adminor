@@ -4030,6 +4030,250 @@ export type ResponseResultPageVoLeaseBillFeeFinanceItemVo = {
     data?: PageVoLeaseBillFeeFinanceItemVo;
 };
 
+/**
+ * 租客财务流水查询DTO
+ */
+export type FinanceFlowFinanceQueryDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 财务流水状态：0=入账中，1=已入账，3=已作废
+     */
+    status?: number;
+    /**
+     * 流水类型
+     */
+    flowType?: string;
+    /**
+     * 费用类型
+     */
+    feeType?: string;
+    /**
+     * 房源信息关键词
+     */
+    roomKeyword?: string;
+};
+
+/**
+ * 租客财务流水汇总
+ */
+export type FinanceFlowFinanceSummaryVo = {
+    /**
+     * 待入账流水总额
+     */
+    pendingAmount?: number;
+    /**
+     * 今日待入账总额
+     */
+    todayPendingAmount?: number;
+    /**
+     * 已入账流水总额
+     */
+    successAmount?: number;
+    /**
+     * 今日已入账总额
+     */
+    todaySuccessAmount?: number;
+    /**
+     * 已作废流水总额
+     */
+    voidedAmount?: number;
+    /**
+     * 今日已作废总额
+     */
+    todayVoidedAmount?: number;
+};
+
+export type ResponseResultFinanceFlowFinanceSummaryVo = {
+    code?: number;
+    message?: string;
+    data?: FinanceFlowFinanceSummaryVo;
+};
+
+/**
+ * 租客财务流水列表项
+ */
+export type FinanceFlowFinanceItemVo = {
+    /**
+     * 财务流水ID
+     */
+    id?: string;
+    /**
+     * 财务流水号
+     */
+    flowNo?: string;
+    /**
+     * 支付流水ID
+     */
+    paymentFlowId?: string;
+    /**
+     * 业务类型
+     */
+    bizType?: string;
+    /**
+     * 业务单据ID
+     */
+    bizId?: string;
+    /**
+     * 业务单据编号
+     */
+    bizNo?: string;
+    /**
+     * 流水类型
+     */
+    flowType?: string;
+    /**
+     * 资金方向
+     */
+    flowDirection?: string;
+    /**
+     * 金额
+     */
+    amount?: number;
+    /**
+     * 状态
+     */
+    status?: number;
+    /**
+     * 费用类型
+     */
+    feeType?: string;
+    /**
+     * 费用名称
+     */
+    feeName?: string;
+    /**
+     * 租客ID
+     */
+    tenantId?: string;
+    /**
+     * 租客姓名
+     */
+    tenantName?: string;
+    /**
+     * 租客电话
+     */
+    tenantPhone?: string;
+    /**
+     * 账单ID
+     */
+    billId?: string;
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 账单期数
+     */
+    sortOrder?: number;
+    /**
+     * 房源地址
+     */
+    roomAddress?: string;
+    /**
+     * 支付流水号
+     */
+    paymentNo?: string;
+    /**
+     * 支付方式
+     */
+    paymentChannel?: string;
+    /**
+     * 支付流水审批状态
+     */
+    paymentApprovalStatus?: number;
+    /**
+     * 支付流水状态
+     */
+    paymentStatus?: number;
+    /**
+     * 交易流水号
+     */
+    thirdTradeNo?: string;
+    /**
+     * 支付凭证
+     */
+    paymentVoucherUrl?: string;
+    /**
+     * 付款方姓名
+     */
+    payerName?: string;
+    /**
+     * 付款方手机号
+     */
+    payerPhone?: string;
+    /**
+     * 收款方名称
+     */
+    receiverName?: string;
+    /**
+     * 操作人
+     */
+    operatorName?: string;
+    /**
+     * 财务流水备注
+     */
+    remark?: string;
+    /**
+     * 支付备注
+     */
+    paymentRemark?: string;
+    /**
+     * 账单应收日期
+     */
+    dueDate?: string;
+    /**
+     * 账单开始日期
+     */
+    billStart?: string;
+    /**
+     * 账单结束日期
+     */
+    billEnd?: string;
+    /**
+     * 财务流水时间
+     */
+    flowTime?: string;
+    /**
+     * 支付时间
+     */
+    payTime?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+};
+
+export type PageVoFinanceFlowFinanceItemVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<FinanceFlowFinanceItemVo>;
+};
+
+export type ResponseResultPageVoFinanceFlowFinanceItemVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoFinanceFlowFinanceItemVo;
+};
+
+/**
+ * 财务流水详情查询DTO
+ */
+export type FinanceFlowIdDto = {
+    /**
+     * 财务流水ID
+     */
+    id: string;
+};
+
+export type ResponseResultFinanceFlowFinanceItemVo = {
+    code?: number;
+    message?: string;
+    data?: FinanceFlowFinanceItemVo;
+};
+
 export type ResponseResultString = {
     code?: number;
     message?: string;
@@ -7310,7 +7554,7 @@ export type FinanceBizTypeEnum = 'LEASE_BILL_FEE';
 
 export type FinanceFlowDirectionEnum = 'IN' | 'OUT';
 
-export type FinanceFlowStatusEnum = 'PENDING' | 'SUCCESS' | 'FAILED' | 'VOIDED';
+export type FinanceFlowStatusEnum = 'PENDING' | 'SUCCESS' | 'VOIDED';
 
 export type FinanceFlowTypeEnum = 'RECEIVE' | 'PAY' | 'REFUND' | 'VOID' | 'ADJUST';
 
@@ -8958,6 +9202,54 @@ export type FeePageResponses = {
 
 export type FeePageResponse = FeePageResponses[keyof FeePageResponses];
 
+export type Summary2Data = {
+    body: FinanceFlowFinanceQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/finance-flow/summary';
+};
+
+export type Summary2Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultFinanceFlowFinanceSummaryVo;
+};
+
+export type Summary2Response = Summary2Responses[keyof Summary2Responses];
+
+export type Page2Data = {
+    body: FinanceFlowFinanceQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/finance-flow/page';
+};
+
+export type Page2Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoFinanceFlowFinanceItemVo;
+};
+
+export type Page2Response = Page2Responses[keyof Page2Responses];
+
+export type Detail2Data = {
+    body: FinanceFlowIdDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/finance-flow/detail';
+};
+
+export type Detail2Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultFinanceFlowFinanceItemVo;
+};
+
+export type Detail2Response = Detail2Responses[keyof Detail2Responses];
+
 export type UploadImageData = {
     body?: {
         file: Blob | File;
@@ -10485,7 +10777,7 @@ export type UserOptionsResponses = {
 
 export type UserOptionsResponse = UserOptionsResponses[keyof UserOptionsResponses];
 
-export type Detail2Data = {
+export type Detail3Data = {
     body?: never;
     path: {
         id: string;
@@ -10494,14 +10786,14 @@ export type Detail2Data = {
     url: '/saas/company/user/detail/{id}';
 };
 
-export type Detail2Responses = {
+export type Detail3Responses = {
     /**
      * OK
      */
     200: ResponseResultUserVo;
 };
 
-export type Detail2Response = Detail2Responses[keyof Detail2Responses];
+export type Detail3Response = Detail3Responses[keyof Detail3Responses];
 
 export type CaptchaData = {
     body?: never;
