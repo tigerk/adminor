@@ -376,9 +376,9 @@
     2. pure-table 去掉 table-layout="auto"（改为默认 fixed），配合 minWidth 实现横向滚动
     3. adaptiveConfig.offsetBottom 需要准确匹配实际头部高度，这里用 72 覆盖常见场景
   -->
-  <div class="flb-page">
+  <div class="flb-page pt-1">
     <!-- ① 汇总统计条 + 分类展开（合为一体的卡片） -->
-    <div class="flb-summary-wrap" :class="{ 'is-expanded': summaryExpanded }">
+    <div class="flb-summary-wrap mb-2" :class="{ 'is-expanded': summaryExpanded }">
       <!-- 顶部统计行 -->
       <div class="flb-summary">
         <div class="flb-summary__cards">
@@ -536,9 +536,7 @@
   .flb-page {
     display: flex;
     flex-direction: column;
-    gap: 6px;
     min-width: 0;
-    margin-top: 2px;
     box-sizing: border-box;
     /* 新增：撑满父容器、禁止自身溢出 */
     height: 100%;
