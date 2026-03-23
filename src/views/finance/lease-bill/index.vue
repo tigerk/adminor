@@ -507,19 +507,18 @@
 
 <style scoped lang="scss">
   /*
-* 核心宽度修复原则：
-* - 所有容器必须 min-width: 0，防止 flex/grid 子项撑破父容器
-* - 根容器 width: 100% + overflow: hidden
-* - 表格容器不设固定宽度，依赖 el-table 内部横向滚动
-*/
-
+    * 核心宽度修复原则：
+    * - 所有容器必须 min-width: 0，防止 flex/grid 子项撑破父容器
+    * - 根容器 width: 100% + overflow: hidden
+    * - 表格容器不设固定宽度，依赖 el-table 内部横向滚动
+    */
   .flb-page {
     display: flex;
     flex-direction: column;
     gap: 6px;
     min-width: 0;
     /* 用 padding 代替 overflow:hidden 来避免贴边，同时不裁掉阴影/右侧内容 */
-    padding: 0 2px 12px 0;
+    margin-top: 2px;
     box-sizing: border-box;
   }
 
@@ -922,10 +921,6 @@
   /* 行点击样式 */
   :deep(.el-table__row) {
     cursor: pointer;
-
-    &:hover td {
-      background-color: #f8fafc !important;
-    }
   }
 
   /* slide-down 动画 */
