@@ -484,7 +484,7 @@
               fontWeight: '600'
             }"
             adaptive
-            :adaptiveConfig="{ offsetBottom: 72 }"
+            :adaptiveConfig="{ offsetBottom: 80 }"
             @row-click="handleRowClick"
             @page-size-change="handleSizeChange"
             @page-current-change="handleCurrentChange"
@@ -517,11 +517,12 @@
     flex-direction: column;
     gap: 6px;
     min-width: 0;
-    /* 用 padding 代替 overflow:hidden 来避免贴边，同时不裁掉阴影/右侧内容 */
     margin-top: 2px;
     box-sizing: border-box;
+    /* 新增：撑满父容器、禁止自身溢出 */
+    height: 100%;
+    overflow: hidden;
   }
-
   /* ── 汇总统计条外层容器（统计行 + 展开面板一体化） ── */
   .flb-summary-wrap {
     background: #fff;
