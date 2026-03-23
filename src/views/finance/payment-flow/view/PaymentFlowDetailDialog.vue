@@ -11,13 +11,6 @@
           <span class="status-badge__dot" />
           {{ statusText(detail.status) }}
         </div>
-        <div
-          v-if="detail.approvalStatus && approvalStatusText(detail.approvalStatus)"
-          class="approval-badge"
-          :class="`approval-badge--${approvalBadgeType(detail.approvalStatus)}`"
-        >
-          {{ approvalStatusText(detail.approvalStatus) }}
-        </div>
       </div>
     </div>
 
