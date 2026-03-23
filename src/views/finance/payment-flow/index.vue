@@ -4,14 +4,12 @@
   import type { PaginationProps } from "@pureadmin/table";
   import { addDialog } from "@/components/ReDialog";
   import { PureTableBar } from "@/components/RePureTableBar";
-  import { PaymentFlowFinanceItemVo, PaymentFlowFinanceQueryDto, PaymentFlowFinanceSummaryVo, PaymentFlowStatusEnumMeta } from "@/types";
+  import { PaymentFlowFinanceItemVo, PaymentFlowFinanceQueryDto, PaymentFlowFinanceSummaryVo } from "@/types";
   import { getFinancePaymentFlowPage, getFinancePaymentFlowSummary } from "@/api/finance/paymentFlow";
   import PaymentFlowDetailDialog from "@/views/finance/payment-flow/view/PaymentFlowDetailDialog.vue";
-  import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
+  import { PaymentFlowChannelEnumMeta, PaymentFlowStatusEnumMeta } from "@/types/generated/enum.meta";
 
-  defineOptions({
-    name: "FinancePaymentFlow"
-  });
+  defineOptions({ name: "FinancePaymentFlow" });
 
   const loading = ref(false);
   const list = ref<PaymentFlowFinanceItemVo[]>([]);
@@ -34,32 +32,35 @@
   });
 
   const statusTabs = [
-    { label: "待审批", value: PaymentFlowStatusEnumMeta.PENDING_APPROVAL.code },
-    { label: "支付成功", value: PaymentFlowStatusEnumMeta.SUCCESS.code },
-    { label: "已关闭", value: PaymentFlowStatusEnumMeta.CLOSED.code }
+    { label: "待审批", value: PaymentFlowStatusEnumMeta.PENDING_APPROVAL.code, color: "amber" },
+    { label: "支付成功", value: PaymentFlowStatusEnumMeta.SUCCESS.code, color: "emerald" },
+    { label: "已关闭", value: PaymentFlowStatusEnumMeta.CLOSED.code, color: "slate" }
   ];
 
   const summaryCards = computed(() => [
     {
       key: "pending",
-      label: "待审批流水",
+      label: "待审批",
+      sublabel: "待审批流水金额",
       total: summary.value.pendingApprovalAmount || 0,
       today: summary.value.todayPendingApprovalAmount || 0,
-      accent: "amber"
+      colorClass: "card-amber"
     },
     {
       key: "success",
       label: "成功支付",
+      sublabel: "支付成功流水金额",
       total: summary.value.successAmount || 0,
       today: summary.value.todaySuccessAmount || 0,
-      accent: "green"
+      colorClass: "card-emerald"
     },
     {
       key: "closed",
-      label: "已关闭流水",
+      label: "已关闭",
+      sublabel: "已关闭流水金额",
       total: summary.value.closedAmount || 0,
       today: summary.value.todayClosedAmount || 0,
-      accent: "slate"
+      colorClass: "card-slate"
     }
   ]);
 
@@ -67,20 +68,19 @@
     {
       label: "状态",
       prop: "status",
-      minWidth: 100,
+      minWidth: 140,
       align: "center",
       slot: "status",
       fixed: "left"
     },
-    { label: "支付流水号", prop: "paymentNo", minWidth: 180 },
-
+    { label: "支付流水号", prop: "paymentNo", minWidth: 185 },
     { label: "租客姓名", prop: "tenantName", minWidth: 100 },
-    { label: "联系电话", prop: "tenantPhone", minWidth: 120 },
+    { label: "联系电话", prop: "tenantPhone", minWidth: 125 },
     { label: "房源信息", prop: "roomAddress", minWidth: 220, showOverflowTooltip: true },
     {
       label: "所属账单",
       minWidth: 110,
-      formatter: ({ sortOrder }) => (sortOrder ? `第${sortOrder}期` : "-")
+      formatter: ({ sortOrder }) => (sortOrder ? `第 ${sortOrder} 期` : "—")
     },
     {
       label: "支付方式",
@@ -93,7 +93,7 @@
       prop: "amount",
       minWidth: 120,
       align: "right",
-      formatter: ({ amount }) => moneyText(amount)
+      slot: "amount"
     },
     { label: "付款人", prop: "payerName", minWidth: 100 },
     { label: "操作人", prop: "operatorName", minWidth: 100 },
@@ -186,71 +186,84 @@
   }
 
   function statusText(status?: number) {
-    if (status === PaymentFlowStatusEnumMeta.PENDING_APPROVAL.code) return "待审批";
-    if (status === PaymentFlowStatusEnumMeta.SUCCESS.code) return "支付成功";
-    if (status === PaymentFlowStatusEnumMeta.CLOSED.code) return "已关闭";
-    return "-";
+    const map: Record<number, string> = { 1: "待审批", 2: "支付成功", 4: "已关闭" };
+    return map[status ?? -1] ?? "—";
   }
 
-  function statusTagType(status?: number) {
-    if (status === 2) return "success";
-    if (status === 4) return "info";
-    return "warning";
+  function statusConfig(status?: number): { type: "warning" | "success" | "info" | "danger" | "primary"; dot: string } {
+    if (status === 2) return { type: "success", dot: "bg-emerald-500" };
+    if (status === 4) return { type: "info", dot: "bg-slate-400" };
+    return { type: "warning", dot: "bg-amber-400" };
   }
 
   function channelText(channel?: string) {
-    if (!channel) return "-";
+    if (!channel) return "—";
     return (PaymentFlowChannelEnumMeta as Record<string, { label: string }>)[channel]?.label || channel;
   }
 
   function moneyText(value?: number) {
-    return `¥${Number(value || 0).toFixed(2)}`;
+    return `¥ ${Number(value || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
   function formatDateTime(value?: string) {
-    return value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "-";
+    return value ? dayjs(value).format("YYYY-MM-DD HH:mm") : "—";
   }
 
   onMounted(fetchPage);
 </script>
 
 <template>
-  <div class="payment-flow-page">
-    <div class="summary-strip">
-      <div v-for="card in summaryCards" :key="card.key" class="summary-item" :class="`summary-item--${card.accent}`">
-        <div class="summary-item__label">{{ card.label }}</div>
-        <div class="summary-item__meta">
-          <span>{{ moneyText(card.total) }}</span>
-          <span>今日金额 {{ moneyText(card.today) }}</span>
+  <div class="pf-page">
+    <!-- ── 汇总卡片区（紧凑横向布局）── -->
+    <div class="summary-row mb-2">
+      <div v-for="card in summaryCards" :key="card.key" class="summary-card" :class="card.colorClass">
+        <div class="summary-card__left">
+          <span class="summary-card__label">{{ card.sublabel }}</span>
+          <div class="summary-card__amount">{{ moneyText(card.total) }}</div>
+        </div>
+        <div class="summary-card__right">
+          <span class="today-dot" />
+          <span class="summary-card__today-text">
+            今日
+            <strong>{{ moneyText(card.today) }}</strong>
+          </span>
         </div>
       </div>
     </div>
 
-    <div class="toolbar-card">
-      <div class="toolbar-card__section toolbar-card__section--form">
-        <el-form :inline="true" :model="queryForm" class="query-form">
-          <el-form-item label="租客姓名">
-            <el-input v-model="queryForm.tenantName" clearable placeholder="请输入租客姓名" />
-          </el-form-item>
-          <el-form-item label="联系电话">
-            <el-input v-model="queryForm.tenantPhone" clearable placeholder="请输入联系电话" />
-          </el-form-item>
-          <el-form-item label="房源信息">
-            <el-input v-model="queryForm.roomKeyword" clearable placeholder="请输入房源关键词" />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="onSearch">查询</el-button>
-            <el-button @click="onReset">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+    <!-- ── 查询工具栏 ── -->
+    <div class="filter-card">
+      <el-form :inline="true" :model="queryForm" class="filter-form">
+        <el-form-item label="租客姓名">
+          <el-input v-model="queryForm.tenantName" clearable placeholder="请输入租客姓名" class="filter-input" />
+        </el-form-item>
+        <el-form-item label="联系电话">
+          <el-input v-model="queryForm.tenantPhone" clearable placeholder="请输入联系电话" class="filter-input" />
+        </el-form-item>
+        <el-form-item label="房源信息">
+          <el-input v-model="queryForm.roomKeyword" clearable placeholder="楼栋 / 门牌 / 小区" class="filter-input" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onSearch">查询</el-button>
+          <el-button @click="onReset">重置</el-button>
+        </el-form-item>
+      </el-form>
     </div>
 
-    <PureTableBar title="租客支付流水列表" :columns="columns" @refresh="fetchPage">
+    <!-- ── 表格区 ── -->
+    <PureTableBar title="租客支付流水" :columns="columns" @refresh="fetchPage">
       <template #buttons>
-        <el-button v-for="item in statusTabs" :key="item.value" :type="queryForm.status === item.value ? 'primary' : 'default'" @click="onSwitchStatus(item.value)">
-          {{ item.label }}
-        </el-button>
+        <div class="status-tab-group">
+          <button
+            v-for="tab in statusTabs"
+            :key="tab.value"
+            class="status-tab"
+            :class="{ 'is-active': queryForm.status === tab.value, [`tab-${tab.color}`]: true }"
+            @click="onSwitchStatus(tab.value)"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
       </template>
 
       <template #default="{ size, dynamicColumns }">
@@ -266,14 +279,22 @@
           :data="list"
           :columns="dynamicColumns"
           :pagination="pagination"
+          class="pf-table"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
           @row-click="handleRowClick"
         >
+          <!-- 状态列 -->
           <template #status="{ row }">
-            <el-tag :type="statusTagType(row.status)" effect="light" round>
+            <div class="status-badge" :class="`status-badge--${statusConfig(row.status).type}`">
+              <span class="status-badge__dot" />
               {{ statusText(row.status) }}
-            </el-tag>
+            </div>
+          </template>
+
+          <!-- 金额列 -->
+          <template #amount="{ row }">
+            <span class="amount-cell">{{ moneyText(row.amount) }}</span>
           </template>
         </pure-table>
       </template>
@@ -282,90 +303,275 @@
 </template>
 
 <style scoped>
-  .payment-flow-page {
+  /* ── 页面容器 ── */
+  .pf-page {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    min-width: 0;
   }
 
-  .summary-strip,
-  .toolbar-card {
-    border-radius: 18px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-  }
-
-  .summary-strip {
+  /* ── 汇总卡片：横向紧凑 ── */
+  .summary-row {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .summary-card {
+    border-radius: 10px;
+    padding: 10px 16px;
+    border: 1px solid var(--el-border-color-light);
+    background: var(--el-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 12px;
-    padding: 12px;
+    transition: box-shadow 0.2s;
   }
 
-  .summary-item {
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    padding: 14px 16px;
+  .summary-card:hover {
+    box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.1);
   }
 
-  .summary-item__label {
-    font-size: 13px;
-    color: #64748b;
-  }
-
-  .summary-item__meta {
-    margin-top: 8px;
+  .summary-card__left {
     display: flex;
-    gap: 18px;
-    font-size: 24px;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .summary-card__label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    white-space: nowrap;
+  }
+
+  .summary-card__amount {
+    font-size: 20px;
     font-weight: 700;
-    color: #0f172a;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
   }
 
-  .summary-item__meta span:last-child {
-    font-size: 13px;
-    font-weight: 500;
-    color: #64748b;
-    align-self: end;
-    margin-bottom: 4px;
+  .summary-card__right {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
   }
 
-  .summary-item--amber {
-    background: linear-gradient(135deg, #fffaf0 0%, #fff7ed 100%);
+  .today-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
   }
 
-  .summary-item--green {
-    background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+  .summary-card__today-text {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    white-space: nowrap;
   }
 
-  .summary-item--slate {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  .summary-card__today-text strong {
+    font-weight: 600;
+    color: var(--el-text-color-regular);
   }
 
-  .toolbar-card {
-    padding: 14px 18px 10px;
+  /* 卡片颜色主题 */
+  .card-amber {
+    background: linear-gradient(135deg, color-mix(in srgb, #f59e0b 8%, var(--el-bg-color)), var(--el-bg-color));
+    border-color: color-mix(in srgb, #f59e0b 25%, var(--el-border-color-light));
+  }
+  .card-amber .today-dot {
+    background: #f59e0b;
+  }
+  .card-amber .summary-card__amount {
+    color: #b45309;
+  }
+  :is(.dark) .card-amber .summary-card__amount {
+    color: #fbbf24;
   }
 
-  .toolbar-card__section--tabs {
+  .card-emerald {
+    background: linear-gradient(135deg, color-mix(in srgb, #10b981 8%, var(--el-bg-color)), var(--el-bg-color));
+    border-color: color-mix(in srgb, #10b981 25%, var(--el-border-color-light));
+  }
+  .card-emerald .today-dot {
+    background: #10b981;
+  }
+  .card-emerald .summary-card__amount {
+    color: #065f46;
+  }
+  :is(.dark) .card-emerald .summary-card__amount {
+    color: #34d399;
+  }
+
+  .card-slate {
+    background: linear-gradient(135deg, color-mix(in srgb, #64748b 6%, var(--el-bg-color)), var(--el-bg-color));
+    border-color: color-mix(in srgb, #64748b 20%, var(--el-border-color-light));
+  }
+  .card-slate .today-dot {
+    background: #94a3b8;
+  }
+  .card-slate .summary-card__amount {
+    color: var(--el-text-color-primary);
+  }
+
+  /* ── 查询栏 ── */
+  .filter-card {
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 10px;
+    padding: 10px 14px 2px;
+  }
+
+  .filter-form {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 12px;
+    gap: 0 6px;
   }
 
-  .query-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 8px;
-  }
-
-  :deep(.query-form .el-form-item) {
+  :deep(.filter-form .el-form-item) {
     margin-bottom: 8px;
   }
 
-  @media (max-width: 960px) {
-    .summary-strip {
+  .filter-input {
+    width: 170px;
+  }
+
+  /* ── 状态切换 ── */
+  .status-tab-group {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .status-tab {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 13px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--el-border-color);
+    background: transparent;
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+    line-height: 1.5;
+  }
+
+  .status-tab:hover {
+    border-color: var(--el-color-primary);
+    color: var(--el-color-primary);
+  }
+
+  .status-tab.is-active.tab-amber {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #92400e;
+  }
+  :is(.dark) .status-tab.is-active.tab-amber {
+    background: rgba(245, 158, 11, 0.18);
+    border-color: #f59e0b;
+    color: #fbbf24;
+  }
+
+  .status-tab.is-active.tab-emerald {
+    background: #d1fae5;
+    border-color: #10b981;
+    color: #065f46;
+  }
+  :is(.dark) .status-tab.is-active.tab-emerald {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: #10b981;
+    color: #34d399;
+  }
+
+  .status-tab.is-active.tab-slate {
+    background: #f1f5f9;
+    border-color: #64748b;
+    color: #334155;
+  }
+  :is(.dark) .status-tab.is-active.tab-slate {
+    background: rgba(100, 116, 139, 0.18);
+    border-color: #94a3b8;
+    color: #cbd5e1;
+  }
+
+  /* ── 状态徽章 ── */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .status-badge__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-badge--warning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .status-badge--warning .status-badge__dot {
+    background: #f59e0b;
+  }
+
+  .status-badge--success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .status-badge--success .status-badge__dot {
+    background: #10b981;
+  }
+
+  .status-badge--info {
+    background: #f1f5f9;
+    color: #475569;
+  }
+  .status-badge--info .status-badge__dot {
+    background: #94a3b8;
+  }
+
+  :is(.dark) .status-badge--warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+  }
+  :is(.dark) .status-badge--success {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+  }
+  :is(.dark) .status-badge--info {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+  }
+
+  /* ── 金额列 ── */
+  .amount-cell {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--el-text-color-primary);
+  }
+
+  /* ── 表格行交互 ── */
+  :deep(.pf-table .el-table__row) {
+    cursor: pointer;
+  }
+
+  /* ── 响应式 ── */
+  @media (max-width: 900px) {
+    .summary-row {
       grid-template-columns: 1fr;
     }
   }
