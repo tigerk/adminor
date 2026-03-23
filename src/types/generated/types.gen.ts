@@ -3561,6 +3561,14 @@ export type FinanceFlowVo = {
      */
     bizNo?: string;
     /**
+     * 费用类型
+     */
+    feeType?: string;
+    /**
+     * 费用名称
+     */
+    feeName?: string;
+    /**
      * 流水类型
      */
     flowType?: string;

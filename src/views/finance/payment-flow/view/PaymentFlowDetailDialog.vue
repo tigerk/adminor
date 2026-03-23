@@ -161,9 +161,28 @@
       </div>
       <div class="info-card__body">
         <el-table :data="detail.financeFlowList || []" border>
-          <el-table-column prop="flowNo" label="财务流水号" min-width="160" />
-          <el-table-column prop="flowType" label="流水类型" min-width="100" />
-          <el-table-column prop="flowDirection" label="资金方向" min-width="90" />
+          <el-table-column prop="flowNo" label="财务流水号" min-width="190" />
+          <el-table-column label="流水类型" min-width="100">
+            <template #default="{ row }">
+              {{ financeFlowTypeText(row.flowType) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="资金方向" min-width="90">
+            <template #default="{ row }">
+              {{ financeFlowDirectionText(row.flowDirection) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="bizType" label="业务类型" min-width="140">
+            <template #default="{ row }">
+              {{ financeBizTypeText(row.bizType) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="费用类型" min-width="110">
+            <template #default="{ row }">
+              {{ feeTypeText(row.feeType) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="feeName" label="费用名称" min-width="160" show-overflow-tooltip />
           <el-table-column prop="amount" label="金额" min-width="100" align="right">
             <template #default="{ row }">
               {{ moneyText(row.amount) }}
@@ -187,7 +206,15 @@
   import dayjs from "dayjs";
   import type { FinanceFlowVo, PaymentFlowFinanceItemVo } from "@/types";
   import { getFinancePaymentFlowDetail } from "@/api/finance/paymentFlow";
-  import { BizApprovalStatusEnumMeta, PaymentFlowChannelEnumMeta, PaymentFlowStatusEnumMeta } from "@/types/generated/enum.meta";
+  import {
+    BizApprovalStatusEnumMeta,
+    FinanceBizTypeEnumMeta,
+    FinanceFlowDirectionEnumMeta,
+    FinanceFlowTypeEnumMeta,
+    LeaseBillFeeTypeEnumMeta,
+    PaymentFlowChannelEnumMeta,
+    PaymentFlowStatusEnumMeta
+  } from "@/types/generated/enum.meta";
 
   const props = defineProps<{ flowId: string }>();
   const loading = ref(false);
@@ -259,6 +286,26 @@
   function channelText(channel?: string) {
     if (!channel) return "—";
     return (PaymentFlowChannelEnumMeta as Record<string, { label: string }>)[channel]?.label || channel;
+  }
+
+  function financeFlowTypeText(type?: string) {
+    if (!type) return "—";
+    return (FinanceFlowTypeEnumMeta as Record<string, { label: string }>)[type]?.label || type;
+  }
+
+  function financeFlowDirectionText(direction?: string) {
+    if (!direction) return "—";
+    return (FinanceFlowDirectionEnumMeta as Record<string, { label: string }>)[direction]?.label || direction;
+  }
+
+  function financeBizTypeText(type?: string) {
+    if (!type) return "—";
+    return (FinanceBizTypeEnumMeta as Record<string, { label: string }>)[type]?.label || type;
+  }
+
+  function feeTypeText(type?: string) {
+    if (!type) return "—";
+    return (LeaseBillFeeTypeEnumMeta as Record<string, { label: string }>)[type]?.label || type;
   }
 
   onMounted(fetchDetail);
