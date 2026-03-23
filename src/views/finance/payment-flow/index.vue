@@ -215,7 +215,7 @@
 <template>
   <div class="pf-page">
     <!-- ── 汇总卡片区（紧凑横向布局）── -->
-    <div class="summary-row mb-2">
+    <div class="summary-row mb-2 mt-1">
       <div v-for="card in summaryCards" :key="card.key" class="summary-card" :class="card.colorClass">
         <div class="summary-card__left">
           <span class="summary-card__label">{{ card.sublabel }}</span>
