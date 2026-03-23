@@ -127,7 +127,7 @@
             :size="size"
             adaptive
             :row-style="rowStyle"
-            :adaptiveConfig="{ offsetBottom: 92 }"
+            :adaptiveConfig="{ offsetBottom: 83 }"
             :data="dataList"
             :columns="dynamicColumns"
             :pagination="{ ...pagination, size }"

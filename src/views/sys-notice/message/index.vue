@@ -180,7 +180,7 @@
           :loading="loading"
           :size="size"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 110 }"
+          :adaptiveConfig="{ offsetBottom: 82 }"
           :data="dataList"
           :columns="dynamicColumns"
           :pagination="{ ...pagination, size }"

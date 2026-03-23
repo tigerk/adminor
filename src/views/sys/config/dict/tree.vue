@@ -147,7 +147,7 @@
   }
 
   .tree-scrollbar {
-    height: calc(90vh - 98px);
+    height: calc(90vh - 71px);
     padding: 4px;
   }
 

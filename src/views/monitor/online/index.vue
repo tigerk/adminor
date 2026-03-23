@@ -36,7 +36,7 @@
           :loading="loading"
           :size="size"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 20 }"
+          :adaptiveConfig="{ offsetBottom: 17 }"
           :data="dataList"
           :columns="dynamicColumns"
           :header-cell-style="{

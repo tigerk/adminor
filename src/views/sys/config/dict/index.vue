@@ -33,7 +33,7 @@
             ref="tableRef"
             row-key="id"
             adaptive
-            :adaptiveConfig="{ offsetBottom: 92 }"
+            :adaptiveConfig="{ offsetBottom: 82 }"
             align-whole="center"
             table-layout="auto"
             :loading="loading"
