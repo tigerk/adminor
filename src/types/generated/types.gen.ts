@@ -3481,6 +3481,188 @@ export type FocusHouseDto = {
 };
 
 /**
+ * 租客支付流水查询DTO
+ */
+export type PaymentFlowFinanceQueryDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 支付流水状态：1=待审批，2=支付成功，4=已关闭
+     */
+    status?: number;
+    /**
+     * 租客姓名
+     */
+    tenantName?: string;
+    /**
+     * 租客电话
+     */
+    tenantPhone?: string;
+    /**
+     * 房源信息关键词
+     */
+    roomKeyword?: string;
+};
+
+/**
+ * 租客支付流水汇总
+ */
+export type PaymentFlowFinanceSummaryVo = {
+    /**
+     * 待审批总金额
+     */
+    pendingApprovalAmount?: number;
+    /**
+     * 今日待审批总金额
+     */
+    todayPendingApprovalAmount?: number;
+    /**
+     * 支付成功总金额
+     */
+    successAmount?: number;
+    /**
+     * 今日支付成功总金额
+     */
+    todaySuccessAmount?: number;
+    /**
+     * 已关闭总金额
+     */
+    closedAmount?: number;
+    /**
+     * 今日已关闭总金额
+     */
+    todayClosedAmount?: number;
+};
+
+export type ResponseResultPaymentFlowFinanceSummaryVo = {
+    code?: number;
+    message?: string;
+    data?: PaymentFlowFinanceSummaryVo;
+};
+
+export type PageVoPaymentFlowFinanceItemVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<PaymentFlowFinanceItemVo>;
+};
+
+/**
+ * 租客支付流水列表项
+ */
+export type PaymentFlowFinanceItemVo = {
+    /**
+     * 支付流水ID
+     */
+    id?: string;
+    /**
+     * 支付流水号
+     */
+    paymentNo?: string;
+    /**
+     * 账单ID
+     */
+    billId?: string;
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 租客ID
+     */
+    tenantId?: string;
+    /**
+     * 账单期数
+     */
+    sortOrder?: number;
+    /**
+     * 租客姓名
+     */
+    tenantName?: string;
+    /**
+     * 租客电话
+     */
+    tenantPhone?: string;
+    /**
+     * 房源信息
+     */
+    roomAddress?: string;
+    /**
+     * 付款人姓名
+     */
+    payerName?: string;
+    /**
+     * 付款人电话
+     */
+    payerPhone?: string;
+    /**
+     * 支付方式
+     */
+    channel?: string;
+    /**
+     * 支付流水状态
+     */
+    status?: number;
+    /**
+     * 审批状态
+     */
+    approvalStatus?: number;
+    /**
+     * 支付金额
+     */
+    amount?: number;
+    /**
+     * 交易流水号
+     */
+    thirdTradeNo?: string;
+    /**
+     * 支付凭证
+     */
+    paymentVoucherUrl?: string;
+    /**
+     * 支付备注
+     */
+    remark?: string;
+    /**
+     * 操作人
+     */
+    operatorName?: string;
+    /**
+     * 支付时间
+     */
+    payTime?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 账单应收日期
+     */
+    dueDate?: string;
+    /**
+     * 账单开始日期
+     */
+    billStart?: string;
+    /**
+     * 账单结束日期
+     */
+    billEnd?: string;
+};
+
+export type ResponseResultPageVoPaymentFlowFinanceItemVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoPaymentFlowFinanceItemVo;
+};
+
+export type ResponseResultPaymentFlowFinanceItemVo = {
+    code?: number;
+    message?: string;
+    data?: PaymentFlowFinanceItemVo;
+};
+
+/**
  * 租客账单财务页查询DTO
  */
 export type LeaseBillFinanceQueryDto = {
@@ -5477,9 +5659,13 @@ export type PaymentFlowVo = {
      */
     channel?: string;
     /**
-     * 状态：0=支付中、1=支付成功、2=支付失败、3=已关闭、4=退款中、5=已退款
+     * 状态：0=待支付、1=待审批、2=支付成功、3=支付失败、4=已关闭、5=退款中、6=已退款
      */
     status?: number;
+    /**
+     * 审批状态：1-审批中 2-已通过 3-已驳回 4-已撤回
+     */
+    approvalStatus?: number;
     /**
      * 第三方单号
      */
@@ -7052,7 +7238,7 @@ export type ApprovalActionStatusEnum = 'PENDING' | 'APPROVED' | 'SKIPPED';
 
 export type ApprovalActionTypeEnum = 'APPROVE' | 'REJECT' | 'TRANSFER';
 
-export type ApprovalBizTypeEnum = 'TENANT_CHECKIN' | 'TENANT_CHECKOUT' | 'HOUSE_CREATE';
+export type ApprovalBizTypeEnum = 'TENANT_CHECKIN' | 'TENANT_CHECKOUT' | 'HOUSE_CREATE' | 'PAYMENT_FLOW';
 
 export type ApprovalInstanceStatusEnum = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN' | 'CANCELLED';
 
@@ -7110,7 +7296,7 @@ export type PaymentFlowChannelEnum = 'CASH' | 'TRANSFER' | 'ALIPAY' | 'WECHAT' |
 
 export type PaymentFlowDirectionEnum = 'IN' | 'OUT';
 
-export type PaymentFlowStatusEnum = 'PENDING' | 'SUCCESS' | 'FAILED' | 'CLOSED' | 'REFUNDING' | 'REFUNDED';
+export type PaymentFlowStatusEnum = 'PENDING' | 'PENDING_APPROVAL' | 'SUCCESS' | 'FAILED' | 'CLOSED' | 'REFUNDING' | 'REFUNDED';
 
 export type DecorationTypeEnum = 'LUXURY' | 'SIMPLE' | 'DETAILED' | 'RAW' | 'WATER' | 'SIMPLEST' | 'UNDECORATED';
 
@@ -8653,36 +8839,84 @@ export type CreateHouse1Responses = {
 export type CreateHouse1Response = CreateHouse1Responses[keyof CreateHouse1Responses];
 
 export type SummaryData = {
-    body: LeaseBillFinanceQueryDto;
+    body: PaymentFlowFinanceQueryDto;
     path?: never;
     query?: never;
-    url: '/saas/finance/lease-bill/summary';
+    url: '/saas/finance/payment-flow/summary';
 };
 
 export type SummaryResponses = {
     /**
      * OK
      */
-    200: ResponseResultLeaseBillFinanceSummaryVo;
+    200: ResponseResultPaymentFlowFinanceSummaryVo;
 };
 
 export type SummaryResponse = SummaryResponses[keyof SummaryResponses];
 
 export type PageData = {
-    body: LeaseBillFinanceQueryDto;
+    body: PaymentFlowFinanceQueryDto;
     path?: never;
     query?: never;
-    url: '/saas/finance/lease-bill/page';
+    url: '/saas/finance/payment-flow/page';
 };
 
 export type PageResponses = {
     /**
      * OK
      */
-    200: ResponseResultPageVoLeaseBillFinanceItemVo;
+    200: ResponseResultPageVoPaymentFlowFinanceItemVo;
 };
 
 export type PageResponse = PageResponses[keyof PageResponses];
+
+export type Detail1Data = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/payment-flow/detail/{id}';
+};
+
+export type Detail1Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPaymentFlowFinanceItemVo;
+};
+
+export type Detail1Response = Detail1Responses[keyof Detail1Responses];
+
+export type Summary1Data = {
+    body: LeaseBillFinanceQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/lease-bill/summary';
+};
+
+export type Summary1Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLeaseBillFinanceSummaryVo;
+};
+
+export type Summary1Response = Summary1Responses[keyof Summary1Responses];
+
+export type Page1Data = {
+    body: LeaseBillFinanceQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/lease-bill/page';
+};
+
+export type Page1Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoLeaseBillFinanceItemVo;
+};
+
+export type Page1Response = Page1Responses[keyof Page1Responses];
 
 export type FeePageData = {
     body: LeaseBillFinanceQueryDto;
@@ -10227,7 +10461,7 @@ export type UserOptionsResponses = {
 
 export type UserOptionsResponse = UserOptionsResponses[keyof UserOptionsResponses];
 
-export type Detail1Data = {
+export type Detail2Data = {
     body?: never;
     path: {
         id: string;
@@ -10236,14 +10470,14 @@ export type Detail1Data = {
     url: '/saas/company/user/detail/{id}';
 };
 
-export type Detail1Responses = {
+export type Detail2Responses = {
     /**
      * OK
      */
     200: ResponseResultUserVo;
 };
 
-export type Detail1Response = Detail1Responses[keyof Detail1Responses];
+export type Detail2Response = Detail2Responses[keyof Detail2Responses];
 
 export type CaptchaData = {
     body?: never;

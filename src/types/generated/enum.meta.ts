@@ -97,7 +97,8 @@ export const ApprovalActionTypeEnumMeta = {
 export const ApprovalBizTypeEnumMeta = {
   TENANT_CHECKIN: {"value":"TENANT_CHECKIN","code":"TENANT_CHECKIN","name":"租客入住","tableName":"tenant","pkField":"id"},
   TENANT_CHECKOUT: {"value":"TENANT_CHECKOUT","code":"TENANT_CHECKOUT","name":"租客退租","tableName":"lease_checkout","pkField":"id"},
-  HOUSE_CREATE: {"value":"HOUSE_CREATE","code":"HOUSE_CREATE","name":"房源录入","tableName":"house","pkField":"id"}
+  HOUSE_CREATE: {"value":"HOUSE_CREATE","code":"HOUSE_CREATE","name":"房源录入","tableName":"house","pkField":"id"},
+  PAYMENT_FLOW: {"value":"PAYMENT_FLOW","code":"PAYMENT_FLOW","name":"支付流水","tableName":"payment_flow","pkField":"id"}
 } as const;
 
 export const ApprovalInstanceStatusEnumMeta = {
@@ -341,11 +342,12 @@ export const PaymentFlowDirectionEnumMeta = {
 
 export const PaymentFlowStatusEnumMeta = {
   PENDING: {"value":"PENDING","code":0,"label":"待支付"},
-  SUCCESS: {"value":"SUCCESS","code":1,"label":"支付成功"},
-  FAILED: {"value":"FAILED","code":2,"label":"支付失败"},
-  CLOSED: {"value":"CLOSED","code":3,"label":"已关闭"},
-  REFUNDING: {"value":"REFUNDING","code":4,"label":"退款中"},
-  REFUNDED: {"value":"REFUNDED","code":5,"label":"已退款"}
+  PENDING_APPROVAL: {"value":"PENDING_APPROVAL","code":1,"label":"待审批"},
+  SUCCESS: {"value":"SUCCESS","code":2,"label":"支付成功"},
+  FAILED: {"value":"FAILED","code":3,"label":"支付失败"},
+  CLOSED: {"value":"CLOSED","code":4,"label":"已关闭"},
+  REFUNDING: {"value":"REFUNDING","code":5,"label":"退款中"},
+  REFUNDED: {"value":"REFUNDED","code":6,"label":"已退款"}
 } as const;
 
 export const DecorationTypeEnumMeta = {
