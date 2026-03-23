@@ -93,7 +93,7 @@
           :loading="loading"
           :size="size"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 108 }"
+          :adaptiveConfig="{ offsetBottom: 92 }"
           :data="dataList"
           :columns="dynamicColumns"
           :pagination="{ ...pagination, size }"

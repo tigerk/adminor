@@ -83,7 +83,7 @@
         :loading="loading"
         :loading-config="{ background: 'transparent' }"
         adaptive
-        :adaptiveConfig="{ offsetBottom: 108 }"
+        :adaptiveConfig="{ offsetBottom: 72 }"
         :data="contractTemplateList"
         :size="tableSize as any"
         :columns="columns"

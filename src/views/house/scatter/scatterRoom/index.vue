@@ -136,7 +136,7 @@
         :loading="loading"
         :loading-config="{ background: 'transparent' }"
         adaptive
-        :adaptiveConfig="{ offsetBottom: 108 }"
+        :adaptiveConfig="{ offsetBottom: 92 }"
         :data="roomTableList"
         :columns="columns"
         :pagination="pagination"

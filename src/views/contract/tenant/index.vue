@@ -67,7 +67,7 @@
         :loading="loading"
         :loading-config="{ background: 'transparent' }"
         adaptive
-        :adaptiveConfig="{ offsetBottom: 120 }"
+        :adaptiveConfig="{ offsetBottom: 92 }"
         :data="tenantList"
         :size="tableSize as any"
         :columns="columns"
