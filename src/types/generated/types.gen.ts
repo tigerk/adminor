@@ -3540,6 +3540,76 @@ export type ResponseResultPaymentFlowFinanceSummaryVo = {
     data?: PaymentFlowFinanceSummaryVo;
 };
 
+/**
+ * 财务流水简要信息
+ */
+export type FinanceFlowVo = {
+    /**
+     * 财务流水号
+     */
+    flowNo?: string;
+    /**
+     * 业务类型
+     */
+    bizType?: string;
+    /**
+     * 业务单据ID
+     */
+    bizId?: string;
+    /**
+     * 业务单据编号
+     */
+    bizNo?: string;
+    /**
+     * 流水类型
+     */
+    flowType?: string;
+    /**
+     * 资金方向
+     */
+    flowDirection?: string;
+    /**
+     * 金额
+     */
+    amount?: number;
+    /**
+     * 币种
+     */
+    currency?: string;
+    /**
+     * 状态：0=入账中、1=已入账、2=失败、3=已作废
+     */
+    status?: number;
+    /**
+     * 退款关联原始流水ID
+     */
+    refundFlowId?: string;
+    /**
+     * 流水发生时间
+     */
+    flowTime?: string;
+    /**
+     * 付款方姓名
+     */
+    payerName?: string;
+    /**
+     * 付款方手机号
+     */
+    payerPhone?: string;
+    /**
+     * 收款方名称
+     */
+    receiverName?: string;
+    /**
+     * 操作员工姓名
+     */
+    operatorName?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
 export type PageVoPaymentFlowFinanceItemVo = {
     currentPage?: string;
     pageSize?: string;
@@ -3648,12 +3718,28 @@ export type PaymentFlowFinanceItemVo = {
      * 账单结束日期
      */
     billEnd?: string;
+    /**
+     * 关联财务流水
+     */
+    financeFlowList?: Array<FinanceFlowVo>;
 };
 
 export type ResponseResultPageVoPaymentFlowFinanceItemVo = {
     code?: number;
     message?: string;
     data?: PageVoPaymentFlowFinanceItemVo;
+};
+
+/**
+ * 支付流水详情查询DTO
+ */
+export type PaymentFlowIdDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 支付流水ID
+     */
+    id: string;
 };
 
 export type ResponseResultPaymentFlowFinanceItemVo = {
@@ -5177,76 +5263,6 @@ export type TenantPersonalVo = {
      * 其他附件列表
      */
     otherImageList?: Array<string>;
-};
-
-/**
- * 财务流水简要信息
- */
-export type FinanceFlowVo = {
-    /**
-     * 财务流水号
-     */
-    flowNo?: string;
-    /**
-     * 业务类型
-     */
-    bizType?: string;
-    /**
-     * 业务单据ID
-     */
-    bizId?: string;
-    /**
-     * 业务单据编号
-     */
-    bizNo?: string;
-    /**
-     * 流水类型
-     */
-    flowType?: string;
-    /**
-     * 资金方向
-     */
-    flowDirection?: string;
-    /**
-     * 金额
-     */
-    amount?: number;
-    /**
-     * 币种
-     */
-    currency?: string;
-    /**
-     * 状态：0=入账中、1=已入账、2=失败、3=已作废
-     */
-    status?: number;
-    /**
-     * 退款关联原始流水ID
-     */
-    refundFlowId?: string;
-    /**
-     * 流水发生时间
-     */
-    flowTime?: string;
-    /**
-     * 付款方姓名
-     */
-    payerName?: string;
-    /**
-     * 付款方手机号
-     */
-    payerPhone?: string;
-    /**
-     * 收款方名称
-     */
-    receiverName?: string;
-    /**
-     * 操作员工姓名
-     */
-    operatorName?: string;
-    /**
-     * 备注
-     */
-    remark?: string;
 };
 
 /**
@@ -8871,10 +8887,10 @@ export type PageResponses = {
 export type PageResponse = PageResponses[keyof PageResponses];
 
 export type Detail1Data = {
-    body?: never;
+    body: PaymentFlowIdDto;
     path?: never;
     query?: never;
-    url: '/saas/finance/payment-flow/detail/{id}';
+    url: '/saas/finance/payment-flow/detail';
 };
 
 export type Detail1Responses = {

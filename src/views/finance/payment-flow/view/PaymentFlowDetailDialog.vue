@@ -156,26 +156,56 @@
         <el-image :src="detail.paymentVoucherUrl" fit="contain" class="voucher-img" preview-teleported :preview-src-list="[detail.paymentVoucherUrl]" />
       </div>
     </div>
+
+    <div class="info-card">
+      <div class="info-card__header">
+        <span class="info-card__icon bill-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+            <path d="M4 4h12v2H4zM4 9h12v2H4zM4 14h12v2H4z" />
+          </svg>
+        </span>
+        <span class="info-card__title">财务流水</span>
+      </div>
+      <div class="info-card__body">
+        <el-table :data="detail.financeFlowList || []" border>
+          <el-table-column prop="flowNo" label="财务流水号" min-width="160" />
+          <el-table-column prop="flowType" label="流水类型" min-width="100" />
+          <el-table-column prop="flowDirection" label="资金方向" min-width="90" />
+          <el-table-column prop="amount" label="金额" min-width="100" align="right">
+            <template #default="{ row }">
+              {{ moneyText(row.amount) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="operatorName" label="操作人" min-width="100" />
+          <el-table-column prop="flowTime" label="流水时间" min-width="150">
+            <template #default="{ row }">
+              {{ formatDateTime(row.flowTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
+        </el-table>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
   import { onMounted, ref } from "vue";
   import dayjs from "dayjs";
-  import type { PaymentFlowFinanceItemVo } from "@/types";
+  import type { FinanceFlowVo, PaymentFlowFinanceItemVo } from "@/types";
   import { getFinancePaymentFlowDetail } from "@/api/finance/paymentFlow";
   import { BizApprovalStatusEnumMeta, PaymentFlowChannelEnumMeta, PaymentFlowStatusEnumMeta } from "@/types/generated/enum.meta";
 
   const props = defineProps<{ flowId: string }>();
   const loading = ref(false);
-  const detail = ref<PaymentFlowFinanceItemVo>({});
+  const detail = ref<PaymentFlowFinanceItemVo & { financeFlowList?: FinanceFlowVo[] }>({});
 
   async function fetchDetail() {
     if (!props.flowId) return;
     loading.value = true;
     try {
-      const res = await getFinancePaymentFlowDetail(props.flowId);
-      detail.value = res.data || {};
+      const { data } = await getFinancePaymentFlowDetail({ id: props.flowId });
+      detail.value = data || {};
     } finally {
       loading.value = false;
     }
