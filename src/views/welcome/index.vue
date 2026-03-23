@@ -333,7 +333,7 @@
           <table class="wd-tenant-table">
             <thead>
               <tr>
-                <th></th>
+                <th />
                 <th>今日</th>
                 <th>本月</th>
               </tr>
@@ -364,7 +364,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    padding: 2px 0 24px;
+    padding: 6px 0 24px;
   }
 
   /* ── Banner ── */
