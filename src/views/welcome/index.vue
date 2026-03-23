@@ -2,70 +2,83 @@
   import { computed, onMounted, ref } from "vue";
   import dayjs from "dayjs";
   import { useRouter } from "vue-router";
-  import { Bell, Money, OfficeBuilding, TrendCharts, Warning } from "@element-plus/icons-vue";
   import type { WelcomeDashboardVo, WelcomeOverdueBucketVo, WelcomePeriodAmountVo, WelcomeRoomOverviewVo, WelcomeTenantStatsVo } from "@/types";
   import { getWelcomeDashboard } from "@/api/welcome";
 
-  defineOptions({
-    name: "Welcome"
-  });
+  defineOptions({ name: "Welcome" });
 
   const router = useRouter();
   const loading = ref(false);
   const dashboard = ref<WelcomeDashboardVo>({});
   const currentLeaseMode = ref(2);
 
+  const greeting = computed(() => {
+    const h = dayjs().hour();
+    if (h < 6) return "夜深了";
+    if (h < 12) return "早上好";
+    if (h < 14) return "中午好";
+    if (h < 18) return "下午好";
+    return "晚上好";
+  });
+
+  const todayStr = computed(() => dayjs().format("YYYY年MM月DD日"));
+
   const roomOverview = computed<WelcomeRoomOverviewVo | undefined>(() => {
     const list = dashboard.value.roomOverviewList || [];
-    return list.find(item => item.leaseMode === currentLeaseMode.value) || list[0];
+    return list.find(i => i.leaseMode === currentLeaseMode.value) || list[0];
   });
 
   const financePeriods = computed(() => buildPeriodItems(dashboard.value.financeSummary));
   const paymentPeriods = computed(() => buildPeriodItems(dashboard.value.paymentSummary));
   const overdueBuckets = computed<WelcomeOverdueBucketVo[]>(() => dashboard.value.overdueBuckets || []);
   const tenantStats = computed<WelcomeTenantStatsVo>(() => dashboard.value.tenantStats || {});
+  const notices = computed(() => dashboard.value.notices || []);
 
   const roomPercentages = computed(() => {
-    const overview = roomOverview.value;
-    const total = Number(overview?.total || 0);
-    if (!total) {
-      return { leased: 0, available: 0, preparing: 0 };
-    }
+    const o = roomOverview.value;
+    const total = Number(o?.total || 0);
+    if (!total) return { leased: 0, available: 0, preparing: 0 };
     return {
-      leased: Number((((overview?.leasedCount || 0) / total) * 100).toFixed(2)),
-      available: Number((((overview?.availableCount || 0) / total) * 100).toFixed(2)),
-      preparing: Number((((overview?.preparingCount || 0) / total) * 100).toFixed(2))
+      leased: +(((o?.leasedCount || 0) / total) * 100).toFixed(1),
+      available: +(((o?.availableCount || 0) / total) * 100).toFixed(1),
+      preparing: +(((o?.preparingCount || 0) / total) * 100).toFixed(1)
     };
   });
 
-  const roomDonutStyle = computed(() => {
-    const leased = roomPercentages.value.leased;
-    const available = roomPercentages.value.available;
-    const preparing = roomPercentages.value.preparing;
-    const leasedEnd = leased;
-    const availableEnd = leased + available;
-    const preparingEnd = leased + available + preparing;
-    return {
-      background: `conic-gradient(#2563eb 0 ${leasedEnd}%, #ff6678 ${leasedEnd}% ${availableEnd}%, #ff8a1a ${availableEnd}% ${preparingEnd}%, #e5e7eb ${preparingEnd}% 100%)`
-    };
+  const donutGradient = computed(() => {
+    const { leased, available, preparing } = roomPercentages.value;
+    const a2 = leased + available;
+    const a3 = a2 + preparing;
+    return `conic-gradient(
+      var(--el-color-primary) 0 ${leased}%,
+      var(--el-text-color-placeholder) ${leased}% ${a2}%,
+      var(--el-border-color) ${a2}% ${a3}%,
+      var(--el-fill-color) ${a3}% 100%
+    )`;
   });
 
-  const roomMetricCards = computed(() => {
-    const overview = roomOverview.value || {};
+  const roomMetrics = computed(() => {
+    const o = roomOverview.value || {};
     return [
-      { key: "available", label: "空置", value: overview.availableCount || 0, accent: "text-[#ff5568]" },
-      { key: "preparing", label: "配置", value: overview.preparingCount || 0, accent: "text-[#ff8a1a]" },
-      { key: "leased", label: "已租", value: overview.leasedCount || 0, accent: "text-[#2563eb]" },
-      { key: "checkin", label: "即将搬入(30天内)", value: overview.upcomingCheckInCount || 0, accent: "text-[#10b981]" },
-      { key: "checkout", label: "即将搬出(30天内)", value: overview.upcomingCheckOutCount || 0, accent: "text-[#8b5cf6]" },
-      { key: "overdue", label: "到期未退", value: overview.overdueCheckOutCount || 0, accent: "text-[#ef4444]" }
+      { label: "空置", value: o.availableCount ?? 0, danger: false },
+      { label: "配置中", value: o.preparingCount ?? 0, danger: false },
+      { label: "已租", value: o.leasedCount ?? 0, primary: true },
+      { label: "即将搬入", sub: "30天内", value: o.upcomingCheckInCount ?? 0, danger: false },
+      { label: "即将搬出", sub: "30天内", value: o.upcomingCheckOutCount ?? 0, danger: false },
+      { label: "到期未退", value: o.overdueCheckOutCount ?? 0, danger: true }
     ];
   });
 
-  const tenantStatCards = computed(() => [
-    { key: "deposit", label: "定金租客", today: tenantStats.value.todayDepositCount || 0, month: tenantStats.value.monthDepositCount || 0, accent: "bg-amber-50 text-amber-600" },
-    { key: "new", label: "新签", today: tenantStats.value.todayNewSignCount || 0, month: tenantStats.value.monthNewSignCount || 0, accent: "bg-blue-50 text-blue-600" },
-    { key: "renew", label: "续签", today: tenantStats.value.todayRenewCount || 0, month: tenantStats.value.monthRenewCount || 0, accent: "bg-emerald-50 text-emerald-600" }
+  const tenantStatRows = computed(() => [
+    { label: "定金租客", today: tenantStats.value.todayDepositCount || 0, month: tenantStats.value.monthDepositCount || 0 },
+    { label: "新签", today: tenantStats.value.todayNewSignCount || 0, month: tenantStats.value.monthNewSignCount || 0 },
+    { label: "续签", today: tenantStats.value.todayRenewCount || 0, month: tenantStats.value.monthRenewCount || 0 }
+  ]);
+
+  const legendItems = computed(() => [
+    { label: "已租", value: roomPercentages.value.leased, cls: "dot-primary" },
+    { label: "空置", value: roomPercentages.value.available, cls: "dot-muted" },
+    { label: "配置", value: roomPercentages.value.preparing, cls: "dot-light" }
   ]);
 
   async function fetchDashboard() {
@@ -73,7 +86,7 @@
     try {
       const { data } = await getWelcomeDashboard();
       dashboard.value = data || {};
-      if (!dashboard.value.roomOverviewList?.find(item => item.leaseMode === currentLeaseMode.value)) {
+      if (!dashboard.value.roomOverviewList?.find(i => i.leaseMode === currentLeaseMode.value)) {
         currentLeaseMode.value = dashboard.value.roomOverviewList?.[0]?.leaseMode || 2;
       }
     } finally {
@@ -88,687 +101,813 @@
       { key: "thisMonth", label: "本月", value: period?.thisMonthAmount || 0 },
       { key: "lastMonth", label: "上月", value: period?.lastMonthAmount || 0 },
       { key: "thisYear", label: "本年", value: period?.thisYearAmount || 0 },
-      { key: "total", label: "全部", value: period?.totalAmount || 0 }
+      { key: "total", label: "累计", value: period?.totalAmount || 0 }
     ];
   }
 
-  function openNoticeList() {
-    router.push("/my-notice/notice/index");
-  }
-
-  function openNoticeDetail() {
-    router.push("/my-notice/notice/index");
-  }
-
-  function openOverdueBills() {
-    router.push({
-      path: "/finance/lease-bill",
-      query: {
-        overdueOnly: "true"
-      }
-    });
-  }
-
   function moneyText(value?: number) {
-    const amount = Number(value || 0);
-    return `￥${amount.toLocaleString("zh-CN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })}`;
+    const n = Number(value || 0);
+    return `¥${n.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
-  function compactMoneyText(value?: number) {
-    const amount = Number(value || 0);
-    if (amount >= 100000000) {
-      return `${(amount / 100000000).toFixed(2)}亿+`;
-    }
-    if (amount >= 10000) {
-      return `${(amount / 10000).toFixed(2)}万+`;
-    }
-    return moneyText(amount);
+  function compactMoney(value?: number) {
+    const n = Number(value || 0);
+    if (n >= 1e8) return `¥${(n / 1e8).toFixed(2)}亿`;
+    if (n >= 1e4) return `¥${(n / 1e4).toFixed(2)}万`;
+    return moneyText(n);
   }
 
-  function formatDateTime(value?: string) {
-    return value ? dayjs(value).format("YYYY-MM-DD HH:mm") : "—";
+  function formatTime(value?: string) {
+    return value ? dayjs(value).format("MM-DD HH:mm") : "—";
   }
 
   onMounted(fetchDashboard);
 </script>
 
 <template>
-  <div v-loading="loading" class="welcome-dashboard">
-    <div class="dashboard-grid">
-      <section class="hero-card hero-card--finance">
-        <div class="hero-card__header">
-          <div class="hero-card__title-wrap">
-            <div class="hero-card__icon bg-blue-50 text-blue-600">
-              <el-icon><TrendCharts /></el-icon>
-            </div>
-            <div>
-              <div class="hero-card__title">财务流水</div>
-              <div class="hero-card__subtitle">按入账成功口径统计</div>
-            </div>
-          </div>
-          <div class="hero-card__headline">{{ moneyText(dashboard.financeSummary?.totalAmount) }}</div>
+  <div v-loading="loading" class="wd" element-loading-background="transparent">
+    <!-- ① Banner -->
+    <div class="wd-banner">
+      <div>
+        <p class="wd-banner__date">{{ todayStr }}</p>
+        <h1 class="wd-banner__title">{{ greeting }}，欢迎回来 👋</h1>
+      </div>
+      <div class="wd-banner__kpis">
+        <div class="wd-kpi">
+          <span class="wd-kpi__label">财务流水（累计）</span>
+          <span class="wd-kpi__val">{{ compactMoney(dashboard.financeSummary?.totalAmount) }}</span>
         </div>
-        <div class="period-grid">
-          <div v-for="item in financePeriods" :key="item.key" class="period-grid__item">
-            <span class="period-grid__label">{{ item.label }}</span>
-            <strong class="period-grid__value">{{ moneyText(item.value) }}</strong>
-          </div>
+        <div class="wd-kpi wd-kpi--em">
+          <span class="wd-kpi__label">支付（累计）</span>
+          <span class="wd-kpi__val">{{ compactMoney(dashboard.paymentSummary?.totalAmount) }}</span>
         </div>
-      </section>
-
-      <section class="hero-card hero-card--payment">
-        <div class="hero-card__header">
-          <div class="hero-card__title-wrap">
-            <div class="hero-card__icon bg-emerald-50 text-emerald-600">
-              <el-icon><Money /></el-icon>
-            </div>
-            <div>
-              <div class="hero-card__title">支付</div>
-              <div class="hero-card__subtitle">按支付成功口径统计</div>
-            </div>
-          </div>
-          <div class="hero-card__headline">{{ moneyText(dashboard.paymentSummary?.totalAmount) }}</div>
-        </div>
-        <div class="period-grid">
-          <div v-for="item in paymentPeriods" :key="item.key" class="period-grid__item">
-            <span class="period-grid__label">{{ item.label }}</span>
-            <strong class="period-grid__value">{{ moneyText(item.value) }}</strong>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
 
-    <div class="dashboard-grid dashboard-grid--secondary">
-      <section class="board-card notices-card">
-        <div class="board-card__header">
-          <div class="board-card__title-wrap">
-            <div class="board-card__icon bg-sky-50 text-sky-600">
-              <el-icon><Bell /></el-icon>
+    <!-- ② 主体 -->
+    <div class="wd-body">
+      <!-- 左栏 -->
+      <div class="wd-left">
+        <!-- 财务流水 -->
+        <div class="wd-card">
+          <div class="wd-card-head">
+            <div class="wd-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
             </div>
-            <div>
-              <h3 class="board-card__title">最新公告</h3>
-              <p class="board-card__caption">最近发布的系统公告</p>
+            <div class="wd-card-titles">
+              <span class="wd-card-title">财务流水</span>
+              <span class="wd-card-caption">按入账成功口径统计</span>
+            </div>
+            <span class="wd-badge">实时</span>
+          </div>
+          <div class="wd-period-grid">
+            <div v-for="item in financePeriods" :key="item.key" class="wd-period-cell">
+              <span class="wd-period-label">{{ item.label }}</span>
+              <strong class="wd-period-val">{{ moneyText(item.value) }}</strong>
             </div>
           </div>
-          <el-button link type="primary" @click="openNoticeList">查看全部</el-button>
         </div>
 
-        <div v-if="dashboard.notices?.length" class="notice-list">
-          <div v-for="notice in dashboard.notices" :key="notice.id" class="notice-item notice-item--clickable" @click="openNoticeDetail">
-            <div class="notice-item__content">
-              <div class="notice-item__title">{{ notice.title || "未命名公告" }}</div>
-              <div class="notice-item__meta">
-                <span>{{ notice.createByName || "系统" }}</span>
-                <span>{{ formatDateTime(notice.publishTime) }}</span>
-              </div>
+        <!-- 支付 -->
+        <div class="wd-card">
+          <div class="wd-card-head">
+            <div class="wd-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="1" y="4" width="22" height="16" rx="2" />
+                <line x1="1" y1="10" x2="23" y2="10" />
+              </svg>
+            </div>
+            <div class="wd-card-titles">
+              <span class="wd-card-title">支付</span>
+              <span class="wd-card-caption">按支付成功口径统计</span>
+            </div>
+            <span class="wd-badge">实时</span>
+          </div>
+          <div class="wd-period-grid">
+            <div v-for="item in paymentPeriods" :key="item.key" class="wd-period-cell">
+              <span class="wd-period-label">{{ item.label }}</span>
+              <strong class="wd-period-val">{{ moneyText(item.value) }}</strong>
             </div>
           </div>
         </div>
-        <el-empty v-else description="暂无公告" :image-size="88" />
-      </section>
 
-      <section class="board-card tenant-card">
-        <div class="board-card__header">
-          <div class="board-card__title-wrap">
-            <div class="board-card__icon bg-violet-50 text-violet-600">
-              <el-icon><OfficeBuilding /></el-icon>
+        <!-- 房源概况 -->
+        <div class="wd-card">
+          <div class="wd-card-head">
+            <div class="wd-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
             </div>
-            <div>
-              <h3 class="board-card__title">租客统计</h3>
-              <p class="board-card__caption">按今日和本月统计新增业务</p>
+            <div class="wd-card-titles">
+              <span class="wd-card-title">房源概况</span>
+              <span class="wd-card-caption">
+                共
+                <b>{{ roomOverview?.total || 0 }}</b>
+                间 &nbsp;·&nbsp; 出租率
+                <b>{{ Number(roomOverview?.occupancyRate || 0).toFixed(1) }}%</b>
+              </span>
+            </div>
+            <!-- 模式 tab -->
+            <div class="wd-tabs">
+              <button
+                v-for="item in dashboard.roomOverviewList || []"
+                :key="item.leaseMode"
+                class="wd-tab"
+                :class="{ 'is-active': currentLeaseMode === item.leaseMode }"
+                @click="currentLeaseMode = item.leaseMode || 2"
+              >
+                {{ item.leaseModeName }}
+              </button>
+            </div>
+          </div>
+
+          <div class="wd-room-body">
+            <!-- 指标格 -->
+            <div class="wd-metrics">
+              <div v-for="m in roomMetrics" :key="m.label" class="wd-metric">
+                <span class="wd-metric-val" :class="{ 'is-primary': m.primary, 'is-danger': m.danger }">{{ m.value }}</span>
+                <span class="wd-metric-label">
+                  {{ m.label }}
+                  <em v-if="m.sub">{{ m.sub }}</em>
+                </span>
+              </div>
+            </div>
+
+            <!-- 饼图 -->
+            <div class="wd-donut-wrap">
+              <div class="wd-donut" :style="{ background: donutGradient }">
+                <div class="wd-donut-hole">
+                  <span class="wd-donut-pct">{{ Number(roomOverview?.occupancyRate || 0).toFixed(1) }}%</span>
+                  <span class="wd-donut-sub">出租率</span>
+                </div>
+              </div>
+              <!-- 图例：竖排，永不换行 -->
+              <div class="wd-legend">
+                <div v-for="leg in legendItems" :key="leg.label" class="wd-legend-row">
+                  <span class="wd-legend-dot" :class="leg.cls" />
+                  <span class="wd-legend-label">{{ leg.label }}</span>
+                  <span class="wd-legend-val">{{ leg.value }}%</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="tenant-stats-grid">
-          <div v-for="item in tenantStatCards" :key="item.key" class="tenant-stat">
-            <div class="tenant-stat__badge" :class="item.accent">{{ item.label }}</div>
-            <div class="tenant-stat__values">
-              <div>
-                <span class="tenant-stat__label">今日</span>
-                <strong>{{ item.today }}</strong>
+      </div>
+      <!-- /left -->
+
+      <!-- 右栏 -->
+      <div class="wd-right">
+        <!-- 最新公告 -->
+        <div class="wd-card">
+          <div class="wd-card-head">
+            <div class="wd-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            </div>
+            <div class="wd-card-titles">
+              <span class="wd-card-title">最新公告</span>
+              <span class="wd-card-caption">近期系统公告</span>
+            </div>
+            <el-button link type="primary" size="small" class="wd-more-btn" @click="router.push('/my-notice/notice/index')">全部 →</el-button>
+          </div>
+          <div v-if="notices.length" class="wd-notice-list">
+            <div v-for="notice in notices" :key="notice.id" class="wd-notice-row" @click="router.push('/my-notice/notice/index')">
+              <span class="wd-notice-dot" />
+              <div class="wd-notice-content">
+                <p class="wd-notice-title">{{ notice.title || "未命名公告" }}</p>
+                <p class="wd-notice-meta">{{ notice.createByName || "系统" }} · {{ formatTime(notice.publishTime) }}</p>
               </div>
-              <div>
-                <span class="tenant-stat__label">本月</span>
-                <strong>{{ item.month }}</strong>
-              </div>
+              <svg class="wd-notice-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </div>
           </div>
+          <el-empty v-else description="暂无公告" :image-size="60" />
         </div>
-      </section>
+
+        <!-- 逾期欠款 -->
+        <div class="wd-card">
+          <div class="wd-card-head">
+            <div class="wd-icon wd-icon--danger">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <div class="wd-card-titles">
+              <span class="wd-card-title">逾期欠款</span>
+              <span class="wd-card-caption">按逾期天数分桶统计</span>
+            </div>
+            <el-button link type="danger" size="small" class="wd-more-btn" @click="router.push({ path: '/finance/lease-bill', query: { overdueOnly: 'true' } })">查看 →</el-button>
+          </div>
+          <div v-if="overdueBuckets.length" class="wd-overdue-grid">
+            <div v-for="item in overdueBuckets" :key="item.key" class="wd-overdue-cell" @click="router.push({ path: '/finance/lease-bill', query: { overdueOnly: 'true' } })">
+              <span class="wd-overdue-label">{{ item.label }}</span>
+              <span class="wd-overdue-val">{{ compactMoney(item.amount) }}</span>
+            </div>
+          </div>
+          <el-empty v-else description="暂无逾期欠款" :image-size="56" />
+        </div>
+
+        <!-- 租客统计 -->
+        <div class="wd-card">
+          <div class="wd-card-head">
+            <div class="wd-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div class="wd-card-titles">
+              <span class="wd-card-title">租客统计</span>
+              <span class="wd-card-caption">今日 / 本月新增业务</span>
+            </div>
+          </div>
+          <table class="wd-tenant-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>今日</th>
+                <th>本月</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in tenantStatRows" :key="row.label">
+                <td class="wd-tenant-name">{{ row.label }}</td>
+                <td class="wd-tenant-num">{{ row.today }}</td>
+                <td class="wd-tenant-num">{{ row.month }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- /right -->
     </div>
-
-    <section class="board-card room-card">
-      <div class="board-card__header board-card__header--room">
-        <div class="board-card__title-wrap">
-          <div class="board-card__icon bg-blue-50 text-blue-600">
-            <el-icon><OfficeBuilding /></el-icon>
-          </div>
-          <div>
-            <h3 class="board-card__title">房源概况</h3>
-            <p class="board-card__caption">
-              {{ roomOverview?.total || 0 }} 间
-              <span class="room-card__divider">|</span>
-              出租率 {{ Number(roomOverview?.occupancyRate || 0).toFixed(2) }}%
-            </p>
-          </div>
-        </div>
-
-        <div class="mode-switch">
-          <button
-            v-for="item in dashboard.roomOverviewList || []"
-            :key="item.leaseMode"
-            class="mode-switch__item"
-            :class="{ 'is-active': currentLeaseMode === item.leaseMode }"
-            @click="currentLeaseMode = item.leaseMode || 2"
-          >
-            {{ item.leaseModeName }}
-          </button>
-        </div>
-      </div>
-
-      <div class="room-card__body">
-        <div class="room-card__metrics">
-          <div v-for="item in roomMetricCards" :key="item.key" class="room-metric">
-            <div class="room-metric__value" :class="item.accent">{{ item.value }}</div>
-            <div class="room-metric__label">{{ item.label }}</div>
-          </div>
-        </div>
-
-        <div class="room-card__chart">
-          <div class="donut" :style="roomDonutStyle">
-            <div class="donut__inner">
-              <div class="donut__value">{{ Number(roomOverview?.occupancyRate || 0).toFixed(2) }}%</div>
-              <div class="donut__label">出租率</div>
-            </div>
-          </div>
-          <div class="donut-legend">
-            <div class="donut-legend__item">
-              <span class="dot dot-blue" />
-              <span>已租 {{ roomPercentages.leased.toFixed(2) }}%</span>
-            </div>
-            <div class="donut-legend__item">
-              <span class="dot dot-red" />
-              <span>空置 {{ roomPercentages.available.toFixed(2) }}%</span>
-            </div>
-            <div class="donut-legend__item">
-              <span class="dot dot-amber" />
-              <span>配置 {{ roomPercentages.preparing.toFixed(2) }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="board-card overdue-card">
-      <div class="board-card__header">
-        <div class="board-card__title-wrap">
-          <div class="board-card__icon bg-rose-50 text-rose-600">
-            <el-icon><Warning /></el-icon>
-          </div>
-          <div>
-            <h3 class="board-card__title">租客逾期欠款</h3>
-            <p class="board-card__caption">按逾期天数对待收金额分桶</p>
-          </div>
-        </div>
-      </div>
-      <div class="overdue-grid">
-        <div v-for="item in overdueBuckets" :key="item.key" class="overdue-item overdue-item--clickable" @click="openOverdueBills">
-          <div class="overdue-item__label">{{ item.label }}</div>
-          <div class="overdue-item__amount">{{ compactMoneyText(item.amount) }}</div>
-        </div>
-      </div>
-    </section>
   </div>
 </template>
 
 <style scoped lang="scss">
-  .welcome-dashboard {
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   全部颜色均使用 Element Plus CSS 变量
+   深色模式由 html.dark 自动切换 EP 变量，
+   无需再写任何 html.dark 覆盖规则
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  .wd {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
+    padding: 2px 0 24px;
   }
 
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    min-width: 0;
-  }
-
-  .dashboard-grid--secondary {
-    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-  }
-
-  .hero-card,
-  .board-card {
-    background: #fff;
-    border: 1px solid #edf1f7;
-    border-radius: 18px;
-    box-shadow: 0 8px 28px rgb(15 23 42 / 0.05);
-    min-width: 0;
-  }
-
-  .hero-card {
-    padding: 20px 22px;
-  }
-
-  .hero-card--finance {
-    background: linear-gradient(180deg, rgb(59 130 246 / 0.06), #fff 48%);
-  }
-
-  .hero-card--payment {
-    background: linear-gradient(180deg, rgb(16 185 129 / 0.06), #fff 48%);
-  }
-
-  .hero-card__header,
-  .board-card__header {
+  /* ── Banner ── */
+  .wd-banner {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+    box-shadow: var(--el-box-shadow-lighter);
+    flex-wrap: wrap;
   }
 
-  .hero-card__title-wrap,
-  .board-card__title-wrap {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-  }
-
-  .hero-card__icon,
-  .board-card__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
-  .hero-card__title,
-  .board-card__title {
-    color: #111827;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  .hero-card__subtitle,
-  .board-card__caption {
-    color: #6b7280;
-    font-size: 13px;
-    line-height: 1.4;
-    margin-top: 4px;
-  }
-
-  .hero-card__headline {
-    color: #111827;
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1;
-    text-align: right;
-    white-space: nowrap;
-  }
-
-  .period-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 18px;
-  }
-
-  .period-grid__item {
-    border: 1px solid #edf1f7;
-    border-radius: 14px;
-    padding: 12px 14px;
-    background: rgb(248 250 252 / 0.9);
-    min-width: 0;
-  }
-
-  .period-grid__label {
-    display: block;
+  .wd-banner__date {
     font-size: 12px;
-    color: #64748b;
-    margin-bottom: 6px;
+    color: var(--el-text-color-placeholder);
+    margin-bottom: 4px;
+  }
+  .wd-banner__title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+    line-height: 1.25;
   }
 
-  .period-grid__value {
-    display: block;
-    color: #0f172a;
-    font-size: 18px;
-    line-height: 1.3;
-    word-break: break-all;
+  .wd-banner__kpis {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
-  .board-card {
-    padding: 18px 20px;
-  }
-
-  .notice-list {
+  .wd-kpi {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 18px;
-  }
-
-  .notice-item {
-    border: 1px solid #eef2f7;
-    background: linear-gradient(180deg, #fff, #f8fbff);
-    border-radius: 14px;
-    padding: 14px 16px;
-  }
-
-  .notice-item--clickable {
-    cursor: pointer;
-    transition:
-      transform 0.18s ease,
-      box-shadow 0.18s ease,
-      border-color 0.18s ease;
-  }
-
-  .notice-item--clickable:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgb(37 99 235 / 0.08);
-    border-color: rgb(147 197 253 / 0.8);
-  }
-
-  .notice-item__title {
-    color: #111827;
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.5;
-  }
-
-  .notice-item__meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #94a3b8;
-    font-size: 12px;
-    margin-top: 8px;
-  }
-
-  .tenant-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 18px;
-  }
-
-  .tenant-stat {
-    border: 1px solid #edf1f7;
-    border-radius: 16px;
-    padding: 16px;
-    background: linear-gradient(180deg, #fff, #f8fafc);
-  }
-
-  .tenant-stat__badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 76px;
-    padding: 5px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .tenant-stat__values {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 16px;
-  }
-
-  .tenant-stat__label {
-    display: block;
-    color: #94a3b8;
-    font-size: 12px;
-    margin-bottom: 6px;
-  }
-
-  .tenant-stat strong {
-    color: #0f172a;
-    font-size: 22px;
-    line-height: 1;
-  }
-
-  .room-card__divider {
-    padding: 0 10px;
-    color: #cbd5e1;
-  }
-
-  .mode-switch {
-    display: inline-flex;
-    padding: 4px;
-    background: #f8fafc;
-    border-radius: 999px;
     gap: 4px;
+    padding: 12px 18px;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+    min-width: 160px;
   }
 
-  .mode-switch__item {
-    border: 0;
-    background: transparent;
-    padding: 8px 14px;
-    border-radius: 999px;
-    color: #475569;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
+  .wd-kpi--em {
+    background: var(--el-color-primary-light-9);
+    border-color: var(--el-color-primary-light-7);
   }
 
-  .mode-switch__item.is-active {
-    background: #2563eb;
-    color: #fff;
-    box-shadow: 0 8px 20px rgb(37 99 235 / 0.2);
+  .wd-kpi__label {
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
+  }
+  .wd-kpi__val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
   }
 
-  .room-card__body {
+  /* ── 双栏布局 ── */
+  .wd-body {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
-    gap: 20px;
-    margin-top: 18px;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+    gap: 14px;
+    align-items: start;
   }
 
-  .room-card__metrics {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .wd-left,
+  .wd-right {
+    display: flex;
+    flex-direction: column;
     gap: 14px;
   }
 
-  .room-metric {
-    border-radius: 18px;
-    background: #f8fafc;
-    min-height: 134px;
+  /* ── 卡片 ── */
+  .wd-card {
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--el-box-shadow-lighter);
+    transition: box-shadow 0.2s;
+
+    &:hover {
+      box-shadow: var(--el-box-shadow-light);
+    }
+  }
+
+  /* ── 卡片头部 ── */
+  .wd-card-head {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .wd-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: 18px 14px;
-    border: 1px solid #eef2f7;
+    flex-shrink: 0;
+    background: var(--el-fill-color);
+    color: var(--el-text-color-secondary);
   }
 
-  .room-metric__value {
-    font-size: 40px;
-    line-height: 1;
-    font-weight: 700;
+  .wd-icon--danger {
+    background: var(--el-color-danger-light-9);
+    color: var(--el-color-danger);
   }
 
-  .room-metric__label {
-    color: #334155;
-    font-size: 15px;
-    margin-top: 14px;
-    text-align: center;
-  }
-
-  .room-card__chart {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
+  .wd-card-titles {
+    flex: 1;
     min-width: 0;
   }
-
-  .donut {
-    width: 212px;
-    height: 212px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .donut__inner {
-    width: 122px;
-    height: 122px;
-    background: #fff;
-    border-radius: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    box-shadow: inset 0 0 0 1px #eef2f7;
-  }
-
-  .donut__value {
-    color: #0f172a;
-    font-size: 26px;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  .donut__label {
-    color: #64748b;
-    font-size: 12px;
-    margin-top: 8px;
-  }
-
-  .donut-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  .wd-card-title {
+    display: block;
     font-size: 14px;
-    color: #475569;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+    line-height: 1.3;
+  }
+  .wd-card-caption {
+    display: block;
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
+    margin-top: 2px;
+    b {
+      color: var(--el-text-color-secondary);
+      font-weight: 600;
+    }
   }
 
-  .donut-legend__item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .dot {
-    width: 10px;
-    height: 10px;
+  .wd-badge {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
     border-radius: 999px;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    border: 1px solid var(--el-color-primary-light-7);
+  }
+
+  .wd-more-btn {
+    margin-left: auto;
     flex-shrink: 0;
   }
 
-  .dot-blue {
-    background: #2563eb;
-  }
-
-  .dot-red {
-    background: #ff6678;
-  }
-
-  .dot-amber {
-    background: #ff8a1a;
-  }
-
-  .overdue-grid {
+  /* ── 期间数据格 ── */
+  .wd-period-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 18px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
-  .overdue-item {
-    border: 1px solid #fee2e2;
-    background: linear-gradient(180deg, #fff, #fff7f7);
-    border-radius: 16px;
-    padding: 18px 16px;
+  .wd-period-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 13px;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    transition: border-color 0.15s;
+
+    &:hover {
+      border-color: var(--el-color-primary-light-5);
+    }
   }
 
-  .overdue-item--clickable {
+  .wd-period-label {
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
+  }
+  .wd-period-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+    word-break: break-all;
+    line-height: 1.3;
+  }
+
+  /* ── 房源模式 Tab ── */
+  .wd-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 9px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .wd-tab {
+    border: none;
+    background: transparent;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--el-text-color-secondary);
     cursor: pointer;
     transition:
-      transform 0.18s ease,
-      box-shadow 0.18s ease,
-      border-color 0.18s ease;
+      background 0.15s,
+      color 0.15s;
+    white-space: nowrap;
+
+    &.is-active {
+      background: var(--el-color-primary);
+      color: #fff;
+    }
+
+    &:not(.is-active):hover {
+      color: var(--el-text-color-primary);
+    }
   }
 
-  .overdue-item--clickable:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 24px rgb(220 38 38 / 0.08);
-    border-color: rgb(252 165 165 / 0.95);
+  /* ── 房源 body ── */
+  .wd-room-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 196px;
+    gap: 16px;
+    align-items: center;
   }
 
-  .overdue-item__label {
-    color: #7f1d1d;
-    font-size: 13px;
-    margin-bottom: 10px;
+  .wd-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
-  .overdue-item__amount {
-    color: #dc2626;
+  .wd-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 13px 13px;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+  }
+
+  .wd-metric-val {
     font-size: 26px;
-    line-height: 1.1;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--el-text-color-primary);
+
+    &.is-primary {
+      color: var(--el-color-primary);
+    }
+    &.is-danger {
+      color: var(--el-color-danger);
+    }
+  }
+
+  .wd-metric-label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    line-height: 1.3;
+    em {
+      display: block;
+      font-style: normal;
+      color: var(--el-text-color-placeholder);
+      font-size: 11px;
+    }
+  }
+
+  /* ── 甜甜圈 ── */
+  .wd-donut-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .wd-donut {
+    width: 144px;
+    height: 144px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .wd-donut-hole {
+    width: 88px;
+    height: 88px;
+    background: var(--el-bg-color);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wd-donut-pct {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--el-text-color-primary);
+    line-height: 1;
+  }
+  .wd-donut-sub {
+    font-size: 11px;
+    color: var(--el-text-color-placeholder);
+    margin-top: 4px;
+  }
+
+  /* ── 图例：竖排 grid，三列对齐，不换行 ── */
+  .wd-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .wd-legend-row {
+    display: grid;
+    grid-template-columns: 8px 1fr auto;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+  }
+
+  .wd-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.dot-primary {
+      background: var(--el-color-primary);
+    }
+    &.dot-muted {
+      background: var(--el-text-color-placeholder);
+    }
+    &.dot-light {
+      background: var(--el-border-color);
+    }
+  }
+
+  .wd-legend-label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+  .wd-legend-val {
+    font-size: 12px;
     font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  /* ── 公告 ── */
+  .wd-notice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .wd-notice-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
+
+    &:hover {
+      background: var(--el-fill-color-light);
+      border-color: var(--el-border-color-lighter);
+    }
+  }
+
+  .wd-notice-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--el-color-primary);
+    flex-shrink: 0;
+  }
+
+  .wd-notice-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .wd-notice-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wd-notice-meta {
+    font-size: 11px;
+    color: var(--el-text-color-placeholder);
+    margin-top: 2px;
+  }
+  .wd-notice-chevron {
+    color: var(--el-text-color-placeholder);
+    flex-shrink: 0;
+  }
+
+  /* ── 逾期欠款 ── */
+  .wd-overdue-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .wd-overdue-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 13px;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+
+    &:hover {
+      border-color: var(--el-color-danger-light-5);
+      background: var(--el-color-danger-light-9);
+    }
+  }
+
+  .wd-overdue-label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    font-weight: 500;
+  }
+  .wd-overdue-val {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--el-color-danger);
+    line-height: 1;
     word-break: break-all;
   }
 
-  @media (max-width: 1440px) {
-    .dashboard-grid,
-    .dashboard-grid--secondary,
-    .room-card__body {
-      grid-template-columns: 1fr;
+  /* ── 租客统计 table ── */
+  .wd-tenant-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 13px;
+
+    thead tr {
+      border-bottom: 1px solid var(--el-border-color-lighter);
     }
 
-    .room-card__metrics,
-    .tenant-stats-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    th {
+      padding: 0 12px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--el-text-color-placeholder);
+      text-align: center;
+
+      &:first-child {
+        text-align: left;
+        padding-left: 0;
+      }
     }
 
-    .overdue-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+    tbody tr {
+      border-bottom: 1px solid var(--el-border-color-extra-light);
+
+      &:last-child {
+        border-bottom: none;
+      }
     }
   }
 
-  @media (max-width: 960px) {
-    .period-grid,
-    .room-card__metrics,
-    .tenant-stats-grid,
-    .overdue-grid {
+  .wd-tenant-name {
+    padding: 11px 12px 11px 0;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+    white-space: nowrap;
+  }
+
+  .wd-tenant-num {
+    padding: 11px 12px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--el-text-color-primary);
+  }
+
+  /* ── 响应式 ── */
+  @media (max-width: 1280px) {
+    .wd-body {
       grid-template-columns: 1fr;
     }
+    .wd-room-body {
+      grid-template-columns: 1fr;
+    }
+    .wd-donut-wrap {
+      flex-direction: row;
+      justify-content: center;
+      padding: 8px 0;
+    }
+    .wd-legend {
+      width: auto;
+      min-width: 120px;
+    }
+  }
 
-    .hero-card__header,
-    .board-card__header--room {
+  @media (max-width: 860px) {
+    .wd-banner {
       flex-direction: column;
       align-items: flex-start;
     }
-
-    .hero-card__headline {
-      text-align: left;
-      font-size: 24px;
+    .wd-banner__kpis {
+      width: 100%;
     }
-
-    .donut {
-      width: 184px;
-      height: 184px;
+    .wd-kpi {
+      flex: 1;
+      min-width: unset;
     }
-
-    .donut__inner {
-      width: 106px;
-      height: 106px;
+    .wd-period-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .wd-metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .wd-overdue-grid {
+      grid-template-columns: 1fr;
+    }
+    .wd-card-head {
+      flex-wrap: wrap;
+    }
+    .wd-tabs {
+      margin-left: 0;
     }
   }
 </style>
