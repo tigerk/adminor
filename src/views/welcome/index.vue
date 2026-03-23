@@ -1,27 +1,29 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from "vue";
   import dayjs from "dayjs";
+  import { useRouter } from "vue-router";
   import { Bell, Money, OfficeBuilding, TrendCharts, Warning } from "@element-plus/icons-vue";
-  import type { WelcomeDashboard, WelcomeOverdueBucket, WelcomePeriodAmount, WelcomeRoomOverview, WelcomeTenantStats } from "@/types";
+  import type { WelcomeDashboardVo, WelcomeOverdueBucketVo, WelcomePeriodAmountVo, WelcomeRoomOverviewVo, WelcomeTenantStatsVo } from "@/types";
   import { getWelcomeDashboard } from "@/api/welcome";
 
   defineOptions({
     name: "Welcome"
   });
 
+  const router = useRouter();
   const loading = ref(false);
-  const dashboard = ref<WelcomeDashboard>({});
+  const dashboard = ref<WelcomeDashboardVo>({});
   const currentLeaseMode = ref(2);
 
-  const roomOverview = computed<WelcomeRoomOverview | undefined>(() => {
+  const roomOverview = computed<WelcomeRoomOverviewVo | undefined>(() => {
     const list = dashboard.value.roomOverviewList || [];
     return list.find(item => item.leaseMode === currentLeaseMode.value) || list[0];
   });
 
   const financePeriods = computed(() => buildPeriodItems(dashboard.value.financeSummary));
   const paymentPeriods = computed(() => buildPeriodItems(dashboard.value.paymentSummary));
-  const overdueBuckets = computed<WelcomeOverdueBucket[]>(() => dashboard.value.overdueBuckets || []);
-  const tenantStats = computed<WelcomeTenantStats>(() => dashboard.value.tenantStats || {});
+  const overdueBuckets = computed<WelcomeOverdueBucketVo[]>(() => dashboard.value.overdueBuckets || []);
+  const tenantStats = computed<WelcomeTenantStatsVo>(() => dashboard.value.tenantStats || {});
 
   const roomPercentages = computed(() => {
     const overview = roomOverview.value;
@@ -79,7 +81,7 @@
     }
   }
 
-  function buildPeriodItems(period?: WelcomePeriodAmount) {
+  function buildPeriodItems(period?: WelcomePeriodAmountVo) {
     return [
       { key: "today", label: "今日", value: period?.todayAmount || 0 },
       { key: "yesterday", label: "昨日", value: period?.yesterdayAmount || 0 },
@@ -88,6 +90,23 @@
       { key: "thisYear", label: "本年", value: period?.thisYearAmount || 0 },
       { key: "total", label: "全部", value: period?.totalAmount || 0 }
     ];
+  }
+
+  function openNoticeList() {
+    router.push("/my-notice/notice/index");
+  }
+
+  function openNoticeDetail() {
+    router.push("/my-notice/notice/index");
+  }
+
+  function openOverdueBills() {
+    router.push({
+      path: "/finance/lease-bill",
+      query: {
+        overdueOnly: "true"
+      }
+    });
   }
 
   function moneyText(value?: number) {
@@ -174,10 +193,11 @@
               <p class="board-card__caption">最近发布的系统公告</p>
             </div>
           </div>
+          <el-button link type="primary" @click="openNoticeList">查看全部</el-button>
         </div>
 
         <div v-if="dashboard.notices?.length" class="notice-list">
-          <div v-for="notice in dashboard.notices" :key="notice.id" class="notice-item">
+          <div v-for="notice in dashboard.notices" :key="notice.id" class="notice-item notice-item--clickable" @click="openNoticeDetail">
             <div class="notice-item__content">
               <div class="notice-item__title">{{ notice.title || "未命名公告" }}</div>
               <div class="notice-item__meta">
@@ -295,7 +315,7 @@
         </div>
       </div>
       <div class="overdue-grid">
-        <div v-for="item in overdueBuckets" :key="item.key" class="overdue-item">
+        <div v-for="item in overdueBuckets" :key="item.key" class="overdue-item overdue-item--clickable" @click="openOverdueBills">
           <div class="overdue-item__label">{{ item.label }}</div>
           <div class="overdue-item__amount">{{ compactMoneyText(item.amount) }}</div>
         </div>
@@ -442,6 +462,20 @@
     background: linear-gradient(180deg, #fff, #f8fbff);
     border-radius: 14px;
     padding: 14px 16px;
+  }
+
+  .notice-item--clickable {
+    cursor: pointer;
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .notice-item--clickable:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgb(37 99 235 / 0.08);
+    border-color: rgb(147 197 253 / 0.8);
   }
 
   .notice-item__title {
@@ -661,6 +695,20 @@
     background: linear-gradient(180deg, #fff, #fff7f7);
     border-radius: 16px;
     padding: 18px 16px;
+  }
+
+  .overdue-item--clickable {
+    cursor: pointer;
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .overdue-item--clickable:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgb(220 38 38 / 0.08);
+    border-color: rgb(252 165 165 / 0.95);
   }
 
   .overdue-item__label {

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { computed, onMounted, reactive, ref, h } from "vue";
+  import { computed, onMounted, reactive, ref, h, watch } from "vue";
   import dayjs from "dayjs";
   import type { PaginationProps } from "@pureadmin/table";
+  import { useRoute } from "vue-router";
   import { PureTableBar } from "@/components/RePureTableBar";
   import type { LeaseBillFeeFinanceItemVo, LeaseBillFinanceItemVo, LeaseBillFinanceQueryDto, LeaseBillFinanceSummaryVo } from "@/types";
   import { getFinanceLeaseBillFeePage, getFinanceLeaseBillPage, getFinanceLeaseBillSummary } from "@/api/finance/leaseBill";
@@ -13,6 +14,7 @@
     name: "FinanceLeaseBill"
   });
 
+  const route = useRoute();
   type ViewMode = "bill" | "fee";
 
   const loading = ref(false);
@@ -270,6 +272,12 @@
     onSearch();
   }
 
+  function applyRouteQuery() {
+    queryForm.overdueOnly = route.query.overdueOnly === "true";
+    const payStatus = route.query.payStatus;
+    queryForm.payStatus = typeof payStatus === "string" && payStatus !== "" ? Number(payStatus) : undefined;
+  }
+
   function onSwitchView(mode: ViewMode) {
     viewMode.value = mode;
     fetchPage();
@@ -345,7 +353,20 @@
     return value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "—";
   }
 
-  onMounted(fetchPage);
+  onMounted(() => {
+    applyRouteQuery();
+    fetchPage();
+  });
+
+  watch(
+    () => route.query,
+    () => {
+      applyRouteQuery();
+      billPagination.currentPage = 1;
+      feePagination.currentPage = 1;
+      fetchPage();
+    }
+  );
 </script>
 
 <template>
