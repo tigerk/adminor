@@ -34,9 +34,9 @@
   });
 
   const statusTabs = [
-    { label: "待审批", value: 1 },
-    { label: "支付成功", value: 2 },
-    { label: "已关闭", value: 4 }
+    { label: "待审批", value: PaymentFlowStatusEnumMeta.PENDING_APPROVAL.code },
+    { label: "支付成功", value: PaymentFlowStatusEnumMeta.SUCCESS.code },
+    { label: "已关闭", value: PaymentFlowStatusEnumMeta.CLOSED.code }
   ];
 
   const summaryCards = computed(() => [
@@ -64,14 +64,16 @@
   ]);
 
   const columns: TableColumnList = [
-    { label: "支付流水号", prop: "paymentNo", minWidth: 180, fixed: "left" },
     {
       label: "状态",
       prop: "status",
       minWidth: 100,
       align: "center",
-      slot: "status"
+      slot: "status",
+      fixed: "left"
     },
+    { label: "支付流水号", prop: "paymentNo", minWidth: 180 },
+
     { label: "租客姓名", prop: "tenantName", minWidth: 100 },
     { label: "联系电话", prop: "tenantPhone", minWidth: 120 },
     { label: "房源信息", prop: "roomAddress", minWidth: 220, showOverflowTooltip: true },
@@ -255,7 +257,7 @@
         <pure-table
           row-key="id"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 96 }"
+          :adaptiveConfig="{ offsetBottom: 80 }"
           alignWhole="center"
           table-layout="auto"
           showOverflowTooltip
