@@ -274,7 +274,7 @@
   import { Refresh } from "@element-plus/icons-vue";
   import { ElMessageBox } from "element-plus";
   import { LeaseBillListVo } from "@/types";
-  import { collectLeaseBill, getLeaseBillDetail, getLeaseBillInvalidList, getLeaseBillList, updateLeaseBill, voidLeaseBill } from "@/api/contract/tenant";
+  import { collectLeaseBill, getLeaseBillDetail, getHistoryLeaseBillList, getLeaseBillList, updateLeaseBill, voidLeaseBill } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { message } from "@/utils/message";
   import LeaseBillDetailDialog from "@/views/finance/lease-bill/view/LeaseBillDetailDialog.vue";
@@ -483,7 +483,7 @@
 
     historicalLoading.value = true;
     try {
-      const res = await getLeaseBillInvalidList({ leaseId: props.leaseId });
+      const res = await getHistoryLeaseBillList({ leaseId: props.leaseId });
       if (res.code === 0) {
         historicalBillList.value = res.data || [];
       }
