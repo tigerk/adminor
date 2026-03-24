@@ -16,7 +16,7 @@
   const { t } = useI18n();
   const emit = defineEmits<{
     (e: "switchPage", page: string): void;
-    (e: "showImageVerify", callback: () => void): void;
+    (e: "showImageVerify", callback: (captcha: string) => void): void;
   }>();
 
   const loading = ref(false);
@@ -78,10 +78,11 @@
       }
 
       // 通知父组件显示图形验证码，并传入回调函数
-      emit("showImageVerify", () => {
+      emit("showImageVerify", (captcha: string) => {
         // 图形验证码验证成功后的回调
         sendSmsCode({
-          phone: forgotForm.phone
+          phone: forgotForm.phone,
+          captcha
         }).then(resp => {
           // 模拟发送验证码
           useVerifyCode().start(ruleFormRef.value, "phone", 60);

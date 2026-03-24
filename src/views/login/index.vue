@@ -44,7 +44,7 @@
   const imgCode = ref("");
   const showImageVerify = ref(false);
   const userInputCode = ref("");
-  const verifyCallback = ref<(() => void) | null>(null);
+  const verifyCallback = ref<((captcha: string) => void) | null>(null);
 
   const { t } = useI18n();
   const { initStorage } = useLayout();
@@ -97,7 +97,7 @@
   };
 
   // 显示图形验证码对话框
-  const showImageVerifyDialog = (callback: () => void) => {
+  const showImageVerifyDialog = (callback: (captcha: string) => void) => {
     verifyCallback.value = callback;
     showImageVerify.value = true;
     userInputCode.value = "";
@@ -119,10 +119,11 @@
 
     // 图形验证码正确，关闭对话框并执行回调
     showImageVerify.value = false;
+    const captcha = userInputCode.value;
     userInputCode.value = "";
 
     if (verifyCallback.value) {
-      verifyCallback.value();
+      verifyCallback.value(captcha);
       verifyCallback.value = null;
     }
   };
@@ -166,7 +167,7 @@
 
       <!-- 表单容器 -->
       <div class="form-container">
-        <div class="form-section">
+        <div :class="['form-section', currentPage === 'register' ? 'form-section-register' : '']">
           <div class="form-card">
             <!-- 登录页面 -->
             <Motion v-if="currentPage === 'login'" key="login">
@@ -347,6 +348,10 @@
     .form-title {
       font-size: 24px;
     }
+
+    .form-section-register {
+      max-width: 100%;
+    }
   }
 
   .login-wrapper {
@@ -458,6 +463,10 @@
   .form-section {
     width: 100%;
     max-width: 420px;
+  }
+
+  .form-section-register {
+    max-width: 560px;
   }
 
   .form-card {
