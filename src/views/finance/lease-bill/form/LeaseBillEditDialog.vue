@@ -513,7 +513,7 @@
     totalAmount: form.totalAmount,
     dueDate: form.dueDate,
     remark: form.remark,
-    valid: form.valid,
+    historical: form.historical,
     feeList: feeList.value.map(({ uid, feeTypeCascade, ...fee }) => fee)
   });
 

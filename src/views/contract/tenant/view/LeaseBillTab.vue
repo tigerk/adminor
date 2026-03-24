@@ -119,7 +119,11 @@
                   <el-button class="mt-[2px]!" link type="primary" size="small" :icon="useRenderIcon(More)" @click.stop />
                   <template #dropdown>
                     <el-dropdown-menu @click.stop>
-                      <template v-if="row.payStatus === 0">
+                      <template v-if="isVoided(row)">
+                        <el-dropdown-item command="edit" disabled>编辑账单</el-dropdown-item>
+                        <el-dropdown-item command="void" disabled>作废账单</el-dropdown-item>
+                      </template>
+                      <template v-else-if="row.payStatus === 0">
                         <el-dropdown-item command="collect">收款</el-dropdown-item>
                         <el-dropdown-item command="edit">编辑账单</el-dropdown-item>
                         <el-dropdown-item command="split">账单拆分</el-dropdown-item>
@@ -152,28 +156,28 @@
       </div>
     </div>
 
-    <!-- 历史无效账单区块 -->
-    <div v-if="invalidBillList && invalidBillList.length > 0" class="bill-section">
+    <!-- 历史账单区块 -->
+    <div v-if="historicalBillList && historicalBillList.length > 0" class="bill-section">
       <div class="section-header-wrapper">
         <div class="flex items-center justify-between px-4 py-2.5 section-header-content">
           <div class="flex items-center gap-3">
-            <span class="text-sm font-semibold section-title">历史无效账单</span>
+            <span class="text-sm font-semibold section-title">历史账单</span>
             <div class="flex items-center gap-1.5 px-2 py-1 count-badge">
-              <span class="text-xs font-medium">{{ invalidBillList?.length || 0 }}条</span>
+              <span class="text-xs font-medium">{{ historicalBillList?.length || 0 }}条</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 历史无效账单表格 -->
+      <!-- 历史账单表格 -->
       <div class="bill-table-wrapper">
         <el-table
-          v-loading="invalidLoading"
-          :data="invalidBillList"
+          v-loading="historicalLoading"
+          :data="historicalBillList"
           border
           stripe
           class="bill-table invalid-bill-table"
-          :expand-row-keys="expandedInvalidBillRows"
+          :expand-row-keys="expandedHistoricalBillRows"
           row-key="id"
           @row-click="openBillDetail"
         >
@@ -268,8 +272,9 @@
 <script setup lang="ts">
   import { h, onMounted, ref, watch } from "vue";
   import { Refresh } from "@element-plus/icons-vue";
+  import { ElMessageBox } from "element-plus";
   import { LeaseBillListVo } from "@/types";
-  import { collectLeaseBill, getLeaseBillDetail, getLeaseBillInvalidList, getLeaseBillList, updateLeaseBill } from "@/api/contract/tenant";
+  import { collectLeaseBill, getLeaseBillDetail, getLeaseBillInvalidList, getLeaseBillList, updateLeaseBill, voidLeaseBill } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { message } from "@/utils/message";
   import LeaseBillDetailDialog from "@/views/finance/lease-bill/view/LeaseBillDetailDialog.vue";
@@ -289,10 +294,10 @@
   const loading = ref(false);
   const expandedBillRows = ref<string[]>([]);
 
-  // 历史无效账单数据
-  const invalidBillList = ref<LeaseBillListVo[]>([]);
-  const invalidLoading = ref(false);
-  const expandedInvalidBillRows = ref<string[]>([]);
+  // 历史账单数据
+  const historicalBillList = ref<LeaseBillListVo[]>([]);
+  const historicalLoading = ref(false);
+  const expandedHistoricalBillRows = ref<string[]>([]);
 
   const isOverdue = (bill: LeaseBillListVo) => {
     if (bill.payStatus === 2 || !bill.dueDate) return false;
@@ -310,6 +315,8 @@
     if (bill.payStatus === 1) return "warning";
     return "danger";
   };
+
+  const isVoided = (bill: LeaseBillListVo) => bill.status === 2;
 
   const openBillDetail = (row: LeaseBillListVo) => {
     let billId = row.id as string;
@@ -336,6 +343,10 @@
   };
 
   const handleCollect = (row: LeaseBillListVo) => {
+    if (isVoided(row)) {
+      message("账单已作废，不允许收款", { type: "warning" });
+      return;
+    }
     const collectRef = ref<InstanceType<typeof LeaseBillCollectDialog>>();
     addDialog({
       title: "账单收款",
@@ -374,11 +385,42 @@
     message(`标记坏账：第${row.sortOrder}期`, { type: "info" });
   };
 
-  const handleVoid = (row: LeaseBillListVo) => {
-    message(`作废账单：第${row.sortOrder}期`, { type: "warning" });
+  const handleVoid = async (row: LeaseBillListVo) => {
+    if (isVoided(row)) {
+      message("账单已作废", { type: "warning" });
+      return;
+    }
+    if (row.payStatus !== 0) {
+      message("仅未支付账单允许作废", { type: "warning" });
+      return;
+    }
+    try {
+      const { value } = await ElMessageBox.prompt("请输入作废原因", "作废账单", {
+        confirmButtonText: "确认作废",
+        cancelButtonText: "取消",
+        inputType: "textarea",
+        inputPlaceholder: "请输入作废原因",
+        inputPattern: /\S+/,
+        inputErrorMessage: "请输入作废原因"
+      });
+      const resp = await voidLeaseBill({
+        billId: String(row.id || ""),
+        voidReason: value
+      });
+      if (resp.code === 0 && resp.data !== false) {
+        message("账单作废成功", { type: "success" });
+        fetchBillData();
+      } else {
+        message(resp.message || "账单作废失败", { type: "warning" });
+      }
+    } catch {}
   };
 
   const handleEdit = async (row: LeaseBillListVo) => {
+    if (isVoided(row)) {
+      message("账单已作废，不允许编辑", { type: "warning" });
+      return;
+    }
     if (row.payStatus === 2) {
       message("账单已支付，不允许编辑", { type: "warning" });
       return;
@@ -435,25 +477,25 @@
     }
   };
 
-  // 获取历史无效账单数据
-  const fetchInvalidBillList = async () => {
+  // 获取历史账单数据
+  const fetchHistoricalBillList = async () => {
     if (!props.leaseId) return;
 
-    invalidLoading.value = true;
+    historicalLoading.value = true;
     try {
       const res = await getLeaseBillInvalidList({ leaseId: props.leaseId });
       if (res.code === 0) {
-        invalidBillList.value = res.data || [];
+        historicalBillList.value = res.data || [];
       }
     } finally {
-      invalidLoading.value = false;
+      historicalLoading.value = false;
     }
   };
 
   // 刷新所有账单数据
   const fetchBillData = () => {
     fetchBillList();
-    fetchInvalidBillList();
+    fetchHistoricalBillList();
   };
 
   // 暴露刷新方法供父组件调用

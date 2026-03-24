@@ -15,6 +15,9 @@
           <span class="address-banner__value">{{ roomAddressText }}</span>
         </div>
         <div class="address-banner__tags">
+          <div class="address-banner__badge" :class="billStatusBadgeClass">
+            {{ billStatusText }}
+          </div>
           <div class="address-banner__badge" :class="statusBadgeClass">
             {{ payStatusText }}
           </div>
@@ -68,7 +71,7 @@
             账单信息
           </div>
           <div class="panel__actions">
-            <button v-if="bill.payStatus === 0 || bill.payStatus === 1" class="action-btn action-btn--primary" @click="handleCollect">
+            <button v-if="!isVoided && (bill.payStatus === 0 || bill.payStatus === 1)" class="action-btn action-btn--primary" @click="handleCollect">
               <svg viewBox="0 0 16 16" fill="currentColor">
                 <path
                   d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 4.5v.94a2.5 2.5 0 010 4.62v.94h-1.5v-.94A2.5 2.5 0 015 9h1.5a1 1 0 001 1h1a1 1 0 000-2h-1a2.5 2.5 0 010-5h.25V2h1.5v.5H9a2.5 2.5 0 012.5 2.5H10a1 1 0 00-1-1h-1a1 1 0 000 2h1a2.5 2.5 0 012.25 3.59A2.5 2.5 0 019 11h-.25V11h-.5v.5H6.75V11H6a2.5 2.5 0 01-2.5-2.5H5a1 1 0 001 1z"
@@ -76,11 +79,11 @@
               </svg>
               收款
             </button>
-            <button class="action-btn" :disabled="bill.payStatus === 2" :class="{ 'action-btn--disabled': bill.payStatus === 2 }" @click="handleEdit">编辑账单</button>
-            <button v-if="bill.payStatus === 0" class="action-btn" @click="handleSplit">账单拆分</button>
-            <button v-if="bill.payStatus === 0" class="action-btn" @click="handleFree">免收</button>
-            <button v-if="bill.payStatus === 0" class="action-btn" @click="handleBadDebt">标记坏账</button>
-            <button class="action-btn action-btn--danger" @click="handleVoid">作废账单</button>
+            <button class="action-btn" :disabled="!canEdit" :class="{ 'action-btn--disabled': !canEdit }" @click="handleEdit">编辑账单</button>
+            <button v-if="!isVoided && bill.payStatus === 0" class="action-btn" @click="handleSplit">账单拆分</button>
+            <button v-if="!isVoided && bill.payStatus === 0" class="action-btn" @click="handleFree">免收</button>
+            <button v-if="!isVoided && bill.payStatus === 0" class="action-btn" @click="handleBadDebt">标记坏账</button>
+            <button v-if="!isVoided" class="action-btn action-btn--danger" @click="handleVoid">作废账单</button>
           </div>
         </div>
 
@@ -134,6 +137,12 @@
             <div class="info-cell__val info-cell__val--mono">{{ getPayerIdNo }}</div>
           </div>
           <div class="info-cell">
+            <div class="info-cell__key">账单状态</div>
+            <div class="info-cell__val">
+              <span class="status-badge" :class="billStatusBadgeClass">{{ billStatusText }}</span>
+            </div>
+          </div>
+          <div class="info-cell">
             <div class="info-cell__key">支付状态</div>
             <div class="info-cell__val">
               <span class="status-badge" :class="statusBadgeClass">{{ payStatusText }}</span>
@@ -169,6 +178,10 @@
           <div class="info-cell info-cell--full">
             <div class="info-cell__key">备注</div>
             <div class="info-cell__val">{{ bill.remark || "—" }}</div>
+          </div>
+          <div v-if="isVoided" class="info-cell info-cell--full">
+            <div class="info-cell__key">作废原因</div>
+            <div class="info-cell__val">{{ bill.voidReason || "—" }}</div>
           </div>
         </div>
       </div>
@@ -342,10 +355,11 @@
 
 <script setup lang="ts">
   import { Calendar, Money, Tickets, User, Wallet } from "@element-plus/icons-vue";
+  import { ElMessageBox } from "element-plus";
   import { computed, onMounted, ref } from "vue";
   import { h } from "vue";
   import type { FinanceFlowVo, LeaseBillListVo, LeaseDetailVo, PaymentFlowVo } from "@/types";
-  import { collectLeaseBill, getLeaseBillDetail, getLeaseDetail, updateLeaseBill } from "@/api/contract/tenant";
+  import { collectLeaseBill, getLeaseBillDetail, getLeaseDetail, updateLeaseBill, voidLeaseBill } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog/index";
   import { message } from "@/utils/message";
   import LeaseBillEditDialog from "@/views/finance/lease-bill/form/LeaseBillEditDialog.vue";
@@ -389,6 +403,8 @@
     })
   );
   const latestPaymentFlow = computed<PaymentFlowVo | undefined>(() => paymentFlowList.value[0]);
+  const isVoided = computed(() => bill.value.status === 2);
+  const canEdit = computed(() => !isVoided.value && bill.value.payStatus !== 2);
 
   const billTypeText = computed(() => {
     const type = bill.value.billType;
@@ -407,6 +423,8 @@
     return "未知";
   });
 
+  const billStatusText = computed(() => (bill.value.status === 2 ? "已作废" : "正常"));
+
   const latestPaymentChannelText = computed(() => paymentChannelText(latestPaymentFlow.value?.channel));
 
   const payerInfo = computed(() => {
@@ -424,7 +442,7 @@
   });
 
   const isOverdue = computed(() => {
-    if (bill.value.payStatus === 2 || !bill.value.dueDate) return false;
+    if (isVoided.value || bill.value.payStatus === 2 || !bill.value.dueDate) return false;
     return new Date(bill.value.dueDate).getTime() < Date.now();
   });
 
@@ -434,6 +452,8 @@
     if (bill.value.payStatus === 2) return "badge--paid";
     return "";
   });
+
+  const billStatusBadgeClass = computed(() => (isVoided.value ? "badge--voided" : "badge--normal"));
 
   const formatDate = (val?: string) => (val ? val.substring(0, 10) : "—");
   const formatDateTime = (val?: string) => (val ? val.substring(0, 19).replace("T", " ") : "—");
@@ -616,13 +636,40 @@
     message(`标记坏账：第${bill.value.sortOrder}期`, { type: "info" });
   };
 
-  const handleVoid = () => {
-    message(`作废账单：第${bill.value.sortOrder}期`, { type: "warning" });
+  const handleVoid = async () => {
+    if (isVoided.value) {
+      message("账单已作废", { type: "warning" });
+      return;
+    }
+    if (bill.value.payStatus !== 0) {
+      message("仅未支付账单允许作废", { type: "warning" });
+      return;
+    }
+    try {
+      const { value } = await ElMessageBox.prompt(`确认作废后，此账单将无效，请谨慎操作。`, `确定要作废 ${bill.value.sortOrder}期账单吗？`, {
+        confirmButtonText: "确认作废",
+        cancelButtonText: "取消",
+        inputType: "textarea",
+        inputPlaceholder: "请输入作废原因",
+        inputPattern: /\S+/,
+        inputErrorMessage: "请输入作废原因"
+      });
+      const resp = await voidLeaseBill({
+        billId: String(bill.value.id || ""),
+        voidReason: value
+      });
+      if (resp.code === 0 && resp.data !== false) {
+        message("账单作废成功", { type: "success" });
+        await refreshBillDetail();
+      } else {
+        message(resp.message || "账单作废失败", { type: "warning" });
+      }
+    } catch {}
   };
 
   const handleEdit = () => {
-    if (bill.value.payStatus === 2) {
-      message("账单已支付，不允许编辑", { type: "warning" });
+    if (!canEdit.value) {
+      message(isVoided.value ? "账单已作废，不允许编辑" : "账单已支付，不允许编辑", { type: "warning" });
       return;
     }
     const editRef = ref<InstanceType<typeof LeaseBillEditDialog>>();
@@ -866,6 +913,18 @@
     color: var(--bill-success);
     border: 1px solid var(--bill-success-soft-border);
   }
+  .badge--normal,
+  .status-badge.badge--normal {
+    background: var(--bill-primary-soft);
+    color: var(--bill-primary);
+    border: 1px solid var(--bill-primary-soft-border);
+  }
+  .badge--voided,
+  .status-badge.badge--voided {
+    background: var(--bill-info-soft);
+    color: var(--bill-text-secondary);
+    border: 1px solid var(--bill-info-soft-border);
+  }
   .badge--overdue,
   .status-badge.badge--overdue,
   .address-banner__badge--overdue {
@@ -885,6 +944,14 @@
   .address-banner__badge.badge--paid {
     background: var(--bill-success-soft);
     color: var(--bill-success);
+  }
+  .address-banner__badge.badge--normal {
+    background: var(--bill-primary-soft);
+    color: var(--bill-primary);
+  }
+  .address-banner__badge.badge--voided {
+    background: var(--bill-info-soft);
+    color: var(--bill-text-secondary);
   }
   .address-banner__badge--overdue {
     background: var(--bill-danger-soft);

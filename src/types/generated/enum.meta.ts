@@ -376,6 +376,11 @@ export const LeaseBillFeeTypeEnumMeta = {
   OTHER_FEE: {"value":"OTHER_FEE","code":"OTHER_FEE","label":"其他费用"}
 } as const;
 
+export const LeaseBillStatusEnumMeta = {
+  NORMAL: {"value":"NORMAL","code":1,"name":"正常"},
+  VOIDED: {"value":"VOIDED","code":2,"name":"已作废"}
+} as const;
+
 export const LeaseBillTypeEnumMeta = {
   RENT: {"value":"RENT","code":1,"name":"租金"},
   DEPOSIT: {"value":"DEPOSIT","code":2,"name":"押金"},

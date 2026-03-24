@@ -1,6 +1,17 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type { ApiResponse, PaginationResponse, LeaseBillCollectDto, LeaseBillListVo, LeaseBillUpdateDto, LeaseContractVo, LeaseDetailVo, LeaseListVo, LeaseQueryDto } from "@/types";
+import type {
+  ApiResponse,
+  PaginationResponse,
+  LeaseBillCollectDto,
+  LeaseBillListVo,
+  LeaseBillUpdateDto,
+  LeaseBillVoidDto,
+  LeaseContractVo,
+  LeaseDetailVo,
+  LeaseListVo,
+  LeaseQueryDto
+} from "@/types";
 
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
@@ -65,6 +76,11 @@ export const updateLeaseBill = (data?: LeaseBillUpdateDto) => {
 /** 租客账单收款 */
 export const collectLeaseBill = (data?: LeaseBillCollectDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/bill/collect"), { data });
+};
+
+/** 作废租客账单 */
+export const voidLeaseBill = (data?: LeaseBillVoidDto) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/lease/bill/void"), { data });
 };
 
 /** 生成租客合同 */

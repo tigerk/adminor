@@ -5876,6 +5876,10 @@ export type LeaseBillListVo = {
      */
     billType?: number;
     /**
+     * 账单状态：1=正常，2=已作废
+     */
+    status?: number;
+    /**
      * 结转来源账单ID
      */
     carryOverFromBillId?: string;
@@ -5915,6 +5919,22 @@ export type LeaseBillListVo = {
      * 备注信息
      */
     remark?: string;
+    /**
+     * 是否历史账单：0=否，1=是
+     */
+    historical?: boolean;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
+    /**
+     * 作废时间
+     */
+    voidTime?: string;
+    /**
+     * 作废人
+     */
+    voidBy?: string;
     /**
      * 房源地址
      */
@@ -6169,9 +6189,9 @@ export type LeaseDetailVo = {
      */
     leaseBillList?: Array<LeaseBillListVo>;
     /**
-     * 租客无效账单列表
+     * 租客历史账单列表
      */
-    leaseInvalidBillList?: Array<LeaseBillListVo>;
+    leaseHistoricalBillList?: Array<LeaseBillListVo>;
     /**
      * 租客同住人列表
      */
@@ -6356,6 +6376,24 @@ export type ResponseResultInteger = {
 };
 
 /**
+ * 租客账单作废DTO
+ */
+export type LeaseBillVoidDto = {
+    /**
+     * 账单ID
+     */
+    billId?: string;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
+    /**
+     * 操作人ID
+     */
+    updateBy?: string;
+};
+
+/**
  * 租客账单费用DTO
  */
 export type LeaseBillFeeDto = {
@@ -6462,9 +6500,9 @@ export type LeaseBillUpdateDto = {
      */
     remark?: string;
     /**
-     * 是否有效
+     * 是否历史账单
      */
-    valid?: boolean;
+    historical?: boolean;
     /**
      * 账单费用明细
      */
@@ -7849,6 +7887,8 @@ export type LeaseModeEnum = 'UNKNOWN' | 'FOCUS' | 'SCATTER';
 export type RentalTypeEnum = 'ENTIRE' | 'SHARED';
 
 export type LeaseBillFeeTypeEnum = 'RENTAL' | 'DEPOSIT' | 'OTHER_FEE';
+
+export type LeaseBillStatusEnum = 'NORMAL' | 'VOIDED';
 
 export type LeaseBillTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'RELEASE' | 'DEPOSIT_CARRY_IN' | 'DEPOSIT_CARRY_OUT';
 
@@ -10045,6 +10085,24 @@ export type CancelTenantResponses = {
 };
 
 export type CancelTenantResponse = CancelTenantResponses[keyof CancelTenantResponses];
+
+export type VoidBillData = {
+    body: LeaseBillVoidDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/bill/void';
+};
+
+export type VoidBillResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type VoidBillResponse = VoidBillResponses[keyof VoidBillResponses];
 
 export type UpdateBillData = {
     body: LeaseBillUpdateDto;
