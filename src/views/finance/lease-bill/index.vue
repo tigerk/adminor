@@ -5,6 +5,7 @@
   import { useRoute } from "vue-router";
   import { PureTableBar } from "@/components/RePureTableBar";
   import type { LeaseBillFeeFinanceItemVo, LeaseBillFinanceItemVo, LeaseBillFinanceQueryDto, LeaseBillFinanceSummaryVo } from "@/types";
+  import { LeaseBillStatusEnumMeta } from "@/types";
   import { getFinanceLeaseBillFeePage, getFinanceLeaseBillPage, getFinanceLeaseBillSummary } from "@/api/finance/leaseBill";
   import { addDialog } from "@/components/ReDialog";
   import LeaseBillDetailDialog from "@/views/finance/lease-bill/view/LeaseBillDetailDialog.vue";
@@ -87,10 +88,17 @@
 
   const billColumns: TableColumnList = [
     {
+      label: "账单状态",
+      prop: "status",
+      minWidth: 100,
+      fixed: "left",
+      align: "center",
+      slot: "billStatus"
+    },
+    {
       label: "支付状态",
       prop: "payStatus",
       minWidth: 100,
-      fixed: "left",
       align: "center",
       slot: "payStatus"
     },
@@ -331,9 +339,17 @@
     return "—";
   }
 
+  function billStatusText(status?: number) {
+    return Object.values(LeaseBillStatusEnumMeta).find(item => item.code === status)?.name || "—";
+  }
+
+  function billStatusTagType(status?: number) {
+    return status === LeaseBillStatusEnumMeta.VOIDED.code ? "info" : "success";
+  }
+
   function payStatusTagType(status?: number) {
-    if (status === 2) return "success";
-    if (status === 1) return "warning";
+    if (status === LeaseBillStatusEnumMeta.VOIDED.code) return "success";
+    if (status === LeaseBillStatusEnumMeta.NORMAL.code) return "warning";
     return "danger";
   }
 
@@ -520,6 +536,11 @@
             @page-size-change="handleSizeChange"
             @page-current-change="handleCurrentChange"
           >
+            <template #billStatus="{ row }">
+              <el-tag :type="billStatusTagType(row.status)" size="small" effect="light" round>
+                {{ billStatusText(row.status) }}
+              </el-tag>
+            </template>
             <template #payStatus="{ row }">
               <el-tag :type="payStatusTagType(row.payStatus)" size="small" effect="light" round>
                 {{ payStatusText(row.payStatus) }}

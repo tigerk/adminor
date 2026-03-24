@@ -3911,6 +3911,10 @@ export type LeaseBillFinanceItemVo = {
      */
     payStatus?: number;
     /**
+     * 账单状态
+     */
+    status?: number;
+    /**
      * 是否逾期
      */
     overdue?: boolean;
