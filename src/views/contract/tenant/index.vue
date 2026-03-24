@@ -110,7 +110,8 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch } from "vue";
+  import { onMounted, ref, watch } from "vue";
+  import { useRoute } from "vue-router";
   import { LEAST_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
@@ -133,6 +134,7 @@
   import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
 
   const { openLeaseCheckoutDialog } = useCheckoutDialog();
+  const route = useRoute();
 
   defineOptions({
     name: "ContractTenant"
@@ -160,6 +162,11 @@
 
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
   const statusOptions = [{ label: "全部", value: undefined }, ...LEAST_STATUS_OPTIONS];
+
+  function applyRouteQuery() {
+    queryForm.status = typeof route.query.status === "string" && route.query.status !== "" ? Number(route.query.status) : undefined;
+    queryForm.expiringDaysWithin = typeof route.query.expiringDaysWithin === "string" && route.query.expiringDaysWithin !== "" ? Number(route.query.expiringDaysWithin) : undefined;
+  }
 
   const handleConfirmDelete = row => {
     ElMessageBox.confirm("确认作废该租客吗？", "作废", {
@@ -218,6 +225,23 @@
       pdfUrl.value = "";
     }
   });
+
+  onMounted(() => {
+    applyRouteQuery();
+    if (route.query.status || route.query.expiringDaysWithin) {
+      onTenantSearch();
+    }
+  });
+
+  watch(
+    () => route.query,
+    () => {
+      applyRouteQuery();
+      if (route.query.status || route.query.expiringDaysWithin) {
+        onTenantSearch();
+      }
+    }
+  );
 </script>
 
 <style lang="scss" scoped>

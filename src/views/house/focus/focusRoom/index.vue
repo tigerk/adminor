@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { nextTick, onMounted, ref } from "vue";
+  import { nextTick, onMounted, ref, watch } from "vue";
+  import { useRoute } from "vue-router";
   import { delay, subBefore, useResizeObserver } from "@pureadmin/utils";
   import Search from "~icons/ri/search-eye-line";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
@@ -10,6 +11,8 @@
   defineOptions({
     name: "FocusRoom"
   });
+
+  const route = useRoute();
 
   const { openFocusEditDialog } = useFocusEdit();
   const {
@@ -39,7 +42,21 @@
   const treeHeight = ref();
   const tableSize = ref("default");
 
+  function applyRouteQuery() {
+    queryForm.occupancyStatus = typeof route.query.occupancyStatus === "string" && route.query.occupancyStatus !== "" ? Number(route.query.occupancyStatus) : undefined;
+    queryForm.vacancyDaysMin = typeof route.query.vacancyDaysMin === "string" && route.query.vacancyDaysMin !== "" ? Number(route.query.vacancyDaysMin) : undefined;
+    queryForm.vacancyDaysMax = typeof route.query.vacancyDaysMax === "string" && route.query.vacancyDaysMax !== "" ? Number(route.query.vacancyDaysMax) : undefined;
+    if (queryForm.occupancyStatus === 0) {
+      queryForm.locked = undefined;
+      queryForm.closed = undefined;
+    }
+  }
+
   onMounted(() => {
+    applyRouteQuery();
+    if (route.query.occupancyStatus || route.query.vacancyDaysMin || route.query.vacancyDaysMax) {
+      onSearch();
+    }
     useResizeObserver(contentRef, async () => {
       await nextTick();
       delay(60).then(() => {
@@ -47,6 +64,14 @@
       });
     });
   });
+
+  watch(
+    () => route.query,
+    () => {
+      applyRouteQuery();
+      onSearch();
+    }
+  );
 
   function modifyFocusHouse() {
     if (queryForm.leaseModeId) {

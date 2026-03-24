@@ -245,7 +245,6 @@
       padding: 0 10px;
       border-radius: 6px;
       font-size: 13px;
-      color: #333;
       transition:
         background 0.18s ease,
         color 0.18s ease;

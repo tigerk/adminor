@@ -2,7 +2,16 @@
   import { computed, onMounted, ref } from "vue";
   import dayjs from "dayjs";
   import { useRouter } from "vue-router";
-  import type { WelcomeDashboardVo, WelcomeOverdueBucketVo, WelcomePeriodAmountVo, WelcomeRoomOverviewVo, WelcomeTenantStatsVo } from "@/types";
+  import type {
+    WelcomeCountBucketVo,
+    WelcomeContractWarningVo,
+    WelcomeDashboardVo,
+    WelcomeOverdueBucketVo,
+    WelcomeOverdueTenantVo,
+    WelcomePeriodAmountVo,
+    WelcomeRoomOverviewVo,
+    WelcomeTenantStatsVo
+  } from "@/types";
   import { getWelcomeDashboard } from "@/api/welcome";
 
   defineOptions({ name: "Welcome" });
@@ -31,6 +40,9 @@
   const financePeriods = computed(() => buildPeriodItems(dashboard.value.financeSummary));
   const paymentPeriods = computed(() => buildPeriodItems(dashboard.value.paymentSummary));
   const overdueBuckets = computed<WelcomeOverdueBucketVo[]>(() => dashboard.value.overdueBuckets || []);
+  const vacancyBuckets = computed<WelcomeCountBucketVo[]>(() => dashboard.value.vacancyBuckets || []);
+  const contractWarning = computed<WelcomeContractWarningVo>(() => dashboard.value.contractWarning || {});
+  const overdueTenantTopList = computed<WelcomeOverdueTenantVo[]>(() => dashboard.value.overdueTenantTopList || []);
   const tenantStats = computed<WelcomeTenantStatsVo>(() => dashboard.value.tenantStats || {});
   const notices = computed(() => dashboard.value.notices || []);
 
@@ -73,6 +85,12 @@
     { label: "定金租客", today: tenantStats.value.todayDepositCount || 0, month: tenantStats.value.monthDepositCount || 0 },
     { label: "新签", today: tenantStats.value.todayNewSignCount || 0, month: tenantStats.value.monthNewSignCount || 0 },
     { label: "续签", today: tenantStats.value.todayRenewCount || 0, month: tenantStats.value.monthRenewCount || 0 }
+  ]);
+
+  const contractWarningRows = computed(() => [
+    { label: "未来 7 天应收", value: compactMoney(contractWarning.value.next7DaysReceivableAmount), emphasis: true },
+    { label: "7 天内到期合同", value: `${contractWarning.value.expiring7DaysCount || 0} 份` },
+    { label: "30 天内到期合同", value: `${contractWarning.value.expiring30DaysCount || 0} 份` }
   ]);
 
   const legendItems = computed(() => [
@@ -119,6 +137,53 @@
 
   function formatTime(value?: string) {
     return value ? dayjs(value).format("MM-DD HH:mm") : "—";
+  }
+
+  function getVacancyQuery(key?: string) {
+    if (key === "vacancy_1_7") return { vacancyDaysMin: "1", vacancyDaysMax: "7" };
+    if (key === "vacancy_8_15") return { vacancyDaysMin: "8", vacancyDaysMax: "15" };
+    return { vacancyDaysMin: "16" };
+  }
+
+  function goToVacancyBucket(key?: string) {
+    const path = currentLeaseMode.value === 1 ? "/house/focus/room/index" : "/house/scatter";
+    router.push({
+      path,
+      query: {
+        occupancyStatus: "0",
+        ...getVacancyQuery(key)
+      }
+    });
+  }
+
+  function goToContractWarning(days?: number) {
+    if (!days) return;
+    router.push({
+      path: "/contract/tenant",
+      query: {
+        status: "1",
+        expiringDaysWithin: String(days)
+      }
+    });
+  }
+
+  function goToUpcomingReceivable() {
+    router.push({
+      path: "/finance/lease-bill",
+      query: {
+        dueWithinDays: "7"
+      }
+    });
+  }
+
+  function goToTenantOverdueBills(tenantId?: string) {
+    router.push({
+      path: "/finance/lease-bill",
+      query: {
+        overdueOnly: "true",
+        tenantId
+      }
+    });
   }
 
   onMounted(fetchDashboard);
@@ -253,6 +318,19 @@
               </div>
             </div>
           </div>
+
+          <div v-if="vacancyBuckets.length" class="wd-subsection">
+            <div class="wd-subsection__head">
+              <span class="wd-subsection__title">空置时长分布</span>
+              <span class="wd-subsection__caption">空置越久，去化压力越大</span>
+            </div>
+            <div class="wd-vacancy-grid">
+              <div v-for="item in vacancyBuckets" :key="item.key" class="wd-vacancy-cell" @click="goToVacancyBucket(item.key)">
+                <span class="wd-vacancy-label">{{ item.label }}</span>
+                <strong class="wd-vacancy-val">{{ item.count || 0 }}</strong>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <!-- /left -->
@@ -312,6 +390,63 @@
             </div>
           </div>
           <el-empty v-else description="暂无逾期欠款" :image-size="56" />
+        </div>
+        <div class="wd-card">
+          <div class="wd-card-head">
+            <div class="wd-icon wd-icon--warn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            <div class="wd-card-titles">
+              <span class="wd-card-title">合同与收款预警</span>
+              <span class="wd-card-caption">合同到期与近期应收安排</span>
+            </div>
+          </div>
+          <div class="wd-warning-grid">
+            <div
+              v-for="item in contractWarningRows"
+              :key="item.label"
+              class="wd-warning-cell"
+              :class="{ 'is-emphasis': item.emphasis }"
+              @click="item.label === '未来 7 天应收' ? goToUpcomingReceivable() : goToContractWarning(item.label === '7 天内到期合同' ? 7 : 30)"
+            >
+              <span class="wd-warning-label">{{ item.label }}</span>
+              <strong class="wd-warning-val">{{ item.value }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="wd-card">
+          <div class="wd-card-head">
+            <div class="wd-icon wd-icon--danger">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div class="wd-card-titles">
+              <span class="wd-card-title">逾期租客 Top5</span>
+              <span class="wd-card-caption">按逾期欠款总额排序</span>
+            </div>
+          </div>
+          <div v-if="overdueTenantTopList.length" class="wd-rank-list">
+            <div v-for="(item, index) in overdueTenantTopList" :key="item.tenantId || index" class="wd-rank-row" @click="goToTenantOverdueBills(item.tenantId)">
+              <div class="wd-rank-left">
+                <span class="wd-rank-no">{{ index + 1 }}</span>
+                <div class="wd-rank-user">
+                  <span class="wd-rank-name">{{ item.tenantName || "未命名租客" }}</span>
+                  <span class="wd-rank-phone">{{ item.tenantPhone || "—" }}</span>
+                </div>
+              </div>
+              <strong class="wd-rank-amount">{{ compactMoney(item.unpaidAmount) }}</strong>
+            </div>
+          </div>
+          <el-empty v-else description="暂无逾期租客" :image-size="56" />
         </div>
 
         <!-- 租客统计 -->
@@ -477,6 +612,11 @@
   .wd-icon--danger {
     background: var(--el-color-danger-light-9);
     color: var(--el-color-danger);
+  }
+
+  .wd-icon--warn {
+    background: var(--el-color-warning-light-9);
+    color: var(--el-color-warning);
   }
 
   .wd-card-titles {
@@ -721,6 +861,69 @@
     color: var(--el-text-color-primary);
   }
 
+  .wd-subsection {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--el-border-color-extra-light);
+  }
+
+  .wd-subsection__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .wd-subsection__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  .wd-subsection__caption {
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
+  }
+
+  .wd-vacancy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .wd-vacancy-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 13px;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+
+    &:hover {
+      border-color: var(--el-color-primary-light-5);
+      background: var(--el-color-primary-light-9);
+    }
+  }
+
+  .wd-vacancy-label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .wd-vacancy-val {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--el-text-color-primary);
+  }
+
   /* ── 公告 ── */
   .wd-notice-list {
     display: flex;
@@ -815,6 +1018,119 @@
     word-break: break-all;
   }
 
+  .wd-warning-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .wd-warning-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 13px;
+    border-radius: 8px;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+
+    &:hover {
+      border-color: var(--el-color-warning-light-5);
+    }
+
+    &.is-emphasis {
+      background: var(--el-color-warning-light-9);
+      border-color: var(--el-color-warning-light-7);
+    }
+  }
+
+  .wd-warning-label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .wd-warning-val {
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--el-text-color-primary);
+  }
+
+  .wd-rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .wd-rank-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 13px;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+
+    &:hover {
+      border-color: var(--el-color-danger-light-5);
+      background: var(--el-color-danger-light-9);
+    }
+  }
+
+  .wd-rank-left {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .wd-rank-no {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--el-color-danger-light-9);
+    color: var(--el-color-danger);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .wd-rank-user {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .wd-rank-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  .wd-rank-phone {
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
+  }
+
+  .wd-rank-amount {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--el-color-danger);
+    white-space: nowrap;
+  }
+
   /* ── 租客统计 table ── */
   .wd-tenant-table {
     width: 100%;
@@ -899,6 +1215,10 @@
     }
     .wd-metrics {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .wd-vacancy-grid,
+    .wd-warning-grid {
+      grid-template-columns: 1fr;
     }
     .wd-overdue-grid {
       grid-template-columns: 1fr;

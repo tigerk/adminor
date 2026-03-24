@@ -28,6 +28,8 @@
   const queryForm = reactive<LeaseBillFinanceQueryDto>({
     currentPage: "1",
     pageSize: "15",
+    tenantId: undefined,
+    dueWithinDays: undefined,
     tenantName: "",
     tenantPhone: "",
     roomKeyword: "",
@@ -217,6 +219,8 @@
       tenantName: queryForm.tenantName?.trim() || undefined,
       tenantPhone: queryForm.tenantPhone?.trim() || undefined,
       roomKeyword: queryForm.roomKeyword?.trim() || undefined,
+      tenantId: queryForm.tenantId,
+      dueWithinDays: queryForm.dueWithinDays,
       overdueOnly: queryForm.overdueOnly || undefined,
       payStatus: queryForm.payStatus
     };
@@ -262,6 +266,8 @@
     queryForm.tenantName = "";
     queryForm.tenantPhone = "";
     queryForm.roomKeyword = "";
+    queryForm.tenantId = undefined;
+    queryForm.dueWithinDays = undefined;
     queryForm.overdueOnly = false;
     queryForm.payStatus = undefined;
     onSearch();
@@ -273,7 +279,11 @@
   }
 
   function applyRouteQuery() {
+    const tenantId = route.query.tenantId;
+    const dueWithinDays = route.query.dueWithinDays;
     queryForm.overdueOnly = route.query.overdueOnly === "true";
+    queryForm.tenantId = typeof tenantId === "string" && tenantId !== "" ? tenantId : undefined;
+    queryForm.dueWithinDays = typeof dueWithinDays === "string" && dueWithinDays !== "" ? Number(dueWithinDays) : undefined;
     const payStatus = route.query.payStatus;
     queryForm.payStatus = typeof payStatus === "string" && payStatus !== "" ? Number(payStatus) : undefined;
   }

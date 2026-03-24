@@ -43,6 +43,7 @@ function useTenant() {
     phone: "",
     tenantType: undefined,
     status: undefined,
+    expiringDaysWithin: undefined,
     pageSize: "15",
     currentPage: "1"
   });
@@ -511,6 +512,7 @@ function useTenant() {
       idNo: "",
       tenantType: undefined,
       status: undefined,
+      expiringDaysWithin: undefined,
       pageSize: 15,
       currentPage: 1
     });

@@ -2292,6 +2292,14 @@ export type RoomQueryDto = {
      * 关闭状态：true=只查已关闭房间。优先级高于 locked 和 occupancyStatus
      */
     closed?: boolean;
+    /**
+     * 空置天数最小值
+     */
+    vacancyDaysMin?: number;
+    /**
+     * 空置天数最大值
+     */
+    vacancyDaysMax?: number;
 };
 
 export type ResponseResultRoomTotalVo = {
@@ -3763,6 +3771,10 @@ export type LeaseBillFinanceQueryDto = {
     currentPage?: string;
     pageSize?: string;
     /**
+     * 租客ID
+     */
+    tenantId?: string;
+    /**
      * 支付状态：0=未支付，1=部分支付，2=已支付
      */
     payStatus?: number;
@@ -3770,6 +3782,10 @@ export type LeaseBillFinanceQueryDto = {
      * 是否仅查询逾期账单
      */
     overdueOnly?: boolean;
+    /**
+     * 未来几天内应收
+     */
+    dueWithinDays?: number;
     /**
      * 租客姓名
      */
@@ -4441,6 +4457,42 @@ export type ResponseResultWelcomeDashboardVo = {
 };
 
 /**
+ * 欢迎页合同与应收预警
+ */
+export type WelcomeContractWarningVo = {
+    /**
+     * 未来7天应收金额
+     */
+    next7DaysReceivableAmount?: number;
+    /**
+     * 7天内到期合同数
+     */
+    expiring7DaysCount?: number;
+    /**
+     * 30天内到期合同数
+     */
+    expiring30DaysCount?: number;
+};
+
+/**
+ * 欢迎页数量分桶
+ */
+export type WelcomeCountBucketVo = {
+    /**
+     * 分桶键
+     */
+    key?: string;
+    /**
+     * 分桶名称
+     */
+    label?: string;
+    /**
+     * 数量
+     */
+    count?: number;
+};
+
+/**
  * 欢迎页聚合数据
  */
 export type WelcomeDashboardVo = {
@@ -4464,6 +4516,18 @@ export type WelcomeDashboardVo = {
      * 租客逾期欠款分桶
      */
     overdueBuckets?: Array<WelcomeOverdueBucketVo>;
+    /**
+     * 空置时长分布
+     */
+    vacancyBuckets?: Array<WelcomeCountBucketVo>;
+    /**
+     * 合同与应收预警
+     */
+    contractWarning?: WelcomeContractWarningVo;
+    /**
+     * 逾期租客Top5
+     */
+    overdueTenantTopList?: Array<WelcomeOverdueTenantVo>;
     /**
      * 租客统计
      */
@@ -4512,6 +4576,28 @@ export type WelcomeOverdueBucketVo = {
      * 欠款总额
      */
     amount?: number;
+};
+
+/**
+ * 欢迎页逾期租客
+ */
+export type WelcomeOverdueTenantVo = {
+    /**
+     * 租客ID
+     */
+    tenantId?: string;
+    /**
+     * 租客名称
+     */
+    tenantName?: string;
+    /**
+     * 租客电话
+     */
+    tenantPhone?: string;
+    /**
+     * 逾期欠款金额
+     */
+    unpaidAmount?: number;
 };
 
 /**
@@ -5365,6 +5451,10 @@ export type LeaseQueryDto = {
      * 房间ID
      */
     roomId?: string;
+    /**
+     * N天内到期合同
+     */
+    expiringDaysWithin?: number;
 };
 
 export type ResponseResultTenantTotalVo = {
