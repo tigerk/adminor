@@ -5939,6 +5939,7 @@ export type LeaseBillListVo = {
      * 作废人
      */
     voidBy?: string;
+    voidByName?: string;
     /**
      * 房源地址
      */
@@ -10144,23 +10145,23 @@ export type GetBillListResponses = {
 
 export type GetBillListResponse = GetBillListResponses[keyof GetBillListResponses];
 
-export type GetBillInvalidListData = {
+export type GetBillHistoryListData = {
     body: LeaseQueryDto;
     path?: never;
     query: {
         arg1: UserLoginVo;
     };
-    url: '/saas/contract/lease/bill/invalid/list';
+    url: '/saas/contract/lease/bill/history/list';
 };
 
-export type GetBillInvalidListResponses = {
+export type GetBillHistoryListResponses = {
     /**
      * OK
      */
     200: ResponseResultListLeaseBillListVo;
 };
 
-export type GetBillInvalidListResponse = GetBillInvalidListResponses[keyof GetBillInvalidListResponses];
+export type GetBillHistoryListResponse = GetBillHistoryListResponses[keyof GetBillHistoryListResponses];
 
 export type GetBillDetailData = {
     body: LeaseBillDetailDto;
