@@ -117,7 +117,6 @@
           <div class="section-subtitle">可新增、删除、调整费用项；总额会根据费用明细自动计算</div>
         </div>
         <div class="table-tools">
-          <el-button text type="primary" @click="syncPeriodToFees">同步账期到空白费用周期</el-button>
         </div>
       </div>
 
