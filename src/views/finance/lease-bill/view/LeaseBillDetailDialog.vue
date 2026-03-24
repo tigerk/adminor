@@ -179,7 +179,27 @@
             <div class="info-cell__key">备注</div>
             <div class="info-cell__val">{{ bill.remark || "—" }}</div>
           </div>
-          <div v-if="isVoided" class="info-cell info-cell--full">
+        </div>
+      </div>
+
+      <div v-if="isVoided" class="panel">
+        <div class="panel__header">
+          <div class="panel__title">
+            <span class="panel__title-dot panel__title-dot--danger" />
+            作废信息
+          </div>
+        </div>
+
+        <div class="void-info-grid">
+          <div class="void-info-cell">
+            <div class="info-cell__key">作废操作人</div>
+            <div class="info-cell__val">{{ bill.voidByName || "—" }}</div>
+          </div>
+          <div class="void-info-cell">
+            <div class="info-cell__key">作废时间</div>
+            <div class="info-cell__val">{{ formatDateTime(bill.voidTime) }}</div>
+          </div>
+          <div class="void-info-cell void-info-cell--full">
             <div class="info-cell__key">作废原因</div>
             <div class="info-cell__val">{{ bill.voidReason || "—" }}</div>
           </div>
@@ -1006,6 +1026,9 @@
   .panel__title-dot--green {
     background: var(--bill-success);
   }
+  .panel__title-dot--danger {
+    background: var(--bill-danger);
+  }
   .panel__title-dot--purple {
     background: var(--bill-purple);
   }
@@ -1142,6 +1165,29 @@
     color: var(--bill-primary);
     font-weight: 700;
     font-size: 15px;
+  }
+
+  .void-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    padding: 4px 0;
+  }
+
+  .void-info-cell {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--bill-border-extra);
+    border-right: 1px solid var(--bill-border-extra);
+  }
+
+  .void-info-cell:nth-child(2n) {
+    border-right: none;
+  }
+
+  .void-info-cell--full {
+    grid-column: 1 / -1;
+    border-right: none;
+    border-bottom: none;
   }
 
   /* ===== 标签 ===== */
@@ -1572,6 +1618,9 @@
     .info-cell:nth-child(2n) {
       border-right: none;
     }
+    .void-info-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .payment-flow-grid {
       grid-template-columns: repeat(2, 1fr);
     }
@@ -1597,6 +1646,15 @@
     }
     .fee-col--remark {
       display: none;
+    }
+    .void-info-grid {
+      grid-template-columns: 1fr;
+    }
+    .void-info-cell {
+      border-right: none;
+    }
+    .void-info-cell--full {
+      grid-column: auto;
     }
   }
 </style>
