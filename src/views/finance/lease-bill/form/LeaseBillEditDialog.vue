@@ -525,6 +525,28 @@
 
 <style scoped lang="scss">
   .bill-edit-dialog {
+    --bill-bg: var(--el-bg-color);
+    --bill-bg-overlay: var(--el-bg-color-overlay);
+    --bill-bg-soft: var(--el-fill-color-light);
+    --bill-bg-softer: var(--el-fill-color-lighter);
+    --bill-bg-softest: var(--el-fill-color-extra-light);
+    --bill-border: var(--el-border-color);
+    --bill-border-light: var(--el-border-color-light);
+    --bill-border-lighter: var(--el-border-color-lighter);
+    --bill-border-extra: var(--el-border-color-extra-light);
+    --bill-text-primary: var(--el-text-color-primary);
+    --bill-text-regular: var(--el-text-color-regular);
+    --bill-text-secondary: var(--el-text-color-secondary);
+    --bill-text-placeholder: var(--el-text-color-placeholder);
+    --bill-primary: var(--el-color-primary);
+    --bill-primary-soft: var(--el-color-primary-light-9);
+    --bill-primary-soft-border: var(--el-color-primary-light-7);
+    --bill-success: var(--el-color-success);
+    --bill-success-soft: var(--el-color-success-light-9);
+    --bill-warning: var(--el-color-warning);
+    --bill-warning-soft: var(--el-color-warning-light-9);
+    --bill-danger: var(--el-color-danger);
+    --bill-danger-soft: var(--el-color-danger-light-9);
     display: grid;
     gap: 16px;
     padding-bottom: 20px;
@@ -537,19 +559,19 @@
     gap: 16px;
     padding: 18px 20px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%);
-    border: 1px solid #dbeafe;
+    background: linear-gradient(135deg, var(--bill-primary-soft) 0%, var(--bill-bg-softest) 100%);
+    border: 1px solid var(--bill-primary-soft-border);
   }
 
   .hero-label {
-    color: #2563eb;
+    color: var(--bill-primary);
     font-size: 13px;
     font-weight: 600;
   }
 
   .hero-title {
     margin-top: 6px;
-    color: #111827;
+    color: var(--bill-text-primary);
     font-size: 22px;
     font-weight: 700;
   }
@@ -558,7 +580,7 @@
     display: flex;
     gap: 18px;
     margin-top: 8px;
-    color: #6b7280;
+    color: var(--bill-text-secondary);
     font-size: 13px;
     flex-wrap: wrap;
   }
@@ -573,24 +595,24 @@
     min-width: 110px;
     padding: 12px 14px;
     border-radius: 12px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--bill-bg-overlay);
+    border: 1px solid var(--bill-border-light);
   }
 
   .summary-chip--primary {
-    border-color: #bfdbfe;
-    background: #eff6ff;
+    border-color: var(--bill-primary-soft-border);
+    background: var(--bill-primary-soft);
   }
 
   .summary-chip__label {
     display: block;
-    color: #6b7280;
+    color: var(--bill-text-secondary);
     font-size: 12px;
     margin-bottom: 6px;
   }
 
   .summary-chip__value {
-    color: #111827;
+    color: var(--bill-text-primary);
     font-size: 18px;
     font-weight: 700;
   }
@@ -598,13 +620,13 @@
   .section-card {
     padding: 18px 20px;
     border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
+    border: 1px solid var(--bill-border-light);
+    background: var(--bill-bg-overlay);
   }
 
   .section-card--muted {
-    background: #fbfdff;
-    border-color: #dbe7f5;
+    background: var(--bill-bg-softest);
+    border-color: var(--bill-primary-soft-border);
   }
 
   .section-card--compact {
@@ -623,14 +645,14 @@
   }
 
   .section-title {
-    color: #111827;
+    color: var(--bill-text-primary);
     font-size: 18px;
     font-weight: 700;
   }
 
   .section-subtitle {
     margin-top: 4px;
-    color: #6b7280;
+    color: var(--bill-text-secondary);
     font-size: 13px;
   }
 
@@ -662,19 +684,19 @@
   .payment-item {
     padding: 10px 12px;
     border-radius: 10px;
-    background: #fff;
-    border: 1px solid #e5edf8;
+    background: var(--bill-bg-overlay);
+    border: 1px solid var(--bill-border-lighter);
   }
 
   .payment-item__label {
-    color: #6b7280;
+    color: var(--bill-text-secondary);
     font-size: 11px;
     line-height: 1.2;
   }
 
   .payment-item__value {
     margin-top: 6px;
-    color: #111827;
+    color: var(--bill-text-primary);
     font-size: 14px;
     font-weight: 600;
     word-break: break-all;
@@ -691,30 +713,30 @@
   }
 
   .payment-badge--paid {
-    color: #16a34a;
-    background: #dcfce7;
+    color: var(--bill-success);
+    background: var(--bill-success-soft);
   }
 
   .payment-badge--partial {
-    color: #d97706;
-    background: #fef3c7;
+    color: var(--bill-warning);
+    background: var(--bill-warning-soft);
   }
 
   .payment-badge--overdue {
-    color: #e11d48;
-    background: #ffe4e6;
+    color: var(--bill-danger);
+    background: var(--bill-danger-soft);
   }
 
   .payment-badge--unpaid {
-    color: #dc2626;
-    background: #fee2e2;
+    color: var(--bill-danger);
+    background: var(--bill-danger-soft);
   }
 
   .fee-table-wrapper {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--bill-border-light);
     border-radius: 12px;
     overflow: hidden;
-    background: #fff;
+    background: var(--bill-bg-overlay);
   }
 
   .fee-table {
@@ -726,20 +748,20 @@
   .fee-table th,
   .fee-table td {
     padding: 10px 12px;
-    border-bottom: 1px solid #eef2f7;
+    border-bottom: 1px solid var(--bill-border-extra);
     vertical-align: middle;
     text-align: left;
   }
 
   .fee-table th {
-    background: #f8fafc;
-    color: #4b5563;
+    background: var(--bill-bg-softest);
+    color: var(--bill-text-regular);
     font-weight: 600;
   }
 
   .required {
     margin-left: 2px;
-    color: #ef4444;
+    color: var(--bill-danger);
   }
 
   .empty-row td {
@@ -751,7 +773,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #6b7280;
+    color: var(--bill-text-secondary);
   }
 
   .period-picker {
@@ -761,7 +783,7 @@
   }
 
   .period-sep {
-    color: #9ca3af;
+    color: var(--bill-text-placeholder);
   }
 
   .add-fee-bar {
@@ -775,7 +797,7 @@
     margin-top: 14px;
     padding: 14px 16px;
     border-radius: 12px;
-    background: #f8fafc;
+    background: var(--bill-bg-softest);
   }
 
   .summary-item {
@@ -784,24 +806,24 @@
   }
 
   .summary-label {
-    color: #6b7280;
+    color: var(--bill-text-secondary);
     font-size: 12px;
   }
 
   .summary-value {
-    color: #111827;
+    color: var(--bill-text-primary);
     font-size: 18px;
     font-weight: 700;
   }
 
   .summary-value--primary {
-    color: #2563eb;
+    color: var(--bill-primary);
   }
 
   .summary-divider {
     width: 1px;
     align-self: stretch;
-    background: #dbe3ef;
+    background: var(--bill-border-lighter);
   }
 
   @media (max-width: 1200px) {

@@ -308,7 +308,7 @@
     return t <= 0 ? 0 : Number(Math.min((nextPaidAmount.value / t) * 100, 100).toFixed(2));
   });
   const collectProgressText = computed(() => `${collectProgressPercent.value}%`);
-  const collectProgressColor = computed(() => ["#94a3b8", "#f59e0b", "#10b981"][resolvedPayStatus.value]);
+  const collectProgressColor = computed(() => ["var(--collect-text-placeholder)", "var(--collect-warning)", "var(--collect-success)"][resolvedPayStatus.value]);
   const previewMetrics = computed(() => [
     { label: "本次分配合计", value: `¥${moneyText(allocatedAmount.value)}`, warn: false },
     { label: "收款后累计已收", value: `¥${moneyText(nextPaidAmount.value)}`, warn: false },
@@ -388,6 +388,31 @@
 <style scoped>
   /* ── 外层 ── */
   .collect-wrap {
+    --collect-bg: var(--el-bg-color);
+    --collect-bg-overlay: var(--el-bg-color-overlay);
+    --collect-bg-soft: var(--el-fill-color-light);
+    --collect-bg-softer: var(--el-fill-color-lighter);
+    --collect-bg-softest: var(--el-fill-color-extra-light);
+    --collect-border: var(--el-border-color);
+    --collect-border-light: var(--el-border-color-light);
+    --collect-border-lighter: var(--el-border-color-lighter);
+    --collect-border-extra: var(--el-border-color-extra-light);
+    --collect-text-primary: var(--el-text-color-primary);
+    --collect-text-regular: var(--el-text-color-regular);
+    --collect-text-secondary: var(--el-text-color-secondary);
+    --collect-text-placeholder: var(--el-text-color-placeholder);
+    --collect-primary: var(--el-color-primary);
+    --collect-primary-soft: var(--el-color-primary-light-9);
+    --collect-primary-soft-border: var(--el-color-primary-light-7);
+    --collect-success: var(--el-color-success);
+    --collect-success-soft: var(--el-color-success-light-9);
+    --collect-success-soft-border: var(--el-color-success-light-7);
+    --collect-warning: var(--el-color-warning);
+    --collect-warning-soft: var(--el-color-warning-light-9);
+    --collect-warning-soft-border: var(--el-color-warning-light-7);
+    --collect-danger: var(--el-color-danger);
+    --collect-danger-soft: var(--el-color-danger-light-9);
+    --collect-danger-soft-border: var(--el-color-danger-light-7);
     display: flex;
     flex-direction: column;
     padding-bottom: 4px;
@@ -401,8 +426,8 @@
     flex-wrap: wrap;
     gap: 12px;
     padding: 12px 16px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--collect-bg-softest);
+    border: 1px solid var(--collect-border-light);
     border-radius: 10px;
   }
   .bill-overview__left {
@@ -414,8 +439,8 @@
     width: fit-content;
     padding: 2px 9px;
     border-radius: 5px;
-    background: #eff6ff;
-    color: #2563eb;
+    background: var(--collect-primary-soft);
+    color: var(--collect-primary);
     font-size: 12px;
     font-weight: 700;
   }
@@ -425,7 +450,7 @@
     flex-wrap: wrap;
     gap: 5px;
     font-size: 12px;
-    color: #64748b;
+    color: var(--collect-text-secondary);
   }
   .bill-meta__item {
     display: flex;
@@ -433,25 +458,25 @@
     gap: 3px;
   }
   .bill-meta__dot {
-    color: #cbd5e1;
+    color: var(--collect-text-placeholder);
   }
   .bill-meta__overdue {
     padding: 1px 7px;
     border-radius: 20px;
-    background: #fef2f2;
-    color: #dc2626;
+    background: var(--collect-danger-soft);
+    color: var(--collect-danger);
     font-size: 11px;
     font-weight: 700;
-    border: 1px solid #fecaca;
+    border: 1px solid var(--collect-danger-soft-border);
   }
   .bill-kpi-row {
     display: flex;
     align-items: stretch;
     flex-shrink: 0;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--collect-border-light);
     border-radius: 8px;
     overflow: hidden;
-    background: #fff;
+    background: var(--collect-bg-overlay);
   }
   .bill-kpi {
     display: flex;
@@ -461,32 +486,32 @@
   }
   .bill-kpi-divider {
     width: 1px;
-    background: #e2e8f0;
+    background: var(--collect-border-light);
     flex-shrink: 0;
   }
   .bill-kpi__label {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
     white-space: nowrap;
   }
   .bill-kpi__value {
     font-size: 15px;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--collect-text-primary);
     font-variant-numeric: tabular-nums;
   }
   .bill-kpi__value--paid {
-    color: #059669;
+    color: var(--collect-success);
   }
   .bill-kpi__value--unpaid {
-    color: #d97706;
+    color: var(--collect-warning);
   }
 
   /* ── 通用 Section ── */
   .section-block {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--collect-border-light);
     border-radius: 10px;
-    background: #fff;
+    background: var(--collect-bg-overlay);
     overflow: hidden;
   }
 
@@ -507,7 +532,7 @@
     padding: 12px 16px 0;
     font-size: 13px;
     font-weight: 600;
-    color: #334155;
+    color: var(--collect-text-primary);
   }
   /* 在 header 内时，由 header 控制 padding，title 自身不加 */
   .section-block__header > .section-block__title {
@@ -515,19 +540,19 @@
   }
 
   .section-icon {
-    color: #3b82f6;
+    color: var(--collect-primary);
     font-size: 15px;
     flex-shrink: 0;
   }
   .section-icon--indigo {
-    color: #6366f1;
+    color: var(--collect-primary);
   }
   .section-icon--emerald {
-    color: #059669;
+    color: var(--collect-success);
   }
   .section-sub {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
     font-weight: 400;
     margin-left: 2px;
   }
@@ -544,19 +569,19 @@
     display: flex;
     align-items: center;
     gap: 3px;
-    color: #475569;
+    color: var(--collect-text-regular);
   }
   .payer-inline__item--addr {
-    color: #64748b;
+    color: var(--collect-text-secondary);
   }
   .payer-icon {
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
     font-size: 13px;
   }
   .payer-sep {
     width: 1px;
     height: 12px;
-    background: #e2e8f0;
+    background: var(--collect-border-light);
     flex-shrink: 0;
   }
 
@@ -583,14 +608,14 @@
 
   /* input 前缀图标 */
   .input-icon {
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
     font-size: 14px;
   }
 
   /* label 里的"选填"标注 */
   .label-optional {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
     font-weight: 400;
     margin-left: 3px;
   }
@@ -630,25 +655,25 @@
     margin-top: 8px;
     padding-top: 7px;
     padding-bottom: 7px;
-    background: #f8fafc;
-    border-top: 1px solid #f1f5f9;
-    border-bottom: 1px solid #e8edf4;
+    background: var(--collect-bg-softest);
+    border-top: 1px solid var(--collect-border-extra);
+    border-bottom: 1px solid var(--collect-border-lighter);
     font-size: 11px;
     font-weight: 600;
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
     letter-spacing: 0.03em;
   }
   .fee-row {
     padding-top: 10px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--collect-border-extra);
     transition: background 0.1s;
   }
   .fee-row:last-child {
     border-bottom: none;
   }
   .fee-row:hover {
-    background: #fafbff;
+    background: var(--collect-bg-softest);
   }
 
   .fc {
@@ -683,7 +708,7 @@
     margin: 0;
     font-size: 13px;
     font-weight: 500;
-    color: #1e293b;
+    color: var(--collect-text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -696,34 +721,34 @@
     height: 16px;
     padding: 0 5px;
     border-radius: 3px;
-    background: #f1f5f9;
-    color: #64748b;
+    background: var(--collect-bg-soft);
+    color: var(--collect-text-secondary);
     font-size: 10px;
     font-weight: 500;
   }
   .cycle-date {
     font-size: 11px;
-    color: #64748b;
+    color: var(--collect-text-secondary);
     white-space: nowrap;
   }
   .cycle-sep {
     font-size: 10px;
-    color: #cbd5e1;
+    color: var(--collect-text-placeholder);
     flex-shrink: 0;
   }
   .n-default {
     font-size: 13px;
-    color: #475569;
+    color: var(--collect-text-regular);
     font-variant-numeric: tabular-nums;
   }
   .n-muted {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
     font-variant-numeric: tabular-nums;
   }
   .n-warn {
     font-size: 13px;
-    color: #d97706;
+    color: var(--collect-warning);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
   }
@@ -737,7 +762,7 @@
     justify-content: center;
     gap: 8px;
     padding: 28px 0;
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
     font-size: 13px;
   }
   .fee-empty__icon {
@@ -748,8 +773,8 @@
     display: flex;
     align-items: center;
     padding: 10px 16px;
-    background: #f8fafc;
-    border-top: 1px solid #e8edf4;
+    background: var(--collect-bg-softest);
+    border-top: 1px solid var(--collect-border-lighter);
   }
   .af-item {
     display: flex;
@@ -760,25 +785,25 @@
   .af-sep {
     width: 1px;
     height: 18px;
-    background: #e2e8f0;
+    background: var(--collect-border-light);
     margin: 0 12px;
     flex-shrink: 0;
   }
   .af-label {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
   }
   .af-val {
     font-size: 13px;
     font-weight: 700;
-    color: #334155;
+    color: var(--collect-text-primary);
     font-variant-numeric: tabular-nums;
   }
   .af-val--warn {
-    color: #d97706;
+    color: var(--collect-warning);
   }
   .af-val--ok {
-    color: #059669;
+    color: var(--collect-success);
   }
 
   /* ── ④ 结果预览 ── */
@@ -804,19 +829,19 @@
     font-weight: 700;
   }
   .pill--paid {
-    background: #ecfdf5;
-    color: #059669;
-    border: 1px solid #a7f3d0;
+    background: var(--collect-success-soft);
+    color: var(--collect-success);
+    border: 1px solid var(--collect-success-soft-border);
   }
   .pill--partial {
-    background: #fffbeb;
-    color: #d97706;
-    border: 1px solid #fde68a;
+    background: var(--collect-warning-soft);
+    color: var(--collect-warning);
+    border: 1px solid var(--collect-warning-soft-border);
   }
   .pill--unpaid {
-    background: #f8fafc;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
+    background: var(--collect-bg-softest);
+    color: var(--collect-text-secondary);
+    border: 1px solid var(--collect-border-light);
   }
   .pill--overdue {
     display: inline-flex;
@@ -826,20 +851,20 @@
     border-radius: 20px;
     font-size: 11px;
     font-weight: 700;
-    background: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
+    background: var(--collect-danger-soft);
+    color: var(--collect-danger);
+    border: 1px solid var(--collect-danger-soft-border);
   }
   .prog-pct {
     margin-left: auto;
     font-size: 12px;
     font-weight: 700;
-    color: #334155;
+    color: var(--collect-text-primary);
     font-variant-numeric: tabular-nums;
   }
   .prog-track {
     height: 5px;
-    background: #e2e8f0;
+    background: var(--collect-border-light);
     border-radius: 999px;
     overflow: hidden;
   }
@@ -860,21 +885,21 @@
     gap: 4px;
     padding: 8px 10px;
     border-radius: 7px;
-    background: #f8fafc;
-    border: 1px solid #f1f5f9;
+    background: var(--collect-bg-softest);
+    border: 1px solid var(--collect-border-extra);
   }
   .metric-cell__label {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--collect-text-placeholder);
   }
   .metric-cell__val {
     font-size: 13px;
     font-weight: 700;
-    color: #334155;
+    color: var(--collect-text-primary);
     font-variant-numeric: tabular-nums;
   }
   .metric-val--warn {
-    color: #d97706;
+    color: var(--collect-warning);
   }
 
   /* ── Element Plus 覆盖 ── */
@@ -890,7 +915,7 @@
   }
   :deep(.el-form-item__label) {
     font-size: 12px;
-    color: #64748b;
+    color: var(--collect-text-secondary);
     font-weight: 500;
     padding-bottom: 4px;
     line-height: 1.4;

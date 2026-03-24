@@ -656,10 +656,40 @@
 <style scoped>
   /* ===== 全局布局 ===== */
   .bill-detail-dialog {
+    --bill-bg: var(--el-bg-color);
+    --bill-bg-overlay: var(--el-bg-color-overlay);
+    --bill-bg-soft: var(--el-fill-color-light);
+    --bill-bg-softer: var(--el-fill-color-lighter);
+    --bill-bg-softest: var(--el-fill-color-extra-light);
+    --bill-border: var(--el-border-color);
+    --bill-border-light: var(--el-border-color-light);
+    --bill-border-lighter: var(--el-border-color-lighter);
+    --bill-border-extra: var(--el-border-color-extra-light);
+    --bill-text-primary: var(--el-text-color-primary);
+    --bill-text-regular: var(--el-text-color-regular);
+    --bill-text-secondary: var(--el-text-color-secondary);
+    --bill-text-placeholder: var(--el-text-color-placeholder);
+    --bill-primary: var(--el-color-primary);
+    --bill-primary-dark: var(--el-color-primary-dark-2);
+    --bill-primary-soft: var(--el-color-primary-light-9);
+    --bill-primary-soft-border: var(--el-color-primary-light-7);
+    --bill-success: var(--el-color-success);
+    --bill-success-soft: var(--el-color-success-light-9);
+    --bill-success-soft-border: var(--el-color-success-light-7);
+    --bill-warning: var(--el-color-warning);
+    --bill-warning-soft: var(--el-color-warning-light-9);
+    --bill-warning-soft-border: var(--el-color-warning-light-7);
+    --bill-danger: var(--el-color-danger);
+    --bill-danger-soft: var(--el-color-danger-light-9);
+    --bill-danger-soft-border: var(--el-color-danger-light-7);
+    --bill-info-soft: var(--el-color-info-light-9);
+    --bill-info-soft-border: var(--el-color-info-light-7);
+    --bill-purple: #7c3aed;
+    --bill-purple-soft: color-mix(in srgb, var(--bill-purple) 14%, transparent);
     display: flex;
     flex-direction: column;
     gap: 14px;
-    color: #1a1f2e;
+    color: var(--bill-text-primary);
     font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   }
 
@@ -669,15 +699,15 @@
     align-items: center;
     gap: 12px;
     padding: 14px 18px;
-    background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
-    border: 1px solid #c7d7fb;
+    background: linear-gradient(135deg, var(--bill-primary-soft) 0%, var(--bill-bg-softer) 100%);
+    border: 1px solid var(--bill-primary-soft-border);
     border-radius: 10px;
   }
 
   .address-banner__icon {
     width: 36px;
     height: 36px;
-    background: #3b5bdb;
+    background: var(--bill-primary);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -699,13 +729,13 @@
   }
 
   .address-banner__label {
-    color: #6c7a9c;
+    color: var(--bill-text-secondary);
     font-size: 13px;
     white-space: nowrap;
   }
 
   .address-banner__value {
-    color: #1a1f2e;
+    color: var(--bill-text-primary);
     font-size: 14px;
     font-weight: 600;
   }
@@ -737,31 +767,31 @@
     overflow: hidden;
     padding: 18px 20px;
     border-radius: 12px;
-    border: 1px solid #e8ecf4;
-    background: #fff;
+    border: 1px solid var(--bill-border-lighter);
+    background: var(--bill-bg-overlay);
   }
 
   .metric-card--amount {
-    border-color: #dbeafe;
-    background: #f8fbff;
+    border-color: var(--bill-primary-soft-border);
+    background: var(--bill-primary-soft);
   }
 
   .metric-card--amount .metric-card__icon-wrap {
-    background: #dbeafe;
-    color: #2563eb;
+    background: var(--bill-primary-soft);
+    color: var(--bill-primary);
   }
 
   .metric-card__value--amount {
     font-size: 22px;
     font-weight: 700;
-    color: #1d4ed8;
+    color: var(--bill-primary-dark);
   }
 
   .metric-card__currency {
     font-size: 14px;
     font-weight: 500;
     margin-right: 2px;
-    color: #1d4ed8;
+    color: var(--bill-primary-dark);
     opacity: 0.8;
   }
 
@@ -777,30 +807,30 @@
   }
 
   .metric-card--payer .metric-card__icon-wrap {
-    background: #eff6ff;
-    color: #2563eb;
+    background: var(--bill-primary-soft);
+    color: var(--bill-primary);
   }
 
   .metric-card--period .metric-card__icon-wrap {
-    background: #f0fdf4;
-    color: #16a34a;
+    background: var(--bill-success-soft);
+    color: var(--bill-success);
   }
 
   .metric-card--summary .metric-card__icon-wrap {
-    background: #fff7ed;
-    color: #d97706;
+    background: var(--bill-warning-soft);
+    color: var(--bill-warning);
   }
 
   .metric-card__label {
     font-size: 12px;
-    color: #8492b0;
+    color: var(--bill-text-placeholder);
     margin-bottom: 4px;
   }
 
   .metric-card__value {
     font-size: 15px;
     font-weight: 600;
-    color: #1a1f2e;
+    color: var(--bill-text-primary);
     line-height: 1.4;
   }
 
@@ -813,52 +843,52 @@
     width: 42px;
     height: 42px;
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--bill-border-light);
     overflow: hidden;
   }
 
   /* ===== 状态标签 ===== */
   .badge--unpaid,
   .status-badge.badge--unpaid {
-    background: #fff1f2;
-    color: #e11d48;
-    border: 1px solid #fecdd3;
+    background: var(--bill-danger-soft);
+    color: var(--bill-danger);
+    border: 1px solid var(--bill-danger-soft-border);
   }
   .badge--partial,
   .status-badge.badge--partial {
-    background: #fffbeb;
-    color: #d97706;
-    border: 1px solid #fde68a;
+    background: var(--bill-warning-soft);
+    color: var(--bill-warning);
+    border: 1px solid var(--bill-warning-soft-border);
   }
   .badge--paid,
   .status-badge.badge--paid {
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
+    background: var(--bill-success-soft);
+    color: var(--bill-success);
+    border: 1px solid var(--bill-success-soft-border);
   }
   .badge--overdue,
   .status-badge.badge--overdue,
   .address-banner__badge--overdue {
-    background: #fff1f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
+    background: var(--bill-danger-soft);
+    color: var(--bill-danger);
+    border: 1px solid var(--bill-danger-soft-border);
   }
 
   .address-banner__badge.badge--unpaid {
-    background: #fff1f2;
-    color: #e11d48;
+    background: var(--bill-danger-soft);
+    color: var(--bill-danger);
   }
   .address-banner__badge.badge--partial {
-    background: #fffbeb;
-    color: #d97706;
+    background: var(--bill-warning-soft);
+    color: var(--bill-warning);
   }
   .address-banner__badge.badge--paid {
-    background: #f0fdf4;
-    color: #16a34a;
+    background: var(--bill-success-soft);
+    color: var(--bill-success);
   }
   .address-banner__badge--overdue {
-    background: #fff1f2;
-    color: #dc2626;
+    background: var(--bill-danger-soft);
+    color: var(--bill-danger);
   }
 
   .status-badge {
@@ -871,9 +901,9 @@
 
   /* ===== 通用 Panel ===== */
   .panel {
-    border: 1px solid #e8ecf4;
+    border: 1px solid var(--bill-border-lighter);
     border-radius: 12px;
-    background: #fff;
+    background: var(--bill-bg-overlay);
     overflow: hidden;
   }
 
@@ -882,8 +912,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 20px;
-    border-bottom: 1px solid #f0f2f8;
-    background: #fafbfd;
+    border-bottom: 1px solid var(--bill-border-extra);
+    background: var(--bill-bg-softest);
   }
 
   .panel__title {
@@ -892,31 +922,31 @@
     gap: 8px;
     font-size: 14px;
     font-weight: 700;
-    color: #1a1f2e;
+    color: var(--bill-text-primary);
   }
 
   .panel__title-dot {
     width: 4px;
     height: 16px;
     border-radius: 2px;
-    background: #2563eb;
+    background: var(--bill-primary);
     flex-shrink: 0;
   }
 
   .panel__title-dot--orange {
-    background: #f59e0b;
+    background: var(--bill-warning);
   }
   .panel__title-dot--green {
-    background: #10b981;
+    background: var(--bill-success);
   }
   .panel__title-dot--purple {
-    background: #8b5cf6;
+    background: var(--bill-purple);
   }
 
   .panel__count {
     font-size: 12px;
-    color: #8492b0;
-    background: #f0f2f8;
+    color: var(--bill-text-placeholder);
+    background: var(--bill-bg-soft);
     padding: 2px 10px;
     border-radius: 20px;
   }
@@ -938,43 +968,43 @@
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    border: 1px solid #d1d9f0;
-    background: #fff;
-    color: #4361b8;
+    border: 1px solid var(--bill-border-light);
+    background: var(--bill-bg-overlay);
+    color: var(--bill-primary);
     transition: all 0.15s ease;
     line-height: 1;
   }
 
   .action-btn:hover {
-    background: #f0f4ff;
-    border-color: #93a8f0;
-    color: #2563eb;
+    background: var(--bill-primary-soft);
+    border-color: var(--bill-primary-soft-border);
+    color: var(--bill-primary);
   }
 
   .action-btn--disabled,
   .action-btn:disabled {
     cursor: not-allowed;
-    color: #9ca3af;
-    border-color: #e5e7eb;
-    background: #f8fafc;
+    color: var(--bill-text-placeholder);
+    border-color: var(--bill-border-light);
+    background: var(--bill-bg-softest);
   }
 
   .action-btn--disabled:hover,
   .action-btn:disabled:hover {
-    color: #9ca3af;
-    border-color: #e5e7eb;
-    background: #f8fafc;
+    color: var(--bill-text-placeholder);
+    border-color: var(--bill-border-light);
+    background: var(--bill-bg-softest);
   }
 
   .action-btn--primary {
-    background: #2563eb;
+    background: var(--bill-primary);
     color: #fff;
-    border-color: #2563eb;
+    border-color: var(--bill-primary);
   }
 
   .action-btn--primary:hover {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
+    background: var(--bill-primary-dark);
+    border-color: var(--bill-primary-dark);
     color: #fff;
   }
 
@@ -984,14 +1014,14 @@
   }
 
   .action-btn--danger {
-    color: #e11d48;
-    border-color: #fecdd3;
-    background: #fff1f2;
+    color: var(--bill-danger);
+    border-color: var(--bill-danger-soft-border);
+    background: var(--bill-danger-soft);
   }
 
   .action-btn--danger:hover {
-    background: #ffe4e6;
-    border-color: #fda4af;
+    background: var(--bill-danger-soft);
+    border-color: var(--bill-danger-soft-border);
   }
 
   /* ===== 信息网格 ===== */
@@ -1004,8 +1034,8 @@
 
   .info-cell {
     padding: 14px 20px;
-    border-bottom: 1px solid #f4f5f9;
-    border-right: 1px solid #f4f5f9;
+    border-bottom: 1px solid var(--bill-border-extra);
+    border-right: 1px solid var(--bill-border-extra);
   }
 
   .info-cell:nth-child(4n) {
@@ -1023,13 +1053,13 @@
 
   .info-cell__key {
     font-size: 12px;
-    color: #8492b0;
+    color: var(--bill-text-placeholder);
     margin-bottom: 6px;
   }
 
   .info-cell__val {
     font-size: 14px;
-    color: #1a1f2e;
+    color: var(--bill-text-primary);
     font-weight: 500;
     line-height: 1.5;
     word-break: break-all;
@@ -1042,7 +1072,7 @@
   }
 
   .info-cell__val--amount {
-    color: #2563eb;
+    color: var(--bill-primary);
     font-weight: 700;
     font-size: 15px;
   }
@@ -1057,20 +1087,20 @@
   }
 
   .tag--blue {
-    background: #eff6ff;
-    color: #2563eb;
+    background: var(--bill-primary-soft);
+    color: var(--bill-primary);
   }
   .tag--gray {
-    background: #f4f5f9;
-    color: #6c7a9c;
+    background: var(--bill-bg-soft);
+    color: var(--bill-text-secondary);
   }
   .tag--orange {
-    background: #fff7ed;
-    color: #d97706;
+    background: var(--bill-warning-soft);
+    color: var(--bill-warning);
   }
   .tag--green {
-    background: #f0fdf4;
-    color: #16a34a;
+    background: var(--bill-success-soft);
+    color: var(--bill-success);
   }
 
   /* ===== 费用明细自定义表格 ===== */
@@ -1081,23 +1111,23 @@
   .fee-table__head {
     display: flex;
     align-items: center;
-    background: #f8fafc;
-    border-bottom: 1px solid #e8ecf4;
+    background: var(--bill-bg-softest);
+    border-bottom: 1px solid var(--bill-border-lighter);
     padding: 10px 20px;
     font-weight: 600;
-    color: #6c7a9c;
+    color: var(--bill-text-secondary);
     font-size: 12px;
   }
 
   .fee-table__body {
-    divide-y: 1px solid #f0f2f8;
+    divide-y: 1px solid var(--bill-border-extra);
   }
 
   .fee-row {
     display: flex;
     align-items: center;
     padding: 12px 20px;
-    border-bottom: 1px solid #f4f5f9;
+    border-bottom: 1px solid var(--bill-border-extra);
     transition: background 0.12s;
   }
 
@@ -1106,7 +1136,7 @@
   }
 
   .fee-row:hover {
-    background: #fafbff;
+    background: var(--bill-bg-softest);
   }
 
   .fee-col {
@@ -1116,7 +1146,7 @@
   .fee-col--idx {
     width: 48px;
     flex-shrink: 0;
-    color: #bcc4d8;
+    color: var(--bill-text-placeholder);
     font-weight: 600;
   }
   .fee-col--type {
@@ -1126,25 +1156,25 @@
   .fee-col--name {
     flex: 1;
     min-width: 0;
-    color: #1a1f2e;
+    color: var(--bill-text-primary);
     font-weight: 500;
   }
   .fee-col--num {
     width: 110px;
     flex-shrink: 0;
     justify-content: flex-end;
-    color: #4b5563;
+    color: var(--bill-text-regular);
   }
   .fee-col--period {
     width: 210px;
     flex-shrink: 0;
-    color: #6c7a9c;
+    color: var(--bill-text-secondary);
     padding-left: 20px;
   }
   .fee-col--remark {
     flex: 1;
     min-width: 0;
-    color: #8492b0;
+    color: var(--bill-text-placeholder);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1152,7 +1182,7 @@
   }
 
   .fee-col--positive {
-    color: #2563eb;
+    color: var(--bill-primary);
     font-weight: 600;
   }
 
@@ -1161,7 +1191,7 @@
     display: flex;
     align-items: center;
     font-size: 13px;
-    color: #4b5563;
+    color: var(--bill-text-regular);
   }
   .flow-col--no {
     flex: 1.4;
@@ -1204,7 +1234,7 @@
     width: 148px;
     flex-shrink: 0;
     justify-content: center;
-    color: #6c7a9c;
+    color: var(--bill-text-secondary);
   }
   .flow-col--remark {
     flex: 1;
@@ -1214,7 +1244,7 @@
   .flow-col--mono {
     font-family: "SF Mono", "Menlo", monospace;
     font-size: 12px;
-    color: #6c7a9c;
+    color: var(--bill-text-secondary);
     letter-spacing: 0.01em;
   }
 
@@ -1223,7 +1253,7 @@
     display: flex;
     align-items: center;
     font-size: 13px;
-    color: #4b5563;
+    color: var(--bill-text-regular);
   }
   .pay-col--no {
     flex: 1.4;
@@ -1233,7 +1263,7 @@
     white-space: nowrap;
     font-family: "SF Mono", "Menlo", monospace;
     font-size: 12px;
-    color: #6c7a9c;
+    color: var(--bill-text-secondary);
   }
   .pay-col--channel {
     width: 80px;
@@ -1251,7 +1281,7 @@
     white-space: nowrap;
     font-family: "SF Mono", "Menlo", monospace;
     font-size: 12px;
-    color: #6c7a9c;
+    color: var(--bill-text-secondary);
   }
   .pay-col--voucher {
     width: 68px;
@@ -1272,7 +1302,7 @@
     width: 148px;
     flex-shrink: 0;
     justify-content: center;
-    color: #6c7a9c;
+    color: var(--bill-text-secondary);
   }
 
   /* ===== 备注悬浮 ===== */
@@ -1283,10 +1313,10 @@
     white-space: nowrap;
     max-width: 100%;
     cursor: default;
-    color: #8492b0;
+    color: var(--bill-text-placeholder);
   }
   .remark-text:hover {
-    color: #3b5bdb;
+    color: var(--bill-primary);
     text-decoration: underline dotted;
     text-underline-offset: 2px;
   }
@@ -1300,24 +1330,24 @@
     font-weight: 500;
   }
   .pay-status--processing {
-    background: #fffbeb;
-    color: #d97706;
+    background: var(--bill-warning-soft);
+    color: var(--bill-warning);
   }
   .pay-status--success {
-    background: #f0fdf4;
-    color: #16a34a;
+    background: var(--bill-success-soft);
+    color: var(--bill-success);
   }
   .pay-status--fail {
-    background: #fff1f2;
-    color: #e11d48;
+    background: var(--bill-danger-soft);
+    color: var(--bill-danger);
   }
   .pay-status--closed {
-    background: #f4f5f9;
-    color: #8492b0;
+    background: var(--bill-bg-soft);
+    color: var(--bill-text-placeholder);
   }
   .pay-status--refund {
-    background: #f5f3ff;
-    color: #7c3aed;
+    background: var(--bill-purple-soft);
+    color: var(--bill-purple);
   }
 
   /* ===== Element Plus 表格美化 ===== */
@@ -1326,14 +1356,14 @@
   }
 
   .styled-table :deep(.el-table th) {
-    background: #f8fafc !important;
-    color: #6c7a9c;
+    background: var(--bill-bg-softest) !important;
+    color: var(--bill-text-secondary);
     font-size: 12px;
     font-weight: 600;
   }
 
   .styled-table :deep(.el-table td) {
-    color: #1a1f2e;
+    color: var(--bill-text-primary);
     font-size: 13px;
   }
 
@@ -1343,8 +1373,8 @@
     border-radius: 4px;
     font-size: 12px;
     font-weight: 500;
-    background: #f0f4ff;
-    color: #3b5bdb;
+    background: var(--bill-primary-soft);
+    color: var(--bill-primary);
   }
 
   .direction-tag {
@@ -1356,12 +1386,12 @@
   }
 
   .direction-tag--in {
-    background: #f0fdf4;
-    color: #16a34a;
+    background: var(--bill-success-soft);
+    color: var(--bill-success);
   }
   .direction-tag--out {
-    background: #fff1f2;
-    color: #e11d48;
+    background: var(--bill-danger-soft);
+    color: var(--bill-danger);
   }
 
   .flow-status {
@@ -1373,25 +1403,25 @@
   }
 
   .flow-status--0 {
-    background: #fffbeb;
-    color: #d97706;
+    background: var(--bill-warning-soft);
+    color: var(--bill-warning);
   }
   .flow-status--1 {
-    background: #f0fdf4;
-    color: #16a34a;
+    background: var(--bill-success-soft);
+    color: var(--bill-success);
   }
   .flow-status--2 {
-    background: #fff1f2;
-    color: #e11d48;
+    background: var(--bill-danger-soft);
+    color: var(--bill-danger);
   }
   .flow-status--3 {
-    background: #f4f5f9;
-    color: #8492b0;
+    background: var(--bill-bg-soft);
+    color: var(--bill-text-placeholder);
   }
 
   .amount-value {
     font-weight: 600;
-    color: #2563eb;
+    color: var(--bill-primary);
     font-variant-numeric: tabular-nums;
   }
 
@@ -1404,8 +1434,8 @@
 
   .payment-cell {
     padding: 16px 22px;
-    border-right: 1px solid #f4f5f9;
-    border-bottom: 1px solid #f4f5f9;
+    border-right: 1px solid var(--bill-border-extra);
+    border-bottom: 1px solid var(--bill-border-extra);
   }
 
   .payment-cell:nth-child(3n) {
@@ -1418,25 +1448,25 @@
 
   .payment-cell__label {
     font-size: 12px;
-    color: #8492b0;
+    color: var(--bill-text-placeholder);
     margin-bottom: 6px;
   }
 
   .payment-cell__value {
     font-size: 14px;
     font-weight: 500;
-    color: #1a1f2e;
+    color: var(--bill-text-primary);
   }
 
   .payment-cell__value--mono {
     font-family: "SF Mono", "Menlo", monospace;
     font-size: 13px;
     letter-spacing: 0.02em;
-    color: #4b5563;
+    color: var(--bill-text-regular);
   }
 
   .payment-cell__value--amount {
-    color: #2563eb;
+    color: var(--bill-primary);
     font-weight: 700;
     font-size: 16px;
   }
@@ -1458,7 +1488,7 @@
 
   .empty-state__text {
     font-size: 13px;
-    color: #b0b9cc;
+    color: var(--bill-text-placeholder);
   }
 
   /* ===== 响应式 ===== */
@@ -1470,7 +1500,7 @@
       grid-template-columns: repeat(2, 1fr);
     }
     .info-cell:nth-child(4n) {
-      border-right: 1px solid #f4f5f9;
+      border-right: 1px solid var(--bill-border-extra);
     }
     .info-cell:nth-child(2n) {
       border-right: none;
@@ -1479,7 +1509,7 @@
       grid-template-columns: repeat(2, 1fr);
     }
     .payment-cell:nth-child(3n) {
-      border-right: 1px solid #f4f5f9;
+      border-right: 1px solid var(--bill-border-extra);
     }
     .payment-cell:nth-child(2n) {
       border-right: none;
