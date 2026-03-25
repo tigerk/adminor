@@ -37,6 +37,7 @@
   const disabled = ref(false);
   const ruleFormRef = ref<FormInstance>();
   const currentPage = ref("login"); // login | register | forgot
+  const agreementVisible = ref(false);
 
   const { t } = useI18n();
   const { initStorage } = useLayout();
@@ -162,10 +163,15 @@
 
                 <el-button type="primary" size="large" class="submit-btn" :loading="loading" :disabled="disabled" @click="onLogin(ruleFormRef)">登 录</el-button>
 
+                <div class="login-agreement">
+                  <span>登录即表明您同意</span>
+                  <button type="button" class="agreement-link" @click="agreementVisible = true">《平台服务协议》</button>
+                </div>
+
                 <div class="switch-page">
                   <el-space>
                     <span>没有账户？</span>
-                    <el-button link type="primary" @click="currentPage = 'register'">立即注册</el-button>
+                    <el-button link type="primary" @click="currentPage = 'register'">申请试用</el-button>
                   </el-space>
                 </div>
               </el-form>
@@ -249,6 +255,12 @@
         <p class="display-description">构建高效、安全、智能的企业管理生态系统</p>
       </div>
     </div>
+
+    <el-dialog v-model="agreementVisible" title="平台服务协议" width="760px" destroy-on-close append-to-body align-center class="agreement-dialog">
+      <div class="agreement-content">
+        <iframe class="agreement-frame" src="/agreement.html" title="平台服务协议" loading="lazy" />
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -552,35 +564,59 @@
     }
   }
 
-  .image-verify-container {
+  .login-agreement {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    gap: 4px;
     align-items: center;
-  }
-
-  .verify-image-wrapper {
-    display: flex;
     justify-content: center;
-    padding: 12px;
-    background: #f5f7fa;
-    border-radius: 8px;
-  }
-
-  .captcha-image {
-    display: block;
-    width: 200px;
-    height: 80px;
-    cursor: pointer;
-    border-radius: 8px;
-    object-fit: cover;
-  }
-
-  .verify-tip {
-    margin: 0;
-    font-size: 12px;
-    color: #999;
+    margin-bottom: 18px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #667085;
     text-align: center;
+  }
+
+  .agreement-link {
+    padding: 0;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.6;
+    color: #3478f6;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .agreement-content {
+    height: min(68vh, 760px);
+    overflow: hidden;
+    border: 1px solid #eaecf0;
+    border-radius: 18px;
+    background: #fff;
+  }
+
+  .agreement-frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+  }
+
+  :deep(.agreement-dialog .el-dialog) {
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  :deep(.agreement-dialog .el-dialog__header) {
+    padding: 22px 24px 12px;
+    margin-right: 0;
+    border-bottom: 1px solid #eaecf0;
+  }
+
+  :deep(.agreement-dialog .el-dialog__body) {
+    padding: 20px 24px 24px;
+    background: #fff;
   }
 
   /* Dark mode styles */
@@ -659,6 +695,14 @@
       }
     }
 
+    .login-agreement {
+      color: #94a3b8;
+    }
+
+    .agreement-link {
+      color: #60a5fa;
+    }
+
     .display-section {
       background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
     }
@@ -671,8 +715,29 @@
       color: #999;
     }
 
-    .verify-image-wrapper {
-      background: #2a2a2a;
+    :deep(.agreement-dialog .el-dialog) {
+      background: #0f172a;
+    }
+
+    :deep(.agreement-dialog .el-dialog__header) {
+      border-bottom-color: #243047;
+    }
+
+    :deep(.agreement-dialog .el-dialog__title) {
+      color: #f8fafc;
+    }
+
+    :deep(.agreement-dialog .el-dialog__body) {
+      background: #0f172a;
+    }
+
+    .agreement-content {
+      border-color: #243047;
+      background: #fff;
+    }
+
+    :deep(.agreement-dialog .el-dialog__headerbtn .el-dialog__close) {
+      color: #94a3b8;
     }
   }
 </style>
