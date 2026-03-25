@@ -2867,6 +2867,11 @@ export type SmsLoginDto = {
     verifyCode: string;
 };
 
+export type LoginSmsSendDto = {
+    phone: string;
+    captcha: string;
+};
+
 export type UserProfileUpdateDto = {
     nickname?: string;
     avatar?: string;
@@ -9238,12 +9243,9 @@ export type SmsLoginResponses = {
 export type SmsLoginResponse = SmsLoginResponses[keyof SmsLoginResponses];
 
 export type SendSmsCodeData = {
-    body?: never;
+    body: LoginSmsSendDto;
     path?: never;
-    query: {
-        phone: string;
-        captcha: string;
-    };
+    query?: never;
     url: '/saas/login/sms/send';
 };
 

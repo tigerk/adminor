@@ -78,7 +78,7 @@ export const switchCompany = (data?: CompanySwitchDto) => {
 };
 
 export const sendSmsCode = (data?: object) => {
-  return http.request<UserResult>("post", baseUrlApi("login/sms/send"), { params: data });
+  return http.request<UserResult>("post", baseUrlApi("login/sms/send"), { data });
 };
 
 export const registerAccount = (data?: object) => {

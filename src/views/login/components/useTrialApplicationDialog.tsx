@@ -15,7 +15,7 @@ export function useTrialApplicationDialog() {
       destroyOnClose: true,
       hideFooter: true,
       fullscreen: deviceDetection(),
-      fullscreenIcon: true,
+      fullscreenIcon: false,
       contentRenderer: () => h(TrialApplicationDialog)
     });
   }
