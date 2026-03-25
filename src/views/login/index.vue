@@ -167,13 +167,6 @@
                   <span>登录即表明您同意</span>
                   <button type="button" class="agreement-link" @click="agreementVisible = true">《平台服务协议》</button>
                 </div>
-
-                <div class="switch-page">
-                  <el-space>
-                    <span>没有账户？</span>
-                    <el-button link type="primary" @click="currentPage = 'register'">申请试用</el-button>
-                  </el-space>
-                </div>
               </el-form>
             </Motion>
 
@@ -182,6 +175,13 @@
 
             <!-- 忘记密码页面 - 使用拆分的组件 -->
             <LoginUpdate v-if="currentPage === 'forgot'" @switch-page="switchPage" />
+          </div>
+
+          <div class="switch-page mt-8">
+            <el-space>
+              <span>没有账户？</span>
+              <el-button link type="primary" @click="currentPage = 'register'">申请试用</el-button>
+            </el-space>
           </div>
         </div>
       </div>
