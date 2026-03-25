@@ -1,13 +1,13 @@
 <script setup lang="ts">
   import { useI18n } from "vue-i18n";
-  import { ref, reactive, onBeforeUnmount } from "vue";
+  import { ref, reactive, onBeforeUnmount, computed, watch } from "vue";
   import Motion from "../utils/motion";
   import { message } from "@/utils/message";
   import { updateRules } from "../utils/rule";
   import type { FormInstance } from "element-plus";
   import { useVerifyCode } from "../utils/verifyCode";
   import { $t, transformI18n } from "@/plugins/i18n";
-  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+  import { baseUrlApi } from "@/api/utils";
   import Lock from "~icons/ri/lock-fill";
   import Phone from "~icons/ri/phone-fill";
   import Shield from "~icons/ri/shield-keyhole-line";
@@ -16,11 +16,12 @@
   const { t } = useI18n();
   const emit = defineEmits<{
     (e: "switchPage", page: string): void;
-    (e: "showImageVerify", callback: (captcha: string) => void): void;
   }>();
 
   const loading = ref(false);
   const ruleFormRef = ref<FormInstance>();
+  const imageVerifyCode = ref("");
+  const captchaImageUrl = ref("");
   const { isDisabled, text } = useVerifyCode();
 
   // 忘记密码表单
@@ -30,6 +31,30 @@
     password: "",
     confirmPassword: ""
   });
+
+  const hasValidPhone = computed(() => /^1\d{10}$/.test(forgotForm.phone));
+
+  const refreshCaptcha = () => {
+    if (!hasValidPhone.value) {
+      captchaImageUrl.value = "";
+      return;
+    }
+    captchaImageUrl.value = `${baseUrlApi(`captcha/${forgotForm.phone}`)}?t=${Date.now()}`;
+  };
+
+  watch(
+    () => forgotForm.phone,
+    (phone, prevPhone) => {
+      if (phone === prevPhone) return;
+      forgotForm.verifyCode = "";
+      imageVerifyCode.value = "";
+      if (phone.length === 11 && hasValidPhone.value) {
+        refreshCaptcha();
+        return;
+      }
+      captchaImageUrl.value = "";
+    }
+  );
 
   // 确认密码验证规则
   const repeatPasswordRule = [
@@ -67,28 +92,29 @@
     });
   };
 
-  // 发送验证码 - 通知父组件显示图形验证码
   const sendVerificationCode = async (formEl: FormInstance | undefined, field: string) => {
     if (!formEl) return;
-
-    // 先验证手机号
     await formEl.validateField(field, async valid => {
       if (!valid) {
         return;
       }
+      if (!imageVerifyCode.value) {
+        message("请输入图形验证码", { type: "warning" });
+        if (!captchaImageUrl.value) refreshCaptcha();
+        return;
+      }
 
-      // 通知父组件显示图形验证码，并传入回调函数
-      emit("showImageVerify", (captcha: string) => {
-        // 图形验证码验证成功后的回调
-        sendSmsCode({
-          phone: forgotForm.phone,
-          captcha
-        }).then(resp => {
-          // 模拟发送验证码
+      sendSmsCode({
+        phone: forgotForm.phone,
+        captcha: imageVerifyCode.value
+      })
+        .then(() => {
           useVerifyCode().start(ruleFormRef.value, "phone", 60);
           message("验证码已发送", { type: "success" });
+        })
+        .catch(() => {
+          refreshCaptcha();
         });
-      });
     });
   };
 
@@ -114,6 +140,23 @@
             </el-icon>
           </template>
         </el-input>
+      </el-form-item>
+
+      <el-form-item v-if="hasValidPhone" class="inline-captcha-item">
+        <div class="verify-code-wrapper captcha-wrapper">
+          <el-input v-model="imageVerifyCode" size="large" clearable maxlength="4" placeholder="图形验证码">
+            <template #prefix>
+              <el-icon>
+                <Shield />
+              </el-icon>
+            </template>
+          </el-input>
+          <button type="button" class="captcha-box" @click="refreshCaptcha">
+            <img v-if="captchaImageUrl" :src="captchaImageUrl" alt="图形验证码" class="captcha-image" />
+            <span v-else>加载验证码</span>
+          </button>
+        </div>
+        <p class="captcha-tip">手机号输入完成后自动显示，点击图片可刷新</p>
       </el-form-item>
 
       <el-form-item prop="verifyCode">
@@ -230,6 +273,45 @@
     }
   }
 
+  .captcha-wrapper {
+    align-items: stretch;
+  }
+
+  .inline-captcha-item {
+    margin-top: -6px;
+  }
+
+  .captcha-box {
+    flex-shrink: 0;
+    width: 140px;
+    height: 48px;
+    padding: 0;
+    overflow: hidden;
+    color: #666;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    transition: all 0.3s;
+  }
+
+  .captcha-box:hover {
+    border-color: #c0c0c0;
+  }
+
+  .captcha-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .captcha-tip {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #666;
+  }
+
   .submit-btn {
     width: 100%;
     height: 48px;
@@ -317,6 +399,20 @@
           color: #666;
         }
       }
+    }
+
+    .captcha-box {
+      color: #999;
+      background: #2a2a2a;
+      border-color: #3a3a3a;
+
+      &:hover {
+        border-color: #4a4a4a;
+      }
+    }
+
+    .captcha-tip {
+      color: #999;
     }
 
     .switch-page {

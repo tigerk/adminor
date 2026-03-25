@@ -14,7 +14,7 @@
   import { ref, reactive } from "vue";
   import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
   import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
-  import ReImageVerify from "@/components/ReImageVerify";
+  import { baseUrlApi } from "@/api/utils";
 
   // 导入拆分的组件
   import LoginRegister from "./components/LoginRegister.vue";
@@ -24,7 +24,6 @@
   import Lock from "~icons/ri/lock-fill";
   import Eye from "~icons/ri/eye-line";
   import EyeOff from "~icons/ri/eye-off-line";
-  import Shield from "~icons/ri/shield-keyhole-line";
   import dayIcon from "@/assets/svg/day.svg?component";
   import darkIcon from "@/assets/svg/dark.svg?component";
 
@@ -38,13 +37,6 @@
   const disabled = ref(false);
   const ruleFormRef = ref<FormInstance>();
   const currentPage = ref("login"); // login | register | forgot
-  const imageVerifyRef = ref();
-
-  // 图形验证码相关
-  const imgCode = ref("");
-  const showImageVerify = ref(false);
-  const userInputCode = ref("");
-  const verifyCallback = ref<((captcha: string) => void) | null>(null);
 
   const { t } = useI18n();
   const { initStorage } = useLayout();
@@ -94,45 +86,6 @@
   // 切换页面
   const switchPage = (page: string) => {
     currentPage.value = page;
-  };
-
-  // 显示图形验证码对话框
-  const showImageVerifyDialog = (callback: (captcha: string) => void) => {
-    verifyCallback.value = callback;
-    showImageVerify.value = true;
-    userInputCode.value = "";
-  };
-
-  // 确认图形验证码
-  const confirmImageVerify = () => {
-    if (!userInputCode.value) {
-      message("请输入图形验证码", { type: "warning" });
-      return;
-    }
-
-    if (userInputCode.value.toLowerCase() !== imgCode.value.toLowerCase()) {
-      message("图形验证码错误", { type: "error" });
-      imageVerifyRef.value?.getImgCode();
-      userInputCode.value = "";
-      return;
-    }
-
-    // 图形验证码正确，关闭对话框并执行回调
-    showImageVerify.value = false;
-    const captcha = userInputCode.value;
-    userInputCode.value = "";
-
-    if (verifyCallback.value) {
-      verifyCallback.value(captcha);
-      verifyCallback.value = null;
-    }
-  };
-
-  // 取消图形验证码
-  const cancelImageVerify = () => {
-    showImageVerify.value = false;
-    userInputCode.value = "";
-    verifyCallback.value = null;
   };
 
   const immediateDebounce: any = debounce(formRef => onLogin(formRef), 1000, true);
@@ -219,10 +172,10 @@
             </Motion>
 
             <!-- 注册页面 - 使用拆分的组件 -->
-            <LoginRegister v-if="currentPage === 'register'" @switch-page="switchPage" @show-image-verify="showImageVerifyDialog" />
+            <LoginRegister v-if="currentPage === 'register'" @switch-page="switchPage" />
 
             <!-- 忘记密码页面 - 使用拆分的组件 -->
-            <LoginUpdate v-if="currentPage === 'forgot'" @switch-page="switchPage" @show-image-verify="showImageVerifyDialog" />
+            <LoginUpdate v-if="currentPage === 'forgot'" @switch-page="switchPage" />
           </div>
         </div>
       </div>
@@ -296,27 +249,6 @@
         <p class="display-description">构建高效、安全、智能的企业管理生态系统</p>
       </div>
     </div>
-
-    <!-- 图形验证码对话框 - 统一在父组件管理 -->
-    <el-dialog v-model="showImageVerify" title="请输入图形验证码" width="360px" :close-on-click-modal="false">
-      <div class="image-verify-container">
-        <div class="verify-image-wrapper">
-          <ReImageVerify ref="imageVerifyRef" v-model:code="imgCode" />
-        </div>
-        <el-input v-model="userInputCode" placeholder="请输入图形验证码" size="large" maxlength="4" clearable @keyup.enter="confirmImageVerify">
-          <template #prefix>
-            <el-icon>
-              <Shield />
-            </el-icon>
-          </template>
-        </el-input>
-        <p class="verify-tip">点击图片可刷新验证码</p>
-      </div>
-      <template #footer>
-        <el-button @click="cancelImageVerify">取消</el-button>
-        <el-button type="primary" @click="confirmImageVerify">确定</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -466,7 +398,7 @@
   }
 
   .form-section-register {
-    max-width: 560px;
+    max-width: 620px;
   }
 
   .form-card {
@@ -633,6 +565,15 @@
     padding: 12px;
     background: #f5f7fa;
     border-radius: 8px;
+  }
+
+  .captcha-image {
+    display: block;
+    width: 200px;
+    height: 80px;
+    cursor: pointer;
+    border-radius: 8px;
+    object-fit: cover;
   }
 
   .verify-tip {
