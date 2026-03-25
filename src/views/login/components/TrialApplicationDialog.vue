@@ -10,20 +10,16 @@
   import { getRegionCityList } from "@/api/region";
   import { createTrialApplication } from "@/api/trialApplication";
   import { useVerifyCode } from "../utils/verifyCode";
-  import Phone from "~icons/ri/phone-fill";
-  import Shield from "~icons/ri/shield-keyhole-line";
-  import MapPin from "~icons/ri/map-pin-line";
-  import Message from "~icons/ri/message-3-line";
-  import Close from "~icons/ri/close-line";
+  import Phone from "~icons/ri/smartphone-line";
+  import Shield from "~icons/ri/shield-check-line";
+  import MapPin from "~icons/ri/map-pin-2-line";
+  import MessageIcon from "~icons/ri/chat-1-line";
   import ArrowDown from "~icons/ri/arrow-down-s-line";
-  import Check from "~icons/ri/check-line";
-  import Search from "~icons/ri/search-line";
+  import CheckIcon from "~icons/ri/check-line";
+  import SearchIcon from "~icons/ri/search-line";
+  import RefreshIcon from "~icons/ri/refresh-line";
 
-  type CityOption = {
-    id: number;
-    name: string;
-    letter: string;
-  };
+  type CityOption = { id: number; name: string; letter: string };
 
   const loading = ref(false);
   const cityLoading = ref(false);
@@ -34,8 +30,8 @@
   const keyword = ref("");
   const cityOptions = ref<CityOption[]>([]);
   const activeLetter = ref("A");
-  const { isDisabled, text } = useVerifyCode();
   const submitSuccess = ref(false);
+  const { isDisabled, text } = useVerifyCode();
 
   const form = reactive({
     phone: "",
@@ -55,7 +51,7 @@
             return;
           }
           if (!isPhone(value)) {
-            callback(new Error("请输入正确的手机号"));
+            callback(new Error("手机号格式不正确"));
             return;
           }
           callback();
@@ -70,7 +66,7 @@
   const hasValidPhone = computed(() => /^1\d{10}$/.test(form.phone));
 
   const groupedCities = computed(() => {
-    const filtered = cityOptions.value.filter(item => !keyword.value || item.name.includes(keyword.value.trim()));
+    const filtered = cityOptions.value.filter(c => !keyword.value || c.name.includes(keyword.value.trim()));
     return filtered.reduce<Record<string, CityOption[]>>((acc, item) => {
       if (!acc[item.letter]) acc[item.letter] = [];
       acc[item.letter].push(item);
@@ -80,7 +76,6 @@
 
   const availableLetters = computed(() => Object.keys(groupedCities.value).sort());
   const currentCityList = computed(() => groupedCities.value[activeLetter.value] || []);
-  const selectedCityLabel = computed(() => form.cityName || "");
 
   const refreshCaptcha = () => {
     if (!hasValidPhone.value) {
@@ -97,14 +92,11 @@
     }
   };
 
-  const selectLetter = (letter: string) => {
-    activeLetter.value = letter;
-  };
-
   const selectCity = (city: CityOption) => {
     form.regionId = city.id;
     form.cityName = city.name;
     cityPanelVisible.value = false;
+    keyword.value = "";
   };
 
   const fetchCities = async () => {
@@ -113,14 +105,14 @@
       const res = await getRegionCityList();
       const list = Array.isArray(res?.data) ? res.data : [];
       cityOptions.value = list
-        .map(item => {
+        .map((item: any) => {
           const rawLetter = pinyin(item.name || "", { pattern: "first", toneType: "none" })
             .charAt(0)
             .toUpperCase();
           const letter = /^[A-Z]$/.test(rawLetter) ? rawLetter : "#";
           return { id: Number(item.id), name: item.name, letter };
         })
-        .sort((a, b) => {
+        .sort((a: CityOption, b: CityOption) => {
           if (a.letter === b.letter) return a.name.localeCompare(b.name, "zh-CN");
           if (a.letter === "#") return 1;
           if (b.letter === "#") return -1;
@@ -140,7 +132,7 @@
       return;
     }
     if (!imageVerifyCode.value) {
-      message("请输入图形验证码", { type: "warning" });
+      message("请先输入图形验证码", { type: "warning" });
       refreshCaptcha();
       return;
     }
@@ -182,734 +174,493 @@
   );
 
   watch(keyword, () => {
-    if (availableLetters.value.length === 0) {
-      activeLetter.value = "A";
-      return;
+    if (!availableLetters.value.includes(activeLetter.value)) {
+      activeLetter.value = availableLetters.value[0] || "A";
     }
-    if (!availableLetters.value.includes(activeLetter.value)) activeLetter.value = availableLetters.value[0];
   });
 
-  onMounted(() => {
-    fetchCities();
-  });
-  onBeforeUnmount(() => {
-    useVerifyCode().end();
-  });
+  onMounted(fetchCities);
+  onBeforeUnmount(() => useVerifyCode().end());
 </script>
 
 <template>
-  <!-- 成功状态 -->
-  <Transition name="fade-up" mode="out-in">
-    <div v-if="submitSuccess" class="success-view">
-      <div class="success-icon-wrap">
-        <div class="success-ring success-ring--outer" />
-        <div class="success-ring success-ring--inner" />
-        <div class="success-check">
-          <el-icon><Check /></el-icon>
-        </div>
-      </div>
-      <h3 class="success-title">申请已提交</h3>
-      <p class="success-desc">
-        我们会在 1-2 个工作日内审核您的申请，并通过
-        <strong>{{ form.phone }}</strong>
-        联系您。
-      </p>
-      <el-button type="primary" size="large" class="success-btn" @click="closeAllDialog()">好的，知道了</el-button>
-    </div>
+  <div class="tad-root">
+    <!-- ══════════════════════════════════
+         左侧品牌栏
+    ══════════════════════════════════ -->
+    <aside class="tad-brand" aria-hidden="true">
+      <div class="tad-brand__bg" />
+      <div class="tad-brand__glow1" />
+      <div class="tad-brand__glow2" />
 
-    <!-- 表单主体 -->
-    <div v-else class="trial-dialog">
-      <!-- 关闭按钮 -->
-      <button type="button" class="btn-close" @click="closeAllDialog()">
-        <el-icon><Close /></el-icon>
-      </button>
-
-      <!-- 左侧装饰条 -->
-      <div class="side-accent" aria-hidden="true">
-        <span class="side-accent__dot" />
-        <span class="side-accent__line" />
-        <span class="side-accent__dot" />
-      </div>
-
-      <!-- 头部 -->
-      <div class="dialog-head">
-        <div class="dialog-badge">申请试用</div>
-        <h2 class="dialog-title">完善信息，开启试用</h2>
-        <p class="dialog-subtitle">提交后进入人工审核，我们将根据您的城市和使用需求安排开通</p>
-      </div>
-
-      <!-- 表单 -->
-      <el-form ref="ruleFormRef" :model="form" :rules="rules" label-position="top" class="trial-form">
-        <!-- 手机号 -->
-        <el-form-item prop="phone" class="form-field">
-          <template #label>
-            <span class="field-label">
-              <el-icon class="field-label__icon"><Phone /></el-icon>
-              手机号码
-            </span>
-          </template>
-          <el-input v-model="form.phone" size="large" clearable maxlength="11" placeholder="输入您的手机号" class="custom-input" />
-        </el-form-item>
-
-        <!-- 图形验证码 -->
-        <Transition name="slide-down">
-          <el-form-item v-if="hasValidPhone" class="form-field captcha-field">
-            <template #label>
-              <span class="field-label">
-                <el-icon class="field-label__icon"><Shield /></el-icon>
-                图形验证码
-              </span>
-            </template>
-            <div class="input-addon-row">
-              <el-input v-model="imageVerifyCode" size="large" clearable maxlength="4" placeholder="输入图形验证码" class="custom-input" />
-              <button type="button" class="captcha-box" :title="captchaImageUrl ? '点击刷新' : '点击加载'" @click="refreshCaptcha">
-                <img v-if="captchaImageUrl" :src="captchaImageUrl" alt="图形验证码" class="captcha-img" />
-                <span v-else class="captcha-placeholder">
-                  <el-icon><Shield /></el-icon>
-                  点击加载
-                </span>
-                <span class="captcha-refresh-tip">刷新</span>
-              </button>
-            </div>
-          </el-form-item>
-        </Transition>
-
-        <!-- 短信验证码 -->
-        <el-form-item prop="verifyCode" class="form-field">
-          <template #label>
-            <span class="field-label">
-              <el-icon class="field-label__icon"><Shield /></el-icon>
-              短信验证码
-            </span>
-          </template>
-          <div class="input-addon-row">
-            <el-input v-model="form.verifyCode" size="large" clearable maxlength="6" placeholder="输入短信验证码" class="custom-input" />
-            <button type="button" class="sms-btn" :class="{ 'is-disabled': isDisabled }" :disabled="isDisabled" @click="sendVerificationCode">
-              <span v-if="isDisabled" class="sms-btn__countdown">{{ text }}s</span>
-              <span v-else>发送验证码</span>
-            </button>
+      <div class="tad-brand__inner">
+        <!-- Logo 区 -->
+        <div class="tad-brand__logo">
+          <div class="tad-brand__logo-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 2L16 6V12L9 16L2 12V6L9 2Z" stroke="white" stroke-width="1.5" stroke-linejoin="round" />
+              <circle cx="9" cy="9" r="2" fill="white" />
+            </svg>
           </div>
-        </el-form-item>
+          <span>申请试用</span>
+        </div>
 
-        <!-- 城市选择 -->
-        <el-form-item prop="regionId" class="form-field">
-          <template #label>
-            <span class="field-label">
-              <el-icon class="field-label__icon"><MapPin /></el-icon>
-              所在城市
-            </span>
-          </template>
-          <div class="city-picker">
-            <button type="button" class="city-trigger" :class="{ 'is-open': cityPanelVisible, 'has-value': form.cityName }" @click="toggleCityPanel">
-              <span class="city-trigger__value">
-                <span v-if="form.cityName" class="city-trigger__text">{{ selectedCityLabel }}</span>
-                <span v-else class="city-trigger__placeholder">选择您所在的城市</span>
-              </span>
-              <el-icon class="city-trigger__arrow"><ArrowDown /></el-icon>
-            </button>
+        <!-- 主文案 -->
+        <div class="tad-brand__copy">
+          <h2>
+            开启您的
+            <br />
+            专属试用
+          </h2>
+          <p>
+            完成信息填写后，我们将在
+            <strong>1–2 个工作日</strong>
+            内完成审核并联系您开通账号。
+          </p>
+        </div>
 
-            <Transition name="panel-drop">
-              <div v-if="cityPanelVisible" class="city-panel">
-                <div class="city-search-wrap">
-                  <el-icon class="city-search-icon"><Search /></el-icon>
-                  <input v-model="keyword" class="city-search-input" placeholder="搜索城市名称…" />
-                </div>
+        <!-- 流程步骤 -->
+        <ol class="tad-steps">
+          <li class="tad-step">
+            <div class="tad-step__badge">01</div>
+            <div>
+              <strong>填写申请</strong>
+              <span>手机号 + 所在城市</span>
+            </div>
+          </li>
+          <li class="tad-step__line" />
+          <li class="tad-step">
+            <div class="tad-step__badge">02</div>
+            <div>
+              <strong>人工审核</strong>
+              <span>1–2 个工作日处理</span>
+            </div>
+          </li>
+          <li class="tad-step__line" />
+          <li class="tad-step">
+            <div class="tad-step__badge">03</div>
+            <div>
+              <strong>短信通知</strong>
+              <span>账号开通，即可使用</span>
+            </div>
+          </li>
+        </ol>
 
-                <div class="city-letters-bar">
-                  <button
-                    v-for="letter in availableLetters"
-                    :key="letter"
-                    type="button"
-                    class="letter-btn"
-                    :class="{ 'is-active': letter === activeLetter }"
-                    @click="selectLetter(letter)"
-                  >
-                    {{ letter }}
+        <!-- 底部声明 -->
+        <p class="tad-brand__note">提交即代表同意平台服务协议与隐私政策</p>
+      </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         右侧内容区
+    ══════════════════════════════════ -->
+    <div class="tad-main">
+      <Transition name="tad-view" mode="out-in">
+        <!-- ── 成功态 ── -->
+        <div v-if="submitSuccess" key="success" class="tad-success">
+          <div class="tad-success__anim">
+            <svg class="tad-success__circle" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="32" fill="none" stroke="#22c55e" stroke-width="2" stroke-dasharray="201" stroke-dashoffset="201">
+                <animate attributeName="stroke-dashoffset" from="201" to="0" dur="0.55s" fill="freeze" begin="0.05s" easing="ease-out" />
+              </circle>
+            </svg>
+            <div class="tad-success__icon">
+              <el-icon><CheckIcon /></el-icon>
+            </div>
+          </div>
+          <h3>申请已提交！</h3>
+          <p>
+            我们将通过
+            <strong>{{ form.phone }}</strong>
+            与您联系，请保持手机畅通。
+          </p>
+          <el-button type="primary" size="large" class="tad-submit-btn" style="width: 100%" @click="closeAllDialog()">好的，我知道了</el-button>
+        </div>
+
+        <!-- ── 表单 ── -->
+        <div v-else key="form" class="tad-form-wrap">
+          <header class="tad-form-header">
+            <h3>完善申请信息</h3>
+            <p>请如实填写以下信息，便于我们快速为您开通</p>
+          </header>
+
+          <el-form ref="ruleFormRef" :model="form" :rules="rules" label-position="top" class="tad-form">
+            <!-- 手机号 -->
+            <el-form-item prop="phone" class="tad-field">
+              <template #label>
+                <span class="tad-field-label">
+                  <el-icon><Phone /></el-icon>
+                  手机号码
+                  <em class="tad-req">*</em>
+                </span>
+              </template>
+              <el-input v-model="form.phone" size="large" clearable maxlength="11" placeholder="请输入您的手机号码" class="tad-input" />
+            </el-form-item>
+
+            <!-- 图形验证码 -->
+            <Transition name="tad-reveal">
+              <el-form-item v-if="hasValidPhone" class="tad-field tad-field--no-req">
+                <template #label>
+                  <span class="tad-field-label">
+                    <el-icon><Shield /></el-icon>
+                    图形验证码
+                  </span>
+                </template>
+                <div class="tad-inline">
+                  <el-input v-model="imageVerifyCode" size="large" clearable maxlength="4" placeholder="输入图形验证码" class="tad-input" />
+                  <button type="button" class="tad-captcha-btn" :title="captchaImageUrl ? '点击刷新验证码' : '点击加载验证码'" @click="refreshCaptcha">
+                    <img v-if="captchaImageUrl" :src="captchaImageUrl" alt="图形验证码" />
+                    <span v-else class="tad-captcha-btn__empty">
+                      <el-icon><RefreshIcon /></el-icon>
+                      <b>点击加载</b>
+                    </span>
+                    <span class="tad-captcha-btn__mask">
+                      <el-icon><RefreshIcon /></el-icon>
+                    </span>
                   </button>
                 </div>
-
-                <div class="city-list">
-                  <template v-if="cityLoading">
-                    <div class="city-empty">
-                      <span class="city-empty__spinner" />
-                      加载中…
-                    </div>
-                  </template>
-                  <template v-else-if="currentCityList.length === 0">
-                    <div class="city-empty">暂无匹配城市</div>
-                  </template>
-                  <template v-else>
-                    <button
-                      v-for="city in currentCityList"
-                      :key="city.id"
-                      type="button"
-                      class="city-option"
-                      :class="{ 'is-selected': city.id === form.regionId }"
-                      @click="selectCity(city)"
-                    >
-                      <span>{{ city.name }}</span>
-                      <el-icon v-if="city.id === form.regionId" class="city-option__check"><Check /></el-icon>
-                    </button>
-                  </template>
-                </div>
-              </div>
+              </el-form-item>
             </Transition>
+
+            <!-- 短信验证码 -->
+            <el-form-item prop="verifyCode" class="tad-field">
+              <template #label>
+                <span class="tad-field-label">
+                  <el-icon><Shield /></el-icon>
+                  短信验证码
+                  <em class="tad-req">*</em>
+                </span>
+              </template>
+              <div class="tad-inline">
+                <el-input v-model="form.verifyCode" size="large" clearable maxlength="6" placeholder="输入 6 位验证码" class="tad-input" />
+                <button type="button" class="tad-sms-btn" :class="{ 'is-waiting': isDisabled }" :disabled="isDisabled" @click="sendVerificationCode">
+                  <span v-if="isDisabled">
+                    <b class="tad-countdown">{{ text }}s</b>
+                    &nbsp;后重发
+                  </span>
+                  <span v-else>获取验证码</span>
+                </button>
+              </div>
+            </el-form-item>
+
+            <!-- 城市 -->
+            <el-form-item prop="regionId" class="tad-field">
+              <template #label>
+                <span class="tad-field-label">
+                  <el-icon><MapPin /></el-icon>
+                  所在城市
+                  <em class="tad-req">*</em>
+                </span>
+              </template>
+              <div class="tad-city-picker">
+                <button type="button" class="tad-city-trigger" :class="{ 'is-open': cityPanelVisible }" @click="toggleCityPanel">
+                  <span :class="form.cityName ? 'tad-city-val' : 'tad-city-ph'">
+                    {{ form.cityName || "选择您所在的城市" }}
+                  </span>
+                  <el-icon class="tad-city-arrow"><ArrowDown /></el-icon>
+                </button>
+
+                <Transition name="tad-panel">
+                  <div v-if="cityPanelVisible" class="tad-city-panel">
+                    <div class="tad-city-search">
+                      <el-icon><SearchIcon /></el-icon>
+                      <input v-model="keyword" placeholder="搜索城市名称…" />
+                    </div>
+                    <div class="tad-city-letters">
+                      <button v-for="l in availableLetters" :key="l" type="button" class="tad-city-letter" :class="{ active: l === activeLetter }" @click="activeLetter = l">
+                        {{ l }}
+                      </button>
+                    </div>
+                    <div class="tad-city-list">
+                      <div v-if="cityLoading" class="tad-city-empty">
+                        <span class="tad-spin" />
+                        加载中…
+                      </div>
+                      <div v-else-if="!currentCityList.length" class="tad-city-empty">暂无匹配城市</div>
+                      <button
+                        v-for="city in currentCityList"
+                        :key="city.id"
+                        type="button"
+                        class="tad-city-chip"
+                        :class="{ selected: city.id === form.regionId }"
+                        @click="selectCity(city)"
+                      >
+                        <el-icon v-if="city.id === form.regionId"><CheckIcon /></el-icon>
+                        {{ city.name }}
+                      </button>
+                    </div>
+                  </div>
+                </Transition>
+              </div>
+            </el-form-item>
+
+            <!-- 使用场景（选填） -->
+            <el-form-item class="tad-field tad-field--no-req">
+              <template #label>
+                <span class="tad-field-label">
+                  <el-icon><MessageIcon /></el-icon>
+                  使用场景
+                  <span class="tad-opt-tag">选填</span>
+                </span>
+              </template>
+              <el-input
+                v-model="form.usageRemark"
+                type="textarea"
+                :rows="3"
+                maxlength="300"
+                show-word-limit
+                placeholder="简述您的团队规模、房源类型，或当前遇到的问题，帮助我们更好地服务您…"
+                class="tad-textarea"
+              />
+            </el-form-item>
+          </el-form>
+
+          <!-- 底部操作 -->
+          <div class="tad-actions">
+            <el-button class="tad-cancel-btn" size="large" @click="closeAllDialog()">取消</el-button>
+            <el-button type="primary" size="large" class="tad-submit-btn" :loading="loading" @click="handleSubmit">提交申请</el-button>
           </div>
-        </el-form-item>
-
-        <!-- 使用备注 -->
-        <el-form-item class="form-field">
-          <template #label>
-            <span class="field-label">
-              <el-icon class="field-label__icon"><Message /></el-icon>
-              使用场景
-              <span class="field-label__optional">（选填）</span>
-            </span>
-          </template>
-          <el-input
-            v-model="form.usageRemark"
-            type="textarea"
-            :rows="3"
-            maxlength="300"
-            show-word-limit
-            placeholder="例如：管理长租公寓 50 套，当前团队 3 人，希望实现合同与账单自动化…"
-            class="custom-textarea"
-          />
-        </el-form-item>
-      </el-form>
-
-      <!-- 底部操作 -->
-      <div class="dialog-footer">
-        <el-button size="large" class="btn-cancel" @click="closeAllDialog()">取消</el-button>
-        <el-button type="primary" size="large" class="btn-submit" :loading="loading" @click="handleSubmit">
-          <span v-if="!loading">提交申请</span>
-          <span v-else>提交中…</span>
-        </el-button>
-      </div>
+        </div>
+      </Transition>
     </div>
-  </Transition>
+  </div>
 </template>
 
 <style scoped lang="scss">
-  /* ─── 设计令牌 ─────────────────────────────────── */
-  .trial-dialog,
-  .success-view {
-    --accent: #3b82f6;
-    --accent-soft: rgba(59, 130, 246, 0.1);
-    --accent-ring: rgba(59, 130, 246, 0.25);
-    --radius-sm: 10px;
-    --radius-md: 14px;
-    --radius-lg: 20px;
-    --input-h: 48px;
-    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* ════════════════════════════════════════════
+   设计令牌
+════════════════════════════════════════════ */
+  .tad-root {
+    /* 主色 */
+    --accent: #2563eb;
+    --accent-h: #1d4ed8;
+    --accent-muted: rgba(37, 99, 235, 0.09);
+    --accent-ring: rgba(37, 99, 235, 0.22);
+    --success: #22c55e;
 
-    /* 浅色 */
+    /* 语义色 — 浅色 */
     --bg: #ffffff;
-    --bg-subtle: #f8fafc;
-    --bg-muted: #f1f5f9;
+    --bg-sub: #f8fafc;
+    --bg-hover: #f1f5f9;
     --border: #e2e8f0;
-    --border-focus: var(--accent);
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
-    --text-placeholder: #94a3b8;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.12);
+    --border-h: #94a3b8;
+    --t1: #0f172a;
+    --t2: #475569;
+    --t3: #94a3b8;
+    --shadow: rgba(15, 23, 42, 0.07);
+
+    /* 品牌栏（始终深色，不变） */
+    --brand-a: #1e3a8a;
+    --brand-b: #172554;
+
+    /* 基础 */
+    --r: 10px;
+    --r-lg: 14px;
+    --h: 46px;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* 深色模式适配 */
-  :root.dark .trial-dialog,
-  :root.dark .success-view,
-  .dark .trial-dialog,
-  .dark .success-view,
-  [data-theme="dark"] .trial-dialog,
-  [data-theme="dark"] .success-view {
+  /* 深色覆盖 */
+  :root.dark .tad-root,
+  .dark .tad-root,
+  [data-theme="dark"] .tad-root {
     --bg: #0f172a;
-    --bg-subtle: #1e293b;
-    --bg-muted: #334155;
+    --bg-sub: #1e293b;
+    --bg-hover: #334155;
     --border: #334155;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-placeholder: #475569;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.5);
+    --border-h: #64748b;
+    --t1: #f1f5f9;
+    --t2: #94a3b8;
+    --t3: #475569;
+    --shadow: rgba(0, 0, 0, 0.35);
   }
 
-  /* ─── 容器 ─────────────────────────────────────── */
-  .trial-dialog {
+  /* ════════════════════════════════════════════
+   根布局
+════════════════════════════════════════════ */
+  .tad-root {
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ════════════════════════════════════════════
+   左侧品牌栏
+════════════════════════════════════════════ */
+  .tad-brand {
     position: relative;
-    padding: 36px 40px 32px 52px;
-    background: var(--bg);
-    color: var(--text-primary);
-    min-width: 0;
-  }
-
-  /* ─── 侧边装饰 ──────────────────────────────────── */
-  .side-accent {
-    position: absolute;
-    left: 20px;
-    top: 36px;
-    bottom: 32px;
+    flex-shrink: 0;
+    width: 252px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0;
-  }
-  .side-accent__dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    flex-shrink: 0;
-  }
-  .side-accent__line {
-    flex: 1;
-    width: 2px;
-    background: linear-gradient(to bottom, var(--accent), transparent);
-    margin: 4px 0;
-    opacity: 0.25;
+    overflow: hidden;
   }
 
-  /* ─── 关闭按钮 ──────────────────────────────────── */
-  .btn-close {
+  .tad-brand__bg {
     position: absolute;
-    top: 16px;
-    right: 16px;
-    display: inline-flex;
+    inset: 0;
+    background: linear-gradient(150deg, var(--brand-a) 0%, var(--brand-b) 100%);
+  }
+
+  .tad-brand__glow1,
+  .tad-brand__glow2 {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .tad-brand__glow1 {
+    width: 320px;
+    height: 320px;
+    top: -120px;
+    left: -100px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 65%);
+  }
+  .tad-brand__glow2 {
+    width: 260px;
+    height: 260px;
+    bottom: -80px;
+    right: -80px;
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.18) 0%, transparent 65%);
+  }
+
+  .tad-brand__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 30px 26px 26px;
+  }
+
+  .tad-brand__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    span {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      letter-spacing: 0.02em;
+    }
+  }
+
+  .tad-brand__logo-icon {
+    width: 34px;
+    height: 34px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    color: var(--text-secondary);
-    background: transparent;
-    border: 0;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all var(--transition);
-    z-index: 2;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9px;
+    flex-shrink: 0;
+  }
 
-    &:hover {
-      color: var(--text-primary);
-      background: var(--bg-muted);
+  .tad-brand__copy {
+    margin: 40px 0 32px;
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 21px;
+      font-weight: 800;
+      line-height: 1.35;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.75;
+      color: rgba(255, 255, 255, 0.55);
+
+      strong {
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+      }
     }
   }
 
-  /* ─── 头部 ──────────────────────────────────────── */
-  .dialog-head {
-    margin-bottom: 28px;
-  }
-
-  .dialog-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    margin-bottom: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent);
-    background: var(--accent-soft);
-    border: 1px solid var(--accent-ring);
-    border-radius: 999px;
-  }
-
-  .dialog-title {
-    margin: 0 0 8px;
-    font-size: 22px;
-    font-weight: 700;
-    line-height: 1.3;
-    color: var(--text-primary);
-    letter-spacing: -0.3px;
-  }
-
-  .dialog-subtitle {
+  /* 步骤列表 */
+  .tad-steps {
+    list-style: none;
     margin: 0;
-    font-size: 13.5px;
-    line-height: 1.65;
-    color: var(--text-secondary);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
   }
 
-  /* ─── 表单全局覆盖 ──────────────────────────────── */
-  .trial-form {
-    :deep(.el-form-item) {
-      margin-bottom: 20px;
+  .tad-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    &__badge {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--brand-a);
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 7px;
+      letter-spacing: 0.02em;
     }
 
-    :deep(.el-form-item__label) {
-      padding-bottom: 8px !important;
+    div:last-child {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-top: 3px;
+    }
+
+    strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    span {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.45);
       line-height: 1.4;
     }
 
-    :deep(.el-form-item__error) {
-      font-size: 12px;
-      padding-top: 4px;
-      color: #ef4444;
-    }
-
-    /* 清除 ElementPlus 默认 box-shadow */
-    :deep(.el-input__wrapper) {
-      box-shadow: none !important;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      background: var(--bg-subtle);
-      min-height: var(--input-h);
-      padding: 0 14px;
-      transition:
-        border-color var(--transition),
-        box-shadow var(--transition),
-        background var(--transition);
-
-      &:hover {
-        border-color: var(--text-secondary);
-      }
-
-      &.is-focus {
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px var(--accent-ring) !important;
-        background: var(--bg);
-      }
-    }
-
-    :deep(.el-input__inner) {
-      color: var(--text-primary);
-      font-size: 14.5px;
-
-      &::placeholder {
-        color: var(--text-placeholder);
-      }
-    }
-
-    :deep(.el-input__prefix) {
-      color: var(--text-secondary);
-    }
-
-    :deep(.el-textarea__inner) {
-      box-shadow: none !important;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-md);
-      background: var(--bg-subtle);
-      color: var(--text-primary);
-      font-size: 14px;
-      line-height: 1.7;
-      padding: 12px 14px;
-      resize: none;
-      transition:
-        border-color var(--transition),
-        box-shadow var(--transition);
-
-      &::placeholder {
-        color: var(--text-placeholder);
-      }
-
-      &:focus {
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px var(--accent-ring) !important;
-        background: var(--bg);
-      }
-    }
-
-    :deep(.el-input__count) {
-      background: transparent;
-      color: var(--text-placeholder);
-      font-size: 11.5px;
+    &__line {
+      width: 1px;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.12);
+      margin: 3px 0 3px 12px;
     }
   }
 
-  /* ─── 字段标签 ──────────────────────────────────── */
-  .field-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text-primary);
-
-    &__icon {
-      font-size: 14px;
-      color: var(--accent);
-      opacity: 0.8;
-    }
-
-    &__optional {
-      font-weight: 400;
-      color: var(--text-secondary);
-      font-size: 12px;
-    }
+  .tad-brand__note {
+    margin: auto 0 0;
+    padding-top: 28px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    line-height: 1.5;
   }
 
-  /* ─── 行内附加控件 ──────────────────────────────── */
-  .input-addon-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-    width: 100%;
-  }
-
-  /* ─── 图形验证码 ─────────────────────────────────── */
-  .captcha-box {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 140px;
-    height: var(--input-h);
-    overflow: hidden;
-    background: var(--bg-subtle);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    flex-shrink: 0;
-    transition:
-      border-color var(--transition),
-      box-shadow var(--transition);
-
-    &:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-ring);
-
-      .captcha-refresh-tip {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  }
-
-  .captcha-img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .captcha-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: var(--text-secondary);
-
-    .el-icon {
-      font-size: 18px;
-    }
-  }
-
-  .captcha-refresh-tip {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
-    color: #fff;
-    background: rgba(0, 0, 0, 0.48);
-    opacity: 0;
-    transform: translateY(4px);
-    transition: all var(--transition);
-    backdrop-filter: blur(2px);
-  }
-
-  /* ─── 短信按钮 ──────────────────────────────────── */
-  .sms-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: var(--input-h);
-    padding: 0 18px;
-    font-size: 13.5px;
-    font-weight: 600;
-    white-space: nowrap;
-    color: var(--accent);
-    background: var(--accent-soft);
-    border: 1.5px solid var(--accent-ring);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all var(--transition);
-    flex-shrink: 0;
-
-    &:hover:not(.is-disabled) {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-      box-shadow: 0 4px 12px var(--accent-ring);
-    }
-
-    &.is-disabled {
-      color: var(--text-secondary);
-      background: var(--bg-muted);
-      border-color: var(--border);
-      cursor: not-allowed;
-    }
-
-    &__countdown {
-      font-variant-numeric: tabular-nums;
-      font-size: 15px;
-    }
-  }
-
-  /* ─── 城市选择器 ─────────────────────────────────── */
-  .city-picker {
-    position: relative;
-    width: 100%;
-  }
-
-  .city-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    height: var(--input-h);
-    padding: 0 14px;
-    background: var(--bg-subtle);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all var(--transition);
-    text-align: left;
-
-    &:hover {
-      border-color: var(--text-secondary);
-    }
-
-    &.is-open {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-ring);
-      background: var(--bg);
-
-      .city-trigger__arrow {
-        transform: rotate(180deg);
-        color: var(--accent);
-      }
-    }
-
-    &__value {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      min-width: 0;
-    }
-
-    &__text {
-      font-size: 14.5px;
-      font-weight: 500;
-      color: var(--text-primary);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    &__placeholder {
-      font-size: 14.5px;
-      color: var(--text-placeholder);
-    }
-
-    &__arrow {
-      flex-shrink: 0;
-      font-size: 16px;
-      color: var(--text-secondary);
-      transition:
-        transform var(--transition),
-        color var(--transition);
-      margin-left: 8px;
-    }
-  }
-
-  /* ─── 城市下拉面板 ───────────────────────────────── */
-  .city-panel {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    z-index: 100;
-    width: 100%;
-    background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    overflow: hidden;
-  }
-
-  .city-search-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-subtle);
-  }
-
-  .city-search-icon {
-    flex-shrink: 0;
-    font-size: 15px;
-    color: var(--text-secondary);
-  }
-
-  .city-search-input {
+  /* ════════════════════════════════════════════
+   右侧主区
+════════════════════════════════════════════ */
+  .tad-main {
     flex: 1;
     min-width: 0;
-    font-size: 14px;
-    color: var(--text-primary);
-    background: transparent;
-    border: 0;
-    outline: 0;
-
-    &::placeholder {
-      color: var(--text-placeholder);
-    }
-  }
-
-  .city-letters-bar {
+    background: var(--bg);
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .letter-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 28px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all var(--transition);
-    letter-spacing: 0.02em;
-
-    &:hover {
-      color: var(--accent);
-      background: var(--accent-soft);
-    }
-
-    &.is-active {
-      color: var(--accent);
-      background: var(--accent-soft);
-      border-color: var(--accent-ring);
-    }
-  }
-
-  .city-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 12px 16px 14px;
-    max-height: 220px;
+    flex-direction: column;
     overflow-y: auto;
+    max-height: 80vh;
 
-    /* 自定义滚动条 */
     &::-webkit-scrollbar {
       width: 4px;
-    }
-    &::-webkit-scrollbar-track {
-      background: transparent;
     }
     &::-webkit-scrollbar-thumb {
       background: var(--border);
@@ -917,219 +668,655 @@
     }
   }
 
-  .city-option {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
-    font-size: 13.5px;
-    color: var(--text-primary);
-    background: var(--bg-subtle);
-    border: 1px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all var(--transition);
-    white-space: nowrap;
-
-    &:hover {
-      color: var(--accent);
-      background: var(--accent-soft);
-      border-color: var(--accent-ring);
-    }
-
-    &.is-selected {
-      color: var(--accent);
-      background: var(--accent-soft);
-      border-color: var(--accent-ring);
-      font-weight: 600;
-    }
-
-    &__check {
-      font-size: 13px;
-    }
-  }
-
-  .city-empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 24px 0;
-    font-size: 13.5px;
-    color: var(--text-secondary);
-  }
-
-  .city-empty__spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-
-  /* ─── 底部操作 ──────────────────────────────────── */
-  .dialog-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 28px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-  }
-
-  .btn-cancel {
-    height: 44px;
-    padding: 0 22px;
-    font-size: 14px;
-    color: var(--text-secondary) !important;
-    background: transparent !important;
-    border: 1.5px solid var(--border) !important;
-    border-radius: var(--radius-md) !important;
-    box-shadow: none !important;
-    transition: all var(--transition);
-
-    &:hover {
-      color: var(--text-primary) !important;
-      border-color: var(--text-secondary) !important;
-    }
-  }
-
-  .btn-submit {
-    height: 44px;
-    padding: 0 28px;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    border-radius: var(--radius-md) !important;
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3) !important;
-    transition: all var(--transition) !important;
-
-    &:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4) !important;
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-  }
-
-  /* ─── 成功态 ─────────────────────────────────────── */
-  .success-view {
+  /* ════════════════════════════════════════════
+   成功态
+════════════════════════════════════════════ */
+  .tad-success {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 56px 48px 48px;
+    padding: 52px 48px;
     text-align: center;
-    background: var(--bg);
-    color: var(--text-primary);
+
+    h3 {
+      margin: 20px 0 10px;
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--t1);
+      letter-spacing: -0.2px;
+    }
+
+    p {
+      margin: 0 0 32px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--t2);
+      max-width: 300px;
+
+      strong {
+        color: var(--t1);
+        font-weight: 600;
+      }
+    }
   }
 
-  .success-icon-wrap {
+  .tad-success__anim {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 80px;
-    height: 80px;
-    margin-bottom: 28px;
+    width: 72px;
+    height: 72px;
   }
 
-  .success-ring {
+  .tad-success__circle {
     position: absolute;
     inset: 0;
-    border-radius: 50%;
-    animation: pulse-ring 2s ease-out infinite;
+    width: 72px;
+    height: 72px;
   }
 
-  .success-ring--outer {
-    background: rgba(34, 197, 94, 0.08);
-    animation-delay: 0s;
-  }
-
-  .success-ring--inner {
+  .tad-success__icon {
+    position: absolute;
     inset: 10px;
-    background: rgba(34, 197, 94, 0.14);
-    animation-delay: 0.3s;
-  }
-
-  .success-check {
-    position: relative;
-    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 56px;
-    height: 56px;
-    background: #22c55e;
+    background: var(--success);
     border-radius: 50%;
-    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.35);
-    animation: pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation: tad-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
 
     .el-icon {
-      font-size: 24px;
+      font-size: 20px;
       color: #fff;
     }
   }
 
-  .success-title {
-    margin: 0 0 12px;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-    color: var(--text-primary);
+  /* ════════════════════════════════════════════
+   表单包装
+════════════════════════════════════════════ */
+  .tad-form-wrap {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 36px 28px;
   }
 
-  .success-desc {
-    margin: 0 0 36px;
-    font-size: 14px;
-    line-height: 1.75;
-    color: var(--text-secondary);
-    max-width: 320px;
+  .tad-form-header {
+    margin-bottom: 24px;
 
-    strong {
-      color: var(--text-primary);
+    h3 {
+      margin: 0 0 5px;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--t1);
+      letter-spacing: -0.2px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--t3);
+    }
+  }
+
+  /* ════════════════════════════════════════════
+   ElementPlus 重置
+════════════════════════════════════════════ */
+  .tad-form {
+    :deep(.el-form-item) {
+      margin-bottom: 16px;
+    }
+
+    :deep(.el-form-item__label) {
+      padding-bottom: 6px !important;
+      line-height: 1;
+    }
+
+    :deep(.el-form-item__error) {
+      padding-top: 3px;
+      font-size: 11.5px;
+      color: #ef4444;
+    }
+
+    :deep(.el-input__wrapper) {
+      height: var(--h);
+      padding: 0 13px;
+      box-shadow: none !important;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      background: var(--bg-sub) !important;
+      transition:
+        border-color 0.16s var(--ease),
+        box-shadow 0.16s var(--ease),
+        background 0.16s var(--ease);
+
+      &:hover:not(.is-focus) {
+        border-color: var(--border-h);
+      }
+      &.is-focus {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 3px var(--accent-ring) !important;
+        background: var(--bg) !important;
+      }
+    }
+
+    :deep(.el-input__inner) {
+      font-size: 14px;
+      color: var(--t1);
+      &::placeholder {
+        color: var(--t3);
+      }
+    }
+
+    :deep(.el-input__prefix-inner .el-icon),
+    :deep(.el-input__suffix-inner .el-icon) {
+      color: var(--t3);
+    }
+
+    :deep(.el-textarea__inner) {
+      box-shadow: none !important;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      background: var(--bg-sub) !important;
+      padding: 11px 13px;
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: var(--t1);
+      resize: none;
+      transition:
+        border-color 0.16s var(--ease),
+        box-shadow 0.16s var(--ease);
+
+      &::placeholder {
+        color: var(--t3);
+      }
+      &:focus {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 3px var(--accent-ring) !important;
+        background: var(--bg) !important;
+      }
+    }
+
+    :deep(.el-input__count),
+    :deep(.el-input__count-inner) {
+      background: transparent !important;
+      font-size: 11px;
+      color: var(--t3);
+    }
+  }
+
+  /* ════════════════════════════════════════════
+   字段标签
+════════════════════════════════════════════ */
+  .tad-field-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--t2);
+
+    .el-icon {
+      font-size: 13px;
+      color: var(--accent);
+      opacity: 0.85;
+    }
+  }
+
+  .tad-req {
+    font-style: normal;
+    color: #ef4444;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .tad-opt-tag {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--t3);
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-style: normal;
+  }
+
+  /* ════════════════════════════════════════════
+   行内控件行
+════════════════════════════════════════════ */
+  .tad-inline {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  /* 图形验证码按钮 */
+  .tad-captcha-btn {
+    position: relative;
+    flex-shrink: 0;
+    width: 124px;
+    height: var(--h);
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    background: var(--bg-sub);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.16s var(--ease);
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &__empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+
+      .el-icon {
+        font-size: 15px;
+        color: var(--t3);
+      }
+
+      b {
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--t3);
+      }
+    }
+
+    &__mask {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      transition: opacity 0.16s var(--ease);
+
+      .el-icon {
+        font-size: 17px;
+        color: #fff;
+      }
+    }
+
+    &:hover {
+      border-color: var(--accent);
+      .tad-captcha-btn__mask {
+        opacity: 1;
+      }
+    }
+  }
+
+  /* 短信按钮 */
+  .tad-sms-btn {
+    flex-shrink: 0;
+    height: var(--h);
+    padding: 0 15px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--accent);
+    background: var(--accent-muted);
+    border: 1.5px solid var(--accent-ring);
+    border-radius: var(--r);
+    cursor: pointer;
+    transition: all 0.16s var(--ease);
+    line-height: 1;
+
+    &:not(.is-waiting):hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 4px 14px var(--accent-ring);
+    }
+
+    &.is-waiting {
+      color: var(--t3);
+      background: var(--bg-sub);
+      border-color: var(--border);
+      cursor: not-allowed;
+    }
+  }
+
+  .tad-countdown {
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  /* ════════════════════════════════════════════
+   城市选择器
+════════════════════════════════════════════ */
+  .tad-city-picker {
+    position: relative;
+    width: 100%;
+  }
+
+  .tad-city-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: var(--h);
+    padding: 0 13px;
+    background: var(--bg-sub);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    cursor: pointer;
+    transition:
+      border-color 0.16s var(--ease),
+      box-shadow 0.16s var(--ease);
+    text-align: left;
+
+    &:hover:not(.is-open) {
+      border-color: var(--border-h);
+    }
+
+    &.is-open {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+      background: var(--bg);
+
+      .tad-city-arrow {
+        transform: rotate(180deg);
+        color: var(--accent);
+      }
+    }
+  }
+
+  .tad-city-val {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--t1);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tad-city-ph {
+    font-size: 14px;
+    color: var(--t3);
+  }
+
+  .tad-city-arrow {
+    flex-shrink: 0;
+    font-size: 16px;
+    color: var(--t3);
+    transition:
+      transform 0.18s var(--ease),
+      color 0.16s var(--ease);
+    margin-left: 6px;
+  }
+
+  /* 下拉面板 */
+  .tad-city-panel {
+    position: absolute;
+    top: calc(100% + 7px);
+    left: 0;
+    right: 0;
+    z-index: 300;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow:
+      0 14px 44px var(--shadow),
+      0 2px 8px var(--shadow);
+    overflow: hidden;
+  }
+
+  .tad-city-search {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-sub);
+
+    .el-icon {
+      font-size: 14px;
+      color: var(--t3);
+      flex-shrink: 0;
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font-size: 13.5px;
+      color: var(--t1);
+
+      &::placeholder {
+        color: var(--t3);
+      }
+    }
+  }
+
+  .tad-city-letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 9px 13px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tad-city-letter {
+    width: 27px;
+    height: 25px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--t3);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.14s var(--ease);
+    letter-spacing: 0.02em;
+
+    &:hover {
+      color: var(--accent);
+      background: var(--accent-muted);
+    }
+    &.active {
+      color: var(--accent);
+      background: var(--accent-muted);
+      border-color: var(--accent-ring);
+    }
+  }
+
+  .tad-city-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 10px 13px 12px;
+    max-height: 196px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 999px;
+    }
+  }
+
+  .tad-city-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: var(--t2);
+    background: var(--bg-sub);
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.14s var(--ease);
+    white-space: nowrap;
+
+    .el-icon {
+      font-size: 11px;
+    }
+
+    &:hover {
+      color: var(--accent);
+      background: var(--accent-muted);
+      border-color: var(--accent-ring);
+    }
+
+    &.selected {
+      color: var(--accent);
+      background: var(--accent-muted);
+      border-color: var(--accent-ring);
       font-weight: 600;
     }
   }
 
-  .success-btn {
-    height: 46px;
-    padding: 0 36px;
-    font-size: 14.5px;
-    font-weight: 600;
-    border-radius: var(--radius-md) !important;
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3) !important;
+  .tad-city-empty {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    padding: 18px 0;
+    font-size: 13px;
+    color: var(--t3);
+    justify-content: center;
   }
 
-  /* ─── 动效 ───────────────────────────────────────── */
-  @keyframes spin {
+  /* ════════════════════════════════════════════
+   底部操作区
+════════════════════════════════════════════ */
+  .tad-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  .tad-cancel-btn {
+    height: 40px !important;
+    padding: 0 18px !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    color: var(--t2) !important;
+    background: transparent !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: var(--r) !important;
+    box-shadow: none !important;
+    transition: all 0.16s var(--ease) !important;
+
+    &:hover {
+      color: var(--t1) !important;
+      border-color: var(--border-h) !important;
+      background: var(--bg-hover) !important;
+    }
+  }
+
+  .tad-submit-btn {
+    height: 40px !important;
+    padding: 0 26px !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    border-radius: var(--r) !important;
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 3px 10px var(--accent-ring) !important;
+    letter-spacing: 0.01em;
+    transition: all 0.16s var(--ease) !important;
+
+    &:hover:not(:disabled) {
+      background: var(--accent-h) !important;
+      border-color: var(--accent-h) !important;
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.32) !important;
+      transform: translateY(-1px);
+    }
+    &:active:not(:disabled) {
+      transform: none !important;
+    }
+  }
+
+  /* ════════════════════════════════════════════
+   Spinner
+════════════════════════════════════════════ */
+  .tad-spin {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: tad-spin 0.65s linear infinite;
+  }
+
+  /* ════════════════════════════════════════════
+   Transitions
+════════════════════════════════════════════ */
+  /* 图形验证码 reveal */
+  .tad-reveal-enter-active {
+    transition: all 0.25s var(--ease);
+  }
+  .tad-reveal-leave-active {
+    transition: all 0.16s var(--ease);
+  }
+  .tad-reveal-enter-from,
+  .tad-reveal-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  /* 城市面板 panel */
+  .tad-panel-enter-active {
+    transition: all 0.2s var(--ease);
+  }
+  .tad-panel-leave-active {
+    transition: all 0.14s var(--ease);
+  }
+  .tad-panel-enter-from,
+  .tad-panel-leave-to {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.98);
+    transform-origin: top center;
+  }
+
+  /* 视图切换 */
+  .tad-view-enter-active {
+    transition: all 0.28s var(--ease);
+  }
+  .tad-view-leave-active {
+    transition: all 0.18s var(--ease);
+  }
+  .tad-view-enter-from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  .tad-view-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  /* ════════════════════════════════════════════
+   Keyframes
+════════════════════════════════════════════ */
+  @keyframes tad-spin {
     to {
       transform: rotate(360deg);
     }
   }
-
-  @keyframes pulse-ring {
-    0% {
-      transform: scale(0.9);
-      opacity: 0.6;
-    }
-    60% {
-      transform: scale(1.15);
-      opacity: 0;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-
-  @keyframes pop-in {
+  @keyframes tad-pop {
     from {
-      transform: scale(0.5);
+      transform: scale(0.35);
       opacity: 0;
     }
     to {
@@ -1138,86 +1325,34 @@
     }
   }
 
-  /* Transition: slide-down (图形验证码出现) */
-  .slide-down-enter-active {
-    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .slide-down-leave-active {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .slide-down-enter-from,
-  .slide-down-leave-to {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-
-  /* Transition: panel-drop (城市面板) */
-  .panel-drop-enter-active {
-    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .panel-drop-leave-active {
-    transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .panel-drop-enter-from,
-  .panel-drop-leave-to {
-    opacity: 0;
-    transform: translateY(-6px) scale(0.98);
-    transform-origin: top center;
-  }
-
-  /* Transition: fade-up (表单 ↔ 成功态) */
-  .fade-up-enter-active {
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .fade-up-leave-active {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .fade-up-enter-from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  .fade-up-leave-to {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-
-  /* ─── 响应式 ─────────────────────────────────────── */
-  @media (width <= 640px) {
-    .trial-dialog {
-      padding: 28px 20px 24px 32px;
+  /* ════════════════════════════════════════════
+   响应式
+════════════════════════════════════════════ */
+  @media (width <= 600px) {
+    .tad-brand {
+      display: none;
+    }
+    .tad-form-wrap {
+      padding: 26px 22px 22px;
     }
 
-    .dialog-title {
-      font-size: 19px;
-    }
-
-    .input-addon-row {
-      grid-template-columns: 1fr;
-    }
-
-    .captcha-box {
-      width: 100%;
-      height: 44px;
-    }
-
-    .sms-btn {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .dialog-footer {
-      flex-direction: column-reverse;
+    .tad-inline {
+      flex-direction: column;
       gap: 8px;
-
-      .btn-cancel,
-      .btn-submit {
-        width: 100%;
-        justify-content: center;
-      }
+    }
+    .tad-captcha-btn {
+      width: 100%;
+    }
+    .tad-sms-btn {
+      width: 100%;
     }
 
-    .success-view {
-      padding: 40px 28px 36px;
+    .tad-actions {
+      flex-direction: column-reverse;
+      .tad-cancel-btn,
+      .tad-submit-btn {
+        width: 100% !important;
+      }
     }
   }
 </style>
