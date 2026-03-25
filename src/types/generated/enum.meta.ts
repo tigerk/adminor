@@ -78,6 +78,12 @@ export const StatusEnumMeta = {
   DISABLED: {"value":0}
 } as const;
 
+export const TrialApplicationStatusEnumMeta = {
+  PENDING: {"value":"PENDING","code":0,"name":"申请中"},
+  APPROVED: {"value":"APPROVED","code":1,"name":"已通过"},
+  REJECTED: {"value":"REJECTED","code":2,"name":"已拒绝"}
+} as const;
+
 export const ZoneEnumMeta = {
   SHANGHAI: {"value":"SHANGHAI","zone":"Asia/Shanghai","desc":"中国上海"}
 } as const;

@@ -12,9 +12,8 @@
   import { useUserStoreHook } from "@/store/modules/user";
   import { initRouter, getTopMenu } from "@/router/utils";
   import { ref, reactive } from "vue";
-  import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
   import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
-  import { baseUrlApi } from "@/api/utils";
+  import { useTrialApplicationDialog } from "./components/useTrialApplicationDialog";
 
   // 导入拆分的组件
   import LoginRegister from "./components/LoginRegister.vue";
@@ -38,6 +37,7 @@
   const ruleFormRef = ref<FormInstance>();
   const currentPage = ref("login"); // login | register | forgot
   const agreementVisible = ref(false);
+  const { openTrialApplicationDialog } = useTrialApplicationDialog();
 
   const { t } = useI18n();
   const { initStorage } = useLayout();
@@ -45,8 +45,6 @@
   const { dataTheme, themeMode, dataThemeChange } = useDataThemeChange();
   dataThemeChange(themeMode.value);
   const { title, getLogo } = useNav();
-  const { locale, translationCh, translationEn } = useTranslationLang();
-
   // 登录表单
   const loginForm = reactive({
     username: "",
@@ -180,7 +178,8 @@
           <div class="switch-page mt-8">
             <el-space>
               <span>没有账户？</span>
-              <el-button link type="primary" @click="currentPage = 'register'">申请试用</el-button>
+              <el-button link type="primary" @click="openTrialApplicationDialog">申请试用</el-button>
+              <el-button link type="primary" @click="currentPage = 'register'">立即注册</el-button>
             </el-space>
           </div>
         </div>

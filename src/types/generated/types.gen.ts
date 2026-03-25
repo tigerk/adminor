@@ -146,6 +146,19 @@ export type WechatBindDto = {
     password: string;
 };
 
+/**
+ * 试用申请创建参数
+ */
+export type TrialApplicationCreateDto = {
+    phone: string;
+    verificationCode: string;
+    regionId: string;
+    /**
+     * 如何使用系统
+     */
+    usageRemark?: string;
+};
+
 export type TokenRefreshDto = {
     /**
      * 刷新令牌
@@ -2605,6 +2618,17 @@ export type RoomGridItemVo = {
      * 房间列表
      */
     rooms?: Array<RoomListVo>;
+};
+
+export type UserRegisterDto = {
+    nature: number;
+    companyName: string;
+    companyAbbr?: string;
+    legalPerson: string;
+    contactName: string;
+    phone: string;
+    password: string;
+    verificationCode: string;
 };
 
 /**
@@ -5939,6 +5963,9 @@ export type LeaseBillListVo = {
      * 作废人
      */
     voidBy?: string;
+    /**
+     * 作废人昵称
+     */
     voidByName?: string;
     /**
      * 房源地址
@@ -7819,6 +7846,8 @@ export type SaasUserTypeEnum = 'COMPANY_ADMIN' | 'COMPANY_USER';
 
 export type StatusEnum = 'ACTIVE' | 'DISABLED';
 
+export type TrialApplicationStatusEnum = 'PENDING' | 'APPROVED' | 'REJECTED';
+
 export type ZoneEnum = 'SHANGHAI';
 
 export type ApprovalActionStatusEnum = 'PENDING' | 'APPROVED' | 'SKIPPED';
@@ -8003,6 +8032,22 @@ export type WechatBindResponses = {
 };
 
 export type WechatBindResponse = WechatBindResponses[keyof WechatBindResponses];
+
+export type CreateData = {
+    body: TrialApplicationCreateDto;
+    path?: never;
+    query?: never;
+    url: '/saas/trialApplication/create';
+};
+
+export type CreateResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type CreateResponse = CreateResponses[keyof CreateResponses];
 
 export type RefreshData = {
     body: TokenRefreshDto;
@@ -8606,21 +8651,21 @@ export type Delete3Responses = {
 
 export type Delete3Response = Delete3Responses[keyof Delete3Responses];
 
-export type CreateData = {
+export type Create1Data = {
     body: DictDataCreateDto;
     path?: never;
     query?: never;
     url: '/saas/sys/dict/data/create';
 };
 
-export type CreateResponses = {
+export type Create1Responses = {
     /**
      * OK
      */
     200: ResponseResultLong;
 };
 
-export type CreateResponse = CreateResponses[keyof CreateResponses];
+export type Create1Response = Create1Responses[keyof Create1Responses];
 
 export type InsertData = {
     body: DictCreateDto;
@@ -8968,6 +9013,22 @@ export type CloseRoomResponses = {
 
 export type CloseRoomResponse = CloseRoomResponses[keyof CloseRoomResponses];
 
+export type RegisterData = {
+    body: UserRegisterDto;
+    path?: never;
+    query?: never;
+    url: '/saas/register';
+};
+
+export type RegisterResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type RegisterResponse = RegisterResponses[keyof RegisterResponses];
+
 export type GetMyOperationListData = {
     body: MineLogDto;
     path?: never;
@@ -9144,21 +9205,21 @@ export type LoginResponses = {
 
 export type LoginResponse = LoginResponses[keyof LoginResponses];
 
-export type SendSmsCodeData = {
+export type UpdatePasswordData = {
     body: LoginUpdateDto;
     path?: never;
     query?: never;
     url: '/saas/login/update';
 };
 
-export type SendSmsCodeResponses = {
+export type UpdatePasswordResponses = {
     /**
      * OK
      */
     200: ResponseResultBoolean;
 };
 
-export type SendSmsCodeResponse = SendSmsCodeResponses[keyof SendSmsCodeResponses];
+export type UpdatePasswordResponse = UpdatePasswordResponses[keyof UpdatePasswordResponses];
 
 export type SmsLoginData = {
     body: SmsLoginDto;
@@ -9176,7 +9237,7 @@ export type SmsLoginResponses = {
 
 export type SmsLoginResponse = SmsLoginResponses[keyof SmsLoginResponses];
 
-export type SendSmsCode1Data = {
+export type SendSmsCodeData = {
     body?: never;
     path?: never;
     query: {
@@ -9186,14 +9247,14 @@ export type SendSmsCode1Data = {
     url: '/saas/login/sms/send';
 };
 
-export type SendSmsCode1Responses = {
+export type SendSmsCodeResponses = {
     /**
      * OK
      */
     200: ResponseResultBoolean;
 };
 
-export type SendSmsCode1Response = SendSmsCode1Responses[keyof SendSmsCode1Responses];
+export type SendSmsCodeResponse = SendSmsCodeResponses[keyof SendSmsCodeResponses];
 
 export type UpdateLoginUserProfileData = {
     body: UserProfileUpdateDto;
@@ -9683,21 +9744,21 @@ export type Delete4Responses = {
 
 export type Delete4Response = Delete4Responses[keyof Delete4Responses];
 
-export type Create1Data = {
+export type Create2Data = {
     body: DeliveryCreateDto;
     path?: never;
     query?: never;
     url: '/saas/delivery/create';
 };
 
-export type Create1Responses = {
+export type Create2Responses = {
     /**
      * OK
      */
     200: ResponseResultDeliveryVo;
 };
 
-export type Create1Response = Create1Responses[keyof Create1Responses];
+export type Create2Response = Create2Responses[keyof Create2Responses];
 
 export type GetSummaryData = {
     body?: never;
@@ -9877,21 +9938,21 @@ export type Delete5Responses = {
 
 export type Delete5Response = Delete5Responses[keyof Delete5Responses];
 
-export type Create2Data = {
+export type Create3Data = {
     body: ContractSealCreateDto;
     path?: never;
     query?: never;
     url: '/saas/contract/seal/create';
 };
 
-export type Create2Responses = {
+export type Create3Responses = {
     /**
      * OK
      */
     200: ResponseResultLong;
 };
 
-export type Create2Response = Create2Responses[keyof Create2Responses];
+export type Create3Response = Create3Responses[keyof Create3Responses];
 
 export type UpdateLeaseData = {
     body: TenantCreateDto;
@@ -10363,7 +10424,7 @@ export type Delete6Responses = {
 
 export type Delete6Response = Delete6Responses[keyof Delete6Responses];
 
-export type Create3Data = {
+export type Create4Data = {
     body: UserCreateDto;
     path?: never;
     query: {
@@ -10372,14 +10433,14 @@ export type Create3Data = {
     url: '/saas/company/user/create';
 };
 
-export type Create3Responses = {
+export type Create4Responses = {
     /**
      * OK
      */
     200: ResponseResultUserCreateVo;
 };
 
-export type Create3Response = Create3Responses[keyof Create3Responses];
+export type Create4Response = Create4Responses[keyof Create4Responses];
 
 export type GetOrderPageData = {
     body: CompanyOrderPageDto;
@@ -10815,21 +10876,21 @@ export type SendNewPhoneChangeSmsResponses = {
 
 export type SendNewPhoneChangeSmsResponse = SendNewPhoneChangeSmsResponses[keyof SendNewPhoneChangeSmsResponses];
 
-export type UpdatePasswordData = {
+export type UpdatePassword1Data = {
     body: AccountPasswordUpdateDto;
     path?: never;
     query?: never;
     url: '/saas/account/password/update';
 };
 
-export type UpdatePasswordResponses = {
+export type UpdatePassword1Responses = {
     /**
      * OK
      */
     200: ResponseResultBoolean;
 };
 
-export type UpdatePasswordResponse = UpdatePasswordResponses[keyof UpdatePasswordResponses];
+export type UpdatePassword1Response = UpdatePassword1Responses[keyof UpdatePassword1Responses];
 
 export type UpdateEmailData = {
     body: AccountEmailUpdateDto;
