@@ -152,8 +152,8 @@
     }
 
     :deep(.el-input__wrapper.is-focus) {
-      border-color: var(--accent, #ba6a28) !important;
-      box-shadow: 0 0 0 3px var(--accent-bg, rgb(186 106 40 / 8%)) !important;
+      border-color: var(--accent, #c76e00) !important;
+      box-shadow: 0 0 0 3px var(--accent-bg, rgb(199 110 0 / 8%)) !important;
       background: var(--surface-solid, #fff);
     }
 
@@ -180,9 +180,9 @@
 
   .verify-btn {
     height: 50px;
-    color: var(--accent, #ba6a28);
-    background: var(--accent-bg, rgb(186 106 40 / 8%));
-    border: 1px solid var(--accent-border, rgb(186 106 40 / 18%));
+    color: var(--accent, #c76e00);
+    background: var(--accent-bg, rgb(199 110 0 / 8%));
+    border: 1px solid var(--accent-border, rgb(199 110 0 / 18%));
     border-radius: 14px;
     font-size: 13px;
     font-weight: 700;
@@ -191,8 +191,8 @@
 
   .verify-btn:hover:not(:disabled) {
     color: #fff;
-    background: var(--accent, #ba6a28);
-    border-color: var(--accent, #ba6a28);
+    background: var(--accent, #c76e00);
+    border-color: var(--accent, #c76e00);
   }
 
   .verify-btn:disabled {
@@ -219,7 +219,7 @@
     padding: 0;
     font-size: 13px;
     font-weight: 600;
-    color: var(--accent, #ba6a28);
+    color: var(--accent, #c76e00);
     white-space: nowrap;
     background: none;
     border: none;
@@ -233,7 +233,7 @@
     width: 100%;
     height: 52px;
     color: #fff;
-    background: var(--accent, #ba6a28);
+    background: var(--accent, #c76e00);
     border: none;
     border-radius: 14px;
     font-size: 15px;
@@ -243,7 +243,7 @@
 
   .submit-btn:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgb(180 83 9 / 30%);
+    box-shadow: 0 12px 28px rgb(199 110 0 / 30%);
   }
 
   .submit-btn:disabled {

@@ -97,7 +97,7 @@
     width: 46px;
     height: 46px;
     color: #fff;
-    background: var(--accent, #ba6a28);
+    background: var(--accent, #c76e00);
     border-radius: 14px;
     font-size: 18px;
     font-weight: 700;
@@ -149,7 +149,7 @@
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.08em;
-      color: var(--accent, #ba6a28);
+      color: var(--accent, #c76e00);
       font-family: var(--mono, "JetBrains Mono", ui-monospace, monospace);
     }
 

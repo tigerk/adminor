@@ -583,7 +583,7 @@
 
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(180, 83, 9, 0.25);
+      box-shadow: 0 8px 24px rgba(199, 110, 0, 0.25);
     }
     &:disabled {
       opacity: 0.6;

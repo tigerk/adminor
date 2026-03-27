@@ -319,10 +319,10 @@
     --text: #241f1b;
     --text-soft: #827873;
     --text-faint: #ab9f98;
-    --accent: #ba6a28;
-    --accent-warm: #d8832f;
-    --accent-bg: rgba(186, 106, 40, 0.08);
-    --accent-border: rgba(186, 106, 40, 0.18);
+    --accent: #c76e00;
+    --accent-warm: #dd8a1f;
+    --accent-bg: rgba(199, 110, 0, 0.08);
+    --accent-border: rgba(199, 110, 0, 0.18);
     --success: #70a66b;
     --shadow-sm: 0 1px 3px rgba(32, 24, 19, 0.06);
     --shadow-md: 0 12px 30px rgba(32, 24, 19, 0.08);
@@ -354,10 +354,10 @@
     --text: #f7f2ed;
     --text-soft: #afa29a;
     --text-faint: #7f7269;
-    --accent: #f2ac3b;
-    --accent-warm: #f6c05b;
-    --accent-bg: rgba(242, 172, 59, 0.08);
-    --accent-border: rgba(242, 172, 59, 0.2);
+    --accent: #c76e00;
+    --accent-warm: #dd8a1f;
+    --accent-bg: rgba(199, 110, 0, 0.1);
+    --accent-border: rgba(199, 110, 0, 0.24);
     --success: #7ec47b;
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.18);
     --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.26);
@@ -388,7 +388,7 @@
       right: -26%;
       width: 520px;
       height: 520px;
-      background: radial-gradient(circle, rgba(186, 106, 40, 0.12), transparent 60%);
+      background: radial-gradient(circle, rgba(199, 110, 0, 0.12), transparent 60%);
       filter: blur(54px);
       content: "";
     }
@@ -436,7 +436,7 @@
     font-size: 15px;
     font-weight: 600;
     font-family: var(--mono);
-    box-shadow: 0 8px 24px rgba(186, 106, 40, 0.22);
+    box-shadow: 0 8px 24px rgba(199, 110, 0, 0.22);
   }
 
   .brand-logo__image {
@@ -778,7 +778,7 @@
 
   .btn-submit:hover {
     transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgba(180, 83, 9, 0.3);
+    box-shadow: 0 12px 28px rgba(199, 110, 0, 0.3);
   }
 
   .agreement-line {
@@ -796,7 +796,7 @@
     font-size: 12px;
     font-weight: 600;
     text-decoration: underline;
-    text-decoration-color: rgba(186, 106, 40, 0.3);
+    text-decoration-color: rgba(199, 110, 0, 0.3);
     text-underline-offset: 2px;
   }
 
