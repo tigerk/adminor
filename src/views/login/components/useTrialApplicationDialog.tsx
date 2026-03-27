@@ -6,12 +6,12 @@ import TrialApplicationDialog from "./TrialApplicationDialog.vue";
 export function useTrialApplicationDialog() {
   function openTrialApplicationDialog() {
     addDialog({
-      title: "",
-      width: "560px",
+      title: "请完善信息，我们尽快与您联系",
+      width: "460px",
       alignCenter: true,
       lockScroll: true,
       closeOnClickModal: false,
-      draggable: false,
+      draggable: true,
       destroyOnClose: true,
       hideFooter: true,
       fullscreen: deviceDetection(),

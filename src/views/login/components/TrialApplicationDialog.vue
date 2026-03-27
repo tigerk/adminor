@@ -188,7 +188,6 @@
       <!-- Form -->
       <div v-else key="form">
         <div class="tad-head">
-          <h3>申请试用账号</h3>
           <p>留下手机号和所在城市，我们会在审核后协助开通试用环境</p>
         </div>
 
