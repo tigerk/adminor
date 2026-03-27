@@ -1,17 +1,17 @@
 <script setup lang="ts">
   import { useI18n } from "vue-i18n";
   import { ref, reactive, onBeforeUnmount, computed, watch } from "vue";
-  import Motion from "../utils/motion";
   import { message } from "@/utils/message";
   import { updateRules } from "../utils/rule";
   import type { FormInstance } from "element-plus";
   import { useVerifyCode } from "../utils/verifyCode";
   import { $t, transformI18n } from "@/plugins/i18n";
   import { baseUrlApi } from "@/api/utils";
+  import { loginUpdate, sendSmsCode } from "@/api/login";
+
   import Lock from "~icons/ri/lock-fill";
   import Phone from "~icons/ri/phone-fill";
   import Shield from "~icons/ri/shield-keyhole-line";
-  import { loginUpdate, sendSmsCode } from "@/api/login";
 
   const { t } = useI18n();
   const emit = defineEmits<{
@@ -24,7 +24,6 @@
   const captchaImageUrl = ref("");
   const { isDisabled, text } = useVerifyCode();
 
-  // 忘记密码表单
   const forgotForm = reactive({
     phone: "",
     verifyCode: "",
@@ -56,33 +55,24 @@
     }
   );
 
-  // 确认密码验证规则
   const repeatPasswordRule = [
     {
-      validator: (rule, value, callback) => {
-        if (value === "") {
-          callback(new Error(transformI18n($t("login.purePassWordSureReg"))));
-        } else if (forgotForm.password !== value) {
-          callback(new Error(transformI18n($t("login.purePassWordDifferentReg"))));
-        } else {
-          callback();
-        }
+      validator: (rule: any, value: string, callback: any) => {
+        if (value === "") callback(new Error(transformI18n($t("login.purePassWordSureReg"))));
+        else if (forgotForm.password !== value) callback(new Error(transformI18n($t("login.purePassWordDifferentReg"))));
+        else callback();
       },
       trigger: "blur"
     }
   ];
 
-  // 重置密码处理
   const onUpdate = async (formEl: FormInstance | undefined) => {
     loading.value = true;
     if (!formEl) return;
     await formEl.validate(valid => {
       if (valid) {
-        // 模拟重置密码请求
-        loginUpdate({ phone: forgotForm.phone, verifyCode: forgotForm.verifyCode, password: forgotForm.password }).then(resp => {
-          message(transformI18n($t("login.purePassWordUpdateReg")), {
-            type: "success"
-          });
+        loginUpdate({ phone: forgotForm.phone, verifyCode: forgotForm.verifyCode, password: forgotForm.password }).then(() => {
+          message(transformI18n($t("login.purePassWordUpdateReg")), { type: "success" });
           emit("switchPage", "login");
           loading.value = false;
         });
@@ -94,20 +84,14 @@
 
   const sendVerificationCode = async (formEl: FormInstance | undefined, field: string) => {
     if (!formEl) return;
-    await formEl.validateField(field, async valid => {
-      if (!valid) {
-        return;
-      }
+    await formEl.validateField(field, async (valid: boolean) => {
+      if (!valid) return;
       if (!imageVerifyCode.value) {
         message("请输入图形验证码", { type: "warning" });
         if (!captchaImageUrl.value) refreshCaptcha();
         return;
       }
-
-      sendSmsCode({
-        phone: forgotForm.phone,
-        captcha: imageVerifyCode.value
-      })
+      sendSmsCode({ phone: forgotForm.phone, captcha: imageVerifyCode.value })
         .then(() => {
           useVerifyCode().start(ruleFormRef.value, "phone", 60);
           message("验证码已发送", { type: "success" });
@@ -118,342 +102,533 @@
     });
   };
 
-  // 组件销毁时清理定时器
   onBeforeUnmount(() => {
     useVerifyCode().end();
   });
 </script>
 
 <template>
-  <Motion key="forgot">
-    <div class="form-header">
-      <h1 class="form-title">重置密码</h1>
-      <p class="form-subtitle">输入您的手机号重置密码</p>
+  <div class="forgot-card">
+    <div class="forgot-card__accent" />
+    <div class="forgot-card__head">
+      <div>
+        <h2>重置登录密码</h2>
+        <p>通过手机验证完成安全重置</p>
+      </div>
+      <button type="button" class="back-link" @click="emit('switchPage', 'login')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+        返回登录
+      </button>
     </div>
 
-    <el-form ref="ruleFormRef" :model="forgotForm" :rules="updateRules" class="auth-form">
-      <el-form-item prop="phone">
-        <el-input v-model="forgotForm.phone" size="large" clearable placeholder="手机号">
-          <template #prefix>
-            <el-icon>
-              <Phone />
-            </el-icon>
-          </template>
-        </el-input>
-      </el-form-item>
+    <div class="forgot-card__body">
+      <!-- Security hints -->
+      <div class="security-hints">
+        <div class="security-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4" /></svg>
+          手机号自动触发图形码
+        </div>
+        <div class="security-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4" /></svg>
+          短信验证后立即生效
+        </div>
+        <div class="security-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4" /></svg>
+          新密码仅在本次提交
+        </div>
+      </div>
 
-      <el-form-item v-if="hasValidPhone" class="inline-captcha-item">
-        <div class="verify-code-wrapper captcha-wrapper">
-          <el-input v-model="imageVerifyCode" size="large" clearable maxlength="4" placeholder="图形验证码">
-            <template #prefix>
-              <el-icon>
-                <Shield />
-              </el-icon>
-            </template>
-          </el-input>
-          <button type="button" class="captcha-box" @click="refreshCaptcha">
-            <img v-if="captchaImageUrl" :src="captchaImageUrl" alt="图形验证码" class="captcha-image" />
-            <span v-else>加载验证码</span>
+      <el-form ref="ruleFormRef" :model="forgotForm" :rules="updateRules" class="fw-form">
+        <!-- Phone -->
+        <div class="form-group">
+          <label class="form-label">手机号</label>
+          <el-form-item prop="phone">
+            <div class="form-input-wrap">
+              <el-input v-model="forgotForm.phone" class="fw-input" clearable placeholder="请输入手机号">
+                <template #prefix>
+                  <el-icon><Phone /></el-icon>
+                </template>
+              </el-input>
+            </div>
+          </el-form-item>
+        </div>
+
+        <!-- Captcha (shown when phone is valid) -->
+        <Transition name="expand">
+          <div v-if="hasValidPhone" class="form-group">
+            <label class="form-label">图形验证码</label>
+            <div class="verify-row verify-row--captcha">
+              <el-input v-model="imageVerifyCode" class="fw-input" clearable maxlength="4" placeholder="请输入图形验证码">
+                <template #prefix>
+                  <el-icon><Shield /></el-icon>
+                </template>
+              </el-input>
+              <button type="button" class="captcha-box" @click="refreshCaptcha">
+                <img v-if="captchaImageUrl" :src="captchaImageUrl" alt="图形验证码" class="captcha-img" />
+                <span v-else class="captcha-placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  加载验证码
+                </span>
+              </button>
+            </div>
+            <p class="field-hint">点击图片可刷新</p>
+          </div>
+        </Transition>
+
+        <!-- SMS Code -->
+        <div class="form-group">
+          <label class="form-label">短信验证码</label>
+          <el-form-item prop="verifyCode">
+            <div class="verify-row">
+              <el-input v-model="forgotForm.verifyCode" class="fw-input" clearable placeholder="输入验证码">
+                <template #prefix>
+                  <el-icon><Shield /></el-icon>
+                </template>
+              </el-input>
+              <button type="button" class="verify-btn" :class="{ waiting: isDisabled }" :disabled="isDisabled" @click="sendVerificationCode(ruleFormRef, 'phone')">
+                {{ isDisabled ? text + t("login.pureInfo") : "获取验证码" }}
+              </button>
+            </div>
+          </el-form-item>
+        </div>
+
+        <!-- Passwords -->
+        <div class="two-col">
+          <div class="form-group">
+            <label class="form-label">新密码</label>
+            <el-form-item prop="password">
+              <el-input v-model="forgotForm.password" class="fw-input" type="password" show-password placeholder="8-18位，至少两种字符">
+                <template #prefix>
+                  <el-icon><Lock /></el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+          </div>
+          <div class="form-group">
+            <label class="form-label">确认新密码</label>
+            <el-form-item :rules="repeatPasswordRule" prop="confirmPassword">
+              <el-input v-model="forgotForm.confirmPassword" class="fw-input" type="password" show-password placeholder="请再次输入">
+                <template #prefix>
+                  <el-icon><Lock /></el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="btn-group">
+          <button type="button" class="btn-back" @click="emit('switchPage', 'login')">取消</button>
+          <button type="button" class="btn-next" :disabled="loading" @click="onUpdate(ruleFormRef)">
+            {{ loading ? "重置中…" : "重置密码" }}
+            <svg v-if="!loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4" /></svg>
           </button>
         </div>
-        <p class="captcha-tip">手机号输入完成后自动显示，点击图片可刷新</p>
-      </el-form-item>
-
-      <el-form-item prop="verifyCode">
-        <div class="verify-code-wrapper">
-          <el-input v-model="forgotForm.verifyCode" size="large" clearable placeholder="验证码">
-            <template #prefix>
-              <el-icon>
-                <Shield />
-              </el-icon>
-            </template>
-          </el-input>
-          <el-button class="verify-btn" :disabled="isDisabled" @click="sendVerificationCode(ruleFormRef, 'phone')">
-            {{ text.length > 0 ? text + t("login.pureInfo") : "获取验证码" }}
-          </el-button>
-        </div>
-      </el-form-item>
-
-      <el-form-item prop="password">
-        <el-input v-model="forgotForm.password" size="large" type="password" placeholder="新密码">
-          <template #prefix>
-            <el-icon>
-              <Lock />
-            </el-icon>
-          </template>
-        </el-input>
-      </el-form-item>
-
-      <el-form-item :rules="repeatPasswordRule" prop="confirmPassword">
-        <el-input v-model="forgotForm.confirmPassword" size="large" type="password" placeholder="确认新密码">
-          <template #prefix>
-            <el-icon>
-              <Lock />
-            </el-icon>
-          </template>
-        </el-input>
-      </el-form-item>
-
-      <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="onUpdate(ruleFormRef)">重置密码</el-button>
-
-      <div class="switch-page">
-        <el-space>
-          <span>想起密码了？</span>
-          <el-button link type="primary" @click="emit('switchPage', 'login')">返回登录</el-button>
-        </el-space>
-      </div>
-    </el-form>
-  </Motion>
+      </el-form>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">
-  .form-header,
-  .auth-form,
-  .verify-code-wrapper,
-  .captcha-box,
-  .submit-btn,
-  .switch-page {
-    --login-title: #10233d;
-    --login-text: #47607b;
-    --login-muted: #6f8197;
-    --login-primary: #2364ff;
-    --login-primary-strong: #0b4ddd;
-    --login-border: rgba(134, 156, 184, 0.18);
-    --login-input-bg: rgba(255, 255, 255, 0.72);
-    --login-dark-title: #f5f8ff;
-    --login-dark-text: #b0bfd5;
-    --login-dark-muted: #89a0bd;
-    --login-dark-border: rgba(255, 255, 255, 0.08);
-    --login-dark-input-bg: rgba(7, 16, 28, 0.88);
+  .forgot-card {
+    --bg: #f6f3ee;
+    --surface-solid: #fff;
+    --border: rgba(28, 25, 23, 0.08);
+    --border-strong: rgba(28, 25, 23, 0.15);
+    --text: #1c1917;
+    --text-soft: #78716c;
+    --text-faint: #a8a29e;
+    --accent: #b45309;
+    --accent-warm: #d97706;
+    --accent-bg: rgba(180, 83, 9, 0.06);
+    --accent-border: rgba(180, 83, 9, 0.18);
+    --success: #15803d;
+    --danger: #dc2626;
+    --shadow-lg: 0 24px 64px rgba(28, 25, 23, 0.12);
+    --radius: 20px;
+    --radius-sm: 14px;
+    --serif: "Instrument Serif", Georgia, serif;
+    --sans: "DM Sans", -apple-system, sans-serif;
+    --mono: "JetBrains Mono", monospace;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    position: relative;
+    font-family: var(--sans);
+    color: var(--text);
   }
 
-  .form-header {
-    margin-bottom: 36px;
-    text-align: center;
+  :global(.lw-shell.dark) .forgot-card {
+    --bg: #161412;
+    --surface-solid: #1e1b18;
+    --border: rgba(245, 245, 244, 0.08);
+    --border-strong: rgba(245, 245, 244, 0.15);
+    --text: #f5f5f4;
+    --text-soft: #a8a29e;
+    --text-faint: #78716c;
+    --accent: #f59e0b;
+    --accent-warm: #fbbf24;
+    --accent-bg: rgba(245, 158, 11, 0.08);
+    --accent-border: rgba(245, 158, 11, 0.22);
+    --success: #4ade80;
+    --danger: #f87171;
+    --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.3);
   }
 
-  .form-title {
-    margin-bottom: 8px;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--login-title);
-    transition: color 0.3s ease;
+  .forgot-card__accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-warm), transparent);
   }
 
-  .form-subtitle {
-    font-size: 14px;
-    color: var(--login-text);
-    transition: color 0.3s ease;
+  .forgot-card__head {
+    padding: 32px 32px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+
+    h2 {
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    p {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-soft);
+    }
   }
 
-  .auth-form {
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-top: 4px;
+    font-family: var(--sans);
+    padding: 0;
+    transition: opacity 0.2s;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  .forgot-card__body {
+    padding: 24px 32px 32px;
+  }
+
+  /* Security hints */
+  .security-hints {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .security-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--success);
+    background: rgba(21, 128, 61, 0.06);
+    border: 1px solid rgba(21, 128, 61, 0.18);
+    border-radius: 999px;
+    font-family: var(--mono);
+
+    svg {
+      width: 12px;
+      height: 12px;
+      stroke: var(--success);
+      flex-shrink: 0;
+    }
+  }
+
+  :global(.lw-shell.dark) .security-hint {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.06);
+    border-color: rgba(74, 222, 128, 0.18);
+
+    svg {
+      stroke: #4ade80;
+    }
+  }
+
+  /* Form */
+  .fw-form {
     :deep(.el-form-item) {
-      margin-bottom: 18px;
+      margin-bottom: 0;
+    }
+
+    :deep(.el-form-item__error) {
+      position: static;
+      padding: 4px 0 8px;
+      font-size: 12px;
+      color: var(--danger);
+      font-family: var(--mono);
     }
 
     :deep(.el-input__wrapper) {
-      min-height: 54px;
-      padding: 0 16px;
-      background: var(--login-input-bg);
-      border: 1px solid var(--login-border);
-      border-radius: 18px;
+      height: 52px;
+      background: var(--bg);
+      border: 1.5px solid var(--border) !important;
+      border-radius: var(--radius-sm) !important;
       box-shadow: none !important;
-      transition: all 0.3s;
+      transition: all 0.2s var(--ease);
 
       &:hover {
-        border-color: rgba(134, 156, 184, 0.32);
+        border-color: var(--border-strong) !important;
       }
-
       &.is-focus {
-        border-color: var(--login-primary);
-        box-shadow: 0 0 0 3px rgba(35, 100, 255, 0.14) !important;
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 3px var(--accent-bg) !important;
+        background: var(--surface-solid);
       }
     }
 
     :deep(.el-input__inner) {
-      height: 46px;
       font-size: 15px;
-      color: var(--login-title);
-
+      font-family: var(--sans);
+      color: var(--text);
+      background: transparent;
       &::placeholder {
-        color: var(--login-muted);
+        color: var(--text-faint);
       }
     }
 
-    :deep(.el-input__prefix) {
-      color: var(--login-muted);
+    :deep(.el-input__prefix),
+    :deep(.el-input__suffix) {
+      color: var(--text-faint);
     }
   }
 
-  .verify-code-wrapper {
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-label {
     display: flex;
-    gap: 12px;
-
-    .verify-btn {
-      flex-shrink: 0;
-      height: 54px;
-      padding: 0 20px;
-      border-radius: 18px;
-    }
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-soft);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: var(--mono);
   }
 
-  .captcha-wrapper {
-    align-items: stretch;
+  .form-input-wrap {
+    position: relative;
   }
 
-  .inline-captcha-item {
-    margin-top: -6px;
+  .verify-row {
+    display: grid;
+    grid-template-columns: 1fr 148px;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .verify-row--captcha {
+    grid-template-columns: 1fr 148px;
   }
 
   .captcha-box {
-    flex-shrink: 0;
-    width: 140px;
-    height: 54px;
-    padding: 0;
+    height: 52px;
     overflow: hidden;
-    color: var(--login-muted);
-    background: var(--login-input-bg);
-    border: 1px solid var(--login-border);
-    border-radius: 18px;
-    transition: all 0.3s;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s var(--ease);
+
+    &:hover {
+      border-color: var(--accent);
+    }
   }
 
-  .captcha-box:hover {
-    border-color: rgba(134, 156, 184, 0.32);
-  }
-
-  .captcha-image {
+  .captcha-img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  .captcha-tip {
-    margin: 8px 0 0;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--login-muted);
+  .captcha-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--mono);
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
   }
 
-  .submit-btn {
-    width: 100%;
+  .field-hint {
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--mono);
+  }
+
+  .verify-btn {
     height: 52px;
-    margin-bottom: 24px;
-    font-size: 15px;
+    padding: 0 16px;
+    font-size: 13px;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--login-primary) 0%, var(--login-primary-strong) 100%);
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1.5px solid var(--accent-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s var(--ease);
+    font-family: var(--sans);
+
+    &:not(.waiting):hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    &.waiting {
+      color: var(--text-faint);
+      background: var(--bg);
+      border-color: var(--border);
+      cursor: not-allowed;
+    }
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .btn-back,
+  .btn-next {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 52px;
+    padding: 0 24px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
     border: none;
-    border-radius: 16px;
-    box-shadow: 0 18px 36px rgba(35, 100, 255, 0.26);
-    transition: all 0.3s;
+    cursor: pointer;
+    transition: all 0.25s var(--ease);
+    font-family: var(--sans);
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .btn-back {
+    background: var(--bg);
+    color: var(--text-soft);
+    border: 1.5px solid var(--border);
 
     &:hover {
-      box-shadow: 0 18px 36px rgba(35, 100, 255, 0.3);
+      border-color: var(--border-strong);
+      color: var(--text);
+    }
+  }
+
+  .btn-next {
+    flex: 1;
+    color: white;
+    background: var(--accent);
+
+    &:hover {
       transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(180, 83, 9, 0.3);
+    }
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
   }
 
-  .switch-page {
-    font-size: 14px;
-    color: var(--login-text);
-    text-align: center;
-    transition: color 0.3s ease;
-
-    .el-button {
-      font-size: 14px;
-    }
+  /* Expand transition */
+  .expand-enter-active {
+    transition: all 0.25s var(--ease);
+  }
+  .expand-leave-active {
+    transition: all 0.18s var(--ease);
+  }
+  .expand-enter-from,
+  .expand-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
   }
 
-  /* Dark mode support - using :global to target parent dark class */
-  .login-wrapper.dark {
-    .form-title {
-      color: var(--login-dark-title) !important;
+  @media (width <= 640px) {
+    .forgot-card__head {
+      padding: 20px 20px 16px;
+      flex-direction: column;
     }
-
-    .form-subtitle {
-      color: var(--login-dark-text);
+    .forgot-card__body {
+      padding: 20px 20px 24px;
     }
-
-    .auth-form {
-      :deep(.el-form-item__label) {
-        color: var(--login-dark-title);
-      }
-
-      :deep(.el-input__wrapper) {
-        background: var(--login-dark-input-bg);
-        border-color: var(--login-dark-border);
-
-        &:hover {
-          border-color: rgba(255, 255, 255, 0.16);
-        }
-
-        &.is-focus {
-          border-color: var(--login-primary);
-        }
-      }
-
-      :deep(.el-input__inner) {
-        color: var(--login-dark-title);
-
-        &::placeholder {
-          color: var(--login-dark-muted);
-        }
-      }
-
-      :deep(.el-input__prefix),
-      :deep(.el-input__suffix) {
-        color: var(--login-dark-muted);
-      }
+    .two-col {
+      grid-template-columns: 1fr;
     }
-
-    .verify-code-wrapper {
-      .verify-btn {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(255, 255, 255, 0.1);
-        color: var(--login-dark-title);
-
-        &:hover:not(:disabled) {
-          background: rgba(92, 147, 255, 0.16);
-          border-color: rgba(92, 147, 255, 0.28);
-        }
-
-        &:disabled {
-          background: rgba(255, 255, 255, 0.03);
-          border-color: rgba(255, 255, 255, 0.06);
-          color: rgba(255, 255, 255, 0.38);
-        }
-      }
+    .verify-row {
+      grid-template-columns: 1fr;
     }
-
-    .captcha-box {
-      color: var(--login-dark-muted);
-      background: var(--login-dark-input-bg);
-      border-color: var(--login-dark-border);
-
-      &:hover {
-        border-color: rgba(255, 255, 255, 0.16);
-      }
+    .btn-group {
+      flex-direction: column-reverse;
     }
-
-    .captcha-tip {
-      color: var(--login-dark-muted);
-    }
-
-    .switch-page {
-      color: var(--login-dark-text);
-
-      span {
-        color: var(--login-dark-text);
-      }
-
-      .el-button {
-        color: var(--login-primary);
-
-        &:hover {
-          color: #82a8ff;
-        }
-      }
+    .security-hints {
+      gap: 6px;
     }
   }
 </style>

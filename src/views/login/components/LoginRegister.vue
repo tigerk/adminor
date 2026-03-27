@@ -3,7 +3,6 @@
   import { useI18n } from "vue-i18n";
   import type { FormInstance, FormRules } from "element-plus";
   import { isPhone } from "@pureadmin/utils";
-  import Motion from "../utils/motion";
   import { message } from "@/utils/message";
   import { updateRules, REGEXP_PWD } from "../utils/rule";
   import { useVerifyCode } from "../utils/verifyCode";
@@ -17,9 +16,6 @@
   import Building from "~icons/ri/building-2-line";
   import Person from "~icons/ri/user-line";
   import CheckCircle from "~icons/ri/checkbox-circle-fill";
-  import ArrowRight from "~icons/ri/arrow-right-line";
-  import ArrowLeft from "~icons/ri/arrow-left-line";
-  import InfoCircle from "~icons/ri/information-line";
   import FileText from "~icons/ri/file-text-line";
 
   const { t } = useI18n();
@@ -85,19 +81,24 @@
     const pwd = registerForm.password;
     if (!pwd) return 0;
     let score = 0;
-    if (pwd.length >= 8) score += 1;
-    if (/[a-z]/.test(pwd)) score += 1;
-    if (/[A-Z]/.test(pwd)) score += 1;
-    if (/[0-9]/.test(pwd)) score += 1;
-    if (/[^a-zA-Z0-9]/.test(pwd)) score += 1;
+    if (pwd.length >= 8) score++;
+    if (/[a-z]/.test(pwd)) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^a-zA-Z0-9]/.test(pwd)) score++;
     return score;
   });
 
   const strengthMeta = computed(() => {
-    if (!registerForm.password) return { text: "未设置", className: "" };
-    if (passwordStrength.value <= 2) return { text: "强度较弱", className: "weak" };
-    if (passwordStrength.value <= 4) return { text: "强度中等", className: "medium" };
-    return { text: "强度较高", className: "strong" };
+    if (!registerForm.password) return { text: "", level: "" };
+    if (passwordStrength.value <= 2) return { text: "较弱", level: "weak" };
+    if (passwordStrength.value <= 4) return { text: "中等", level: "medium" };
+    return { text: "强", level: "strong" };
+  });
+
+  const strengthBars = computed(() => {
+    const count = passwordStrength.value <= 2 ? (passwordStrength.value <= 1 ? 1 : 2) : passwordStrength.value <= 4 ? 3 : 4;
+    return [0, 1, 2, 3].map(i => i < count);
   });
 
   const formRules = reactive<FormRules>({
@@ -264,7 +265,6 @@
       if (!captchaImageUrl.value) refreshCaptcha();
       return;
     }
-
     sendSmsCode({ phone: registerForm.phone, captcha: imageVerifyCode.value })
       .then(() => {
         useVerifyCode().start(ruleFormRef.value, "phone", 60);
@@ -281,7 +281,6 @@
     try {
       const valid = await formEl.validate().catch(() => false);
       if (!valid) return;
-
       await registerAccount(buildPayload());
       message("注册成功，请使用手机号登录", { type: "success" });
       emit("switchPage", "login");
@@ -296,850 +295,913 @@
 </script>
 
 <template>
-  <Motion key="register">
-    <div class="rg-shell">
-      <div class="rg-topbar">
-        <div class="rg-badge">
-          <el-icon><Building /></el-icon>
-          <span>创建新账户</span>
-        </div>
+  <div class="rg-shell">
+    <!-- Header -->
+    <div class="register-card__head">
+      <div>
+        <h2>开始使用{{ $t ? "" : "" }}租房管理系统</h2>
+        <p>按照 3 个步骤完成注册，系统会自动初始化默认套餐与公司档案</p>
       </div>
+      <button type="button" class="back-link" @click="emit('switchPage', 'login')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+        返回登录
+      </button>
+    </div>
 
-      <div class="rg-hero">
-        <h1 class="rg-title">开始使用租房管理系统</h1>
-        <p class="rg-subtitle">按照 3 个步骤完成注册，系统会自动为你初始化默认套餐与公司档案。</p>
-      </div>
+    <!-- Steps -->
+    <div class="steps">
+      <button
+        v-for="(step, index) in stepList"
+        :key="step.title"
+        type="button"
+        class="step"
+        :class="{ 'is-active': index === currentStep, 'is-done': index < currentStep }"
+        @click="jumpStep(index)"
+      >
+        <span class="step__num">
+          <el-icon v-if="index < currentStep"><CheckCircle /></el-icon>
+          <span v-else>{{ index + 1 }}</span>
+        </span>
+        <span class="step__label">
+          <b>{{ step.title }}</b>
+          <i>{{ step.subtitle }}</i>
+        </span>
+      </button>
+    </div>
 
-      <div class="rg-progress">
-        <button
-          v-for="(step, index) in stepList"
-          :key="step.title"
-          type="button"
-          class="pg-item"
-          :class="{ 'is-active': index === currentStep, 'is-done': index < currentStep }"
-          @click="jumpStep(index)"
-        >
-          <span class="pg-index">
-            <el-icon v-if="index < currentStep"><CheckCircle /></el-icon>
-            <span v-else>{{ index + 1 }}</span>
-          </span>
-          <span class="pg-text">
-            <b>{{ step.title }}</b>
-            <i>{{ step.subtitle }}</i>
-          </span>
-        </button>
-      </div>
-
-      <el-form ref="ruleFormRef" :model="registerForm" :rules="formRules" label-position="top" class="rg-form">
-        <section class="rg-card" :class="{ 'is-active': currentStep === 0 }">
-          <div class="rg-card__head">
-            <div class="rg-card__title">
-              <span class="card-no">01</span>
-              <div>
-                <h3>选择主体类型</h3>
-                <p>先确认你是以个人还是企业身份使用系统</p>
-              </div>
-            </div>
-            <div class="rg-chip">{{ natureLabel }}</div>
-          </div>
-
-          <div v-show="currentStep === 0" class="rg-card__body">
+    <!-- Form -->
+    <el-form ref="ruleFormRef" :model="registerForm" :rules="formRules" label-position="top" class="rg-form">
+      <!-- Step 0: Nature -->
+      <div v-if="currentStep === 0" class="step-panel">
+        <div class="rg-card">
+          <div class="rg-card__body">
             <div class="nature-grid">
               <button
                 type="button"
-                class="nature-option"
-                :class="{ 'is-selected': isPersonal }"
+                class="nature-card"
+                :class="{ selected: isPersonal }"
                 @click="
                   registerForm.nature = 2;
                   onNatureChange();
                 "
               >
-                <span class="nature-icon">
+                <span class="nature-card__icon">
                   <el-icon><Person /></el-icon>
                 </span>
-                <span class="nature-main">
+                <span class="nature-card__main">
                   <strong>个人主体</strong>
                   <small>个人房东、独立运营者</small>
                 </span>
-                <span class="nature-check" :class="{ 'is-on': isPersonal }" />
+                <span class="nature-card__check" :class="{ on: isPersonal }" />
               </button>
 
               <button
                 type="button"
-                class="nature-option"
-                :class="{ 'is-selected': !isPersonal }"
+                class="nature-card"
+                :class="{ selected: !isPersonal }"
                 @click="
                   registerForm.nature = 1;
                   onNatureChange();
                 "
               >
-                <span class="nature-icon">
+                <span class="nature-card__icon">
                   <el-icon><Building /></el-icon>
                 </span>
-                <span class="nature-main">
+                <span class="nature-card__main">
                   <strong>企业主体</strong>
                   <small>租赁公司、中介机构</small>
                 </span>
-                <span class="nature-check" :class="{ 'is-on': !isPersonal }" />
+                <span class="nature-card__check" :class="{ on: !isPersonal }" />
               </button>
             </div>
 
             <div class="rg-note">
-              <el-icon><InfoCircle /></el-icon>
-              <span>{{ natureHint }}</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" />
+              </svg>
+              {{ natureHint }}
             </div>
 
             <div class="rg-actions">
-              <button type="button" class="btn-primary btn-full" @click="nextStep">
+              <button type="button" class="btn-next btn-full" @click="nextStep">
                 下一步：填写主体信息
-                <el-icon><ArrowRight /></el-icon>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </button>
             </div>
           </div>
-        </section>
+        </div>
+      </div>
 
-        <section class="rg-card" :class="{ 'is-active': currentStep === 1 }">
-          <div class="rg-card__head">
-            <div class="rg-card__title">
-              <span class="card-no">02</span>
-              <div>
-                <h3>填写主体信息</h3>
-                <p>{{ isPersonal ? "个人资料会自动映射到联系人与法定代表人" : "这些资料将用于初始化企业主体档案" }}</p>
-              </div>
-            </div>
-            <div v-if="entityStepDone" class="rg-chip success">
-              <el-icon><CheckCircle /></el-icon>
-              已填写
-            </div>
-          </div>
-
-          <div v-show="currentStep === 1" class="rg-card__body">
-            <el-form-item prop="companyName">
-              <template #label>
-                <span class="field-label">
-                  <em>*</em>
-                  {{ isPersonal ? "名称" : "公司名称" }}
-                </span>
-              </template>
-              <el-input v-model="registerForm.companyName" size="large" clearable :placeholder="isPersonal ? '请输入名称，将写入公司名称' : '请输入公司全称'">
-                <template #prefix>
-                  <el-icon><User /></el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
-
-            <template v-if="isPersonal">
-              <el-form-item prop="realName">
-                <template #label>
-                  <span class="field-label">
-                    <em>*</em>
-                    真实姓名
-                  </span>
-                </template>
-                <el-input v-model="registerForm.realName" size="large" clearable placeholder="请输入真实姓名">
+      <!-- Step 1: Entity info -->
+      <div v-if="currentStep === 1" class="step-panel">
+        <div class="rg-card">
+          <div class="rg-card__body">
+            <div class="form-group">
+              <label class="form-label">
+                <em class="req">*</em>
+                {{ isPersonal ? "名称" : "公司名称" }}
+              </label>
+              <el-form-item prop="companyName">
+                <el-input v-model="registerForm.companyName" class="rg-input" size="large" clearable :placeholder="isPersonal ? '请输入名称' : '请输入公司全称'">
                   <template #prefix>
                     <el-icon><User /></el-icon>
                   </template>
                 </el-input>
               </el-form-item>
+            </div>
+
+            <template v-if="isPersonal">
+              <div class="form-group">
+                <label class="form-label">
+                  <em class="req">*</em>
+                  真实姓名
+                </label>
+                <el-form-item prop="realName">
+                  <el-input v-model="registerForm.realName" class="rg-input" size="large" clearable placeholder="请输入真实姓名">
+                    <template #prefix>
+                      <el-icon><User /></el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </div>
             </template>
 
             <div v-else class="two-col">
-              <el-form-item v-if="!isPersonal" prop="companyAbbr">
-                <template #label>
-                  <span class="field-label optional">
-                    公司简称
-                    <span>选填</span>
-                  </span>
-                </template>
-                <el-input v-model="registerForm.companyAbbr" size="large" clearable placeholder="请输入公司简称">
-                  <template #prefix>
-                    <el-icon><User /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-              <el-form-item prop="legalPerson">
-                <template #label>
-                  <span class="field-label">
-                    <em>*</em>
-                    法定代表人
-                  </span>
-                </template>
-                <el-input v-model="registerForm.legalPerson" size="large" clearable placeholder="请输入法定代表人">
-                  <template #prefix>
-                    <el-icon><User /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
+              <div class="form-group">
+                <label class="form-label">
+                  公司简称
+                  <span class="optional-tag">选填</span>
+                </label>
+                <el-form-item prop="companyAbbr">
+                  <el-input v-model="registerForm.companyAbbr" class="rg-input" size="large" clearable placeholder="请输入公司简称">
+                    <template #prefix>
+                      <el-icon><User /></el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <em class="req">*</em>
+                  法定代表人
+                </label>
+                <el-form-item prop="legalPerson">
+                  <el-input v-model="registerForm.legalPerson" class="rg-input" size="large" clearable placeholder="请输入法定代表人">
+                    <template #prefix>
+                      <el-icon><User /></el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </div>
             </div>
 
             <div class="rg-actions">
-              <button type="button" class="btn-secondary" @click="prevStep">
-                <el-icon><ArrowLeft /></el-icon>
+              <button type="button" class="btn-back" @click="prevStep">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
                 上一步
               </button>
-              <button type="button" class="btn-primary" @click="nextStep">
+              <button type="button" class="btn-next" @click="nextStep">
                 下一步：填写登录信息
-                <el-icon><ArrowRight /></el-icon>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </button>
             </div>
           </div>
-        </section>
+        </div>
+      </div>
 
-        <section class="rg-card" :class="{ 'is-active': currentStep === 2 }">
-          <div class="rg-card__head">
-            <div class="rg-card__title">
-              <span class="card-no">03</span>
-              <div>
-                <h3>设置登录信息</h3>
-                <p>手机号用于登录、短信验证和联系电话，密码用于管理员首次登录</p>
-              </div>
+      <!-- Step 2: Login info -->
+      <div v-if="currentStep === 2" class="step-panel">
+        <div class="rg-card">
+          <div class="rg-card__body">
+            <!-- Contact name (enterprise only) -->
+            <div v-if="!isPersonal" class="form-group">
+              <label class="form-label">
+                <em class="req">*</em>
+                联系人
+              </label>
+              <el-form-item prop="contactName">
+                <el-input v-model="registerForm.contactName" class="rg-input" size="large" clearable placeholder="请输入联系人">
+                  <template #prefix>
+                    <el-icon><User /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
             </div>
-            <div v-if="loginStepDone" class="rg-chip success">
-              <el-icon><CheckCircle /></el-icon>
-              可提交
+
+            <!-- Phone -->
+            <div class="form-group">
+              <label class="form-label">
+                <em class="req">*</em>
+                手机号
+              </label>
+              <el-form-item prop="phone">
+                <el-input v-model="registerForm.phone" class="rg-input" size="large" clearable placeholder="请输入手机号">
+                  <template #prefix>
+                    <el-icon><Phone /></el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
             </div>
-          </div>
 
-          <div v-show="currentStep === 2" class="rg-card__body">
-            <el-form-item prop="contactName">
-              <template #label>
-                <span class="field-label">
-                  <em>*</em>
-                  联系人
-                </span>
-              </template>
-              <el-input v-model="registerForm.contactName" size="large" clearable placeholder="请输入联系人">
-                <template #prefix>
-                  <el-icon><User /></el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
-            <el-form-item prop="phone">
-              <template #label>
-                <span class="field-label">
-                  <em>*</em>
-                  手机号
-                </span>
-              </template>
-              <el-input v-model="registerForm.phone" size="large" clearable placeholder="请输入手机号">
-                <template #prefix>
-                  <el-icon><Phone /></el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
-
-            <el-form-item v-if="hasValidPhone" class="inline-captcha-item">
-              <template #label>
-                <span class="field-label">
-                  <em>*</em>
+            <!-- Image captcha -->
+            <Transition name="expand">
+              <div v-if="hasValidPhone" class="form-group">
+                <label class="form-label">
+                  <em class="req">*</em>
                   图形验证码
-                </span>
-              </template>
-              <div class="verify-row verify-row-captcha">
-                <el-input v-model="imageVerifyCode" size="large" clearable maxlength="4" placeholder="请输入图形验证码">
-                  <template #prefix>
-                    <el-icon><Shield /></el-icon>
-                  </template>
-                </el-input>
-                <button type="button" class="captcha-box" @click="refreshCaptcha">
-                  <img v-if="captchaImageUrl" :src="captchaImageUrl" alt="图形验证码" class="captcha-image" />
-                  <span v-else>加载验证码</span>
-                </button>
+                </label>
+                <div class="verify-row verify-row--captcha">
+                  <el-input v-model="imageVerifyCode" class="rg-input" size="large" clearable maxlength="4" placeholder="请输入图形验证码">
+                    <template #prefix>
+                      <el-icon><Shield /></el-icon>
+                    </template>
+                  </el-input>
+                  <button type="button" class="captcha-box" @click="refreshCaptcha">
+                    <img v-if="captchaImageUrl" :src="captchaImageUrl" alt="图形验证码" class="captcha-img" />
+                    <span v-else class="captcha-placeholder">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      加载验证码
+                    </span>
+                  </button>
+                </div>
+                <p class="field-hint">手机号输入完成后自动显示，点击图片可刷新</p>
               </div>
-              <p class="captcha-tip">手机号输入完成后自动显示，点击图片可刷新</p>
-            </el-form-item>
+            </Transition>
 
-            <el-form-item prop="verifyCode">
-              <template #label>
-                <span class="field-label">
-                  <em>*</em>
-                  短信验证码
-                </span>
-              </template>
-              <div class="verify-row">
-                <el-input v-model="registerForm.verifyCode" size="large" clearable placeholder="请输入短信验证码">
-                  <template #prefix>
-                    <el-icon><Shield /></el-icon>
-                  </template>
-                </el-input>
-                <el-button class="verify-btn" :disabled="isDisabled" @click="sendCode(ruleFormRef, 'phone')">
-                  {{ text.length > 0 ? text + t("login.pureInfo") : "获取验证码" }}
-                </el-button>
-              </div>
-            </el-form-item>
-
-            <div class="two-col">
-              <el-form-item prop="password">
-                <template #label>
-                  <span class="field-label">
-                    <em>*</em>
-                    登录密码
-                  </span>
-                </template>
-                <el-input v-model="registerForm.password" size="large" type="password" show-password placeholder="8-18位，至少两种字符组合">
-                  <template #prefix>
-                    <el-icon><Lock /></el-icon>
-                  </template>
-                </el-input>
-                <div class="pwd-strength" :class="strengthMeta.className">
-                  <span>{{ strengthMeta.text }}</span>
+            <!-- SMS code -->
+            <div class="form-group">
+              <label class="form-label">
+                <em class="req">*</em>
+                短信验证码
+              </label>
+              <el-form-item prop="verifyCode">
+                <div class="verify-row">
+                  <el-input v-model="registerForm.verifyCode" class="rg-input" size="large" clearable placeholder="请输入短信验证码">
+                    <template #prefix>
+                      <el-icon><Shield /></el-icon>
+                    </template>
+                  </el-input>
+                  <button type="button" class="verify-btn" :class="{ waiting: isDisabled }" :disabled="isDisabled" @click="sendCode(ruleFormRef, 'phone')">
+                    {{ isDisabled ? text + t("login.pureInfo") : "获取验证码" }}
+                  </button>
                 </div>
               </el-form-item>
-
-              <el-form-item prop="confirmPassword">
-                <template #label>
-                  <span class="field-label">
-                    <em>*</em>
-                    确认密码
-                  </span>
-                </template>
-                <el-input v-model="registerForm.confirmPassword" size="large" type="password" show-password placeholder="请再次输入密码">
-                  <template #prefix>
-                    <el-icon><Lock /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
             </div>
 
+            <!-- Passwords -->
+            <div class="two-col">
+              <div class="form-group">
+                <label class="form-label">
+                  <em class="req">*</em>
+                  登录密码
+                </label>
+                <el-form-item prop="password">
+                  <el-input v-model="registerForm.password" class="rg-input" size="large" type="password" show-password placeholder="8-18位，至少两种字符">
+                    <template #prefix>
+                      <el-icon><Lock /></el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+                <div v-if="registerForm.password" class="pwd-meter">
+                  <div class="pwd-meter__bars">
+                    <span v-for="(active, i) in strengthBars" :key="i" class="pwd-meter__bar" :class="{ active, [strengthMeta.level]: active }" />
+                  </div>
+                  <span class="pwd-meter__text" :class="strengthMeta.level">{{ strengthMeta.text }}</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <em class="req">*</em>
+                  确认密码
+                </label>
+                <el-form-item prop="confirmPassword">
+                  <el-input v-model="registerForm.confirmPassword" class="rg-input" size="large" type="password" show-password placeholder="请再次输入密码">
+                    <template #prefix>
+                      <el-icon><Lock /></el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </div>
+            </div>
+
+            <!-- Agreement -->
             <div class="agreement-box">
               <div class="agreement-box__head">
                 <div class="agreement-box__title">
                   <el-icon><FileText /></el-icon>
-                  <span>平台使用协议</span>
+                  平台使用协议
                 </div>
-                <button type="button" class="link-btn" @click="agreementVisible = true">
+                <button type="button" class="form-link" @click="agreementVisible = true">
                   查看完整协议
-                  <el-icon><ArrowRight /></el-icon>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                 </button>
               </div>
               <p class="agreement-box__desc">注册即表示你将使用本系统开展租房业务管理，请先确认责任边界、合规要求与法律风险承担方式。</p>
               <el-form-item prop="agreed" class="agreement-item">
-                <el-checkbox v-model="registerForm.agreed" class="agreement-check">
+                <el-checkbox v-model="registerForm.agreed">
                   <span class="agreement-check-text">我已阅读并同意《平台使用协议》</span>
                 </el-checkbox>
               </el-form-item>
             </div>
 
-            <div class="rg-actions mt-3">
-              <button type="button" class="btn-secondary" @click="prevStep">
-                <el-icon><ArrowLeft /></el-icon>
+            <!-- Actions -->
+            <div class="rg-actions">
+              <button type="button" class="btn-back" @click="prevStep">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
                 上一步
               </button>
-              <button type="button" class="btn-primary" :disabled="loading" @click="onRegister(ruleFormRef)">
-                {{ loading ? "正在注册..." : "立即注册" }}
-                <el-icon v-if="!loading"><ArrowRight /></el-icon>
+              <button type="button" class="btn-next" :disabled="loading" @click="onRegister(ruleFormRef)">
+                {{ loading ? "正在注册…" : "立即注册" }}
+                <svg v-if="!loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 12l2 2 4-4" />
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
               </button>
             </div>
           </div>
-        </section>
-      </el-form>
-
-      <div class="switch-page">
-        <span>已有账户？</span>
-        <el-button link type="primary" @click="emit('switchPage', 'login')">立即登录</el-button>
-      </div>
-
-      <el-dialog v-model="agreementVisible" title="平台使用协议" width="760px" destroy-on-close append-to-body align-center class="agreement-dialog">
-        <div class="agreement-content">
-          <iframe class="agreement-frame" src="/agreement.html" title="平台使用协议" loading="lazy" />
         </div>
-      </el-dialog>
+      </div>
+    </el-form>
+
+    <!-- Switch to login -->
+    <div class="register-switch">
+      <span>已有账户？</span>
+      <button type="button" class="form-link" @click="emit('switchPage', 'login')">立即登录</button>
     </div>
-  </Motion>
+
+    <!-- Agreement dialog -->
+    <el-dialog v-model="agreementVisible" title="平台使用协议" width="760px" destroy-on-close append-to-body align-center class="rg-dialog">
+      <div class="rg-dialog__content">
+        <iframe class="rg-dialog__frame" src="/agreement.html" title="平台使用协议" loading="lazy" />
+      </div>
+    </el-dialog>
+  </div>
 </template>
 
 <style scoped lang="scss">
   .rg-shell {
-    --rg-text: #101828;
-    --rg-text-soft: #667085;
-    --rg-text-faint: #98a2b3;
-    --rg-surface: rgb(255 255 255 / 84%);
-    --rg-surface-strong: #fff;
-    --rg-surface-soft: #f8fafc;
-    --rg-border: #dbe3f3;
-    --rg-border-strong: #c7d6f7;
-    --rg-accent: #2563eb;
-    --rg-accent-soft: rgb(37 99 235 / 10%);
-    --rg-success: #067647;
-    --rg-success-soft: #ecfdf3;
-    --rg-shadow: 0 18px 50px rgb(15 23 42 / 10%);
-    color: var(--rg-text);
+    --bg: #f6f3ee;
+    --bg-warm: #ede8df;
+    --surface-solid: #fff;
+    --border: rgba(28, 25, 23, 0.08);
+    --border-strong: rgba(28, 25, 23, 0.15);
+    --text: #1c1917;
+    --text-soft: #78716c;
+    --text-faint: #a8a29e;
+    --accent: #b45309;
+    --accent-warm: #d97706;
+    --accent-bg: rgba(180, 83, 9, 0.06);
+    --accent-border: rgba(180, 83, 9, 0.18);
+    --success: #15803d;
+    --danger: #dc2626;
+    --shadow-lg: 0 24px 64px rgba(28, 25, 23, 0.12);
+    --shadow-sm: 0 1px 3px rgba(28, 25, 23, 0.06);
+    --radius: 20px;
+    --radius-sm: 14px;
+    --radius-xs: 10px;
+    --serif: "Instrument Serif", Georgia, serif;
+    --sans: "DM Sans", -apple-system, sans-serif;
+    --mono: "JetBrains Mono", monospace;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+    font-family: var(--sans);
+    color: var(--text);
   }
 
-  :global(.login-wrapper.dark .rg-shell) {
-    --rg-text: #f8fafc;
-    --rg-text-soft: #94a3b8;
-    --rg-text-faint: #64748b;
-    --rg-surface: rgb(17 24 39 / 82%);
-    --rg-surface-strong: #0f172a;
-    --rg-surface-soft: #162033;
-    --rg-border: #243047;
-    --rg-border-strong: #3b5b92;
-    --rg-accent: #60a5fa;
-    --rg-accent-soft: rgb(96 165 250 / 14%);
-    --rg-success: #86efac;
-    --rg-success-soft: rgb(22 163 74 / 12%);
-    --rg-shadow: 0 22px 60px rgb(0 0 0 / 28%);
+  :global(.lw-shell.dark) .rg-shell {
+    --bg: #161412;
+    --bg-warm: #1e1b18;
+    --surface-solid: #1e1b18;
+    --border: rgba(245, 245, 244, 0.08);
+    --border-strong: rgba(245, 245, 244, 0.15);
+    --text: #f5f5f4;
+    --text-soft: #a8a29e;
+    --text-faint: #78716c;
+    --accent: #f59e0b;
+    --accent-warm: #fbbf24;
+    --accent-bg: rgba(245, 158, 11, 0.08);
+    --accent-border: rgba(245, 158, 11, 0.22);
+    --success: #4ade80;
+    --danger: #f87171;
+    --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
-  .rg-topbar {
-    margin-bottom: 14px;
+  /* ══ HEADER ══ */
+  .register-card__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 28px 32px 20px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius) var(--radius) 0 0;
+    box-shadow: var(--shadow-lg);
+    border-bottom: none;
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-warm), transparent);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    h2 {
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    p {
+      font-size: 13px;
+      color: var(--text-soft);
+      line-height: 1.6;
+    }
   }
 
-  .rg-badge {
+  .back-link {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
+    gap: 6px;
     font-size: 13px;
-    font-weight: 700;
-    color: var(--rg-accent);
-    background: var(--rg-accent-soft);
-    border: 1px solid rgb(37 99 235 / 18%);
-    border-radius: 999px;
+    font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-top: 4px;
+    font-family: var(--sans);
+    padding: 0;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+    &:hover {
+      opacity: 0.7;
+    }
   }
 
-  .rg-hero {
-    margin-bottom: 24px;
+  /* ══ STEPS ══ */
+  .steps {
+    display: flex;
+    gap: 6px;
+    padding: 14px 32px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-bottom: none;
   }
 
-  .rg-title {
-    margin: 0 0 10px;
-    font-size: 26px;
-    font-weight: 800;
-    line-height: 1.15;
-    color: var(--rg-text);
-    letter-spacing: -0.03em;
-  }
-
-  .rg-subtitle {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.7;
-    color: var(--rg-text-soft);
-  }
-
-  .rg-progress {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    margin-bottom: 22px;
-  }
-
-  .pg-item {
+  .step {
+    flex: 1;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 14px;
-    text-align: left;
+    padding: 10px 14px;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    transition: all 0.2s var(--ease);
+    border: 1px solid transparent;
     background: transparent;
-    border: 1px solid var(--rg-border);
-    border-radius: 16px;
-    transition: 0.2s ease;
+    text-align: left;
+
+    &.is-active {
+      background: var(--surface-solid);
+      border-color: var(--accent-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    &.is-done {
+      background: var(--accent-bg);
+    }
   }
 
-  .pg-item.is-active {
-    background: var(--rg-accent-soft);
-    border-color: var(--rg-border-strong);
-    box-shadow: inset 0 0 0 1px rgb(37 99 235 / 8%);
-  }
-
-  .pg-item.is-done {
-    background: var(--rg-surface-soft);
-  }
-
-  .pg-index {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    font-size: 13px;
+  .step__num {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
     font-weight: 700;
-    color: var(--rg-text);
-    background: var(--rg-surface-strong);
-    border: 1px solid var(--rg-border);
-    border-radius: 999px;
+    font-family: var(--mono);
+    color: var(--text-soft);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.2s var(--ease);
+
+    .step.is-active & {
+      color: white;
+      background: var(--accent);
+      border-color: transparent;
+    }
+
+    .step.is-done & {
+      color: white;
+      background: var(--success);
+      border-color: transparent;
+    }
   }
 
-  .pg-item.is-active .pg-index,
-  .pg-item.is-done .pg-index {
-    color: #fff;
-    background: var(--rg-accent);
-    border-color: transparent;
-  }
-
-  .pg-text {
+  .step__label {
     display: flex;
     flex-direction: column;
     min-width: 0;
 
     b {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
-      color: var(--rg-text);
+      color: var(--text);
     }
 
     i {
-      overflow: hidden;
-      font-size: 11px;
+      font-size: 10.5px;
       font-style: normal;
-      color: var(--rg-text-soft);
+      color: var(--text-soft);
+      overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
   }
 
+  /* ══ FORM ══ */
   .rg-form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-
     :deep(.el-form-item) {
-      margin-bottom: 18px;
-      width: 100%;
-    }
-
-    :deep(.el-form-item__label) {
-      margin-bottom: 8px;
-      line-height: 1.2;
-      white-space: normal;
-    }
-
-    :deep(.el-form-item__content) {
-      display: block;
-      width: 100%;
-      line-height: 1.4;
-    }
-
-    :deep(.el-input__wrapper) {
-      min-height: 50px;
-      background: var(--rg-surface-strong);
-      border: 1px solid var(--rg-border);
-      border-radius: 14px;
-      box-shadow: none !important;
-      transition: 0.2s ease;
-    }
-
-    :deep(.el-input__wrapper:hover) {
-      border-color: var(--rg-border-strong);
-    }
-
-    :deep(.el-input__wrapper.is-focus) {
-      border-color: var(--rg-accent);
-      box-shadow: 0 0 0 4px rgb(37 99 235 / 10%) !important;
-    }
-
-    :deep(.el-input__inner) {
-      height: 34px;
-      font-size: 15px;
-      color: var(--rg-text);
-    }
-
-    :deep(.el-input__inner::placeholder) {
-      color: var(--rg-text-faint);
-    }
-
-    :deep(.el-input__prefix),
-    :deep(.el-input__suffix) {
-      color: var(--rg-text-faint);
+      margin-bottom: 0;
     }
 
     :deep(.el-form-item__error) {
       position: static;
-      padding-top: 6px;
+      padding: 4px 0 8px;
       font-size: 12px;
-      color: #ef4444;
+      color: var(--danger);
+      font-family: var(--mono);
     }
 
-    :deep(.el-checkbox) {
-      align-items: flex-start;
-      white-space: normal;
-    }
-
-    :deep(.el-checkbox__label) {
-      line-height: 1.6;
-      color: var(--rg-text);
-    }
-
-    :deep(.el-button.is-disabled) {
-      opacity: 0.7;
+    :deep(.el-form-item__label) {
+      display: none;
     }
   }
 
   .rg-card {
-    overflow: hidden;
-    background: var(--rg-surface);
-    border: 1px solid var(--rg-border);
-    border-radius: 22px;
-    box-shadow: var(--rg-shadow);
-    backdrop-filter: blur(12px);
-  }
-
-  .rg-card.is-active {
-    border-color: var(--rg-border-strong);
-    box-shadow:
-      0 0 0 1px rgb(37 99 235 / 12%),
-      var(--rg-shadow);
-  }
-
-  .rg-card__head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 20px 22px 18px;
-    border-bottom: 1px solid var(--rg-border);
-  }
-
-  .rg-card__title {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-
-    h3 {
-      margin: 0 0 4px;
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--rg-text);
-    }
-
-    p {
-      margin: 0;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--rg-text-soft);
-    }
-  }
-
-  .card-no {
-    min-width: 32px;
-    padding-top: 4px;
-    font-size: 24px;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--rg-accent);
-    letter-spacing: -0.03em;
-  }
-
-  .rg-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--rg-text);
-    background: var(--rg-surface-soft);
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-
-  .rg-chip.success {
-    color: var(--rg-success);
-    background: var(--rg-success-soft);
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow-lg);
   }
 
   .rg-card__body {
-    padding: 22px;
+    padding: 24px 32px 28px;
   }
 
-  .nature-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    margin-bottom: 16px;
+  .step-panel {
+    animation: fadeSlideIn 0.35s var(--ease) both;
   }
 
-  .nature-option {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    padding: 18px 16px;
-    text-align: left;
-    background: var(--rg-surface-strong);
-    border: 1px solid var(--rg-border);
-    border-radius: 18px;
-    transition: 0.2s ease;
-  }
-
-  .nature-option.is-selected {
-    background: var(--rg-accent-soft);
-    border-color: var(--rg-border-strong);
-    box-shadow: inset 0 0 0 1px rgb(37 99 235 / 12%);
-  }
-
-  .nature-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    font-size: 22px;
-    color: var(--rg-accent);
-    background: var(--rg-surface-soft);
-    border-radius: 14px;
-  }
-
-  .nature-main {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-width: 0;
-
-    strong {
-      margin-bottom: 3px;
-      font-size: 17px;
-      font-weight: 800;
-      color: var(--rg-text);
+  @keyframes fadeSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
     }
-
-    small {
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--rg-text-soft);
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
-  .nature-check {
-    width: 18px;
-    height: 18px;
-    background: transparent;
-    border: 2px solid var(--rg-border-strong);
-    border-radius: 999px;
-  }
-
-  .nature-check.is-on {
-    background: var(--rg-accent);
-    border-color: var(--rg-accent);
-    box-shadow: inset 0 0 0 4px var(--rg-surface-strong);
-  }
-
-  .rg-note {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 12px 14px;
+  /* Form elements */
+  .form-group {
     margin-bottom: 18px;
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--rg-text-soft);
-    background: var(--rg-surface-soft);
-    border: 1px dashed var(--rg-border-strong);
-    border-radius: 14px;
   }
 
-  .field-label {
-    display: inline-flex;
+  .form-label {
+    display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--rg-text);
-
-    em {
-      font-style: normal;
-      color: #ef4444;
-    }
-  }
-
-  .field-label.optional span {
-    padding: 2px 8px;
+    gap: 5px;
+    margin-bottom: 8px;
     font-size: 11px;
     font-weight: 600;
-    color: var(--rg-text-soft);
-    background: var(--rg-surface-soft);
-    border-radius: 999px;
+    color: var(--text-soft);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+
+  .req {
+    font-style: normal;
+    color: var(--danger);
+  }
+
+  .optional-tag {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-faint);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: var(--sans);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .rg-input {
+    :deep(.el-input__wrapper) {
+      height: 52px;
+      background: var(--bg);
+      border: 1.5px solid var(--border) !important;
+      border-radius: var(--radius-sm) !important;
+      box-shadow: none !important;
+      transition: all 0.2s var(--ease);
+
+      &:hover {
+        border-color: var(--border-strong) !important;
+      }
+      &.is-focus {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 3px var(--accent-bg) !important;
+        background: var(--surface-solid);
+      }
+    }
+
+    :deep(.el-input__inner) {
+      font-size: 15px;
+      font-family: var(--sans);
+      color: var(--text);
+      background: transparent;
+      &::placeholder {
+        color: var(--text-faint);
+      }
+    }
+
+    :deep(.el-input__prefix),
+    :deep(.el-input__suffix) {
+      color: var(--text-faint);
+    }
   }
 
   .two-col {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 14px;
   }
 
   .verify-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 148px;
-    gap: 12px;
+    grid-template-columns: 1fr 148px;
+    gap: 10px;
     width: 100%;
   }
 
-  .verify-row-captcha {
-    grid-template-columns: minmax(0, 1fr) 156px;
-  }
-
-  .inline-captcha-item {
-    margin-top: -2px;
+  .verify-row--captcha {
+    grid-template-columns: 1fr 150px;
   }
 
   .captcha-box {
-    display: inline-flex;
+    height: 52px;
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    cursor: pointer;
+    display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 50px;
-    padding: 0;
-    overflow: hidden;
-    color: var(--rg-text-soft);
-    background: var(--rg-surface-strong);
-    border: 1px solid var(--rg-border);
-    border-radius: 14px;
-    transition: 0.2s ease;
+    transition: border-color 0.2s var(--ease);
+
+    &:hover {
+      border-color: var(--accent);
+    }
   }
 
-  .captcha-box:hover {
-    border-color: var(--rg-border-strong);
-  }
-
-  .captcha-image {
+  .captcha-img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  .captcha-tip {
-    margin: 8px 0 0;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--rg-text-soft);
+  .captcha-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--mono);
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  .field-hint {
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--mono);
   }
 
   .verify-btn {
-    height: 50px;
+    height: 52px;
+    padding: 0 14px;
+    font-size: 13px;
     font-weight: 700;
-    color: var(--rg-accent);
-    background: var(--rg-accent-soft);
-    border: 1px solid rgb(37 99 235 / 18%);
-    border-radius: 14px;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1.5px solid var(--accent-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s var(--ease);
+    font-family: var(--sans);
+
+    &:not(.waiting):hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    &.waiting {
+      color: var(--text-faint);
+      background: var(--bg);
+      border-color: var(--border);
+      cursor: not-allowed;
+    }
   }
 
-  .pwd-strength {
+  /* Password meter */
+  .pwd-meter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-top: 8px;
-    font-size: 12px;
-    color: var(--rg-text-soft);
   }
 
-  .pwd-strength.weak {
-    color: #ef4444;
+  .pwd-meter__bars {
+    display: flex;
+    gap: 4px;
+    flex: 1;
   }
 
-  .pwd-strength.medium {
-    color: #f59e0b;
+  .pwd-meter__bar {
+    flex: 1;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--border);
+    transition: background 0.3s var(--ease);
+
+    &.active {
+      &.weak {
+        background: var(--danger);
+      }
+      &.medium {
+        background: #d97706;
+      }
+      &.strong {
+        background: var(--success);
+      }
+    }
   }
 
-  .pwd-strength.strong {
-    color: #10b981;
+  .pwd-meter__text {
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 600;
+    white-space: nowrap;
+
+    &.weak {
+      color: var(--danger);
+    }
+    &.medium {
+      color: #d97706;
+    }
+    &.strong {
+      color: var(--success);
+    }
   }
 
+  /* Nature cards */
+  .nature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .nature-card {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 18px 16px;
+    text-align: left;
+    background: var(--surface-solid);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s var(--ease);
+    cursor: pointer;
+    font-family: var(--sans);
+
+    &.selected {
+      background: var(--accent-bg);
+      border-color: var(--accent-border);
+    }
+
+    &:hover:not(.selected) {
+      border-color: var(--border-strong);
+    }
+  }
+
+  .nature-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+    color: var(--accent);
+    background: var(--bg);
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .nature-card__main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+
+    strong {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    small {
+      font-size: 11.5px;
+      color: var(--text-soft);
+      line-height: 1.4;
+    }
+  }
+
+  .nature-card__check {
+    width: 18px;
+    height: 18px;
+    background: transparent;
+    border: 2px solid var(--border-strong);
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: all 0.2s var(--ease);
+
+    &.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 4px var(--surface-solid);
+    }
+  }
+
+  /* Note */
+  .rg-note {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--text-soft);
+    background: var(--bg);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-xs);
+    font-family: var(--mono);
+  }
+
+  /* Agreement box */
   .agreement-box {
     padding: 16px 18px;
     margin-top: 4px;
     margin-bottom: 6px;
-    background: linear-gradient(135deg, var(--rg-surface-soft) 0%, var(--rg-surface-strong) 100%);
-    border: 1px solid var(--rg-border);
-    border-radius: 18px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
   }
 
   .agreement-box__head {
@@ -1147,286 +1209,212 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .agreement-box__title {
     display: inline-flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--rg-text);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
   }
 
   .agreement-box__desc {
-    margin: 0 0 14px;
-    font-size: 13px;
+    margin: 0 0 12px;
+    font-size: 12px;
     line-height: 1.7;
-    color: var(--rg-text-soft);
+    color: var(--text-soft);
   }
 
   .agreement-item {
-    margin-bottom: 0 !important;
-  }
-
-  .link-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 6px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--rg-accent);
-    background: var(--rg-accent-soft);
-    border: 1px solid rgb(37 99 235 / 16%);
-    border-radius: 999px;
-    transition: 0.2s ease;
-  }
-
-  .link-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgb(37 99 235 / 12%);
-  }
-
-  .rg-actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    margin-top: 6px;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    appearance: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 52px;
-    padding: 0 20px;
-    font-size: 15px;
-    font-weight: 800;
-    border-radius: 16px;
-    border: none;
-    outline: none;
-    transition: 0.2s ease;
-  }
-
-  .btn-primary {
-    flex: 1;
-    color: #fff;
-    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-    box-shadow: 0 14px 26px rgb(37 99 235 / 24%);
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 18px 30px rgb(37 99 235 / 28%);
-  }
-
-  .btn-primary:focus-visible,
-  .btn-secondary:focus-visible,
-  .link-btn:focus-visible,
-  .nature-option:focus-visible,
-  .pg-item:focus-visible {
-    outline: 2px solid var(--rg-accent);
-    outline-offset: 2px;
-  }
-
-  .btn-primary.btn-full {
-    width: 100%;
-    flex: none;
-  }
-
-  .btn-primary:disabled {
-    cursor: not-allowed;
-    opacity: 0.7;
-    box-shadow: none;
-  }
-
-  .btn-secondary {
-    min-width: 132px;
-    color: var(--rg-text);
-    background: var(--rg-surface-strong);
-    border: 1px solid var(--rg-border);
-  }
-
-  .btn-secondary:hover {
-    background: var(--rg-surface-soft);
-  }
-
-  .switch-page {
-    display: inline-flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    margin-top: 18px;
-    font-size: 14px;
-    line-height: 1;
-    color: var(--rg-text-soft);
-
-    :deep(.el-button) {
-      margin: 0;
-      font-size: 14px;
-      line-height: 1;
-      vertical-align: middle;
+    :deep(.el-form-item__content) {
+      line-height: 1.4;
     }
 
-    span {
-      line-height: 1;
+    :deep(.el-form-item__error) {
+      padding-top: 6px;
     }
-  }
-
-  .agreement-content {
-    height: min(68vh, 760px);
-    overflow: hidden;
-    border: 1px solid #eaecf0;
-    border-radius: 18px;
-    background: #fff;
-  }
-
-  .agreement-frame {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border: 0;
-    background: #fff;
-  }
-
-  :deep(.agreement-item .el-form-item__content) {
-    display: flex;
-    align-items: flex-start;
-    line-height: 1.4;
-  }
-
-  :deep(.agreement-item .el-form-item__error) {
-    padding-top: 8px;
-  }
-
-  :deep(.agreement-check) {
-    display: inline-flex;
-    align-items: flex-start;
-    width: 100%;
-    min-height: 24px;
-    margin: 0;
-  }
-
-  :deep(.agreement-item .el-checkbox) {
-    display: inline-flex;
-    align-items: flex-start;
-    gap: 10px;
-    width: 100%;
-  }
-
-  :deep(.agreement-item .el-checkbox__input) {
-    flex: none;
-    align-self: flex-start;
-    margin-top: 2px;
-  }
-
-  :deep(.agreement-item .el-checkbox__label) {
-    display: flex;
-    align-items: flex-start;
-    padding-left: 0;
-    margin-top: 0;
-    line-height: 1.45;
-    white-space: normal;
   }
 
   .agreement-check-text {
-    display: block;
-    margin-top: -1px;
-    padding-top: 0;
-    line-height: 1.45;
+    font-size: 13px;
+    color: var(--text);
   }
 
-  :deep(.agreement-dialog .el-dialog) {
+  .form-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    padding: 0;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  /* Actions */
+  .rg-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn-back,
+  .btn-next {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 52px;
+    padding: 0 24px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s var(--ease);
+    font-family: var(--sans);
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .btn-back {
+    background: var(--bg);
+    color: var(--text-soft);
+    border: 1.5px solid var(--border);
+
+    &:hover {
+      border-color: var(--border-strong);
+      color: var(--text);
+    }
+  }
+
+  .btn-next {
+    flex: 1;
+    color: white;
+    background: var(--accent);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.15) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
+    }
+
+    &:hover::before {
+      transform: translateX(100%);
+    }
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(180, 83, 9, 0.28);
+    }
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .btn-full {
+    width: 100%;
+    flex: none;
+  }
+
+  /* Switch */
+  .register-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-soft);
+  }
+
+  /* Expand transition */
+  .expand-enter-active {
+    transition: all 0.25s var(--ease);
+  }
+  .expand-leave-active {
+    transition: all 0.18s var(--ease);
+  }
+  .expand-enter-from,
+  .expand-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  /* Dialog */
+  :deep(.rg-dialog .el-dialog) {
     border-radius: 24px;
     overflow: hidden;
   }
 
-  :deep(.agreement-dialog .el-dialog__header) {
+  :deep(.rg-dialog .el-dialog__header) {
     padding: 22px 24px 12px;
     margin-right: 0;
-    border-bottom: 1px solid #eaecf0;
+    border-bottom: 1px solid var(--border);
   }
 
-  :deep(.agreement-dialog .el-dialog__body) {
+  :deep(.rg-dialog .el-dialog__body) {
     padding: 20px 24px 24px;
-    background: #fff;
   }
 
-  :global(.login-wrapper.dark .rg-card) {
-    background: var(--rg-surface);
-    border-color: var(--rg-border);
+  .rg-dialog__content {
+    height: min(68vh, 760px);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 14px;
   }
 
-  :global(.login-wrapper.dark .rg-card__head) {
-    border-bottom-color: var(--rg-border);
+  .rg-dialog__frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
   }
 
-  :global(.login-wrapper.dark .pg-item) {
-    background: rgb(15 23 42 / 45%);
-  }
-
-  :global(.login-wrapper.dark .pg-item.is-active) {
-    background: var(--rg-accent-soft);
-  }
-
-  :global(.login-wrapper.dark .agreement-box) {
-    background: linear-gradient(135deg, rgb(15 23 42 / 90%) 0%, rgb(22 32 51 / 96%) 100%);
-  }
-
-  :global(.login-wrapper.dark .link-btn) {
-    border-color: rgb(96 165 250 / 22%);
-  }
-
-  :global(.login-wrapper.dark .agreement-dialog .el-dialog) {
-    background: #0f172a;
-  }
-
-  :global(.login-wrapper.dark .agreement-dialog .el-dialog__header) {
-    border-bottom-color: #243047;
-  }
-
-  :global(.login-wrapper.dark .agreement-dialog .el-dialog__title) {
-    color: #f8fafc;
-  }
-
-  :global(.login-wrapper.dark .agreement-dialog .el-dialog__body) {
-    background: #0f172a;
-  }
-
-  :global(.login-wrapper.dark .agreement-content) {
-    border-color: #243047;
-    background: #fff;
-  }
-
-  :global(.login-wrapper.dark .agreement-dialog .el-dialog__headerbtn .el-dialog__close) {
-    color: #94a3b8;
-  }
-
-  @media (width <= 768px) {
-    .rg-progress {
+  @media (width <= 640px) {
+    .register-card__head {
+      padding: 20px 20px 16px;
+      flex-direction: column;
+    }
+    .steps {
+      padding: 10px 20px;
+      flex-direction: column;
+    }
+    .rg-card__body {
+      padding: 20px 20px 24px;
+    }
+    .nature-grid,
+    .two-col {
       grid-template-columns: 1fr;
     }
-
-    .nature-grid,
-    .two-col,
     .verify-row {
       grid-template-columns: 1fr;
     }
-
-    .rg-card__head,
-    .agreement-box__head,
     .rg-actions {
-      flex-direction: column;
-      align-items: stretch;
+      flex-direction: column-reverse;
     }
-
-    .btn-secondary {
+    .btn-back {
       width: 100%;
     }
   }

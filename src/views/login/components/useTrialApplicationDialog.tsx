@@ -7,7 +7,7 @@ export function useTrialApplicationDialog() {
   function openTrialApplicationDialog() {
     addDialog({
       title: "",
-      width: "500px",
+      width: "560px",
       alignCenter: true,
       lockScroll: true,
       closeOnClickModal: false,
