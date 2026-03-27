@@ -296,65 +296,35 @@
 
 <template>
   <div class="rg-shell">
-    <!-- Header -->
-    <div class="register-card__head">
-      <div>
-        <h2>开始使用{{ $t ? "" : "" }}租房管理系统</h2>
-        <p>按照 3 个步骤完成注册，系统会自动初始化默认套餐与公司档案</p>
+    <div class="register-card">
+      <div class="register-card__head">
+        <div>
+          <h2>创建租住业务工作台</h2>
+          <p>三步完成主体信息、联系人和安全设置</p>
+        </div>
       </div>
-      <button type="button" class="back-link" @click="emit('switchPage', 'login')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-        返回登录
-      </button>
-    </div>
 
-    <!-- Steps -->
-    <div class="steps">
-      <button
-        v-for="(step, index) in stepList"
-        :key="step.title"
-        type="button"
-        class="step"
-        :class="{ 'is-active': index === currentStep, 'is-done': index < currentStep }"
-        @click="jumpStep(index)"
-      >
-        <span class="step__num">
-          <el-icon v-if="index < currentStep"><CheckCircle /></el-icon>
-          <span v-else>{{ index + 1 }}</span>
-        </span>
-        <span class="step__label">
-          <b>{{ step.title }}</b>
-          <i>{{ step.subtitle }}</i>
-        </span>
-      </button>
-    </div>
+      <div class="steps">
+        <button
+          v-for="(step, index) in stepList"
+          :key="step.title"
+          type="button"
+          class="step"
+          :class="{ 'is-active': index === currentStep, 'is-done': index < currentStep }"
+          @click="jumpStep(index)"
+        >
+          <span class="step__num">
+            <el-icon v-if="index < currentStep"><CheckCircle /></el-icon>
+            <span v-else>{{ index + 1 }}</span>
+          </span>
+          <span class="step__label">{{ step.title }}</span>
+        </button>
+      </div>
 
-    <!-- Form -->
-    <el-form ref="ruleFormRef" :model="registerForm" :rules="formRules" label-position="top" class="rg-form">
-      <!-- Step 0: Nature -->
-      <div v-if="currentStep === 0" class="step-panel">
-        <div class="rg-card">
-          <div class="rg-card__body">
+      <div class="step-content">
+        <el-form ref="ruleFormRef" :model="registerForm" :rules="formRules" label-position="top" class="rg-form">
+          <div v-if="currentStep === 0" class="step-panel">
             <div class="nature-grid">
-              <button
-                type="button"
-                class="nature-card"
-                :class="{ selected: isPersonal }"
-                @click="
-                  registerForm.nature = 2;
-                  onNatureChange();
-                "
-              >
-                <span class="nature-card__icon">
-                  <el-icon><Person /></el-icon>
-                </span>
-                <span class="nature-card__main">
-                  <strong>个人主体</strong>
-                  <small>个人房东、独立运营者</small>
-                </span>
-                <span class="nature-card__check" :class="{ on: isPersonal }" />
-              </button>
-
               <button
                 type="button"
                 class="nature-card"
@@ -373,9 +343,28 @@
                 </span>
                 <span class="nature-card__check" :class="{ on: !isPersonal }" />
               </button>
+
+              <button
+                type="button"
+                class="nature-card"
+                :class="{ selected: isPersonal }"
+                @click="
+                  registerForm.nature = 2;
+                  onNatureChange();
+                "
+              >
+                <span class="nature-card__icon">
+                  <el-icon><Person /></el-icon>
+                </span>
+                <span class="nature-card__main">
+                  <strong>个人主体</strong>
+                  <small>个人房东、独立运营</small>
+                </span>
+                <span class="nature-card__check" :class="{ on: isPersonal }" />
+              </button>
             </div>
 
-            <div class="rg-note">
+            <div class="note-box">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px">
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 16v-4M12 8h.01" />
@@ -383,22 +372,18 @@
               {{ natureHint }}
             </div>
 
-            <div class="rg-actions">
+            <div class="btn-group">
               <button type="button" class="btn-next btn-full" @click="nextStep">
                 下一步：填写主体信息
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Step 1: Entity info -->
-      <div v-if="currentStep === 1" class="step-panel">
-        <div class="rg-card">
-          <div class="rg-card__body">
+          <div v-if="currentStep === 1" class="step-panel">
             <div class="form-group">
               <label class="form-label">
+                <el-icon><Building /></el-icon>
                 <em class="req">*</em>
                 {{ isPersonal ? "名称" : "公司名称" }}
               </label>
@@ -414,6 +399,7 @@
             <template v-if="isPersonal">
               <div class="form-group">
                 <label class="form-label">
+                  <el-icon><User /></el-icon>
                   <em class="req">*</em>
                   真实姓名
                 </label>
@@ -443,6 +429,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label">
+                  <el-icon><User /></el-icon>
                   <em class="req">*</em>
                   法定代表人
                 </label>
@@ -456,7 +443,7 @@
               </div>
             </div>
 
-            <div class="rg-actions">
+            <div class="btn-group">
               <button type="button" class="btn-back" @click="prevStep">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
                 上一步
@@ -467,47 +454,44 @@
               </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Step 2: Login info -->
-      <div v-if="currentStep === 2" class="step-panel">
-        <div class="rg-card">
-          <div class="rg-card__body">
-            <!-- Contact name (enterprise only) -->
-            <div v-if="!isPersonal" class="form-group">
-              <label class="form-label">
-                <em class="req">*</em>
-                联系人
-              </label>
-              <el-form-item prop="contactName">
-                <el-input v-model="registerForm.contactName" class="rg-input" size="large" clearable placeholder="请输入联系人">
-                  <template #prefix>
-                    <el-icon><User /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
+          <div v-if="currentStep === 2" class="step-panel">
+            <div class="two-col">
+              <div v-if="!isPersonal" class="form-group">
+                <label class="form-label">
+                  <el-icon><User /></el-icon>
+                  <em class="req">*</em>
+                  联系人
+                </label>
+                <el-form-item prop="contactName">
+                  <el-input v-model="registerForm.contactName" class="rg-input" size="large" clearable placeholder="请输入联系人">
+                    <template #prefix>
+                      <el-icon><User /></el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </div>
+
+              <div class="form-group" :class="{ 'form-group--full': isPersonal }">
+                <label class="form-label">
+                  <el-icon><Phone /></el-icon>
+                  <em class="req">*</em>
+                  手机号
+                </label>
+                <el-form-item prop="phone">
+                  <el-input v-model="registerForm.phone" class="rg-input" size="large" clearable placeholder="请输入手机号">
+                    <template #prefix>
+                      <el-icon><Phone /></el-icon>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </div>
             </div>
 
-            <!-- Phone -->
-            <div class="form-group">
-              <label class="form-label">
-                <em class="req">*</em>
-                手机号
-              </label>
-              <el-form-item prop="phone">
-                <el-input v-model="registerForm.phone" class="rg-input" size="large" clearable placeholder="请输入手机号">
-                  <template #prefix>
-                    <el-icon><Phone /></el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-            </div>
-
-            <!-- Image captcha -->
             <Transition name="expand">
               <div v-if="hasValidPhone" class="form-group">
                 <label class="form-label">
+                  <el-icon><Shield /></el-icon>
                   <em class="req">*</em>
                   图形验证码
                 </label>
@@ -531,9 +515,9 @@
               </div>
             </Transition>
 
-            <!-- SMS code -->
             <div class="form-group">
               <label class="form-label">
+                <el-icon><Shield /></el-icon>
                 <em class="req">*</em>
                 短信验证码
               </label>
@@ -551,10 +535,10 @@
               </el-form-item>
             </div>
 
-            <!-- Passwords -->
             <div class="two-col">
               <div class="form-group">
                 <label class="form-label">
+                  <el-icon><Lock /></el-icon>
                   <em class="req">*</em>
                   登录密码
                 </label>
@@ -574,6 +558,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label">
+                  <el-icon><Lock /></el-icon>
                   <em class="req">*</em>
                   确认密码
                 </label>
@@ -587,28 +572,18 @@
               </div>
             </div>
 
-            <!-- Agreement -->
             <div class="agreement-box">
-              <div class="agreement-box__head">
-                <div class="agreement-box__title">
-                  <el-icon><FileText /></el-icon>
-                  平台使用协议
-                </div>
-                <button type="button" class="form-link" @click="agreementVisible = true">
-                  查看完整协议
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-                </button>
-              </div>
-              <p class="agreement-box__desc">注册即表示你将使用本系统开展租房业务管理，请先确认责任边界、合规要求与法律风险承担方式。</p>
               <el-form-item prop="agreed" class="agreement-item">
                 <el-checkbox v-model="registerForm.agreed">
-                  <span class="agreement-check-text">我已阅读并同意《平台使用协议》</span>
+                  <span class="agreement-check-text">
+                    我已阅读并同意
+                    <button type="button" class="agreement-link" @click.stop="agreementVisible = true">《平台使用协议》</button>
+                  </span>
                 </el-checkbox>
               </el-form-item>
             </div>
 
-            <!-- Actions -->
-            <div class="rg-actions">
+            <div class="btn-group">
               <button type="button" class="btn-back" @click="prevStep">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
                 上一步
@@ -622,17 +597,15 @@
               </button>
             </div>
           </div>
-        </div>
+        </el-form>
       </div>
-    </el-form>
+    </div>
 
-    <!-- Switch to login -->
     <div class="register-switch">
       <span>已有账户？</span>
       <button type="button" class="form-link" @click="emit('switchPage', 'login')">立即登录</button>
     </div>
 
-    <!-- Agreement dialog -->
     <el-dialog v-model="agreementVisible" title="平台使用协议" width="760px" destroy-on-close append-to-body align-center class="rg-dialog">
       <div class="rg-dialog__content">
         <iframe class="rg-dialog__frame" src="/agreement.html" title="平台使用协议" loading="lazy" />
@@ -690,19 +663,17 @@
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
-  /* ══ HEADER ══ */
-  .register-card__head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 28px 32px 20px;
+  .register-card {
     background: var(--surface-solid);
     border: 1px solid var(--border);
-    border-radius: var(--radius) var(--radius) 0 0;
+    border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
-    border-bottom: none;
-    position: relative;
+    overflow: hidden;
+  }
+
+  .register-card__head {
+    padding: 14px 32px 10px;
+    border-bottom: 1px solid var(--border);
 
     &::before {
       content: "";
@@ -720,81 +691,54 @@
       font-size: 24px;
       font-weight: 400;
       letter-spacing: -0.02em;
-      margin-bottom: 4px;
+      margin: 0 0 4px;
       color: var(--text);
     }
 
     p {
+      margin: 0;
       font-size: 13px;
       color: var(--text-soft);
       line-height: 1.6;
     }
   }
 
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    background: none;
-    border: none;
-    cursor: pointer;
-    white-space: nowrap;
-    margin-top: 4px;
-    font-family: var(--sans);
-    padding: 0;
-    transition: opacity 0.2s;
-    flex-shrink: 0;
-
-    svg {
-      width: 14px;
-      height: 14px;
-    }
-    &:hover {
-      opacity: 0.7;
-    }
-  }
-
-  /* ══ STEPS ══ */
   .steps {
     display: flex;
     gap: 6px;
-    padding: 14px 32px;
+    flex-wrap: nowrap;
+    padding: 14px 25px;
     background: var(--bg);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-bottom: none;
   }
 
   .step {
     flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 14px;
+    padding: 7px 8px;
     border-radius: var(--radius-xs);
     cursor: pointer;
     transition: all 0.2s var(--ease);
-    border: 1px solid transparent;
+    border: 1px solid var(--border);
     background: transparent;
     text-align: left;
 
     &.is-active {
-      background: var(--surface-solid);
+      background: rgb(245 158 11 / 10%);
       border-color: var(--accent-border);
-      box-shadow: var(--shadow-sm);
     }
 
     &.is-done {
-      background: var(--accent-bg);
+      background: rgb(74 222 128 / 10%);
+      border-color: rgb(74 222 128 / 18%);
     }
   }
 
   .step__num {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border-radius: 9px;
     display: grid;
     place-items: center;
@@ -810,41 +754,36 @@
     .step.is-active & {
       color: white;
       background: var(--accent);
-      border-color: transparent;
+      border-color: var(--accent);
     }
 
     .step.is-done & {
       color: white;
       background: var(--success);
-      border-color: transparent;
+      border-color: var(--success);
     }
   }
 
   .step__label {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-
-    b {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    i {
-      font-size: 10.5px;
-      font-style: normal;
-      color: var(--text-soft);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+    white-space: nowrap;
   }
 
-  /* ══ FORM ══ */
+  .step-content {
+    padding: 16px 32px 18px;
+  }
+
   .rg-form {
     :deep(.el-form-item) {
       margin-bottom: 0;
+    }
+
+    :deep(.el-form-item__content) {
+      display: block;
+      width: 100%;
     }
 
     :deep(.el-form-item__error) {
@@ -858,18 +797,6 @@
     :deep(.el-form-item__label) {
       display: none;
     }
-  }
-
-  .rg-card {
-    background: var(--surface-solid);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 var(--radius) var(--radius);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .rg-card__body {
-    padding: 24px 32px 28px;
   }
 
   .step-panel {
@@ -887,22 +814,29 @@
     }
   }
 
-  /* Form elements */
   .form-group {
+    width: 100%;
     margin-bottom: 18px;
   }
 
   .form-label {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     margin-bottom: 8px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-soft);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
     font-family: var(--mono);
+
+    :deep(svg) {
+      width: 14px;
+      height: 14px;
+      color: var(--accent);
+      opacity: 0.75;
+    }
   }
 
   .req {
@@ -924,6 +858,8 @@
   }
 
   .rg-input {
+    width: 100%;
+
     :deep(.el-input__wrapper) {
       height: 52px;
       background: var(--bg);
@@ -966,13 +902,13 @@
 
   .verify-row {
     display: grid;
-    grid-template-columns: 1fr 148px;
+    grid-template-columns: 1fr 140px;
     gap: 10px;
     width: 100%;
   }
 
   .verify-row--captcha {
-    grid-template-columns: 1fr 150px;
+    grid-template-columns: 1fr 140px;
   }
 
   .captcha-box {
@@ -1047,7 +983,6 @@
     }
   }
 
-  /* Password meter */
   .pwd-meter {
     display: flex;
     align-items: center;
@@ -1098,21 +1033,23 @@
     }
   }
 
-  /* Nature cards */
   .nature-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
 
   .nature-card {
+    position: relative;
     display: flex;
-    gap: 12px;
-    align-items: center;
-    padding: 18px 16px;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    min-height: 184px;
+    padding: 22px 20px;
     text-align: left;
-    background: var(--surface-solid);
+    background: transparent;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     transition: all 0.2s var(--ease);
@@ -1120,8 +1057,9 @@
     font-family: var(--sans);
 
     &.selected {
-      background: var(--accent-bg);
-      border-color: var(--accent-border);
+      background: rgb(245 158 11 / 10%);
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgb(245 158 11 / 22%);
     }
 
     &:hover:not(.selected) {
@@ -1137,7 +1075,8 @@
     height: 44px;
     font-size: 20px;
     color: var(--accent);
-    background: var(--bg);
+    background: var(--accent);
+    color: white;
     border-radius: 12px;
     flex-shrink: 0;
   }
@@ -1149,20 +1088,23 @@
     min-width: 0;
 
     strong {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--text);
-      margin-bottom: 2px;
+      margin-bottom: 6px;
     }
 
     small {
-      font-size: 11.5px;
+      font-size: 12px;
       color: var(--text-soft);
-      line-height: 1.4;
+      line-height: 1.5;
     }
   }
 
   .nature-card__check {
+    position: absolute;
+    top: 18px;
+    right: 18px;
     width: 18px;
     height: 18px;
     background: transparent;
@@ -1178,54 +1120,31 @@
     }
   }
 
-  /* Note */
-  .rg-note {
+  .note-box {
     display: flex;
-    gap: 8px;
-    align-items: flex-start;
-    padding: 12px 14px;
-    margin-bottom: 18px;
-    font-size: 12.5px;
+    gap: 10px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    font-size: 12px;
     line-height: 1.7;
     color: var(--text-soft);
-    background: var(--bg);
-    border: 1px dashed var(--border-strong);
+    background: var(--accent-bg);
+    border: 1px dashed var(--accent-border);
     border-radius: var(--radius-xs);
-    font-family: var(--mono);
+
+    svg {
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
   }
 
-  /* Agreement box */
   .agreement-box {
-    padding: 16px 18px;
-    margin-top: 4px;
+    padding: 14px 16px;
     margin-bottom: 6px;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-  }
-
-  .agreement-box__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 8px;
-  }
-
-  .agreement-box__title {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .agreement-box__desc {
-    margin: 0 0 12px;
-    font-size: 12px;
-    line-height: 1.7;
-    color: var(--text-soft);
   }
 
   .agreement-item {
@@ -1241,6 +1160,15 @@
   .agreement-check-text {
     font-size: 13px;
     color: var(--text);
+  }
+
+  .agreement-link {
+    color: var(--accent);
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 13px;
+    font-weight: 700;
   }
 
   .form-link {
@@ -1262,11 +1190,10 @@
     }
   }
 
-  /* Actions */
-  .rg-actions {
+  .btn-group {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 24px;
   }
 
   .btn-back,
@@ -1275,14 +1202,13 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 52px;
-    padding: 0 24px;
+    height: 48px;
+    padding: 0 20px;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     border-radius: var(--radius-sm);
-    border: none;
     cursor: pointer;
-    transition: all 0.25s var(--ease);
+    transition: all 0.2s var(--ease);
     font-family: var(--sans);
 
     svg {
@@ -1293,19 +1219,20 @@
 
   .btn-back {
     background: var(--bg);
-    color: var(--text-soft);
-    border: 1.5px solid var(--border);
+    color: var(--text);
+    border: 1px solid var(--border);
 
     &:hover {
-      border-color: var(--border-strong);
-      color: var(--text);
+      background: var(--border);
     }
   }
 
   .btn-next {
     flex: 1;
+    font-weight: 700;
     color: white;
     background: var(--accent);
+    border: none;
     position: relative;
     overflow: hidden;
 
@@ -1323,7 +1250,7 @@
     }
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 8px 20px rgba(180, 83, 9, 0.28);
+      box-shadow: 0 8px 24px rgba(180, 83, 9, 0.25);
     }
     &:disabled {
       opacity: 0.6;
@@ -1338,7 +1265,6 @@
     flex: none;
   }
 
-  /* Switch */
   .register-switch {
     display: flex;
     align-items: center;
@@ -1349,7 +1275,6 @@
     color: var(--text-soft);
   }
 
-  /* Expand transition */
   .expand-enter-active {
     transition: all 0.25s var(--ease);
   }
@@ -1362,7 +1287,6 @@
     transform: translateY(-8px);
   }
 
-  /* Dialog */
   :deep(.rg-dialog .el-dialog) {
     border-radius: 24px;
     overflow: hidden;
@@ -1395,27 +1319,30 @@
   @media (width <= 640px) {
     .register-card__head {
       padding: 20px 20px 16px;
-      flex-direction: column;
     }
     .steps {
       padding: 10px 20px;
       flex-direction: column;
     }
-    .rg-card__body {
+    .step-content {
       padding: 20px 20px 24px;
     }
     .nature-grid,
     .two-col {
       grid-template-columns: 1fr;
     }
-    .verify-row {
+    .verify-row,
+    .verify-row--captcha {
       grid-template-columns: 1fr;
     }
-    .rg-actions {
+    .btn-group {
       flex-direction: column-reverse;
     }
     .btn-back {
       width: 100%;
+    }
+    .nature-card {
+      min-height: 152px;
     }
   }
 </style>

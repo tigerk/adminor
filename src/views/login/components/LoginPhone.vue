@@ -9,8 +9,7 @@
   import Motion from "../utils/motion";
   import Phone from "~icons/ri/smartphone-line";
   import Shield from "~icons/ri/shield-keyhole-line";
-  import ArrowLeft from "~icons/ri/arrow-left-line";
-  import QrCode from "~icons/ri/qr-code-line";
+  import ArrowRight from "~icons/ri/arrow-right-line";
 
   const emit = defineEmits<{
     (e: "switchMode", mode: "account" | "phone" | "qrcode"): void;
@@ -24,7 +23,7 @@
     phone: "",
     verifyCode: ""
   });
-  const { isDisabled, text } = useVerifyCode();
+  const { isDisabled, text, start } = useVerifyCode();
 
   const onLogin = async (formEl: FormInstance | undefined) => {
     if (!formEl) return;
@@ -47,199 +46,213 @@
 
 <template>
   <div class="phone-login">
-    <div class="phone-login__head">
-      <div>
-        <h3>手机验证码登录</h3>
-        <p>适合现场签约、移动巡检和临时设备登录，输入手机号即可验证身份。</p>
-      </div>
-      <button type="button" class="ghost-link" @click="emit('switchMode', 'account')">
-        <el-icon><ArrowLeft /></el-icon>
-        返回账号登录
-      </button>
-    </div>
-
     <el-form ref="ruleFormRef" :model="ruleForm" :rules="phoneRules" class="phone-form">
       <Motion>
         <el-form-item prop="phone">
-          <el-input v-model="ruleForm.phone" clearable size="large" :placeholder="t('login.purePhone')">
-            <template #prefix>
-              <el-icon><Phone /></el-icon>
-            </template>
-          </el-input>
+          <div class="form-group">
+            <label class="form-label">手机号</label>
+            <el-input v-model="ruleForm.phone" class="auth-input" clearable :placeholder="t('login.purePhone')">
+              <template #prefix>
+                <el-icon class="input-icon"><Phone /></el-icon>
+              </template>
+            </el-input>
+          </div>
         </el-form-item>
       </Motion>
 
       <Motion :delay="100">
         <el-form-item prop="verifyCode">
-          <div class="verify-row">
-            <el-input v-model="ruleForm.verifyCode" clearable size="large" :placeholder="t('login.pureSmsVerifyCode')">
-              <template #prefix>
-                <el-icon><Shield /></el-icon>
-              </template>
-            </el-input>
-            <el-button class="verify-btn" :disabled="isDisabled" @click="useVerifyCode().start(ruleFormRef, 'phone')">
-              {{ text.length > 0 ? `${text}s 后重发` : t("login.pureGetVerifyCode") }}
-            </el-button>
+          <div class="form-group">
+            <label class="form-label">验证码</label>
+            <div class="verify-row">
+              <el-input v-model="ruleForm.verifyCode" class="auth-input" clearable :placeholder="t('login.pureSmsVerifyCode')">
+                <template #prefix>
+                  <el-icon class="input-icon"><Shield /></el-icon>
+                </template>
+              </el-input>
+              <button type="button" class="verify-btn" :disabled="isDisabled" @click="start(ruleFormRef, 'phone')">
+                {{ text.length > 0 ? `${text}s 后重发` : t("login.pureGetVerifyCode") }}
+              </button>
+            </div>
           </div>
         </el-form-item>
       </Motion>
 
       <Motion :delay="140">
-        <div class="phone-login__tips">
-          <span>验证码登录后自动绑定当前设备的安全记录。</span>
-          <button type="button" @click="emit('openForgot')">无法接收短信？</button>
+        <div class="phone-login__meta">
+          <div class="phone-login__tips">验证码登录后自动绑定当前设备的安全记录。</div>
+          <button type="button" class="minor-link" @click="emit('openForgot')">无法接收短信？</button>
         </div>
       </Motion>
 
       <Motion :delay="180">
-        <el-button class="submit-btn" size="large" type="primary" :loading="loading" @click="onLogin(ruleFormRef)">
-          {{ t("login.pureLogin") }}
-        </el-button>
+        <button type="button" class="submit-btn" :disabled="loading" @click="onLogin(ruleFormRef)">
+          <span>{{ loading ? "验证中…" : "验证登录" }}</span>
+          <el-icon v-if="!loading"><ArrowRight /></el-icon>
+        </button>
       </Motion>
     </el-form>
-
-    <Motion :delay="220">
-      <div class="switch-card">
-        <div>
-          <strong>在电脑端继续？</strong>
-          <span>也可以切换成二维码登录，用企业微信或移动端直接扫码。</span>
-        </div>
-        <button type="button" class="ghost-action" @click="emit('switchMode', 'qrcode')">
-          <el-icon><QrCode /></el-icon>
-          切换二维码
-        </button>
-      </div>
-    </Motion>
   </div>
 </template>
 
 <style scoped lang="scss">
   .phone-login {
-    color: var(--shell-text, #0f172a);
-  }
-
-  .phone-login__head {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 18px;
-
-    h3 {
-      margin: 0 0 8px;
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-    }
-
-    p {
-      margin: 0;
-      font-size: 14px;
-      line-height: 1.7;
-      color: var(--shell-text-soft, #52637a);
-    }
-  }
-
-  .ghost-link,
-  .ghost-action {
-    display: inline-flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    padding: 0 14px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--shell-primary, #2563eb);
-    background: var(--shell-primary-soft, rgb(37 99 235 / 10%));
-    border: 1px solid rgb(37 99 235 / 16%);
-    border-radius: 14px;
-    transition: 0.2s ease;
+    color: var(--text, #241f1b);
   }
 
   .phone-form {
     :deep(.el-form-item) {
-      margin-bottom: 16px;
+      margin-bottom: 0;
     }
 
-    :deep(.el-form-item__label) {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-family: "JetBrains Mono", ui-monospace, monospace;
+    :deep(.el-form-item__content) {
+      display: block;
+      width: 100%;
     }
+
+    :deep(.el-form-item__error) {
+      position: static;
+      padding-top: 6px;
+      font-size: 11px;
+    }
+  }
+
+  .form-group {
+    width: 100%;
+    margin-bottom: 18px;
+  }
+
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--text-soft, #827873);
+    text-transform: uppercase;
+    font-family: var(--mono, "JetBrains Mono", ui-monospace, monospace);
+  }
+
+  .auth-input {
+    width: 100%;
+
+    :deep(.el-input__wrapper) {
+      height: 52px;
+      padding: 0 16px;
+      background: var(--bg, #f7f3ec);
+      border: 1.5px solid var(--border, rgb(145 89 39 / 12%)) !important;
+      border-radius: 14px !important;
+      box-shadow: none !important;
+      transition: 0.2s ease;
+    }
+
+    :deep(.el-input__wrapper:hover) {
+      border-color: var(--border-strong, rgb(145 89 39 / 22%)) !important;
+    }
+
+    :deep(.el-input__wrapper.is-focus) {
+      border-color: var(--accent, #ba6a28) !important;
+      box-shadow: 0 0 0 3px var(--accent-bg, rgb(186 106 40 / 8%)) !important;
+      background: var(--surface-solid, #fff);
+    }
+
+    :deep(.el-input__inner) {
+      font-size: 15px;
+      color: var(--text, #241f1b);
+
+      &::placeholder {
+        color: var(--text-faint, #ab9f98);
+      }
+    }
+  }
+
+  .input-icon {
+    color: var(--text-faint, #ab9f98);
   }
 
   .verify-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 132px;
-    gap: 12px;
+    grid-template-columns: 1fr 140px;
+    gap: 10px;
     width: 100%;
   }
 
-  .verify-btn,
-  .submit-btn {
-    height: 56px;
-    border-radius: 18px;
+  .verify-btn {
+    height: 50px;
+    color: var(--accent, #ba6a28);
+    background: var(--accent-bg, rgb(186 106 40 / 8%));
+    border: 1px solid var(--accent-border, rgb(186 106 40 / 18%));
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    transition: 0.2s ease;
   }
 
-  .phone-login__tips {
+  .verify-btn:hover:not(:disabled) {
+    color: #fff;
+    background: var(--accent, #ba6a28);
+    border-color: var(--accent, #ba6a28);
+  }
+
+  .verify-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+
+  .phone-login__meta {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     margin: 4px 0 18px;
-    font-size: 13px;
-    line-height: 1.6;
-    color: var(--shell-text-soft, #52637a);
+  }
 
-    button {
-      font-weight: 700;
-      color: var(--shell-primary, #2563eb);
-      white-space: nowrap;
-    }
+  .phone-login__tips {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-faint, #ab9f98);
+    font-family: var(--mono, "JetBrains Mono", ui-monospace, monospace);
+  }
+
+  .minor-link {
+    padding: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent, #ba6a28);
+    white-space: nowrap;
+    background: none;
+    border: none;
   }
 
   .submit-btn {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
     width: 100%;
+    height: 52px;
+    color: #fff;
+    background: var(--accent, #ba6a28);
+    border: none;
+    border-radius: 14px;
     font-size: 15px;
-    font-weight: 800;
+    font-weight: 700;
+    transition: 0.25s ease;
   }
 
-  .switch-card {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 18px;
-    margin-top: 18px;
-    background: rgb(148 163 184 / 7%);
-    border: 1px solid rgb(148 163 184 / 14%);
-    border-radius: 20px;
+  .submit-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgb(180 83 9 / 30%);
+  }
 
-    strong,
-    span {
-      display: block;
-    }
-
-    strong {
-      margin-bottom: 6px;
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    span {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--shell-text-soft, #52637a);
-    }
+  .submit-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.72;
   }
 
   @media (width <= 768px) {
-    .phone-login__head,
-    .phone-login__tips,
-    .switch-card {
+    .phone-login__meta {
       flex-direction: column;
       align-items: stretch;
     }
