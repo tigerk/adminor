@@ -210,20 +210,6 @@
               </div>
 
               <div class="auth-card__body">
-                <div class="auth-tabs">
-                  <button
-                    v-for="mode in loginModeList"
-                    :key="mode.key"
-                    type="button"
-                    class="auth-tab"
-                    :class="{ active: currentLoginMode === mode.key }"
-                    @click="switchLoginMode(mode.key)"
-                  >
-                    <el-icon><component :is="mode.icon" /></el-icon>
-                    <span>{{ mode.label }}</span>
-                  </button>
-                </div>
-
                 <Motion v-if="currentLoginMode === 'account'" key="account-login">
                   <el-form ref="ruleFormRef" :model="loginForm" :rules="loginRules" class="lw-form">
                     <el-form-item prop="username">
@@ -285,8 +271,6 @@
 
               <div class="auth-footer">
                 <span>还没有账户？</span>
-                <button type="button" class="form-link" @click="currentPage = 'register'">创建工作台</button>
-                <span class="auth-footer__divider" />
                 <button type="button" class="form-link" @click="openTrialApplicationDialog">申请试用</button>
               </div>
             </div>
