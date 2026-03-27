@@ -207,6 +207,26 @@
 </template>
 
 <style scoped lang="scss">
+  .form-header,
+  .auth-form,
+  .verify-code-wrapper,
+  .captcha-box,
+  .submit-btn,
+  .switch-page {
+    --login-title: #10233d;
+    --login-text: #47607b;
+    --login-muted: #6f8197;
+    --login-primary: #2364ff;
+    --login-primary-strong: #0b4ddd;
+    --login-border: rgba(134, 156, 184, 0.18);
+    --login-input-bg: rgba(255, 255, 255, 0.72);
+    --login-dark-title: #f5f8ff;
+    --login-dark-text: #b0bfd5;
+    --login-dark-muted: #89a0bd;
+    --login-dark-border: rgba(255, 255, 255, 0.08);
+    --login-dark-input-bg: rgba(7, 16, 28, 0.88);
+  }
+
   .form-header {
     margin-bottom: 36px;
     text-align: center;
@@ -216,48 +236,52 @@
     margin-bottom: 8px;
     font-size: 28px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--login-title);
     transition: color 0.3s ease;
   }
 
   .form-subtitle {
     font-size: 14px;
-    color: #666;
+    color: var(--login-text);
     transition: color 0.3s ease;
   }
 
   .auth-form {
     :deep(.el-form-item) {
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     :deep(.el-input__wrapper) {
-      padding: 4px 16px;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
+      min-height: 54px;
+      padding: 0 16px;
+      background: var(--login-input-bg);
+      border: 1px solid var(--login-border);
+      border-radius: 18px;
       box-shadow: none !important;
       transition: all 0.3s;
 
       &:hover {
-        border-color: #c0c0c0;
+        border-color: rgba(134, 156, 184, 0.32);
       }
 
       &.is-focus {
-        border-color: #3478f6;
+        border-color: var(--login-primary);
+        box-shadow: 0 0 0 3px rgba(35, 100, 255, 0.14) !important;
       }
     }
 
     :deep(.el-input__inner) {
-      height: 40px;
+      height: 46px;
       font-size: 15px;
+      color: var(--login-title);
 
       &::placeholder {
-        color: #999;
+        color: var(--login-muted);
       }
     }
 
     :deep(.el-input__prefix) {
-      color: #999;
+      color: var(--login-muted);
     }
   }
 
@@ -267,9 +291,9 @@
 
     .verify-btn {
       flex-shrink: 0;
-      height: 48px;
+      height: 54px;
       padding: 0 20px;
-      border-radius: 10px;
+      border-radius: 18px;
     }
   }
 
@@ -284,18 +308,18 @@
   .captcha-box {
     flex-shrink: 0;
     width: 140px;
-    height: 48px;
+    height: 54px;
     padding: 0;
     overflow: hidden;
-    color: #666;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
+    color: var(--login-muted);
+    background: var(--login-input-bg);
+    border: 1px solid var(--login-border);
+    border-radius: 18px;
     transition: all 0.3s;
   }
 
   .captcha-box:hover {
-    border-color: #c0c0c0;
+    border-color: rgba(134, 156, 184, 0.32);
   }
 
   .captcha-image {
@@ -309,29 +333,30 @@
     margin: 8px 0 0;
     font-size: 12px;
     line-height: 1.5;
-    color: #666;
+    color: var(--login-muted);
   }
 
   .submit-btn {
     width: 100%;
-    height: 48px;
+    height: 52px;
     margin-bottom: 24px;
-    font-size: 16px;
-    font-weight: 600;
-    background: linear-gradient(135deg, #3478f6 0%, #3478f6 100%);
+    font-size: 15px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--login-primary) 0%, var(--login-primary-strong) 100%);
     border: none;
-    border-radius: 10px;
+    border-radius: 16px;
+    box-shadow: 0 18px 36px rgba(35, 100, 255, 0.26);
     transition: all 0.3s;
 
     &:hover {
-      box-shadow: 0 8px 20px rgba(52, 120, 246, 0.3);
-      transform: translateY(-2px);
+      box-shadow: 0 18px 36px rgba(35, 100, 255, 0.3);
+      transform: translateY(-1px);
     }
   }
 
   .switch-page {
     font-size: 14px;
-    color: #666;
+    color: var(--login-text);
     text-align: center;
     transition: color 0.3s ease;
 
@@ -343,90 +368,90 @@
   /* Dark mode support - using :global to target parent dark class */
   .login-wrapper.dark {
     .form-title {
-      color: #f0f0f0 !important;
+      color: var(--login-dark-title) !important;
     }
 
     .form-subtitle {
-      color: #999;
+      color: var(--login-dark-text);
     }
 
     .auth-form {
       :deep(.el-form-item__label) {
-        color: #f0f0f0;
+        color: var(--login-dark-title);
       }
 
       :deep(.el-input__wrapper) {
-        background: #2a2a2a;
-        border-color: #3a3a3a;
+        background: var(--login-dark-input-bg);
+        border-color: var(--login-dark-border);
 
         &:hover {
-          border-color: #4a4a4a;
+          border-color: rgba(255, 255, 255, 0.16);
         }
 
         &.is-focus {
-          border-color: #409eff;
+          border-color: var(--login-primary);
         }
       }
 
       :deep(.el-input__inner) {
-        color: #f0f0f0;
+        color: var(--login-dark-title);
 
         &::placeholder {
-          color: #666;
+          color: var(--login-dark-muted);
         }
       }
 
       :deep(.el-input__prefix),
       :deep(.el-input__suffix) {
-        color: #999;
+        color: var(--login-dark-muted);
       }
     }
 
     .verify-code-wrapper {
       .verify-btn {
-        background: #2a2a2a;
-        border-color: #3a3a3a;
-        color: #f0f0f0;
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: var(--login-dark-title);
 
         &:hover:not(:disabled) {
-          background: #333;
-          border-color: #4a4a4a;
+          background: rgba(92, 147, 255, 0.16);
+          border-color: rgba(92, 147, 255, 0.28);
         }
 
         &:disabled {
-          background: #1e1e1e;
-          border-color: #2a2a2a;
-          color: #666;
+          background: rgba(255, 255, 255, 0.03);
+          border-color: rgba(255, 255, 255, 0.06);
+          color: rgba(255, 255, 255, 0.38);
         }
       }
     }
 
     .captcha-box {
-      color: #999;
-      background: #2a2a2a;
-      border-color: #3a3a3a;
+      color: var(--login-dark-muted);
+      background: var(--login-dark-input-bg);
+      border-color: var(--login-dark-border);
 
       &:hover {
-        border-color: #4a4a4a;
+        border-color: rgba(255, 255, 255, 0.16);
       }
     }
 
     .captcha-tip {
-      color: #999;
+      color: var(--login-dark-muted);
     }
 
     .switch-page {
-      color: #999;
+      color: var(--login-dark-text);
 
       span {
-        color: #999;
+        color: var(--login-dark-text);
       }
 
       .el-button {
-        color: #409eff;
+        color: var(--login-primary);
 
         &:hover {
-          color: #66b1ff;
+          color: #82a8ff;
         }
       }
     }
