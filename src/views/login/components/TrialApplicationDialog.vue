@@ -243,7 +243,7 @@
             </label>
             <el-form-item prop="verifyCode">
               <div class="tad-row">
-                <el-input v-model="form.verifyCode" clearable maxlength="6" placeholder="输入 6 位验证码" class="tad-input" />
+                <el-input v-model="form.verifyCode" clearable maxlength="4" placeholder="输入 4 位验证码" class="tad-input" />
                 <button type="button" class="tad-sms-btn" :class="{ waiting: isDisabled }" :disabled="isDisabled" @click="sendVerificationCode">
                   <template v-if="isDisabled">
                     <span class="tad-count">{{ text }}s</span>
