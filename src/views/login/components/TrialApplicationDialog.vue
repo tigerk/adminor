@@ -22,6 +22,9 @@
   const keyword = ref("");
   const cityOptions = ref<CityOption[]>([]);
   const submitSuccess = ref(false);
+  const getRootElement = () => (typeof document !== "undefined" ? document.documentElement : null);
+  const isDark = ref(getRootElement()?.classList.contains("dark") ?? false);
+  let themeObserver: MutationObserver | null = null;
   const { isDisabled, text } = useVerifyCode();
 
   const form = reactive({
@@ -55,6 +58,10 @@
   });
 
   const hasValidPhone = computed(() => /^1\d{10}$/.test(form.phone));
+
+  const syncTheme = () => {
+    isDark.value = getRootElement()?.classList.contains("dark") ?? false;
+  };
 
   const sortedCityGroups = computed(() => {
     const kw = keyword.value.trim();
@@ -100,12 +107,19 @@
       const res = await getRegionCityList();
       const list = Array.isArray(res?.data) ? res.data : [];
       cityOptions.value = list.map((item: any) => {
-        const rawLetter = pinyin(item.name || "", { pattern: "first", toneType: "none" })
-          .charAt(0)
-          .toUpperCase();
+        let rawLetter = "";
+        try {
+          rawLetter = pinyin(item.name || "", { pattern: "first", toneType: "none" })
+            .charAt(0)
+            .toUpperCase();
+        } catch {
+          rawLetter = "";
+        }
         const letter = /^[A-Z]$/.test(rawLetter) ? rawLetter : "#";
         return { id: Number(item.id), name: item.name, letter };
       });
+    } catch {
+      cityOptions.value = [];
     } finally {
       cityLoading.value = false;
     }
@@ -155,12 +169,27 @@
     }
   );
 
-  onMounted(fetchCities);
-  onBeforeUnmount(() => useVerifyCode().end());
+  onMounted(() => {
+    fetchCities();
+    syncTheme();
+    const root = getRootElement();
+    if (root && typeof MutationObserver !== "undefined") {
+      themeObserver = new MutationObserver(syncTheme);
+      themeObserver.observe(root, {
+        attributes: true,
+        attributeFilter: ["class"]
+      });
+    }
+  });
+
+  onBeforeUnmount(() => {
+    useVerifyCode().end();
+    themeObserver?.disconnect();
+  });
 </script>
 
 <template>
-  <div class="tad">
+  <div :class="['tad', { 'is-dark': isDark }]">
     <Transition name="tad-view" mode="out-in">
       <!-- Success state -->
       <div v-if="submitSuccess" key="success" class="tad-success">
@@ -360,10 +389,10 @@
     --text: #1c1917;
     --text-soft: #78716c;
     --text-faint: #a8a29e;
-    --accent: #c76e00;
-    --accent-warm: #dd8a1f;
-    --accent-bg: rgba(199, 110, 0, 0.06);
-    --accent-border: rgba(199, 110, 0, 0.18);
+    --accent: var(--el-color-primary);
+    --accent-warm: var(--el-color-primary-light-3);
+    --accent-bg: var(--el-color-primary-light-9);
+    --accent-border: var(--el-color-primary-light-7);
     --success: #15803d;
     --danger: #dc2626;
     --radius-sm: 14px;
@@ -371,14 +400,19 @@
     --sans: "DM Sans", -apple-system, sans-serif;
     --mono: "JetBrains Mono", monospace;
     --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-panel: 0 8px 24px rgba(28, 25, 23, 0.1);
+    --shadow-btn-accent: 0 8px 20px color-mix(in srgb, var(--accent) 28%, transparent);
+    --mask-bg: rgba(0, 0, 0, 0.45);
 
     padding: 8px 4px 4px;
     font-family: var(--sans);
     color: var(--text);
   }
 
-  /* Dark mode via el-dialog's dark class */
-  :global(.dark) .tad {
+  :global(html.dark) .tad,
+  :global(body.dark) .tad,
+  :global(.dark) .tad,
+  .tad.is-dark {
     --bg: #161412;
     --surface-solid: #1e1b18;
     --border: rgba(245, 245, 244, 0.08);
@@ -386,12 +420,16 @@
     --text: #f5f5f4;
     --text-soft: #a8a29e;
     --text-faint: #78716c;
-    --accent: #c76e00;
-    --accent-warm: #dd8a1f;
-    --accent-bg: rgba(199, 110, 0, 0.1);
-    --accent-border: rgba(199, 110, 0, 0.24);
+    --accent: var(--el-color-primary);
+    --accent-warm: var(--el-color-primary-light-3);
+    --accent-bg: var(--el-color-primary-light-9);
+    --accent-border: var(--el-color-primary-light-7);
     --success: #4ade80;
     --danger: #f87171;
+    --shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow-btn-accent: 0 8px 20px color-mix(in srgb, var(--accent) 18%, transparent);
+    --mask-bg: rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
   }
 
   /* Success */
@@ -493,7 +531,7 @@
   .tad-input {
     :deep(.el-input__wrapper) {
       height: 48px;
-      background: var(--bg);
+      background: var(--bg) !important;
       border: 1.5px solid var(--border) !important;
       border-radius: var(--radius-xs) !important;
       box-shadow: none !important;
@@ -505,49 +543,92 @@
       &.is-focus {
         border-color: var(--accent) !important;
         box-shadow: 0 0 0 3px var(--accent-bg) !important;
-        background: var(--surface-solid);
+        background: var(--surface-solid) !important;
       }
     }
 
     :deep(.el-input__inner) {
       font-size: 14px;
       font-family: var(--sans);
-      color: var(--text);
-      background: transparent;
+      color: var(--text) !important;
+      background: transparent !important;
       &::placeholder {
-        color: var(--text-faint);
+        color: var(--text-faint) !important;
       }
+    }
+
+    :deep(.el-input__suffix .el-icon) {
+      color: var(--text-faint);
     }
   }
 
   .tad-textarea {
     :deep(.el-textarea__inner) {
-      background: var(--bg);
+      background: var(--bg) !important;
       border: 1.5px solid var(--border) !important;
       border-radius: var(--radius-xs) !important;
       box-shadow: none !important;
       font-size: 13.5px;
       font-family: var(--sans);
-      color: var(--text);
+      color: var(--text) !important;
       resize: none;
       transition: all 0.2s var(--ease);
 
       &::placeholder {
-        color: var(--text-faint);
+        color: var(--text-faint) !important;
       }
       &:focus {
         border-color: var(--accent) !important;
         box-shadow: 0 0 0 3px var(--accent-bg) !important;
-        background: var(--surface-solid);
+        background: var(--surface-solid) !important;
       }
     }
 
     :deep(.el-input__count) {
-      background: transparent;
+      background: transparent !important;
       font-size: 11px;
       color: var(--text-faint);
       font-family: var(--mono);
     }
+  }
+
+  /* 深色模式下强制覆盖 Element Plus 默认白色背景 */
+  :global(html.dark) .tad-input :deep(.el-input__wrapper),
+  :global(body.dark) .tad-input :deep(.el-input__wrapper),
+  :global(.dark) .tad-input :deep(.el-input__wrapper),
+  .tad.is-dark .tad-input :deep(.el-input__wrapper) {
+    background: #161412 !important;
+    &.is-focus {
+      background: #1e1b18 !important;
+    }
+  }
+  :global(html.dark) .tad-input :deep(.el-input__inner),
+  :global(body.dark) .tad-input :deep(.el-input__inner),
+  :global(.dark) .tad-input :deep(.el-input__inner),
+  .tad.is-dark .tad-input :deep(.el-input__inner) {
+    color: #f5f5f4 !important;
+    &::placeholder {
+      color: #78716c !important;
+    }
+  }
+  :global(html.dark) .tad-textarea :deep(.el-textarea__inner),
+  :global(body.dark) .tad-textarea :deep(.el-textarea__inner),
+  :global(.dark) .tad-textarea :deep(.el-textarea__inner),
+  .tad.is-dark .tad-textarea :deep(.el-textarea__inner) {
+    background: #161412 !important;
+    color: #f5f5f4 !important;
+    &::placeholder {
+      color: #78716c !important;
+    }
+    &:focus {
+      background: #1e1b18 !important;
+    }
+  }
+  :global(html.dark) .tad-textarea :deep(.el-input__count),
+  :global(body.dark) .tad-textarea :deep(.el-input__count),
+  :global(.dark) .tad-textarea :deep(.el-input__count),
+  .tad.is-dark .tad-textarea :deep(.el-input__count) {
+    color: #78716c !important;
   }
 
   .form-group {
@@ -643,7 +724,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.45);
+      background: var(--mask-bg);
       backdrop-filter: blur(2px);
       opacity: 0;
       transition: opacity 0.15s var(--ease);
@@ -755,7 +836,7 @@
     background: var(--surface-solid);
     border: 1.5px solid var(--border);
     border-radius: var(--radius-xs);
-    box-shadow: 0 8px 24px rgba(28, 25, 23, 0.1);
+    box-shadow: var(--shadow-panel);
     overflow: hidden;
   }
 
@@ -928,7 +1009,7 @@
     }
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 8px 20px rgba(199, 110, 0, 0.28);
+      box-shadow: var(--shadow-btn-accent);
     }
     &:disabled {
       opacity: 0.6;
@@ -1026,3 +1107,4 @@
     }
   }
 </style>
+const syncTheme = () => { isDark.value = document.documentElement.classList.contains("dark"); };

@@ -624,10 +624,10 @@
     --text: #1c1917;
     --text-soft: #78716c;
     --text-faint: #a8a29e;
-    --accent: #c76e00;
-    --accent-warm: #dd8a1f;
-    --accent-bg: rgba(199, 110, 0, 0.06);
-    --accent-border: rgba(199, 110, 0, 0.18);
+    --accent: var(--el-color-primary);
+    --accent-warm: var(--el-color-primary-light-3);
+    --accent-bg: var(--el-color-primary-light-9);
+    --accent-border: var(--el-color-primary-light-7);
     --success: #15803d;
     --danger: #dc2626;
     --shadow-lg: 0 24px 64px rgba(28, 25, 23, 0.12);
@@ -653,10 +653,10 @@
     --text: #f5f5f4;
     --text-soft: #a8a29e;
     --text-faint: #78716c;
-    --accent: #c76e00;
-    --accent-warm: #dd8a1f;
-    --accent-bg: rgba(199, 110, 0, 0.1);
-    --accent-border: rgba(199, 110, 0, 0.24);
+    --accent: var(--el-color-primary);
+    --accent-warm: var(--el-color-primary-light-3);
+    --accent-bg: var(--el-color-primary-light-9);
+    --accent-border: var(--el-color-primary-light-7);
     --success: #4ade80;
     --danger: #f87171;
     --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.3);
@@ -726,7 +726,7 @@
     text-align: left;
 
     &.is-active {
-      background: rgb(245 158 11 / 10%);
+      background: var(--accent-bg);
       border-color: var(--accent-border);
     }
 
@@ -1008,7 +1008,7 @@
         background: var(--danger);
       }
       &.medium {
-        background: #c76e00;
+        background: var(--accent);
       }
       &.strong {
         background: var(--success);
@@ -1026,7 +1026,7 @@
       color: var(--danger);
     }
     &.medium {
-      color: #c76e00;
+      color: var(--accent);
     }
     &.strong {
       color: var(--success);
@@ -1057,9 +1057,9 @@
     font-family: var(--sans);
 
     &.selected {
-      background: rgb(245 158 11 / 10%);
+      background: var(--accent-bg);
       border-color: var(--accent);
-      box-shadow: inset 0 0 0 1px rgb(245 158 11 / 22%);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
     }
 
     &:hover:not(.selected) {
@@ -1250,7 +1250,7 @@
     }
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(199, 110, 0, 0.25);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 25%, transparent);
     }
     &:disabled {
       opacity: 0.6;
