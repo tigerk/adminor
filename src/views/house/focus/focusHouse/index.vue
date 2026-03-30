@@ -121,7 +121,7 @@
         </el-form>
 
         <div class="action-buttons">
-          <el-button color="#626aef" :dark="true" @click="openFocusEditDialog()" @created-focus-house="onFocusHouseSearch">添加房源</el-button>
+          <el-button color="#626aef" :dark="true" @click="openFocusEditDialog('新增', undefined, onFocusHouseSearch)">添加房源</el-button>
         </div>
       </div>
     </el-card>
