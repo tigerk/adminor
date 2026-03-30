@@ -64,7 +64,7 @@
         </el-form-item>
       </re-col>
       <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="部门负责人">
+        <el-form-item label="部门主管">
           <el-select v-model="newFormInline.supervisorId" class="w-full" clearable filterable placeholder="请选择部门主管">
             <el-option v-for="item in newFormInline.supervisorOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
@@ -84,7 +84,7 @@
         </el-form-item>
       </re-col>
       <re-col :value="12" :xs="24" :sm="24">
-        <el-form-item label="是否为门店">
+        <el-form-item label="门店">
           <el-switch v-model="newFormInline.isStore" inline-prompt :active-value="true" :inactive-value="false" active-text="是" inactive-text="否" :style="switchStyle" />
         </el-form-item>
       </re-col>

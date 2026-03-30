@@ -61,7 +61,7 @@ export function useRole(treeRef: Ref) {
     {
       label: "用户数量",
       prop: "userCount",
-      width: 80
+      width: 100
     },
     {
       label: "状态",
