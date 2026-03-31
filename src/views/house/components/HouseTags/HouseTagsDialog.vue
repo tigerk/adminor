@@ -106,7 +106,7 @@
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: #303133;
+    color: var(--el-text-color-primary);
   }
 
   .tags-grid {
@@ -120,12 +120,12 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background: #f5f7fa;
+    background: var(--el-fill-color-light);
     border-radius: 4px;
     transition: background-color 0.3s;
   }
 
   .tags-item:hover {
-    background: #ecf5ff;
+    background: var(--el-color-primary-light-9);
   }
 </style>
