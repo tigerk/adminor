@@ -100,8 +100,8 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="openEntireEditDialog()">整租房源</el-dropdown-item>
-              <el-dropdown-item @click="openShareEditDialog()">合租房源</el-dropdown-item>
+              <el-dropdown-item @click="openEntireEditDialog('新增', undefined, onSearch)">整租房源</el-dropdown-item>
+              <el-dropdown-item @click="openShareEditDialog('新增', undefined, onSearch)">合租房源</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>

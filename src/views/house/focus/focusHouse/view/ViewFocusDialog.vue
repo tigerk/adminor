@@ -5,7 +5,8 @@
   import { getRoomList } from "@/api/house/room";
   import { getDictDataByDictCode } from "@/api/sys/dict";
   import { IconifyIconOnline } from "@/components/ReIcon";
-  import type { DictData, FocusCreateDto, RoomListVo } from "@/types";
+  import { FILTER_TYPE } from "@/constants";
+  import type { DictData, FocusCreateDto, RoomListVo, RoomTotalItemVo } from "@/types";
   import { OccupancyStatusEnumMeta } from "@/types/generated/enum.meta";
   import { ELECTRICITY_TYPE_OPTIONS, getOptionByCode, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
 
@@ -17,7 +18,7 @@
   const roomList = ref<RoomListVo[]>([]);
   const tagLabelMap = ref<Record<string, string>>({});
   const facilityLabelMap = ref<Record<string, string>>({});
-  const roomFilter = ref<"all" | "available" | "locked" | "closed">("all");
+  const activeStatusKey = ref<string>("all");
 
   const buildingRows = computed(() => focusDetail.value?.buildings ?? []);
   const layoutRows = computed(() => focusDetail.value?.houseLayoutList ?? []);
@@ -32,13 +33,79 @@
     closed: roomList.value.filter(r => r.closed).length
   }));
 
+  const roomStatusTotal = computed<RoomTotalItemVo[]>(() => {
+    const statusMap = new Map<number, RoomTotalItemVo>();
+
+    roomList.value.forEach(room => {
+      if (room.closed || room.locked || room.occupancyStatus === undefined || room.occupancyStatus === null) return;
+      const statusCode = Number(room.occupancyStatus);
+      const enumMeta = Object.values(OccupancyStatusEnumMeta).find(item => item.code === room.occupancyStatus);
+      const current = statusMap.get(statusCode);
+
+      if (current) {
+        current.total = (current.total ?? 0) + 1;
+        if (!current.roomStatusColor && (room.occupancyStatusColor || enumMeta?.color)) {
+          current.roomStatusColor = room.occupancyStatusColor || enumMeta?.color;
+        }
+      } else {
+        statusMap.set(statusCode, {
+          roomStatusName: room.occupancyStatusName || enumMeta?.name || "未知",
+          roomStatusColor: room.occupancyStatusColor || enumMeta?.color,
+          total: 1,
+          filterType: FILTER_TYPE.BY_STATUS,
+          roomStatus: statusCode
+        });
+      }
+    });
+
+    const statusList = Array.from(statusMap.values()).sort((a, b) => Number(a.roomStatus ?? 0) - Number(b.roomStatus ?? 0));
+
+    return [
+      { roomStatusName: "全部", total: roomList.value.length, filterType: undefined, roomStatus: undefined, roomStatusColor: undefined },
+      ...statusList,
+      { roomStatusName: "已锁定", total: roomStats.value.locked, filterType: FILTER_TYPE.BY_LOCKED, roomStatus: undefined, roomStatusColor: "#f59e0b" },
+      { roomStatusName: "已关闭", total: roomStats.value.closed, filterType: FILTER_TYPE.BY_CLOSED, roomStatus: undefined, roomStatusColor: "#9ca3af" }
+    ].filter(item => item.filterType === undefined || (item.total ?? 0) > 0);
+  });
+
   const filteredRooms = computed(() => {
-    if (roomFilter.value === "all") return roomList.value;
-    if (roomFilter.value === "available") return roomList.value.filter(r => !r.closed && !r.locked);
-    if (roomFilter.value === "locked") return roomList.value.filter(r => !r.closed && r.locked);
-    if (roomFilter.value === "closed") return roomList.value.filter(r => r.closed);
+    if (activeStatusKey.value === "all") return roomList.value;
+    if (activeStatusKey.value === "locked") return roomList.value.filter(r => !r.closed && r.locked);
+    if (activeStatusKey.value === "closed") return roomList.value.filter(r => r.closed);
+    if (activeStatusKey.value.startsWith("status-")) {
+      const statusCode = Number(activeStatusKey.value.replace("status-", ""));
+      return roomList.value.filter(r => !r.closed && !r.locked && Number(r.occupancyStatus) === statusCode);
+    }
     return roomList.value;
   });
+
+  function handleStatusClick(item: RoomTotalItemVo & { filterType?: number; roomStatus?: number }) {
+    if (item.filterType === undefined || item.filterType === null) {
+      activeStatusKey.value = "all";
+    } else if (item.filterType === FILTER_TYPE.BY_STATUS) {
+      activeStatusKey.value = `status-${item.roomStatus}`;
+    } else if (item.filterType === FILTER_TYPE.BY_LOCKED) {
+      activeStatusKey.value = "locked";
+    } else if (item.filterType === FILTER_TYPE.BY_CLOSED) {
+      activeStatusKey.value = "closed";
+    }
+  }
+
+  function isStatusActive(item: RoomTotalItemVo & { filterType?: number }): boolean {
+    if (item.filterType === undefined || item.filterType === null) {
+      return activeStatusKey.value === "all";
+    }
+    if (item.filterType === FILTER_TYPE.BY_STATUS) {
+      return activeStatusKey.value === `status-${item.roomStatus}`;
+    }
+    if (item.filterType === FILTER_TYPE.BY_LOCKED) {
+      return activeStatusKey.value === "locked";
+    }
+    if (item.filterType === FILTER_TYPE.BY_CLOSED) {
+      return activeStatusKey.value === "closed";
+    }
+    return false;
+  }
 
   const getOptionLabel = (options: readonly any[], value?: string) => {
     if (!value) return "-";
@@ -49,13 +116,17 @@
   const getHeatingLabel = (v?: string) => getOptionLabel(HEATING_TYPE_OPTIONS, v);
 
   const getOccupancyMeta = (row: RoomListVo) => {
+    const enumMeta = Object.values(OccupancyStatusEnumMeta).find(item => item.code === row.occupancyStatus);
+    const statusDot = row.occupancyStatusColor || enumMeta?.color || "#9ca3af";
+    const statusColor = row.occupancyStatusColor || enumMeta?.color || "#6b7280";
+
     if (row.closed) return { text: "已关闭", dot: "#9ca3af", color: "#6b7280", key: "closed" };
     if (row.locked) return { text: "已锁定", dot: "#f59e0b", color: "#b45309", key: "locked" };
-    const enumMeta = Object.values(OccupancyStatusEnumMeta).find(item => item.code === row.occupancyStatus);
+
     return {
       text: row.occupancyStatusName || enumMeta?.name || "未知",
-      dot: row.occupancyStatusColor || enumMeta?.color || "#9ca3af",
-      color: row.occupancyStatusColor || enumMeta?.color || "#6b7280",
+      dot: statusDot,
+      color: statusColor,
       key: "available"
     };
   };
@@ -149,11 +220,10 @@
     <div class="fv-tabs">
       <button class="tab-btn" :class="{ active: activeTab === 'info' }" @click="activeTab = 'info'">项目信息</button>
       <button class="tab-btn" :class="{ active: activeTab === 'rooms' }" @click="activeTab = 'rooms'">
-        房源列表
+        房间列表
         <span class="tab-count">{{ roomStats.total }}</span>
       </button>
     </div>
-
     <!-- ══════════════════ 项目信息 ══════════════════ -->
     <div v-show="activeTab === 'info'" class="fv-body">
       <div class="section-stack">
@@ -363,28 +433,27 @@
     <!-- ══════════════════ 房源列表 ══════════════════ -->
     <div v-show="activeTab === 'rooms'" class="fv-body">
       <!-- 筛选条 -->
-      <div class="room-filter-row">
-        <button
-          v-for="item in [
-            { key: 'all', label: '全部', count: roomStats.total },
-            { key: 'available', label: '可出租', count: roomStats.available },
-            { key: 'locked', label: '已锁定', count: roomStats.locked },
-            { key: 'closed', label: '已关闭', count: roomStats.closed }
-          ]"
-          :key="item.key"
-          class="filter-chip"
-          :class="{ active: roomFilter === item.key }"
-          @click="roomFilter = item.key as any"
-        >
-          <span v-if="item.key !== 'all'" class="chip-dot" :class="`dot-${item.key}`" />
-          {{ item.label }}
-          <span class="chip-count">{{ item.count }}</span>
-        </button>
-      </div>
+      <el-form-item class="room-filter-form-item">
+        <el-button-group class="status-bar">
+          <el-button
+            v-for="item in roomStatusTotal"
+            :key="item.filterType !== undefined ? `${item.filterType}-${item.roomStatus}` : 'all'"
+            class="status-btn"
+            type="default"
+            :class="{ 'is-active': isStatusActive(item) }"
+            @click="handleStatusClick(item)"
+          >
+            <span class="status-content">
+              <span v-if="item.roomStatusColor" class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
+              {{ item.roomStatusName }}（{{ item.total }}）
+            </span>
+          </el-button>
+        </el-button-group>
+      </el-form-item>
 
       <!-- 房源卡片网格 -->
       <div v-if="filteredRooms.length" class="room-grid">
-        <div v-for="room in filteredRooms" :key="room.roomId" class="room-card" :class="`room-card--${getOccupancyMeta(room).key}`">
+        <div v-for="room in filteredRooms" :key="room.roomId" class="room-card" :class="`room-card--${getOccupancyMeta(room).key}`" :style="{ '--room-accent': getOccupancyMeta(room).dot }">
           <!-- 头部：门牌号 + 状态 -->
           <div class="rc-head">
             <span class="rc-door">{{ room.doorNumber || room.roomNumber || "—" }}</span>
@@ -851,60 +920,45 @@
   }
 
   /* ══ 房源列表 ══ */
-  .room-filter-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .room-filter-form-item {
     margin-bottom: 16px;
-    flex-wrap: wrap;
   }
-  .filter-chip {
+  .status-bar {
     display: inline-flex;
-    align-items: center;
+    flex-wrap: nowrap;
+    align-items: stretch;
+  }
+  :deep(.status-btn) {
+    margin: 0 !important;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: var(--el-text-color-regular);
+    border-color: var(--el-border-color) !important;
+    transition: all 0.2s;
+
+    &:hover {
+      color: var(--el-color-primary);
+      border-color: var(--el-color-primary-light-5);
+      background: var(--el-color-primary-light-9);
+    }
+
+    &.is-active {
+      color: var(--el-color-primary);
+      background: var(--el-color-primary-light-9);
+      border-color: var(--el-color-primary);
+    }
+  }
+  .status-content {
+    display: flex;
     gap: 6px;
-    font-size: 12px;
-    padding: 5px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    border: 1px solid var(--el-border-color);
-    background: var(--fv-surface-overlay);
-    color: var(--el-text-color-secondary);
-    transition: all 0.15s;
-    font-family: inherit;
+    align-items: center;
   }
-  .filter-chip:hover {
-    border-color: var(--el-color-primary-light-5);
-    color: var(--el-text-color-primary);
-  }
-  .filter-chip.active {
-    color: var(--el-text-color-primary);
-    border-color: var(--el-text-color-primary);
-  }
-  .chip-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
+  .status-dot {
+    display: inline-block;
     flex-shrink: 0;
-  }
-  .dot-available {
-    background: var(--el-color-success);
-  }
-  .dot-locked {
-    background: var(--el-color-warning);
-  }
-  .dot-closed {
-    background: var(--el-border-color);
-  }
-  .chip-count {
-    font-size: 11px;
-    min-width: 18px;
-    text-align: center;
-    background: var(--fv-chip-count-bg);
-    border-radius: 10px;
-    padding: 0 5px;
-  }
-  .filter-chip.active .chip-count {
-    background: var(--fv-chip-count-active-bg);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
   }
 
   /* 房源网格 */
@@ -940,7 +994,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: var(--el-color-success);
+    background: var(--room-accent, var(--el-color-success));
   }
   .room-card--locked::before {
     content: "";
@@ -949,7 +1003,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: var(--el-color-warning);
+    background: var(--room-accent, var(--el-color-warning));
   }
   .room-card--closed::before {
     content: "";
@@ -958,7 +1012,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: var(--fv-closed-bar);
+    background: var(--room-accent, var(--fv-closed-bar));
   }
 
   .rc-head {

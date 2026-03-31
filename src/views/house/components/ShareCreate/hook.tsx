@@ -149,7 +149,7 @@ export function useShareEdit() {
    * @param title 对话框标题（"新增" 或 "编辑"）
    * @param id    房源 ID（可选）。传入则进入编辑模式，从后端拉取数据；不传则初始化空表单。
    */
-  async function openShareEditDialog(title = "新增", id?: string) {
+  async function openShareEditDialog(title = "新增", id?: string, onConfirm?: () => void) {
     let formInlineData: ScatterCreateDto = getDefaultFormData();
 
     // 编辑模式：通过 id 从后端获取完整数据
@@ -202,6 +202,7 @@ export function useShareEdit() {
                 if (resp.code === 0) {
                   message(title === "新增" ? "新增成功" : "修改成功", { type: "success" });
                   closeDialog(options, index);
+                  onConfirm?.();
                 } else {
                   message(resp.message, { type: "error" });
                 }
