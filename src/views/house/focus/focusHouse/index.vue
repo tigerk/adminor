@@ -1,13 +1,16 @@
 <script setup lang="ts">
-  import { computed, onMounted, ref } from "vue";
+  import { computed, h, onMounted, ref } from "vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
   import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
   import type { FormInstance } from "element-plus";
   import { ElEmpty, ElImage, ElSkeleton, ElTag } from "element-plus";
   import { IconifyIconOnline } from "@/components/ReIcon";
-  import { Setting } from "@element-plus/icons-vue";
+  import { Setting, View } from "@element-plus/icons-vue";
   import { ELECTRICITY_TYPE_OPTIONS, getOptionByCode, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
+  import { addDialog } from "@/components/ReDialog";
+  import { deviceDetection } from "@pureadmin/utils";
+  import ViewFocusDialog from "@/views/house/focus/focusHouse/view/ViewFocusDialog.vue";
 
   defineOptions({
     name: "FocusHouse"
@@ -79,6 +82,22 @@
   const getHeatingLabel = (type: string) => {
     const option = getOptionByCode([...HEATING_TYPE_OPTIONS], type);
     return option?.label || type;
+  };
+
+  const openViewDialog = (focusId: string) => {
+    addDialog({
+      title: "查看项目",
+      width: "78vw",
+      top: "4vh",
+      lockScroll: true,
+      alignCenter: true,
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      hideFooter: true,
+      contentRenderer: () => h(ViewFocusDialog, { focusId })
+    });
   };
 
   onMounted(async () => {
@@ -244,12 +263,20 @@
                 <IconifyIconOnline icon="ep:phone" class="contact-icon" />
                 <span>{{ item.storePhone }}</span>
               </div>
-              <el-button link type="primary" @click="handleEditFocus(item.id)">
-                <el-icon>
-                  <Setting />
-                </el-icon>
-                <span>管理项目</span>
-              </el-button>
+              <div class="card-actions">
+                <el-button link type="primary" @click="openViewDialog(item.id)">
+                  <el-icon>
+                    <View />
+                  </el-icon>
+                  <span>查看项目</span>
+                </el-button>
+                <el-button link type="primary" @click="handleEditFocus(item.id)">
+                  <el-icon>
+                    <Setting />
+                  </el-icon>
+                  <span>管理项目</span>
+                </el-button>
+              </div>
             </div>
 
             <!-- 更新时间 -->
@@ -520,6 +547,12 @@
 
   .contact-info {
     display: flex;
+    align-items: center;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 10px;
     align-items: center;
   }
 
