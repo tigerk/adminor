@@ -4,6 +4,7 @@
   import { getFocusById } from "@/api/house/focus";
   import { getRoomList } from "@/api/house/room";
   import { getDictDataByDictCode } from "@/api/sys/dict";
+  import { IconifyIconOnline } from "@/components/ReIcon";
   import type { DictData, FocusCreateDto, RoomListVo } from "@/types";
   import { OccupancyStatusEnumMeta } from "@/types/generated/enum.meta";
   import { ELECTRICITY_TYPE_OPTIONS, getOptionByCode, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
@@ -198,47 +199,35 @@
               <div class="cost-row">
                 <div class="cost-item">
                   <div class="cost-icon ci-blue">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15">
-                      <path d="M8 2c0 0-5 4-5 8a5 5 0 0010 0c0-4-5-8-5-8z" />
-                    </svg>
+                    <IconifyIconOnline icon="solar:water-broken" />
                   </div>
                   <span class="cost-name">水费</span>
                   <span class="cost-val">{{ getWaterLabel(focusDetail?.water) }}</span>
                 </div>
                 <div class="cost-item">
                   <div class="cost-icon ci-amber">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15">
-                      <path d="M8 1l1.5 3.5L13 5l-2.5 2.5.5 3.5L8 9.5l-3 1.5.5-3.5L3 5l3.5-.5z" />
-                    </svg>
+                    <IconifyIconOnline icon="ep:lightning" />
                   </div>
                   <span class="cost-name">电费</span>
                   <span class="cost-val">{{ getElectricityLabel(focusDetail?.electricity) }}</span>
                 </div>
                 <div class="cost-item">
                   <div class="cost-icon ci-red">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15">
-                      <path d="M8 2c-1 2-4 4-4 7a4 4 0 008 0C12 6 9 4 8 2z" />
-                    </svg>
+                    <IconifyIconOnline icon="ep:sunny" />
                   </div>
                   <span class="cost-name">供暖</span>
                   <span class="cost-val">{{ getHeatingLabel(focusDetail?.heating) }}</span>
                 </div>
                 <div class="cost-item">
                   <div class="cost-icon ci-slate">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15">
-                      <rect x="3" y="2" width="10" height="12" rx="1" />
-                      <path d="M6 6h4M6 9h4" />
-                    </svg>
+                    <IconifyIconOnline icon="material-symbols:elevator" />
                   </div>
                   <span class="cost-name">电梯</span>
                   <span class="cost-val">{{ focusDetail?.hasElevator ? "有" : "无" }}</span>
                 </div>
                 <div class="cost-item">
                   <div class="cost-icon ci-green">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15">
-                      <circle cx="8" cy="8" r="5" />
-                      <path d="M8 5v3l2 1.5" />
-                    </svg>
+                    <IconifyIconOnline icon="ep:food" />
                   </div>
                   <span class="cost-name">燃气</span>
                   <span class="cost-val">{{ focusDetail?.hasGas ? "有" : "无" }}</span>
