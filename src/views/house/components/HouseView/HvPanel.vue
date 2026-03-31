@@ -2,7 +2,7 @@
   import { ref, computed, watch } from "vue";
   import { ArrowRight, Calendar, Edit, User } from "@element-plus/icons-vue";
   import { BookingListVo, LeaseLiteVo, RoomDetailVo } from "@/types";
-  import { OCCUPANCY_STATUS_ENUM } from "@/constants";
+  import { OccupancyStatusEnumMeta } from "@/types/generated/enum.meta";
   import { calcLeaseDuration } from "@/utils/house";
   import { formatDate } from "@/utils/date";
   import { message } from "@/utils/message";
@@ -12,9 +12,9 @@
     currentRoom: RoomDetailVo | null;
   }>();
 
-  const isLeased = computed(() => props.currentRoom?.occupancyStatus === OCCUPANCY_STATUS_ENUM.LEASED.code);
-  const isAvailable = computed(() => props.currentRoom?.occupancyStatus === OCCUPANCY_STATUS_ENUM.AVAILABLE.code);
-  const isBooked = computed(() => props.currentRoom?.occupancyStatus === OCCUPANCY_STATUS_ENUM.BOOKED.code);
+  const isLeased = computed(() => props.currentRoom?.occupancyStatus === OccupancyStatusEnumMeta.LEASED.code);
+  const isAvailable = computed(() => props.currentRoom?.occupancyStatus === OccupancyStatusEnumMeta.AVAILABLE.code);
+  const isBooked = computed(() => props.currentRoom?.occupancyStatus === OccupancyStatusEnumMeta.BOOKED.code);
 
   const tenantInfo = computed(() => {
     const li = props.currentRoom?.lease;

@@ -1,7 +1,7 @@
-import { DECORATION_TYPE_OPTIONS, DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, RENTAL_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
+import { DIRECTION_OPTIONS, ELECTRICITY_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
 import type { HouseLayoutDto, RoomListVo } from "@/types";
-import { OCCUPANCY_STATUS_ENUM } from "@/constants";
 import type { RoomDetailVo } from "@/types";
+import { DecorationTypeEnumMeta, OccupancyStatusEnumMeta, RentalTypeEnumMeta } from "@/types/generated/enum.meta";
 
 /**
  * 显示装修类型的label
@@ -11,7 +11,7 @@ import type { RoomDetailVo } from "@/types";
  */
 export const getDecorationLabel = (val?: number | string) => {
   if (val === undefined || val === null || val === "") return "-";
-  return DECORATION_TYPE_OPTIONS.find(item => item.value === Number(val))?.label || "-";
+  return Object.values(DecorationTypeEnumMeta).find(item => item.code === Number(val))?.name || "-";
 };
 
 export const getDirectionLabel = (val?: string) => {
@@ -21,7 +21,7 @@ export const getDirectionLabel = (val?: string) => {
 
 export const getRentalTypeLabel = (val?: number) => {
   if (val == null) return "-";
-  return RENTAL_TYPE_OPTIONS.find(item => item.value === val)?.label || "-";
+  return Object.values(RentalTypeEnumMeta).find(item => item.code === val)?.name || "-";
 };
 
 export const getWaterTypeLabel = (val?: string) => {
@@ -72,6 +72,8 @@ export const calcLeaseDuration = (start?: Date | string, end?: Date | string) =>
 };
 
 /**
+ * 综合occupancyStatus和closed、locked 来计算最终的 roomStatus
+ *
  * 获取房间状态（业务状态 + 管理状态）的 text、class、color
  * 优先级：closed > locked > occupancyStatus
  * @param room
@@ -85,7 +87,7 @@ export const getRoomStatus = (room: RoomDetailVo) => {
     return { text: "锁房", cls: "locked", color: "#8C8C8C" };
   }
 
-  const entry = Object.entries(OCCUPANCY_STATUS_ENUM).find(([, s]) => s.code === room.occupancyStatus);
+  const entry = Object.entries(OccupancyStatusEnumMeta).find(([, s]) => s.code === room.occupancyStatus);
   if (!entry) return { text: "-", cls: "locked", color: "#8C8C8C" };
   const [key, s] = entry;
   const clsMap: Record<string, string> = {

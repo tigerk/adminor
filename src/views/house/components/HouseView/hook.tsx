@@ -11,7 +11,6 @@ import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
 import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
 import useBooking from "@/views/contract/booking/utils/hook";
-import { OCCUPANCY_STATUS_ENUM } from "@/constants";
 
 /** 弹窗内部使用的状态包装（loading + 数据） */
 export interface HouseViewState {

@@ -11,9 +11,9 @@ import { useRoomLock } from "@/views/house/components/RoomLock/hook";
 import type { RoomGridItemVo, RoomGridDto, RoomListVo } from "@/types";
 import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
-import { OCCUPANCY_STATUS_ENUM } from "@/constants";
 import { message } from "@/utils/message";
 import { formatDate, formatDateByDot } from "@/utils/date";
+import { OccupancyStatusEnumMeta } from "@/types/generated/enum.meta";
 
 // ==================== Hook 特有的类型定义 ====================
 // 说明：以下三个 Processed* 接口是必须保留的前端展示层类型。
@@ -271,9 +271,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       case "booking":
         openBookingDialog("添加", { roomIds: [room.roomId], roomList: [room] }, () => {
           // [修正] 乐观更新：RoomListVo 上是 occupancyStatus 三件套，不是 roomStatus
-          room.occupancyStatus = OCCUPANCY_STATUS_ENUM.BOOKED.code;
-          room.occupancyStatusName = OCCUPANCY_STATUS_ENUM.BOOKED.name;
-          room.occupancyStatusColor = OCCUPANCY_STATUS_ENUM.BOOKED.color;
+          room.occupancyStatus = OccupancyStatusEnumMeta.BOOKED.code;
+          room.occupancyStatusName = OccupancyStatusEnumMeta.BOOKED.name;
+          room.occupancyStatusColor = OccupancyStatusEnumMeta.BOOKED.color;
         });
         break;
       case "tenant":
@@ -289,9 +289,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
           },
           () => {
             // [修正] 乐观更新：RoomListVo 上是 occupancyStatus 三件套，不是 roomStatus
-            room.occupancyStatus = OCCUPANCY_STATUS_ENUM.LEASED.code;
-            room.occupancyStatusName = OCCUPANCY_STATUS_ENUM.LEASED.name;
-            room.occupancyStatusColor = OCCUPANCY_STATUS_ENUM.LEASED.color;
+            room.occupancyStatus = OccupancyStatusEnumMeta.LEASED.code;
+            room.occupancyStatusName = OccupancyStatusEnumMeta.LEASED.name;
+            room.occupancyStatusColor = OccupancyStatusEnumMeta.LEASED.color;
           }
         );
         ElMessage.success(`准备为房间 ${room.roomNumber} 签约`);

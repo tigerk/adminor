@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { computed, onMounted, ref, watch } from "vue";
   import { HouseDetailVo, LeaseLiteVo, RoomDetailVo, RoomTrackVo, type PriceConfigDto, BookingListVo, RoomLockRecordProps, PriceMethodEnumMeta } from "@/types";
-  import { OCCUPANCY_STATUS_ENUM } from "@/constants";
+  import { OccupancyStatusEnumMeta } from "@/types/generated/enum.meta";
 
   import { message } from "@/utils/message";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
@@ -58,9 +58,9 @@
   // ── 出租统计 ──────────────────────────────────────────────
   const roomStats = computed(() => {
     const tabs = roomTabs.value;
-    const leased = tabs.filter(r => r.occupancyStatus === OCCUPANCY_STATUS_ENUM.LEASED.code).length;
-    const available = tabs.filter(r => r.occupancyStatus === OCCUPANCY_STATUS_ENUM.AVAILABLE.code).length;
-    const booked = tabs.filter(r => r.occupancyStatus === OCCUPANCY_STATUS_ENUM.BOOKED.code).length;
+    const leased = tabs.filter(r => r.occupancyStatus === OccupancyStatusEnumMeta.LEASED.code).length;
+    const available = tabs.filter(r => r.occupancyStatus === OccupancyStatusEnumMeta.AVAILABLE.code).length;
+    const booked = tabs.filter(r => r.occupancyStatus === OccupancyStatusEnumMeta.BOOKED.code).length;
     return { total: tabs.length, leased, available, booked };
   });
   const occupancyRate = computed(() => {

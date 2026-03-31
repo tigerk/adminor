@@ -24,30 +24,6 @@ export const ROOM_STATUS_OPTIONS = [
   { label: "锁房", value: 5 }
 ] as const;
 
-/* 房间状态枚举 */
-export const OCCUPANCY_STATUS_ENUM = {
-  AVAILABLE: {
-    code: 0,
-    name: "空置",
-    color: "#FF2800"
-  },
-  LEASED: {
-    code: 1,
-    name: "已租",
-    color: "#52C41A"
-  },
-  BOOKED: {
-    code: 2,
-    name: "已预定",
-    color: "#EAA212"
-  },
-  PREPARING: {
-    code: 3,
-    name: "配置中",
-    color: "#4B50AD"
-  }
-} as const;
-
 /**
  * 金额计算方式
  */

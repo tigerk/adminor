@@ -25,7 +25,7 @@
               <el-input v-model="queryParams.keywords" placeholder="房源名称/房间号" clearable style="width: 200px" @keyup.enter="handleQuery" />
             </el-form-item>
             <el-form-item label="状态">
-              <el-select v-model="queryParams.roomStatus" placeholder="全部" clearable style="width: 120px">
+              <el-select v-model="queryParams.occupancyStatus" placeholder="全部" clearable style="width: 120px">
                 <el-option v-for="item in roomStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -53,7 +53,7 @@
               <template #default="{ row }">
                 <el-space :size="2">
                   <div>
-                    <el-tag size="small">{{ getOptionByCode([...RENTAL_TYPE_OPTIONS], row.rentalType).label }}</el-tag>
+                    <el-tag size="small">{{ getRentalTypeText(row.rentalType) }}</el-tag>
                     <span class="font-bold ml-2">{{ row.houseName }}</span>
                   </div>
                   <div class="text-xs text-gray-500">
@@ -64,7 +64,7 @@
             </el-table-column>
             <el-table-column label="房态" width="100" align="center">
               <template #default="{ row }">
-                <el-tag>{{ getOptionByCode([...ROOM_STATUS_OPTIONS], row.roomStatus).label }}</el-tag>
+                <el-tag>{{ getRoomStatusText(row) }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column label="户型/面积" width="140">
@@ -109,7 +109,9 @@
   import { nextTick, reactive, ref } from "vue";
   import { Close, Refresh, Search } from "@element-plus/icons-vue";
   import { getRoomList } from "@/api/house/room";
-  import { getOptionByCode, RENTAL_TYPE_OPTIONS, ROOM_STATUS_OPTIONS } from "@/constants";
+  import { ROOM_STATUS_OPTIONS } from "@/constants";
+  import { getRentalTypeLabel, getRoomStatus } from "@/utils/house";
+  import type { RoomQueryDto } from "@/types";
 
   const emit = defineEmits(["confirm"]);
   const visible = ref(false);
@@ -124,14 +126,28 @@
     currentPage: 1,
     pageSize: 10,
     keywords: "",
-    roomStatus: 0
+    occupancyStatus: 0
   });
+
+  const getRentalTypeText = (rentalType?: number) => {
+    return getRentalTypeLabel(rentalType);
+  };
+
+  const getRoomStatusText = (row: any) => {
+    if (!row) return "-";
+    return getRoomStatus(row).text;
+  };
 
   // 获取列表数据
   const getList = async () => {
     loading.value = true;
     try {
-      const res = await getRoomList(queryParams);
+      const requestParams: RoomQueryDto = {
+        ...queryParams,
+        currentPage: String(queryParams.currentPage),
+        pageSize: String(queryParams.pageSize)
+      };
+      const res = await getRoomList(requestParams);
 
       // 关键修复：将字符串类型转换为数字类型
       roomList.value = res.data.list || [];
@@ -209,7 +225,7 @@
   // 重置查询
   const resetQuery = () => {
     queryParams.keywords = "";
-    queryParams.roomStatus = 0;
+    queryParams.occupancyStatus = 0;
     queryParams.currentPage = 1;
     getList();
   };
@@ -245,7 +261,7 @@
     queryParams.currentPage = 1;
     queryParams.pageSize = 10;
     queryParams.keywords = "";
-    queryParams.roomStatus = 0;
+    queryParams.occupancyStatus = 0;
 
     nextTick(async () => {
       selectedRows.value = [];
