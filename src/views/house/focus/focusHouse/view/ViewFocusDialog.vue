@@ -129,12 +129,12 @@
         </div>
         <div class="stat-sep" />
         <div class="stat-cell">
-          <span class="stat-n" style="color: #16a34a">{{ roomStats.available }}</span>
+          <span class="stat-n stat-n--success">{{ roomStats.available }}</span>
           <span class="stat-l">可出租</span>
         </div>
         <div class="stat-sep" />
         <div class="stat-cell">
-          <span class="stat-n" style="color: #b45309">{{ roomStats.locked }}</span>
+          <span class="stat-n stat-n--warning">{{ roomStats.locked }}</span>
           <span class="stat-l">已锁定</span>
         </div>
         <div class="stat-sep" />
@@ -459,6 +459,26 @@
 
 <style scoped>
   .fv-root {
+    --fv-surface: var(--el-bg-color);
+    --fv-surface-overlay: var(--el-bg-color-overlay);
+    --fv-soft-bg: var(--el-fill-color);
+    --fv-soft-bg-light: var(--el-fill-color-lighter);
+    --fv-pill-bg: var(--el-fill-color);
+    --fv-chip-count-bg: var(--el-fill-color-darker);
+    --fv-chip-count-active-bg: rgb(255 255 255 / 0.2);
+    --fv-card-shadow-hover: var(--el-box-shadow-light);
+    --fv-status-blue-bg: rgb(59 130 246 / 0.14);
+    --fv-status-blue-text: var(--el-color-primary);
+    --fv-status-amber-bg: rgb(245 158 11 / 0.18);
+    --fv-status-amber-text: var(--el-color-warning-dark-2);
+    --fv-status-red-bg: rgb(239 68 68 / 0.14);
+    --fv-status-red-text: var(--el-color-danger);
+    --fv-status-green-bg: rgb(34 197 94 / 0.14);
+    --fv-status-green-text: var(--el-color-success);
+    --fv-status-warning-bg: rgb(245 158 11 / 0.16);
+    --fv-status-warning-text: var(--el-color-warning-dark-2);
+    --fv-status-danger-text: var(--el-color-danger);
+    --fv-closed-bar: var(--el-border-color);
     min-height: 300px;
     font-size: 13px;
     font-family: var(--el-font-family);
@@ -492,7 +512,7 @@
     gap: 4px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-    background: rgba(0, 0, 0, 0.05);
+    background: var(--fv-pill-bg);
     padding: 2px 9px;
     border-radius: 20px;
   }
@@ -515,6 +535,12 @@
     line-height: 1;
     color: var(--el-text-color-primary);
   }
+  .stat-n--success {
+    color: var(--el-color-success);
+  }
+  .stat-n--warning {
+    color: var(--el-color-warning-dark-2);
+  }
   .stat-l {
     font-size: 11px;
     color: var(--el-text-color-secondary);
@@ -530,7 +556,7 @@
     display: flex;
     padding: 0 20px;
     border-bottom: 1px solid var(--el-border-color-lighter);
-    background: #fff;
+    background: var(--fv-surface);
   }
   .tab-btn {
     font-size: 13px;
@@ -577,7 +603,7 @@
 
   /* ── Card ── */
   .card {
-    background: #fff;
+    background: var(--fv-surface-overlay);
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 10px;
     overflow: hidden;
@@ -665,24 +691,24 @@
     justify-content: center;
   }
   .ci-blue {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--fv-status-blue-bg);
+    color: var(--fv-status-blue-text);
   }
   .ci-amber {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--fv-status-amber-bg);
+    color: var(--fv-status-amber-text);
   }
   .ci-red {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--fv-status-red-bg);
+    color: var(--fv-status-red-text);
   }
   .ci-slate {
-    background: var(--el-fill-color);
+    background: var(--fv-soft-bg);
     color: var(--el-text-color-secondary);
   }
   .ci-green {
-    background: #dcfce7;
-    color: #15803d;
+    background: var(--fv-status-green-bg);
+    color: var(--fv-status-green-text);
   }
   .cost-name {
     font-size: 11px;
@@ -736,16 +762,16 @@
     border-radius: 4px;
   }
   .flag-warn {
-    background: #fef9c3;
-    color: #92400e;
+    background: var(--fv-status-warning-bg);
+    color: var(--fv-status-warning-text);
   }
   .flag-neutral {
-    background: var(--el-fill-color);
+    background: var(--fv-soft-bg);
     color: var(--el-text-color-secondary);
   }
   .closed-floors {
     font-size: 12px;
-    color: #dc2626;
+    color: var(--fv-status-danger-text);
   }
 
   /* 户型 */
@@ -841,7 +867,7 @@
     border-radius: 20px;
     cursor: pointer;
     border: 1px solid var(--el-border-color);
-    background: #fff;
+    background: var(--fv-surface-overlay);
     color: var(--el-text-color-secondary);
     transition: all 0.15s;
     font-family: inherit;
@@ -851,8 +877,7 @@
     color: var(--el-text-color-primary);
   }
   .filter-chip.active {
-    background: var(--el-text-color-primary);
-    color: #fff;
+    color: var(--el-text-color-primary);
     border-color: var(--el-text-color-primary);
   }
   .chip-dot {
@@ -862,24 +887,24 @@
     flex-shrink: 0;
   }
   .dot-available {
-    background: #16a34a;
+    background: var(--el-color-success);
   }
   .dot-locked {
-    background: #f59e0b;
+    background: var(--el-color-warning);
   }
   .dot-closed {
-    background: #9ca3af;
+    background: var(--el-border-color);
   }
   .chip-count {
     font-size: 11px;
     min-width: 18px;
     text-align: center;
-    background: rgba(0, 0, 0, 0.08);
+    background: var(--fv-chip-count-bg);
     border-radius: 10px;
     padding: 0 5px;
   }
   .filter-chip.active .chip-count {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--fv-chip-count-active-bg);
   }
 
   /* 房源网格 */
@@ -889,7 +914,7 @@
     gap: 12px;
   }
   .room-card {
-    background: #fff;
+    background: var(--fv-surface-overlay);
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 10px;
     padding: 14px;
@@ -904,7 +929,7 @@
   }
   .room-card:hover {
     border-color: var(--el-color-primary-light-5);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--fv-card-shadow-hover);
   }
 
   /* 状态色条 */
@@ -915,7 +940,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: #16a34a;
+    background: var(--el-color-success);
   }
   .room-card--locked::before {
     content: "";
@@ -924,7 +949,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: #f59e0b;
+    background: var(--el-color-warning);
   }
   .room-card--closed::before {
     content: "";
@@ -933,7 +958,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: #d1d5db;
+    background: var(--fv-closed-bar);
   }
 
   .rc-head {
