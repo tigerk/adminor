@@ -45,7 +45,7 @@ export const NOTICE_TODO_TYPE_HELPER = {
 
 export const NOTICE_TARGET_SCOPE_META = {
   ALL: SysNoticeTargetScopeEnumMeta.ALL,
-  LANDLORD: SysNoticeTargetScopeEnumMeta.LANDLORD,
+  OWNER: SysNoticeTargetScopeEnumMeta.OWNER,
   TENANT: SysNoticeTargetScopeEnumMeta.TENANT,
   ROLE: SysNoticeTargetScopeEnumMeta.SPECIFIED_ROLE
 } as const;

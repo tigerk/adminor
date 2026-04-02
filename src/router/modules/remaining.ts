@@ -55,6 +55,44 @@ export default [
       showLink: false
     }
   },
+  {
+    path: "/finance/owner-bill",
+    component: Layout,
+    meta: {
+      title: "业主账单",
+      showLink: false
+    },
+    children: [
+      {
+        path: "",
+        name: "OwnerBillEntry",
+        component: () => import("@/views/finance/owner-bill/index.vue"),
+        meta: {
+          title: "业主账单",
+          showLink: false
+        }
+      }
+    ]
+  },
+  {
+    path: "/finance/owner-withdraw",
+    component: Layout,
+    meta: {
+      title: "业主提现",
+      showLink: false
+    },
+    children: [
+      {
+        path: "",
+        name: "OwnerWithdrawEntry",
+        component: () => import("@/views/finance/owner-withdraw/index.vue"),
+        meta: {
+          title: "业主提现",
+          showLink: false
+        }
+      }
+    ]
+  },
   // 下面是一个无layout菜单的例子（一个全屏空白页面），因为这种情况极少发生，所以只需要在前端配置即可（配置路径：src/router/modules/remaining.ts）
   {
     path: "/empty",

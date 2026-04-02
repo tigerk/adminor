@@ -3798,6 +3798,806 @@ export type ResponseResultPaymentFlowFinanceItemVo = {
 };
 
 /**
+ * 业主提现申请查询DTO
+ */
+export type OwnerWithdrawApplyQueryDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 合同ID
+     */
+    contractId?: string;
+    /**
+     * 业主名称
+     */
+    ownerName?: string;
+    /**
+     * 提现单号
+     */
+    applyNo?: string;
+    /**
+     * 审批状态
+     */
+    approvalStatus?: number;
+    /**
+     * 打款状态
+     */
+    withdrawStatus?: number;
+};
+
+/**
+ * 业主提现汇总VO
+ */
+export type OwnerWithdrawSummaryVo = {
+    /**
+     * 提现申请数量
+     */
+    applyCount?: string;
+    /**
+     * 待审批数量
+     */
+    pendingApprovalCount?: string;
+    /**
+     * 打款中数量
+     */
+    processingCount?: string;
+    /**
+     * 打款成功数量
+     */
+    successCount?: string;
+    /**
+     * 申请总金额
+     */
+    totalApplyAmount?: number;
+    /**
+     * 实际到账总金额
+     */
+    totalActualAmount?: number;
+    /**
+     * 账户可用余额
+     */
+    availableAmount?: number;
+    /**
+     * 账户冻结金额
+     */
+    frozenAmount?: number;
+};
+
+export type ResponseResultOwnerWithdrawSummaryVo = {
+    code?: number;
+    message?: string;
+    data?: OwnerWithdrawSummaryVo;
+};
+
+/**
+ * 业主提现申请列表VO
+ */
+export type OwnerWithdrawApplyListVo = {
+    /**
+     * 提现申请ID
+     */
+    applyId?: string;
+    /**
+     * 提现单号
+     */
+    applyNo?: string;
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 业主名称
+     */
+    ownerName?: string;
+    /**
+     * 业主联系电话
+     */
+    ownerPhone?: string;
+    /**
+     * 申请金额
+     */
+    applyAmount?: number;
+    /**
+     * 手续费
+     */
+    feeAmount?: number;
+    /**
+     * 实际到账金额
+     */
+    actualAmount?: number;
+    /**
+     * 审批状态
+     */
+    approvalStatus?: number;
+    /**
+     * 打款状态
+     */
+    withdrawStatus?: number;
+    /**
+     * 收款人
+     */
+    payeeName?: string;
+    /**
+     * 开户行名称
+     */
+    payeeBankName?: string;
+    /**
+     * 打款渠道
+     */
+    channel?: string;
+    /**
+     * 申请时间
+     */
+    appliedAt?: string;
+    /**
+     * 审批时间
+     */
+    approvedAt?: string;
+    /**
+     * 打款时间
+     */
+    paidAt?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+};
+
+export type PageVoOwnerWithdrawApplyListVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<OwnerWithdrawApplyListVo>;
+};
+
+export type ResponseResultPageVoOwnerWithdrawApplyListVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoOwnerWithdrawApplyListVo;
+};
+
+/**
+ * 业主提现操作DTO
+ */
+export type OwnerWithdrawOperateDto = {
+    /**
+     * 提现申请ID
+     */
+    applyId?: string;
+    /**
+     * 操作类型
+     */
+    operateType?: OwnerWithdrawOperateEnum;
+    /**
+     * 失败或驳回原因
+     */
+    failureReason?: string;
+    /**
+     * 第三方交易号
+     */
+    thirdTradeNo?: string;
+    /**
+     * 打款渠道
+     */
+    channel?: string;
+};
+
+/**
+ * 业主提现操作类型枚举
+ */
+export type OwnerWithdrawOperateEnum = 'APPROVE' | 'REJECT' | 'PAYING' | 'SUCCESS' | 'FAIL' | 'CANCEL';
+
+/**
+ * 业主提现申请ID DTO
+ */
+export type OwnerWithdrawApplyIdDto = {
+    /**
+     * 提现申请ID
+     */
+    applyId?: string;
+};
+
+/**
+ * 业主账户流水VO
+ */
+export type OwnerAccountFlowVo = {
+    /**
+     * 流水ID
+     */
+    id?: string;
+    /**
+     * 业务类型
+     */
+    bizType?: string;
+    /**
+     * 业务ID
+     */
+    bizId?: string;
+    /**
+     * 流水方向
+     */
+    flowDirection?: string;
+    /**
+     * 变动类型
+     */
+    changeType?: string;
+    /**
+     * 变动金额
+     */
+    amount?: number;
+    /**
+     * 变动前可用金额
+     */
+    availableBefore?: number;
+    /**
+     * 变动后可用金额
+     */
+    availableAfter?: number;
+    /**
+     * 变动前冻结金额
+     */
+    frozenBefore?: number;
+    /**
+     * 变动后冻结金额
+     */
+    frozenAfter?: number;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+};
+
+/**
+ * 业主提现申请详情VO
+ */
+export type OwnerWithdrawApplyDetailVo = {
+    /**
+     * 提现申请ID
+     */
+    applyId?: string;
+    /**
+     * 提现单号
+     */
+    applyNo?: string;
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 业主名称
+     */
+    ownerName?: string;
+    /**
+     * 业主联系电话
+     */
+    ownerPhone?: string;
+    /**
+     * 申请金额
+     */
+    applyAmount?: number;
+    /**
+     * 手续费
+     */
+    feeAmount?: number;
+    /**
+     * 实际到账金额
+     */
+    actualAmount?: number;
+    /**
+     * 审批状态
+     */
+    approvalStatus?: number;
+    /**
+     * 打款状态
+     */
+    withdrawStatus?: number;
+    /**
+     * 收款人
+     */
+    payeeName?: string;
+    /**
+     * 收款账号
+     */
+    payeeAccountNo?: string;
+    /**
+     * 开户行名称
+     */
+    payeeBankName?: string;
+    /**
+     * 打款渠道
+     */
+    channel?: string;
+    /**
+     * 第三方交易号
+     */
+    thirdTradeNo?: string;
+    /**
+     * 失败原因
+     */
+    failureReason?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 申请时间
+     */
+    appliedAt?: string;
+    /**
+     * 审批时间
+     */
+    approvedAt?: string;
+    /**
+     * 打款时间
+     */
+    paidAt?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 更新时间
+     */
+    updateTime?: string;
+    /**
+     * 账户流水列表
+     */
+    flowList?: Array<OwnerAccountFlowVo>;
+};
+
+export type ResponseResultOwnerWithdrawApplyDetailVo = {
+    code?: number;
+    message?: string;
+    data?: OwnerWithdrawApplyDetailVo;
+};
+
+/**
+ * 业主提现申请创建DTO
+ */
+export type OwnerWithdrawCreateDto = {
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 申请金额
+     */
+    applyAmount?: number;
+    /**
+     * 手续费
+     */
+    feeAmount?: number;
+    /**
+     * 收款人姓名
+     */
+    payeeName?: string;
+    /**
+     * 收款账号
+     */
+    payeeAccountNo?: string;
+    /**
+     * 开户行名称
+     */
+    payeeBankName?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
+ * 业主账单查询DTO
+ */
+export type OwnerBillQueryDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 合同ID
+     */
+    contractId?: string;
+    /**
+     * 业主名称
+     */
+    ownerName?: string;
+    /**
+     * 账单编号
+     */
+    billNo?: string;
+    /**
+     * 审批状态
+     */
+    approvalStatus?: number;
+    /**
+     * 结算状态
+     */
+    settlementStatus?: number;
+};
+
+/**
+ * 业主账单汇总VO
+ */
+export type OwnerBillSummaryVo = {
+    /**
+     * 账单数量
+     */
+    billCount?: string;
+    /**
+     * 收入总额
+     */
+    totalIncomeAmount?: number;
+    /**
+     * 应付总额
+     */
+    totalPayableAmount?: number;
+    /**
+     * 可提现总额
+     */
+    totalWithdrawableAmount?: number;
+};
+
+export type ResponseResultOwnerBillSummaryVo = {
+    code?: number;
+    message?: string;
+    data?: OwnerBillSummaryVo;
+};
+
+/**
+ * 业主账单列表VO
+ */
+export type OwnerBillListVo = {
+    /**
+     * 账单ID
+     */
+    billId?: string;
+    /**
+     * 账单编号
+     */
+    billNo?: string;
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 业主名称
+     */
+    ownerName?: string;
+    /**
+     * 业主联系电话
+     */
+    ownerPhone?: string;
+    /**
+     * 合同ID
+     */
+    contractId?: string;
+    /**
+     * 合同编号
+     */
+    contractNo?: string;
+    /**
+     * 合作模式
+     */
+    cooperationMode?: OwnerCooperationModeEnum;
+    /**
+     * 账期开始日期
+     */
+    billStart?: string;
+    /**
+     * 账期结束日期
+     */
+    billEnd?: string;
+    /**
+     * 收入金额
+     */
+    incomeAmount?: number;
+    /**
+     * 减免金额
+     */
+    reductionAmount?: number;
+    /**
+     * 费用金额
+     */
+    expenseAmount?: number;
+    /**
+     * 应付金额
+     */
+    payableAmount?: number;
+    /**
+     * 可提现金额
+     */
+    withdrawableAmount?: number;
+    /**
+     * 账单状态
+     */
+    billStatus?: number;
+    /**
+     * 审批状态
+     */
+    approvalStatus?: number;
+    /**
+     * 结算状态
+     */
+    settlementStatus?: number;
+    /**
+     * 生成时间
+     */
+    generatedAt?: string;
+    /**
+     * 审批时间
+     */
+    approvedAt?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+};
+
+/**
+ * 业主合作模式枚举
+ */
+export type OwnerCooperationModeEnum = 'LIGHT_MANAGED' | 'MASTER_LEASE';
+
+export type PageVoOwnerBillListVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<OwnerBillListVo>;
+};
+
+export type ResponseResultPageVoOwnerBillListVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoOwnerBillListVo;
+};
+
+/**
+ * 业主账单ID DTO
+ */
+export type OwnerBillIdDto = {
+    /**
+     * 业主账单ID
+     */
+    billId?: string;
+};
+
+/**
+ * 业主账单详情VO
+ */
+export type OwnerBillDetailVo = {
+    /**
+     * 账单ID
+     */
+    billId?: string;
+    /**
+     * 账单编号
+     */
+    billNo?: string;
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 业主名称
+     */
+    ownerName?: string;
+    /**
+     * 业主联系电话
+     */
+    ownerPhone?: string;
+    /**
+     * 合同ID
+     */
+    contractId?: string;
+    /**
+     * 合同编号
+     */
+    contractNo?: string;
+    /**
+     * 合作模式
+     */
+    cooperationMode?: OwnerCooperationModeEnum;
+    /**
+     * 账期开始日期
+     */
+    billStart?: string;
+    /**
+     * 账期结束日期
+     */
+    billEnd?: string;
+    /**
+     * 收入金额
+     */
+    incomeAmount?: number;
+    /**
+     * 减免金额
+     */
+    reductionAmount?: number;
+    /**
+     * 费用金额
+     */
+    expenseAmount?: number;
+    /**
+     * 调账金额
+     */
+    adjustAmount?: number;
+    /**
+     * 应付金额
+     */
+    payableAmount?: number;
+    /**
+     * 已结金额
+     */
+    settledAmount?: number;
+    /**
+     * 已提现金额
+     */
+    withdrawnAmount?: number;
+    /**
+     * 冻结金额
+     */
+    freezeAmount?: number;
+    /**
+     * 可提现金额
+     */
+    withdrawableAmount?: number;
+    /**
+     * 账单状态
+     */
+    billStatus?: number;
+    /**
+     * 审批状态
+     */
+    approvalStatus?: number;
+    /**
+     * 结算状态
+     */
+    settlementStatus?: number;
+    /**
+     * 生成时间
+     */
+    generatedAt?: string;
+    /**
+     * 审批时间
+     */
+    approvedAt?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 更新时间
+     */
+    updateTime?: string;
+    /**
+     * 账单明细列表
+     */
+    lineList?: Array<OwnerBillLineVo>;
+    /**
+     * 账单减免列表
+     */
+    reductionList?: Array<OwnerBillReductionVo>;
+};
+
+/**
+ * 业主账单明细VO
+ */
+export type OwnerBillLineVo = {
+    /**
+     * 明细ID
+     */
+    id?: string;
+    /**
+     * 来源类型
+     */
+    sourceType?: string;
+    /**
+     * 来源ID
+     */
+    sourceId?: string;
+    /**
+     * 明细类型
+     */
+    itemType?: string;
+    /**
+     * 明细名称
+     */
+    itemName?: string;
+    /**
+     * 方向
+     */
+    direction?: string;
+    /**
+     * 金额
+     */
+    amount?: number;
+    /**
+     * 业务日期
+     */
+    bizDate?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 公式快照
+     */
+    formulaSnapshot?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+};
+
+/**
+ * 业主账单减免明细VO
+ */
+export type OwnerBillReductionVo = {
+    /**
+     * 减免明细ID
+     */
+    id?: string;
+    /**
+     * 来源类型
+     */
+    sourceType?: string;
+    /**
+     * 来源ID
+     */
+    sourceId?: string;
+    /**
+     * 减免类型
+     */
+    reductionType?: string;
+    /**
+     * 减免名称
+     */
+    reductionName?: string;
+    /**
+     * 减免金额
+     */
+    amount?: number;
+    /**
+     * 业务日期
+     */
+    bizDate?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 规则快照
+     */
+    ruleSnapshot?: string;
+    /**
+     * 状态
+     */
+    status?: number;
+};
+
+export type ResponseResultOwnerBillDetailVo = {
+    code?: number;
+    message?: string;
+    data?: OwnerBillDetailVo;
+};
+
+/**
  * 租客账单财务页查询DTO
  */
 export type LeaseBillFinanceQueryDto = {
@@ -5179,6 +5979,735 @@ export type ContractSealDeleteDto = {
      * 合同电子印章ID
      */
     id: string;
+};
+
+/**
+ * 业主承担方枚举
+ */
+export type OwnerBearTypeEnum = 'PLATFORM' | 'OWNER' | 'SHARED';
+
+/**
+ * 业主企业信息DTO
+ */
+export type OwnerCompanyDto = {
+    /**
+     * 业主企业ID
+     */
+    id?: string;
+    /**
+     * SaaS企业ID
+     */
+    companyId?: string;
+    /**
+     * 企业名称
+     */
+    name?: string;
+    /**
+     * 统一社会信用代码
+     */
+    uscc?: string;
+    /**
+     * 法人姓名
+     */
+    legalPerson?: string;
+    /**
+     * 法人证件类型
+     */
+    legalPersonIdType?: 'ID_CARD' | 'PASSPORT' | 'HONGKONG_MACAO' | 'TAIWAN';
+    /**
+     * 法人证件号码
+     */
+    legalPersonIdNo?: string;
+    /**
+     * 联系人姓名
+     */
+    contactName?: string;
+    /**
+     * 联系人电话
+     */
+    contactPhone?: string;
+    /**
+     * 注册地址
+     */
+    registeredAddress?: string;
+    /**
+     * 标签列表
+     */
+    tags?: Array<string>;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * 创建人
+     */
+    createBy?: string;
+};
+
+/**
+ * 业主合同DTO
+ */
+export type OwnerContractDto = {
+    /**
+     * 合同ID
+     */
+    id?: string;
+    /**
+     * SaaS企业ID
+     */
+    companyId?: string;
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 合作模式
+     */
+    cooperationMode?: OwnerCooperationModeEnum;
+    /**
+     * 合同编号
+     */
+    contractNo?: string;
+    /**
+     * 合同模板ID
+     */
+    contractTemplateId?: string;
+    /**
+     * 合同内容快照
+     */
+    contractContent?: string;
+    /**
+     * 签署状态
+     */
+    signStatus?: OwnerSignStatusEnum;
+    /**
+     * 合同开始日期
+     */
+    contractStart?: string;
+    /**
+     * 合同结束日期
+     */
+    contractEnd?: string;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * 审批状态
+     */
+    approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 创建人
+     */
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 更新人
+     */
+    updateBy?: string;
+    /**
+     * 更新时间
+     */
+    updateTime?: string;
+};
+
+/**
+ * 业主合同房源DTO
+ */
+export type OwnerContractHouseDto = {
+    /**
+     * 合同房源ID
+     */
+    id?: string;
+    /**
+     * 房源ID
+     */
+    houseId?: string;
+    /**
+     * 房源名称
+     */
+    houseName?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 轻托管结算规则
+     */
+    settlementRule?: OwnerSettlementRuleDto;
+    /**
+     * 轻托管免租规则
+     */
+    rentFreeRule?: OwnerRentFreeRuleDto;
+};
+
+/**
+ * 业主费用计算方式枚举
+ */
+export type OwnerFeeModeEnum = 'RATIO' | 'FIXED';
+
+/**
+ * 业主免租计算方式枚举
+ */
+export type OwnerFreeCalcModeEnum = 'BY_DAYS' | 'FIXED' | 'RATIO';
+
+/**
+ * 业主免租类型枚举
+ */
+export type OwnerFreeTypeEnum = 'BUILT_IN' | 'OUTSIDE';
+
+/**
+ * 业主结算收入口径枚举
+ */
+export type OwnerIncomeBasisEnum = 'RECEIVED' | 'RECEIVABLE';
+
+/**
+ * 包租免租规则DTO
+ */
+export type OwnerLeaseFreeRuleDto = {
+    /**
+     * 免租类型
+     */
+    freeType?: OwnerFreeTypeEnum;
+    /**
+     * 开始日期
+     */
+    startDate?: string;
+    /**
+     * 结束日期
+     */
+    endDate?: string;
+    /**
+     * 计算方式
+     */
+    calcMode?: OwnerFreeCalcModeEnum;
+    /**
+     * 免租金额
+     */
+    freeAmount?: number;
+    /**
+     * 免租比例
+     */
+    freeRatio?: number;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
+ * 包租规则DTO
+ */
+export type OwnerLeaseRuleDto = {
+    /**
+     * 总月租金
+     */
+    rentAmount?: number;
+    /**
+     * 总押金
+     */
+    depositAmount?: number;
+    /**
+     * 押金月数
+     */
+    depositMonths?: number;
+    /**
+     * 付款月数
+     */
+    paymentMonths?: number;
+    /**
+     * 付款方式文案
+     */
+    payWay?: string;
+    /**
+     * 收租类型
+     */
+    rentDueType?: 'EARLY' | 'FIXED' | 'LATE';
+    /**
+     * 固定收租日
+     */
+    rentDueDay?: number;
+    /**
+     * 收租偏移天数
+     */
+    rentDueOffsetDays?: number;
+    /**
+     * 首付日期
+     */
+    firstPayDate?: string;
+    /**
+     * 计费开始日期
+     */
+    billingStart?: string;
+    /**
+     * 计费结束日期
+     */
+    billingEnd?: string;
+    /**
+     * 折算方式
+     */
+    prorateType?: OwnerProrateTypeEnum;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
+ * 业主个人信息DTO
+ */
+export type OwnerPersonalDto = {
+    /**
+     * 个人业主ID
+     */
+    id?: string;
+    /**
+     * SaaS企业ID
+     */
+    companyId?: string;
+    /**
+     * 姓名
+     */
+    name?: string;
+    /**
+     * 性别
+     */
+    gender?: 'UNKNOWN' | 'MALE' | 'FEMALE';
+    /**
+     * 证件类型
+     */
+    idType?: 'ID_CARD' | 'PASSPORT' | 'HONGKONG_MACAO' | 'TAIWAN';
+    /**
+     * 证件号码
+     */
+    idNo?: string;
+    /**
+     * 联系电话
+     */
+    phone?: string;
+    /**
+     * 标签列表
+     */
+    tags?: Array<string>;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * 创建人
+     */
+    createBy?: string;
+};
+
+/**
+ * 业主包租折算方式枚举
+ */
+export type OwnerProrateTypeEnum = 'BY_DAYS' | 'FULL_PERIOD';
+
+/**
+ * 轻托管免租规则DTO
+ */
+export type OwnerRentFreeRuleDto = {
+    /**
+     * 免租类型
+     */
+    freeType?: OwnerFreeTypeEnum;
+    /**
+     * 开始日期
+     */
+    startDate?: string;
+    /**
+     * 结束日期
+     */
+    endDate?: string;
+    /**
+     * 承担方式
+     */
+    bearType?: OwnerBearTypeEnum;
+    /**
+     * 业主承担比例
+     */
+    ownerRatio?: number;
+    /**
+     * 平台承担比例
+     */
+    platformRatio?: number;
+    /**
+     * 计算方式
+     */
+    calcMode?: OwnerFreeCalcModeEnum;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
+ * 业主轻托管结算模式枚举
+ */
+export type OwnerSettlementModeEnum = 'FIXED' | 'SHARE_GROSS' | 'SHARE_NET' | 'GUARANTEE_PLUS_SHARE' | 'AGENCY';
+
+/**
+ * 轻托管结算规则DTO
+ */
+export type OwnerSettlementRuleDto = {
+    /**
+     * 收入口径
+     */
+    incomeBasis?: OwnerIncomeBasisEnum;
+    /**
+     * 结算模式
+     */
+    settlementMode?: OwnerSettlementModeEnum;
+    /**
+     * 保底租金
+     */
+    guaranteedRentAmount?: number;
+    /**
+     * 佣金方式
+     */
+    commissionMode?: OwnerFeeModeEnum;
+    /**
+     * 佣金值
+     */
+    commissionValue?: number;
+    /**
+     * 服务费方式
+     */
+    serviceFeeMode?: OwnerFeeModeEnum;
+    /**
+     * 服务费值
+     */
+    serviceFeeValue?: number;
+    /**
+     * 税费承担方式
+     */
+    bearTaxType?: OwnerBearTypeEnum;
+    /**
+     * 生效开始日期
+     */
+    effectiveStart?: string;
+    /**
+     * 生效结束日期
+     */
+    effectiveEnd?: string;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
+ * 业主合同签署状态枚举
+ */
+export type OwnerSignStatusEnum = 'PENDING' | 'SIGNED';
+
+/**
+ * 业主主体类型枚举
+ */
+export type OwnerTypeEnum = 'PERSONAL' | 'COMPANY';
+
+/**
+ * 业主更新DTO
+ */
+export type OwnerUpdateDto = {
+    /**
+     * 业主类型
+     */
+    ownerType?: OwnerTypeEnum;
+    /**
+     * 个人业主信息
+     */
+    ownerPersonal?: OwnerPersonalDto;
+    /**
+     * 企业业主信息
+     */
+    ownerCompany?: OwnerCompanyDto;
+    /**
+     * 业主合同
+     */
+    ownerContract?: OwnerContractDto;
+    /**
+     * 合同房源列表
+     */
+    contractHouseList?: Array<OwnerContractHouseDto>;
+    /**
+     * 包租规则
+     */
+    ownerLeaseRule?: OwnerLeaseRuleDto;
+    /**
+     * 包租免租规则列表
+     */
+    ownerLeaseFreeRuleList?: Array<OwnerLeaseFreeRuleDto>;
+    /**
+     * 更新人
+     */
+    updateBy?: string;
+};
+
+/**
+ * 业主合同状态更新DTO
+ */
+export type OwnerContractStatusDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+};
+
+/**
+ * 业主查询DTO
+ */
+export type OwnerQueryDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 业主名称
+     */
+    ownerName?: string;
+    /**
+     * 业主手机号
+     */
+    ownerPhone?: string;
+    /**
+     * 业主类型
+     */
+    ownerType?: OwnerTypeEnum;
+    /**
+     * 签署状态
+     */
+    signStatus?: OwnerSignStatusEnum;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+};
+
+/**
+ * 业主列表VO
+ */
+export type OwnerListVo = {
+    /**
+     * 合同ID
+     */
+    contractId?: string;
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 业主类型
+     */
+    ownerType?: OwnerTypeEnum;
+    /**
+     * 业主名称
+     */
+    ownerName?: string;
+    /**
+     * 业主联系电话
+     */
+    ownerPhone?: string;
+    /**
+     * 合同编号
+     */
+    contractNo?: string;
+    /**
+     * 合作模式
+     */
+    cooperationMode?: OwnerCooperationModeEnum;
+    /**
+     * 合同模板名称
+     */
+    contractTemplateName?: string;
+    /**
+     * 房源名称列表
+     */
+    houseNames?: string;
+    /**
+     * 合同开始日期
+     */
+    contractStart?: string;
+    /**
+     * 合同结束日期
+     */
+    contractEnd?: string;
+    /**
+     * 签署状态
+     */
+    signStatus?: OwnerSignStatusEnum;
+    /**
+     * 状态
+     */
+    status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+};
+
+export type PageVoOwnerListVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<OwnerListVo>;
+};
+
+export type ResponseResultPageVoOwnerListVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoOwnerListVo;
+};
+
+/**
+ * 业主合同ID DTO
+ */
+export type OwnerContractIdDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
+};
+
+/**
+ * 业主详情VO
+ */
+export type OwnerDetailVo = {
+    /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 业主类型
+     */
+    ownerType?: OwnerTypeEnum;
+    /**
+     * 个人业主信息
+     */
+    ownerPersonal?: OwnerPersonalDto;
+    /**
+     * 企业业主信息
+     */
+    ownerCompany?: OwnerCompanyDto;
+    /**
+     * 业主合同
+     */
+    ownerContract?: OwnerContractDto;
+    /**
+     * 合同房源列表
+     */
+    contractHouseList?: Array<OwnerContractHouseDto>;
+    /**
+     * 包租规则
+     */
+    ownerLeaseRule?: OwnerLeaseRuleDto;
+    /**
+     * 包租免租规则列表
+     */
+    ownerLeaseFreeRuleList?: Array<OwnerLeaseFreeRuleDto>;
+    /**
+     * 创建人
+     */
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createTime?: string;
+    /**
+     * 更新人
+     */
+    updateBy?: string;
+    /**
+     * 更新时间
+     */
+    updateTime?: string;
+};
+
+export type ResponseResultOwnerDetailVo = {
+    code?: number;
+    message?: string;
+    data?: OwnerDetailVo;
+};
+
+/**
+ * 业主创建DTO
+ */
+export type OwnerCreateDto = {
+    /**
+     * 业主类型
+     */
+    ownerType?: OwnerTypeEnum;
+    /**
+     * 个人业主信息
+     */
+    ownerPersonal?: OwnerPersonalDto;
+    /**
+     * 企业业主信息
+     */
+    ownerCompany?: OwnerCompanyDto;
+    /**
+     * 业主合同
+     */
+    ownerContract?: OwnerContractDto;
+    /**
+     * 合同房源列表
+     */
+    contractHouseList?: Array<OwnerContractHouseDto>;
+    /**
+     * 包租规则
+     */
+    ownerLeaseRule?: OwnerLeaseRuleDto;
+    /**
+     * 包租免租规则列表
+     */
+    ownerLeaseFreeRuleList?: Array<OwnerLeaseFreeRuleDto>;
+    /**
+     * 创建人
+     */
+    createBy?: string;
 };
 
 /**
@@ -7897,7 +9426,7 @@ export type ContractTemplateStatusEnum = 'UNEFFECTIVE' | 'EFFECTIVE';
 
 export type ContractTypeEnum = 'TENANT' | 'OWNER' | 'BOOKING' | 'CHECKOUT';
 
-export type LandlordParamsEnum = 'CONTRACT_NUMBER' | 'HOUSE_ADDRESS' | 'PROJECT_NAME' | 'BUILDING_NUMBER' | 'UNIT_NUMBER' | 'HOUSE_NUMBER' | 'SHARED_ROOM_NUMBER' | 'SIGNED_HOUSE_LIST' | 'HOUSE_PROPERTY_NUMBER' | 'HOUSE_TYPE' | 'PROPERTY_TYPE' | 'TOTAL_AREA' | 'SIGNED_AREA' | 'TENANT_NAME';
+export type OwnerParamsEnum = 'CONTRACT_NUMBER' | 'HOUSE_ADDRESS' | 'PROJECT_NAME' | 'BUILDING_NUMBER' | 'UNIT_NUMBER' | 'HOUSE_NUMBER' | 'SHARED_ROOM_NUMBER' | 'SIGNED_HOUSE_LIST' | 'HOUSE_PROPERTY_NUMBER' | 'HOUSE_TYPE' | 'PROPERTY_TYPE' | 'TOTAL_AREA' | 'SIGNED_AREA' | 'TENANT_NAME';
 
 export type TenantParamsEnum = 'CONTRACT_CODE' | 'SIGNED_HOUSE_LIST' | 'TOTAL_AREA' | 'OWNER_NAME' | 'OWNER_PHONE' | 'OWNER_ID_CARD' | 'TENANT_NAME' | 'TENANT_PHONE' | 'TENANT_ID_CARD' | 'LEASE_START' | 'LEASE_END' | 'LEASE_DAYS' | 'RENT_PRICE' | 'PAYMENT_MONTHS' | 'DEPOSIT_MONTHS' | 'TENANT_REMARK' | 'OWNER_SIGNATURE' | 'TENANT_SIGNATURE' | 'COMPANY_SEAL' | 'CONTRACT_DATE';
 
@@ -7966,7 +9495,7 @@ export type RoomTypeEnum = 'MASTER_BEDROOM' | 'SECOND_BEDROOM' | 'BREAK' | 'HALF
 
 export type SysMessageTypeEnum = 'SYSTEM' | 'CONTRACT_REMIND' | 'BILL_REMIND' | 'REPAIR_NOTIFY' | 'PRIVATE_CHAT';
 
-export type SysNoticeTargetScopeEnum = 'ALL' | 'LANDLORD' | 'TENANT' | 'SPECIFIED_ROLE';
+export type SysNoticeTargetScopeEnum = 'ALL' | 'OWNER' | 'TENANT' | 'SPECIFIED_ROLE';
 
 export type SysNoticeTypeEnum = 'SYSTEM' | 'OPERATION';
 
@@ -9542,6 +11071,138 @@ export type Detail1Responses = {
 
 export type Detail1Response = Detail1Responses[keyof Detail1Responses];
 
+export type WithdrawSummaryData = {
+    body: OwnerWithdrawApplyQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/owner/withdraw/summary';
+};
+
+export type WithdrawSummaryResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultOwnerWithdrawSummaryVo;
+};
+
+export type WithdrawSummaryResponse = WithdrawSummaryResponses[keyof WithdrawSummaryResponses];
+
+export type WithdrawPageData = {
+    body: OwnerWithdrawApplyQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/owner/withdraw/page';
+};
+
+export type WithdrawPageResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoOwnerWithdrawApplyListVo;
+};
+
+export type WithdrawPageResponse = WithdrawPageResponses[keyof WithdrawPageResponses];
+
+export type WithdrawOperateData = {
+    body: OwnerWithdrawOperateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/finance/owner/withdraw/operate';
+};
+
+export type WithdrawOperateResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type WithdrawOperateResponse = WithdrawOperateResponses[keyof WithdrawOperateResponses];
+
+export type WithdrawDetailData = {
+    body: OwnerWithdrawApplyIdDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/owner/withdraw/detail';
+};
+
+export type WithdrawDetailResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultOwnerWithdrawApplyDetailVo;
+};
+
+export type WithdrawDetailResponse = WithdrawDetailResponses[keyof WithdrawDetailResponses];
+
+export type WithdrawCreateData = {
+    body: OwnerWithdrawCreateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/finance/owner/withdraw/create';
+};
+
+export type WithdrawCreateResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type WithdrawCreateResponse = WithdrawCreateResponses[keyof WithdrawCreateResponses];
+
+export type BillSummaryData = {
+    body: OwnerBillQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/owner/bill/summary';
+};
+
+export type BillSummaryResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultOwnerBillSummaryVo;
+};
+
+export type BillSummaryResponse = BillSummaryResponses[keyof BillSummaryResponses];
+
+export type BillPageData = {
+    body: OwnerBillQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/owner/bill/page';
+};
+
+export type BillPageResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoOwnerBillListVo;
+};
+
+export type BillPageResponse = BillPageResponses[keyof BillPageResponses];
+
+export type BillDetailData = {
+    body: OwnerBillIdDto;
+    path?: never;
+    query?: never;
+    url: '/saas/finance/owner/bill/detail';
+};
+
+export type BillDetailResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultOwnerBillDetailVo;
+};
+
+export type BillDetailResponse = BillDetailResponses[keyof BillDetailResponses];
+
 export type Summary1Data = {
     body: LeaseBillFinanceQueryDto;
     path?: never;
@@ -9960,6 +11621,110 @@ export type Create3Responses = {
 
 export type Create3Response = Create3Responses[keyof Create3Responses];
 
+export type Update3Data = {
+    body: OwnerUpdateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/update';
+};
+
+export type Update3Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type Update3Response = Update3Responses[keyof Update3Responses];
+
+export type UpdateStatusData = {
+    body: OwnerContractStatusDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/updateStatus';
+};
+
+export type UpdateStatusResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type UpdateStatusResponse = UpdateStatusResponses[keyof UpdateStatusResponses];
+
+export type List4Data = {
+    body: OwnerQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/owner/list';
+};
+
+export type List4Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoOwnerListVo;
+};
+
+export type List4Response = List4Responses[keyof List4Responses];
+
+export type Detail3Data = {
+    body: OwnerContractIdDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/owner/detail';
+};
+
+export type Detail3Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultOwnerDetailVo;
+};
+
+export type Detail3Response = Detail3Responses[keyof Detail3Responses];
+
+export type Delete6Data = {
+    body: OwnerContractIdDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/delete';
+};
+
+export type Delete6Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type Delete6Response = Delete6Responses[keyof Delete6Responses];
+
+export type Create4Data = {
+    body: OwnerCreateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/create';
+};
+
+export type Create4Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type Create4Response = Create4Responses[keyof Create4Responses];
+
 export type UpdateLeaseData = {
     body: TenantCreateDto;
     path?: never;
@@ -10348,7 +12113,7 @@ export type CancelBookingResponses = {
 
 export type CancelBookingResponse = CancelBookingResponses[keyof CancelBookingResponses];
 
-export type UpdateStatusData = {
+export type UpdateStatus1Data = {
     body: UserUpdateStatusDto;
     path?: never;
     query: {
@@ -10357,14 +12122,14 @@ export type UpdateStatusData = {
     url: '/saas/company/user/updateStatus';
 };
 
-export type UpdateStatusResponses = {
+export type UpdateStatus1Responses = {
     /**
      * OK
      */
     200: ResponseResultLong;
 };
 
-export type UpdateStatusResponse = UpdateStatusResponses[keyof UpdateStatusResponses];
+export type UpdateStatus1Response = UpdateStatus1Responses[keyof UpdateStatus1Responses];
 
 export type AssignUserRoleData = {
     body: CompanyUserRoleAssignDto;
@@ -10382,21 +12147,21 @@ export type AssignUserRoleResponses = {
 
 export type AssignUserRoleResponse = AssignUserRoleResponses[keyof AssignUserRoleResponses];
 
-export type List4Data = {
+export type List5Data = {
     body: UserQueryDto;
     path?: never;
     query?: never;
     url: '/saas/company/user/list';
 };
 
-export type List4Responses = {
+export type List5Responses = {
     /**
      * OK
      */
     200: ResponseResultPageVoUserVo;
 };
 
-export type List4Response = List4Responses[keyof List4Responses];
+export type List5Response = List5Responses[keyof List5Responses];
 
 export type ListRoleIdsData = {
     body: CompanyUserIdDto;
@@ -10414,23 +12179,23 @@ export type ListRoleIdsResponses = {
 
 export type ListRoleIdsResponse = ListRoleIdsResponses[keyof ListRoleIdsResponses];
 
-export type Delete6Data = {
+export type Delete7Data = {
     body: Array<string>;
     path?: never;
     query?: never;
     url: '/saas/company/user/delete';
 };
 
-export type Delete6Responses = {
+export type Delete7Responses = {
     /**
      * OK
      */
     200: ResponseResultInteger;
 };
 
-export type Delete6Response = Delete6Responses[keyof Delete6Responses];
+export type Delete7Response = Delete7Responses[keyof Delete7Responses];
 
-export type Create4Data = {
+export type Create5Data = {
     body: UserCreateDto;
     path?: never;
     query: {
@@ -10439,14 +12204,14 @@ export type Create4Data = {
     url: '/saas/company/user/create';
 };
 
-export type Create4Responses = {
+export type Create5Responses = {
     /**
      * OK
      */
     200: ResponseResultUserCreateVo;
 };
 
-export type Create4Response = Create4Responses[keyof Create4Responses];
+export type Create5Response = Create5Responses[keyof Create5Responses];
 
 export type GetOrderPageData = {
     body: CompanyOrderPageDto;
@@ -10962,7 +12727,7 @@ export type SelectOneResponses = {
 
 export type SelectOneResponse = SelectOneResponses[keyof SelectOneResponses];
 
-export type List5Data = {
+export type List6Data = {
     body?: never;
     path?: never;
     query: {
@@ -10971,14 +12736,14 @@ export type List5Data = {
     url: '/saas/sys/dict/list';
 };
 
-export type List5Responses = {
+export type List6Responses = {
     /**
      * OK
      */
     200: ResponseResultListDictVo;
 };
 
-export type List5Response = List5Responses[keyof List5Responses];
+export type List6Response = List6Responses[keyof List6Responses];
 
 export type GetDictData = {
     body?: never;
@@ -11049,21 +12814,21 @@ export type PoiTipsResponses = {
 
 export type PoiTipsResponse = PoiTipsResponses[keyof PoiTipsResponses];
 
-export type List6Data = {
+export type List7Data = {
     body?: never;
     path?: never;
     query?: never;
     url: '/saas/region/list';
 };
 
-export type List6Responses = {
+export type List7Responses = {
     /**
      * OK
      */
     200: ResponseResultListRegionVo;
 };
 
-export type List6Response = List6Responses[keyof List6Responses];
+export type List7Response = List7Responses[keyof List7Responses];
 
 export type ThreeListData = {
     body?: never;
@@ -11201,7 +12966,7 @@ export type UserOptionsResponses = {
 
 export type UserOptionsResponse = UserOptionsResponses[keyof UserOptionsResponses];
 
-export type Detail3Data = {
+export type Detail4Data = {
     body?: never;
     path: {
         id: string;
@@ -11210,14 +12975,14 @@ export type Detail3Data = {
     url: '/saas/company/user/detail/{id}';
 };
 
-export type Detail3Responses = {
+export type Detail4Responses = {
     /**
      * OK
      */
     200: ResponseResultUserVo;
 };
 
-export type Detail3Response = Detail3Responses[keyof Detail3Responses];
+export type Detail4Response = Detail4Responses[keyof Detail4Responses];
 
 export type CaptchaData = {
     body?: never;
@@ -11235,21 +13000,21 @@ export type CaptchaResponses = {
     200: unknown;
 };
 
-export type Delete7Data = {
+export type Delete8Data = {
     body?: never;
     path?: never;
     query?: never;
     url: '/saas/sys/dict/delete/{id}';
 };
 
-export type Delete7Responses = {
+export type Delete8Responses = {
     /**
      * OK
      */
     200: ResponseResultBoolean;
 };
 
-export type Delete7Response = Delete7Responses[keyof Delete7Responses];
+export type Delete8Response = Delete8Responses[keyof Delete8Responses];
 
 export type Index3Data = {
     body?: never;

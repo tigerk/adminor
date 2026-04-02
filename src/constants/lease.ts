@@ -1,8 +1,15 @@
-import { ContractNatureEnumMeta, ContractTemplateStatusEnumMeta, ContractTypeEnumMeta, LeaseFirstBillDayEnumMeta, LeaseRentDueTypeEnumMeta, LeaseStatusEnumMeta } from "@/types/generated/enum.meta";
+import {
+  ContractNatureEnumMeta,
+  ContractTemplateStatusEnumMeta,
+  ContractTypeEnumMeta,
+  LeaseFirstBillDayEnumMeta,
+  LeaseRentDueTypeEnumMeta,
+  LeaseStatusEnumMeta
+} from "@/types/generated/enum.meta";
 
 export const CONTRACT_TYPE_OPTIONS = [
   { label: ContractTypeEnumMeta.TENANT.name, value: ContractTypeEnumMeta.TENANT.code },
-  // { label: "房东合同", value: 2 },
+  { label: ContractTypeEnumMeta.OWNER.name, value: ContractTypeEnumMeta.OWNER.code },
   { label: ContractTypeEnumMeta.BOOKING.name, value: ContractTypeEnumMeta.BOOKING.code },
   { label: ContractTypeEnumMeta.CHECKOUT.name, value: ContractTypeEnumMeta.CHECKOUT.code }
 ];

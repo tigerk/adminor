@@ -1,5 +1,69 @@
 // AUTO GENERATED - DO NOT EDIT
 
+export const OwnerWithdrawOperateEnumMeta = {
+  APPROVE: {"value":"APPROVE"},
+  REJECT: {"value":"REJECT"},
+  PAYING: {"value":"PAYING"},
+  SUCCESS: {"value":"SUCCESS"},
+  FAIL: {"value":"FAIL"},
+  CANCEL: {"value":"CANCEL"}
+} as const;
+
+export const OwnerCooperationModeEnumMeta = {
+  LIGHT_MANAGED: {"value":"LIGHT_MANAGED"},
+  MASTER_LEASE: {"value":"MASTER_LEASE"}
+} as const;
+
+export const OwnerBearTypeEnumMeta = {
+  PLATFORM: {"value":"PLATFORM"},
+  OWNER: {"value":"OWNER"},
+  SHARED: {"value":"SHARED"}
+} as const;
+
+export const OwnerFeeModeEnumMeta = {
+  RATIO: {"value":"RATIO"},
+  FIXED: {"value":"FIXED"}
+} as const;
+
+export const OwnerFreeCalcModeEnumMeta = {
+  BY_DAYS: {"value":"BY_DAYS"},
+  FIXED: {"value":"FIXED"},
+  RATIO: {"value":"RATIO"}
+} as const;
+
+export const OwnerFreeTypeEnumMeta = {
+  BUILT_IN: {"value":"BUILT_IN"},
+  OUTSIDE: {"value":"OUTSIDE"}
+} as const;
+
+export const OwnerIncomeBasisEnumMeta = {
+  RECEIVED: {"value":"RECEIVED"},
+  RECEIVABLE: {"value":"RECEIVABLE"}
+} as const;
+
+export const OwnerProrateTypeEnumMeta = {
+  BY_DAYS: {"value":"BY_DAYS"},
+  FULL_PERIOD: {"value":"FULL_PERIOD"}
+} as const;
+
+export const OwnerSettlementModeEnumMeta = {
+  FIXED: {"value":"FIXED"},
+  SHARE_GROSS: {"value":"SHARE_GROSS"},
+  SHARE_NET: {"value":"SHARE_NET"},
+  GUARANTEE_PLUS_SHARE: {"value":"GUARANTEE_PLUS_SHARE"},
+  AGENCY: {"value":"AGENCY"}
+} as const;
+
+export const OwnerSignStatusEnumMeta = {
+  PENDING: {"value":"PENDING"},
+  SIGNED: {"value":"SIGNED"}
+} as const;
+
+export const OwnerTypeEnumMeta = {
+  PERSONAL: {"value":"PERSONAL"},
+  COMPANY: {"value":"COMPANY"}
+} as const;
+
 export const BooleanEnumMeta = {
   FALSE: {"value":0},
   TRUE: {"value":1}
@@ -231,8 +295,8 @@ export const ContractTypeEnumMeta = {
   CHECKOUT: {"value":"CHECKOUT","code":4,"name":"退租"}
 } as const;
 
-export const LandlordParamsEnumMeta = {
-  CONTRACT_NUMBER: {"value":"${房东合同编号}","key":"${房东合同编号}"},
+export const OwnerParamsEnumMeta = {
+  CONTRACT_NUMBER: {"value":"${业主合同编号}","key":"${业主合同编号}"},
   HOUSE_ADDRESS: {"value":"${房屋地址}","key":"${房屋地址}"},
   PROJECT_NAME: {"value":"${小区/项目名称}","key":"${小区/项目名称}"},
   BUILDING_NUMBER: {"value":"${楼栋号}","key":"${楼栋号}"},
@@ -497,7 +561,7 @@ export const SysMessageTypeEnumMeta = {
 
 export const SysNoticeTargetScopeEnumMeta = {
   ALL: {"value":"ALL","code":1,"name":"全员"},
-  LANDLORD: {"value":"LANDLORD","code":2,"name":"房东"},
+  OWNER: {"value":"OWNER","code":2,"name":"业主"},
   TENANT: {"value":"TENANT","code":3,"name":"租客"},
   SPECIFIED_ROLE: {"value":"SPECIFIED_ROLE","code":4,"name":"指定角色"}
 } as const;
