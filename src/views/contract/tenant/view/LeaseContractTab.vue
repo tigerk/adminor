@@ -73,7 +73,7 @@
   // 监听 props 变化更新本地状态
   import { computed, h, ref, watch } from "vue";
   import { Checked, Document, Download } from "@element-plus/icons-vue";
-  import { LEASE_SIGN_STATUS_OPTIONS, LEASE_STATUS_ENUM } from "@/constants";
+  import { LEASE_SIGN_STATUS_OPTIONS, LEASE_STATUS_MAP } from "@/constants";
   import { message } from "@/utils/message";
   import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
@@ -85,7 +85,7 @@
     leaseContract: LeaseContractVo | null;
     leaseId: string; // 租约ID，用于事件回调
     tenantStatus: number;
-    createTime?: Date;
+    createTime?: string | Date;
     readonly?: boolean;
   }
 
@@ -118,7 +118,7 @@
     if (props.readonly) {
       return false;
     }
-    return props.tenantStatus === LEASE_STATUS_ENUM.TO_SIGN.code;
+    return props.tenantStatus === LEASE_STATUS_MAP.TO_SIGN.code;
   });
 
   // 下载合同

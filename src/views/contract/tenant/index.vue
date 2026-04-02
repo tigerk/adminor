@@ -112,7 +112,7 @@
 <script setup lang="ts">
   import { onMounted, ref, watch } from "vue";
   import { useRoute } from "vue-router";
-  import { LEAST_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
+  import { LEASE_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import View from "~icons/ep/view";
@@ -161,7 +161,7 @@
   } = useTenant();
 
   const tenantTypeOptions = TENANT_TYPE_OPTIONS;
-  const statusOptions = [{ label: "全部", value: undefined }, ...LEAST_STATUS_OPTIONS];
+  const statusOptions = [{ label: "全部", value: undefined }, ...LEASE_STATUS_OPTIONS];
 
   function applyRouteQuery() {
     queryForm.status = typeof route.query.status === "string" && route.query.status !== "" ? Number(route.query.status) : undefined;

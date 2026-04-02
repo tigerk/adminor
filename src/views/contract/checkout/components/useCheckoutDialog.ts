@@ -2,12 +2,12 @@ import { h, ref } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { message } from "@/utils/message";
-import { LEASE_STATUS_ENUM } from "@/constants";
+import { LEASE_STATUS_MAP } from "@/constants";
 import type { LeaseListVo } from "@/types";
 import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
 
 /** 可退租的状态：待签字(1)、在租中(2) */
-const CAN_CHECKOUT_STATUS: number[] = [LEASE_STATUS_ENUM.TO_SIGN.code, LEASE_STATUS_ENUM.EFFECTIVE.code];
+const CAN_CHECKOUT_STATUS: number[] = [LEASE_STATUS_MAP.TO_SIGN.code, LEASE_STATUS_MAP.EFFECTIVE.code];
 
 /**
  * 退租弹框 hook

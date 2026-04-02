@@ -34,7 +34,7 @@
   // ==================== Emits ====================
   const emit = defineEmits<{
     (e: "status-change", status: number): void;
-    (e: "submitted", instanceId: number): void;
+    (e: "submitted", instanceId: string | number): void;
   }>();
 
   // ==================== 响应式数据 ====================
@@ -153,7 +153,7 @@
     try {
       await ElMessageBox.confirm("确定要撤回审批吗？", "提示", { type: "warning" });
 
-      const res = await withdrawApproval(instance.value!.id);
+      const res = await withdrawApproval(Number(instance.value!.id));
 
       if (res.code === 0) {
         ElMessage.success("已撤回");

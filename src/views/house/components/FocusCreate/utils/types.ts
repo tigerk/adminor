@@ -3,7 +3,7 @@
 import type { FocusBuildingDto, FocusCreateDto, FocusHouseDto } from "@/types";
 
 export interface FormProps {
-  formInline: FocusCreateDto;
+  formInline: LocalFocusCreateDto;
 }
 
 /**

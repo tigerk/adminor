@@ -2082,6 +2082,10 @@ export type RoomCreateDto = {
      * 房间价格配置
      */
     priceConfig?: PriceConfigDto;
+    /**
+     * 更新人
+     */
+    updateBy?: string;
 };
 
 /**

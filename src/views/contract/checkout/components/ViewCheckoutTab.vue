@@ -36,7 +36,7 @@
             <span class="text-value">{{ checkoutDetail.expectedPaymentDate || "-" }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="退租原因" label-align="right" :span="2">
-            <span class="text-value">{{ checkoutDetail.checkoutReason || "-" }}</span>
+            <span class="text-value">{{ checkoutDetail.remark || "-" }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="违约原因" label-align="right" :span="2">
             <span class="text-value">{{ checkoutDetail.breachReason || "-" }}</span>

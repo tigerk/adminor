@@ -1,7 +1,7 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { APPROVAL_STATUS_ENUM, CHECKOUT_FEE_TYPE_ENUM, CHECKOUT_STATUS_ENUM, FEE_DIRECTION_ENUM } from "@/constants";
+import { APPROVAL_STATUS_META, CHECKOUT_FEE_TYPE_CODE_MAP, CHECKOUT_STATUS_META, FEE_DIRECTION_ENUM } from "@/constants";
 import type { LeaseCheckoutVo, LeaseCheckoutDto, LeaseCheckoutInitVo } from "@/types";
 import type { CheckoutFeeFormItem, CheckoutPageFormData } from "@/types/models/checkout";
 import { getCheckoutDetail, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
@@ -58,14 +58,14 @@ export function useCheckout() {
   });
 
   function syncDepositRefundFee(amount: number) {
-    const targetIndex = form.feeList.findIndex(f => f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
+    const targetIndex = form.feeList.findIndex(f => f.feeType === CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND);
     if (targetIndex > -1) {
       form.feeList[targetIndex].feeAmount = amount;
       return;
     }
 
     addFee({
-      feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
+      feeType: CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND,
       feeName: "押金退还",
       feeAmount: amount,
       feeDirection: FEE_DIRECTION_ENUM.REFUND
@@ -75,7 +75,7 @@ export function useCheckout() {
   // 是否可以编辑
   const canEdit = computed(() => {
     if (!checkoutDetail.value) return true;
-    return checkoutDetail.value.status === CHECKOUT_STATUS_ENUM.DRAFT || checkoutDetail.value.approvalStatus === APPROVAL_STATUS_ENUM.REJECTED;
+    return checkoutDetail.value.status === CHECKOUT_STATUS_META.DRAFT.code || checkoutDetail.value.approvalStatus === APPROVAL_STATUS_META.REJECTED.code;
   });
 
   // 是否可以提交
@@ -105,7 +105,7 @@ export function useCheckout() {
       if (res.data.unpaidBills && res.data.unpaidBills.length > 0) {
         res.data.unpaidBills.forEach(bill => {
           addFee({
-            feeType: CHECKOUT_FEE_TYPE_ENUM.RENT,
+            feeType: CHECKOUT_FEE_TYPE_CODE_MAP.RENT,
             feeName: `${bill.billTypeName ?? ""} (${bill.billPeriod ?? ""})`,
             feeAmount: bill.unpaidAmount ?? 0,
             feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,

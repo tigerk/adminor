@@ -1,111 +1,80 @@
+import { ContractNatureEnumMeta, ContractTemplateStatusEnumMeta, ContractTypeEnumMeta, LeaseFirstBillDayEnumMeta, LeaseRentDueTypeEnumMeta, LeaseStatusEnumMeta } from "@/types/generated/enum.meta";
+
 export const CONTRACT_TYPE_OPTIONS = [
-  { label: "租客合同", value: 1 },
+  { label: ContractTypeEnumMeta.TENANT.name, value: ContractTypeEnumMeta.TENANT.code },
   // { label: "房东合同", value: 2 },
-  { label: "预定合同", value: 3 },
-  { label: "退租合同", value: 4 }
-] as const;
+  { label: ContractTypeEnumMeta.BOOKING.name, value: ContractTypeEnumMeta.BOOKING.code },
+  { label: ContractTypeEnumMeta.CHECKOUT.name, value: ContractTypeEnumMeta.CHECKOUT.code }
+];
 
-export const CONTRACT_TYPE_ENUM = {
-  TENANT: 1,
-  LANDLORD: 2,
-  BOOKING: 3,
-  CHECKOUT: 4
-} as const;
+export const CONTRACT_TYPE_META = ContractTypeEnumMeta;
 
-export const CONTRACT_TEMPLATE_STATUS_OPTIONS = [
-  { label: "未启用", value: 0 },
-  { label: "启用中", value: 1 }
-] as const;
+export const CONTRACT_TEMPLATE_STATUS_OPTIONS = Object.values(ContractTemplateStatusEnumMeta).map(item => ({ label: item.name, value: item.code }));
 
-/**
- * 租客状态选项
- * 租客状态：0=待审批，1=待签字，2=在租中，3=已退租，-1=已作废
- */
-export const LEAST_STATUS_OPTIONS = [
-  { label: "待审批", value: 0 },
-  { label: "待签字", value: 1 },
-  { label: "在租中", value: 2 },
-  { label: "已退租", value: 3 },
-  { label: "已作废", value: -1 }
-] as const;
+export const LEASE_STATUS_OPTIONS = Object.values(LeaseStatusEnumMeta)
+  .sort((a, b) => a.sortOrder - b.sortOrder)
+  .map(item => ({ label: item.name, value: item.code }));
 
-// 签约类型：1=新签，2=续签，3=转租，4=换房
-export const LEASE_CONTRACT_NATURE_OPTIONS = [
-  { label: "新签", value: 1 },
-  { label: "续签", value: 2 },
-  { label: "转租", value: 3 },
-  { label: "换房", value: 4 }
-] as const;
+export const LEASE_CONTRACT_NATURE_OPTIONS = Object.values(ContractNatureEnumMeta).map(item => ({ label: item.name, value: item.code }));
 
-export const LEASE_CONTRACT_NATURE_ENUM = {
+export const LEASE_CONTRACT_NATURE_STATUS_MAP = {
   NEW: {
-    code: 1,
-    name: "新签",
+    code: ContractNatureEnumMeta.NEW_SIGN.code,
+    name: ContractNatureEnumMeta.NEW_SIGN.name,
     color: "#409eff"
   },
   RENEW: {
-    code: 2,
-    name: "续签",
+    code: ContractNatureEnumMeta.RENEWAL.code,
+    name: ContractNatureEnumMeta.RENEWAL.name,
     color: "#67c23a"
   },
   TRANSFER: {
-    code: 3,
-    name: "转租",
+    code: ContractNatureEnumMeta.SUBLET.code,
+    name: ContractNatureEnumMeta.SUBLET.name,
     color: "#e6a23c"
   },
   CHANGE_ROOM: {
-    code: 4,
-    name: "换房",
+    code: ContractNatureEnumMeta.RELOCATION.code,
+    name: ContractNatureEnumMeta.RELOCATION.name,
     color: "#909399"
   }
 } as const;
 
-// 合同状态：0=待签字，1=在租中，2=已退租，3=已作废
 export const LEASE_SIGN_STATUS_OPTIONS = [
   { label: "待签字", value: 0 },
   { label: "已签字", value: 1 }
 ] as const;
 
-// 收租类型：1=提前，2=固定，3=延后
-export const RENT_DUE_TYPE_OPTIONS = [
-  { label: "提前", value: 1 },
-  { label: "固定", value: 2 },
-  { label: "延后", value: 3 }
-] as const;
+export const RENT_DUE_TYPE_OPTIONS = Object.values(LeaseRentDueTypeEnumMeta).map(item => ({ label: item.name, value: item.code }));
 
-// 首期账单收租日：0=跟随合同起租日，1=跟随合同创建日
-export const FIRST_BILL_DAY_OPTIONS = [
-  { label: "跟随合同起租日", value: 0 },
-  { label: "跟随合同创建日", value: 1 }
-] as const;
+export const FIRST_BILL_DAY_OPTIONS = Object.values(LeaseFirstBillDayEnumMeta).map(item => ({ label: item.name, value: item.code }));
 
-/* 租客状态枚举
- * 租客状态：0=待审批，1=待签字，2=在租中，3=已退租，-1=已作废
- */
-export const LEASE_STATUS_ENUM = {
+export const LEASE_STATUS_META = LeaseStatusEnumMeta;
+
+export const LEASE_STATUS_MAP = {
   PENDING_APPROVAL: {
-    code: 0,
-    name: "待审批",
-    color: "#FF2800"
+    code: LEASE_STATUS_META.PENDING_APPROVAL.code,
+    name: LEASE_STATUS_META.PENDING_APPROVAL.name,
+    color: LEASE_STATUS_META.PENDING_APPROVAL.color
   },
   TO_SIGN: {
-    code: 1,
-    name: "待签字",
-    color: "#FF2800"
+    code: LEASE_STATUS_META.TO_SIGN.code,
+    name: LEASE_STATUS_META.TO_SIGN.name,
+    color: LEASE_STATUS_META.TO_SIGN.color
   },
   EFFECTIVE: {
-    code: 2,
-    name: "在租中",
-    color: "#52C41A"
+    code: LEASE_STATUS_META.EFFECTIVE.code,
+    name: LEASE_STATUS_META.EFFECTIVE.name,
+    color: LEASE_STATUS_META.EFFECTIVE.color
   },
   TERMINATED: {
-    code: 3,
-    name: "已退租",
-    color: "#EAA212"
+    code: LEASE_STATUS_META.TERMINATED.code,
+    name: LEASE_STATUS_META.TERMINATED.name,
+    color: LEASE_STATUS_META.TERMINATED.color
   },
   CANCELLED: {
-    code: -1,
-    name: "已作废",
-    color: "#DBDBDB"
+    code: LEASE_STATUS_META.CANCELLED.code,
+    name: LEASE_STATUS_META.CANCELLED.name,
+    color: LEASE_STATUS_META.CANCELLED.color
   }
 } as const;

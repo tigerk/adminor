@@ -4,7 +4,7 @@
   import type { PaginationProps } from "@pureadmin/table";
   import { PureTableBar } from "@/components/RePureTableBar";
   import { deleteMessage, getMessageAdminPage, sendMessage } from "@/api/sys-notice";
-  import { NOTICE_MESSAGE_TYPE_ENUM, NOTICE_MESSAGE_TYPE_HELPER } from "@/constants";
+  import { NOTICE_MESSAGE_TYPE_HELPER, NOTICE_MESSAGE_TYPE_META } from "@/constants";
   import { message } from "@/utils/message";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import Plus from "~icons/ep/plus";
@@ -25,7 +25,7 @@
     receiverId: undefined as number | undefined,
     title: "",
     content: "",
-    msgType: NOTICE_MESSAGE_TYPE_ENUM.SYSTEM.code
+    msgType: NOTICE_MESSAGE_TYPE_META.SYSTEM.code
   });
 
   const rules = {
@@ -35,7 +35,7 @@
     msgType: [{ required: true, message: "请选择消息类型", trigger: "change" }]
   };
 
-  const msgTypeOptions = Object.values(NOTICE_MESSAGE_TYPE_ENUM).map(item => ({
+  const msgTypeOptions = Object.values(NOTICE_MESSAGE_TYPE_META).map(item => ({
     label: item.name,
     value: item.code
   }));
@@ -116,7 +116,7 @@
     form.receiverId = undefined;
     form.title = "";
     form.content = "";
-    form.msgType = NOTICE_MESSAGE_TYPE_ENUM.SYSTEM.code;
+    form.msgType = NOTICE_MESSAGE_TYPE_META.SYSTEM.code;
     dialogVisible.value = true;
   }
 

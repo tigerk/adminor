@@ -45,7 +45,6 @@
       price: undefined,
       availableDate: undefined,
       vacancyStartTime: undefined,
-      roomStatus: undefined,
       remark: undefined,
       imageList: [],
       videoList: [],

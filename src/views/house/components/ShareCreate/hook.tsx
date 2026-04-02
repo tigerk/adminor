@@ -74,7 +74,6 @@ function convertRoomDetailToCreateDto(room: RoomDetailVo): RoomCreateDto {
     price: room.price,
     availableDate: room.availableDate,
     vacancyStartTime: room.vacancyStartTime,
-    roomStatus: room.roomStatus,
     remark: room.remark,
     facilities: room.facilities ?? [],
     tags: room.tags ?? [],

@@ -33,7 +33,7 @@ export function useFacilityEdit() {
 
         const result: FacilityItemDto[] = Object.entries(selectedFacilities).map(([name, count]) => ({
           name,
-          count: Number(count) // 将 count 转换为 number 类型
+          count: String(count)
         }));
 
         console.log("selectedOptions is", result);

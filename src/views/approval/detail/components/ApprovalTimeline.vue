@@ -2,7 +2,7 @@
   import { computed } from "vue";
   import { ChatLineSquare, Check, Clock, Close, Document, DocumentDelete, Minus, User } from "@element-plus/icons-vue";
   import type { ApprovalActionVo } from "@/types";
-  import { APPROVAL_ACTION_STATUS_HELPER, APPROVAL_ACTION_TYPE_HELPER } from "@/constants";
+  import { APPROVAL_ACTION_STATUS_META_HELPER, APPROVAL_ACTION_TYPE_META_HELPER } from "@/constants";
 
   // ====== Types ======
 
@@ -26,16 +26,16 @@
 
   /** 获取分组状态 */
   const getGroupStatus = (actions: ApprovalActionVo[]): "done" | "reject" | "active" | "wait" => {
-    if (actions.some(a => APPROVAL_ACTION_TYPE_HELPER.isApprove(a.action))) {
+    if (actions.some(a => APPROVAL_ACTION_TYPE_META_HELPER.isApprove(a.action))) {
       return "done";
     }
-    if (actions.some(a => APPROVAL_ACTION_TYPE_HELPER.isReject(a.action))) {
+    if (actions.some(a => APPROVAL_ACTION_TYPE_META_HELPER.isReject(a.action))) {
       return "reject";
     }
-    if (actions.every(a => APPROVAL_ACTION_STATUS_HELPER.isSkipped(a.status))) {
+    if (actions.every(a => APPROVAL_ACTION_STATUS_META_HELPER.isSkipped(a.status))) {
       return "wait";
     }
-    if (actions.some(a => APPROVAL_ACTION_STATUS_HELPER.isPending(a.status))) {
+    if (actions.some(a => APPROVAL_ACTION_STATUS_META_HELPER.isPending(a.status))) {
       return "active";
     }
     return "wait";
@@ -77,10 +77,10 @@
 
   /** 获取单个审批人的状态 */
   const getActionStatus = (action: ApprovalActionVo) => {
-    if (APPROVAL_ACTION_STATUS_HELPER.isPending(action.status)) return "active";
-    if (APPROVAL_ACTION_STATUS_HELPER.isSkipped(action.status)) return "wait";
-    if (APPROVAL_ACTION_TYPE_HELPER.isApprove(action.action)) return "done";
-    if (APPROVAL_ACTION_TYPE_HELPER.isReject(action.action)) return "reject";
+    if (APPROVAL_ACTION_STATUS_META_HELPER.isPending(action.status)) return "active";
+    if (APPROVAL_ACTION_STATUS_META_HELPER.isSkipped(action.status)) return "wait";
+    if (APPROVAL_ACTION_TYPE_META_HELPER.isApprove(action.action)) return "done";
+    if (APPROVAL_ACTION_TYPE_META_HELPER.isReject(action.action)) return "reject";
     return "active";
   };
 

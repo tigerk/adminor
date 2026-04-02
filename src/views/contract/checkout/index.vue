@@ -68,7 +68,7 @@
   import Search from "~icons/ep/search";
   import Refresh from "~icons/ep/refresh";
   import View from "~icons/ep/view";
-  import { APPROVAL_STATUS_ENUM, CHECKOUT_STATUS_OPTIONS, CHECKOUT_TYPE_OPTIONS } from "@/constants";
+  import { APPROVAL_STATUS_META, CHECKOUT_STATUS_OPTIONS, CHECKOUT_TYPE_OPTIONS } from "@/constants";
   import { getCheckoutDetail, queryCheckoutList } from "@/api/contract/checkout";
   import type { LeaseCheckoutVo, LeaseCheckoutQueryDto } from "@/types";
   import ViewCheckoutTab from "@/views/contract/checkout/components/ViewCheckoutTab.vue";
@@ -104,10 +104,10 @@
   });
 
   const approvalOptions = [
-    { label: "审批中", value: APPROVAL_STATUS_ENUM.PENDING },
-    { label: "已通过", value: APPROVAL_STATUS_ENUM.APPROVED },
-    { label: "已驳回", value: APPROVAL_STATUS_ENUM.REJECTED },
-    { label: "已撤回", value: APPROVAL_STATUS_ENUM.WITHDRAWN }
+    { label: "审批中", value: APPROVAL_STATUS_META.PENDING.code },
+    { label: "已通过", value: APPROVAL_STATUS_META.APPROVED.code },
+    { label: "已驳回", value: APPROVAL_STATUS_META.REJECTED.code },
+    { label: "已撤回", value: APPROVAL_STATUS_META.WITHDRAWN.code }
   ];
 
   const columns = [

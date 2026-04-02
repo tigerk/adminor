@@ -4,6 +4,7 @@
   import { onMounted, reactive, ref } from "vue";
   import type { PaginationProps } from "@pureadmin/table";
   import { Refresh } from "@element-plus/icons-vue";
+  import { IconifyIconOnline } from "@/components/ReIcon";
 
   defineOptions({
     name: "SecurityLog"

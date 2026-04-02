@@ -15,7 +15,7 @@
       supervisorOptions: [],
       sortOrder: 0,
       status: 1,
-      isStore: 0,
+      isStore: false,
       remark: ""
     })
   });

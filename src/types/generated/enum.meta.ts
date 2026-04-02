@@ -11,9 +11,9 @@ export const DeletedEnumMeta = {
 } as const;
 
 export const GenderEnumMeta = {
-  UNKNOWN: {"value":0},
-  MALE: {"value":1},
-  FEMALE: {"value":2}
+  UNKNOWN: {"value":"UNKNOWN","code":0,"name":"未知"},
+  MALE: {"value":"MALE","code":1,"name":"男"},
+  FEMALE: {"value":"FEMALE","code":2,"name":"女"}
 } as const;
 
 export const IdTypeEnumMeta = {

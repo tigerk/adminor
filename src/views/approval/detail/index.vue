@@ -21,7 +21,7 @@
   import { getApprovalInstanceDetail, handleApproval } from "@/api/approval";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import type { ApprovalInstanceVo } from "@/types";
-  import { APPROVAL_ACTION_TYPE_ENUM, APPROVAL_ACTION_TYPE_HELPER, APPROVAL_BIZ_TYPE_HELPER, APPROVAL_INSTANCE_STATUS_HELPER } from "@/constants";
+  import { APPROVAL_ACTION_TYPE_META, APPROVAL_ACTION_TYPE_META_HELPER, APPROVAL_BIZ_TYPE_META_HELPER, APPROVAL_INSTANCE_STATUS_MAP_HELPER } from "@/constants";
   import ApprovalTimeline from "@/views/approval/detail/components/ApprovalTimeline.vue";
 
   // ====== Types ======
@@ -46,7 +46,7 @@
   const approvalFormRef = ref<FormInstance>();
   const submitting = ref(false);
   const approvalForm = ref<ApprovalForm>({
-    action: APPROVAL_ACTION_TYPE_ENUM.APPROVE.code,
+    action: APPROVAL_ACTION_TYPE_META.APPROVE.code,
     remark: ""
   });
   const showConfirmDialog = ref(false);
@@ -54,9 +54,9 @@
   const { openTenantViewDialog } = useTenant();
 
   // ====== Computed ======
-  const canApprove = computed(() => props.from === "todo" && APPROVAL_INSTANCE_STATUS_HELPER.isPending(detail.value?.status));
+  const canApprove = computed(() => props.from === "todo" && APPROVAL_INSTANCE_STATUS_MAP_HELPER.isPending(detail.value?.status));
 
-  const isRejectAction = computed(() => APPROVAL_ACTION_TYPE_HELPER.isReject(approvalForm.value.action));
+  const isRejectAction = computed(() => APPROVAL_ACTION_TYPE_META_HELPER.isReject(approvalForm.value.action));
 
   const approvalFormRules = computed<FormRules>(() => ({
     action: [{ required: true, message: "请选择审批结果", trigger: "change" }],
@@ -75,11 +75,11 @@
   type StatusKey = "pending" | "approved" | "rejected" | "withdrawn" | "cancelled";
 
   const getStatusKey = (status: number): StatusKey => {
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isPending(status)) return "pending";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isApproved(status)) return "approved";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isRejected(status)) return "rejected";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isWithdrawn(status)) return "withdrawn";
-    if (APPROVAL_INSTANCE_STATUS_HELPER.isCancelled(status)) return "cancelled";
+    if (APPROVAL_INSTANCE_STATUS_MAP_HELPER.isPending(status)) return "pending";
+    if (APPROVAL_INSTANCE_STATUS_MAP_HELPER.isApproved(status)) return "approved";
+    if (APPROVAL_INSTANCE_STATUS_MAP_HELPER.isRejected(status)) return "rejected";
+    if (APPROVAL_INSTANCE_STATUS_MAP_HELPER.isWithdrawn(status)) return "withdrawn";
+    if (APPROVAL_INSTANCE_STATUS_MAP_HELPER.isCancelled(status)) return "cancelled";
     return "pending";
   };
 
@@ -99,11 +99,11 @@
   const handleViewBusinessDetail = () => {
     if (!detail.value) return;
     const { bizType, bizId } = detail.value;
-    if (APPROVAL_BIZ_TYPE_HELPER.isTenantCheckin(bizType)) {
+    if (APPROVAL_BIZ_TYPE_META_HELPER.isTenantCheckin(bizType)) {
       openTenantViewDialog("查看", { leaseId: bizId }, { readonly: true });
-    } else if (APPROVAL_BIZ_TYPE_HELPER.isTenantCheckout(bizType)) {
+    } else if (APPROVAL_BIZ_TYPE_META_HELPER.isTenantCheckout(bizType)) {
       ElMessage.warning("退租详情功能开发中");
-    } else if (APPROVAL_BIZ_TYPE_HELPER.isHouseCreate(bizType)) {
+    } else if (APPROVAL_BIZ_TYPE_META_HELPER.isHouseCreate(bizType)) {
       ElMessage.warning("房源详情功能开发中");
     } else {
       ElMessage.warning("暂不支持该业务类型的详情查看");
@@ -114,7 +114,7 @@
   const handleShowApprovalPanel = () => {
     showApprovalPanel.value = true;
     approvalForm.value = {
-      action: APPROVAL_ACTION_TYPE_ENUM.APPROVE.code,
+      action: APPROVAL_ACTION_TYPE_META.APPROVE.code,
       remark: ""
     };
     nextTick(() => approvalFormRef.value?.clearValidate());
@@ -123,7 +123,7 @@
   const handleCancelApproval = () => {
     showApprovalPanel.value = false;
     approvalForm.value = {
-      action: APPROVAL_ACTION_TYPE_ENUM.APPROVE.code,
+      action: APPROVAL_ACTION_TYPE_META.APPROVE.code,
       remark: ""
     };
     approvalFormRef.value?.clearValidate();
@@ -150,7 +150,7 @@
         remark: approvalForm.value.remark || undefined
       });
       ElMessage.success(
-        APPROVAL_ACTION_TYPE_HELPER.isApprove(approvalForm.value.action) ? "审批通过成功" : `已${APPROVAL_ACTION_TYPE_HELPER.getNameByCode(approvalForm.value.action)}该审批`
+        APPROVAL_ACTION_TYPE_META_HELPER.isApprove(approvalForm.value.action) ? "审批通过成功" : `已${APPROVAL_ACTION_TYPE_META_HELPER.getNameByCode(approvalForm.value.action)}该审批`
       );
       showApprovalPanel.value = false;
       fetchDetail().then();
@@ -185,7 +185,7 @@
       </span>
       <span class="ad-banner__body">
         <span class="ad-banner__title">
-          {{ APPROVAL_INSTANCE_STATUS_HELPER.getNameByCode(detail?.status) }}
+          {{ APPROVAL_INSTANCE_STATUS_MAP_HELPER.getNameByCode(detail?.status) }}
         </span>
         <span class="ad-banner__sub">{{ detail?.bizTypeName }} · {{ detail?.instanceNo }}</span>
       </span>
@@ -203,9 +203,9 @@
             <div class="ad-panel__picks">
               <div
                 class="ad-pick ad-pick--pass"
-                :class="{ 'is-on': approvalForm.action === APPROVAL_ACTION_TYPE_ENUM.APPROVE.code }"
+                :class="{ 'is-on': approvalForm.action === APPROVAL_ACTION_TYPE_META.APPROVE.code }"
                 @click="
-                  approvalForm.action = APPROVAL_ACTION_TYPE_ENUM.APPROVE.code;
+                  approvalForm.action = APPROVAL_ACTION_TYPE_META.APPROVE.code;
                   handleActionChange();
                 "
               >
@@ -218,9 +218,9 @@
               </div>
               <div
                 class="ad-pick ad-pick--deny"
-                :class="{ 'is-on': approvalForm.action === APPROVAL_ACTION_TYPE_ENUM.REJECT.code }"
+                :class="{ 'is-on': approvalForm.action === APPROVAL_ACTION_TYPE_META.REJECT.code }"
                 @click="
-                  approvalForm.action = APPROVAL_ACTION_TYPE_ENUM.REJECT.code;
+                  approvalForm.action = APPROVAL_ACTION_TYPE_META.REJECT.code;
                   handleActionChange();
                 "
               >
@@ -334,7 +334,7 @@
         <el-button type="primary" link size="small" class="ad-sec__link" @click="handleViewBusinessDetail">查看完整信息 →</el-button>
       </div>
 
-      <template v-if="APPROVAL_BIZ_TYPE_HELPER.isTenantCheckin(detail?.bizType)">
+      <template v-if="APPROVAL_BIZ_TYPE_META_HELPER.isTenantCheckin(detail?.bizType)">
         <div class="ad-tenant">
           <span class="ad-tenant__av">
             <el-icon :size="17"><UserFilled /></el-icon>

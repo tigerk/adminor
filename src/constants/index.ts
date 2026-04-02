@@ -1,4 +1,13 @@
-// src/constants/house.ts
+import { GenderEnumMeta, IdTypeEnumMeta, TenantTypeEnumMeta } from "@/types/generated/enum.meta";
+
+/**
+ * Constants naming rules:
+ * - `*_META`: direct backend-synced enum metadata
+ * - `*_MAP`: frontend-extended mapping with extra UI/business fields
+ * - `*_META_HELPER` / `*_MAP_HELPER`: helper methods bound to the corresponding source
+ * - `*_CODE_MAP`: flat key-to-code mapping for direct comparisons/assignment
+ * - `*_OPTIONS`: UI option lists for selects, radios, and filters
+ */
 
 export * from "./house";
 export * from "./room";
@@ -9,12 +18,6 @@ export * from "./notice";
 export * from "./checkout";
 export * from "./booking";
 
-/**
- * 根据值获取租赁类型
- * @param options 类型选项数组
- * @param code 类型的值
- * @returns 对应的类型对象或 undefined
- */
 export function getOptionByCode(options: any[], code: any) {
   return options.find(item => item.value === code);
 }
@@ -24,28 +27,8 @@ export function getOptionNameByCode(options: readonly { label: string; value: an
   return options.find(item => item.value === code)?.label || "";
 }
 
-/**
- * 性别选项：1-男，2-女
- */
-export const GENDER_OPTIONS = [
-  { label: "男", value: 1 },
-  { label: "女", value: 2 }
-] as const;
-
-/**
- * 证件类型选项
- */
-export const ID_TYPE_OPTIONS = [
-  { label: "身份证", value: 0 },
-  { label: "护照", value: 1 },
-  { label: "港澳通行证", value: 2 },
-  { label: "台胞证", value: 3 }
-] as const;
-
-/**
- * 租客类型选项
- */
-export const TENANT_TYPE_OPTIONS = [
-  { label: "个人", value: 0 },
-  { label: "企业", value: 1 }
-] as const;
+export const GENDER_OPTIONS = Object.values(GenderEnumMeta)
+  .filter(item => item.code !== GenderEnumMeta.UNKNOWN.code)
+  .map(item => ({ label: item.name, value: item.code }));
+export const ID_TYPE_OPTIONS = Object.values(IdTypeEnumMeta).map(item => ({ label: item.name, value: item.code }));
+export const TENANT_TYPE_OPTIONS = Object.values(TenantTypeEnumMeta).map(item => ({ label: item.name, value: item.code }));

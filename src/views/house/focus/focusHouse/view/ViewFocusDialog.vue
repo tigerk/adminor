@@ -5,7 +5,7 @@
   import { getRoomList } from "@/api/house/room";
   import { getDictDataByDictCode } from "@/api/sys/dict";
   import { IconifyIconOnline } from "@/components/ReIcon";
-  import { FILTER_TYPE } from "@/constants";
+  import { ROOM_FILTER_TYPE } from "@/constants";
   import type { DictData, FocusCreateDto, RoomListVo, RoomTotalItemVo } from "@/types";
   import { OccupancyStatusEnumMeta } from "@/types/generated/enum.meta";
   import { ELECTRICITY_TYPE_OPTIONS, getOptionByCode, HEATING_TYPE_OPTIONS, WATER_TYPE_OPTIONS } from "@/constants";
@@ -52,7 +52,7 @@
           roomStatusName: room.occupancyStatusName || enumMeta?.name || "未知",
           roomStatusColor: room.occupancyStatusColor || enumMeta?.color,
           total: 1,
-          filterType: FILTER_TYPE.BY_STATUS,
+          filterType: ROOM_FILTER_TYPE.BY_STATUS,
           roomStatus: statusCode
         });
       }
@@ -63,8 +63,8 @@
     return [
       { roomStatusName: "全部", total: roomList.value.length, filterType: undefined, roomStatus: undefined, roomStatusColor: undefined },
       ...statusList,
-      { roomStatusName: "已锁定", total: roomStats.value.locked, filterType: FILTER_TYPE.BY_LOCKED, roomStatus: undefined, roomStatusColor: "#f59e0b" },
-      { roomStatusName: "已关闭", total: roomStats.value.closed, filterType: FILTER_TYPE.BY_CLOSED, roomStatus: undefined, roomStatusColor: "#9ca3af" }
+      { roomStatusName: "已锁定", total: roomStats.value.locked, filterType: ROOM_FILTER_TYPE.BY_LOCKED, roomStatus: undefined, roomStatusColor: "#f59e0b" },
+      { roomStatusName: "已关闭", total: roomStats.value.closed, filterType: ROOM_FILTER_TYPE.BY_CLOSED, roomStatus: undefined, roomStatusColor: "#9ca3af" }
     ].filter(item => item.filterType === undefined || (item.total ?? 0) > 0);
   });
 
@@ -82,11 +82,11 @@
   function handleStatusClick(item: RoomTotalItemVo & { filterType?: number; roomStatus?: number }) {
     if (item.filterType === undefined || item.filterType === null) {
       activeStatusKey.value = "all";
-    } else if (item.filterType === FILTER_TYPE.BY_STATUS) {
+    } else if (item.filterType === ROOM_FILTER_TYPE.BY_STATUS) {
       activeStatusKey.value = `status-${item.roomStatus}`;
-    } else if (item.filterType === FILTER_TYPE.BY_LOCKED) {
+    } else if (item.filterType === ROOM_FILTER_TYPE.BY_LOCKED) {
       activeStatusKey.value = "locked";
-    } else if (item.filterType === FILTER_TYPE.BY_CLOSED) {
+    } else if (item.filterType === ROOM_FILTER_TYPE.BY_CLOSED) {
       activeStatusKey.value = "closed";
     }
   }
@@ -95,13 +95,13 @@
     if (item.filterType === undefined || item.filterType === null) {
       return activeStatusKey.value === "all";
     }
-    if (item.filterType === FILTER_TYPE.BY_STATUS) {
+    if (item.filterType === ROOM_FILTER_TYPE.BY_STATUS) {
       return activeStatusKey.value === `status-${item.roomStatus}`;
     }
-    if (item.filterType === FILTER_TYPE.BY_LOCKED) {
+    if (item.filterType === ROOM_FILTER_TYPE.BY_LOCKED) {
       return activeStatusKey.value === "locked";
     }
-    if (item.filterType === FILTER_TYPE.BY_CLOSED) {
+    if (item.filterType === ROOM_FILTER_TYPE.BY_CLOSED) {
       return activeStatusKey.value === "closed";
     }
     return false;

@@ -361,7 +361,7 @@
     PAYMENT_METHOD_OPTIONS,
     PRICE_METHOD_OPTIONS,
     LEASE_SIGN_STATUS_OPTIONS,
-    LEASE_STATUS_ENUM
+    LEASE_STATUS_MAP
   } from "@/constants";
   import { Document, Edit, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
@@ -403,18 +403,17 @@
   }>();
 
   const activeTab = ref("tenant");
-  const isTerminated = computed(() => localFormInline.value.status === LEASE_STATUS_ENUM.TERMINATED.code);
+  const isTerminated = computed(() => localFormInline.value.status === LEASE_STATUS_MAP.TERMINATED.code);
   const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
   const checkoutLoading = ref(false);
 
   const fetchCheckoutDetail = async () => {
     if (!isTerminated.value) return;
-    const tenantId = localFormInline.value.tenantId;
     const leaseId = localFormInline.value.leaseId;
-    if (!tenantId) return;
+    if (!leaseId) return;
     checkoutLoading.value = true;
     try {
-      const res = await getCheckoutByLeaseId(tenantId, leaseId);
+      const res = await getCheckoutByLeaseId(leaseId);
       if (res.code === 0) {
         checkoutDetail.value = res.data || null;
       } else {
@@ -437,7 +436,7 @@
   watch(
     () => localFormInline.value.status,
     status => {
-      if (status === LEASE_STATUS_ENUM.TERMINATED.code && activeTab.value === "checkout") {
+      if (status === LEASE_STATUS_MAP.TERMINATED.code && activeTab.value === "checkout") {
         fetchCheckoutDetail();
       }
     }
@@ -546,7 +545,7 @@
     if (props.readonly) {
       return false;
     }
-    return !(status === LEASE_STATUS_ENUM.TERMINATED.code || status === LEASE_STATUS_ENUM.EFFECTIVE.code);
+    return !(status === LEASE_STATUS_MAP.TERMINATED.code || status === LEASE_STATUS_MAP.EFFECTIVE.code);
   };
 
   const allowChangeSignStatus = (status: number) => {
@@ -554,7 +553,7 @@
     if (props.readonly) {
       return false;
     }
-    return status === LEASE_STATUS_ENUM.TO_SIGN.code;
+    return status === LEASE_STATUS_MAP.TO_SIGN.code;
   };
 
   const editLease = (row: LeaseDetailVo) => {
@@ -570,13 +569,22 @@
         tenantId: row.tenantId,
         contractTemplateId: row.leaseContract?.contractTemplateId
       },
-      tenantPersonal: { ...row.tenantPersonal },
-      tenantCompany: { ...row.tenantCompany },
+      tenantPersonal: row.tenantPersonal
+        ? {
+            ...row.tenantPersonal,
+            companyId: row.tenantPersonal.companyId ? Number(row.tenantPersonal.companyId) : undefined
+          }
+        : undefined,
+      tenantCompany: row.tenantCompany ? { ...row.tenantCompany } : undefined,
       tenantMateList: row.tenantMateList,
       otherFees: row.otherFees,
       isEdit: true
     };
     openTenantDialog("修改租客 " + row.tenantName, tenantCreateFormInline);
+  };
+
+  const editTenantInfo = (row: LeaseDetailVo) => {
+    editLease(row);
   };
 </script>
 

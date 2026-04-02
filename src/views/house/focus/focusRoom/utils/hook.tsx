@@ -6,7 +6,7 @@ import router from "@/router";
 import { getRoomList, getRoomTotalVo } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
 import type { HouseLayoutDto, RoomQueryDto, RoomTotalItemVo } from "@/types";
-import { FILTER_TYPE } from "@/constants";
+import { ROOM_FILTER_TYPE } from "@/constants";
 
 export function userFocusRoom() {
   const pagination = reactive<PaginationProps>({
@@ -156,15 +156,15 @@ export function userFocusRoom() {
     if (item.filterType === undefined || item.filterType === null) {
       // 全部
       activeStatusKey.value = "all";
-    } else if (item.filterType === FILTER_TYPE.BY_STATUS) {
+    } else if (item.filterType === ROOM_FILTER_TYPE.BY_STATUS) {
       // 按出租占用状态
       queryForm.occupancyStatus = item.roomStatus ?? undefined;
       activeStatusKey.value = `status-${item.roomStatus}`;
-    } else if (item.filterType === FILTER_TYPE.BY_LOCKED) {
+    } else if (item.filterType === ROOM_FILTER_TYPE.BY_LOCKED) {
       // 锁房
       queryForm.locked = true;
       activeStatusKey.value = "locked";
-    } else if (item.filterType === FILTER_TYPE.BY_CLOSED) {
+    } else if (item.filterType === ROOM_FILTER_TYPE.BY_CLOSED) {
       // 已关闭
       queryForm.closed = true;
       activeStatusKey.value = "closed";
@@ -182,13 +182,13 @@ export function userFocusRoom() {
     if (item.filterType === undefined || item.filterType === null) {
       return activeStatusKey.value === "all";
     }
-    if (item.filterType === FILTER_TYPE.BY_STATUS) {
+    if (item.filterType === ROOM_FILTER_TYPE.BY_STATUS) {
       return activeStatusKey.value === `status-${item.roomStatus}`;
     }
-    if (item.filterType === FILTER_TYPE.BY_LOCKED) {
+    if (item.filterType === ROOM_FILTER_TYPE.BY_LOCKED) {
       return activeStatusKey.value === "locked";
     }
-    if (item.filterType === FILTER_TYPE.BY_CLOSED) {
+    if (item.filterType === ROOM_FILTER_TYPE.BY_CLOSED) {
       return activeStatusKey.value === "closed";
     }
     return false;

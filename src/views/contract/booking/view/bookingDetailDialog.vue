@@ -342,8 +342,8 @@
     return days >= 30 ? `${Math.floor(days / 30)}个月${days % 30 > 0 ? (days % 30) + "天" : ""}` : `${days}天`;
   };
 
-  const getStatusType = (status: number) => {
-    const types: Record<number, string> = { 1: "primary", 2: "success", 3: "danger", 4: "warning" };
+  const getStatusType = (status: number): "primary" | "success" | "danger" | "warning" | "info" => {
+    const types: Record<number, "primary" | "success" | "danger" | "warning"> = { 1: "primary", 2: "success", 3: "danger", 4: "warning" };
     return types[status] || "info";
   };
 </script>

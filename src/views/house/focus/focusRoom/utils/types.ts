@@ -1,7 +1,12 @@
 interface QueryFormItemProps {
-  keywords: string;
-  houseId: number;
-  roomStatus: number;
+  keywords?: string;
+  houseId?: string;
+  leaseModeId?: string;
+  occupancyStatus?: number;
+  locked?: boolean;
+  closed?: boolean;
+  vacancyDaysMin?: number;
+  vacancyDaysMax?: number;
 }
 
 interface FormProps {

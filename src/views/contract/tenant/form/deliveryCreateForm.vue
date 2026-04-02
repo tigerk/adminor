@@ -159,7 +159,7 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
-  import type { DeliveryCreateDto, DeliveryItemVo, FacilityItemDto } from "@/types";
+  import type { DeliveryCreateDto, DeliveryItemDto, DeliveryItemVo, FacilityItemDto } from "@/types";
   import { DataLine, Delete, Grid, InfoFilled, Lightning, Picture, Plus } from "@element-plus/icons-vue";
   import UploadImage from "@/components/Business/UploadImage.vue";
   import { getCompanyUserOptions } from "@/api/company";
@@ -167,8 +167,25 @@
   import { getDictDataByDictCode } from "@/api/sys/dict";
   import { DELIVERY_ITEM_CATEGORY, DELIVERY_TYPE_OPTIONS } from "@/constants";
 
+  type DeliveryFormData = DeliveryCreateDto & {
+    id?: string;
+    status?: number;
+    facilities?: FacilityItemDto[];
+  };
+
+  type DeliveryFormItem = DeliveryItemVo & {
+    deliveryId?: string;
+    isCustom?: boolean;
+  };
+
+  type DeliverySubmitItem = DeliveryItemDto & {
+    id?: string;
+    deliveryId?: string;
+    isCustom?: boolean;
+  };
+
   interface FormProps {
-    formInline: DeliveryCreateDto;
+    formInline: DeliveryFormData;
     isViewMode?: boolean; // 是否为查看模式
   }
 
@@ -181,7 +198,7 @@
   const facilityOptions = ref<Array<{ label: string; value: string }>>([]);
 
   // 表单数据
-  const formData = reactive<DeliveryCreateDto>({
+  const formData = reactive<DeliveryFormData>({
     id: props.formInline?.id,
     subjectType: props.formInline?.subjectType || "tenant",
     subjectTypeId: props.formInline?.subjectTypeId,
@@ -203,7 +220,7 @@
   });
 
   // 设施项目列表（包含水电燃气和房间设施）
-  const facilityItems = ref<DeliveryItemVo[]>([]);
+  const facilityItems = ref<DeliveryFormItem[]>([]);
 
   // 过滤后的设施列表（仅用于表格显示，不包含水电燃气）
   const facilityItemsFiltered = computed(() => {
@@ -241,7 +258,7 @@
 
   // 从房间设施初始化物品列表
   const initFacilitiesFromRoom = () => {
-    const items: DeliveryItemVo[] = [];
+    const items: DeliveryFormItem[] = [];
     let sortOrder = 1;
 
     // 1. 添加水电燃气项（固定项）
@@ -356,16 +373,16 @@
   const getRef = () => formRef.value;
 
   // 获取表单数据（提交时调用）
-  const getFormData = (): DeliveryCreateDto => {
+  const getFormData = (): DeliveryFormData => {
     // 更新 formData.items 为当前的 facilityItems
-    formData.items = facilityItems.value.map(item => ({
+    formData.items = facilityItems.value.map<DeliverySubmitItem>(item => ({
       id: item.id,
       deliveryId: item.deliveryId,
       itemCategory: item.itemCategory,
       itemCode: item.itemCode,
-      itemName: item.itemName,
+      itemName: item.itemName || "",
       itemUnit: item.itemUnit,
-      currentValue: item.currentValue,
+      currentValue: item.currentValue || "0",
       damaged: item.damaged,
       remark: item.remark,
       sortOrder: item.sortOrder,
@@ -378,7 +395,6 @@
       subjectTypeId: formData.subjectTypeId,
       roomId: formData.roomId,
       handoverType: formData.handoverType,
-      status: formData.status,
       handoverDate: formData.handoverDate,
       inspectorId: formData.inspectorId,
       remark: formData.remark,

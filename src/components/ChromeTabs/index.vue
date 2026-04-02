@@ -9,7 +9,7 @@
       <el-tab-pane
         v-for="(tab, index) in tabs"
         :key="tab.name"
-        :label="renderTabLabel(tab)"
+        :label="tab.title"
         :name="tab.name"
       />
     </el-tabs>
@@ -17,9 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref } from "vue";
-import { ElIcon } from "element-plus";
-import * as Icons from "@element-plus/icons-vue";
+import { ref } from "vue";
 
 // Props: tabs 列表（包含 icon、title、事件），默认激活 tab
 const props = defineProps<{
@@ -40,15 +38,6 @@ const activeName = ref(props.modelValue || props.tabs[0]?.name);
 // watch(activeName, val => {
 //   emit("update:modelValue", val);
 // });
-
-// 渲染图标 + 标签名
-const renderTabLabel = (tab: any) => {
-  const IconComponent = tab.icon ? (Icons as any)[tab.icon] : null;
-  return h("span", { class: "tab-label" }, [
-    IconComponent ? h(ElIcon, null, { default: () => h(IconComponent) }) : null,
-    h("span", { class: "tab-title" }, tab.title)
-  ]);
-};
 
 // 标签点击事件触发传入的回调
 const handleTabClick = (pane: any) => {

@@ -65,8 +65,8 @@ export interface CheckoutPageFormData extends Omit<LeaseCheckoutDto, "feeList" |
 export interface CheckoutDialogFormData extends Omit<LeaseCheckoutDto, "feeList" | "checkoutType" | "badDebtReason"> {
   checkoutType: number | null;
   feeList: CheckoutFeeFormItem[];
-  /** 附件文件列表（已上传返回 URL 字符串，或上传组件内部对象） */
-  attachmentFiles: (string | { url?: string })[];
+  /** 附件文件列表（上传组件统一使用 string[] URL） */
+  attachmentFiles: string[];
   /** 坏账原因（settlementMethod === BAD_DEBT 时必填，前端保证非 undefined） */
   badDebtReason: string;
 }

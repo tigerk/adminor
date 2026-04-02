@@ -54,8 +54,8 @@
     loading.value = true;
     try {
       const { data } = await getCompanyOrderPage({
-        currentPage: pagination.currentPage,
-        pageSize: pagination.pageSize
+        currentPage: String(pagination.currentPage),
+        pageSize: String(pagination.pageSize)
       });
       dataList.value = data?.list ?? [];
       pagination.total = Number(data?.total ?? 0);

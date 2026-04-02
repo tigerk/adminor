@@ -19,7 +19,7 @@
     // 加载传入的数据
     if (facilities && facilities.length > 0) {
       facilities.forEach(item => {
-        selectedFacilities[item.name] = item.count;
+        selectedFacilities[item.name] = Number(item.count);
       });
     }
   }

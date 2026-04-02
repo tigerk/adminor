@@ -5,7 +5,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { createTenant, deleteTenant, getLeaseDetail, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
-import { getOptionByCode, LEASE_CONTRACT_NATURE_ENUM, LEASE_SIGN_STATUS_OPTIONS, LEAST_STATUS_OPTIONS } from "@/constants";
+import { getOptionByCode, LEASE_CONTRACT_NATURE_STATUS_MAP, LEASE_SIGN_STATUS_OPTIONS, LEASE_STATUS_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
 import type {
@@ -62,8 +62,8 @@ function useTenant() {
   const { switchStyle } = usePublicHooks();
 
   const leaseContractSignStatusOptions = [...LEASE_SIGN_STATUS_OPTIONS] as any[];
-  const mutableTenantStatusOptions = [...LEAST_STATUS_OPTIONS] as any[];
-  const leaseContractNatureOptions = Object.values(LEASE_CONTRACT_NATURE_ENUM);
+  const mutableTenantStatusOptions = [...LEASE_STATUS_OPTIONS] as any[];
+  const leaseContractNatureOptions = Object.values(LEASE_CONTRACT_NATURE_STATUS_MAP);
 
   // 计算当前页的起始索引
   const startIndex = computed(() => (pagination.currentPage - 1) * pagination.pageSize + 1);

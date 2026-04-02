@@ -2,7 +2,7 @@
   import { computed, ref, watch } from "vue";
   import type { PriceConfigFormProps } from "./types";
   import { PriceConfigDto, PriceMethodEnumMeta, PricePlanDto } from "@/types";
-  import { PRICE_METHOD_OPTIONS, PRICE_PLANT_OPTIONS } from "@/constants";
+  import { PRICE_METHOD_OPTIONS, PRICE_PLAN_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
 
@@ -22,11 +22,11 @@
   }
 
   const priceMethodOptions = PRICE_METHOD_OPTIONS;
-  const pricePlantOptions = PRICE_PLANT_OPTIONS;
+  const pricePlanOptions = PRICE_PLAN_OPTIONS;
 
   // 当前选中的方案索引 —— 从已有的 pricePlans 中反向映射，避免 watch immediate 时将传入数据清空
   const selectedPlans = ref<number[]>(
-    (priceConfig.value.pricePlans || []).map(plan => pricePlantOptions.findIndex(opt => String(opt.value) === plan.planType)).filter(idx => idx !== -1)
+    (priceConfig.value.pricePlans || []).map(plan => pricePlanOptions.findIndex(opt => String(opt.value) === plan.planType)).filter(idx => idx !== -1)
   );
 
   // 当前选中的默认方案索引 —— 从已有数据中读取
@@ -62,12 +62,12 @@
       const newPricePlans: PricePlanDto[] = [];
 
       newPlans.forEach((planIndex, arrayIndex) => {
-        const existing = existingPlans.find(p => p.planType === String(pricePlantOptions[planIndex].value));
+        const existing = existingPlans.find(p => p.planType === String(pricePlanOptions[planIndex].value));
 
         if (existing) {
           newPricePlans.push(existing);
         } else {
-          const planOption = pricePlantOptions[planIndex];
+          const planOption = pricePlanOptions[planIndex];
           newPricePlans.push({
             roomId: priceConfig.value.roomId,
             planName: planOption.label,
@@ -139,7 +139,7 @@
 
       <div class="plan-selection">
         <el-checkbox-group v-model="selectedPlans">
-          <el-checkbox v-for="(plan, index) in pricePlantOptions" :key="index" :label="index">{{ plan.label }}</el-checkbox>
+          <el-checkbox v-for="(plan, index) in pricePlanOptions" :key="index" :label="index">{{ plan.label }}</el-checkbox>
         </el-checkbox-group>
       </div>
 

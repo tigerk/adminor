@@ -115,7 +115,7 @@
                 inactive-text="关"
                 :active-value="true"
                 :inactive-value="false"
-                @change="val => onChange(val, item)"
+                @change="val => onChange(Boolean(val), item)"
               />
             </div>
           </div>
@@ -152,7 +152,7 @@
                 inactive-text="关"
                 :active-value="true"
                 :inactive-value="false"
-                @change="val => onChange(val, item)"
+                @change="val => onChange(Boolean(val), item)"
               />
             </div>
           </div>
@@ -189,7 +189,7 @@
                 inactive-text="关"
                 :active-value="true"
                 :inactive-value="false"
-                @change="val => onChange(val, item)"
+                @change="val => onChange(Boolean(val), item)"
               />
             </div>
           </div>

@@ -87,11 +87,11 @@
             <el-col :span="18">
               <el-form-item label="退租类型" prop="checkoutType">
                 <el-radio-group v-model="form.checkoutType" @change="handleCheckoutTypeChange">
-                  <el-radio-button :value="CHECKOUT_TYPE_ENUM.NORMAL">
+                  <el-radio-button :value="CHECKOUT_TYPE_META.NORMAL.code">
                     <el-icon class="mr-1"><CircleCheck /></el-icon>
                     正常退
                   </el-radio-button>
-                  <el-radio-button :value="CHECKOUT_TYPE_ENUM.BREACH">
+                  <el-radio-button :value="CHECKOUT_TYPE_META.BREACH.code">
                     <el-icon class="mr-1"><Warning /></el-icon>
                     违约退
                   </el-radio-button>
@@ -101,7 +101,7 @@
           </el-row>
           <!-- 违约退时显示解约原因 -->
           <transition name="slide-fade">
-            <el-form-item v-if="form.checkoutType === CHECKOUT_TYPE_ENUM.BREACH" label="解约原因">
+            <el-form-item v-if="form.checkoutType === CHECKOUT_TYPE_META.BREACH.code" label="解约原因">
               <el-input v-model="form.breachReason" type="textarea" :rows="2" placeholder="请输入解约原因（选填）" maxlength="300" show-word-limit :disabled="!canEdit" />
             </el-form-item>
           </transition>
@@ -270,17 +270,17 @@
             <div class="summary-field">
               <span class="field-label">账单处理方式</span>
               <el-radio-group v-model="form.settlementMethod" :disabled="!canEdit" @change="handleSettlementMethodChange">
-                <el-radio :value="SETTLEMENT_METHOD_ENUM.GENERATE_BILL">生成待付账单</el-radio>
-                <el-radio :value="SETTLEMENT_METHOD_ENUM.OFFLINE_PAYMENT">线下付款</el-radio>
-                <el-radio :value="SETTLEMENT_METHOD_ENUM.APPLY_PAYMENT">申请付款</el-radio>
-                <el-radio :value="SETTLEMENT_METHOD_ENUM.BAD_DEBT">标记坏账</el-radio>
+                <el-radio :value="SETTLEMENT_METHOD_META.GENERATE_BILL.code">生成待付账单</el-radio>
+                <el-radio :value="SETTLEMENT_METHOD_META.OFFLINE_PAYMENT.code">线下付款</el-radio>
+                <el-radio :value="SETTLEMENT_METHOD_META.APPLY_PAYMENT.code">申请付款</el-radio>
+                <el-radio :value="SETTLEMENT_METHOD_META.BAD_DEBT.code">标记坏账</el-radio>
               </el-radio-group>
             </div>
           </div>
 
           <!-- 标记坏账时必须录入坏账原因 -->
           <transition name="slide-fade">
-            <div v-if="form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT" class="bad-debt-reason">
+            <div v-if="form.settlementMethod === SETTLEMENT_METHOD_META.BAD_DEBT.code" class="bad-debt-reason">
               <el-icon class="bad-debt-icon"><Warning /></el-icon>
               <div class="bad-debt-input">
                 <span class="field-label">
@@ -391,13 +391,13 @@
   import { ElMessage, type FormInstance, type FormRules } from "element-plus";
   import { Check, CircleCheck, CirclePlus, Delete, Plus, Tickets, Warning } from "@element-plus/icons-vue";
   import {
-    APPROVAL_STATUS_ENUM,
-    CHECKOUT_FEE_TYPE_ENUM,
-    CHECKOUT_STATUS_ENUM,
-    CHECKOUT_TYPE_ENUM,
-    CONTRACT_TYPE_ENUM,
+    APPROVAL_STATUS_META,
+    CHECKOUT_FEE_TYPE_CODE_MAP,
+    CHECKOUT_STATUS_META,
+    CHECKOUT_TYPE_META,
+    CONTRACT_TYPE_META,
     FEE_DIRECTION_ENUM,
-    SETTLEMENT_METHOD_ENUM
+    SETTLEMENT_METHOD_META
   } from "@/constants";
   import type { LeaseCheckoutVo, LeaseCheckoutInitVo } from "@/types";
   import type { CheckoutFeeFormItem, CheckoutDialogFormData } from "@/types/models/checkout";
@@ -447,7 +447,7 @@
 
   async function loadConfirmationTemplates() {
     if (confirmationTemplateOptions.value.length > 0) return;
-    const res = await getMyAvailableContractTemplates({ contractType: CONTRACT_TYPE_ENUM.CHECKOUT });
+    const res = await getMyAvailableContractTemplates({ contractType: CONTRACT_TYPE_META.CHECKOUT.code });
     if (res.code === 0) {
       confirmationTemplateOptions.value = res.data || [];
     }
@@ -531,14 +531,14 @@
     id: undefined,
     tenantId: "",
     leaseId: "",
-    checkoutType: CHECKOUT_TYPE_ENUM.NORMAL,
+    checkoutType: CHECKOUT_TYPE_META.NORMAL.code,
     actualCheckoutDate: "",
     breachReason: "",
     addCleaningFee: false,
     cleaningFeeAmount: null,
     feeList: [],
     expectedPaymentDate: "",
-    settlementMethod: SETTLEMENT_METHOD_ENUM.GENERATE_BILL,
+    settlementMethod: SETTLEMENT_METHOD_META.GENERATE_BILL.code,
     remark: "",
     attachmentIds: [],
     attachmentFiles: [],
@@ -567,7 +567,7 @@
 
   const canEdit = computed(() => {
     if (!checkoutDetail.value) return true;
-    return checkoutDetail.value.status === CHECKOUT_STATUS_ENUM.DRAFT || checkoutDetail.value.approvalStatus === APPROVAL_STATUS_ENUM.REJECTED;
+    return checkoutDetail.value.status === CHECKOUT_STATUS_META.DRAFT.code || checkoutDetail.value.approvalStatus === APPROVAL_STATUS_META.REJECTED.code;
   });
 
   function handleScroll() {
@@ -633,15 +633,15 @@
   }
 
   function handleCheckoutTypeChange(val: number) {
-    if (val === CHECKOUT_TYPE_ENUM.BREACH) {
-      form.feeList = form.feeList.filter(f => !(f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND));
-    } else if (val === CHECKOUT_TYPE_ENUM.NORMAL) {
+    if (val === CHECKOUT_TYPE_META.BREACH.code) {
+      form.feeList = form.feeList.filter(f => !(f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND));
+    } else if (val === CHECKOUT_TYPE_META.NORMAL.code) {
       form.breachReason = "";
-      const hasDepositRefund = form.feeList.some(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND);
+      const hasDepositRefund = form.feeList.some(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND);
       if (!hasDepositRefund && initData.value && initData.value.depositAmount && initData.value.depositAmount > 0) {
         const newFee: CheckoutFeeFormItem = {
           feeDirection: FEE_DIRECTION_ENUM.REFUND,
-          feeType: CHECKOUT_FEE_TYPE_ENUM.DEPOSIT_REFUND,
+          feeType: CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND,
           feeSubName: "房屋押金",
           feeAmount: initData.value.depositAmount ?? null,
           feeStart: formatDate(initData.value.leaseStart).replace(/\./g, "-"),
@@ -659,17 +659,17 @@
     if (val && form.cleaningFeeAmount && form.cleaningFeeAmount > 0) {
       addCleaningFeeRow();
     } else if (!val) {
-      form.feeList = form.feeList.filter(f => f.feeType !== CHECKOUT_FEE_TYPE_ENUM.CLEANING);
+      form.feeList = form.feeList.filter(f => f.feeType !== CHECKOUT_FEE_TYPE_CODE_MAP.CLEANING);
     }
   }
 
   function addCleaningFeeRow() {
     const today = getTodayStr();
-    const exists = form.feeList.some(f => f.feeType === CHECKOUT_FEE_TYPE_ENUM.CLEANING);
+    const exists = form.feeList.some(f => f.feeType === CHECKOUT_FEE_TYPE_CODE_MAP.CLEANING);
     if (!exists) {
       form.feeList.push({
         feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
-        feeType: CHECKOUT_FEE_TYPE_ENUM.CLEANING,
+        feeType: CHECKOUT_FEE_TYPE_CODE_MAP.CLEANING,
         feeSubName: "清洁费",
         feeAmount: form.cleaningFeeAmount || 0,
         feeStart: today,
@@ -681,7 +681,7 @@
   }
 
   function handleSettlementMethodChange(val: number) {
-    if (val !== SETTLEMENT_METHOD_ENUM.BAD_DEBT) {
+    if (val !== SETTLEMENT_METHOD_META.BAD_DEBT.code) {
       form.badDebtReason = "";
     }
   }
@@ -761,7 +761,7 @@
     form.leaseId = leaseId;
     form.actualCheckoutDate = getTodayStr();
     form.expectedPaymentDate = getTodayStr();
-    form.checkoutType = CHECKOUT_TYPE_ENUM.NORMAL;
+    form.checkoutType = CHECKOUT_TYPE_META.NORMAL.code;
 
     if (res.data.payeeInfo) {
       form.payeeName = res.data.payeeInfo.payeeName || "";
@@ -800,7 +800,7 @@
     form.actualCheckoutDate = detail.actualCheckoutDate ?? "";
     form.breachReason = detail.breachReason ?? "";
     form.expectedPaymentDate = detail.expectedPaymentDate ?? "";
-    form.settlementMethod = detail.settlementMethod ?? SETTLEMENT_METHOD_ENUM.GENERATE_BILL;
+    form.settlementMethod = detail.settlementMethod ?? SETTLEMENT_METHOD_META.GENERATE_BILL.code;
     form.remark = detail.remark ?? "";
 
     if (!form.confirmationTemplate && confirmationTemplateOptions.value.length > 0) {
@@ -874,21 +874,12 @@
         ElMessage.warning("请至少添加一条费用明细");
         return;
       }
-      if (form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT && !form.badDebtReason?.trim()) {
+      if (form.settlementMethod === SETTLEMENT_METHOD_META.BAD_DEBT.code && !form.badDebtReason?.trim()) {
         ElMessage.warning("标记坏账时必须填写坏账原因");
         return;
       }
 
-      const attachmentIds: string[] = [];
-      if (form.attachmentFiles?.length > 0) {
-        for (const file of form.attachmentFiles) {
-          if (typeof file === "string") {
-            attachmentIds.push(file);
-          } else if (file?.url) {
-            attachmentIds.push(file.url);
-          }
-        }
-      }
+      const attachmentIds = [...form.attachmentFiles];
 
       submitting.value = true;
       try {
@@ -896,7 +887,7 @@
           ...form,
           checkoutType: form.checkoutType as number,
           attachmentIds,
-          remark: form.settlementMethod === SETTLEMENT_METHOD_ENUM.BAD_DEBT ? `${form.remark || ""}${form.remark ? "\n" : ""}【坏账原因】${form.badDebtReason}` : form.remark,
+          remark: form.settlementMethod === SETTLEMENT_METHOD_META.BAD_DEBT.code ? `${form.remark || ""}${form.remark ? "\n" : ""}【坏账原因】${form.badDebtReason}` : form.remark,
           feeList: form.feeList.map(f => ({
             id: f.id,
             feeDirection: f.feeDirection,
@@ -929,14 +920,14 @@
     form.id = undefined;
     form.tenantId = "";
     form.leaseId = "";
-    form.checkoutType = CHECKOUT_TYPE_ENUM.NORMAL;
+    form.checkoutType = CHECKOUT_TYPE_META.NORMAL.code;
     form.actualCheckoutDate = "";
     form.breachReason = "";
     form.addCleaningFee = false;
     form.cleaningFeeAmount = null;
     form.feeList = [];
     form.expectedPaymentDate = "";
-    form.settlementMethod = SETTLEMENT_METHOD_ENUM.GENERATE_BILL;
+    form.settlementMethod = SETTLEMENT_METHOD_META.GENERATE_BILL.code;
     form.remark = "";
     form.attachmentIds = [];
     form.attachmentFiles = [];

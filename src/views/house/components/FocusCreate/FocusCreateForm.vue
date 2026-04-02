@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { ref } from "vue";
-  import { FormProps } from "@/views/house/components/FocusCreate/utils/types";
+  import type { FocusHouseDto } from "@/types";
+  import type { FormProps, LocalFocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
   import FocusAssignHouse from "@/views/house/components/FocusCreate/FocusAssignHouse.vue";
   import FocusExtraInfo from "@/views/house/components/FocusCreate/FocusExtraInfo.vue";
   import FocusBasicInfo from "@/views/house/components/FocusCreate/FocusBasicInfo.vue";
@@ -11,8 +12,8 @@
 
   const props = withDefaults(defineProps<FormProps>(), {
     formInline: () => ({
-      id: 0,
-      businessMode: 0,
+      id: "",
+      leaseMode: 1,
       focusCode: "",
       focusName: "",
       address: "",
@@ -29,13 +30,13 @@
           housePrefix: "A",
           excludeFour: false,
           numberLength: 4,
-          housesStatusOfFloors: new Map(),
+          housesStatusOfFloors: new Map<number, Map<string, FocusHouseDto>>(),
           isNew: true
         }
       ],
       houseList: [],
-      deptId: 0,
-      salesmanId: 0,
+      deptId: "",
+      salesmanId: "",
       storePhone: "",
       water: "commercial",
       electricity: "commercial",
@@ -93,7 +94,7 @@
   };
 
   // ✅ 改为 ref 而不是 reactive
-  const form = ref(
+  const form = ref<LocalFocusCreateDto>(
     deepCloneForm({
       ...props.formInline,
       // ✅ 在这里设置默认值

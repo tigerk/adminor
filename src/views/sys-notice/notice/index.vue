@@ -4,7 +4,7 @@
   import type { PaginationProps } from "@pureadmin/table";
   import { PureTableBar } from "@/components/RePureTableBar";
   import { deleteNotice, getNoticeDetail, getNoticePage, saveNotice } from "@/api/sys-notice";
-  import { NOTICE_NOTICE_TYPE_ENUM, NOTICE_NOTICE_TYPE_HELPER, NOTICE_TARGET_SCOPE_ENUM, NOTICE_TARGET_SCOPE_HELPER } from "@/constants";
+  import { NOTICE_NOTICE_TYPE_HELPER, NOTICE_NOTICE_TYPE_META, NOTICE_TARGET_SCOPE_HELPER, NOTICE_TARGET_SCOPE_META } from "@/constants";
   import { message } from "@/utils/message";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import { getSimpleRoleList } from "@/api/sys/user";
@@ -60,12 +60,12 @@
     background: true
   });
 
-  const noticeTypeOptions = Object.values(NOTICE_NOTICE_TYPE_ENUM).map(item => ({
+  const noticeTypeOptions = Object.values(NOTICE_NOTICE_TYPE_META).map(item => ({
     label: item.name,
     value: item.code
   }));
 
-  const targetScopeOptions = Object.values(NOTICE_TARGET_SCOPE_ENUM).map(item => ({
+  const targetScopeOptions = Object.values(NOTICE_TARGET_SCOPE_META).map(item => ({
     label: item.name,
     value: item.code
   }));
@@ -160,7 +160,7 @@
       form.content = notice.content || "";
       form.noticeType = notice.noticeType ?? 1;
       form.targetScope = notice.targetScope ?? 1;
-      form.roleIds = (data?.roleIds ?? []).map(id => String(id));
+      form.roleIds = (data?.roleIds ?? []).map(id => Number(id));
       editMeta.createByName = notice.createByName || "-";
       editMeta.publishTime = notice.publishTime ? dayjs(notice.publishTime).format("YYYY-MM-DD HH:mm:ss") : "-";
       dialogVisible.value = true;
@@ -213,7 +213,7 @@
     getSimpleRoleList().then(({ data }) => {
       roleOptions.value = (data || []).map(item => ({
         label: item.roleName ?? item.name ?? item.label ?? item.code,
-        value: String(item.id ?? item.value)
+        value: Number(item.id ?? item.value)
       }));
     });
   });
