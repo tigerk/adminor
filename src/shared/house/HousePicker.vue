@@ -1,21 +1,15 @@
 <template>
-  <el-dialog v-model="visible" width="72vw" append-to-body :close-on-click-modal="false" :align-center="true" :draggable="true" :show-close="false" class="house-picker-dialog">
-    <!-- Custom Header -->
-    <template #header>
-      <div class="picker-header">
-        <div class="picker-header__left">
-          <div class="picker-header__icon">
-            <el-icon><House /></el-icon>
-          </div>
-          <div>
-            <h2 class="picker-header__title">选择房源</h2>
-            <p class="picker-header__subtitle">选择需要关联的房源信息</p>
-          </div>
-        </div>
-        <el-icon class="picker-header__close" @click="handleClose"><Close /></el-icon>
-      </div>
-    </template>
-
+  <el-dialog
+    v-model="visible"
+    title="选择房源"
+    width="72vw"
+    append-to-body
+    :close-on-click-modal="false"
+    :align-center="true"
+    :draggable="true"
+    :show-close="false"
+    class="house-picker-dialog"
+  >
     <div class="house-picker-body">
       <!-- Left: Selected Panel -->
       <div class="selected-panel">
