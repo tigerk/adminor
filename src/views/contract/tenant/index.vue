@@ -53,7 +53,7 @@
         </div>
       </el-col>
       <el-col :span="6" class="text-right">
-        <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openTenantDialog()">添加租客</el-button>
+        <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openTenantDialog()">添加租客合同</el-button>
       </el-col>
     </el-row>
 

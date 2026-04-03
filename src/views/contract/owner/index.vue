@@ -23,7 +23,7 @@
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-select v-model="queryForm.cooperationMode" placeholder="合作模式" clearable class="owner-filter-select" @change="handleSearch">
+            <el-select v-model="queryForm.cooperationMode" placeholder="委托模式" clearable class="owner-filter-select" @change="handleSearch">
               <el-option v-for="item in cooperationModeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
@@ -67,7 +67,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="合作模式" width="120" align="center">
+          <el-table-column label="委托模式" width="120" align="center">
             <template #default="{ row }">
               <el-tag :type="row.cooperationMode === 'MASTER_LEASE' ? 'warning' : 'success'">
                 {{ cooperationModeLabelMap[row.cooperationMode || "LIGHT_MANAGED"] }}

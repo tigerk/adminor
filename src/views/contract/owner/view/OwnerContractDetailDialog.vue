@@ -50,13 +50,43 @@
               <el-descriptions-item label="姓名">{{ detailData.ownerPersonal?.name || "-" }}</el-descriptions-item>
               <el-descriptions-item label="联系电话">{{ detailData.ownerPersonal?.phone || "-" }}</el-descriptions-item>
               <el-descriptions-item label="证件号码">{{ detailData.ownerPersonal?.idNo || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="收款人姓名">{{ detailData.ownerPersonal?.payeeName || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="收款人电话">{{ detailData.ownerPersonal?.payeePhone || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="银行卡号">{{ detailData.ownerPersonal?.bankAccountNo || "-" }}</el-descriptions-item>
             </template>
             <template v-else>
               <el-descriptions-item label="企业名称">{{ detailData.ownerCompany?.name || "-" }}</el-descriptions-item>
               <el-descriptions-item label="联系电话">{{ detailData.ownerCompany?.contactPhone || "-" }}</el-descriptions-item>
               <el-descriptions-item label="统一信用代码">{{ detailData.ownerCompany?.uscc || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="收款人姓名">{{ detailData.ownerCompany?.payeeName || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="收款人电话">{{ detailData.ownerCompany?.payeePhone || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="银行卡号">{{ detailData.ownerCompany?.bankAccountNo || "-" }}</el-descriptions-item>
             </template>
           </el-descriptions>
+
+          <div class="image-preview-group">
+            <template v-if="detailData.ownerType === 'PERSONAL'">
+              <div v-for="card in personalImageCards" :key="card.label" class="image-preview-card">
+                <div class="image-preview-card__label">{{ card.label }}</div>
+                <el-image v-if="card.url" :src="card.url" fit="cover" class="image-preview-card__image" :preview-src-list="[card.url]" preview-teleported />
+                <div v-else class="image-preview-card__empty">未上传</div>
+              </div>
+            </template>
+            <template v-else>
+              <div class="image-preview-card">
+                <div class="image-preview-card__label">营业执照</div>
+                <el-image
+                  v-if="detailData.ownerCompany?.businessLicenseUrls?.[0]"
+                  :src="detailData.ownerCompany.businessLicenseUrls[0]"
+                  fit="cover"
+                  class="image-preview-card__image"
+                  :preview-src-list="detailData.ownerCompany.businessLicenseUrls"
+                  preview-teleported
+                />
+                <div v-else class="image-preview-card__empty">未上传</div>
+              </div>
+            </template>
+          </div>
         </el-card>
 
         <el-card shadow="never" class="detail-card">
@@ -65,6 +95,9 @@
             <el-descriptions-item label="合同模板">{{ detailData.contractTemplateName || detailTemplate?.templateName || detailData.ownerContract?.contractTemplateId || "-" }}</el-descriptions-item>
             <el-descriptions-item label="合同周期">{{ formatDate(detailData.ownerContract?.contractStart) }} 至 {{ formatDate(detailData.ownerContract?.contractEnd) }}</el-descriptions-item>
             <el-descriptions-item label="签署状态">{{ signStatusLabelMap[detailData.ownerContract?.signStatus || "PENDING"] }}</el-descriptions-item>
+            <el-descriptions-item label="签约类型">{{ signTypeLabelMap[detailData.ownerContract?.signType || "NEW"] }}</el-descriptions-item>
+            <el-descriptions-item label="合同介质">{{ contractMediumLabelMap[detailData.ownerContract?.contractMedium || "PAPER"] }}</el-descriptions-item>
+            <el-descriptions-item label="通知业主">{{ detailData.ownerContract?.notifyOwner ? "是" : "否" }}</el-descriptions-item>
             <el-descriptions-item label="创建人">{{ detailData.createByName || detailData.createBy || "-" }}</el-descriptions-item>
             <el-descriptions-item label="创建时间">{{ detailData.createTime || "-" }}</el-descriptions-item>
             <el-descriptions-item label="更新时间">{{ detailData.updateTime || "-" }}</el-descriptions-item>
@@ -119,19 +152,35 @@
                 <template #default="{ row }">{{ incomeBasisLabelMap[row.settlementRule?.incomeBasis || "RECEIVED"] }}</template>
               </el-table-column>
               <el-table-column label="保底租金" min-width="100">
-                <template #default="{ row }">{{ formatMoney(row.settlementRule?.guaranteedRentAmount) }}</template>
+                <template #default="{ row }">
+                  {{ row.settlementRule?.hasGuaranteedRent ? formatMoney(row.settlementRule?.guaranteedRentAmount) : "无保底" }}
+                </template>
               </el-table-column>
               <el-table-column label="佣金" min-width="120">
                 <template #default="{ row }">{{ feeModeLabelMap[row.settlementRule?.commissionMode || "RATIO"] }} / {{ formatMoney(row.settlementRule?.commissionValue) }}</template>
               </el-table-column>
-              <el-table-column label="服务费" min-width="120">
-                <template #default="{ row }">{{ feeModeLabelMap[row.settlementRule?.serviceFeeMode || "FIXED"] }} / {{ formatMoney(row.settlementRule?.serviceFeeValue) }}</template>
+              <el-table-column label="管理费" min-width="150">
+                <template #default="{ row }">
+                  {{
+                    row.settlementRule?.managementFeeEnabled
+                      ? `${feeModeLabelMap[row.settlementRule?.managementFeeMode || "RATIO"]} / ${formatMoney(row.settlementRule?.managementFeeValue)}`
+                      : "未收取"
+                  }}
+                </template>
+              </el-table-column>
+              <el-table-column label="手续费承担" min-width="160">
+                <template #default="{ row }">{{ paymentFeeBearTypeLabelMap[row.settlementRule?.paymentFeeBearType || "PLATFORM_ALL"] }}</template>
+              </el-table-column>
+              <el-table-column label="分账时间" min-width="180">
+                <template #default="{ row }">{{ settlementTimingLabelMap[row.settlementRule?.settlementTiming || "TENANT_PAYMENT_REALTIME"] }}</template>
               </el-table-column>
               <el-table-column label="免租规则" min-width="220">
                 <template #default="{ row }">
-                  {{ freeTypeLabelMap[row.rentFreeRule?.freeType || "BUILT_IN"] }} /
-                  {{ bearTypeLabelMap[row.rentFreeRule?.bearType || "PLATFORM"] }} /
-                  {{ formatDate(row.rentFreeRule?.startDate) }} - {{ formatDate(row.rentFreeRule?.endDate) }}
+                  {{
+                    row.rentFreeRule?.enabled
+                      ? `${freeTypeLabelMap[row.rentFreeRule?.freeType || "BUILT_IN"]} / ${bearTypeLabelMap[row.rentFreeRule?.bearType || "PLATFORM"]} / ${formatDate(row.rentFreeRule?.startDate)} - ${formatDate(row.rentFreeRule?.endDate)}`
+                      : "未启用"
+                  }}
                 </template>
               </el-table-column>
             </el-table>
@@ -149,7 +198,16 @@
               <el-descriptions-item label="收租设置">{{ getRentDueTypeText(detailData.ownerLeaseRule) }}</el-descriptions-item>
               <el-descriptions-item label="首付日期">{{ formatDate(detailData.ownerLeaseRule?.firstPayDate) }}</el-descriptions-item>
               <el-descriptions-item label="折算方式">{{ prorateTypeLabelMap[detailData.ownerLeaseRule?.prorateType || "BY_DAYS"] }}</el-descriptions-item>
+              <el-descriptions-item label="交房日期">{{ formatDate(detailData.ownerLeaseRule?.handoverDate) }}</el-descriptions-item>
+              <el-descriptions-item label="承租用途">{{ detailData.ownerLeaseRule?.usageType || "-" }}</el-descriptions-item>
             </el-descriptions>
+
+            <el-table v-if="detailData.ownerLeaseRule?.otherFeeList?.length" :data="detailData.ownerLeaseRule.otherFeeList" border class="mt-4">
+              <el-table-column prop="name" label="费用名称" min-width="160" />
+              <el-table-column prop="paymentMethod" label="收支方向" min-width="120" />
+              <el-table-column prop="priceMethod" label="金额方式" min-width="120" />
+              <el-table-column prop="priceInput" label="金额/比例" min-width="120" />
+            </el-table>
           </el-card>
         </template>
       </el-tab-pane>
@@ -167,9 +225,36 @@
   import { getMyAvailableContractTemplates, getContractTemplateParams } from "@/api/contract/template";
   import { previewOwnerContract } from "@/api/contract/owner";
   import useOwnerContract from "@/views/contract/owner/utils/hook";
-  import type { ContractTemplateListVo, OwnerDetailVo, OwnerLeaseRuleDto } from "@/types/generated";
+  import type { ContractTemplateListVo, OtherFeeDto, OwnerDetailVo, OwnerLeaseRuleDto } from "@/types/generated";
 
-  type OwnerDetailData = OwnerDetailVo & { contractTemplateName?: string };
+  type OwnerDetailData = OwnerDetailVo & {
+    contractTemplateName?: string;
+    ownerPersonal?: OwnerDetailVo["ownerPersonal"] & {
+      payeeName?: string;
+      payeePhone?: string;
+      bankAccountNo?: string;
+      idCardFrontList?: string[];
+      idCardBackList?: string[];
+      idCardInHandList?: string[];
+      otherImageList?: string[];
+    };
+    ownerCompany?: OwnerDetailVo["ownerCompany"] & {
+      payeeName?: string;
+      payeePhone?: string;
+      bankAccountNo?: string;
+      businessLicenseUrls?: string[];
+    };
+    ownerContract?: OwnerDetailVo["ownerContract"] & {
+      signType?: "NEW" | "RENEW";
+      contractMedium?: "ELECTRONIC" | "PAPER";
+      notifyOwner?: boolean;
+    };
+    ownerLeaseRule?: OwnerLeaseRuleDto & {
+      handoverDate?: string;
+      usageType?: string;
+      otherFeeList?: OtherFeeDto[];
+    };
+  };
   const props = defineProps<{ formInline?: OwnerDetailData | null }>();
   const router = useRouter();
   const { openOwnerDialog } = useOwnerContract();
@@ -182,12 +267,19 @@
   const ownerTypeLabelMap = { PERSONAL: "个人", COMPANY: "企业" } as const;
   const cooperationModeLabelMap = { LIGHT_MANAGED: "轻托管", MASTER_LEASE: "包租" } as const;
   const signStatusLabelMap = { PENDING: "待签字", SIGNED: "已签字" } as const;
+  const signTypeLabelMap = { NEW: "新签", RENEW: "续签" } as const;
+  const contractMediumLabelMap = { ELECTRONIC: "电子合同", PAPER: "纸质合同" } as const;
   const statusLabelMap = { ACTIVE: "启用", DISABLED: "停用" } as const;
   const settlementModeLabelMap = { FIXED: "固定保底", SHARE_GROSS: "毛收分成", SHARE_NET: "净收分成", GUARANTEE_PLUS_SHARE: "保底加分成", AGENCY: "代收代付" } as const;
   const incomeBasisLabelMap = { RECEIVED: "按实收", RECEIVABLE: "按应收" } as const;
   const feeModeLabelMap = { RATIO: "按比例", FIXED: "固定金额" } as const;
   const bearTypeLabelMap = { PLATFORM: "平台承担", OWNER: "业主承担", SHARED: "共同承担" } as const;
   const freeTypeLabelMap = { BUILT_IN: "内置免租", OUTSIDE: "外置免租" } as const;
+  const paymentFeeBearTypeLabelMap = { PLATFORM_ALL: "公司承担 100%", OWNER_ALL: "业主承担 100%", BY_INCOME_SHARE: "各自承担自己所得" } as const;
+  const settlementTimingLabelMap = {
+    TENANT_PAYMENT_REALTIME: "租客支付实时分账",
+    LEASE_START_GENERATE_BILL: "起租日直接给业主生成账单"
+  } as const;
   const prorateTypeLabelMap = { BY_DAYS: "按天折算", FULL_PERIOD: "整期计费" } as const;
   const rentDueTypeLabelMap = { EARLY: "提前收租", FIXED: "固定收租", LATE: "延后收租" } as const;
 
@@ -201,6 +293,15 @@
   const templateParamLabelMap = computed(() => templateParams.value.reduce<Record<string, string>>((acc, item) => ((acc[item.key] = item.label), acc), {}));
   const detailTemplatePreviewFields = computed(() => buildTemplatePreviewFields(detailTemplatePlaceholders.value));
   const detailTemplateResolvedCount = computed(() => detailTemplatePreviewFields.value.filter(item => item.value !== "签约时自动生成").length);
+  const personalImageCards = computed(() => {
+    const personal = detailData.value?.ownerPersonal;
+    return [
+      { label: "身份证国徽面", url: personal?.idCardFrontList?.[0] || "" },
+      { label: "身份证人像面", url: personal?.idCardBackList?.[0] || "" },
+      { label: "手持身份证照", url: personal?.idCardInHandList?.[0] || "" },
+      { label: "其他附件", url: personal?.otherImageList?.[0] || "" }
+    ];
+  });
 
   function formatDate(value?: string | number | Date) {
     if (!value) return "-";
@@ -294,16 +395,121 @@
 </script>
 
 <style scoped lang="scss">
-  .detail-hero, .detail-metrics, .template-preview-metrics, .template-token-list, .template-preview-grid { margin-bottom: 16px; }
-  .detail-hero { display: flex; justify-content: space-between; gap: 16px; }
-  .detail-hero__title { display: flex; gap: 8px; align-items: center; font-size: 20px; font-weight: 700; }
-  .detail-hero__meta { display: flex; gap: 16px; margin-top: 8px; color: var(--el-text-color-secondary); flex-wrap: wrap; }
-  .detail-hero__actions { display: flex; gap: 12px; align-items: flex-start; }
-  .detail-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-  .metric-card, .template-preview-metric, .template-preview-item { border: 1px solid var(--el-border-color-light); border-radius: 12px; background: var(--el-bg-color); padding: 16px; }
-  .metric-card__label, .template-preview-metric__label, .template-preview-item__label { color: var(--el-text-color-secondary); font-size: 12px; }
-  .metric-card__value, .template-preview-metric__value { font-size: 24px; font-weight: 700; color: var(--el-text-color-primary); }
-  .detail-card { margin-bottom: 16px; }
-  .template-preview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .template-token-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .detail-hero,
+  .detail-metrics,
+  .template-preview-metrics,
+  .template-token-list,
+  .template-preview-grid {
+    margin-bottom: 16px;
+  }
+
+  .detail-hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .detail-hero__title {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .detail-hero__meta {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    color: var(--el-text-color-secondary);
+    flex-wrap: wrap;
+  }
+
+  .detail-hero__actions {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .detail-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .metric-card,
+  .template-preview-metric,
+  .template-preview-item {
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 12px;
+    background: var(--el-bg-color);
+    padding: 16px;
+  }
+
+  .metric-card__label,
+  .template-preview-metric__label,
+  .template-preview-item__label {
+    color: var(--el-text-color-secondary);
+    font-size: 12px;
+  }
+
+  .metric-card__value,
+  .template-preview-metric__value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  .detail-card {
+    margin-bottom: 16px;
+  }
+
+  .template-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .template-token-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .image-preview-group {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .image-preview-card {
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 12px;
+    padding: 12px;
+    background: var(--el-fill-color-extra-light);
+  }
+
+  .image-preview-card__label {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .image-preview-card__image {
+    width: 100%;
+    height: 88px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .image-preview-card__empty {
+    height: 88px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: var(--el-text-color-secondary);
+  }
 </style>
