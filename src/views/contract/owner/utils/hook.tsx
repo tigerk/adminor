@@ -103,7 +103,7 @@ function useOwnerContract() {
       closeOnClickModal: false,
       destroyOnClose: true,
       hideFooter: true,
-      contentRenderer: () => h(OwnerContractDetailDialog, { formInline: row })
+      contentRenderer: () => h(OwnerContractDetailDialog, { formInline: (row || null) as any })
     });
   }
 

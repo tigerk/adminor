@@ -20,6 +20,11 @@ export const OwnerBearTypeEnumMeta = {
   SHARED: {"value":"SHARED"}
 } as const;
 
+export const OwnerContractMediumEnumMeta = {
+  ELECTRONIC: {"value":"ELECTRONIC"},
+  PAPER: {"value":"PAPER"}
+} as const;
+
 export const OwnerFeeModeEnumMeta = {
   RATIO: {"value":"RATIO"},
   FIXED: {"value":"FIXED"}
@@ -41,6 +46,12 @@ export const OwnerIncomeBasisEnumMeta = {
   RECEIVABLE: {"value":"RECEIVABLE"}
 } as const;
 
+export const OwnerPaymentFeeBearTypeEnumMeta = {
+  PLATFORM_ALL: {"value":"PLATFORM_ALL"},
+  OWNER_ALL: {"value":"OWNER_ALL"},
+  BY_INCOME_SHARE: {"value":"BY_INCOME_SHARE"}
+} as const;
+
 export const OwnerProrateTypeEnumMeta = {
   BY_DAYS: {"value":"BY_DAYS"},
   FULL_PERIOD: {"value":"FULL_PERIOD"}
@@ -54,9 +65,19 @@ export const OwnerSettlementModeEnumMeta = {
   AGENCY: {"value":"AGENCY"}
 } as const;
 
+export const OwnerSettlementTimingEnumMeta = {
+  TENANT_PAYMENT_REALTIME: {"value":"TENANT_PAYMENT_REALTIME"},
+  LEASE_START_GENERATE_BILL: {"value":"LEASE_START_GENERATE_BILL"}
+} as const;
+
 export const OwnerSignStatusEnumMeta = {
   PENDING: {"value":"PENDING"},
   SIGNED: {"value":"SIGNED"}
+} as const;
+
+export const OwnerSignTypeEnumMeta = {
+  NEW: {"value":"NEW"},
+  RENEW: {"value":"RENEW"}
 } as const;
 
 export const OwnerTypeEnumMeta = {
@@ -357,6 +378,11 @@ export const FileAttachBizTypeEnumMeta = {
   TENANT_MATE_ID_CARD_BACK: {"value":"TENANT_MATE_ID_CARD_BACK","bizType":"tenant_mate_id_card_back"},
   TENANT_MATE_ID_CARD_IN_HAND: {"value":"TENANT_MATE_ID_CARD_IN_HAND","bizType":"tenant_mate_id_card_in_hand"},
   TENANT_MATE_OTHER_IMAGE: {"value":"TENANT_MATE_OTHER_IMAGE","bizType":"tenant_mate_other_image"},
+  OWNER_ID_CARD_FRONT: {"value":"OWNER_ID_CARD_FRONT","bizType":"owner_id_card_front"},
+  OWNER_ID_CARD_BACK: {"value":"OWNER_ID_CARD_BACK","bizType":"owner_id_card_back"},
+  OWNER_ID_CARD_IN_HAND: {"value":"OWNER_ID_CARD_IN_HAND","bizType":"owner_id_card_in_hand"},
+  OWNER_OTHER_IMAGE: {"value":"OWNER_OTHER_IMAGE","bizType":"owner_other_image"},
+  OWNER_BUSINESS_LICENSE: {"value":"OWNER_BUSINESS_LICENSE","bizType":"owner_business_license"},
   DELIVERY_IMAGE: {"value":"DELIVERY_IMAGE","bizType":"delivery_image"},
   CONTRACT_SEAL_IMAGE: {"value":"CONTRACT_SEAL_IMAGE","bizType":"contract_seal_image"}
 } as const;

@@ -207,120 +207,6 @@
         </el-row>
       </div>
     </el-card>
-
-    <el-card shadow="never" class="form-card">
-      <template #header>
-        <div class="card-header">
-          <div>
-            <div class="card-title">合同信息</div>
-            <div class="card-desc">支持电子合同 / 纸质合同、签约类型和合同模板关键字段预览。</div>
-          </div>
-          <el-button link type="primary" @click="handlePreview(form.ownerContract.id)">预览合同</el-button>
-        </div>
-      </template>
-
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="合同介质">
-            <el-segmented v-model="form.ownerContract.contractMedium" :options="contractMediumOptions" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="8">
-          <el-form-item label="签约类型">
-            <el-segmented v-model="form.ownerContract.signType" :options="signTypeOptions" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="8">
-          <el-form-item label="通知设置">
-            <el-checkbox v-model="form.ownerContract.notifyOwner">短信通知业主确认租约信息</el-checkbox>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <el-form-item label="合同模板" prop="ownerContract.contractTemplateId">
-            <el-select v-model="form.ownerContract.contractTemplateId" class="w-full" placeholder="请选择业主合同模板">
-              <el-option v-for="item in contractTemplates" :key="item.id" :label="item.templateName" :value="item.id" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="合同编号">
-            <el-input :model-value="form.ownerContract.contractNo || '保存后自动生成'" readonly />
-          </el-form-item>
-        </el-col>
-        <el-col :span="8">
-          <el-form-item label="合同周期" prop="contractDateRange">
-            <div class="date-range-field">
-              <el-date-picker v-model="contractDateRange" type="daterange" value-format="YYYY-MM-DD" class="w-full" />
-              <div class="date-shortcuts">
-                <el-button text @click="applyYearShortcut(3)">3年</el-button>
-                <el-button text @click="applyYearShortcut(5)">5年</el-button>
-              </div>
-            </div>
-          </el-form-item>
-        </el-col>
-        <el-col :span="4">
-          <el-form-item label="签署状态">
-            <el-select v-model="form.ownerContract.signStatus" class="w-full">
-              <el-option v-for="item in signStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-form-item label="备注">
-        <el-input v-model="form.ownerContract.remark" type="textarea" :rows="3" placeholder="请输入合同补充说明" maxlength="1000" show-word-limit />
-      </el-form-item>
-
-      <div class="template-preview-panel" v-loading="templateParamsLoading">
-        <div class="template-preview-panel__header">
-          <div>
-            <div class="template-preview-panel__title">模板关键字段预览</div>
-            <div class="template-preview-panel__desc">选择模板后，自动识别模板变量，并展示当前合同可回填的关键字段。</div>
-          </div>
-          <el-button link type="primary" :disabled="!selectedTemplate?.id || !form.ownerContract.id" @click="handlePreview(form.ownerContract.id)">预览生成合同</el-button>
-        </div>
-
-        <el-empty v-if="!selectedTemplate" description="请选择合同模板后查看关键字段预览" :image-size="70" />
-
-        <template v-else>
-          <div class="template-preview-metrics">
-            <div class="template-preview-metric">
-              <span class="template-preview-metric__label">模板名称</span>
-              <span class="template-preview-metric__value">{{ selectedTemplate.templateName || "-" }}</span>
-            </div>
-            <div class="template-preview-metric">
-              <span class="template-preview-metric__label">检测字段</span>
-              <span class="template-preview-metric__value">{{ selectedTemplatePlaceholders.length }}</span>
-            </div>
-            <div class="template-preview-metric">
-              <span class="template-preview-metric__label">当前可预览</span>
-              <span class="template-preview-metric__value">{{ selectedTemplateResolvedCount }}</span>
-            </div>
-            <div class="template-preview-metric">
-              <span class="template-preview-metric__label">正文长度</span>
-              <span class="template-preview-metric__value">{{ selectedTemplateTextLength }}</span>
-            </div>
-          </div>
-
-          <div class="template-token-list">
-            <el-tag v-for="key in selectedTemplatePlaceholders" :key="key" effect="plain" class="template-token">
-              {{ getTemplateLabel(key) }}
-            </el-tag>
-          </div>
-
-          <div class="template-preview-grid">
-            <div v-for="item in selectedTemplatePreviewFields" :key="item.key" class="template-preview-item">
-              <div class="template-preview-item__label">{{ item.label }}</div>
-              <div class="template-preview-item__value">{{ item.value }}</div>
-            </div>
-          </div>
-        </template>
-      </div>
-    </el-card>
-
     <el-card shadow="never" class="form-card">
       <template #header>
         <div class="card-header">
@@ -328,7 +214,18 @@
             <div class="card-title">签约房源</div>
             <div class="card-desc">先选择签约房源，再按当前委托模式配置对应条款。</div>
           </div>
-          <el-button type="primary" link @click="roomPickerRef?.show(selectedRooms)">选择房源</el-button>
+          <el-button
+            type="primary"
+            link
+            @click="
+              housePickerRef?.show({
+                selected: selectedHouses,
+                excludeOwnerContractId: form.ownerContract.id
+              })
+            "
+          >
+            选择房源
+          </el-button>
         </div>
       </template>
 
@@ -384,9 +281,7 @@
                   <div>当前采用 {{ settlementModeLabelMap[activeContractHouse.settlementRule.settlementMode || "FIXED"] }} 结算。</div>
                   <div>{{ activeContractHouse.rentFreeRule.enabled ? "已启用免租规则" : "未启用免租规则" }}。</div>
                 </div>
-                <div v-else class="house-highlight">
-                  当前房源仅用于标记包租合同覆盖范围，金额和费用统一在下方包租条款中配置。
-                </div>
+                <div v-else class="house-highlight">当前房源仅用于标记包租合同覆盖范围，金额和费用统一在下方包租条款中配置。</div>
               </template>
             </div>
           </div>
@@ -407,6 +302,19 @@
       </template>
 
       <div v-if="activeContractHouse" class="rule-editor">
+        <div class="mode-guide">
+          <div class="mode-guide__header">
+            <div>
+              <div class="mode-guide__title">{{ activeSettlementGuide.title }}</div>
+              <div class="mode-guide__desc">{{ activeSettlementGuide.desc }}</div>
+            </div>
+            <el-tag effect="plain" type="primary">{{ settlementModeLabelMap[activeSettlementMode] }}</el-tag>
+          </div>
+          <div class="mode-guide__fields">
+            <el-tag v-for="field in activeSettlementGuide.fields" :key="field" effect="plain">{{ field }}</el-tag>
+          </div>
+        </div>
+
         <el-row :gutter="20">
           <el-col :span="6">
             <el-form-item label="结算模式">
@@ -415,7 +323,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
+          <el-col v-if="shouldShowIncomeBasis" :span="6">
             <el-form-item label="收入口径">
               <el-select v-model="activeContractHouse.settlementRule.incomeBasis" class="w-full">
                 <el-option v-for="option in incomeBasisOptions" :key="option.value" :label="option.label" :value="option.value" />
@@ -439,7 +347,7 @@
         </el-row>
 
         <div class="switch-grid">
-          <div class="switch-card">
+          <div v-if="shouldShowGuaranteed" class="switch-card">
             <div class="switch-card__head">
               <span>保底租金</span>
               <el-switch v-model="activeContractHouse.settlementRule.hasGuaranteedRent" />
@@ -504,26 +412,26 @@
         </div>
 
         <el-row :gutter="20">
-          <el-col :span="6">
+          <el-col v-if="shouldShowCommission" :span="6">
             <el-form-item label="佣金方式">
               <el-select v-model="activeContractHouse.settlementRule.commissionMode" class="w-full">
                 <el-option v-for="option in feeModeOptions" :key="option.value" :label="option.label" :value="option.value" />
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
+          <el-col v-if="shouldShowCommission" :span="6">
             <el-form-item label="佣金值">
               <el-input-number v-model="activeContractHouse.settlementRule.commissionValue" :min="0" :precision="2" class="w-full" />
             </el-form-item>
           </el-col>
-          <el-col :span="6">
+          <el-col v-if="shouldShowServiceFee" :span="6">
             <el-form-item label="服务费方式">
               <el-select v-model="activeContractHouse.settlementRule.serviceFeeMode" class="w-full">
                 <el-option v-for="option in feeModeOptions" :key="option.value" :label="option.label" :value="option.value" />
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
+          <el-col v-if="shouldShowServiceFee" :span="6">
             <el-form-item label="服务费值">
               <el-input-number v-model="activeContractHouse.settlementRule.serviceFeeValue" :min="0" :precision="2" class="w-full" />
             </el-form-item>
@@ -654,10 +562,71 @@
         <div class="sub-panel__header">
           <div>
             <div class="sub-panel__title">其他费用</div>
-            <div class="sub-panel__desc">参考退租费用，支持配置收 / 支方向和金额方式。</div>
+            <div class="sub-panel__desc">参考退租费用，支持前置选择收 / 支和金额方式。</div>
           </div>
+          <el-button type="primary" plain @click="addLeaseFee">添加费用</el-button>
         </div>
-        <OtherFeeSelect v-model="form.ownerLeaseRule.otherFeeList" />
+
+        <div class="fee-table-wrapper">
+          <table class="fee-table">
+            <thead>
+              <tr>
+                <th style="width: 70px">收支</th>
+                <th style="width: 180px">费用类型</th>
+                <th style="width: 150px">付款方式</th>
+                <th style="width: 260px">金额</th>
+                <th>备注</th>
+                <th style="width: 56px">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!form.ownerLeaseRule.otherFeeList?.length" class="empty-row">
+                <td colspan="6">
+                  <div class="empty-state">暂无其他费用，点击右上角“添加费用”新增。</div>
+                </td>
+              </tr>
+              <tr v-for="(fee, index) in form.ownerLeaseRule.otherFeeList" :key="index">
+                <td>
+                  <div class="direction-chip" :class="fee.feeDirection === 'IN' ? 'chip-income' : 'chip-expense'" @click="toggleLeaseFeeDirection(fee)">
+                    {{ fee.feeDirection === "IN" ? "收入" : "支出" }}
+                  </div>
+                </td>
+                <td>
+                  <el-cascader
+                    v-model="leaseFeeCascaderValues[index]"
+                    :options="otherFeeTypeOptions"
+                    :props="{ emitPath: true, checkStrictly: false }"
+                    clearable
+                    filterable
+                    class="w-full"
+                    @change="value => handleLeaseFeeTypeChange(value, index)"
+                  />
+                </td>
+                <td>
+                  <el-select v-model="fee.paymentMethod" class="w-full">
+                    <el-option v-for="item in paymentMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </td>
+                <td>
+                  <el-input v-model.number="fee.priceInput" type="number" class="w-full" placeholder="请输入">
+                    <template #prepend>
+                      <el-select v-model="fee.priceMethod" style="width: 140px">
+                        <el-option v-for="item in priceMethodOptions" :key="item.value" :label="item.label" :value="item.value" />
+                      </el-select>
+                    </template>
+                    <template #append>{{ fee.priceMethod === 1 ? "元" : "%" }}</template>
+                  </el-input>
+                </td>
+                <td>
+                  <el-input v-model="fee.remark" placeholder="备注" />
+                </td>
+                <td class="text-center">
+                  <el-button link type="danger" @click="form.ownerLeaseRule.otherFeeList?.splice(index, 1)">删除</el-button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="sub-panel">
@@ -712,7 +681,7 @@
       </div>
     </el-card>
 
-    <RoomPicker ref="roomPickerRef" @confirm="handleRoomConfirm" />
+    <HousePicker ref="housePickerRef" @confirm="handleHouseConfirm" />
 
     <el-dialog v-model="previewVisible" top="10px" title="业主合同预览" width="80%" destroy-on-close append-to-body>
       <iframe v-if="pdfUrl" title="业主合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
@@ -726,12 +695,12 @@
   import { getContractTemplateParams, getMyAvailableContractTemplates } from "@/api/contract/template";
   import { previewOwnerContract } from "@/api/contract/owner";
   import UploadImage from "@/components/upload/UploadImage.vue";
-  import RoomPicker from "@/shared/house/RoomPicker.vue";
-  import OtherFeeSelect from "@/shared/contract/OtherFeeSelect.vue";
+  import HousePicker from "@/shared/house/HousePicker.vue";
+  import { getDictDataByParentCode } from "@/api/sys/dict";
+  import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS } from "@/constants";
   import { message } from "@/utils/message";
   import type {
     ContractTemplateListVo,
-    OtherFeeDto,
     OwnerBearTypeEnum,
     OwnerCompanyDto,
     OwnerContractDto,
@@ -866,8 +835,19 @@
   type OwnerLeaseRuleForm = OwnerLeaseRuleDto & {
     handoverDate?: string;
     usageType?: string;
-    otherFeeList?: OtherFeeDto[];
+    otherFeeList?: OwnerLeaseFeeForm[];
     status?: StatusValue;
+  };
+
+  type OwnerLeaseFeeForm = {
+    feeType?: string;
+    feeName?: string;
+    feeDirection?: "IN" | "OUT";
+    paymentMethod?: number;
+    priceMethod?: number;
+    priceInput?: number;
+    sortOrder?: number;
+    remark?: string;
   };
 
   type ContractHouseFormItem = OwnerContractHouseDto & {
@@ -893,12 +873,14 @@
   });
 
   const formRef = ref<FormInstance>();
-  const roomPickerRef = ref<InstanceType<typeof RoomPicker>>();
+  const housePickerRef = ref<InstanceType<typeof HousePicker>>();
   const contractTemplates = ref<ContractTemplateListVo[]>([]);
   const templateParams = ref<ContractTemplateParamItem[]>([]);
   const templateParamsLoading = ref(false);
+  const otherFeeTypeOptions = ref<any[]>([]);
+  const leaseFeeCascaderValues = ref<Record<number, any[]>>({});
   const contractDateRange = ref<string[]>([]);
-  const selectedRooms = ref<PickedRoom[]>([]);
+  const selectedHouses = ref<PickedRoom[]>([]);
   const activeHouseId = ref("");
   const previewVisible = ref(false);
   const pdfUrl = ref("");
@@ -969,6 +951,33 @@
   const settlementTimingLabelMap: Record<OwnerSettlementTimingValue, string> = {
     TENANT_PAYMENT_REALTIME: "租客支付实时分账",
     LEASE_START_GENERATE_BILL: "起租日直接给业主生成账单"
+  };
+  const settlementGuideMap: Record<OwnerSettlementModeEnum, { title: string; desc: string; fields: string[] }> = {
+    FIXED: {
+      title: "固定保底",
+      desc: "平台按约定固定金额给业主，出租溢价和空置风险主要由平台承担。",
+      fields: ["保底租金", "手续费承担方式", "分账时间", "管理费", "免租规则"]
+    },
+    SHARE_GROSS: {
+      title: "毛收分成",
+      desc: "按租客实收毛收入直接分成，不先扣除成本费用。",
+      fields: ["收入口径", "分成比例", "手续费承担方式", "费用科目分账", "免租规则"]
+    },
+    SHARE_NET: {
+      title: "净收分成",
+      desc: "先扣掉约定成本或费用科目，再按净收入与业主分成。",
+      fields: ["收入口径", "分成比例", "服务费", "费用科目分账", "免租规则"]
+    },
+    GUARANTEE_PLUS_SHARE: {
+      title: "保底加分成",
+      desc: "先给业主保底租金，超过阈值的部分再按比例分成。",
+      fields: ["保底租金", "分成比例", "管理费", "手续费承担方式", "费用科目分账"]
+    },
+    AGENCY: {
+      title: "代收代付",
+      desc: "平台代收租金并按约定代扣费用后，将剩余款项结转给业主。",
+      fields: ["收入口径", "服务费", "管理费", "手续费承担方式", "费用科目分账"]
+    }
   };
 
   const idTypeOptions = [
@@ -1055,6 +1064,8 @@
     { label: rentDueTypeLabelMap.FIXED, value: "FIXED" as const },
     { label: rentDueTypeLabelMap.LATE, value: "LATE" as const }
   ];
+  const paymentMethodOptions = PAYMENT_METHOD_OPTIONS;
+  const priceMethodOptions = PRICE_METHOD_OPTIONS;
 
   const createSettlementItem = (): OwnerSettlementItemForm => ({
     feeType: "",
@@ -1062,6 +1073,13 @@
     transferEnabled: true,
     transferRatio: 100,
     sortOrder: 0,
+    remark: ""
+  });
+  const createLeaseFee = (): OwnerLeaseFeeForm => ({
+    feeDirection: "IN",
+    paymentMethod: paymentMethodOptions[0]?.value,
+    priceMethod: priceMethodOptions[0]?.value,
+    priceInput: undefined,
     remark: ""
   });
   const createDefaultSettlementRule = (): OwnerSettlementRuleForm => ({
@@ -1187,6 +1205,12 @@
 
   const activeContractHouse = computed(() => form.contractHouseList.find(item => item.houseId === activeHouseId.value));
   const configuredHouseCount = computed(() => form.contractHouseList.filter(item => isHouseConfigured(item)).length);
+  const activeSettlementMode = computed(() => activeContractHouse.value?.settlementRule?.settlementMode || "FIXED");
+  const activeSettlementGuide = computed(() => settlementGuideMap[activeSettlementMode.value]);
+  const shouldShowGuaranteed = computed(() => ["FIXED", "GUARANTEE_PLUS_SHARE"].includes(activeSettlementMode.value));
+  const shouldShowCommission = computed(() => ["SHARE_GROSS", "SHARE_NET", "GUARANTEE_PLUS_SHARE", "AGENCY"].includes(activeSettlementMode.value));
+  const shouldShowIncomeBasis = computed(() => ["SHARE_GROSS", "SHARE_NET", "AGENCY"].includes(activeSettlementMode.value));
+  const shouldShowServiceFee = computed(() => ["AGENCY", "SHARE_NET"].includes(activeSettlementMode.value));
   const selectedTemplate = computed(() => contractTemplates.value.find(item => String(item.id || "") === String(form.ownerContract.contractTemplateId || "")));
   const templateParamLabelMap = computed(() => templateParams.value.reduce<Record<string, string>>((acc, item) => ((acc[item.key] = item.label), acc), {}));
   const selectedTemplatePlaceholders = computed(() => extractTemplatePlaceholders(selectedTemplate.value?.templateContent));
@@ -1212,10 +1236,10 @@
     }
     return Boolean(
       item.settlementRule?.settlementMode ||
-        item.settlementRule?.settlementItemList?.length ||
-        item.rentFreeRule?.enabled ||
-        item.settlementRule?.hasGuaranteedRent ||
-        item.settlementRule?.managementFeeEnabled
+      item.settlementRule?.settlementItemList?.length ||
+      item.rentFreeRule?.enabled ||
+      item.settlementRule?.hasGuaranteedRent ||
+      item.settlementRule?.managementFeeEnabled
     );
   }
 
@@ -1237,10 +1261,22 @@
     }
   }
 
+  async function loadFeeTypeOptions() {
+    const res = await getDictDataByParentCode({ dictCode: "fee_type" });
+    otherFeeTypeOptions.value = (res.data || []).map((dict: any) => ({
+      label: dict.dictName,
+      value: dict.dictCode,
+      children: (dict.dictDataList || []).map((item: any) => ({
+        label: item.name,
+        value: item.id
+      }))
+    }));
+  }
+
   function resetForm() {
     Object.assign(form, createDefaultForm());
     contractDateRange.value = [];
-    selectedRooms.value = [];
+    selectedHouses.value = [];
     activeHouseId.value = "";
   }
 
@@ -1277,7 +1313,7 @@
         ...(item.rentFreeRule || {})
       }
     }));
-    selectedRooms.value = form.contractHouseList.map(item => ({
+    selectedHouses.value = form.contractHouseList.map(item => ({
       houseId: item.houseId,
       houseName: item.houseName
     }));
@@ -1290,10 +1326,11 @@
       ...createDefaultLeaseFreeRule(),
       ...item
     }));
+    syncLeaseFeeCascaderValues();
   }
 
-  function handleRoomConfirm(rows: PickedRoom[]) {
-    selectedRooms.value = rows || [];
+  function handleHouseConfirm(rows: PickedRoom[]) {
+    selectedHouses.value = rows || [];
     const houseMap = new Map<string, ContractHouseFormItem>();
     for (const row of rows || []) {
       const houseId = String(row.houseId || "");
@@ -1309,7 +1346,7 @@
 
   function removeHouse(houseId: string) {
     form.contractHouseList = form.contractHouseList.filter(item => item.houseId !== houseId);
-    selectedRooms.value = selectedRooms.value.filter(item => String(item.houseId || "") !== houseId);
+    selectedHouses.value = selectedHouses.value.filter(item => String(item.houseId || "") !== houseId);
     if (activeHouseId.value === houseId) {
       activeHouseId.value = form.contractHouseList[0]?.houseId || "";
     }
@@ -1324,6 +1361,42 @@
 
   function addLeaseFreeRule() {
     form.ownerLeaseFreeRuleList.push(createDefaultLeaseFreeRule());
+  }
+
+  function addLeaseFee() {
+    if (!form.ownerLeaseRule.otherFeeList) {
+      form.ownerLeaseRule.otherFeeList = [];
+    }
+    form.ownerLeaseRule.otherFeeList.push(createLeaseFee());
+  }
+
+  function toggleLeaseFeeDirection(fee: OwnerLeaseFeeForm) {
+    fee.feeDirection = fee.feeDirection === "IN" ? "OUT" : "IN";
+  }
+
+  function handleLeaseFeeTypeChange(value: any, index: number) {
+    const target = form.ownerLeaseRule.otherFeeList?.[index];
+    if (!target || !Array.isArray(value) || value.length < 2) return;
+    const parent = otherFeeTypeOptions.value.find((item: any) => item.value === value[0]);
+    const child = parent?.children?.find((item: any) => item.value === value[1]);
+    if (!child) return;
+    target.feeType = String(child.value);
+    target.feeName = child.label;
+  }
+
+  function syncLeaseFeeCascaderValues() {
+    const values: Record<number, any[]> = {};
+    (form.ownerLeaseRule.otherFeeList || []).forEach((fee, index) => {
+      if (!fee.feeType || !otherFeeTypeOptions.value.length) return;
+      for (const parent of otherFeeTypeOptions.value) {
+        const child = parent.children?.find((item: any) => String(item.value) === String(fee.feeType));
+        if (child) {
+          values[index] = [parent.value, child.value];
+          break;
+        }
+      }
+    });
+    leaseFeeCascaderValues.value = values;
   }
 
   function applyYearShortcut(years: number) {
@@ -1376,7 +1449,7 @@
   }
 
   function getTemplatePreviewValue(key: string) {
-    const houseRows = selectedRooms.value;
+    const houseRows = selectedHouses.value;
     const totalArea = houseRows
       .map(item => Number(item.area || 0))
       .filter(item => Number.isFinite(item) && item > 0)
@@ -1458,6 +1531,7 @@
     if (form.ownerContract.cooperationMode === "MASTER_LEASE") {
       payload.ownerLeaseRule = {
         ...form.ownerLeaseRule,
+        otherFeeList: form.ownerLeaseRule.otherFeeList || [],
         billingStart: contractDateRange.value[0],
         billingEnd: contractDateRange.value[1]
       };
@@ -1507,8 +1581,17 @@
   });
 
   onMounted(async () => {
-    await Promise.all([loadTemplates(), loadTemplateParams()]);
+    await Promise.all([loadTemplates(), loadTemplateParams(), loadFeeTypeOptions()]);
+    syncLeaseFeeCascaderValues();
   });
+
+  watch(
+    [() => form.ownerLeaseRule.otherFeeList, otherFeeTypeOptions],
+    () => {
+      syncLeaseFeeCascaderValues();
+    },
+    { deep: true }
+  );
 
   defineExpose({
     getRef,
@@ -1796,6 +1879,39 @@
     background: #fff7ed;
     color: #9a3412;
     line-height: 1.7;
+  }
+
+  .mode-guide {
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+  }
+
+  .mode-guide__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .mode-guide__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d4ed8;
+  }
+
+  .mode-guide__desc {
+    margin-top: 4px;
+    line-height: 1.7;
+    color: #1e3a8a;
+  }
+
+  .mode-guide__fields {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .switch-grid {

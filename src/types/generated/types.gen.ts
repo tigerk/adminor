@@ -3108,6 +3108,102 @@ export type ResponseResultLeaseCheckoutVo = {
     data?: LeaseCheckoutVo;
 };
 
+/**
+ * 房源查询DTO
+ */
+export type HouseQueryDto = {
+    currentPage?: string;
+    pageSize?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 搜索关键字，支持房源名称/编号/地址
+     */
+    keywords?: string;
+    /**
+     * 排除的业主合同ID，编辑当前合同场景下用于保留当前合同已选房源
+     */
+    excludeOwnerContractId?: string;
+};
+
+/**
+ * 房源列表VO
+ */
+export type HouseListVo = {
+    /**
+     * 房源ID
+     */
+    houseId?: string;
+    /**
+     * 房源名称
+     */
+    houseName?: string;
+    /**
+     * 房源编号
+     */
+    houseCode?: string;
+    /**
+     * 房源地址
+     */
+    addressText?: string;
+    /**
+     * 小区名称
+     */
+    communityName?: string;
+    /**
+     * 楼栋
+     */
+    building?: string;
+    /**
+     * 单元
+     */
+    unit?: string;
+    /**
+     * 门牌号
+     */
+    doorNumber?: string;
+    /**
+     * 出租类型
+     */
+    rentalType?: number;
+    /**
+     * 套内面积
+     */
+    area?: number;
+    /**
+     * 房间数
+     */
+    roomCount?: number;
+    /**
+     * 参考月租金
+     */
+    referenceRentAmount?: number;
+    /**
+     * 户型文案
+     */
+    layoutText?: string;
+    /**
+     * 权属证明及编号
+     */
+    certificateNo?: string;
+};
+
+export type PageVoHouseListVo = {
+    currentPage?: string;
+    pageSize?: string;
+    total?: string;
+    pages?: string;
+    list?: Array<HouseListVo>;
+};
+
+export type ResponseResultPageVoHouseListVo = {
+    code?: number;
+    message?: string;
+    data?: PageVoHouseListVo;
+};
+
 export type ResponseResultListAsyncRoutesVo = {
     code?: number;
     message?: string;
@@ -6027,6 +6123,38 @@ export type OwnerCompanyDto = {
      */
     contactPhone?: string;
     /**
+     * 收款人姓名
+     */
+    payeeName?: string;
+    /**
+     * 收款人电话
+     */
+    payeePhone?: string;
+    /**
+     * 收款人证件类型
+     */
+    payeeIdType?: 'ID_CARD' | 'PASSPORT' | 'HONGKONG_MACAO' | 'TAIWAN';
+    /**
+     * 收款人证件号码
+     */
+    payeeIdNo?: string;
+    /**
+     * 银行卡开户名
+     */
+    bankAccountName?: string;
+    /**
+     * 银行卡号
+     */
+    bankAccountNo?: string;
+    /**
+     * 开户行名称
+     */
+    bankName?: string;
+    /**
+     * 营业执照附件
+     */
+    businessLicenseUrls?: Array<string>;
+    /**
      * 注册地址
      */
     registeredAddress?: string;
@@ -6084,6 +6212,18 @@ export type OwnerContractDto = {
      * 签署状态
      */
     signStatus?: OwnerSignStatusEnum;
+    /**
+     * 签约类型
+     */
+    signType?: OwnerSignTypeEnum;
+    /**
+     * 合同介质
+     */
+    contractMedium?: OwnerContractMediumEnum;
+    /**
+     * 是否通知业主
+     */
+    notifyOwner?: boolean;
     /**
      * 合同开始日期
      */
@@ -6153,6 +6293,11 @@ export type OwnerContractHouseDto = {
 };
 
 /**
+ * 业主合同介质枚举
+ */
+export type OwnerContractMediumEnum = 'ELECTRONIC' | 'PAPER';
+
+/**
  * 业主费用计算方式枚举
  */
 export type OwnerFeeModeEnum = 'RATIO' | 'FIXED';
@@ -6171,6 +6316,44 @@ export type OwnerFreeTypeEnum = 'BUILT_IN' | 'OUTSIDE';
  * 业主结算收入口径枚举
  */
 export type OwnerIncomeBasisEnum = 'RECEIVED' | 'RECEIVABLE';
+
+/**
+ * 包租其他费用DTO
+ */
+export type OwnerLeaseFeeDto = {
+    /**
+     * 费用科目类型
+     */
+    feeType?: string;
+    /**
+     * 费用名称
+     */
+    feeName?: string;
+    /**
+     * 收支方向
+     */
+    feeDirection?: 'IN' | 'OUT';
+    /**
+     * 付款方式
+     */
+    paymentMethod?: 'RENT' | 'ALL' | 'MONTH' | 'BI_MONTH' | 'QUARTER' | 'HALF_YEAR' | 'YEAR';
+    /**
+     * 价格方式
+     */
+    priceMethod?: 'FIXED' | 'RATIO';
+    /**
+     * 金额或比例
+     */
+    priceInput?: number;
+    /**
+     * 排序
+     */
+    sortOrder?: number;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
 
 /**
  * 包租免租规则DTO
@@ -6251,6 +6434,14 @@ export type OwnerLeaseRuleDto = {
      */
     firstPayDate?: string;
     /**
+     * 交房日期
+     */
+    handoverDate?: string;
+    /**
+     * 承租用途
+     */
+    usageType?: string;
+    /**
      * 计费开始日期
      */
     billingStart?: string;
@@ -6270,7 +6461,16 @@ export type OwnerLeaseRuleDto = {
      * 备注
      */
     remark?: string;
+    /**
+     * 其他费用列表
+     */
+    otherFeeList?: Array<OwnerLeaseFeeDto>;
 };
+
+/**
+ * 业主支付手续费承担方式枚举
+ */
+export type OwnerPaymentFeeBearTypeEnum = 'PLATFORM_ALL' | 'OWNER_ALL' | 'BY_INCOME_SHARE';
 
 /**
  * 业主个人信息DTO
@@ -6305,6 +6505,50 @@ export type OwnerPersonalDto = {
      */
     phone?: string;
     /**
+     * 收款人姓名
+     */
+    payeeName?: string;
+    /**
+     * 收款人电话
+     */
+    payeePhone?: string;
+    /**
+     * 收款人证件类型
+     */
+    payeeIdType?: 'ID_CARD' | 'PASSPORT' | 'HONGKONG_MACAO' | 'TAIWAN';
+    /**
+     * 收款人证件号码
+     */
+    payeeIdNo?: string;
+    /**
+     * 银行卡开户名
+     */
+    bankAccountName?: string;
+    /**
+     * 银行卡号
+     */
+    bankAccountNo?: string;
+    /**
+     * 开户行名称
+     */
+    bankName?: string;
+    /**
+     * 身份证国徽面
+     */
+    idCardFrontList?: Array<string>;
+    /**
+     * 身份证人像面
+     */
+    idCardBackList?: Array<string>;
+    /**
+     * 手持身份证照片
+     */
+    idCardInHandList?: Array<string>;
+    /**
+     * 其他附件
+     */
+    otherImageList?: Array<string>;
+    /**
      * 标签列表
      */
     tags?: Array<string>;
@@ -6331,6 +6575,10 @@ export type OwnerProrateTypeEnum = 'BY_DAYS' | 'FULL_PERIOD';
  * 轻托管免租规则DTO
  */
 export type OwnerRentFreeRuleDto = {
+    /**
+     * 是否启用免租
+     */
+    enabled?: boolean;
     /**
      * 免租类型
      */
@@ -6370,6 +6618,36 @@ export type OwnerRentFreeRuleDto = {
 };
 
 /**
+ * 轻托管分账费用科目DTO
+ */
+export type OwnerSettlementItemDto = {
+    /**
+     * 费用科目类型
+     */
+    feeType?: string;
+    /**
+     * 费用科目名称
+     */
+    itemName?: string;
+    /**
+     * 是否转给业主
+     */
+    transferEnabled?: boolean;
+    /**
+     * 转给业主比例
+     */
+    transferRatio?: number;
+    /**
+     * 排序
+     */
+    sortOrder?: number;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
  * 业主轻托管结算模式枚举
  */
 export type OwnerSettlementModeEnum = 'FIXED' | 'SHARE_GROSS' | 'SHARE_NET' | 'GUARANTEE_PLUS_SHARE' | 'AGENCY';
@@ -6391,6 +6669,10 @@ export type OwnerSettlementRuleDto = {
      */
     guaranteedRentAmount?: number;
     /**
+     * 是否有保底租金
+     */
+    hasGuaranteedRent?: boolean;
+    /**
      * 佣金方式
      */
     commissionMode?: OwnerFeeModeEnum;
@@ -6407,9 +6689,37 @@ export type OwnerSettlementRuleDto = {
      */
     serviceFeeValue?: number;
     /**
+     * 是否启用管理费
+     */
+    managementFeeEnabled?: boolean;
+    /**
+     * 管理费方式
+     */
+    managementFeeMode?: OwnerFeeModeEnum;
+    /**
+     * 管理费值
+     */
+    managementFeeValue?: number;
+    /**
      * 税费承担方式
      */
     bearTaxType?: OwnerBearTypeEnum;
+    /**
+     * 支付手续费承担方式
+     */
+    paymentFeeBearType?: OwnerPaymentFeeBearTypeEnum;
+    /**
+     * 分账时间
+     */
+    settlementTiming?: OwnerSettlementTimingEnum;
+    /**
+     * 是否启用免租规则
+     */
+    rentFreeEnabled?: boolean;
+    /**
+     * 分账费用科目列表
+     */
+    settlementItemList?: Array<OwnerSettlementItemDto>;
     /**
      * 生效开始日期
      */
@@ -6429,9 +6739,19 @@ export type OwnerSettlementRuleDto = {
 };
 
 /**
+ * 业主分账时间枚举
+ */
+export type OwnerSettlementTimingEnum = 'TENANT_PAYMENT_REALTIME' | 'LEASE_START_GENERATE_BILL';
+
+/**
  * 业主合同签署状态枚举
  */
 export type OwnerSignStatusEnum = 'PENDING' | 'SIGNED';
+
+/**
+ * 业主签约类型枚举
+ */
+export type OwnerSignTypeEnum = 'NEW' | 'RENEW';
 
 /**
  * 业主主体类型枚举
@@ -6696,6 +7016,10 @@ export type OwnerDetailVo = {
      * 业主合同
      */
     ownerContract?: OwnerContractDto;
+    /**
+     * 合同模板名称
+     */
+    contractTemplateName?: string;
     /**
      * 合同房源列表
      */
@@ -9512,7 +9836,7 @@ export type TenantParamsEnum = 'CONTRACT_CODE' | 'SIGNED_HOUSE_LIST' | 'TOTAL_AR
 
 export type DeliveryStatusEnum = 'CANCELLED' | 'DRAFT' | 'COMPLETED' | 'SIGNED';
 
-export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'DELIVERY_IMAGE' | 'CONTRACT_SEAL_IMAGE';
+export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'DELIVERY_IMAGE' | 'CONTRACT_SEAL_IMAGE';
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 
@@ -11038,6 +11362,24 @@ export type CancelCheckoutResponses = {
 };
 
 export type CancelCheckoutResponse = CancelCheckoutResponses[keyof CancelCheckoutResponses];
+
+export type GetHouseListData = {
+    body: HouseQueryDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/house/list';
+};
+
+export type GetHouseListResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultPageVoHouseListVo;
+};
+
+export type GetHouseListResponse = GetHouseListResponses[keyof GetHouseListResponses];
 
 export type GetHouseDetailData = {
     body: HouseIdDto;
