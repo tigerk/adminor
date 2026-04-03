@@ -296,7 +296,7 @@
   import { onMounted, reactive, ref } from "vue";
   import { message } from "@/utils/message";
   import { ID_TYPE_OPTIONS } from "@/constants";
-  import UploadImage from "@/components/Business/UploadImage.vue";
+  import UploadImage from "@/components/upload/UploadImage.vue";
   import { getCompanyUserOptions, getCompanyUserDetail } from "@/api/company";
   import { createContractSeal, updateContractSeal, deleteContractSeal, getContractSealList } from "@/api/contract/contractSeal";
   import { ContractSealSourceEnumMeta, ContractSealTypeEnumMeta, ContractSealCreateDto, ContractSealVo, IdNameVo } from "@/types";

@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref } from "vue";
-  import PoiSearch from "@/components/Business/PoiSearch.vue";
+  import PoiSearch from "@/components/region/PoiSearch.vue";
   import { EntireFormProps } from "@/views/house/components/EntireCreate/types";
   import { CircleCheck, Plus } from "@element-plus/icons-vue";
-  import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
+  import DeptTreeSelect from "@/components/org/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { useFacilityEdit } from "@/views/house/components/HouseFacility/hook";
   import HouseLayoutSelector from "@/views/house/components/HouseLayout/HouseLayoutSelector.vue";

@@ -161,7 +161,7 @@
   import type { FormInstance, FormRules } from "element-plus";
   import type { DeliveryCreateDto, DeliveryItemDto, DeliveryItemVo, FacilityItemDto } from "@/types";
   import { DataLine, Delete, Grid, InfoFilled, Lightning, Picture, Plus } from "@element-plus/icons-vue";
-  import UploadImage from "@/components/Business/UploadImage.vue";
+  import UploadImage from "@/components/upload/UploadImage.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { IconifyIconOnline } from "@/components/ReIcon";
   import { getDictDataByDictCode } from "@/api/sys/dict";

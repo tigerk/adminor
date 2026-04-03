@@ -1,39 +1,39 @@
 <template>
   <div class="owner-finance-page">
-    <div class="summary-row">
-      <div v-for="card in summaryCards" :key="card.key" class="summary-card">
-        <span class="summary-card__label">{{ card.label }}</span>
-        <strong class="summary-card__value">{{ card.value }}</strong>
-      </div>
-    </div>
+    <OwnerPageHeader :summary-span="24" :action-span="0">
+      <template #search>
+        <el-form :inline="true" :model="queryForm" class="owner-page-search-form">
+          <el-form-item>
+            <el-input v-model="queryForm.ownerName" placeholder="业主名称" clearable class="owner-filter-input" @keyup.enter="fetchData" />
+          </el-form-item>
+          <el-form-item>
+            <el-input v-model="queryForm.billNo" placeholder="账单编号" clearable class="owner-filter-input" @keyup.enter="fetchData" />
+          </el-form-item>
+          <el-form-item>
+            <el-select v-model="queryForm.approvalStatus" placeholder="审批状态" clearable class="owner-filter-select">
+              <el-option v-for="item in approvalStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-select v-model="queryForm.settlementStatus" placeholder="结算状态" clearable class="owner-filter-select">
+              <el-option v-for="item in settlementStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="fetchData">搜索</el-button>
+            <el-button @click="resetQuery">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </template>
 
-    <el-card shadow="never" class="mt-3">
-      <el-form :inline="true" :model="queryForm">
-        <el-form-item>
-          <el-input v-model="queryForm.ownerName" placeholder="业主名称" clearable class="!w-[180px]" @keyup.enter="fetchData" />
-        </el-form-item>
-        <el-form-item>
-          <el-input v-model="queryForm.billNo" placeholder="账单编号" clearable class="!w-[180px]" @keyup.enter="fetchData" />
-        </el-form-item>
-        <el-form-item>
-          <el-select v-model="queryForm.approvalStatus" placeholder="审批状态" clearable class="!w-[140px]">
-            <el-option v-for="item in approvalStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-select v-model="queryForm.settlementStatus" placeholder="结算状态" clearable class="!w-[140px]">
-            <el-option v-for="item in settlementStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="fetchData">搜索</el-button>
-          <el-button @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+      <template #summary>
+        <OwnerSummaryCards :cards="summaryCards" :columns="4" />
+      </template>
+    </OwnerPageHeader>
 
-    <el-card shadow="never" class="mt-3">
-      <el-table v-loading="loading" :data="tableData" border>
+    <el-row class="bg-bg_color w-full px-4 pb-4">
+      <el-col :span="24">
+        <el-table v-loading="loading" :data="tableData" border>
         <el-table-column prop="billNo" label="账单编号" min-width="180" />
         <el-table-column prop="ownerName" label="业主" min-width="140" />
         <el-table-column prop="ownerPhone" label="联系电话" min-width="140" />
@@ -67,102 +67,45 @@
         </el-table-column>
       </el-table>
 
-      <div class="mt-4 flex justify-end">
-        <el-pagination
-          v-model:current-page="queryForm.currentPage"
-          v-model:page-size="queryForm.pageSize"
-          :page-sizes="[10, 20, 30, 50]"
-          background
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="total"
-          @current-change="fetchData"
-          @size-change="fetchData"
-        />
-      </div>
-    </el-card>
-
-    <el-drawer v-model="detailVisible" title="业主账单详情" size="960px">
-      <el-skeleton v-if="detailLoading" :rows="10" animated />
-      <template v-else>
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="账单编号">{{ detail.billNo || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="业主">{{ detail.ownerName || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="联系电话">{{ detail.ownerPhone || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="合同编号">{{ detail.contractNo || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="合作模式">{{ cooperationModeLabelMap[detail.cooperationMode || "LIGHT_MANAGED"] }}</el-descriptions-item>
-          <el-descriptions-item label="账期">{{ detail.billStart || "-" }} 至 {{ detail.billEnd || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="收入金额">{{ moneyText(detail.incomeAmount) }}</el-descriptions-item>
-          <el-descriptions-item label="减免金额">{{ moneyText(detail.reductionAmount) }}</el-descriptions-item>
-          <el-descriptions-item label="费用金额">{{ moneyText(detail.expenseAmount) }}</el-descriptions-item>
-          <el-descriptions-item label="调账金额">{{ moneyText(detail.adjustAmount) }}</el-descriptions-item>
-          <el-descriptions-item label="应付金额">{{ moneyText(detail.payableAmount) }}</el-descriptions-item>
-          <el-descriptions-item label="可提现金额">{{ moneyText(detail.withdrawableAmount) }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ detail.createTime || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ detail.updateTime || "-" }}</el-descriptions-item>
-          <el-descriptions-item label="备注" :span="2">{{ detail.remark || "-" }}</el-descriptions-item>
-        </el-descriptions>
-
-        <div class="section-title">账单明细</div>
-        <el-table :data="detail.lineList || []" border>
-          <el-table-column prop="itemName" label="项目" min-width="160" />
-          <el-table-column prop="itemType" label="类型" min-width="120" />
-          <el-table-column prop="direction" label="方向" width="90" align="center" />
-          <el-table-column label="金额" min-width="120" align="right">
-            <template #default="{ row }">{{ moneyText(row.amount) }}</template>
-          </el-table-column>
-          <el-table-column prop="bizDate" label="业务日期" min-width="120" />
-          <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
-        </el-table>
-
-        <div class="section-title">减免明细</div>
-        <el-table :data="detail.reductionList || []" border>
-          <el-table-column prop="reductionName" label="减免项目" min-width="160" />
-          <el-table-column prop="reductionType" label="减免类型" min-width="140" />
-          <el-table-column label="金额" min-width="120" align="right">
-            <template #default="{ row }">{{ moneyText(row.amount) }}</template>
-          </el-table-column>
-          <el-table-column prop="bizDate" label="业务日期" min-width="120" />
-          <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
-        </el-table>
-      </template>
-
-      <template #footer>
-        <div class="drawer-footer">
-          <el-button @click="detailVisible = false">关闭</el-button>
-          <el-button
-            type="primary"
-            :disabled="!canWithdraw(detail)"
-            @click="goWithdraw(detail)"
-          >
-            去提现
-          </el-button>
+        <div class="mt-4 flex justify-end">
+          <el-pagination
+            v-model:current-page="queryForm.currentPage"
+            v-model:page-size="queryForm.pageSize"
+            :page-sizes="[10, 20, 30, 50]"
+            background
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total"
+            @current-change="fetchData"
+            @size-change="fetchData"
+          />
         </div>
-      </template>
-    </el-drawer>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref } from "vue";
-  import { useRoute, useRouter } from "vue-router";
-  import { getOwnerBillDetail, getOwnerBillPage, getOwnerBillSummary } from "@/api/finance/owner";
-  import type { OwnerBillDetailVo, OwnerBillIdDto, OwnerBillListVo, OwnerBillQueryDto, OwnerBillSummaryVo } from "@/types/generated";
+  import { useRoute } from "vue-router";
+  import { getOwnerBillPage, getOwnerBillSummary } from "@/api/finance/owner";
+  import useOwnerBillDialog from "@/views/finance/owner-bill/utils/hook";
+  import OwnerPageHeader from "@/shared/owner/OwnerPageHeader.vue";
+  import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";
+  import "@/shared/owner/panel.scss";
+  import type { OwnerBillListVo, OwnerBillQueryDto, OwnerBillSummaryVo } from "@/types/generated";
 
   defineOptions({ name: "OwnerBillEntry" });
 
   const route = useRoute();
-  const router = useRouter();
+  const { openOwnerBillDetailDialog } = useOwnerBillDialog();
   type QueryForm = Omit<OwnerBillQueryDto, "currentPage" | "pageSize"> & {
     currentPage: number;
     pageSize: number;
   };
 
   const loading = ref(false);
-  const detailLoading = ref(false);
-  const detailVisible = ref(false);
   const total = ref(0);
   const tableData = ref<OwnerBillListVo[]>([]);
-  const detail = ref<OwnerBillDetailVo>({});
   const summary = ref<OwnerBillSummaryVo>({});
 
   const cooperationModeLabelMap = {
@@ -247,10 +190,6 @@
     return "info";
   }
 
-  function canWithdraw(data?: OwnerBillDetailVo) {
-    return Number(data?.withdrawableAmount || 0) > 0 && !!data?.ownerId;
-  }
-
   async function fetchData() {
     loading.value = true;
     try {
@@ -276,28 +215,7 @@
   }
 
   async function openDetail(billId?: string) {
-    if (!billId) return;
-    detailVisible.value = true;
-    detailLoading.value = true;
-    try {
-      const resp = await getOwnerBillDetail({ billId } as OwnerBillIdDto);
-      detail.value = resp.data || {};
-    } finally {
-      detailLoading.value = false;
-    }
-  }
-
-  function goWithdraw(data?: OwnerBillDetailVo) {
-    if (!data?.ownerId) return;
-    router.push({
-      path: "/finance/owner-withdraw",
-      query: {
-        ownerId: data.ownerId,
-        contractId: data.contractId,
-        applyAmount: String(data.withdrawableAmount || 0),
-        openCreate: "1"
-      }
-    });
+    await openOwnerBillDetailDialog(billId);
   }
 
   onMounted(fetchData);
@@ -309,43 +227,4 @@
     flex-direction: column;
   }
 
-  .summary-row {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .summary-card {
-    border: 1px solid var(--el-border-color-light);
-    border-radius: 12px;
-    background: var(--el-bg-color);
-    padding: 16px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .summary-card__label {
-    color: var(--el-text-color-secondary);
-    font-size: 13px;
-  }
-
-  .summary-card__value {
-    font-size: 24px;
-    line-height: 1.1;
-    color: var(--el-text-color-primary);
-  }
-
-  .section-title {
-    margin: 20px 0 12px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--el-text-color-primary);
-  }
-
-  .drawer-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-  }
 </style>

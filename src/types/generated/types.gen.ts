@@ -6517,6 +6517,10 @@ export type OwnerQueryDto = {
      */
     ownerType?: OwnerTypeEnum;
     /**
+     * 合作模式
+     */
+    cooperationMode?: OwnerCooperationModeEnum;
+    /**
      * 签署状态
      */
     signStatus?: OwnerSignStatusEnum;
@@ -6524,6 +6528,56 @@ export type OwnerQueryDto = {
      * 状态
      */
     status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * N天内到期合同
+     */
+    expiringDaysWithin?: number;
+};
+
+/**
+ * 业主合同统计VO
+ */
+export type OwnerContractTotalVo = {
+    /**
+     * 全部合同数
+     */
+    total?: number;
+    /**
+     * 启用中合同数
+     */
+    activeTotal?: number;
+    /**
+     * 已停用合同数
+     */
+    disabledTotal?: number;
+    /**
+     * 待签字合同数
+     */
+    pendingSignTotal?: number;
+    /**
+     * 已签字合同数
+     */
+    signedTotal?: number;
+    /**
+     * 30天内到期合同数
+     */
+    expiring30DaysTotal?: number;
+};
+
+export type ResponseResultOwnerContractTotalVo = {
+    code?: number;
+    message?: string;
+    data?: OwnerContractTotalVo;
+};
+
+/**
+ * 业主合同ID DTO
+ */
+export type OwnerContractIdDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
 };
 
 /**
@@ -6567,6 +6621,18 @@ export type OwnerListVo = {
      */
     houseNames?: string;
     /**
+     * 房源数量
+     */
+    houseCount?: number;
+    /**
+     * 总面积
+     */
+    totalArea?: number;
+    /**
+     * 已配置房源数
+     */
+    configuredHouseCount?: number;
+    /**
      * 合同开始日期
      */
     contractStart?: string;
@@ -6586,6 +6652,10 @@ export type OwnerListVo = {
      * 创建时间
      */
     createTime?: string;
+    /**
+     * 更新时间
+     */
+    updateTime?: string;
 };
 
 export type PageVoOwnerListVo = {
@@ -6600,16 +6670,6 @@ export type ResponseResultPageVoOwnerListVo = {
     code?: number;
     message?: string;
     data?: PageVoOwnerListVo;
-};
-
-/**
- * 业主合同ID DTO
- */
-export type OwnerContractIdDto = {
-    /**
-     * 业主合同ID
-     */
-    contractId?: string;
 };
 
 /**
@@ -6641,6 +6701,18 @@ export type OwnerDetailVo = {
      */
     contractHouseList?: Array<OwnerContractHouseDto>;
     /**
+     * 房源数量
+     */
+    houseCount?: number;
+    /**
+     * 总面积
+     */
+    totalArea?: number;
+    /**
+     * 已配置房源数
+     */
+    configuredHouseCount?: number;
+    /**
      * 包租规则
      */
     ownerLeaseRule?: OwnerLeaseRuleDto;
@@ -6653,6 +6725,10 @@ export type OwnerDetailVo = {
      */
     createBy?: string;
     /**
+     * 创建人姓名
+     */
+    createByName?: string;
+    /**
      * 创建时间
      */
     createTime?: string;
@@ -6660,6 +6736,10 @@ export type OwnerDetailVo = {
      * 更新人
      */
     updateBy?: string;
+    /**
+     * 更新人姓名
+     */
+    updateByName?: string;
     /**
      * 更新时间
      */
@@ -11656,6 +11736,38 @@ export type UpdateStatusResponses = {
 };
 
 export type UpdateStatusResponse = UpdateStatusResponses[keyof UpdateStatusResponses];
+
+export type TotalData = {
+    body: OwnerQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/owner/total';
+};
+
+export type TotalResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultOwnerContractTotalVo;
+};
+
+export type TotalResponse = TotalResponses[keyof TotalResponses];
+
+export type PreviewData = {
+    body: OwnerContractIdDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/owner/preview';
+};
+
+export type PreviewResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type PreviewResponse = PreviewResponses[keyof PreviewResponses];
 
 export type List4Data = {
     body: OwnerQueryDto;

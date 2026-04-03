@@ -107,7 +107,7 @@
   import { GENDER_OPTIONS, ID_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import type { TenantMateVo } from "@/types";
   import useTenant from "@/views/contract/tenant/utils/hook";
-  import UploadImage from "@/components/Business/UploadImage.vue";
+  import UploadImage from "@/components/upload/UploadImage.vue";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions } = useTenant();
 

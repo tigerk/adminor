@@ -240,7 +240,7 @@
   import type { FormInstance, FormRules } from "element-plus";
   import type { LeaseBillCollectDto, LeaseBillCollectItemDto, LeaseBillFeeVo, LeaseBillListVo } from "@/types";
   import { PaymentFlowChannelEnumMeta } from "@/types";
-  import UploadImage from "@/components/Business/UploadImage.vue";
+  import UploadImage from "@/components/upload/UploadImage.vue";
 
   interface Props {
     bill: LeaseBillListVo;

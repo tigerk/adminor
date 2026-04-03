@@ -137,7 +137,7 @@
   import type { FormInstance, FormRules } from "element-plus";
   import type { BookingCreateDto, RoomListVo } from "@/types";
   import { getOptionByCode, RENTAL_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
-  import RoomPicker from "@/components/Business/RoomPicker.vue";
+  import RoomPicker from "@/shared/house/RoomPicker.vue";
   import { Plus } from "@element-plus/icons-vue";
   import { formatDate } from "@/utils/date";
 

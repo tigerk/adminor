@@ -15,12 +15,20 @@ export const getOwnerContractList = (data?: OwnerQueryDto) => {
   return http.request<ResponseResultPageVoOwnerListVo>("post", baseUrlApi("contract/owner/list"), { data });
 };
 
+export const getOwnerContractTotal = (data?: Partial<OwnerQueryDto>) => {
+  return http.request<any>("post", baseUrlApi("contract/owner/total"), { data });
+};
+
 export const createOwnerContract = (data: OwnerCreateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/create"), { data });
 };
 
 export const getOwnerContractDetail = (data: OwnerContractIdDto) => {
   return http.request<ResponseResultOwnerDetailVo>("post", baseUrlApi("contract/owner/detail"), { data });
+};
+
+export const previewOwnerContract = (data: OwnerContractIdDto) => {
+  return http.request<Blob>("post", baseUrlApi("contract/owner/preview"), { data }, { responseType: "blob" });
 };
 
 export const updateOwnerContract = (data: OwnerUpdateDto) => {

@@ -4,7 +4,7 @@
   import { PriceConfigDto, PriceMethodEnumMeta, PricePlanDto } from "@/types";
   import { PRICE_METHOD_OPTIONS, PRICE_PLAN_OPTIONS } from "@/constants";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
-  import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
+  import OtherFeeSelect from "@/shared/contract/OtherFeeSelect.vue";
 
   const { getDefaultOtherFee } = usePriceConfigEdit();
 

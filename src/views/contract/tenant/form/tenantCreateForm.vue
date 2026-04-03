@@ -391,13 +391,13 @@
   import type { TenantsCreateFormProps } from "@/types";
   import { tenantCompanyFormRules, tenantFormRules } from "@/views/contract/tenant/utils/rule";
   import useTenant from "@/views/contract/tenant/utils/hook";
-  import UploadImage from "@/components/Business/UploadImage.vue";
+  import UploadImage from "@/components/upload/UploadImage.vue";
   import { Lock, Plus } from "@element-plus/icons-vue";
-  import OtherFeeSelect from "@/components/Business/OtherFeeSelect.vue";
-  import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
+  import OtherFeeSelect from "@/shared/contract/OtherFeeSelect.vue";
+  import DeptTreeSelect from "@/components/org/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
-  import RoomPicker from "@/components/Business/RoomPicker.vue";
+  import RoomPicker from "@/shared/house/RoomPicker.vue";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions, openTenantMateDialog } = useTenant();
 

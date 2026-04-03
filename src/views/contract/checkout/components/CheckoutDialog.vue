@@ -404,7 +404,7 @@
   import { getCheckoutByLeaseId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import { getDictDataByParentCode } from "@/api/sys/dict";
-  import UploadImage from "@/components/Business/UploadImage.vue";
+  import UploadImage from "@/components/upload/UploadImage.vue";
 
   // ──────────────────────────────────────────────
   // 注意：此组件不再自己管理 el-dialog，

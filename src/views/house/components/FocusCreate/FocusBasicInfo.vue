@@ -1,13 +1,13 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from "vue";
   import { LocalFocusBuildingDto, LocalFocusCreateDto } from "@/views/house/components/FocusCreate/utils/types";
-  import DeptTreeSelect from "@/components/Business/DeptTreeSelect.vue";
+  import DeptTreeSelect from "@/components/org/DeptTreeSelect.vue";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
   import { createFocusBasicInfoRules } from "@/views/house/components/FocusCreate/utils/rule";
   import { ElMessage, ElMessageBox } from "element-plus";
   import { getCompanyUserOptions } from "@/api/company";
-  import PoiSearch from "@/components/Business/PoiSearch.vue";
+  import PoiSearch from "@/components/region/PoiSearch.vue";
   import EpCircleClose from "~icons/ep/circle-close";
   import { message } from "@/utils/message";
   import { FocusHouseDto } from "@/types";

@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { onMounted, ref, watch } from "vue";
-  import UploadImage from "@/components/Business/UploadImage.vue";
+  import UploadImage from "@/components/upload/UploadImage.vue";
   import { ImageFormProps } from "@/views/house/components/HouseImage/types";
-  import UploadVideo from "@/components/Business/UploadVideo.vue";
+  import UploadVideo from "@/components/upload/UploadVideo.vue";
 
   const props = withDefaults(defineProps<ImageFormProps>(), {});
 
