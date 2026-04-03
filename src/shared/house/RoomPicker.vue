@@ -212,12 +212,11 @@
   const getStatusClass = (row: any) => {
     const status = getRoomStatus(row);
     const map: Record<string, string> = {
-      available: "status-tag--vacant",
-      leased: "status-tag--occupied",
-      booked: "status-tag--reserved",
-      locked: "status-tag--default"
+      vacant: "status-tag--vacant",
+      occupied: "status-tag--occupied",
+      reserved: "status-tag--reserved"
     };
-    return map[status.cls] || "status-tag--default";
+    return map[status.key] || "status-tag--default";
   };
 
   const getRowClassName = ({ row }: { row: any }) => {
