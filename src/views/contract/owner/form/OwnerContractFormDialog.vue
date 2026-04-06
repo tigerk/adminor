@@ -3,9 +3,9 @@
     <el-card shadow="never" class="form-card">
       <template #header>
         <div class="card-header">
-          <div>
-            <div class="card-title">业主信息</div>
-            <div class="card-desc">录入业主主体信息、证件材料和收款人信息。</div>
+          <div class="header-inline">
+            <span class="card-title">业主信息</span>
+            <span class="card-desc card-desc--inline">录入业主主体信息、证件材料和收款人信息。</span>
           </div>
           <el-space>
             <el-tag effect="plain">{{ ownerTypeLabelMap[form.ownerType] }}</el-tag>
@@ -32,15 +32,15 @@
       <div class="owner-info-grid">
         <div class="info-panel">
           <div class="info-panel__header">
-            <div>
-              <div class="info-panel__title">业主主体信息</div>
-              <div class="info-panel__desc">优先录入主体身份信息和证件材料。</div>
+            <div class="header-inline">
+              <span class="info-panel__title">业主主体信息</span>
+              <span class="info-panel__desc info-panel__desc--inline">优先录入主体身份信息和证件材料。</span>
             </div>
           </div>
 
           <template v-if="form.ownerType === 'PERSONAL'">
             <el-row :gutter="16">
-              <el-col :span="10">
+              <el-col :span="8">
                 <el-form-item label="姓名" prop="ownerPersonal.name">
                   <el-autocomplete
                     v-model="form.ownerPersonal.name"
@@ -59,28 +59,14 @@
                 </el-form-item>
                 <div class="field-tip">输入姓名后可带出历史录入的业主资料和收款信息。</div>
               </el-col>
-              <el-col :span="6">
+              <el-col :span="4">
                 <el-form-item label="性别">
                   <el-segmented v-model="form.ownerPersonal.gender" :options="genderOptions" />
                 </el-form-item>
               </el-col>
-              <el-col :span="8">
+              <el-col :span="6">
                 <el-form-item label="联系电话" prop="ownerPersonal.phone">
                   <el-input v-model="form.ownerPersonal.phone" placeholder="请输入联系电话" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <el-row :gutter="16">
-              <el-col :span="8">
-                <el-form-item label="证件类型">
-                  <el-select v-model="form.ownerPersonal.idType" class="w-full">
-                    <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="10">
-                <el-form-item label="证件号码" prop="ownerPersonal.idNo">
-                  <el-input v-model="form.ownerPersonal.idNo" placeholder="请输入证件号码" />
                 </el-form-item>
               </el-col>
               <el-col :span="6">
@@ -88,6 +74,20 @@
                   <el-select v-model="form.ownerPersonal.tags" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
                     <el-option v-for="item in ownerTagOptions" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row :gutter="16">
+              <el-col :span="8">
+                <el-form-item label="身份证">
+                  <el-select v-model="form.ownerPersonal.idType" class="w-full">
+                    <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="16">
+                <el-form-item label="身份证号码" prop="ownerPersonal.idNo">
+                  <el-input v-model="form.ownerPersonal.idNo" placeholder="请输入证件号码" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -172,12 +172,12 @@
                   </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :span="8">
+              <el-col :span="10">
                 <el-form-item label="法人证件号码">
                   <el-input v-model="form.ownerCompany.legalPersonIdNo" placeholder="请输入法人证件号码" />
                 </el-form-item>
               </el-col>
-              <el-col :span="8">
+              <el-col :span="6">
                 <el-form-item label="业主标签">
                   <el-select v-model="form.ownerCompany.tags" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
                     <el-option v-for="item in ownerTagOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -204,9 +204,9 @@
 
         <div class="info-panel info-panel--payee">
           <div class="info-panel__header">
-            <div>
-              <div class="info-panel__title">收款人信息</div>
-              <div class="info-panel__desc">用于后续提现和打款，可与业主主体不一致。</div>
+            <div class="header-inline">
+              <span class="info-panel__title">收款人信息</span>
+              <span class="info-panel__desc info-panel__desc--inline">用于后续提现和打款，可与业主主体不一致。</span>
             </div>
             <el-space wrap>
               <el-button plain @click="fillPayeeFromOwner">收款人同业主</el-button>
@@ -215,55 +215,150 @@
           </div>
 
           <el-row :gutter="16">
-            <el-col :span="12">
+            <el-col :span="6">
               <el-form-item label="收款人姓名">
                 <el-input v-model="currentPayeeForm.payeeName" placeholder="请输入收款人姓名" />
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+            <el-col :span="6">
               <el-form-item label="收款人电话">
                 <el-input v-model="currentPayeeForm.payeePhone" placeholder="请输入收款人电话" />
               </el-form-item>
             </el-col>
-          </el-row>
-          <el-row :gutter="16">
-            <el-col :span="12">
+            <el-col :span="6">
               <el-form-item label="收款人证件类型">
                 <el-select v-model="currentPayeeForm.payeeIdType" class="w-full">
                   <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+            <el-col :span="6">
               <el-form-item label="收款人证件号码">
                 <el-input v-model="currentPayeeForm.payeeIdNo" placeholder="请输入收款人证件号码" />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="16">
-            <el-col :span="12">
+            <el-col :span="8">
               <el-form-item label="银行卡开户名">
                 <el-input v-model="currentPayeeForm.bankAccountName" placeholder="请输入开户名" />
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+            <el-col :span="8">
               <el-form-item label="银行卡号">
                 <el-input v-model="currentPayeeForm.bankAccountNo" placeholder="请输入银行卡号" />
               </el-form-item>
             </el-col>
+            <el-col :span="8">
+              <el-form-item label="开户行">
+                <el-input v-model="currentPayeeForm.bankName" placeholder="请输入开户行名称" />
+              </el-form-item>
+            </el-col>
           </el-row>
-          <el-form-item label="开户行">
-            <el-input v-model="currentPayeeForm.bankName" placeholder="请输入开户行名称" />
+        </div>
+      </div>
+    </el-card>
+
+    <el-card shadow="never" class="form-card">
+      <template #header>
+        <div class="card-header">
+          <div class="header-inline">
+            <span class="card-title">合同信息</span>
+            <span class="card-desc card-desc--inline">先确认合同模板、签约方式和合同周期，再继续配置房源和条款。</span>
+          </div>
+        </div>
+      </template>
+
+      <div class="contract-info-grid">
+        <div class="info-panel">
+          <div class="info-panel__header">
+            <div class="header-inline">
+              <span class="info-panel__title">签约摘要</span>
+              <span class="info-panel__desc info-panel__desc--inline">核心合同信息集中在这里，方便快速核对。</span>
+            </div>
+          </div>
+
+          <div class="summary-tag-group">
+            <el-tag effect="plain">签约类型：{{ signTypeLabelMap[form.ownerContract.signType || "NEW"] }}</el-tag>
+            <el-tag effect="plain">合同介质：{{ contractMediumLabelMap[form.ownerContract.contractMedium || "PAPER"] }}</el-tag>
+            <el-tag effect="plain">短信通知：{{ form.ownerContract.notifyOwner ? "通知业主" : "不通知" }}</el-tag>
+            <el-tag effect="plain">签署状态：{{ signStatusLabelMap[form.ownerContract.signStatus || "PENDING"] }}</el-tag>
+          </div>
+        </div>
+
+        <div class="info-panel">
+          <div class="info-panel__header">
+            <div class="header-inline">
+              <span class="info-panel__title">合同录入</span>
+              <span class="info-panel__desc info-panel__desc--inline">常用字段做成一屏可完成，减少来回切换。</span>
+            </div>
+          </div>
+
+          <el-row :gutter="16">
+            <el-col :span="10">
+              <el-form-item label="合同模板" prop="ownerContract.contractTemplateId">
+                <el-select v-model="form.ownerContract.contractTemplateId" class="w-full" filterable placeholder="请选择合同模板">
+                  <el-option v-for="item in contractTemplates" :key="item.id" :label="item.templateName || `模板#${item.id}`" :value="item.id" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="7">
+              <el-form-item label="签约类型">
+                <el-segmented v-model="form.ownerContract.signType" :options="signTypeOptions" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="7">
+              <el-form-item label="合同介质">
+                <el-segmented v-model="form.ownerContract.contractMedium" :options="contractMediumOptions" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-row :gutter="16">
+            <el-col :span="7">
+              <el-form-item label="签署状态">
+                <el-segmented v-model="form.ownerContract.signStatus" :options="signStatusOptions" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="5">
+              <el-form-item label="通知业主">
+                <el-switch v-model="form.ownerContract.notifyOwner" inline-prompt active-text="通知" inactive-text="不通知" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <div class="date-range-field date-range-field--compact">
+                <el-form-item label="合同周期">
+                  <el-date-picker
+                    v-model="contractDateRange"
+                    type="daterange"
+                    value-format="YYYY-MM-DD"
+                    range-separator="至"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期"
+                    class="w-full"
+                  />
+                </el-form-item>
+                <div class="date-shortcuts">
+                  <el-button plain @click="applyYearShortcut(3)">3年</el-button>
+                  <el-button plain @click="applyYearShortcut(5)">5年</el-button>
+                </div>
+              </div>
+            </el-col>
+          </el-row>
+
+          <el-form-item label="合同备注">
+            <el-input v-model="form.ownerContract.remark" type="textarea" :rows="1" maxlength="500" show-word-limit placeholder="请输入合同备注" />
           </el-form-item>
         </div>
       </div>
     </el-card>
+
     <el-card shadow="never" class="form-card">
       <template #header>
         <div class="card-header">
-          <div>
-            <div class="card-title">签约房源</div>
-            <div class="card-desc">先选择签约房源，再按当前委托模式配置对应条款。</div>
+          <div class="header-inline">
+            <span class="card-title">签约房源</span>
+            <span class="card-desc card-desc--inline">先选择签约房源，再按当前委托模式配置对应条款。</span>
           </div>
           <el-button
             type="primary"
@@ -282,17 +377,9 @@
 
       <el-form-item label-width="0" prop="contractHouseList">
         <div class="selected-house-wrapper">
-          <div class="selected-house-summary">
-            <div class="summary-metric">
-              <span class="summary-metric__label">已选房源</span>
-              <span class="summary-metric__value">{{ form.contractHouseList.length }}</span>
-              <span class="summary-metric__unit">套</span>
-            </div>
-            <div class="summary-metric">
-              <span class="summary-metric__label">已配置</span>
-              <span class="summary-metric__value">{{ configuredHouseCount }}</span>
-              <span class="summary-metric__unit">套</span>
-            </div>
+          <div class="summary-tag-group">
+            <el-tag effect="plain">已选房源：{{ form.contractHouseList.length }} 套</el-tag>
+            <el-tag effect="plain">已配置：{{ configuredHouseCount }} 套</el-tag>
           </div>
 
           <div v-if="form.contractHouseList.length" class="selected-house-panel">
@@ -322,9 +409,9 @@
     <el-card v-if="form.ownerContract.cooperationMode === 'LIGHT_MANAGED'" shadow="never" class="form-card">
       <template #header>
         <div class="card-header">
-          <div>
-            <div class="card-title">轻托管条款配置</div>
-            <div class="card-desc">所有已选房源统一使用同一套分账规则、管理费、免租与费用科目配置。</div>
+          <div class="header-inline">
+            <span class="card-title">轻托管条款配置</span>
+            <span class="card-desc card-desc--inline">所有已选房源统一使用同一套分账规则、管理费、免租与费用科目配置。</span>
           </div>
           <span class="card-tip">统一配置后自动应用到全部房源</span>
         </div>
@@ -413,7 +500,7 @@
                   </el-input>
                 </el-form-item>
               </el-col>
-              <el-col v-if="sharedContractHouse.settlementRule.settlementMode !== 'SHARE_GROSS'" :span="12">
+              <el-col :span="12">
                 <el-form-item label="分账基数">
                   <el-radio-group v-model="sharedContractHouse.settlementRule.incomeBasis">
                     <el-radio-button v-for="option in incomeBasisOptions" :key="option.value" :label="option.label" :value="option.value" />
@@ -428,129 +515,131 @@
           </template>
         </div>
 
-        <div class="switch-grid">
-          <div class="switch-card">
-            <div class="switch-card__head">
-              <span>管理费</span>
+        <div class="config-card-grid">
+          <div class="config-card">
+            <div class="config-card__header">
+              <div>
+                <div class="config-card__title">管理费</div>
+                <div class="config-card__desc">按租金比例向业主额外收取管理费。</div>
+              </div>
               <el-switch v-model="sharedContractHouse.settlementRule.managementFeeEnabled" />
             </div>
-            <div class="switch-card__body">
-              <div class="card-tip">按租金比例向业主收取管理费。</div>
-              <el-row v-if="sharedContractHouse.settlementRule.managementFeeEnabled" :gutter="12">
-                <el-col :span="24">
+            <div class="config-card__content">
+              <div v-if="sharedContractHouse.settlementRule.managementFeeEnabled" class="config-card__body">
+                <el-form-item label="管理费比例">
                   <el-input v-model.number="sharedContractHouse.settlementRule.managementFeeValue" type="number" class="w-full" placeholder="请输入">
                     <template #append>%</template>
                   </el-input>
-                </el-col>
-              </el-row>
+                </el-form-item>
+              </div>
+              <div v-else class="config-card__empty">当前不向业主收取管理费。</div>
             </div>
           </div>
 
-          <div class="switch-card">
-            <div class="switch-card__head">
-              <span>免租规则</span>
+          <div class="config-card">
+            <div class="config-card__header">
+              <div>
+                <div class="config-card__title">免租规则</div>
+                <div class="config-card__desc">明确免租是否算合同期内、损失谁承担、金额怎么计算。</div>
+              </div>
               <el-switch v-model="sharedContractHouse.rentFreeRule.enabled" />
             </div>
-            <div v-if="sharedContractHouse.rentFreeRule.enabled" class="switch-card__body">
-              <div class="choice-group">
-                <div class="choice-group__label">免租是否算在正式合同期内</div>
-                <el-radio-group v-model="sharedContractHouse.rentFreeRule.freeType">
-                  <el-radio-button v-for="option in freeTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
-                </el-radio-group>
-                <div class="choice-group__desc">
-                  {{ sharedContractHouse.rentFreeRule.freeType === "BUILT_IN" ? "免租天数算在正式合同期内，合同总时长不变。" : "免租天数不算在正式合同期内，更像额外赠送的免租时间。" }}
+            <div class="config-card__content">
+              <div v-if="sharedContractHouse.rentFreeRule.enabled" class="config-card__body">
+                <div class="choice-group">
+                  <div class="choice-group__label">免租是否算在正式合同期内</div>
+                  <el-radio-group v-model="sharedContractHouse.rentFreeRule.freeType">
+                    <el-radio-button v-for="option in freeTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+                  </el-radio-group>
+                  <div class="choice-group__desc">
+                    {{ sharedContractHouse.rentFreeRule.freeType === "BUILT_IN" ? "免租天数算在正式合同期内，合同总时长不变。" : "免租天数不算在正式合同期内，更像额外赠送的免租时间。" }}
+                  </div>
                 </div>
-              </div>
 
-              <div class="choice-group">
-                <div class="choice-group__label">免租损失由谁承担</div>
-                <el-radio-group v-model="sharedContractHouse.rentFreeRule.bearType">
-                  <el-radio-button v-for="option in bearTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
-                </el-radio-group>
-                <div class="choice-group__desc">
-                  {{ bearTypeDescriptionMap[sharedContractHouse.rentFreeRule.bearType || "PLATFORM"] }}
+                <div class="choice-group">
+                  <div class="choice-group__label">免租损失由谁承担</div>
+                  <el-radio-group v-model="sharedContractHouse.rentFreeRule.bearType">
+                    <el-radio-button v-for="option in bearTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+                  </el-radio-group>
+                  <div class="choice-group__desc">
+                    {{ bearTypeDescriptionMap[sharedContractHouse.rentFreeRule.bearType || "PLATFORM"] }}
+                  </div>
                 </div>
-              </div>
 
-              <div class="choice-group">
-                <div class="choice-group__label">免租金额怎么计算</div>
-                <el-radio-group v-model="sharedContractHouse.rentFreeRule.calcMode">
-                  <el-radio-button v-for="option in lightManagedCalcModeOptions" :key="option.value" :label="option.label" :value="option.value" />
-                </el-radio-group>
-                <div class="choice-group__desc">
-                  {{ freeCalcModeDescriptionMap[sharedContractHouse.rentFreeRule.calcMode || "BY_DAYS"] }}
+                <div class="choice-group">
+                  <div class="choice-group__label">免租金额怎么计算</div>
+                  <el-radio-group v-model="sharedContractHouse.rentFreeRule.calcMode">
+                    <el-radio-button v-for="option in lightManagedCalcModeOptions" :key="option.value" :label="option.label" :value="option.value" />
+                  </el-radio-group>
+                  <div class="choice-group__desc">
+                    {{ freeCalcModeDescriptionMap[sharedContractHouse.rentFreeRule.calcMode || "BY_DAYS"] }}
+                  </div>
                 </div>
-              </div>
 
-              <el-row :gutter="12">
-                <el-col :span="12">
-                  <div class="choice-group__label choice-group__label--compact">免租开始日期</div>
-                  <el-date-picker v-model="sharedContractHouse.rentFreeRule.startDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
-                </el-col>
-                <el-col :span="12">
-                  <div class="choice-group__label choice-group__label--compact">免租结束日期</div>
-                  <el-date-picker v-model="sharedContractHouse.rentFreeRule.endDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
-                </el-col>
-              </el-row>
+                <el-row :gutter="12">
+                  <el-col :span="12">
+                    <div class="choice-group__label choice-group__label--compact">免租开始日期</div>
+                    <el-date-picker v-model="sharedContractHouse.rentFreeRule.startDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
+                  </el-col>
+                  <el-col :span="12">
+                    <div class="choice-group__label choice-group__label--compact">免租结束日期</div>
+                    <el-date-picker v-model="sharedContractHouse.rentFreeRule.endDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
+                  </el-col>
+                </el-row>
+              </div>
+              <div v-else class="config-card__empty">当前不启用免租规则。</div>
+            </div>
+          </div>
+
+          <div class="config-card">
+            <div class="config-card__header">
+              <div>
+                <div class="config-card__title">结算时间与手续费</div>
+                <div class="config-card__desc">明确什么时候给业主出账，以及支付手续费谁承担。</div>
+              </div>
+              <el-tag effect="plain" type="info">统一配置</el-tag>
+            </div>
+            <div class="config-card__content">
+              <div class="config-card__body">
+                <el-form-item label="给业主出账时间">
+                  <el-radio-group v-model="sharedContractHouse.settlementRule.settlementTiming">
+                    <el-radio-button v-for="option in settlementTimingOptions" :key="option.value" :label="option.label" :value="option.value" />
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="支付手续费承担方式">
+                  <el-radio-group v-model="sharedContractHouse.settlementRule.paymentFeeBearType">
+                    <el-radio-button v-for="option in paymentFeeBearTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+                  </el-radio-group>
+                </el-form-item>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="sub-panel">
-          <div class="sub-panel__title">结算时间与手续费</div>
-          <div class="sub-panel__desc">这两项一般由公司统一约定，尽量直接选业务口径。</div>
-
-          <el-row :gutter="20">
-            <el-col :span="12">
-              <el-form-item label="给业主出账时间">
-                <el-radio-group v-model="sharedContractHouse.settlementRule.settlementTiming">
-                  <el-radio-button v-for="option in settlementTimingOptions" :key="option.value" :label="option.label" :value="option.value" />
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="支付手续费承担方式">
-                <el-radio-group v-model="sharedContractHouse.settlementRule.paymentFeeBearType">
-                  <el-radio-button v-for="option in paymentFeeBearTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </div>
-
-        <div class="sub-panel">
-          <div class="sub-panel__header">
+        <div class="config-card config-card--full">
+          <div class="config-card__header">
             <div>
-              <div class="sub-panel__title">分账费用科目</div>
-              <div class="sub-panel__desc">参考退租费用的录入方式，先选择收支和费用项，再填写转给业主的比例。</div>
+              <div class="config-card__title">分账费用科目</div>
+              <div class="config-card__desc">先选收支和费用类型，再填写转给业主的比例。每一条都是一张独立费用卡片。</div>
             </div>
             <el-button type="primary" plain @click="addSettlementItem(sharedContractHouse)">添加费用科目</el-button>
           </div>
+          <div class="config-card__content">
+            <div v-if="!sharedContractHouse.settlementRule.settlementItemList?.length" class="config-card__empty">
+              暂无分账费用科目，点击右上角“添加费用科目”新增。
+            </div>
+            <div v-else class="fee-card-list">
+              <div v-for="(item, index) in sharedContractHouse.settlementRule.settlementItemList" :key="index" class="fee-card">
+                <div class="fee-card__header">
+                  <div class="direction-chip" :class="item.feeDirection === 'IN' ? 'chip-income' : 'chip-expense'" @click="toggleSettlementItemDirection(item)">
+                    {{ item.feeDirection === "IN" ? "收入" : "支出" }}
+                  </div>
+                  <el-button link type="danger" @click="sharedContractHouse.settlementRule.settlementItemList?.splice(index, 1)">删除</el-button>
+                </div>
 
-          <div class="fee-table-wrapper">
-            <table class="fee-table">
-              <thead>
-                <tr>
-                  <th style="width: 70px">收支</th>
-                  <th style="width: 220px">费用类型</th>
-                  <th style="width: 180px">转给比例</th>
-                  <th>备注</th>
-                  <th style="width: 56px">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="!sharedContractHouse.settlementRule.settlementItemList?.length" class="empty-row">
-                  <td colspan="5">
-                    <div class="empty-state">暂无分账费用科目，点击右上角“添加费用科目”新增。</div>
-                  </td>
-                </tr>
-                <tr v-for="(item, index) in sharedContractHouse.settlementRule.settlementItemList" :key="index">
-                  <td>
-                    <div class="direction-chip" :class="item.feeDirection === 'IN' ? 'chip-income' : 'chip-expense'" @click="toggleSettlementItemDirection(item)">
-                      {{ item.feeDirection === "IN" ? "收入" : "支出" }}
-                    </div>
-                  </td>
-                  <td>
+                <div class="fee-card__body">
+                  <div class="fee-card__field">
+                    <div class="fee-card__label">费用类型</div>
                     <el-cascader
                       v-model="settlementFeeCascaderValues[`shared-${index}`]"
                       :options="otherFeeTypeOptions"
@@ -560,21 +649,22 @@
                       class="w-full"
                       @change="value => handleSettlementFeeTypeChange(value, sharedContractHouse, index)"
                     />
-                  </td>
-                  <td>
+                  </div>
+
+                  <div class="fee-card__field fee-card__field--ratio">
+                    <div class="fee-card__label">转给比例</div>
                     <el-input v-model.number="item.transferRatio" type="number" class="w-full" placeholder="请输入">
                       <template #append>%</template>
                     </el-input>
-                  </td>
-                  <td>
+                  </div>
+
+                  <div class="fee-card__field fee-card__field--remark">
+                    <div class="fee-card__label">备注</div>
                     <el-input v-model="item.remark" placeholder="备注" />
-                  </td>
-                  <td class="text-center">
-                    <el-button link type="danger" @click="sharedContractHouse.settlementRule.settlementItemList?.splice(index, 1)">删除</el-button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -584,9 +674,9 @@
     <el-card v-else shadow="never" class="form-card">
       <template #header>
         <div class="card-header">
-          <div>
-            <div class="card-title">包租条款</div>
-            <div class="card-desc">包租按合同统一配置总月租金、押付方式、交房日期和其他费用科目。</div>
+          <div class="header-inline">
+            <span class="card-title">包租条款</span>
+            <span class="card-desc card-desc--inline">包租按合同统一配置总月租金、押付方式、交房日期和其他费用科目。</span>
           </div>
         </div>
       </template>
@@ -1058,14 +1148,14 @@
   };
   const settlementModeLabelMap: Record<OwnerSettlementModeEnum, string> = {
     FIXED: "固定结算",
-    SHARE_GROSS: "毛收分成",
-    SHARE_NET: "净收分成",
+    SHARE_GROSS: "按净收入分成",
+    SHARE_NET: "按净收入分成",
     GUARANTEE_PLUS_SHARE: "保底 + 分成",
     AGENCY: "代收代付"
   };
   const settlementModeDescriptionMap: Record<OwnerSettlementModeEnum, string> = {
     FIXED: "适合平台按固定金额给业主，出租溢价和空置风险主要由平台承担。",
-    SHARE_GROSS: "按租客收到的收入直接与业主分成，不先扣平台成本。",
+    SHARE_GROSS: "先按约定扣掉成本或费用，再把净额与业主分成。",
     SHARE_NET: "先按约定扣掉成本或费用，再把净额与业主分成。",
     GUARANTEE_PLUS_SHARE: "先给业主一个保底金额，超过部分再按比例分成。",
     AGENCY: "平台代收租金、代扣约定费用后，再把剩余部分结给业主。"
@@ -1105,12 +1195,6 @@
       value: "FIXED" as OwnerSettlementModeEnum,
       desc: "平台按固定金额给业主，适合托管报价已经谈死的场景。",
       features: ["固定金额", "平台承担波动"]
-    },
-    {
-      label: settlementModeLabelMap.SHARE_GROSS,
-      value: "SHARE_GROSS" as OwnerSettlementModeEnum,
-      desc: "按租客实际收到的租金直接分成，不先扣平台成本。",
-      features: ["按实收分成", "逻辑最直接"]
     },
     {
       label: settlementModeLabelMap.SHARE_NET,
@@ -1736,6 +1820,11 @@
           next.incomeBasis = "RECEIVED";
         }
         break;
+      case "SHARE_GROSS":
+        next.settlementMode = "SHARE_NET";
+        next.hasGuaranteedRent = false;
+        next.incomeBasis = "RECEIVABLE";
+        break;
       case "SHARE_NET":
         next.hasGuaranteedRent = false;
         next.incomeBasis = "RECEIVABLE";
@@ -1744,7 +1833,6 @@
         next.hasGuaranteedRent = false;
         next.incomeBasis = "RECEIVABLE";
         break;
-      case "SHARE_GROSS":
       default:
         next.hasGuaranteedRent = false;
         next.incomeBasis = "RECEIVED";
@@ -1890,11 +1978,22 @@
     border-radius: 12px;
   }
 
+  :deep(.el-form-item) {
+    margin-bottom: 14px;
+  }
+
   .card-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
+  }
+
+  .header-inline {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   .card-title {
@@ -1907,10 +2006,14 @@
   .card-tip,
   .sub-panel__desc,
   .rule-editor__desc {
-    margin-top: 4px;
     font-size: 12px;
     line-height: 1.6;
     color: var(--el-text-color-secondary);
+  }
+
+  .card-desc--inline,
+  .info-panel__desc--inline {
+    margin-top: 0;
   }
 
   .upload-section {
@@ -1947,11 +2050,23 @@
     font-weight: 600;
   }
 
+  .upload-section :deep(.el-upload),
+  .upload-section :deep(.upload-wrap) {
+    width: 112px !important;
+    height: 72px !important;
+  }
+
   .owner-info-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 16px;
     margin-top: 12px;
+  }
+
+  .contract-info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
   .info-panel {
@@ -1966,7 +2081,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .info-panel__title {
@@ -1980,6 +2095,12 @@
     font-size: 12px;
     line-height: 1.6;
     color: var(--el-text-color-secondary);
+  }
+
+  .summary-tag-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .sub-panel {
@@ -2002,6 +2123,10 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+
+  .date-range-field--compact {
+    gap: 6px;
   }
 
   .date-shortcuts {
@@ -2101,65 +2226,37 @@
   .selected-house-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-  }
-
-  .selected-house-summary {
-    display: flex;
-    gap: 16px;
+    gap: 10px;
   }
 
   .selected-house-panel {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .selected-house-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 8px;
   }
 
   .selected-house-chip {
-    min-width: 220px;
+    min-width: 180px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 10px 14px;
+    gap: 8px;
+    padding: 6px 10px;
     border-radius: 12px;
     border: 1px solid var(--el-border-color-light);
     background: #fff;
   }
 
   .selected-house-chip__title {
+    font-size: 13px;
     font-weight: 600;
     color: var(--el-text-color-primary);
-  }
-
-  .summary-metric {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
-    padding: 12px 16px;
-    border-radius: 10px;
-    background: var(--el-fill-color-light);
-  }
-
-  .summary-metric__label {
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-  }
-
-  .summary-metric__value {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--el-text-color-primary);
-  }
-
-  .summary-metric__unit {
-    color: var(--el-text-color-secondary);
   }
 
   .house-layout {
@@ -2273,31 +2370,66 @@
     gap: 8px;
   }
 
-  .switch-grid {
+  .config-card-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
   }
 
-  .switch-card {
-    padding: 14px;
+  .config-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
     border-radius: 12px;
     border: 1px solid var(--el-border-color-lighter);
     background: #fff;
+    overflow: hidden;
   }
 
-  .switch-card__head {
+  .config-card--full {
+    margin-top: 12px;
+  }
+
+  .config-card__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 12px;
-    font-weight: 600;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--el-fill-color-extra-light);
+    border-bottom: 1px solid var(--el-border-color-lighter);
   }
 
-  .switch-card__body {
+  .config-card__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .config-card__desc {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--el-text-color-secondary);
+  }
+
+  .config-card__content {
+    flex: 1;
+    padding: 14px 16px;
+  }
+
+  .config-card__body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+
+  .config-card__empty {
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    color: var(--el-text-color-secondary);
+    line-height: 1.7;
   }
 
   .rule-hint {
@@ -2378,43 +2510,43 @@
     color: var(--el-text-color-secondary);
   }
 
-  .fee-table-wrapper {
-    border: 1px solid var(--el-border-color-light);
+  .fee-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .fee-card {
+    padding: 14px 16px;
     border-radius: 12px;
-    overflow: hidden;
-    background: #fff;
-  }
-
-  .fee-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .fee-table th,
-  .fee-table td {
-    padding: 14px 12px;
-    border-bottom: 1px solid var(--el-border-color-lighter);
-    vertical-align: middle;
-  }
-
-  .fee-table th {
-    text-align: left;
-    font-weight: 600;
-    color: var(--el-text-color-regular);
+    border: 1px solid var(--el-border-color-lighter);
     background: var(--el-fill-color-extra-light);
   }
 
-  .fee-table tbody tr:last-child td {
-    border-bottom: none;
+  .fee-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
   }
 
-  .empty-row td {
-    padding: 24px 12px;
+  .fee-card__body {
+    display: grid;
+    grid-template-columns: minmax(240px, 1.4fr) minmax(140px, 0.6fr) minmax(220px, 1fr);
+    gap: 12px;
   }
 
-  .empty-state {
-    text-align: center;
-    color: var(--el-text-color-secondary);
+  .fee-card__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .fee-card__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
   }
 
   .direction-chip {
@@ -2444,9 +2576,12 @@
 
   @media (max-width: 1200px) {
     .owner-info-grid,
+    .contract-info-grid,
     .house-layout,
     .settlement-mode-grid,
-    .switch-grid,
+    .config-card-grid,
+    .fee-card__body,
+    .summary-card-grid,
     .template-preview-metrics,
     .template-preview-grid {
       grid-template-columns: 1fr;
