@@ -1,5 +1,5 @@
 <template>
-  <el-form ref="formRef" :model="form" :rules="rules" label-position="top" label-width="100px" class="owner-contract-form">
+  <el-form ref="formRef" :model="form" :rules="rules" label-position="top" label-width="100px" class="owner-contract-form mb-4">
     <el-card shadow="never" class="form-card">
       <template #header>
         <div class="card-header">
@@ -60,27 +60,16 @@
             <span class="card-title">业主信息</span>
             <span class="card-desc card-desc--inline">录入业主主体信息、证件材料和收款人信息。</span>
           </div>
-          <el-space>
-            <el-tag effect="plain">{{ ownerTypeLabelMap[form.ownerType] }}</el-tag>
-            <el-tag :type="form.ownerContract.cooperationMode === 'MASTER_LEASE' ? 'warning' : 'success'" effect="plain">
-              {{ cooperationModeLabelMap[form.ownerContract.cooperationMode] }}
-            </el-tag>
-          </el-space>
+          <div class="card-header-form">
+            <el-form-item label="业主类型" prop="ownerType" class="card-header-form__item" label-position="left">
+              <el-segmented v-model="form.ownerType" :options="ownerTypeOptions" />
+            </el-form-item>
+            <el-form-item label="委托模式" prop="ownerContract.cooperationMode" class="card-header-form__item" label-position="left">
+              <el-segmented v-model="form.ownerContract.cooperationMode" :options="cooperationModeOptions" />
+            </el-form-item>
+          </div>
         </div>
       </template>
-
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="业主类型" prop="ownerType">
-            <el-segmented v-model="form.ownerType" :options="ownerTypeOptions" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="8">
-          <el-form-item label="委托模式" prop="ownerContract.cooperationMode">
-            <el-segmented v-model="form.ownerContract.cooperationMode" :options="cooperationModeOptions" />
-          </el-form-item>
-        </el-col>
-      </el-row>
 
       <div class="owner-info-grid">
         <div class="info-panel">
@@ -345,9 +334,10 @@
               <span class="info-panel__title">合同录入</span>
               <span class="info-panel__desc info-panel__desc--inline">常用字段做成一屏可完成，减少来回切换。</span>
             </div>
-            <el-form-item label="通知业主" class="header-switch-field">
-              <el-switch v-model="form.ownerContract.notifyOwner" inline-prompt active-text="通知" inactive-text="不通知" />
-            </el-form-item>
+            <div class="header-switch-row">
+              <span class="header-switch-row__label">通知业主</span>
+              <el-switch v-model="form.ownerContract.notifyOwner" />
+            </div>
           </div>
 
           <div class="contract-entry-grid">
@@ -356,15 +346,6 @@
                 <el-select v-model="form.ownerContract.contractTemplateId" class="w-full" filterable placeholder="请选择合同模板">
                   <el-option v-for="item in contractTemplates" :key="item.id" :label="item.templateName || `模板#${item.id}`" :value="item.id" />
                 </el-select>
-              </el-form-item>
-            </div>
-            <div class="contract-entry-grid__item">
-              <el-form-item label="合同周期">
-                <el-input
-                  :model-value="contractDateRange?.length === 2 ? `${contractDateRange[0]} 至 ${contractDateRange[1]}` : '请选择合同周期'"
-                  readonly
-                  placeholder="请选择合同周期"
-                />
               </el-form-item>
             </div>
             <div class="contract-entry-grid__item">
@@ -384,7 +365,7 @@
             </div>
           </div>
 
-          <div class="date-range-field">
+          <div class="date-range-field date-range-field--contract">
             <el-form-item label="合同周期">
               <el-date-picker
                 v-model="contractDateRange"
@@ -434,10 +415,12 @@
         </div>
 
         <div class="sub-panel">
-          <div class="sub-panel__title">结算方式</div>
-          <div class="sub-panel__desc">选择后，页面只展示该方式下真正需要填写的字段。</div>
+          <div class="sub-panel__title">结算方式
+            <div class="sub-panel__desc">选择后，页面只展示该方式下真正需要填写的字段。</div>
+          </div>
 
-          <el-form-item label="结算方式">
+
+          <el-form-item label="">
             <div class="settlement-mode-grid">
               <button
                 v-for="option in settlementModeOptions"
@@ -548,50 +531,46 @@
             </div>
             <div class="config-card__content">
               <div v-if="sharedContractHouse.rentFreeRule.enabled" class="config-card__body">
-                <div class="choice-group">
-                  <div class="choice-group__label">免租是否算在正式合同期内</div>
-                  <el-radio-group v-model="sharedContractHouse.rentFreeRule.freeType">
-                    <el-radio-button v-for="option in freeTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
-                  </el-radio-group>
-                  <div class="choice-group__desc">
-                    {{
-                      sharedContractHouse.rentFreeRule.freeType === "BUILT_IN"
-                        ? "免租天数算在正式合同期内，合同总时长不变。"
-                        : "免租天数不算在正式合同期内，更像额外赠送的免租时间。"
-                    }}
+                <div class="rent-free-grid">
+                  <div class="choice-group choice-group--compact">
+                    <div class="choice-group__label">是否算在正式合同期内</div>
+                    <el-segmented v-model="sharedContractHouse.rentFreeRule.freeType" :options="freeTypeOptions" />
+                    <div class="choice-group__desc">
+                      {{
+                        sharedContractHouse.rentFreeRule.freeType === "BUILT_IN"
+                          ? "免租天数算在正式合同期内，合同总时长不变。"
+                          : "免租天数不算在正式合同期内，更像额外赠送的免租时间。"
+                      }}
+                    </div>
+                  </div>
+
+                  <div class="choice-group choice-group--compact">
+                    <div class="choice-group__label">免租损失承担方</div>
+                    <el-segmented v-model="sharedContractHouse.rentFreeRule.bearType" :options="bearTypeOptions" />
+                    <div class="choice-group__desc">
+                      {{ bearTypeDescriptionMap[sharedContractHouse.rentFreeRule.bearType || "PLATFORM"] }}
+                    </div>
+                  </div>
+
+                  <div class="choice-group choice-group--compact">
+                    <div class="choice-group__label">免租金额计算方式</div>
+                    <el-segmented v-model="sharedContractHouse.rentFreeRule.calcMode" :options="lightManagedCalcModeOptions" />
+                    <div class="choice-group__desc">
+                      {{ freeCalcModeDescriptionMap[sharedContractHouse.rentFreeRule.calcMode || "BY_DAYS"] }}
+                    </div>
                   </div>
                 </div>
 
-                <div class="choice-group">
-                  <div class="choice-group__label">免租损失由谁承担</div>
-                  <el-radio-group v-model="sharedContractHouse.rentFreeRule.bearType">
-                    <el-radio-button v-for="option in bearTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
-                  </el-radio-group>
-                  <div class="choice-group__desc">
-                    {{ bearTypeDescriptionMap[sharedContractHouse.rentFreeRule.bearType || "PLATFORM"] }}
-                  </div>
-                </div>
-
-                <div class="choice-group">
-                  <div class="choice-group__label">免租金额怎么计算</div>
-                  <el-radio-group v-model="sharedContractHouse.rentFreeRule.calcMode">
-                    <el-radio-button v-for="option in lightManagedCalcModeOptions" :key="option.value" :label="option.label" :value="option.value" />
-                  </el-radio-group>
-                  <div class="choice-group__desc">
-                    {{ freeCalcModeDescriptionMap[sharedContractHouse.rentFreeRule.calcMode || "BY_DAYS"] }}
-                  </div>
-                </div>
-
-                <el-row :gutter="12">
-                  <el-col :span="12">
+                <div class="rent-free-date-row">
+                  <div class="choice-group choice-group--compact">
                     <div class="choice-group__label choice-group__label--compact">免租开始日期</div>
                     <el-date-picker v-model="sharedContractHouse.rentFreeRule.startDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
-                  </el-col>
-                  <el-col :span="12">
+                  </div>
+                  <div class="choice-group choice-group--compact">
                     <div class="choice-group__label choice-group__label--compact">免租结束日期</div>
                     <el-date-picker v-model="sharedContractHouse.rentFreeRule.endDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
-                  </el-col>
-                </el-row>
+                  </div>
+                </div>
               </div>
               <div v-else class="config-card__empty">当前不启用免租规则。</div>
             </div>
@@ -634,37 +613,44 @@
             <div v-if="!sharedContractHouse.settlementRule.settlementItemList?.length" class="config-card__empty">暂无分账费用科目，点击右上角“添加费用科目”新增。</div>
             <div v-else class="fee-card-list">
               <div v-for="(item, index) in sharedContractHouse.settlementRule.settlementItemList" :key="index" class="fee-card">
-                <div class="fee-card__header">
-                  <div class="direction-chip" :class="item.feeDirection === 'IN' ? 'chip-income' : 'chip-expense'" @click="toggleSettlementItemDirection(item)">
-                    {{ item.feeDirection === "IN" ? "收入" : "支出" }}
-                  </div>
-                  <el-button link type="danger" @click="sharedContractHouse.settlementRule.settlementItemList?.splice(index, 1)">删除</el-button>
-                </div>
-
                 <div class="fee-card__body">
-                  <div class="fee-card__field">
-                    <div class="fee-card__label">费用类型</div>
-                    <el-cascader
-                      v-model="settlementFeeCascaderValues[`shared-${index}`]"
-                      :options="otherFeeTypeOptions"
-                      :props="{ emitPath: true, checkStrictly: false }"
-                      clearable
-                      filterable
-                      class="w-full"
-                      @change="value => handleSettlementFeeTypeChange(value, sharedContractHouse, index)"
-                    />
-                  </div>
+                  <div class="fee-card__row">
+                    <div class="fee-card__field fee-card__field--direction">
+                      <div class="fee-card__label">收支</div>
+                      <div class="direction-chip" :class="item.feeDirection === 'IN' ? 'chip-income' : 'chip-expense'" @click="toggleSettlementItemDirection(item)">
+                        {{ item.feeDirection === "IN" ? "收入" : "支出" }}
+                      </div>
+                    </div>
 
-                  <div class="fee-card__field fee-card__field--ratio">
-                    <div class="fee-card__label">转给比例</div>
-                    <el-input v-model.number="item.transferRatio" type="number" class="w-full" placeholder="请输入">
-                      <template #append>%</template>
-                    </el-input>
-                  </div>
+                    <div class="fee-card__field">
+                      <div class="fee-card__label">费用类型</div>
+                      <el-cascader
+                        v-model="settlementFeeCascaderValues[`shared-${index}`]"
+                        :options="otherFeeTypeOptions"
+                        :props="{ emitPath: true, checkStrictly: false }"
+                        clearable
+                        filterable
+                        class="w-full"
+                        @change="value => handleSettlementFeeTypeChange(value, sharedContractHouse, index)"
+                      />
+                    </div>
 
-                  <div class="fee-card__field fee-card__field--remark">
-                    <div class="fee-card__label">备注</div>
-                    <el-input v-model="item.remark" placeholder="备注" />
+                    <div class="fee-card__field fee-card__field--ratio">
+                      <div class="fee-card__label">转给比例</div>
+                      <el-input v-model.number="item.transferRatio" type="number" class="w-full" placeholder="请输入">
+                        <template #append>%</template>
+                      </el-input>
+                    </div>
+
+                    <div class="fee-card__field fee-card__field--remark">
+                      <div class="fee-card__label">备注</div>
+                      <el-input v-model="item.remark" placeholder="备注" />
+                    </div>
+
+                    <div class="fee-card__field fee-card__field--action">
+                      <div class="fee-card__label">操作</div>
+                      <el-button link type="danger" @click="sharedContractHouse.settlementRule.settlementItemList?.splice(index, 1)">删除</el-button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2083,24 +2069,49 @@
 
   .info-panel__header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 10px;
   }
 
-  .header-switch-field {
+  .card-header-form {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
+
+  .card-header-form__item {
     margin-bottom: 0;
     flex-shrink: 0;
   }
 
-  .header-switch-field :deep(.el-form-item__label) {
+  .card-header-form__item :deep(.el-form-item__label) {
     padding-bottom: 0;
     margin-right: 8px;
+    color: var(--el-text-color-regular);
   }
 
-  .header-switch-field :deep(.el-form-item__content) {
+  .card-header-form__item :deep(.el-form-item__content) {
     min-height: auto;
+  }
+
+  .header-switch-row {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+    min-height: 32px;
+  }
+
+  .header-switch-row__label {
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+    min-width: 56px;
+    text-align: right;
   }
 
   .info-panel__title {
@@ -2124,9 +2135,10 @@
 
   .contract-entry-grid {
     display: grid;
-    grid-template-columns: minmax(220px, 1.5fr) minmax(180px, 1.1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr);
+    grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(150px, 0.9fr));
     gap: 16px;
     align-items: start;
+    max-width: 980px;
   }
 
   .contract-entry-grid__item {
@@ -2146,6 +2158,11 @@
 
   .contract-remark-field {
     margin-top: 4px;
+    max-width: 980px;
+  }
+
+  .date-range-field--contract {
+    max-width: 720px;
   }
 
   .sub-panel {
@@ -2417,7 +2434,7 @@
 
   .config-card-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
 
@@ -2488,7 +2505,7 @@
 
   .settlement-mode-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
   }
 
@@ -2539,6 +2556,10 @@
     gap: 8px;
   }
 
+  .choice-group--compact {
+    gap: 6px;
+  }
+
   .choice-group__label {
     font-size: 13px;
     font-weight: 600;
@@ -2555,6 +2576,18 @@
     color: var(--el-text-color-secondary);
   }
 
+  .rent-free-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .rent-free-date-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
   .fee-card-list {
     display: flex;
     flex-direction: column;
@@ -2568,24 +2601,32 @@
     background: var(--el-fill-color-extra-light);
   }
 
-  .fee-card__header {
+  .fee-card__body {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
+    flex-direction: column;
+    gap: 0;
   }
 
-  .fee-card__body {
+  .fee-card__row {
     display: grid;
-    grid-template-columns: minmax(240px, 1.4fr) minmax(140px, 0.6fr) minmax(220px, 1fr);
+    grid-template-columns: 96px minmax(220px, 1.3fr) minmax(150px, 0.8fr) minmax(180px, 1fr) 56px;
     gap: 12px;
+    align-items: end;
   }
 
   .fee-card__field {
     display: flex;
     flex-direction: column;
     gap: 6px;
+  }
+
+  .fee-card__field--direction {
+    align-items: flex-start;
+  }
+
+  .fee-card__field--action {
+    align-items: center;
+    justify-content: flex-end;
   }
 
   .fee-card__label {
@@ -2625,6 +2666,8 @@
     .house-layout,
     .settlement-mode-grid,
     .config-card-grid,
+    .rent-free-grid,
+    .rent-free-date-row,
     .fee-card__body,
     .summary-card-grid,
     .template-preview-metrics,
