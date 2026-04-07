@@ -4,6 +4,59 @@
       <template #header>
         <div class="card-header">
           <div class="header-inline">
+            <span class="card-title">签约房源</span>
+            <span class="card-desc card-desc--inline">打开对话框后先选择签约房源，再继续补充业主信息、合同信息和条款。</span>
+          </div>
+          <el-button
+            type="primary"
+            link
+            @click="
+              housePickerRef?.show({
+                selected: selectedHouses,
+                excludeOwnerContractId: form.ownerContract.id
+              })
+            "
+          >
+            选择房源
+          </el-button>
+        </div>
+      </template>
+
+      <el-form-item label-width="0" prop="contractHouseList">
+        <div class="selected-house-wrapper">
+          <div class="summary-tag-group">
+            <el-tag effect="plain">已选房源：{{ form.contractHouseList.length }} 套</el-tag>
+            <el-tag effect="plain">已配置：{{ configuredHouseCount }} 套</el-tag>
+          </div>
+
+          <div v-if="form.contractHouseList.length" class="selected-house-panel">
+            <div class="selected-house-tags">
+              <div v-for="item in form.contractHouseList" :key="item.houseId" class="selected-house-chip">
+                <div class="selected-house-chip__title">{{ item.houseName || "未命名房源" }}</div>
+                <el-button link type="danger" @click="removeHouse(item.houseId)">移除</el-button>
+              </div>
+            </div>
+
+            <div class="house-highlight">
+              <template v-if="form.ownerContract.cooperationMode === 'LIGHT_MANAGED'">
+                <div>当前所有已选房源统一使用同一套轻托管分账规则。</div>
+                <div>后续如需修改，只需改一次，保存时会同步到全部房源。</div>
+              </template>
+              <template v-else>
+                <div>当前所有已选房源统一纳入同一包租合同。</div>
+                <div>金额、押付方式和其他费用统一在下方包租条款中配置。</div>
+              </template>
+            </div>
+          </div>
+          <el-empty v-else description="请选择一个或多个房源" :image-size="90" />
+        </div>
+      </el-form-item>
+    </el-card>
+
+    <el-card shadow="never" class="form-card">
+      <template #header>
+        <div class="card-header">
+          <div class="header-inline">
             <span class="card-title">业主信息</span>
             <span class="card-desc card-desc--inline">录入业主主体信息、证件材料和收款人信息。</span>
           </div>
@@ -264,7 +317,7 @@
         <div class="card-header">
           <div class="header-inline">
             <span class="card-title">合同信息</span>
-            <span class="card-desc card-desc--inline">先确认合同模板、签约方式和合同周期，再继续配置房源和条款。</span>
+            <span class="card-desc card-desc--inline">房源确认后，再补充合同模板、签约方式、合同周期和备注。</span>
           </div>
         </div>
       </template>
@@ -280,7 +333,7 @@
 
           <div class="summary-tag-group">
             <el-tag effect="plain">签约类型：{{ signTypeLabelMap[form.ownerContract.signType || "NEW"] }}</el-tag>
-            <el-tag effect="plain">合同介质：{{ contractMediumLabelMap[form.ownerContract.contractMedium || "PAPER"] }}</el-tag>
+            <el-tag effect="plain">合同类型：{{ contractMediumLabelMap[form.ownerContract.contractMedium || "PAPER"] }}</el-tag>
             <el-tag effect="plain">短信通知：{{ form.ownerContract.notifyOwner ? "通知业主" : "不通知" }}</el-tag>
             <el-tag effect="plain">签署状态：{{ signStatusLabelMap[form.ownerContract.signStatus || "PENDING"] }}</el-tag>
           </div>
@@ -292,118 +345,70 @@
               <span class="info-panel__title">合同录入</span>
               <span class="info-panel__desc info-panel__desc--inline">常用字段做成一屏可完成，减少来回切换。</span>
             </div>
+            <el-form-item label="通知业主" class="header-switch-field">
+              <el-switch v-model="form.ownerContract.notifyOwner" inline-prompt active-text="通知" inactive-text="不通知" />
+            </el-form-item>
           </div>
 
-          <el-row :gutter="16">
-            <el-col :span="10">
+          <div class="contract-entry-grid">
+            <div class="contract-entry-grid__item contract-entry-grid__item--template">
               <el-form-item label="合同模板" prop="ownerContract.contractTemplateId">
                 <el-select v-model="form.ownerContract.contractTemplateId" class="w-full" filterable placeholder="请选择合同模板">
                   <el-option v-for="item in contractTemplates" :key="item.id" :label="item.templateName || `模板#${item.id}`" :value="item.id" />
                 </el-select>
               </el-form-item>
-            </el-col>
-            <el-col :span="7">
+            </div>
+            <div class="contract-entry-grid__item">
+              <el-form-item label="合同周期">
+                <el-input
+                  :model-value="contractDateRange?.length === 2 ? `${contractDateRange[0]} 至 ${contractDateRange[1]}` : '请选择合同周期'"
+                  readonly
+                  placeholder="请选择合同周期"
+                />
+              </el-form-item>
+            </div>
+            <div class="contract-entry-grid__item">
               <el-form-item label="签约类型">
                 <el-segmented v-model="form.ownerContract.signType" :options="signTypeOptions" />
               </el-form-item>
-            </el-col>
-            <el-col :span="7">
-              <el-form-item label="合同介质">
+            </div>
+            <div class="contract-entry-grid__item">
+              <el-form-item label="合同类型">
                 <el-segmented v-model="form.ownerContract.contractMedium" :options="contractMediumOptions" />
               </el-form-item>
-            </el-col>
-          </el-row>
-
-          <el-row :gutter="16">
-            <el-col :span="7">
+            </div>
+            <div class="contract-entry-grid__item">
               <el-form-item label="签署状态">
                 <el-segmented v-model="form.ownerContract.signStatus" :options="signStatusOptions" />
               </el-form-item>
-            </el-col>
-            <el-col :span="5">
-              <el-form-item label="通知业主">
-                <el-switch v-model="form.ownerContract.notifyOwner" inline-prompt active-text="通知" inactive-text="不通知" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <div class="date-range-field date-range-field--compact">
-                <el-form-item label="合同周期">
-                  <el-date-picker
-                    v-model="contractDateRange"
-                    type="daterange"
-                    value-format="YYYY-MM-DD"
-                    range-separator="至"
-                    start-placeholder="开始日期"
-                    end-placeholder="结束日期"
-                    class="w-full"
-                  />
-                </el-form-item>
-                <div class="date-shortcuts">
-                  <el-button plain @click="applyYearShortcut(3)">3年</el-button>
-                  <el-button plain @click="applyYearShortcut(5)">5年</el-button>
-                </div>
-              </div>
-            </el-col>
-          </el-row>
+            </div>
+          </div>
 
-          <el-form-item label="合同备注">
-            <el-input v-model="form.ownerContract.remark" type="textarea" :rows="1" maxlength="500" show-word-limit placeholder="请输入合同备注" />
-          </el-form-item>
+          <div class="date-range-field">
+            <el-form-item label="合同周期">
+              <el-date-picker
+                v-model="contractDateRange"
+                type="daterange"
+                value-format="YYYY-MM-DD"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                class="w-full"
+              />
+            </el-form-item>
+            <div class="date-shortcuts">
+              <el-button plain @click="applyYearShortcut(3)">3年</el-button>
+              <el-button plain @click="applyYearShortcut(5)">5年</el-button>
+            </div>
+          </div>
+
+          <div class="contract-remark-field">
+            <el-form-item label="合同备注">
+              <el-input v-model="form.ownerContract.remark" type="textarea" :rows="2" maxlength="500" show-word-limit placeholder="请输入合同备注" />
+            </el-form-item>
+          </div>
         </div>
       </div>
-    </el-card>
-
-    <el-card shadow="never" class="form-card">
-      <template #header>
-        <div class="card-header">
-          <div class="header-inline">
-            <span class="card-title">签约房源</span>
-            <span class="card-desc card-desc--inline">先选择签约房源，再按当前委托模式配置对应条款。</span>
-          </div>
-          <el-button
-            type="primary"
-            link
-            @click="
-              housePickerRef?.show({
-                selected: selectedHouses,
-                excludeOwnerContractId: form.ownerContract.id
-              })
-            "
-          >
-            选择房源
-          </el-button>
-        </div>
-      </template>
-
-      <el-form-item label-width="0" prop="contractHouseList">
-        <div class="selected-house-wrapper">
-          <div class="summary-tag-group">
-            <el-tag effect="plain">已选房源：{{ form.contractHouseList.length }} 套</el-tag>
-            <el-tag effect="plain">已配置：{{ configuredHouseCount }} 套</el-tag>
-          </div>
-
-          <div v-if="form.contractHouseList.length" class="selected-house-panel">
-            <div class="selected-house-tags">
-              <div v-for="item in form.contractHouseList" :key="item.houseId" class="selected-house-chip">
-                <div class="selected-house-chip__title">{{ item.houseName || "未命名房源" }}</div>
-                <el-button link type="danger" @click="removeHouse(item.houseId)">移除</el-button>
-              </div>
-            </div>
-
-            <div class="house-highlight">
-              <template v-if="form.ownerContract.cooperationMode === 'LIGHT_MANAGED'">
-                <div>当前所有已选房源统一使用同一套轻托管分账规则。</div>
-                <div>后续如需修改，只需改一次，保存时会同步到全部房源。</div>
-              </template>
-              <template v-else>
-                <div>当前所有已选房源统一纳入同一包租合同。</div>
-                <div>金额、押付方式和其他费用统一在下方包租条款中配置。</div>
-              </template>
-            </div>
-          </div>
-          <el-empty v-else description="请选择一个或多个房源" :image-size="90" />
-        </div>
-      </el-form-item>
     </el-card>
 
     <el-card v-if="form.ownerContract.cooperationMode === 'LIGHT_MANAGED'" shadow="never" class="form-card">
@@ -422,9 +427,7 @@
           <div class="mode-guide__header">
             <div>
               <div class="mode-guide__title">先选结算方式，再补充对应条款</div>
-              <div class="mode-guide__desc">
-                轻托管里最关键的是先明确你和业主怎么结算。不同结算方式只展示自己需要填写的字段。
-              </div>
+              <div class="mode-guide__desc">轻托管里最关键的是先明确你和业主怎么结算。不同结算方式只展示自己需要填写的字段。</div>
             </div>
             <el-tag effect="plain" type="primary">{{ settlementModeLabelMap[sharedContractHouse.settlementRule.settlementMode || "FIXED"] }}</el-tag>
           </div>
@@ -446,12 +449,7 @@
                 <div class="settlement-mode-card__title">{{ option.label }}</div>
                 <div class="settlement-mode-card__desc">{{ option.desc }}</div>
                 <div class="settlement-mode-card__features">
-                  <el-tag
-                    v-for="feature in option.features"
-                    :key="feature"
-                    size="small"
-                    effect="plain"
-                  >
+                  <el-tag v-for="feature in option.features" :key="feature" size="small" effect="plain">
                     {{ feature }}
                   </el-tag>
                 </div>
@@ -510,7 +508,11 @@
             </el-row>
 
             <div class="rule-hint">
-              {{ sharedContractHouse.settlementRule.settlementMode === "AGENCY" ? "业主结转比例：平台代收代付后，剩余金额按约定比例结给业主。管理费比例：平台额外向业主收取多少服务管理费用。" : "业主分成比例：业主从可分账收入中拿多少。管理费比例：平台额外向业主收取多少服务管理费用。" }}
+              {{
+                sharedContractHouse.settlementRule.settlementMode === "AGENCY"
+                  ? "业主结转比例：平台代收代付后，剩余金额按约定比例结给业主。管理费比例：平台额外向业主收取多少服务管理费用。"
+                  : "业主分成比例：业主从可分账收入中拿多少。管理费比例：平台额外向业主收取多少服务管理费用。"
+              }}
             </div>
           </template>
         </div>
@@ -552,7 +554,11 @@
                     <el-radio-button v-for="option in freeTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
                   </el-radio-group>
                   <div class="choice-group__desc">
-                    {{ sharedContractHouse.rentFreeRule.freeType === "BUILT_IN" ? "免租天数算在正式合同期内，合同总时长不变。" : "免租天数不算在正式合同期内，更像额外赠送的免租时间。" }}
+                    {{
+                      sharedContractHouse.rentFreeRule.freeType === "BUILT_IN"
+                        ? "免租天数算在正式合同期内，合同总时长不变。"
+                        : "免租天数不算在正式合同期内，更像额外赠送的免租时间。"
+                    }}
                   </div>
                 </div>
 
@@ -625,9 +631,7 @@
             <el-button type="primary" plain @click="addSettlementItem(sharedContractHouse)">添加费用科目</el-button>
           </div>
           <div class="config-card__content">
-            <div v-if="!sharedContractHouse.settlementRule.settlementItemList?.length" class="config-card__empty">
-              暂无分账费用科目，点击右上角“添加费用科目”新增。
-            </div>
+            <div v-if="!sharedContractHouse.settlementRule.settlementItemList?.length" class="config-card__empty">暂无分账费用科目，点击右上角“添加费用科目”新增。</div>
             <div v-else class="fee-card-list">
               <div v-for="(item, index) in sharedContractHouse.settlementRule.settlementItemList" :key="index" class="fee-card">
                 <div class="fee-card__header">
@@ -1595,23 +1599,25 @@
       pageSize: 10,
       ownerType: form.ownerType,
       ownerName: keyword
-    } as any).then(resp => {
-      const list = (resp.data?.list || []) as OwnerListVo[];
-      const dedupMap = new Map<string, OwnerSuggestionItem>();
-      list.forEach(item => {
-        const key = String(item.ownerId || item.contractId || "");
-        if (!key || dedupMap.has(key)) return;
-        dedupMap.set(key, {
-          value: item.ownerName || "",
-          ownerId: item.ownerId,
-          contractId: item.contractId,
-          ownerPhone: item.ownerPhone || ""
+    } as any)
+      .then(resp => {
+        const list = (resp.data?.list || []) as OwnerListVo[];
+        const dedupMap = new Map<string, OwnerSuggestionItem>();
+        list.forEach(item => {
+          const key = String(item.ownerId || item.contractId || "");
+          if (!key || dedupMap.has(key)) return;
+          dedupMap.set(key, {
+            value: item.ownerName || "",
+            ownerId: item.ownerId,
+            contractId: item.contractId,
+            ownerPhone: item.ownerPhone || ""
+          });
         });
+        cb(Array.from(dedupMap.values()));
+      })
+      .catch(() => {
+        cb([]);
       });
-      cb(Array.from(dedupMap.values()));
-    }).catch(() => {
-      cb([]);
-    });
   }
 
   async function handleOwnerSuggestionSelect(item: OwnerSuggestionItem) {
@@ -1863,11 +1869,10 @@
           form.ownerContract.cooperationMode === "LIGHT_MANAGED"
             ? {
                 ...(sharedSettlementRule || {}),
-                guaranteedRentAmount:
-                  sharedSettlementRule?.settlementMode === "FIXED" || sharedSettlementRule?.hasGuaranteedRent ? sharedSettlementRule?.guaranteedRentAmount : 0,
+                guaranteedRentAmount: sharedSettlementRule?.settlementMode === "FIXED" || sharedSettlementRule?.hasGuaranteedRent ? sharedSettlementRule?.guaranteedRentAmount : 0,
                 managementFeeValue: sharedSettlementRule?.managementFeeEnabled ? sharedSettlementRule?.managementFeeValue : 0,
                 rentFreeEnabled: Boolean(sharedRentFreeRule?.enabled),
-                settlementItemList: (((sharedSettlementRule?.settlementItemList || []) as OwnerSettlementItemForm[])).map(settlementItem => ({
+                settlementItemList: ((sharedSettlementRule?.settlementItemList || []) as OwnerSettlementItemForm[]).map(settlementItem => ({
                   feeDirection: settlementItem.feeDirection,
                   feeType: settlementItem.feeType,
                   itemName: settlementItem.itemName,
@@ -2084,6 +2089,20 @@
     margin-bottom: 10px;
   }
 
+  .header-switch-field {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .header-switch-field :deep(.el-form-item__label) {
+    padding-bottom: 0;
+    margin-right: 8px;
+  }
+
+  .header-switch-field :deep(.el-form-item__content) {
+    min-height: auto;
+  }
+
   .info-panel__title {
     font-size: 14px;
     font-weight: 600;
@@ -2101,6 +2120,32 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+  }
+
+  .contract-entry-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.5fr) minmax(180px, 1.1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .contract-entry-grid__item {
+    min-width: 0;
+  }
+
+  .contract-entry-grid__item--template {
+    min-width: 220px;
+  }
+
+  .contract-entry-grid :deep(.el-segmented),
+  .contract-entry-grid :deep(.el-select),
+  .contract-entry-grid :deep(.el-input),
+  .contract-entry-grid :deep(.el-form-item__content) {
+    width: 100%;
+  }
+
+  .contract-remark-field {
+    margin-top: 4px;
   }
 
   .sub-panel {
@@ -2584,6 +2629,16 @@
     .summary-card-grid,
     .template-preview-metrics,
     .template-preview-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .contract-entry-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 900px) {
+    .contract-entry-grid {
       grid-template-columns: 1fr;
     }
   }
