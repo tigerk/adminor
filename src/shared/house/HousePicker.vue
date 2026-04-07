@@ -7,7 +7,7 @@
     :close-on-click-modal="false"
     :align-center="true"
     :draggable="true"
-    :show-close="false"
+    :show-close="true"
     class="house-picker-dialog"
   >
     <div class="house-picker-body">
@@ -369,9 +369,38 @@
     overflow: hidden;
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12) !important;
 
+    .el-dialog {
+      background: var(--el-bg-color);
+    }
+
     .el-dialog__header {
-      padding: 0 !important;
+      padding: 18px 56px 14px 20px !important;
       margin: 0 !important;
+      border-bottom: 1px solid var(--el-border-color-light);
+    }
+
+    .el-dialog__title {
+      color: var(--el-text-color-primary);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .el-dialog__headerbtn {
+      top: 16px;
+      right: 16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: var(--el-fill-color-light);
+      }
+    }
+
+    .el-dialog__close {
+      color: var(--el-text-color-regular);
+      font-size: 18px;
     }
 
     .el-dialog__body {
@@ -380,7 +409,7 @@
 
     .el-dialog__footer {
       padding: 0 !important;
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid var(--el-border-color-light);
     }
   }
 
@@ -447,12 +476,13 @@
     grid-template-columns: 280px 1fr;
     height: 70vh;
     overflow: hidden;
+    border: 1px solid var(--el-border-color-lighter);
   }
 
   /* ─── Selected Panel ──────────────────────────────── */
   .selected-panel {
-    border-right: 1px solid #f0f0f0;
-    background: #fafafa;
+    border-right: 1px solid var(--el-border-color-light);
+    background: var(--el-fill-color-lighter);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -463,7 +493,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 16px 18px 12px;
-      border-bottom: 1px solid #efefef;
+      border-bottom: 1px solid var(--el-border-color-lighter);
       flex-shrink: 0;
     }
 
@@ -476,7 +506,7 @@
     &__label {
       font-size: 13px;
       font-weight: 600;
-      color: #333;
+      color: var(--el-text-color-primary);
     }
 
     &__badge {
@@ -484,8 +514,8 @@
       height: 20px;
       padding: 0 6px;
       border-radius: 10px;
-      background: #e8e8e8;
-      color: #888;
+      background: var(--el-fill-color);
+      color: var(--el-text-color-secondary);
       font-size: 11px;
       font-weight: 700;
       display: flex;
@@ -531,7 +561,7 @@
     transition: background 0.2s;
 
     &:hover {
-      background: #fff1eb;
+      background: var(--el-color-primary-light-9);
     }
   }
 
@@ -547,9 +577,9 @@
     align-items: flex-start;
     gap: 10px;
     padding: 12px;
-    background: #fff;
+    background: var(--el-bg-color);
     border-radius: 10px;
-    border: 1px solid #efefef;
+    border: 1px solid var(--el-border-color-lighter);
     transition: all 0.2s;
 
     &:hover {
@@ -574,7 +604,7 @@
     &__name {
       font-size: 13px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--el-text-color-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -593,7 +623,7 @@
     &__addr {
       margin-top: 2px;
       font-size: 11px;
-      color: #aaa;
+      color: var(--el-text-color-placeholder);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -610,7 +640,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #ccc;
+      color: var(--el-text-color-placeholder);
       transition: all 0.2s;
 
       &:hover {
@@ -636,20 +666,20 @@
     &__icon {
       width: 60px;
       height: 60px;
-      color: #ddd;
+      color: var(--el-border-color);
     }
 
     &__text {
       margin: 4px 0 0;
       font-size: 13px;
-      color: #bbb;
+      color: var(--el-text-color-placeholder);
       font-weight: 500;
     }
 
     &__hint {
       margin: 0;
       font-size: 11px;
-      color: #ddd;
+      color: var(--el-text-color-disabled);
     }
   }
 
@@ -659,6 +689,7 @@
     flex-direction: column;
     height: 100%;
     overflow: hidden;
+    background: var(--el-bg-color);
   }
 
   /* ─── Search Bar ──────────────────────────────────── */
@@ -667,8 +698,8 @@
     align-items: center;
     gap: 10px;
     padding: 14px 20px;
-    border-bottom: 1px solid #f5f5f5;
-    background: #fff;
+    border-bottom: 1px solid var(--el-border-color-light);
+    background: var(--el-bg-color);
     flex-shrink: 0;
 
     &__input-wrap {
@@ -682,7 +713,7 @@
       left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      color: #bbb;
+      color: var(--el-text-color-placeholder);
       font-size: 14px;
       z-index: 1;
     }
@@ -691,7 +722,7 @@
       .el-input__wrapper {
         padding-left: 36px;
         border-radius: 8px;
-        box-shadow: 0 0 0 1px #e8e8e8;
+        box-shadow: 0 0 0 1px var(--el-border-color);
         transition: box-shadow 0.2s;
 
         &:hover,
@@ -735,14 +766,14 @@
     }
 
     &--ghost {
-      background: #fff;
-      color: #555;
-      border: 1px solid #e8e8e8;
+      background: var(--el-bg-color);
+      color: var(--el-text-color-regular);
+      border: 1px solid var(--el-border-color);
 
       &:hover {
         border-color: #f97316;
         color: #f97316;
-        background: #fff8f5;
+        background: var(--el-color-primary-light-9);
       }
     }
 
@@ -770,23 +801,30 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    padding: 10px 0 10px 10px;
+    padding: 10px;
   }
 
   :deep(.house-table) {
     height: 100%;
     border-radius: 10px;
     overflow: hidden;
-    border: 1px solid #f0f0f0;
+    border: 1px solid var(--el-border-color-light);
+    --el-table-bg-color: var(--el-bg-color);
+    --el-table-tr-bg-color: var(--el-bg-color);
+    --el-table-header-bg-color: var(--el-fill-color-lighter);
+    --el-table-border-color: var(--el-border-color-light);
+    --el-table-row-hover-bg-color: var(--el-fill-color-light);
+    --el-table-text-color: var(--el-text-color-primary);
+    --el-table-header-text-color: var(--el-text-color-secondary);
 
     .el-table__header-wrapper {
       th.el-table__cell {
-        background: #f9f9f9;
-        color: #888;
+        background: var(--el-fill-color-lighter);
+        color: var(--el-text-color-secondary);
         font-size: 12px;
         font-weight: 600;
         letter-spacing: 0.3px;
-        border-bottom: 1px solid #efefef;
+        border-bottom: 1px solid var(--el-border-color-light);
         padding: 12px 0;
       }
     }
@@ -796,16 +834,16 @@
       transition: background 0.15s;
 
       td {
-        border-bottom-color: #f8f8f8;
+        border-bottom-color: var(--el-border-color-lighter);
         padding: 13px 0;
       }
 
       &:hover > td {
-        background: #fffaf7 !important;
+        background: var(--el-fill-color-light) !important;
       }
 
       &.row--selected > td {
-        background: #fff8f3 !important;
+        background: var(--el-color-primary-light-9) !important;
       }
     }
 
@@ -834,12 +872,12 @@
     &__name {
       font-size: 13px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--el-text-color-primary);
     }
 
     &__addr {
       font-size: 11px;
-      color: #aaa;
+      color: var(--el-text-color-placeholder);
     }
   }
 
@@ -870,13 +908,13 @@
 
     &__type {
       font-size: 13px;
-      color: #333;
+      color: var(--el-text-color-regular);
       font-weight: 500;
     }
 
     &__area {
       font-size: 11px;
-      color: #aaa;
+      color: var(--el-text-color-placeholder);
     }
   }
 
@@ -887,10 +925,10 @@
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: #f5f5f5;
+    background: var(--el-fill-color);
     font-size: 12px;
     font-weight: 600;
-    color: #555;
+    color: var(--el-text-color-regular);
   }
 
   .cell-price {
@@ -920,12 +958,12 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 20px;
-    border-top: 1px solid #f5f5f5;
+    border-top: 1px solid var(--el-border-color-light);
     flex-shrink: 0;
 
     &__total {
       font-size: 12px;
-      color: #bbb;
+      color: var(--el-text-color-placeholder);
     }
 
     :deep(.el-pagination) {
@@ -948,7 +986,7 @@
 
     &__summary {
       font-size: 13px;
-      color: #888;
+      color: var(--el-text-color-secondary);
 
       strong {
         color: #f97316;

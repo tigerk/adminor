@@ -1,5 +1,15 @@
 <template>
-  <el-dialog v-model="visible" title="选择房间" width="68vw" append-to-body :close-on-click-modal="false" :align-center="true" :draggable="true" :show-close="false" class="room-picker-dialog">
+  <el-dialog
+    v-model="visible"
+    title="选择房间"
+    width="68vw"
+    append-to-body
+    :close-on-click-modal="false"
+    :align-center="true"
+    :draggable="true"
+    :show-close="true"
+    class="room-picker-dialog"
+  >
     <div class="room-picker-body">
       <!-- Left: Selected Panel -->
       <div class="selected-panel">
@@ -74,7 +84,7 @@
         </div>
 
         <!-- Table -->
-        <div class="table-wrap" v-loading="loading">
+        <div v-loading="loading" class="table-wrap">
           <el-table
             ref="tableRef"
             :data="roomList"
@@ -216,7 +226,7 @@
       occupied: "status-tag--occupied",
       reserved: "status-tag--reserved"
     };
-    return map[status.key] || "status-tag--default";
+    return map[status.cls] || "status-tag--default";
   };
 
   const getRowClassName = ({ row }: { row: any }) => {
@@ -341,9 +351,38 @@
     overflow: hidden;
     box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12) !important;
 
+    .el-dialog {
+      background: var(--el-bg-color);
+    }
+
     .el-dialog__header {
-      padding: 0 !important;
+      padding: 18px 56px 14px 20px !important;
       margin: 0 !important;
+      border-bottom: 1px solid var(--el-border-color-light);
+    }
+
+    .el-dialog__title {
+      color: var(--el-text-color-primary);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .el-dialog__headerbtn {
+      top: 16px;
+      right: 16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: var(--el-fill-color-light);
+      }
+    }
+
+    .el-dialog__close {
+      color: var(--el-text-color-regular);
+      font-size: 18px;
     }
 
     .el-dialog__body {
@@ -352,7 +391,7 @@
 
     .el-dialog__footer {
       padding: 0 !important;
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid var(--el-border-color-light);
     }
   }
 
@@ -418,12 +457,13 @@
     grid-template-columns: 270px 1fr;
     height: 70vh;
     overflow: hidden;
+    border: 1px solid var(--el-border-color-light);
   }
 
   /* ─── Selected Panel ──────────────────────────────── */
   .selected-panel {
-    border-right: 1px solid #f0f0f0;
-    background: #fafafa;
+    border-right: 1px solid var(--el-border-color-light);
+    background: var(--el-fill-color-lighter);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -434,7 +474,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 10px 14px 8px;
-      border-bottom: 1px solid #efefef;
+      border-bottom: 1px solid var(--el-border-color-lighter);
       flex-shrink: 0;
     }
 
@@ -447,7 +487,7 @@
     &__label {
       font-size: 13px;
       font-weight: 600;
-      color: #333;
+      color: var(--el-text-color-primary);
     }
 
     &__badge {
@@ -455,8 +495,8 @@
       height: 20px;
       padding: 0 6px;
       border-radius: 10px;
-      background: #e8e8e8;
-      color: #888;
+      background: var(--el-fill-color);
+      color: var(--el-text-color-secondary);
       font-size: 11px;
       font-weight: 700;
       display: flex;
@@ -498,7 +538,7 @@
     transition: background 0.2s;
 
     &:hover {
-      background: #fff1eb;
+      background: var(--el-color-primary-light-9);
     }
   }
 
@@ -514,9 +554,9 @@
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background: #fff;
+    background: var(--el-bg-color);
     border-radius: 10px;
-    border: 1px solid #efefef;
+    border: 1px solid var(--el-border-color-lighter);
     transition: all 0.2s;
 
     &:hover {
@@ -546,7 +586,7 @@
     &__name {
       font-size: 13px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--el-text-color-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -580,7 +620,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #ccc;
+      color: var(--el-text-color-placeholder);
       transition: all 0.2s;
 
       &:hover {
@@ -606,20 +646,20 @@
     &__icon {
       width: 60px;
       height: 60px;
-      color: #e0e0e0;
+      color: var(--el-border-color);
     }
 
     &__text {
       margin: 4px 0 0;
       font-size: 13px;
-      color: #bbb;
+      color: var(--el-text-color-placeholder);
       font-weight: 500;
     }
 
     &__hint {
       margin: 0;
       font-size: 11px;
-      color: #ddd;
+      color: var(--el-text-color-disabled);
     }
   }
 
@@ -629,6 +669,7 @@
     flex-direction: column;
     height: 100%;
     overflow: hidden;
+    background: var(--el-bg-color);
   }
 
   /* ─── Search Bar ──────────────────────────────────── */
@@ -637,8 +678,8 @@
     align-items: center;
     gap: 10px;
     padding: 10px 16px;
-    border-bottom: 1px solid #f5f5f5;
-    background: #fff;
+    border-bottom: 1px solid var(--el-border-color-light);
+    background: var(--el-bg-color);
     flex-shrink: 0;
 
     &__input-wrap {
@@ -652,7 +693,7 @@
       left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      color: #bbb;
+      color: var(--el-text-color-placeholder);
       font-size: 14px;
       z-index: 1;
     }
@@ -661,7 +702,7 @@
       .el-input__wrapper {
         padding-left: 36px;
         border-radius: 8px;
-        box-shadow: 0 0 0 1px #e8e8e8;
+        box-shadow: 0 0 0 1px var(--el-border-color);
         transition: box-shadow 0.2s;
 
         &:hover,
@@ -676,7 +717,7 @@
 
       .el-input__wrapper {
         border-radius: 8px;
-        box-shadow: 0 0 0 1px #e8e8e8;
+        box-shadow: 0 0 0 1px var(--el-border-color);
 
         &:hover,
         &.is-focus {
@@ -719,14 +760,14 @@
     }
 
     &--ghost {
-      background: #fff;
-      color: #555;
-      border: 1px solid #e8e8e8;
+      background: var(--el-bg-color);
+      color: var(--el-text-color-regular);
+      border: 1px solid var(--el-border-color);
 
       &:hover {
         border-color: #f97316;
         color: #f97316;
-        background: #fff8f5;
+        background: var(--el-color-primary-light-9);
       }
     }
 
@@ -754,23 +795,30 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    padding: 10px 0 10px 10px;
+    padding: 10px;
   }
 
   :deep(.room-table) {
     height: 100%;
     border-radius: 10px;
     overflow: hidden;
-    border: 1px solid #f0f0f0;
+    border: 1px solid var(--el-border-color-light);
+    --el-table-bg-color: var(--el-bg-color);
+    --el-table-tr-bg-color: var(--el-bg-color);
+    --el-table-header-bg-color: var(--el-fill-color-lighter);
+    --el-table-border-color: var(--el-border-color-light);
+    --el-table-row-hover-bg-color: var(--el-fill-color-light);
+    --el-table-text-color: var(--el-text-color-primary);
+    --el-table-header-text-color: var(--el-text-color-secondary);
 
     .el-table__header-wrapper {
       th.el-table__cell {
-        background: #f9f9f9;
-        color: #888;
+        background: var(--el-fill-color-lighter);
+        color: var(--el-text-color-secondary);
         font-size: 12px;
         font-weight: 600;
         letter-spacing: 0.3px;
-        border-bottom: 1px solid #efefef;
+        border-bottom: 1px solid var(--el-border-color-light);
         padding: 9px 0;
       }
     }
@@ -779,17 +827,17 @@
       cursor: pointer;
 
       td {
-        border-bottom-color: #f8f8f8;
+        border-bottom-color: var(--el-border-color-lighter);
         padding: 9px 0;
         transition: background 0.15s;
       }
 
       &:hover > td {
-        background: #fffaf7 !important;
+        background: var(--el-fill-color-light) !important;
       }
 
       &.row--selected > td {
-        background: #fff8f3 !important;
+        background: var(--el-color-primary-light-9) !important;
       }
     }
 
@@ -818,7 +866,7 @@
     &__name {
       font-size: 13px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--el-text-color-primary);
     }
 
     &__room {
@@ -826,7 +874,7 @@
       align-items: center;
       gap: 4px;
       font-size: 11px;
-      color: #aaa;
+      color: var(--el-text-color-placeholder);
     }
   }
 
@@ -874,8 +922,8 @@
     }
 
     &--default {
-      background: #f5f5f5;
-      color: #999;
+      background: var(--el-fill-color);
+      color: var(--el-text-color-secondary);
     }
   }
 
@@ -886,17 +934,17 @@
 
     &__type {
       font-size: 13px;
-      color: #333;
+      color: var(--el-text-color-regular);
       font-weight: 500;
     }
 
     &__area {
       font-size: 11px;
-      color: #aaa;
+      color: var(--el-text-color-placeholder);
     }
 
     &__dir {
-      color: #bbb;
+      color: var(--el-text-color-disabled);
     }
   }
 
@@ -927,12 +975,12 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 16px;
-    border-top: 1px solid #f5f5f5;
+    border-top: 1px solid var(--el-border-color-light);
     flex-shrink: 0;
 
     &__total {
       font-size: 12px;
-      color: #bbb;
+      color: var(--el-text-color-placeholder);
     }
 
     :deep(.el-pagination) {
@@ -950,7 +998,7 @@
 
     &__summary {
       font-size: 13px;
-      color: #888;
+      color: var(--el-text-color-secondary);
 
       strong {
         color: #f97316;
