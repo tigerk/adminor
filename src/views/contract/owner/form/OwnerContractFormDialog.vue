@@ -7,9 +7,11 @@
             <span class="card-title">签约房源</span>
             <span class="card-desc card-desc--inline">打开对话框后先选择签约房源，再继续补充业主信息、合同信息和条款。</span>
           </div>
+          <el-tag effect="plain">已选房源：{{ form.contractHouseList.length }} 套</el-tag>
+          <el-tag effect="plain">已配置：{{ configuredHouseCount }} 套</el-tag>
           <el-button
-            type="primary"
-            link
+            type="danger"
+            size="small"
             @click="
               housePickerRef?.show({
                 selected: selectedHouses,
@@ -17,7 +19,7 @@
               })
             "
           >
-            选择房源
+            <Plus />选择房源
           </el-button>
         </div>
       </template>
@@ -25,8 +27,14 @@
       <el-form-item label-width="0" prop="contractHouseList">
         <div class="selected-house-wrapper">
           <div class="summary-tag-group">
-            <el-tag effect="plain">已选房源：{{ form.contractHouseList.length }} 套</el-tag>
-            <el-tag effect="plain">已配置：{{ configuredHouseCount }} 套</el-tag>
+            <div class="house-highlight">
+              <template v-if="form.ownerContract.cooperationMode === 'LIGHT_MANAGED'">
+                <div>当前所有已选房源统一使用同一套轻托管分账规则。后续如需修改，只需改一次，保存时会同步到全部房源。</div>
+              </template>
+              <template v-else>
+                <div>当前所有已选房源统一纳入同一包租合同。金额、押付方式和其他费用统一在下方包租条款中配置。</div>
+              </template>
+            </div>
           </div>
 
           <div v-if="form.contractHouseList.length" class="selected-house-panel">
@@ -35,17 +43,6 @@
                 <div class="selected-house-chip__title">{{ item.houseName || "未命名房源" }}</div>
                 <el-button link type="danger" @click="removeHouse(item.houseId)">移除</el-button>
               </div>
-            </div>
-
-            <div class="house-highlight">
-              <template v-if="form.ownerContract.cooperationMode === 'LIGHT_MANAGED'">
-                <div>当前所有已选房源统一使用同一套轻托管分账规则。</div>
-                <div>后续如需修改，只需改一次，保存时会同步到全部房源。</div>
-              </template>
-              <template v-else>
-                <div>当前所有已选房源统一纳入同一包租合同。</div>
-                <div>金额、押付方式和其他费用统一在下方包租条款中配置。</div>
-              </template>
             </div>
           </div>
           <el-empty v-else description="请选择一个或多个房源" :image-size="90" />
@@ -876,6 +873,8 @@
   import { getDictDataByParentCode } from "@/api/sys/dict";
   import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS } from "@/constants";
   import { message } from "@/utils/message";
+  import Plus from "~icons/ep/plus";
+
   import type {
     ContractTemplateListVo,
     OwnerBearTypeEnum,
@@ -1975,8 +1974,6 @@
 
   .card-header {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
     gap: 16px;
   }
 
@@ -2391,8 +2388,7 @@
   }
 
   .house-highlight {
-    margin-top: 12px;
-    padding: 14px 16px;
+    padding: 5px 6px;
     border-radius: 12px;
     background: #fff7ed;
     color: #9a3412;
