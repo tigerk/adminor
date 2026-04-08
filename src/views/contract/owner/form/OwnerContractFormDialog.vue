@@ -6,14 +6,15 @@
         <div class="card-header">
           <div class="header-inline">
             <span class="card-title">签约房源</span>
-            <span class="card-desc card-desc--inline">打开对话框后先选择签约房源，再继续补充业主信息、合同信息和条款。</span>
+            <span class="card-desc card-desc--inline">先确认本次合同按房源还是集中式签约，再打开对应选择器。</span>
           </div>
           <div class="card-header-form">
-            <el-tag effect="plain">已选房源：{{ form.contractSubjectList.length }} 套</el-tag>
-            <el-tag effect="plain">已配置：{{ configuredSubjectCount }} 套</el-tag>
-            <el-button type="primary" size="small" @click="housePickerRef?.show({ selected: selectedHouses, excludeOwnerContractId: form.ownerContract.id })">
+            <el-tag effect="plain">类型：{{ currentSubjectTypeLabel }}</el-tag>
+            <el-tag effect="plain">已选：{{ form.contractSubjectList.length }} {{ currentSubjectUnit }}</el-tag>
+            <el-tag effect="plain">已配置：{{ configuredSubjectCount }} {{ currentSubjectUnit }}</el-tag>
+            <el-button type="primary" size="small" @click="openSubjectPicker">
               <Plus />
-              选择房源
+              选择{{ currentSubjectTypeLabel }}
             </el-button>
           </div>
         </div>
@@ -21,15 +22,42 @@
 
       <el-form-item label-width="0" prop="contractSubjectList">
         <div class="selected-house-wrapper">
+          <div class="subject-type-grid">
+            <button
+              v-for="option in subjectTypeOptions"
+              :key="option.value"
+              type="button"
+              :class="['subject-type-card', { 'is-active': selectedSubjectType === option.value }]"
+              @click="handleSubjectTypeChange(option.value)"
+            >
+              <div class="subject-type-card__title">{{ option.label }}</div>
+              <div class="subject-type-card__desc">{{ option.desc }}</div>
+            </button>
+          </div>
+
+          <div class="subject-selection-summary">
+            <div class="subject-selection-summary__left">
+              <div class="subject-selection-summary__title">当前按{{ currentSubjectTypeLabel }}签约</div>
+              <div class="subject-selection-summary__desc">{{ currentSubjectTypeDesc }}</div>
+            </div>
+            <div class="subject-selection-summary__actions">
+              <el-button plain @click="openSubjectPicker">选择{{ currentSubjectTypeLabel }}</el-button>
+              <el-button v-if="form.contractSubjectList.length" text type="danger" @click="clearSubjectSelection">清空已选</el-button>
+            </div>
+          </div>
+
           <div v-if="form.contractSubjectList.length" class="selected-house-panel">
             <div class="selected-house-tags">
-              <div v-for="item in form.contractSubjectList" :key="item.subjectId" class="selected-house-chip">
-                <div class="selected-house-chip__title">{{ item.subjectName || "未命名房源" }}</div>
-                <el-button link type="danger" @click="removeHouse(item.subjectId)">移除</el-button>
+              <div v-for="item in form.contractSubjectList" :key="`${item.subjectType}-${item.subjectId}`" class="selected-house-chip">
+                <div class="selected-house-chip__body">
+                  <el-tag size="small" effect="plain" class="selected-house-chip__type">{{ getSubjectTypeShortLabel(item.subjectType) }}</el-tag>
+                  <div class="selected-house-chip__title">{{ item.subjectName || "未命名房源" }}</div>
+                </div>
+                <el-button link type="danger" @click="removeSubject(item.subjectType, item.subjectId)">移除</el-button>
               </div>
             </div>
           </div>
-          <el-empty v-else description="请选择一个或多个房源" :image-size="90" />
+          <el-empty v-else :description="`请选择一个或多个${currentSubjectTypeLabel}`" :image-size="90" />
         </div>
       </el-form-item>
     </el-card>
@@ -778,20 +806,19 @@
           <el-button type="primary" plain @click="addLeaseFee">添加费用</el-button>
         </div>
         <div class="fee-table-wrapper">
-          <table class="fee-table">
+          <table class="fee-table fee-table--master-lease">
             <thead>
               <tr>
-                <th style="width: 92px">收支</th>
-                <th style="width: 180px">费用类型</th>
-                <th style="width: 150px">付款方式</th>
-                <th style="width: 260px">金额</th>
-                <th>备注</th>
-                <th style="width: 56px">操作</th>
+                <th style="width: 96px">收支</th>
+                <th style="width: 240px">费用类型</th>
+                <th style="width: 170px">付款方式</th>
+                <th style="width: 360px">金额</th>
+                <th style="width: 76px">操作</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="!form.ownerLeaseRule.otherFeeList?.length" class="empty-row">
-                <td colspan="6"><div class="empty-state">暂无其他费用，点击右上角"添加费用"新增。</div></td>
+                <td colspan="5"><div class="empty-state">暂无其他费用，点击右上角"添加费用"新增。</div></td>
               </tr>
               <tr v-for="(fee, index) in form.ownerLeaseRule.otherFeeList" :key="index">
                 <td>
@@ -826,7 +853,6 @@
                     <template #append>{{ fee.priceMethod === 1 ? "元" : "%" }}</template>
                   </el-input>
                 </td>
-                <td><el-input v-model="fee.remark" placeholder="备注" /></td>
                 <td class="text-center">
                   <el-button link type="danger" @click="form.ownerLeaseRule.otherFeeList?.splice(index, 1)">删除</el-button>
                 </td>
@@ -844,43 +870,63 @@
           </div>
           <el-button type="primary" plain @click="addLeaseFreeRule">新增规则</el-button>
         </div>
-        <el-table :data="form.ownerLeaseFreeRuleList" border empty-text="未配置免租规则">
-          <el-table-column label="类型" width="120">
-            <template #default="{ row }">
-              <el-select v-model="row.freeType">
-                <el-option v-for="item in freeTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </template>
-          </el-table-column>
-          <el-table-column label="开始日期" width="160">
-            <template #default="{ row }"><el-date-picker v-model="row.startDate" type="date" value-format="YYYY-MM-DD" /></template>
-          </el-table-column>
-          <el-table-column label="结束日期" width="160">
-            <template #default="{ row }"><el-date-picker v-model="row.endDate" type="date" value-format="YYYY-MM-DD" /></template>
-          </el-table-column>
-          <el-table-column label="计算方式" width="140">
-            <template #default="{ row }">
-              <el-select v-model="row.calcMode">
-                <el-option v-for="item in leaseFreeCalcModeOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </template>
-          </el-table-column>
-          <el-table-column label="金额" width="120">
-            <template #default="{ row }"><el-input-number v-model="row.freeAmount" :min="0" :precision="2" /></template>
-          </el-table-column>
-          <el-table-column label="比例" width="120">
-            <template #default="{ row }"><el-input-number v-model="row.freeRatio" :min="0" :max="1" :step="0.1" :precision="2" /></template>
-          </el-table-column>
-          <el-table-column label="操作" width="90">
-            <template #default="{ $index }">
-              <el-button link type="danger" @click="form.ownerLeaseFreeRuleList.splice($index, 1)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div class="fee-table-wrapper">
+          <table class="fee-table fee-table--master-lease lease-free-table">
+            <thead>
+              <tr>
+                <th style="width: 190px">类型</th>
+                <th style="width: 170px">开始日期</th>
+                <th style="width: 170px">结束日期</th>
+                <th style="width: 360px">金额配置</th>
+                <th style="width: 76px">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!form.ownerLeaseFreeRuleList.length" class="empty-row">
+                <td colspan="5"><div class="empty-state">暂无免租规则，点击右上角“新增规则”添加。</div></td>
+              </tr>
+              <tr v-for="(row, index) in form.ownerLeaseFreeRuleList" :key="index">
+                <td>
+                  <el-select v-model="row.freeType" class="w-full">
+                    <el-option v-for="item in freeTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </td>
+                <td><el-date-picker v-model="row.startDate" type="date" value-format="YYYY-MM-DD" class="w-full" /></td>
+                <td><el-date-picker v-model="row.endDate" type="date" value-format="YYYY-MM-DD" class="w-full" /></td>
+                <td>
+                  <template v-if="row.calcMode === 'RATIO'">
+                    <el-input v-model.number="row.freeRatio" type="number" class="w-full" placeholder="请输入">
+                      <template #prepend>
+                        <el-select v-model="row.calcMode" style="width: 140px">
+                          <el-option v-for="item in leaseFreeCalcModeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                        </el-select>
+                      </template>
+                      <template #append>%</template>
+                    </el-input>
+                  </template>
+                  <template v-else>
+                    <el-input v-model.number="row.freeAmount" type="number" class="w-full" placeholder="请输入">
+                      <template #prepend>
+                        <el-select v-model="row.calcMode" style="width: 140px">
+                          <el-option v-for="item in leaseFreeCalcModeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                        </el-select>
+                      </template>
+                      <template #append>元</template>
+                    </el-input>
+                  </template>
+                </td>
+                <td class="text-center">
+                  <el-button link type="danger" @click="form.ownerLeaseFreeRuleList.splice(index, 1)">删除</el-button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </el-card>
 
     <HousePicker ref="housePickerRef" @confirm="handleHouseConfirm" />
+    <FocusSubjectPicker ref="focusSubjectPickerRef" @confirm="handleFocusSubjectConfirm" />
 
     <el-dialog v-model="previewVisible" top="10px" title="业主合同预览" width="80%" destroy-on-close append-to-body>
       <iframe v-if="pdfUrl" title="业主合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
@@ -890,10 +936,12 @@
 
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, watch } from "vue";
+  import { ElMessageBox } from "element-plus";
   import type { FormInstance } from "element-plus";
   import { getContractTemplateParams, getMyAvailableContractTemplates } from "@/api/contract/template";
   import { getOwnerContractDetail, getOwnerContractList, previewOwnerContract } from "@/api/contract/owner";
   import UploadImage from "@/components/upload/UploadImage.vue";
+  import FocusSubjectPicker from "@/shared/house/FocusSubjectPicker.vue";
   import HousePicker from "@/shared/house/HousePicker.vue";
   import { getDictDataByDictCode, getDictDataByParentCode } from "@/api/sys/dict";
   import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS } from "@/constants";
@@ -982,6 +1030,17 @@
     isEdit?: boolean;
   }
 
+  type SubjectSelectionRow = {
+    subjectType: OwnerContractSubjectTypeEnum;
+    subjectId: string;
+    subjectName: string;
+    address?: string;
+    focusId?: string;
+    focusName?: string;
+    floorTotal?: number;
+    houseCountPerFloor?: number;
+  };
+
   const props = withDefaults(defineProps<Props>(), {
     formInline: null,
     isEdit: false
@@ -990,6 +1049,7 @@
   // ─── 响应式状态 ────────────────────────────────────────────────────────────────
   const formRef = ref<FormInstance>();
   const housePickerRef = ref<InstanceType<typeof HousePicker>>();
+  const focusSubjectPickerRef = ref<InstanceType<typeof FocusSubjectPicker>>();
   const contractTemplates = ref<ContractTemplateListVo[]>([]);
   const templateParams = ref<ContractTemplateParamItem[]>([]);
   const templateParamsLoading = ref(false);
@@ -997,10 +1057,11 @@
   const leaseFeeCascaderValues = ref<Record<number, any[]>>({});
   const settlementFeeCascaderValues = ref<Record<string, any[]>>({});
   const contractDateRange = ref<string[]>([]);
-  const selectedHouses = ref<PickedRoom[]>([]);
+  const selectedSubjects = ref<SubjectSelectionRow[]>([]);
   const previewVisible = ref(false);
   const pdfUrl = ref("");
   const ownerTagOptions = ref<{ label: string; value: string }[]>([]);
+  const selectedSubjectType = ref<OwnerContractSubjectTypeEnum>(OwnerContractSubjectTypeEnumMeta.HOUSE.value as OwnerContractSubjectTypeEnum);
 
   // ─── Label maps（从 types 导入后本地绑定，便于模板访问） ──────────────────────
   const signTypeLabelMap = SIGN_TYPE_LABEL_MAP;
@@ -1103,6 +1164,18 @@
     { label: SETTLEMENT_TIMING_LABEL_MAP.TENANT_PAYMENT_REALTIME, value: "TENANT_PAYMENT_REALTIME" as OwnerSettlementTimingValue },
     { label: SETTLEMENT_TIMING_LABEL_MAP.LEASE_START_GENERATE_BILL, value: "LEASE_START_GENERATE_BILL" as OwnerSettlementTimingValue }
   ];
+  const subjectTypeOptions = [
+    {
+      label: "房源",
+      value: OwnerContractSubjectTypeEnumMeta.HOUSE.value as OwnerContractSubjectTypeEnum,
+      desc: "逐套选择，适合分散式和单套托管。"
+    },
+    {
+      label: "集中式",
+      value: OwnerContractSubjectTypeEnumMeta.FOCUS.value as OwnerContractSubjectTypeEnum,
+      desc: "可直接选整项目，也可进入项目勾选多个楼栋。"
+    }
+  ];
   const rentDueTypeOptions = [
     { label: "提前收租", value: "EARLY" as const },
     { label: "固定日期付款", value: "FIXED" as const },
@@ -1174,8 +1247,8 @@
   function cloneRentFreeRule(rule?: OwnerRentFreeRuleForm): OwnerRentFreeRuleForm {
     return { ...createDefaultRentFreeRule(), ...(rule || {}) };
   }
-  const createSubjectRule = (subjectId: string, subjectName: string, base?: ContractSubjectFormItem): ContractSubjectFormItem => ({
-    subjectType: OwnerContractSubjectTypeEnumMeta.HOUSE.value,
+  const createSubjectRule = (subjectType: OwnerContractSubjectTypeEnum, subjectId: string, subjectName: string, base?: ContractSubjectFormItem): ContractSubjectFormItem => ({
+    subjectType,
     subjectId,
     subjectName,
     remark: "",
@@ -1270,6 +1343,14 @@
   const currentPayeeForm = computed(() => (form.ownerType === "PERSONAL" ? form.ownerPersonal : form.ownerCompany));
   const selectedTemplate = computed(() => contractTemplates.value.find(item => String(item.id || "") === String(form.ownerContract.contractTemplateId || "")));
   const templateParamLabelMap = computed(() => templateParams.value.reduce<Record<string, string>>((acc, item) => ((acc[item.key] = item.label), acc), {}));
+  const currentSubjectTypeLabel = computed(() => getSubjectTypeLabel(selectedSubjectType.value));
+  const currentSubjectTypeDesc = computed(() => {
+    if (selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.FOCUS.value) {
+      return "集中式下既可以直接选择整项目，也可以进入项目后勾选多个楼栋。";
+    }
+    return "适合分散式场景，逐套选择房源后纳入合同。";
+  });
+  const currentSubjectUnit = computed(() => (selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.FOCUS.value ? "项" : "套"));
 
   // ─── 业务函数 ──────────────────────────────────────────────────────────────────
   function isHouseConfigured(item: ContractSubjectFormItem) {
@@ -1323,7 +1404,8 @@
   function resetForm() {
     Object.assign(form, createDefaultForm());
     contractDateRange.value = [];
-    selectedHouses.value = [];
+    selectedSubjects.value = [];
+    selectedSubjectType.value = OwnerContractSubjectTypeEnumMeta.HOUSE.value as OwnerContractSubjectTypeEnum;
   }
 
   function mapDetailToForm(detail?: OwnerDetailVo | null) {
@@ -1345,22 +1427,31 @@
       settlementRule: cloneSettlementRule(item.settlementRule),
       rentFreeRule: cloneRentFreeRule(item.rentFreeRule)
     }));
-    selectedHouses.value = form.contractSubjectList.map(item => ({ houseId: item.subjectId, houseName: item.subjectName }));
+    selectedSubjectType.value =
+      form.contractSubjectList[0]?.subjectType === OwnerContractSubjectTypeEnumMeta.HOUSE.value
+        ? (OwnerContractSubjectTypeEnumMeta.HOUSE.value as OwnerContractSubjectTypeEnum)
+        : (OwnerContractSubjectTypeEnumMeta.FOCUS.value as OwnerContractSubjectTypeEnum);
+    selectedSubjects.value = form.contractSubjectList.map(item => ({
+      subjectType: item.subjectType,
+      subjectId: String(item.subjectId || ""),
+      subjectName: item.subjectName || ""
+    }));
     form.ownerLeaseRule = { ...createDefaultForm().ownerLeaseRule, ...(raw.ownerLeaseRule || {}) };
     form.ownerLeaseFreeRuleList = (raw.ownerLeaseFreeRuleList || []).map((item: any) => ({ ...createDefaultLeaseFreeRule(), ...item }));
     syncLeaseFeeCascaderValues();
     syncSettlementFeeCascaderValues();
   }
 
-  function handleHouseConfirm(rows: PickedRoom[]) {
-    selectedHouses.value = rows || [];
+  function syncContractSubjects(rows: SubjectSelectionRow[]) {
+    selectedSubjects.value = rows || [];
     const houseMap = new Map<string, ContractSubjectFormItem>();
     const sharedRule = form.contractSubjectList[0];
     for (const row of rows || []) {
-      const houseId = String(row.houseId || "");
-      if (!houseId) continue;
-      const existing = form.contractSubjectList.find(item => item.subjectId === houseId);
-      houseMap.set(houseId, existing || createSubjectRule(houseId, row.houseName || "", sharedRule));
+      const subjectId = String(row.subjectId || "");
+      if (!subjectId) continue;
+      const key = `${row.subjectType}-${subjectId}`;
+      const existing = form.contractSubjectList.find(item => item.subjectType === row.subjectType && item.subjectId === subjectId);
+      houseMap.set(key, existing || createSubjectRule(row.subjectType, subjectId, row.subjectName || "", sharedRule));
     }
     form.contractSubjectList = Array.from(houseMap.values());
     if (form.ownerContract.cooperationMode === "LIGHT_MANAGED" && form.contractSubjectList.length > 1) {
@@ -1373,9 +1464,77 @@
     }
   }
 
-  function removeHouse(houseId: string) {
-    form.contractSubjectList = form.contractSubjectList.filter(item => item.subjectId !== houseId);
-    selectedHouses.value = selectedHouses.value.filter(item => String(item.houseId || "") !== houseId);
+  function handleHouseConfirm(rows: PickedRoom[]) {
+    syncContractSubjects(
+      (rows || []).map(row => ({
+        subjectType: OwnerContractSubjectTypeEnumMeta.HOUSE.value as OwnerContractSubjectTypeEnum,
+        subjectId: String(row.houseId || ""),
+        subjectName: row.houseName || "",
+        address: row.address || ""
+      }))
+    );
+  }
+
+  function removeSubject(subjectType?: OwnerContractSubjectTypeEnum, subjectId?: string | number) {
+    const currentId = String(subjectId || "");
+    form.contractSubjectList = form.contractSubjectList.filter(item => !(item.subjectType === subjectType && String(item.subjectId || "") === currentId));
+    selectedSubjects.value = selectedSubjects.value.filter(item => !(item.subjectType === subjectType && item.subjectId === currentId));
+  }
+
+  function clearSubjectSelection() {
+    form.contractSubjectList = [];
+    selectedSubjects.value = [];
+  }
+
+  async function handleSubjectTypeChange(nextType: OwnerContractSubjectTypeEnum) {
+    if (selectedSubjectType.value === nextType) return;
+    if (!form.contractSubjectList.length) {
+      selectedSubjectType.value = nextType;
+      return;
+    }
+    try {
+      await ElMessageBox.confirm("切换合同房源类型后，当前已选内容会被清空。是否继续？", "切换合同房源类型", {
+        type: "warning",
+        confirmButtonText: "继续切换",
+        cancelButtonText: "取消"
+      });
+      clearSubjectSelection();
+      selectedSubjectType.value = nextType;
+    } catch {
+      return;
+    }
+  }
+
+  function getSubjectTypeLabel(subjectType?: OwnerContractSubjectTypeEnum) {
+    if (subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS.value) return "集中式";
+    return "整/合租";
+  }
+
+  function getSubjectTypeShortLabel(subjectType?: OwnerContractSubjectTypeEnum) {
+    if (subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS.value) return "项目";
+    if (subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS_BUILDING.value) return "楼栋";
+    return "整/合租";
+  }
+
+  function openSubjectPicker() {
+    if (selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.FOCUS.value) {
+      focusSubjectPickerRef.value?.show({
+        selected: selectedSubjects.value.filter(
+          item =>
+            item.subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS.value ||
+            item.subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS_BUILDING.value
+        )
+      });
+      return;
+    }
+    housePickerRef.value?.show({
+      selected: selectedSubjects.value.map(item => ({ houseId: item.subjectId, houseName: item.subjectName })),
+      excludeOwnerContractId: form.ownerContract.id
+    });
+  }
+
+  function handleFocusSubjectConfirm(rows: SubjectSelectionRow[]) {
+    syncContractSubjects(rows || []);
   }
 
   function addSettlementItem(house: ContractSubjectFormItem) {
@@ -1874,6 +2033,81 @@
     gap: 8px;
   }
 
+  .subject-type-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .subject-type-card {
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--el-border-color-lighter);
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .subject-type-card:hover {
+    border-color: #fdba74;
+    box-shadow: 0 10px 24px rgb(249 115 22 / 0.08);
+  }
+
+  .subject-type-card.is-active {
+    border-color: var(--el-color-primary);
+    background: #fff7ed;
+    box-shadow: 0 10px 24px rgb(249 115 22 / 0.12);
+  }
+
+  .subject-type-card__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .subject-type-card__desc {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--el-text-color-secondary);
+  }
+
+  .subject-selection-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--el-border-color-lighter);
+    background: var(--el-fill-color-extra-light);
+  }
+
+  .subject-selection-summary__left {
+    min-width: 0;
+  }
+
+  .subject-selection-summary__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .subject-selection-summary__desc {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--el-text-color-secondary);
+  }
+
+  .subject-selection-summary__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
   .contract-remark-field {
     margin-top: 4px;
   }
@@ -2308,10 +2542,25 @@
     background: #fff;
   }
 
+  .selected-house-chip__body {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .selected-house-chip__type {
+    flex-shrink: 0;
+  }
+
   .selected-house-chip__title {
     font-size: 13px;
     font-weight: 600;
     color: var(--el-text-color-primary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* ─── fee table (包租其他费用) ──────────────────────────────────── */
@@ -2323,6 +2572,10 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
+  }
+
+  .fee-table--master-lease {
+    table-layout: fixed;
   }
 
   .fee-table thead tr {
@@ -2339,6 +2592,21 @@
     padding: 10px 8px;
     border-bottom: 1px solid var(--el-border-color-extra-light);
     vertical-align: middle;
+  }
+  .lease-free-table :deep(.el-input-number),
+  .lease-free-table :deep(.el-date-editor),
+  .lease-free-table :deep(.el-select) {
+    width: 100%;
+  }
+  .fee-table--master-lease :deep(.el-input),
+  .fee-table--master-lease :deep(.el-select),
+  .fee-table--master-lease :deep(.el-cascader),
+  .fee-table--master-lease :deep(.el-date-editor) {
+    width: 100%;
+  }
+  .fee-table--master-lease td:last-child,
+  .fee-table--master-lease th:last-child {
+    text-align: center;
   }
   .fee-table tbody tr:last-child td {
     border-bottom: none;
