@@ -513,9 +513,9 @@
                   </el-form-item>
                   <div class="fee-inline-hint">
                     <el-form-item label="&nbsp;" class="fee-inline-item">
-                    按业主实收租金的
-                    <strong>{{ sharedContractHouse.settlementRule.managementFeeValue ?? 0 }}%</strong>
-                    向业主收取管理费。
+                      按业主实收租金的
+                      <strong>{{ sharedContractHouse.settlementRule.managementFeeValue ?? 0 }}%</strong>
+                      向业主收取管理费。
                     </el-form-item>
                   </div>
                 </div>
@@ -598,18 +598,18 @@
               <!-- ✅ 两个字段放在同一行 -->
               <el-row>
                 <re-col :value="12" :xs="24" :sm="24">
-                <el-form-item label="给业主出账时间">
-                  <el-radio-group v-model="sharedContractHouse.settlementRule.settlementTiming">
-                    <el-radio-button v-for="option in settlementTimingOptions" :key="option.value" :label="option.label" :value="option.value" />
-                  </el-radio-group>
-                </el-form-item>
+                  <el-form-item label="给业主出账时间">
+                    <el-radio-group v-model="sharedContractHouse.settlementRule.settlementTiming">
+                      <el-radio-button v-for="option in settlementTimingOptions" :key="option.value" :label="option.label" :value="option.value" />
+                    </el-radio-group>
+                  </el-form-item>
                 </re-col>
                 <re-col :value="12" :xs="24" :sm="24">
-                <el-form-item label="支付手续费承担方式">
-                  <el-radio-group v-model="sharedContractHouse.settlementRule.paymentFeeBearType">
-                    <el-radio-button v-for="option in paymentFeeBearTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
-                  </el-radio-group>
-                </el-form-item>
+                  <el-form-item label="支付手续费承担方式">
+                    <el-radio-group v-model="sharedContractHouse.settlementRule.paymentFeeBearType">
+                      <el-radio-button v-for="option in paymentFeeBearTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+                    </el-radio-group>
+                  </el-form-item>
                 </re-col>
               </el-row>
             </div>
