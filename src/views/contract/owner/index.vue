@@ -56,15 +56,21 @@
     <el-row class="bg-bg_color w-full px-4 pb-4">
       <el-col :span="24">
         <el-table v-loading="loading" :data="tableData" border row-key="contractId">
-          <el-table-column label="业主信息" min-width="220">
+          <el-table-column label="业主信息" min-width="180" align="center">
             <template #default="{ row }">
               <div class="owner-cell">
                 <div class="owner-cell__name">{{ row.ownerName || "-" }}</div>
-                <div class="owner-cell__meta">
-                  <el-tag size="small" effect="plain">{{ ownerTypeLabelMap[row.ownerType || "PERSONAL"] }}</el-tag>
-                  <span>{{ row.ownerPhone || "-" }}</span>
-                </div>
               </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="业主标签" min-width="120" align="center">
+            <template #default="{ row }">
+              <el-tag size="small" effect="plain">{{ ownerTypeLabelMap[row.ownerType || "PERSONAL"] }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="手机号" min-width="140" align="center">
+            <template #default="{ row }">
+              <span>{{ row.ownerPhone || "-" }}</span>
             </template>
           </el-table-column>
           <el-table-column label="委托模式" width="120" align="center">
@@ -74,18 +80,24 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="contractNo" label="合同编号" min-width="180" />
+          <el-table-column prop="contractNo" label="合同编号" min-width="220" />
           <el-table-column prop="contractTemplateName" label="合同模板" min-width="140" show-overflow-tooltip />
-          <el-table-column label="签约房源" min-width="280">
+          <el-table-column label="签约房源" min-width="360">
             <template #default="{ row }">
-              <div class="house-summary">
-                <div class="house-summary__title">{{ row.houseNames || "-" }}</div>
-                <div class="house-summary__meta">
+              <div class="house-summary house-summary--inline">
+                <el-tooltip :content="row.houseNames || '-'" placement="top" :show-after="200">
+                  <div class="house-summary__title">{{ row.houseNames || "-" }}</div>
+                </el-tooltip>
+                <div class="house-summary__meta house-summary__meta--inline">
                   <span>共 {{ row.houseCount || 0 }} 套</span>
-                  <span>总面积 {{ formatArea(row.totalArea) }}</span>
                   <span>已配置 {{ row.configuredHouseCount || 0 }} 套</span>
                 </div>
               </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="总面积" width="110" align="center">
+            <template #default="{ row }">
+              <span>{{ formatArea(row.totalArea) }} m²</span>
             </template>
           </el-table-column>
           <el-table-column label="合同周期" min-width="220">
@@ -108,12 +120,12 @@
             </template>
           </el-table-column>
           <el-table-column prop="updateTime" label="更新时间" min-width="170" />
-          <el-table-column label="操作" width="240" align="center" fixed="right">
+          <el-table-column label="操作" width="200" align="center" fixed="right">
             <template #default="{ row }">
               <el-button link type="primary" @click="openDetail(row.contractId)">查看</el-button>
               <el-button link type="primary" @click="handlePreview(row.contractId)">预览合同</el-button>
-              <el-dropdown trigger="click">
-                <el-button link type="info" :icon="useRenderIcon(More)" />
+              <el-dropdown :hide-on-click="false" popper-class="action-dropdown">
+                <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item @click="openEdit(row.contractId)">编辑合同</el-dropdown-item>
@@ -162,28 +174,14 @@
   import useOwnerContract from "@/views/contract/owner/utils/hook";
   import OwnerPageHeader from "@/shared/owner/OwnerPageHeader.vue";
   import OwnerSummaryFilterTabs from "@/shared/owner/OwnerSummaryFilterTabs.vue";
-  import {
-    deleteOwnerContract,
-    getOwnerContractList,
-    getOwnerContractTotal,
-    previewOwnerContract,
-    updateOwnerContractStatus
-  } from "@/api/contract/owner";
+  import { deleteOwnerContract, getOwnerContractList, getOwnerContractTotal, previewOwnerContract, updateOwnerContractStatus } from "@/api/contract/owner";
   import Search from "~icons/ri/search-line";
   import Refresh from "~icons/ep/refresh";
   import Plus from "~icons/ep/plus";
   import User from "~icons/ep/user";
   import Phone from "~icons/ep/phone";
   import More from "~icons/ep/more-filled";
-  import type {
-    OwnerContractIdDto,
-    OwnerContractStatusDto,
-    OwnerCooperationModeEnum,
-    OwnerListVo,
-    OwnerQueryDto,
-    OwnerSignStatusEnum,
-    OwnerTypeEnum
-  } from "@/types/generated";
+  import type { OwnerContractIdDto, OwnerContractStatusDto, OwnerCooperationModeEnum, OwnerListVo, OwnerQueryDto, OwnerSignStatusEnum, OwnerTypeEnum } from "@/types/generated";
   import { OwnerCooperationModeEnumMeta, OwnerSignStatusEnumMeta, OwnerTypeEnumMeta } from "@/types/generated/enum.meta";
   import "@/shared/owner/panel.scss";
 
@@ -205,6 +203,7 @@
     houseCount?: number;
     totalArea?: number | string;
     configuredHouseCount?: number;
+    ownerTag?: string;
     updateTime?: string;
   };
 
@@ -482,9 +481,21 @@
     gap: 6px;
   }
 
+  .house-summary--inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
   .house-summary__title {
     color: var(--el-text-color-primary);
     line-height: 1.4;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .house-summary__meta {
@@ -493,5 +504,11 @@
     gap: 12px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
+  }
+
+  .house-summary__meta--inline {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
   }
 </style>
