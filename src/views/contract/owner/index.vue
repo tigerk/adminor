@@ -89,8 +89,8 @@
                   <div class="house-summary__title">{{ row.subjectNames || "-" }}</div>
                 </el-tooltip>
                 <div class="house-summary__meta house-summary__meta--inline">
-                  <span>共 {{ row.subjectCount || 0 }} 个</span>
-                  <span>已配置 {{ row.configuredSubjectCount || 0 }} 个</span>
+                  <span>共 {{ row.subjectCount || 0 }} 套</span>
+                  <span>已配置 {{ row.configuredSubjectCount || 0 }} 套</span>
                 </div>
               </div>
             </template>

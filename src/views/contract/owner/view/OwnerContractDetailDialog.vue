@@ -35,7 +35,7 @@
         <div class="metric-card__unit">m²</div>
       </div>
       <div class="metric-card">
-        <div class="metric-card__label">已配置标的</div>
+        <div class="metric-card__label">已配置房源</div>
         <div class="metric-card__value">{{ detailData.configuredSubjectCount || 0 }}</div>
         <div class="metric-card__unit">个</div>
       </div>
@@ -225,16 +225,12 @@
   import { getMyAvailableContractTemplates, getContractTemplateParams } from "@/api/contract/template";
   import { previewOwnerContract } from "@/api/contract/owner";
   import useOwnerContract from "@/views/contract/owner/utils/hook";
-  import type { ContractTemplateListVo, OtherFeeDto, OwnerDetailVo, OwnerLeaseRuleDto } from "@/types/generated";
+  import type { ContractTemplateListVo, OtherFeeDto, OwnerContractSubjectDto, OwnerDetailVo, OwnerLeaseRuleDto, OwnerContractSubjectTypeEnum } from "@/types/generated";
 
   type OwnerDetailData = OwnerDetailVo & {
     contractTemplateName?: string;
-    contractSubjectList?: Array<{
-      id?: string | number;
-      subjectType?: "HOUSE" | "FOCUS_BUILDING" | "FOCUS";
-      subjectId?: string | number;
-      subjectName?: string;
-      remark?: string;
+    contractSubjectList?: Array<OwnerContractSubjectDto & {
+      subjectType?: OwnerContractSubjectTypeEnum;
       settlementRule?: any;
       rentFreeRule?: any;
     }>;

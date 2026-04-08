@@ -905,6 +905,7 @@
     OwnerBearTypeEnum,
     OwnerContractIdDto,
     OwnerCooperationModeEnum,
+    OwnerContractSubjectTypeEnum,
     OwnerDetailVo,
     OwnerFreeCalcModeEnum,
     OwnerFreeTypeEnum,
@@ -1337,7 +1338,7 @@
     form.contractSubjectList = (raw.contractSubjectList || []).map((item: any) => ({
       ...item,
       id: item.id,
-      subjectType: item.subjectType || "HOUSE",
+      subjectType: item.subjectType || (OwnerContractSubjectTypeEnumMeta.HOUSE.value as OwnerContractSubjectTypeEnum),
       subjectId: String(item.subjectId || ""),
       subjectName: item.subjectName || "",
       remark: item.remark || "",
