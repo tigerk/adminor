@@ -9,6 +9,12 @@ export const OwnerWithdrawOperateEnumMeta = {
   CANCEL: {"value":"CANCEL"}
 } as const;
 
+export const OwnerContractSubjectTypeEnumMeta = {
+  HOUSE: {"value":"HOUSE"},
+  BUILDING: {"value":"BUILDING"},
+  COMMUNITY: {"value":"COMMUNITY"}
+} as const;
+
 export const OwnerCooperationModeEnumMeta = {
   LIGHT_MANAGED: {"value":"LIGHT_MANAGED"},
   MASTER_LEASE: {"value":"MASTER_LEASE"}
@@ -512,6 +518,33 @@ export const LeaseStatusEnumMeta = {
   EFFECTIVE: {"value":"EFFECTIVE","code":2,"name":"在租中","color":"#52C41A","sortOrder":2},
   TERMINATED: {"value":"TERMINATED","code":3,"name":"已退租","color":"#EAA212","sortOrder":3},
   CANCELLED: {"value":"CANCELLED","code":-1,"name":"已作废","color":"#DBDBDB","sortOrder":4}
+} as const;
+
+export const OwnerAccountFlowBizTypeEnumMeta = {
+  OWNER_BILL: {"value":"OWNER_BILL","code":"OWNER_BILL","name":"业主账单"}
+} as const;
+
+export const OwnerAccountFlowChangeTypeEnumMeta = {
+  BILL_SETTLE_IN: {"value":"BILL_SETTLE_IN","code":"BILL_SETTLE_IN","name":"账单入账"}
+} as const;
+
+export const OwnerBillItemTypeEnumMeta = {
+  RENT: {"value":"RENT","code":"RENT","name":"租金"},
+  MANAGEMENT_FEE: {"value":"MANAGEMENT_FEE","code":"MANAGEMENT_FEE","name":"管理费"}
+} as const;
+
+export const OwnerBillSettlementStatusEnumMeta = {
+  UNSETTLED: {"value":"UNSETTLED","code":0,"name":"未结算"},
+  PART_SETTLED: {"value":"PART_SETTLED","code":1,"name":"部分结算"},
+  SETTLED: {"value":"SETTLED","code":2,"name":"已结算"}
+} as const;
+
+export const OwnerBillSourceTypeEnumMeta = {
+  OWNER_CONTRACT_SUBJECT: {"value":"OWNER_CONTRACT_SUBJECT","code":"OWNER_CONTRACT_SUBJECT","name":"业主合同房源"}
+} as const;
+
+export const OwnerBillStatusEnumMeta = {
+  NORMAL: {"value":"NORMAL","code":1,"name":"正常"}
 } as const;
 
 export const PayStatusEnumMeta = {

@@ -25,9 +25,9 @@
 
     <div class="detail-metrics">
       <div class="metric-card">
-        <div class="metric-card__label">签约房源</div>
-        <div class="metric-card__value">{{ detailData.houseCount || 0 }}</div>
-        <div class="metric-card__unit">套</div>
+        <div class="metric-card__label">合同房源</div>
+        <div class="metric-card__value">{{ detailData.subjectCount || 0 }}</div>
+        <div class="metric-card__unit">个</div>
       </div>
       <div class="metric-card">
         <div class="metric-card__label">总面积</div>
@@ -35,9 +35,9 @@
         <div class="metric-card__unit">m²</div>
       </div>
       <div class="metric-card">
-        <div class="metric-card__label">已配置房源</div>
-        <div class="metric-card__value">{{ detailData.configuredHouseCount || 0 }}</div>
-        <div class="metric-card__unit">套</div>
+        <div class="metric-card__label">已配置标的</div>
+        <div class="metric-card__value">{{ detailData.configuredSubjectCount || 0 }}</div>
+        <div class="metric-card__unit">个</div>
       </div>
     </div>
 
@@ -142,9 +142,9 @@
       <el-tab-pane label="条款信息">
         <template v-if="detailData.ownerContract?.cooperationMode === 'LIGHT_MANAGED'">
           <el-card shadow="never" class="detail-card">
-            <template #header><span>轻托管房源条款</span></template>
-            <el-table :data="detailData.contractHouseList || []" border>
-              <el-table-column prop="houseName" label="房源" min-width="180" />
+            <template #header><span>轻托管合同房源条款</span></template>
+            <el-table :data="detailData.contractSubjectList || []" border>
+              <el-table-column prop="subjectName" label="合同房源" min-width="180" />
               <el-table-column label="结算模式" min-width="120">
                 <template #default="{ row }">{{ settlementModeLabelMap[row.settlementRule?.settlementMode || "FIXED"] }}</template>
               </el-table-column>
@@ -229,6 +229,17 @@
 
   type OwnerDetailData = OwnerDetailVo & {
     contractTemplateName?: string;
+    contractSubjectList?: Array<{
+      id?: string | number;
+      subjectType?: "HOUSE" | "BUILDING" | "COMMUNITY";
+      subjectId?: string | number;
+      subjectName?: string;
+      remark?: string;
+      settlementRule?: any;
+      rentFreeRule?: any;
+    }>;
+    subjectCount?: number;
+    configuredSubjectCount?: number;
     ownerPersonal?: OwnerDetailVo["ownerPersonal"] & {
       payeeName?: string;
       payeePhone?: string;
@@ -340,9 +351,9 @@
   }
 
   function buildTemplatePreviewFields(keys: string[]) {
-    const houses = (detailData.value?.contractHouseList || []) as any[];
+    const houses = (detailData.value?.contractSubjectList || []) as any[];
     const ownerName = detailOwnerName.value === "-" ? "" : detailOwnerName.value;
-    const houseNames = houses.map(item => item.houseName).filter(Boolean).join("，");
+    const houseNames = houses.map(item => item.subjectName).filter(Boolean).join("，");
     const totalArea = Number(detailData.value?.totalArea || 0);
     const mapping: Record<string, string> = {
       "${业主合同编号}": detailData.value?.ownerContract?.contractNo || "签约时自动生成",

@@ -14,10 +14,10 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
 
     "ownerContract.cooperationMode": [{ required: true, message: "请选择委托模式", trigger: "change" }],
 
-    contractHouseList: [
+    contractSubjectList: [
       {
         required: true,
-        validator: (_, value, callback) => (value?.length ? callback() : callback(new Error("请选择房源"))),
+        validator: (_, value, callback) => (value?.length ? callback() : callback(new Error("请选择合同房源"))),
         trigger: "change"
       }
     ],

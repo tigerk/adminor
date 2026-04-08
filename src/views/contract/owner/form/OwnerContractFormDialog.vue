@@ -9,8 +9,8 @@
             <span class="card-desc card-desc--inline">打开对话框后先选择签约房源，再继续补充业主信息、合同信息和条款。</span>
           </div>
           <div class="card-header-form">
-            <el-tag effect="plain">已选房源：{{ form.contractHouseList.length }} 套</el-tag>
-            <el-tag effect="plain">已配置：{{ configuredHouseCount }} 套</el-tag>
+            <el-tag effect="plain">已选房源：{{ form.contractSubjectList.length }} 套</el-tag>
+            <el-tag effect="plain">已配置：{{ configuredSubjectCount }} 套</el-tag>
             <el-button type="primary" size="small" @click="housePickerRef?.show({ selected: selectedHouses, excludeOwnerContractId: form.ownerContract.id })">
               <Plus />
               选择房源
@@ -19,13 +19,13 @@
         </div>
       </template>
 
-      <el-form-item label-width="0" prop="contractHouseList">
+      <el-form-item label-width="0" prop="contractSubjectList">
         <div class="selected-house-wrapper">
-          <div v-if="form.contractHouseList.length" class="selected-house-panel">
+          <div v-if="form.contractSubjectList.length" class="selected-house-panel">
             <div class="selected-house-tags">
-              <div v-for="item in form.contractHouseList" :key="item.houseId" class="selected-house-chip">
-                <div class="selected-house-chip__title">{{ item.houseName || "未命名房源" }}</div>
-                <el-button link type="danger" @click="removeHouse(item.houseId)">移除</el-button>
+              <div v-for="item in form.contractSubjectList" :key="item.subjectId" class="selected-house-chip">
+                <div class="selected-house-chip__title">{{ item.subjectName || "未命名房源" }}</div>
+                <el-button link type="danger" @click="removeHouse(item.subjectId)">移除</el-button>
               </div>
             </div>
           </div>
@@ -393,7 +393,7 @@
         </div>
       </template>
 
-      <div v-if="sharedContractHouse" class="rule-editor">
+      <div v-if="sharedContractSubject" class="rule-editor">
         <!-- 模式引导 -->
         <div class="mode-guide">
           <div class="mode-guide__header">
@@ -401,7 +401,7 @@
               <div class="mode-guide__title">先选结算方式，再补充对应条款</div>
               <div class="mode-guide__desc">轻托管里最关键的是先明确你和业主怎么结算。不同结算方式只展示自己需要填写的字段。</div>
             </div>
-            <el-tag effect="plain" type="primary">{{ settlementModeLabelMap[sharedContractHouse.settlementRule.settlementMode || "FIXED"] }}</el-tag>
+            <el-tag effect="plain" type="primary">{{ settlementModeLabelMap[sharedContractSubject.settlementRule.settlementMode || "FIXED"] }}</el-tag>
           </div>
         </div>
 
@@ -418,8 +418,8 @@
                 v-for="option in settlementModeOptions"
                 :key="option.value"
                 type="button"
-                :class="['settlement-mode-card', { 'is-active': sharedContractHouse.settlementRule.settlementMode === option.value }]"
-                @click="sharedContractHouse.settlementRule.settlementMode = option.value"
+                :class="['settlement-mode-card', { 'is-active': sharedContractSubject.settlementRule.settlementMode === option.value }]"
+                @click="sharedContractSubject.settlementRule.settlementMode = option.value"
               >
                 <div class="settlement-mode-card__title">{{ option.label }}</div>
                 <div class="settlement-mode-card__desc">{{ option.desc }}</div>
@@ -431,32 +431,32 @@
           </el-form-item>
 
           <!-- 固定结算 -->
-          <el-row v-if="sharedContractHouse.settlementRule.settlementMode === 'FIXED'" :gutter="20">
+          <el-row v-if="sharedContractSubject.settlementRule.settlementMode === 'FIXED'" :gutter="20">
             <el-col :span="8">
               <el-form-item label="固定给业主金额">
-                <el-input-number v-model="sharedContractHouse.settlementRule.guaranteedRentAmount" :min="0" :precision="2" class="w-full" />
+                <el-input-number v-model="sharedContractSubject.settlementRule.guaranteedRentAmount" :min="0" :precision="2" class="w-full" />
               </el-form-item>
             </el-col>
           </el-row>
 
           <!-- 保底 + 分成 -->
-          <template v-else-if="sharedContractHouse.settlementRule.settlementMode === 'GUARANTEE_PLUS_SHARE'">
+          <template v-else-if="sharedContractSubject.settlementRule.settlementMode === 'GUARANTEE_PLUS_SHARE'">
             <el-row :gutter="20">
               <el-col :span="6">
                 <el-form-item label="保底金额">
-                  <el-input-number v-model="sharedContractHouse.settlementRule.guaranteedRentAmount" :min="0" :precision="2" class="w-full" />
+                  <el-input-number v-model="sharedContractSubject.settlementRule.guaranteedRentAmount" :min="0" :precision="2" class="w-full" />
                 </el-form-item>
               </el-col>
               <el-col :span="6">
                 <el-form-item label="业主分成比例">
-                  <el-input v-model.number="sharedContractHouse.settlementRule.commissionValue" type="number" class="w-full" placeholder="请输入">
+                  <el-input v-model.number="sharedContractSubject.settlementRule.commissionValue" type="number" class="w-full" placeholder="请输入">
                     <template #append>%</template>
                   </el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="分账基数">
-                  <el-radio-group v-model="sharedContractHouse.settlementRule.incomeBasis">
+                  <el-radio-group v-model="sharedContractSubject.settlementRule.incomeBasis">
                     <el-radio-button v-for="option in incomeBasisOptions" :key="option.value" :label="option.label" :value="option.value" />
                   </el-radio-group>
                 </el-form-item>
@@ -468,15 +468,15 @@
           <template v-else>
             <el-row :gutter="20">
               <el-col :span="6">
-                <el-form-item :label="sharedContractHouse.settlementRule.settlementMode === 'AGENCY' ? '业主结转比例' : '业主分成比例'">
-                  <el-input v-model.number="sharedContractHouse.settlementRule.commissionValue" type="number" class="w-full" placeholder="请输入">
+                <el-form-item :label="sharedContractSubject.settlementRule.settlementMode === 'AGENCY' ? '业主结转比例' : '业主分成比例'">
+                  <el-input v-model.number="sharedContractSubject.settlementRule.commissionValue" type="number" class="w-full" placeholder="请输入">
                     <template #append>%</template>
                   </el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="分账基数">
-                  <el-radio-group v-model="sharedContractHouse.settlementRule.incomeBasis">
+                  <el-radio-group v-model="sharedContractSubject.settlementRule.incomeBasis">
                     <el-radio-button v-for="option in incomeBasisOptions" :key="option.value" :label="option.label" :value="option.value" />
                   </el-radio-group>
                 </el-form-item>
@@ -484,7 +484,7 @@
             </el-row>
             <div class="rule-hint">
               {{
-                sharedContractHouse.settlementRule.settlementMode === "AGENCY"
+                sharedContractSubject.settlementRule.settlementMode === "AGENCY"
                   ? "业主结转比例：平台代收代付后，剩余金额按约定比例结给业主。"
                   : "业主分成比例：业主从可分账收入中拿多少。管理费比例：平台额外向业主收取多少服务管理费用。"
               }}
@@ -501,20 +501,20 @@
                 <div class="config-card__title">管理费</div>
                 <div class="config-card__desc">按租金比例向业主额外收取管理费。</div>
               </div>
-              <el-switch v-model="sharedContractHouse.settlementRule.managementFeeEnabled" />
+              <el-switch v-model="sharedContractSubject.settlementRule.managementFeeEnabled" />
             </div>
             <div class="config-card__content">
-              <template v-if="sharedContractHouse.settlementRule.managementFeeEnabled">
+              <template v-if="sharedContractSubject.settlementRule.managementFeeEnabled">
                 <div class="fee-inline-row">
                   <el-form-item label="管理费比例" class="fee-inline-item">
-                    <el-input v-model.number="sharedContractHouse.settlementRule.managementFeeValue" type="number" placeholder="请输入" style="width: 160px">
+                    <el-input v-model.number="sharedContractSubject.settlementRule.managementFeeValue" type="number" placeholder="请输入" style="width: 160px">
                       <template #append>%</template>
                     </el-input>
                   </el-form-item>
                   <div class="fee-inline-hint">
                     <el-form-item label="&nbsp;" class="fee-inline-item">
                       按业主实收租金的
-                      <strong>{{ sharedContractHouse.settlementRule.managementFeeValue ?? 0 }}%</strong>
+                      <strong>{{ sharedContractSubject.settlementRule.managementFeeValue ?? 0 }}%</strong>
                       向业主收取管理费。
                     </el-form-item>
                   </div>
@@ -531,18 +531,18 @@
                 <div class="config-card__title">免租规则</div>
                 <div class="config-card__desc">明确免租是否算合同期内、损失谁承担、金额怎么计算。</div>
               </div>
-              <el-switch v-model="sharedContractHouse.rentFreeRule.enabled" />
+              <el-switch v-model="sharedContractSubject.rentFreeRule.enabled" />
             </div>
             <div class="config-card__content">
-              <template v-if="sharedContractHouse.rentFreeRule.enabled">
+              <template v-if="sharedContractSubject.rentFreeRule.enabled">
                 <!-- 三个选项组 -->
                 <el-row class="mb-4" :gutter="16">
                   <re-col :value="8" :xs="24" :sm="24">
                     <div class="choice-group__label">是否算在合同期内</div>
-                    <el-segmented v-model="sharedContractHouse.rentFreeRule.freeType" :options="freeTypeOptions" size="small" />
+                    <el-segmented v-model="sharedContractSubject.rentFreeRule.freeType" :options="freeTypeOptions" size="small" />
                     <div class="choice-group__desc">
                       {{
-                        sharedContractHouse.rentFreeRule.freeType === "BUILT_IN"
+                        sharedContractSubject.rentFreeRule.freeType === "BUILT_IN"
                           ? "免租天数算在正式合同期内，合同总时长不变。"
                           : "免租天数不算在正式合同期内，更像额外赠送的免租时间。"
                       }}
@@ -551,16 +551,16 @@
                   <re-col :value="8" :xs="24" :sm="24">
                     <div class="choice-group choice-group--compact">
                       <div class="choice-group__label">免租损失承担方</div>
-                      <el-segmented v-model="sharedContractHouse.rentFreeRule.bearType" :options="bearTypeOptions" size="small" />
-                      <div class="choice-group__desc">{{ bearTypeDescriptionMap[sharedContractHouse.rentFreeRule.bearType || "PLATFORM"] }}</div>
+                      <el-segmented v-model="sharedContractSubject.rentFreeRule.bearType" :options="bearTypeOptions" size="small" />
+                      <div class="choice-group__desc">{{ bearTypeDescriptionMap[sharedContractSubject.rentFreeRule.bearType || "PLATFORM"] }}</div>
                     </div>
                   </re-col>
 
                   <re-col :value="8" :xs="24" :sm="24">
                     <div class="choice-group choice-group--compact">
                       <div class="choice-group__label">免租金额计算方式</div>
-                      <el-segmented v-model="sharedContractHouse.rentFreeRule.calcMode" :options="lightManagedCalcModeOptions" size="small" />
-                      <div class="choice-group__desc">{{ freeCalcModeDescriptionMap[sharedContractHouse.rentFreeRule.calcMode || "BY_DAYS"] }}</div>
+                      <el-segmented v-model="sharedContractSubject.rentFreeRule.calcMode" :options="lightManagedCalcModeOptions" size="small" />
+                      <div class="choice-group__desc">{{ freeCalcModeDescriptionMap[sharedContractSubject.rentFreeRule.calcMode || "BY_DAYS"] }}</div>
                     </div>
                   </re-col>
                 </el-row>
@@ -568,21 +568,21 @@
                   <re-col :value="8" :xs="24" :sm="24">
                     <div class="rent-free-date-field">
                       <div class="choice-group__label choice-group__label--compact">免租开始日期</div>
-                      <el-date-picker v-model="sharedContractHouse.rentFreeRule.startDate" type="date" value-format="YYYY-MM-DD" placeholder="选择开始日期" class="w-full" />
+                      <el-date-picker v-model="sharedContractSubject.rentFreeRule.startDate" type="date" value-format="YYYY-MM-DD" placeholder="选择开始日期" class="w-full" />
                     </div>
                   </re-col>
                   <re-col :value="16" :xs="24" :sm="24">
                     <el-space>
                       <div class="rent-free-date-field">
                         <div class="choice-group__label choice-group__label--compact">免租结束日期</div>
-                        <el-date-picker v-model="sharedContractHouse.rentFreeRule.endDate" type="date" value-format="YYYY-MM-DD" placeholder="选择结束日期" class="w-full" />
+                        <el-date-picker v-model="sharedContractSubject.rentFreeRule.endDate" type="date" value-format="YYYY-MM-DD" placeholder="选择结束日期" class="w-full" />
                       </div>
                       <div class="rent-free-date-field">
                         <div class="choice-group__label choice-group__label--compact">&nbsp;</div>
                         <el-button-group>
-                          <el-button plain @click="applyRentFreeMonthShortcut(sharedContractHouse.rentFreeRule, 1)">1 个月</el-button>
-                          <el-button plain @click="applyRentFreeMonthShortcut(sharedContractHouse.rentFreeRule, 2)">2 个月</el-button>
-                          <el-button plain @click="applyRentFreeMonthShortcut(sharedContractHouse.rentFreeRule, 3)">3 个月</el-button>
+                          <el-button plain @click="applyRentFreeMonthShortcut(sharedContractSubject.rentFreeRule, 1)">1 个月</el-button>
+                          <el-button plain @click="applyRentFreeMonthShortcut(sharedContractSubject.rentFreeRule, 2)">2 个月</el-button>
+                          <el-button plain @click="applyRentFreeMonthShortcut(sharedContractSubject.rentFreeRule, 3)">3 个月</el-button>
                         </el-button-group>
                       </div>
                     </el-space>
@@ -607,14 +607,14 @@
               <el-row>
                 <re-col :value="12" :xs="24" :sm="24">
                   <el-form-item label="给业主出账时间">
-                    <el-radio-group v-model="sharedContractHouse.settlementRule.settlementTiming">
+                    <el-radio-group v-model="sharedContractSubject.settlementRule.settlementTiming">
                       <el-radio-button v-for="option in settlementTimingOptions" :key="option.value" :label="option.label" :value="option.value" />
                     </el-radio-group>
                   </el-form-item>
                 </re-col>
                 <re-col :value="12" :xs="24" :sm="24">
                   <el-form-item label="支付手续费承担方式">
-                    <el-radio-group v-model="sharedContractHouse.settlementRule.paymentFeeBearType">
+                    <el-radio-group v-model="sharedContractSubject.settlementRule.paymentFeeBearType">
                       <el-radio-button v-for="option in paymentFeeBearTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
                     </el-radio-group>
                   </el-form-item>
@@ -631,13 +631,13 @@
               <div class="config-card__title">分账费用科目</div>
               <div class="config-card__desc">先选收支和费用类型，再填写转给业主的比例。每一条都是一张独立费用卡片。</div>
             </div>
-            <el-button type="primary" plain size="small" @click="addSettlementItem(sharedContractHouse)">
+            <el-button type="primary" plain size="small" @click="addSettlementItem(sharedContractSubject)">
               <Plus />
               添加费用科目
             </el-button>
           </div>
           <div class="config-card__content">
-            <div v-if="!sharedContractHouse.settlementRule.settlementItemList?.length" class="config-card__empty">暂无分账费用科目，点击右上角"添加费用科目"新增。</div>
+            <div v-if="!sharedContractSubject.settlementRule.settlementItemList?.length" class="config-card__empty">暂无分账费用科目，点击右上角"添加费用科目"新增。</div>
             <template v-else>
               <div class="fee-table-wrapper">
                 <table class="fee-table settlement-fee-table">
@@ -651,10 +651,10 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-if="!sharedContractHouse.settlementRule.settlementItemList?.length" class="empty-row">
+                    <tr v-if="!sharedContractSubject.settlementRule.settlementItemList?.length" class="empty-row">
                       <td colspan="5"><div class="empty-state">暂无分账费用科目，点击右上角"添加费用科目"新增。</div></td>
                     </tr>
-                    <tr v-for="(item, index) in sharedContractHouse.settlementRule.settlementItemList" :key="index" class="fee-row">
+                    <tr v-for="(item, index) in sharedContractSubject.settlementRule.settlementItemList" :key="index" class="fee-row">
                       <td>
                         <el-radio-group v-model="item.feeDirection" class="direction-radio-group" size="small">
                           <el-radio-button label="IN">收</el-radio-button>
@@ -669,7 +669,7 @@
                           clearable
                           filterable
                           class="w-full"
-                          @change="value => handleSettlementFeeTypeChange(value, sharedContractHouse, index)"
+                          @change="value => handleSettlementFeeTypeChange(value, sharedContractSubject, index)"
                         />
                       </td>
                       <td>
@@ -681,7 +681,7 @@
                         <el-input v-model="item.remark" placeholder="备注（选填）" />
                       </td>
                       <td class="text-center">
-                        <el-button link type="danger" @click="sharedContractHouse.settlementRule.settlementItemList?.splice(index, 1)">删除</el-button>
+                        <el-button link type="danger" @click="sharedContractSubject.settlementRule.settlementItemList?.splice(index, 1)">删除</el-button>
                       </td>
                     </tr>
                   </tbody>
@@ -921,6 +921,7 @@
   import {
     OwnerBearTypeEnumMeta,
     OwnerCooperationModeEnumMeta,
+    OwnerContractSubjectTypeEnumMeta,
     OwnerFreeCalcModeEnumMeta,
     OwnerFreeTypeEnumMeta,
     OwnerIncomeBasisEnumMeta,
@@ -931,7 +932,7 @@
 
   // ── 从拆分文件导入 ────────────────────────────────────────────────────────────
   import type {
-    ContractHouseFormItem,
+    ContractSubjectFormItem,
     ContractTemplateParamItem,
     OwnerCompanyForm,
     OwnerContractForm,
@@ -1172,9 +1173,10 @@
   function cloneRentFreeRule(rule?: OwnerRentFreeRuleForm): OwnerRentFreeRuleForm {
     return { ...createDefaultRentFreeRule(), ...(rule || {}) };
   }
-  const createHouseRule = (houseId: string, houseName: string, base?: ContractHouseFormItem): ContractHouseFormItem => ({
-    houseId,
-    houseName,
+  const createSubjectRule = (subjectId: string, subjectName: string, base?: ContractSubjectFormItem): ContractSubjectFormItem => ({
+    subjectType: OwnerContractSubjectTypeEnumMeta.HOUSE.value,
+    subjectId,
+    subjectName,
     remark: "",
     settlementRule: cloneSettlementRule(base?.settlementRule),
     rentFreeRule: cloneRentFreeRule(base?.rentFreeRule)
@@ -1234,7 +1236,7 @@
       contractEnd: "",
       remark: ""
     },
-    contractHouseList: [],
+    contractSubjectList: [],
     ownerLeaseRule: {
       rentAmount: 0,
       depositAmount: 0,
@@ -1262,16 +1264,16 @@
   const rules = createOwnerContractRules(() => form);
 
   // ─── 计算属性 ──────────────────────────────────────────────────────────────────
-  const sharedContractHouse = computed(() => form.contractHouseList[0]);
-  const configuredHouseCount = computed(() => form.contractHouseList.filter(item => isHouseConfigured(item)).length);
+  const sharedContractSubject = computed(() => form.contractSubjectList[0]);
+  const configuredSubjectCount = computed(() => form.contractSubjectList.filter(item => isHouseConfigured(item)).length);
   const currentPayeeForm = computed(() => (form.ownerType === "PERSONAL" ? form.ownerPersonal : form.ownerCompany));
   const selectedTemplate = computed(() => contractTemplates.value.find(item => String(item.id || "") === String(form.ownerContract.contractTemplateId || "")));
   const templateParamLabelMap = computed(() => templateParams.value.reduce<Record<string, string>>((acc, item) => ((acc[item.key] = item.label), acc), {}));
 
   // ─── 业务函数 ──────────────────────────────────────────────────────────────────
-  function isHouseConfigured(item: ContractHouseFormItem) {
+  function isHouseConfigured(item: ContractSubjectFormItem) {
     if (form.ownerContract.cooperationMode === "MASTER_LEASE") return true;
-    const source = sharedContractHouse.value || item;
+    const source = sharedContractSubject.value || item;
     return Boolean(
       Number(source.settlementRule?.guaranteedRentAmount || 0) > 0 ||
       Number(source.settlementRule?.commissionValue || 0) > 0 ||
@@ -1332,16 +1334,17 @@
     form.ownerCompany = { ...createDefaultForm().ownerCompany, ...(raw.ownerCompany || {}) };
     form.ownerContract = { ...createDefaultForm().ownerContract, ...(raw.ownerContract || {}) };
     contractDateRange.value = [raw.ownerContract?.contractStart || "", raw.ownerContract?.contractEnd || ""].filter(Boolean);
-    form.contractHouseList = (raw.contractHouseList || []).map((item: any) => ({
+    form.contractSubjectList = (raw.contractSubjectList || []).map((item: any) => ({
       ...item,
       id: item.id,
-      houseId: String(item.houseId || ""),
-      houseName: item.houseName || "",
+      subjectType: item.subjectType || "HOUSE",
+      subjectId: String(item.subjectId || ""),
+      subjectName: item.subjectName || "",
       remark: item.remark || "",
       settlementRule: cloneSettlementRule(item.settlementRule),
       rentFreeRule: cloneRentFreeRule(item.rentFreeRule)
     }));
-    selectedHouses.value = form.contractHouseList.map(item => ({ houseId: item.houseId, houseName: item.houseName }));
+    selectedHouses.value = form.contractSubjectList.map(item => ({ houseId: item.subjectId, houseName: item.subjectName }));
     form.ownerLeaseRule = { ...createDefaultForm().ownerLeaseRule, ...(raw.ownerLeaseRule || {}) };
     form.ownerLeaseFreeRuleList = (raw.ownerLeaseFreeRuleList || []).map((item: any) => ({ ...createDefaultLeaseFreeRule(), ...item }));
     syncLeaseFeeCascaderValues();
@@ -1350,18 +1353,18 @@
 
   function handleHouseConfirm(rows: PickedRoom[]) {
     selectedHouses.value = rows || [];
-    const houseMap = new Map<string, ContractHouseFormItem>();
-    const sharedRule = form.contractHouseList[0];
+    const houseMap = new Map<string, ContractSubjectFormItem>();
+    const sharedRule = form.contractSubjectList[0];
     for (const row of rows || []) {
       const houseId = String(row.houseId || "");
       if (!houseId) continue;
-      const existing = form.contractHouseList.find(item => item.houseId === houseId);
-      houseMap.set(houseId, existing || createHouseRule(houseId, row.houseName || "", sharedRule));
+      const existing = form.contractSubjectList.find(item => item.subjectId === houseId);
+      houseMap.set(houseId, existing || createSubjectRule(houseId, row.houseName || "", sharedRule));
     }
-    form.contractHouseList = Array.from(houseMap.values());
-    if (form.ownerContract.cooperationMode === "LIGHT_MANAGED" && form.contractHouseList.length > 1) {
-      const shared = form.contractHouseList[0];
-      form.contractHouseList = form.contractHouseList.map(item => ({
+    form.contractSubjectList = Array.from(houseMap.values());
+    if (form.ownerContract.cooperationMode === "LIGHT_MANAGED" && form.contractSubjectList.length > 1) {
+      const shared = form.contractSubjectList[0];
+      form.contractSubjectList = form.contractSubjectList.map(item => ({
         ...item,
         settlementRule: cloneSettlementRule(shared.settlementRule),
         rentFreeRule: cloneRentFreeRule(shared.rentFreeRule)
@@ -1370,16 +1373,16 @@
   }
 
   function removeHouse(houseId: string) {
-    form.contractHouseList = form.contractHouseList.filter(item => item.houseId !== houseId);
+    form.contractSubjectList = form.contractSubjectList.filter(item => item.subjectId !== houseId);
     selectedHouses.value = selectedHouses.value.filter(item => String(item.houseId || "") !== houseId);
   }
 
-  function addSettlementItem(house: ContractHouseFormItem) {
+  function addSettlementItem(house: ContractSubjectFormItem) {
     if (!house.settlementRule.settlementItemList) house.settlementRule.settlementItemList = [];
     house.settlementRule.settlementItemList.push(createSettlementItem());
   }
 
-  function handleSettlementFeeTypeChange(value: any, house: ContractHouseFormItem, index: number) {
+  function handleSettlementFeeTypeChange(value: any, house: ContractSubjectFormItem, index: number) {
     const target = house.settlementRule.settlementItemList?.[index];
     if (!target || !Array.isArray(value) || value.length < 2) return;
     const parent = otherFeeTypeOptions.value.find((item: any) => item.value === value[0]);
@@ -1482,7 +1485,7 @@
 
   function syncSettlementFeeCascaderValues() {
     const values: Record<string, any[]> = {};
-    (sharedContractHouse.value?.settlementRule.settlementItemList || []).forEach((item, index) => {
+    (sharedContractSubject.value?.settlementRule.settlementItemList || []).forEach((item, index) => {
       if (!item.feeType || !otherFeeTypeOptions.value.length) return;
       for (const parent of otherFeeTypeOptions.value) {
         const child = parent.children?.find((option: any) => String(option.value) === String(item.feeType));
@@ -1585,15 +1588,16 @@
       contractStart: contractDateRange.value[0],
       contractEnd: contractDateRange.value[1]
     };
-    const sharedSettlementRule = sharedContractHouse.value?.settlementRule ? normalizeLightManagedRule(sharedContractHouse.value.settlementRule) : undefined;
-    const sharedRentFreeRule = sharedContractHouse.value?.rentFreeRule ? { ...sharedContractHouse.value.rentFreeRule } : undefined;
+    const sharedSettlementRule = sharedContractSubject.value?.settlementRule ? normalizeLightManagedRule(sharedContractSubject.value.settlementRule) : undefined;
+    const sharedRentFreeRule = sharedContractSubject.value?.rentFreeRule ? { ...sharedContractSubject.value.rentFreeRule } : undefined;
     const payload: any = {
       ownerType: form.ownerType,
       ownerContract,
-      contractHouseList: form.contractHouseList.map(item => ({
+      contractSubjectList: form.contractSubjectList.map(item => ({
         id: item.id,
-        houseId: item.houseId,
-        houseName: item.houseName,
+        subjectType: item.subjectType,
+        subjectId: item.subjectId,
+        subjectName: item.subjectName,
         remark: item.remark,
         settlementRule:
           form.ownerContract.cooperationMode === "LIGHT_MANAGED"
@@ -1672,7 +1676,7 @@
     { deep: true }
   );
   watch(
-    [() => form.contractHouseList, otherFeeTypeOptions],
+    [() => form.contractSubjectList, otherFeeTypeOptions],
     () => {
       syncSettlementFeeCascaderValues();
     },

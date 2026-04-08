@@ -2,8 +2,8 @@ import type {
   OwnerBearTypeEnum,
   OwnerCompanyDto,
   OwnerContractDto,
-  OwnerContractHouseDto,
   OwnerCooperationModeEnum,
+  OwnerContractSubjectTypeEnum,
   OwnerFreeCalcModeEnum,
   OwnerFreeTypeEnum,
   OwnerIncomeBasisEnum,
@@ -157,11 +157,22 @@ export type OwnerLeaseFeeForm = {
   remark?: string;
 };
 
-// ─── Contract house form item ─────────────────────────────────────────────────
+// ─── Contract subject form item ───────────────────────────────────────────────
 
-export type ContractHouseFormItem = OwnerContractHouseDto & {
-  houseId: string;
-  houseName: string;
+export type OwnerContractSubjectFormDto = {
+  id?: string | number;
+  subjectType?: OwnerContractSubjectTypeEnum;
+  subjectId?: string | number;
+  subjectName?: string;
+  remark?: string;
+  settlementRule?: OwnerSettlementRuleDto;
+  rentFreeRule?: OwnerRentFreeRuleDto;
+};
+
+export type ContractSubjectFormItem = OwnerContractSubjectFormDto & {
+  subjectType: OwnerContractSubjectTypeEnum;
+  subjectId: string;
+  subjectName: string;
   settlementRule: OwnerSettlementRuleForm;
   rentFreeRule: OwnerRentFreeRuleForm;
 };
@@ -173,7 +184,7 @@ export type OwnerContractForm = {
   ownerPersonal: OwnerPersonalForm;
   ownerCompany: OwnerCompanyForm;
   ownerContract: OwnerContractFormDto;
-  contractHouseList: ContractHouseFormItem[];
+  contractSubjectList: ContractSubjectFormItem[];
   ownerLeaseRule: OwnerLeaseRuleForm;
   ownerLeaseFreeRuleList: OwnerLeaseFreeRuleDto[];
 };

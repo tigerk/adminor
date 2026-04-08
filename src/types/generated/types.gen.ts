@@ -4383,6 +4383,18 @@ export type OwnerBillListVo = {
      */
     contractNo?: string;
     /**
+     * 合同房源类型
+     */
+    subjectType?: OwnerContractSubjectTypeEnum;
+    /**
+     * 合同房源ID
+     */
+    subjectId?: string;
+    /**
+     * 合同房源名称
+     */
+    subjectName?: string;
+    /**
      * 合作模式
      */
     cooperationMode?: OwnerCooperationModeEnum;
@@ -4439,6 +4451,11 @@ export type OwnerBillListVo = {
      */
     createTime?: string;
 };
+
+/**
+ * 业主合同房源类型枚举
+ */
+export type OwnerContractSubjectTypeEnum = 'HOUSE' | 'BUILDING' | 'COMMUNITY';
 
 /**
  * 业主合作模式枚举
@@ -4501,6 +4518,18 @@ export type OwnerBillDetailVo = {
      * 合同编号
      */
     contractNo?: string;
+    /**
+     * 合同房源类型
+     */
+    subjectType?: OwnerContractSubjectTypeEnum;
+    /**
+     * 合同房源ID
+     */
+    subjectId?: string;
+    /**
+     * 合同房源名称
+     */
+    subjectName?: string;
     /**
      * 合作模式
      */
@@ -6263,21 +6292,30 @@ export type OwnerContractDto = {
 };
 
 /**
+ * 业主合同介质枚举
+ */
+export type OwnerContractMediumEnum = 'ELECTRONIC' | 'PAPER';
+
+/**
  * 业主合同房源DTO
  */
-export type OwnerContractHouseDto = {
+export type OwnerContractSubjectDto = {
     /**
      * 合同房源ID
      */
     id?: string;
     /**
-     * 房源ID
+     * 合同房源类型
      */
-    houseId?: string;
+    subjectType?: OwnerContractSubjectTypeEnum;
     /**
-     * 房源名称
+     * 合同房源ID
      */
-    houseName?: string;
+    subjectId?: string;
+    /**
+     * 合同房源名称
+     */
+    subjectName?: string;
     /**
      * 备注
      */
@@ -6291,11 +6329,6 @@ export type OwnerContractHouseDto = {
      */
     rentFreeRule?: OwnerRentFreeRuleDto;
 };
-
-/**
- * 业主合同介质枚举
- */
-export type OwnerContractMediumEnum = 'ELECTRONIC' | 'PAPER';
 
 /**
  * 业主费用计算方式枚举
@@ -6622,6 +6655,10 @@ export type OwnerRentFreeRuleDto = {
  */
 export type OwnerSettlementItemDto = {
     /**
+     * 收支方向: IN/OUT
+     */
+    feeDirection?: string;
+    /**
      * 费用科目类型
      */
     feeType?: string;
@@ -6781,7 +6818,7 @@ export type OwnerUpdateDto = {
     /**
      * 合同房源列表
      */
-    contractHouseList?: Array<OwnerContractHouseDto>;
+    contractSubjectList?: Array<OwnerContractSubjectDto>;
     /**
      * 包租规则
      */
@@ -6925,6 +6962,10 @@ export type OwnerListVo = {
      */
     ownerPhone?: string;
     /**
+     * 业主标签
+     */
+    ownerTag?: string;
+    /**
      * 合同编号
      */
     contractNo?: string;
@@ -6937,13 +6978,13 @@ export type OwnerListVo = {
      */
     contractTemplateName?: string;
     /**
-     * 房源名称列表
+     * 合同房源名称列表
      */
-    houseNames?: string;
+    subjectNames?: string;
     /**
-     * 房源数量
+     * 合同房源数量
      */
-    houseCount?: number;
+    subjectCount?: number;
     /**
      * 总面积
      */
@@ -6951,7 +6992,7 @@ export type OwnerListVo = {
     /**
      * 已配置房源数
      */
-    configuredHouseCount?: number;
+    configuredSubjectCount?: number;
     /**
      * 合同开始日期
      */
@@ -7023,11 +7064,11 @@ export type OwnerDetailVo = {
     /**
      * 合同房源列表
      */
-    contractHouseList?: Array<OwnerContractHouseDto>;
+    contractSubjectList?: Array<OwnerContractSubjectDto>;
     /**
-     * 房源数量
+     * 合同房源数量
      */
-    houseCount?: number;
+    subjectCount?: number;
     /**
      * 总面积
      */
@@ -7035,7 +7076,7 @@ export type OwnerDetailVo = {
     /**
      * 已配置房源数
      */
-    configuredHouseCount?: number;
+    configuredSubjectCount?: number;
     /**
      * 包租规则
      */
@@ -7099,7 +7140,7 @@ export type OwnerCreateDto = {
     /**
      * 合同房源列表
      */
-    contractHouseList?: Array<OwnerContractHouseDto>;
+    contractSubjectList?: Array<OwnerContractSubjectDto>;
     /**
      * 包租规则
      */
@@ -9875,6 +9916,36 @@ export type LeaseFirstBillDayEnum = 'FOLLOW_CONTRACT_START' | 'FOLLOW_CONTRACT_C
 export type LeaseRentDueTypeEnum = 'EARLY' | 'FIXED' | 'LATE';
 
 export type LeaseStatusEnum = 'PENDING_APPROVAL' | 'TO_SIGN' | 'EFFECTIVE' | 'TERMINATED' | 'CANCELLED';
+
+/**
+ * 业主账户流水业务类型枚举
+ */
+export type OwnerAccountFlowBizTypeEnum = 'OWNER_BILL';
+
+/**
+ * 业主账户流水变动类型枚举
+ */
+export type OwnerAccountFlowChangeTypeEnum = 'BILL_SETTLE_IN';
+
+/**
+ * 业主账单明细类型枚举
+ */
+export type OwnerBillItemTypeEnum = 'RENT' | 'MANAGEMENT_FEE';
+
+/**
+ * 业主账单结算状态枚举
+ */
+export type OwnerBillSettlementStatusEnum = 'UNSETTLED' | 'PART_SETTLED' | 'SETTLED';
+
+/**
+ * 业主账单来源类型枚举
+ */
+export type OwnerBillSourceTypeEnum = 'OWNER_CONTRACT_SUBJECT';
+
+/**
+ * 业主账单状态枚举
+ */
+export type OwnerBillStatusEnum = 'NORMAL';
 
 export type PayStatusEnum = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID';
 

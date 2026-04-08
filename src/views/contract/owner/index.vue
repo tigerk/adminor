@@ -65,7 +65,7 @@
           </el-table-column>
           <el-table-column label="业主标签" min-width="120" align="center">
             <template #default="{ row }">
-              <el-tag size="small" effect="plain">{{ ownerTypeLabelMap[row.ownerType || "PERSONAL"] }}</el-tag>
+              <span>{{ row.ownerTag || "-" }}</span>
             </template>
           </el-table-column>
           <el-table-column label="手机号" min-width="140" align="center">
@@ -82,15 +82,15 @@
           </el-table-column>
           <el-table-column prop="contractNo" label="合同编号" min-width="220" />
           <el-table-column prop="contractTemplateName" label="合同模板" min-width="140" show-overflow-tooltip />
-          <el-table-column label="签约房源" min-width="360">
+          <el-table-column label="合同房源" min-width="360">
             <template #default="{ row }">
               <div class="house-summary house-summary--inline">
-                <el-tooltip :content="row.houseNames || '-'" placement="top" :show-after="200">
-                  <div class="house-summary__title">{{ row.houseNames || "-" }}</div>
+                <el-tooltip :content="row.subjectNames || '-'" placement="top" :show-after="200">
+                  <div class="house-summary__title">{{ row.subjectNames || "-" }}</div>
                 </el-tooltip>
                 <div class="house-summary__meta house-summary__meta--inline">
-                  <span>共 {{ row.houseCount || 0 }} 套</span>
-                  <span>已配置 {{ row.configuredHouseCount || 0 }} 套</span>
+                  <span>共 {{ row.subjectCount || 0 }} 个</span>
+                  <span>已配置 {{ row.configuredSubjectCount || 0 }} 个</span>
                 </div>
               </div>
             </template>
@@ -200,9 +200,10 @@
   };
 
   type OwnerListRow = OwnerListVo & {
-    houseCount?: number;
+    subjectNames?: string;
+    subjectCount?: number;
     totalArea?: number | string;
-    configuredHouseCount?: number;
+    configuredSubjectCount?: number;
     ownerTag?: string;
     updateTime?: string;
   };
