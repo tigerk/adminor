@@ -1,5 +1,5 @@
 import type { FormRules } from "element-plus";
-import type { OwnerContractForm } from "./types";
+import type { OwnerContractForm } from "./ownerContractFormTypes";
 
 /**
  * 生成业主合同表单校验规则。

@@ -952,7 +952,7 @@
     StatusValue,
     ApprovalStatusValue,
     GenderValue
-  } from "./types";
+  } from "./ownerContractFormTypes";
   import {
     BEAR_TYPE_DESCRIPTION_MAP,
     FREE_CALC_MODE_DESCRIPTION_MAP,
@@ -969,8 +969,8 @@
     SETTLEMENT_TIMING_LABEL_MAP,
     COOPERATION_MODE_LABEL_MAP,
     OWNER_TYPE_LABEL_MAP
-  } from "./types";
-  import { createOwnerContractRules } from "./rules";
+  } from "./ownerContractFormTypes";
+  import { createOwnerContractRules } from "./ownerContractFormRules";
   import ReCol from "@/components/ReCol";
 
   defineOptions({ name: "OwnerContractFormDialog" });
@@ -1258,7 +1258,7 @@
 
   const form = reactive<OwnerContractForm>(createDefaultForm());
 
-  // ─── 校验规则（从 rules.ts 生成） ─────────────────────────────────────────────
+  // ─── 校验规则（从 ownerContractFormRules.ts 生成） ─────────────────────────────────────────────
   const rules = createOwnerContractRules(() => form);
 
   // ─── 计算属性 ──────────────────────────────────────────────────────────────────
