@@ -11,8 +11,8 @@ export const OwnerWithdrawOperateEnumMeta = {
 
 export const OwnerContractSubjectTypeEnumMeta = {
   HOUSE: {"value":"HOUSE"},
-  BUILDING: {"value":"BUILDING"},
-  COMMUNITY: {"value":"COMMUNITY"}
+  FOCUS_BUILDING: {"value":"FOCUS_BUILDING"},
+  FOCUS: {"value":"FOCUS"}
 } as const;
 
 export const OwnerCooperationModeEnumMeta = {

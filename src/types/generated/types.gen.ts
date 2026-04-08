@@ -4455,7 +4455,7 @@ export type OwnerBillListVo = {
 /**
  * 业主合同房源类型枚举
  */
-export type OwnerContractSubjectTypeEnum = 'HOUSE' | 'BUILDING' | 'COMMUNITY';
+export type OwnerContractSubjectTypeEnum = 'HOUSE' | 'FOCUS_BUILDING' | 'FOCUS';
 
 /**
  * 业主合作模式枚举

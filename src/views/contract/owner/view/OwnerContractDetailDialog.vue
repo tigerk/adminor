@@ -231,7 +231,7 @@
     contractTemplateName?: string;
     contractSubjectList?: Array<{
       id?: string | number;
-      subjectType?: "HOUSE" | "BUILDING" | "COMMUNITY";
+      subjectType?: "HOUSE" | "FOCUS_BUILDING" | "FOCUS";
       subjectId?: string | number;
       subjectName?: string;
       remark?: string;
