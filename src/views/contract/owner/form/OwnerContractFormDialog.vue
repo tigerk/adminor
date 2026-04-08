@@ -50,12 +50,14 @@
             <span class="card-desc card-desc--inline">录入业主主体信息、证件材料和收款人信息。</span>
           </div>
           <div class="card-header-form">
-            <el-form-item label="业主类型" prop="ownerType" class="card-header-form__item" label-position="left">
-              <el-segmented v-model="form.ownerType" :options="ownerTypeOptions" />
-            </el-form-item>
-            <el-form-item label="委托模式" prop="ownerContract.cooperationMode" class="card-header-form__item" label-position="left">
-              <el-segmented v-model="form.ownerContract.cooperationMode" :options="cooperationModeOptions" />
-            </el-form-item>
+            <el-space spacer=" ｜ ">
+              <el-form-item label="" prop="ownerType" class="card-header-form__item">
+                <el-segmented v-model="form.ownerType" :options="ownerTypeOptions" />
+              </el-form-item>
+              <el-form-item prop="ownerContract.cooperationMode" class="card-header-form__item">
+                <el-segmented v-model="form.ownerContract.cooperationMode" :options="cooperationModeOptions" />
+              </el-form-item>
+            </el-space>
           </div>
         </div>
       </template>
@@ -110,15 +112,14 @@
             </el-row>
             <el-row :gutter="16">
               <el-col :span="8">
-                <el-form-item label="身份证">
-                  <el-select v-model="form.ownerPersonal.idType" class="w-full">
-                    <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="16">
-                <el-form-item label="身份证号码" prop="ownerPersonal.idNo">
-                  <el-input v-model="form.ownerPersonal.idNo" placeholder="请输入证件号码" />
+                <el-form-item label="证件信息" prop="ownerPersonal.idNo">
+                  <el-input v-model="form.ownerPersonal.idNo" placeholder="请输入证件号码">
+                    <template #prepend>
+                      <el-select v-model="form.ownerPersonal.idType" style="width: 128px">
+                        <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                      </el-select>
+                    </template>
+                  </el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -126,16 +127,20 @@
             <div class="upload-section">
               <div class="upload-section__title">证件信息</div>
               <el-space wrap alignment="start">
-                <UploadImage v-model="form.ownerPersonal.idCardFrontList" :limit="1" :width="124" :height="76">
-                  <template #tip>
-                    <div class="upload-tip">身份证国徽面</div>
-                  </template>
-                </UploadImage>
-                <UploadImage v-model="form.ownerPersonal.idCardBackList" :limit="1" :width="124" :height="76">
-                  <template #tip>
-                    <div class="upload-tip">身份证人像面</div>
-                  </template>
-                </UploadImage>
+                <el-form-item prop="ownerPersonal.idCardFrontList" class="upload-form-item">
+                  <UploadImage v-model="form.ownerPersonal.idCardFrontList" :limit="1" :width="124" :height="76">
+                    <template #tip>
+                      <div class="upload-tip">身份证国徽面</div>
+                    </template>
+                  </UploadImage>
+                </el-form-item>
+                <el-form-item prop="ownerPersonal.idCardBackList" class="upload-form-item">
+                  <UploadImage v-model="form.ownerPersonal.idCardBackList" :limit="1" :width="124" :height="76">
+                    <template #tip>
+                      <div class="upload-tip">身份证人像面</div>
+                    </template>
+                  </UploadImage>
+                </el-form-item>
                 <UploadImage v-model="form.ownerPersonal.idCardInHandList" :limit="1" :width="124" :height="76">
                   <template #tip>
                     <div class="upload-tip">手持身份证照</div>
@@ -152,7 +157,7 @@
 
           <template v-else>
             <el-row :gutter="16">
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="企业名称" prop="ownerCompany.name">
                   <el-autocomplete
                     v-model="form.ownerCompany.name"
@@ -172,9 +177,28 @@
                 </el-form-item>
                 <div class="field-tip">输入企业名称后可带出历史录入的主体和收款信息。</div>
               </el-col>
-              <el-col :span="12">
+              <el-col :span="8">
                 <el-form-item label="统一社会信用代码" prop="ownerCompany.uscc">
                   <el-input v-model="form.ownerCompany.uscc" placeholder="请输入统一社会信用代码" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="业主标签">
+                  <el-select v-model="form.ownerCompany.tags" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
+                    <el-option v-for="item in ownerTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row :gutter="16">
+              <el-col :span="8">
+                <el-form-item label="联系人" prop="ownerCompany.contactName">
+                  <el-input v-model="form.ownerCompany.contactName" placeholder="请输入联系人" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="联系电话" prop="ownerCompany.contactPhone">
+                  <el-input v-model="form.ownerCompany.contactPhone" placeholder="请输入联系电话" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -185,40 +209,22 @@
                 </el-form-item>
               </el-col>
               <el-col :span="8">
-                <el-form-item label="联系电话" prop="ownerCompany.contactPhone">
-                  <el-input v-model="form.ownerCompany.contactPhone" placeholder="请输入联系电话" />
+                <el-form-item label="法人证件信息">
+                  <el-input v-model="form.ownerCompany.legalPersonIdNo" placeholder="请输入法人证件号码">
+                    <template #prepend>
+                      <el-select v-model="form.ownerCompany.legalPersonIdType" style="width: 128px">
+                        <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                      </el-select>
+                    </template>
+                  </el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
-                <el-form-item label="联系人">
-                  <el-input v-model="form.ownerCompany.contactName" placeholder="请输入联系人" />
+                <el-form-item label="注册地址">
+                  <el-input v-model="form.ownerCompany.registeredAddress" placeholder="请输入注册地址" />
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-row :gutter="16">
-              <el-col :span="8">
-                <el-form-item label="法人证件类型">
-                  <el-select v-model="form.ownerCompany.legalPersonIdType" class="w-full">
-                    <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="10">
-                <el-form-item label="法人证件号码">
-                  <el-input v-model="form.ownerCompany.legalPersonIdNo" placeholder="请输入法人证件号码" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="6">
-                <el-form-item label="业主标签">
-                  <el-select v-model="form.ownerCompany.tags" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
-                    <el-option v-for="item in ownerTagOptions" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <el-form-item label="注册地址">
-              <el-input v-model="form.ownerCompany.registeredAddress" placeholder="请输入注册地址" />
-            </el-form-item>
 
             <div class="upload-section">
               <div class="upload-section__title">企业资质</div>
@@ -246,37 +252,34 @@
           </div>
 
           <el-row :gutter="16">
-            <el-col :span="6">
-              <el-form-item label="收款人姓名">
+            <el-col :span="8">
+              <el-form-item label="收款人姓名" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.payeeName' : 'ownerCompany.payeeName'">
                 <el-input v-model="currentPayeeForm.payeeName" placeholder="请输入收款人姓名" />
               </el-form-item>
             </el-col>
-            <el-col :span="6">
-              <el-form-item label="收款人电话">
+            <el-col :span="8">
+              <el-form-item label="收款人电话" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.payeePhone' : 'ownerCompany.payeePhone'">
                 <el-input v-model="currentPayeeForm.payeePhone" placeholder="请输入收款人电话" />
               </el-form-item>
             </el-col>
-            <el-col :span="6">
-              <el-form-item label="收款人证件类型">
-                <el-select v-model="currentPayeeForm.payeeIdType" class="w-full">
-                  <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="6">
-              <el-form-item label="收款人证件号码">
-                <el-input v-model="currentPayeeForm.payeeIdNo" placeholder="请输入收款人证件号码" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="银行卡开户名">
+              <el-form-item label="收款人证件信息" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.payeeIdNo' : 'ownerCompany.payeeIdNo'">
+                <el-input v-model="currentPayeeForm.payeeIdNo" placeholder="请输入收款人证件号码">
+                  <template #prepend>
+                    <el-select v-model="currentPayeeForm.payeeIdType" style="width: 128px">
+                      <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                  </template>
+                </el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="银行卡开户名" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.bankAccountName' : 'ownerCompany.bankAccountName'">
                 <el-input v-model="currentPayeeForm.bankAccountName" placeholder="请输入开户名" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="银行卡号">
+              <el-form-item label="银行卡号" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.bankAccountNo' : 'ownerCompany.bankAccountNo'">
                 <el-input v-model="currentPayeeForm.bankAccountNo" placeholder="请输入银行卡号" />
               </el-form-item>
             </el-col>
@@ -329,54 +332,62 @@
             </div>
           </div>
 
-          <div class="contract-entry-grid">
-            <div class="contract-entry-grid__item contract-entry-grid__item--template">
+          <el-row :gutter="16" class="contract-entry-row">
+            <el-col :span="8">
               <el-form-item label="合同模板" prop="ownerContract.contractTemplateId">
                 <el-select v-model="form.ownerContract.contractTemplateId" class="w-full" filterable placeholder="请选择合同模板">
                   <el-option v-for="item in contractTemplates" :key="item.id" :label="item.templateName || `模板#${item.id}`" :value="item.id" />
                 </el-select>
               </el-form-item>
-            </div>
-            <div class="contract-entry-grid__item">
+            </el-col>
+            <el-col :span="5">
               <el-form-item label="签约类型">
                 <el-segmented v-model="form.ownerContract.signType" :options="signTypeOptions" />
               </el-form-item>
-            </div>
-            <div class="contract-entry-grid__item">
+            </el-col>
+            <el-col :span="5">
               <el-form-item label="合同类型">
                 <el-segmented v-model="form.ownerContract.contractMedium" :options="contractMediumOptions" />
               </el-form-item>
-            </div>
-            <div class="contract-entry-grid__item">
+            </el-col>
+            <el-col :span="6">
               <el-form-item label="签署状态">
                 <el-segmented v-model="form.ownerContract.signStatus" :options="signStatusOptions" />
               </el-form-item>
-            </div>
-          </div>
+            </el-col>
+          </el-row>
 
-          <div class="date-range-field date-range-field--contract">
-            <el-form-item label="合同周期">
-              <el-date-picker
-                v-model="contractDateRange"
-                type="daterange"
-                value-format="YYYY-MM-DD"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                class="w-full"
-              />
-            </el-form-item>
-            <div class="date-shortcuts">
-              <el-button plain @click="applyYearShortcut(3)">3年</el-button>
-              <el-button plain @click="applyYearShortcut(5)">5年</el-button>
-            </div>
-          </div>
-
-          <div class="contract-remark-field">
-            <el-form-item label="合同备注">
-              <el-input v-model="form.ownerContract.remark" type="textarea" :rows="2" maxlength="500" show-word-limit placeholder="请输入合同备注" />
-            </el-form-item>
-          </div>
+          <el-row :gutter="16" class="contract-entry-row">
+            <el-col :span="8">
+              <el-form-item label="合同周期">
+                <el-date-picker
+                  v-model="contractDateRange"
+                  type="daterange"
+                  value-format="YYYY-MM-DD"
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                  class="w-full"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-button-group>
+                <el-button plain @click="applyYearShortcut(1)">1年</el-button>
+                <el-button plain @click="applyYearShortcut(3)">3年</el-button>
+                <el-button plain @click="applyYearShortcut(5)">5年</el-button>
+              </el-button-group>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <div class="contract-remark-field">
+                <el-form-item label="合同备注">
+                  <el-input v-model="form.ownerContract.remark" type="textarea" :rows="2" maxlength="500" show-word-limit placeholder="请输入合同备注" />
+                </el-form-item>
+              </div>
+            </el-col>
+          </el-row>
         </div>
       </div>
     </el-card>
@@ -862,7 +873,7 @@
   import { getOwnerContractDetail, getOwnerContractList, previewOwnerContract } from "@/api/contract/owner";
   import UploadImage from "@/components/upload/UploadImage.vue";
   import HousePicker from "@/shared/house/HousePicker.vue";
-  import { getDictDataByParentCode } from "@/api/sys/dict";
+  import { getDictDataByDictCode, getDictDataByParentCode } from "@/api/sys/dict";
   import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS } from "@/constants";
   import { message } from "@/utils/message";
   import Plus from "~icons/ep/plus";
@@ -1062,12 +1073,12 @@
   const pdfUrl = ref("");
 
   const ownerTypeLabelMap: Record<OwnerTypeEnum, string> = {
-    PERSONAL: "个人",
-    COMPANY: "企业"
+    PERSONAL: "个人业主",
+    COMPANY: "企业业主"
   };
   const cooperationModeLabelMap: Record<OwnerCooperationModeEnum, string> = {
-    LIGHT_MANAGED: "轻托管",
-    MASTER_LEASE: "包租"
+    LIGHT_MANAGED: "轻托管模式",
+    MASTER_LEASE: "包租模式"
   };
   const signStatusLabelMap: Record<OwnerSignStatusEnum, string> = {
     PENDING: "待签字",
@@ -1153,11 +1164,7 @@
     { label: "男", value: "MALE" as GenderValue },
     { label: "女", value: "FEMALE" as GenderValue }
   ];
-  const ownerTagOptions = [
-    { label: "重点业主", value: "KEY" },
-    { label: "高净值", value: "VIP" },
-    { label: "企业客户", value: "COMPANY" }
-  ];
+  const ownerTagOptions = ref<{ label: string; value: string }[]>([]);
   const ownerTypeOptions = [
     { label: ownerTypeLabelMap.PERSONAL, value: OwnerTypeEnumMeta.PERSONAL.value as OwnerTypeEnum },
     { label: ownerTypeLabelMap.COMPANY, value: OwnerTypeEnumMeta.COMPANY.value as OwnerTypeEnum }
@@ -1415,10 +1422,97 @@
   const rules: FormRules = {
     ownerType: [{ required: true, message: "请选择业主类型", trigger: "change" }],
     "ownerContract.cooperationMode": [{ required: true, message: "请选择委托模式", trigger: "change" }],
-    "ownerPersonal.name": [{ required: true, message: "请输入业主姓名", trigger: "blur" }],
-    "ownerPersonal.phone": [{ required: true, message: "请输入联系电话", trigger: "blur" }],
-    "ownerCompany.name": [{ required: true, message: "请输入企业名称", trigger: "blur" }],
-    "ownerCompany.contactPhone": [{ required: true, message: "请输入联系电话", trigger: "blur" }],
+    "ownerPersonal.name": [
+      {
+        trigger: "blur",
+        validator: (_, value, callback) => {
+          if (form.ownerType !== "PERSONAL") return callback();
+          return value ? callback() : callback(new Error("请输入业主姓名"));
+        }
+      }
+    ],
+    "ownerPersonal.phone": [
+      {
+        trigger: "blur",
+        validator: (_, value, callback) => {
+          if (form.ownerType !== "PERSONAL") return callback();
+          return value ? callback() : callback(new Error("请输入联系电话"));
+        }
+      }
+    ],
+    "ownerPersonal.idNo": [
+      {
+        trigger: "blur",
+        validator: (_, value, callback) => {
+          if (form.ownerType !== "PERSONAL") return callback();
+          return value ? callback() : callback(new Error("请输入证件号"));
+        }
+      }
+    ],
+    "ownerPersonal.idCardFrontList": [
+      {
+        trigger: "change",
+        validator: (_, value, callback) => {
+          if (form.ownerType !== "PERSONAL") return callback();
+          return value?.length ? callback() : callback(new Error("请上传身份证国徽面"));
+        }
+      }
+    ],
+    "ownerPersonal.idCardBackList": [
+      {
+        trigger: "change",
+        validator: (_, value, callback) => {
+          if (form.ownerType !== "PERSONAL") return callback();
+          return value?.length ? callback() : callback(new Error("请上传身份证人像面"));
+        }
+      }
+    ],
+    "ownerCompany.name": [
+      {
+        trigger: "blur",
+        validator: (_, value, callback) => {
+          if (form.ownerType !== "COMPANY") return callback();
+          return value ? callback() : callback(new Error("请输入企业名称"));
+        }
+      }
+    ],
+    "ownerCompany.uscc": [
+      {
+        trigger: "blur",
+        validator: (_, value, callback) => {
+          if (form.ownerType !== "COMPANY") return callback();
+          return value ? callback() : callback(new Error("请输入统一社会信用代码"));
+        }
+      }
+    ],
+    "ownerCompany.contactName": [
+      {
+        trigger: "blur",
+        validator: (_, value, callback) => {
+          if (form.ownerType !== "COMPANY") return callback();
+          return value ? callback() : callback(new Error("请输入联系人"));
+        }
+      }
+    ],
+    "ownerCompany.contactPhone": [
+      {
+        trigger: "blur",
+        validator: (_, value, callback) => {
+          if (form.ownerType !== "COMPANY") return callback();
+          return value ? callback() : callback(new Error("请输入联系电话"));
+        }
+      }
+    ],
+    "ownerPersonal.payeeName": [{ required: true, message: "请输入收款人姓名", trigger: "blur" }],
+    "ownerPersonal.payeePhone": [{ required: true, message: "请输入收款人电话", trigger: "blur" }],
+    "ownerPersonal.payeeIdNo": [{ required: true, message: "请输入收款人证件号码", trigger: "blur" }],
+    "ownerPersonal.bankAccountName": [{ required: true, message: "请输入银行卡开户名", trigger: "blur" }],
+    "ownerPersonal.bankAccountNo": [{ required: true, message: "请输入银行卡号", trigger: "blur" }],
+    "ownerCompany.payeeName": [{ required: true, message: "请输入收款人姓名", trigger: "blur" }],
+    "ownerCompany.payeePhone": [{ required: true, message: "请输入收款人电话", trigger: "blur" }],
+    "ownerCompany.payeeIdNo": [{ required: true, message: "请输入收款人证件号码", trigger: "blur" }],
+    "ownerCompany.bankAccountName": [{ required: true, message: "请输入银行卡开户名", trigger: "blur" }],
+    "ownerCompany.bankAccountNo": [{ required: true, message: "请输入银行卡号", trigger: "blur" }],
     "ownerContract.contractTemplateId": [{ required: true, message: "请选择合同模板", trigger: "change" }],
     contractHouseList: [{ required: true, validator: (_, value, callback) => (value?.length ? callback() : callback(new Error("请选择房源"))), trigger: "change" }]
   };
@@ -1465,6 +1559,14 @@
         label: item.name,
         value: item.id
       }))
+    }));
+  }
+
+  async function loadOwnerTagOptions() {
+    const res = await getDictDataByDictCode({ dictCode: "owner_tag" });
+    ownerTagOptions.value = (res.data || []).map((item: any) => ({
+      label: item.name || item.dictName || "",
+      value: item.dictCode || item.code || item.value || ""
     }));
   }
 
@@ -1921,7 +2023,7 @@
   });
 
   onMounted(async () => {
-    await Promise.all([loadTemplates(), loadTemplateParams(), loadFeeTypeOptions()]);
+    await Promise.all([loadTemplates(), loadTemplateParams(), loadFeeTypeOptions(), loadOwnerTagOptions()]);
     syncLeaseFeeCascaderValues();
     syncSettlementFeeCascaderValues();
   });
@@ -1966,14 +2068,14 @@
 
   .card-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 16px;
   }
 
   .header-inline {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
     flex-wrap: wrap;
   }
@@ -2039,6 +2141,16 @@
   .upload-section :deep(.upload-wrap) {
     width: 112px !important;
     height: 72px !important;
+  }
+
+  .upload-form-item {
+    margin-bottom: 0;
+  }
+
+  .upload-form-item :deep(.el-form-item__content) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .owner-info-grid {
@@ -2115,7 +2227,6 @@
   }
 
   .info-panel__desc {
-    margin-top: 4px;
     font-size: 12px;
     line-height: 1.6;
     color: var(--el-text-color-secondary);
@@ -2181,6 +2292,13 @@
     gap: 8px;
   }
 
+  .contract-date-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
   .date-range-field--compact {
     gap: 6px;
   }
@@ -2188,6 +2306,10 @@
   .date-shortcuts {
     display: flex;
     gap: 8px;
+  }
+
+  .date-shortcuts--inline {
+    flex-shrink: 0;
   }
 
   .template-preview-panel {
@@ -2280,21 +2402,32 @@
   }
 
   .selected-house-wrapper {
+    display: flex;
     flex-direction: column;
     gap: 10px;
-    align-items: center;
+    width: 100%;
   }
 
   .selected-house-panel {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: 100%;
   }
 
   .selected-house-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    width: 100%;
+  }
+
+  .selected-house-wrapper :deep(.el-empty) {
+    width: 100%;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .selected-house-chip {
@@ -2668,14 +2801,15 @@
       grid-template-columns: 1fr;
     }
 
-    .contract-entry-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .contract-date-inline {
+      flex-direction: column;
+      align-items: stretch;
     }
   }
 
   @media (max-width: 900px) {
-    .contract-entry-grid {
-      grid-template-columns: 1fr;
+    .date-shortcuts--inline {
+      width: 100%;
     }
   }
 </style>
