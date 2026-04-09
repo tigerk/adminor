@@ -389,6 +389,7 @@ export const FileAttachBizTypeEnumMeta = {
   OWNER_ID_CARD_IN_HAND: {"value":"OWNER_ID_CARD_IN_HAND","bizType":"owner_id_card_in_hand"},
   OWNER_OTHER_IMAGE: {"value":"OWNER_OTHER_IMAGE","bizType":"owner_other_image"},
   OWNER_BUSINESS_LICENSE: {"value":"OWNER_BUSINESS_LICENSE","bizType":"owner_business_license"},
+  OWNER_BILL_PAYMENT_VOUCHER: {"value":"OWNER_BILL_PAYMENT_VOUCHER","bizType":"owner_bill_payment_voucher"},
   DELIVERY_IMAGE: {"value":"DELIVERY_IMAGE","bizType":"delivery_image"},
   CONTRACT_SEAL_IMAGE: {"value":"CONTRACT_SEAL_IMAGE","bizType":"contract_seal_image"}
 } as const;
@@ -530,6 +531,8 @@ export const OwnerAccountFlowChangeTypeEnumMeta = {
 
 export const OwnerBillItemTypeEnumMeta = {
   RENT: {"value":"RENT","code":"RENT","name":"租金"},
+  DEPOSIT: {"value":"DEPOSIT","code":"DEPOSIT","name":"押金"},
+  OTHER_FEE: {"value":"OTHER_FEE","code":"OTHER_FEE","name":"其他费用"},
   MANAGEMENT_FEE: {"value":"MANAGEMENT_FEE","code":"MANAGEMENT_FEE","name":"管理费"}
 } as const;
 
@@ -540,7 +543,10 @@ export const OwnerBillSettlementStatusEnumMeta = {
 } as const;
 
 export const OwnerBillSourceTypeEnumMeta = {
-  OWNER_CONTRACT_SUBJECT: {"value":"OWNER_CONTRACT_SUBJECT","code":"OWNER_CONTRACT_SUBJECT","name":"业主合同房源"}
+  OWNER_CONTRACT_SUBJECT: {"value":"OWNER_CONTRACT_SUBJECT","code":"OWNER_CONTRACT_SUBJECT","name":"业主合同房源"},
+  OWNER_CONTRACT: {"value":"OWNER_CONTRACT","code":"OWNER_CONTRACT","name":"业主合同"},
+  OWNER_LEASE_FEE: {"value":"OWNER_LEASE_FEE","code":"OWNER_LEASE_FEE","name":"包租其他费用"},
+  OWNER_LEASE_FREE_RULE: {"value":"OWNER_LEASE_FREE_RULE","code":"OWNER_LEASE_FREE_RULE","name":"包租免租规则"}
 } as const;
 
 export const OwnerBillStatusEnumMeta = {

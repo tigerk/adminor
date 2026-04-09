@@ -1,6 +1,6 @@
 import { h, ref } from "vue";
 import { addDialog } from "@/components/ReDialog";
-import { createOwnerWithdraw, getOwnerWithdrawDetail } from "@/api/finance/owner";
+import { createOwnerWithdraw, getOwnerWithdrawDetail } from "@/api/owner/owner";
 import OwnerWithdrawCreateDialog from "@/views/finance/owner-withdraw/form/OwnerWithdrawCreateDialog.vue";
 import OwnerWithdrawDetailDialog from "@/views/finance/owner-withdraw/view/OwnerWithdrawDetailDialog.vue";
 import type { OwnerWithdrawApplyDetailVo, OwnerWithdrawApplyIdDto, OwnerWithdrawCreateDto, OwnerWithdrawOperateEnum } from "@/types/generated";

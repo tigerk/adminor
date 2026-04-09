@@ -87,7 +87,7 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref } from "vue";
   import { useRoute } from "vue-router";
-  import { getOwnerBillPage, getOwnerBillSummary } from "@/api/finance/owner";
+  import { getOwnerBillPage, getOwnerBillSummary } from "@/api/owner/owner";
   import useOwnerBillDialog from "@/views/finance/owner-bill/utils/hook";
   import OwnerPageHeader from "@/shared/owner/OwnerPageHeader.vue";
   import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";

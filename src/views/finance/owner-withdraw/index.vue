@@ -96,7 +96,7 @@
     getOwnerWithdrawPage,
     getOwnerWithdrawSummary,
     operateOwnerWithdraw
-  } from "@/api/finance/owner";
+  } from "@/api/owner/owner";
   import OwnerPageHeader from "@/shared/owner/OwnerPageHeader.vue";
   import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";
   import "@/shared/owner/panel.scss";
