@@ -2,7 +2,7 @@
   <el-dialog
     v-model="visible"
     title="选择集中式项目"
-    width="78vw"
+    width="60vw"
     append-to-body
     :close-on-click-modal="false"
     :align-center="true"
@@ -82,14 +82,16 @@
                 v-for="project in projectList"
                 :key="project.subjectId"
                 type="button"
-                :class="['project-card', { 'is-active': activeProjectId === project.subjectId }]"
-                @click="handleProjectClick(project)"
+                :class="['project-card', { 'is-active': activeProjectId === project.subjectId, 'is-selected': isProjectSelected(project.subjectId) }]"
+                @click="handleProjectCardClick(project)"
               >
-                <div class="project-card__top">
-                  <el-checkbox :model-value="isProjectSelected(project.subjectId)" @click.stop @change="toggleProject(project)" />
+                <div class="project-card__inner">
                   <div class="project-card__name">{{ project.subjectName }}</div>
+                  <div class="project-card__addr">{{ project.address || "暂无地址" }}</div>
                 </div>
-                <div class="project-card__addr">{{ project.address || "暂无地址" }}</div>
+                <div v-if="isProjectSelected(project.subjectId)" class="project-card__check">
+                  <el-icon><Check /></el-icon>
+                </div>
               </button>
             </div>
             <el-empty v-else description="暂无可选项目" :image-size="80" />
@@ -100,21 +102,30 @@
             <div class="building-panel__header">
               <div>
                 <div class="building-panel__title">{{ activeProjectName || "请选择左侧项目" }}</div>
-                <div class="building-panel__desc">整项目可直接勾选；如按楼栋签约，可在这里勾选多个楼栋。</div>
+                <div class="building-panel__desc">点击整项目卡片可选中整项目；也可在此选择具体楼栋。</div>
               </div>
             </div>
             <div v-if="buildingRows.length" class="building-grid">
-              <div v-for="building in buildingRows" :key="building.subjectId" class="building-card" :class="{ 'is-selected': isBuildingSelected(building.subjectId) }">
-                <div class="building-card__top">
-                  <el-checkbox :model-value="isBuildingSelected(building.subjectId)" @change="toggleBuilding(building)" />
+              <button
+                v-for="building in buildingRows"
+                :key="building.subjectId"
+                type="button"
+                class="building-card"
+                :class="{ 'is-selected': isBuildingSelected(building.subjectId) }"
+                @click="toggleBuilding(building)"
+              >
+                <div class="building-card__inner">
                   <div class="building-card__name">{{ building.subjectName }}</div>
+                  <div class="building-card__meta">
+                    <span class="meta-item">{{ building.floorTotal || 0 }} 层</span>
+                    <span class="meta-sep">·</span>
+                    <span class="meta-item">每层 {{ building.houseCountPerFloor || 0 }} 套</span>
+                  </div>
                 </div>
-                <div class="building-card__meta">
-                  <span>{{ building.floorTotal || 0 }} 层</span>
-                  <span class="meta-sep">·</span>
-                  <span>每层 {{ building.houseCountPerFloor || 0 }} 套</span>
+                <div v-if="isBuildingSelected(building.subjectId)" class="building-card__check">
+                  <el-icon><Check /></el-icon>
                 </div>
-              </div>
+              </button>
             </div>
             <el-empty v-else :description="activeProjectId ? '当前项目暂无楼栋' : '请先选择项目'" :image-size="90" />
           </div>
@@ -161,7 +172,7 @@
 
 <script setup lang="ts">
   import { nextTick, reactive, ref } from "vue";
-  import { Close, Refresh, Search } from "@element-plus/icons-vue";
+  import { Close, Check, Refresh, Search } from "@element-plus/icons-vue";
   import { getFocusById, getFocusList } from "@/api/house/focus";
   import type { FocusBuildingDto, FocusCreateDto, FocusListVo, OwnerContractSubjectTypeEnum } from "@/types/generated";
   import { OwnerContractSubjectTypeEnumMeta } from "@/types/generated/enum.meta";
@@ -273,6 +284,11 @@
 
   const handleProjectClick = (project: FocusSubjectPickerRow) => {
     void activateProject(project);
+  };
+
+  const handleProjectCardClick = (project: FocusSubjectPickerRow) => {
+    void activateProject(project);
+    toggleProject(project);
   };
 
   const toggleProject = (project: FocusSubjectPickerRow) => {
@@ -776,29 +792,42 @@
   }
 
   .project-card {
-    padding: 11px 12px;
+    position: relative;
+    padding: 11px 14px;
     border-radius: 10px;
-    border: 1px solid var(--el-border-color-light);
+    border: 1.5px solid var(--el-border-color-light);
     background: var(--el-bg-color);
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.18s ease;
     width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 
-    &:hover:not(.is-active) {
-      border-color: #fbd5bc;
-      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.08);
+    &:hover:not(.is-selected) {
+      border-color: #fdba74;
+      background: #fffbf7;
     }
 
-    &.is-active {
-      border-color: #f97316;
+    &.is-active:not(.is-selected) {
+      border-color: #fdba74;
       background: #fff7ed;
     }
 
-    &__top {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    &.is-selected {
+      border-color: #f97316;
+      border-width: 2px;
+      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+
+      .project-card__name {
+        color: #c2410c;
+      }
+    }
+
+    &__inner {
+      flex: 1;
+      min-width: 0;
     }
 
     &__name {
@@ -806,16 +835,32 @@
       font-weight: 600;
       color: var(--el-text-color-primary);
       line-height: 1.4;
-    }
-
-    &__addr {
-      margin-top: 6px;
-      font-size: 11px;
-      color: var(--el-text-color-secondary);
-      line-height: 1.6;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    &__addr {
+      margin-top: 5px;
+      font-size: 11px;
+      color: var(--el-text-color-secondary);
+      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__check {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #f97316;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 11px;
     }
   }
 
@@ -853,7 +898,7 @@
     flex: 1;
     padding: 12px;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(1, minmax(0, 1fr));
     gap: 10px;
     align-content: start;
     overflow-y: auto;
@@ -873,26 +918,41 @@
   }
 
   .building-card {
-    padding: 11px 12px;
+    position: relative;
+    padding: 12px 14px;
     border-radius: 10px;
-    border: 1px solid var(--el-border-color-light);
+    border: 1.5px solid var(--el-border-color-light);
     background: var(--el-bg-color);
-    transition: all 0.2s;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
 
     &:hover:not(.is-selected) {
-      border-color: #fbd5bc;
-      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.08);
+      border-color: #fdba74;
+      background: #fffbf7;
     }
 
     &.is-selected {
       border-color: #f97316;
-      background: #fff7ed;
+      border-width: 2px;
+      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+
+      .building-card__name {
+        color: #c2410c;
+      }
+
+      .building-card__meta {
+        color: #ea580c;
+      }
     }
 
-    &__top {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
+    &__inner {
+      flex: 1;
+      min-width: 0;
     }
 
     &__name {
@@ -903,13 +963,32 @@
     }
 
     &__meta {
-      margin-top: 7px;
+      margin-top: 6px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       font-size: 11px;
       color: var(--el-text-color-secondary);
+      transition: color 0.18s;
     }
+
+    &__check {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #f97316;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 11px;
+      margin-top: 1px;
+    }
+  }
+
+  .meta-item {
+    display: inline;
   }
 
   .meta-sep {
@@ -978,15 +1057,5 @@
   .list-leave-to {
     opacity: 0;
     transform: translateX(12px);
-  }
-
-  /* ─── Checkbox Color Override ─────────────────────── */
-  :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
-    background: #f97316;
-    border-color: #f97316;
-  }
-
-  :deep(.el-checkbox__inner:hover) {
-    border-color: #f97316;
   }
 </style>
