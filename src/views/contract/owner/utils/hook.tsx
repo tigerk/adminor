@@ -10,11 +10,23 @@ import type { OwnerContractIdDto, OwnerDetailVo, OwnerUpdateDto } from "@/types/
 function useOwnerContract() {
   const formRef = ref();
 
-  function openOwnerDialog(
-    title = "添加业主合同",
-    row?: { contractId?: string | number; isEdit?: boolean } | OwnerDetailVo | null,
-    onSuccess?: () => void
-  ) {
+  function resolveSubmitErrorMessage(error: any) {
+    if (!error) return "请检查表单必填项后再提交";
+    if (typeof error === "string") return error;
+    if (typeof error?.message === "string" && error.message) return error.message;
+
+    const fieldErrors = error?.fields;
+    if (fieldErrors && typeof fieldErrors === "object") {
+      const firstFieldKey = Object.keys(fieldErrors)[0];
+      const firstFieldErrors = firstFieldKey ? fieldErrors[firstFieldKey] : undefined;
+      const firstMessage = Array.isArray(firstFieldErrors) ? firstFieldErrors[0]?.message : firstFieldErrors?.message;
+      if (firstMessage) return firstMessage;
+    }
+
+    return "请检查表单必填项后再提交";
+  }
+
+  function openOwnerDialog(title = "添加业主合同", row?: { contractId?: string | number; isEdit?: boolean } | OwnerDetailVo | null, onSuccess?: () => void) {
     const isEdit = Boolean((row as { isEdit?: boolean } | undefined)?.isEdit);
 
     if ((row as { contractId?: string | number } | undefined)?.contractId && !("ownerContract" in (row || {}))) {
@@ -47,12 +59,17 @@ function useOwnerContract() {
       fullscreenIcon: true,
       closeOnClickModal: false,
       destroyOnClose: true,
-      contentRenderer: () => h(OwnerContractFormDialog, { ref: formRef, formInline: null, isEdit: false }),
+      contentRenderer: () => h(OwnerContractFormDialog, { ref: formRef, formInline: row || null, isEdit }),
       beforeSure: async done => {
         const formInstance = formRef.value;
         try {
+          if (!formInstance?.validateAndBuildPayload) {
+            message("表单未初始化完成，请稍后再试", { type: "warning" });
+            return;
+          }
           const payload = await formInstance?.validateAndBuildPayload?.();
           if (!payload) {
+            message("请填写完整信息", { type: "warning" });
             return;
           }
 
@@ -65,9 +82,10 @@ function useOwnerContract() {
             message(resp.message || (isEdit ? "业主合同更新失败" : "业主合同创建失败"), { type: "error" });
           }
         } catch (error: any) {
-          if (error?.message) {
-            message(error.message, { type: "warning" });
-          }
+          const formEl = formInstance?.getRef?.();
+          const firstFieldKey = error?.fields ? Object.keys(error.fields)[0] : "";
+          if (firstFieldKey) formEl?.scrollToField?.(firstFieldKey);
+          message(resolveSubmitErrorMessage(error), { type: "warning" });
         }
       }
     });

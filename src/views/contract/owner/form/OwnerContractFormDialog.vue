@@ -62,7 +62,7 @@
       </div>
 
       <template #footer>
-        <div class="subject-picker-step__footer mt-4">
+        <div class="subject-picker-step__footer mt-2">
           <el-button @click="subjectTypeDialogVisible = false">取消</el-button>
           <el-button type="primary" @click="handleSubjectTypeStepConfirm">下一步</el-button>
         </div>

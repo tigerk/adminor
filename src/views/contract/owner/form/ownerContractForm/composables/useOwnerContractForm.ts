@@ -86,6 +86,13 @@ export const createDefaultLeaseFreeRule = (): OwnerLeaseFreeRuleDto => ({
   status: "ACTIVE"
 });
 
+function buildMasterLeasePayWay(depositMonths?: number, paymentMonths?: number) {
+  const deposit = Math.max(0, Number(depositMonths || 0));
+  const payment = Math.max(0, Number(paymentMonths || 0));
+  if (!deposit && !payment) return "";
+  return `押${deposit}付${payment}`;
+}
+
 export function cloneSettlementRule(rule?: OwnerSettlementRuleForm): OwnerSettlementRuleForm {
   return {
     ...createDefaultSettlementRule(),
@@ -257,6 +264,12 @@ export function useOwnerContractForm() {
     contractDateRange.value = [];
   }
 
+  function normalizeNumberValue(value: unknown) {
+    if (value === null || value === undefined || value === "") return undefined;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? value : parsed;
+  }
+
   function mapDetailToForm(detail?: OwnerDetailVo | null) {
     resetForm();
     if (!detail) return;
@@ -276,7 +289,16 @@ export function useOwnerContractForm() {
       settlementRule: cloneSettlementRule(item.settlementRule),
       rentFreeRule: cloneRentFreeRule(item.rentFreeRule)
     }));
-    form.ownerLeaseRule = { ...createDefaultForm().ownerLeaseRule, ...(raw.ownerLeaseRule || {}) };
+    form.ownerLeaseRule = {
+      ...createDefaultForm().ownerLeaseRule,
+      ...(raw.ownerLeaseRule || {}),
+      otherFeeList: ((raw.ownerLeaseRule?.otherFeeList || []) as OwnerLeaseFeeForm[]).map(item => ({
+        ...createLeaseFee(),
+        ...item,
+        paymentMethod: normalizeNumberValue(item.paymentMethod),
+        priceMethod: normalizeNumberValue(item.priceMethod)
+      }))
+    };
     form.ownerLeaseFreeRuleList = (raw.ownerLeaseFreeRuleList || []).map((item: any) => ({
       ...createDefaultLeaseFreeRule(),
       ...item
@@ -530,6 +552,7 @@ export function useOwnerContractForm() {
     if (form.ownerContract.cooperationMode === "MASTER_LEASE") {
       payload.ownerLeaseRule = {
         ...form.ownerLeaseRule,
+        payWay: buildMasterLeasePayWay(form.ownerLeaseRule.depositMonths, form.ownerLeaseRule.paymentMonths),
         otherFeeList: form.ownerLeaseRule.otherFeeList || [],
         billingStart: contractDateRange.value[0],
         billingEnd: contractDateRange.value[1]

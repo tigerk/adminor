@@ -56,6 +56,20 @@
     <el-row class="bg-bg_color w-full px-4 pb-4">
       <el-col :span="24">
         <el-table v-loading="loading" :data="tableData" border row-key="contractId">
+          <el-table-column label="状态" width="100" align="center" fixed>
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'">
+                {{ statusLabelMap[row.status || "ACTIVE"] }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="签署状态" width="100" align="center" fixed>
+            <template #default="{ row }">
+              <el-tag :type="row.signStatus === 'SIGNED' ? 'success' : 'info'">
+                {{ signStatusLabelMap[row.signStatus || "PENDING"] }}
+              </el-tag>
+            </template>
+          </el-table-column>
           <el-table-column label="业主信息" min-width="180" align="center">
             <template #default="{ row }">
               <div class="owner-cell">
@@ -103,20 +117,6 @@
           <el-table-column label="合同周期" min-width="220">
             <template #default="{ row }">
               <div class="date-range">{{ formatDate(row.contractStart) }} 至 {{ formatDate(row.contractEnd) }}</div>
-            </template>
-          </el-table-column>
-          <el-table-column label="签署状态" width="100" align="center">
-            <template #default="{ row }">
-              <el-tag :type="row.signStatus === 'SIGNED' ? 'success' : 'info'">
-                {{ signStatusLabelMap[row.signStatus || "PENDING"] }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" width="100" align="center">
-            <template #default="{ row }">
-              <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'">
-                {{ statusLabelMap[row.status || "ACTIVE"] }}
-              </el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="updateTime" label="更新时间" min-width="170" />

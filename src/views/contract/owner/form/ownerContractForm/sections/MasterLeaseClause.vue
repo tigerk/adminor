@@ -35,7 +35,7 @@
     <el-row :gutter="20">
       <el-col :span="4">
         <el-form-item label="付款方式">
-          <el-input v-model="form.ownerLeaseRule.payWay" placeholder="如 押一付三" />
+          <el-input :model-value="paymentMethodText" readonly disabled />
         </el-form-item>
       </el-col>
       <el-col :span="4">
@@ -194,7 +194,7 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, toRefs, watch } from "vue";
+  import { computed, reactive, toRefs, watch } from "vue";
   import {
     FREE_TYPE_OPTIONS,
     LEASE_FREE_CALC_MODE_OPTIONS,
@@ -213,6 +213,12 @@
 
   const form = defineModel<OwnerContractForm>("form", { required: true });
   const localLeaseFeeCascaderValues = reactive<Record<number, any[]>>({});
+  const paymentMethodText = computed(() => {
+    const depositMonths = Math.max(0, Number(form.value.ownerLeaseRule.depositMonths || 0));
+    const paymentMonths = Math.max(0, Number(form.value.ownerLeaseRule.paymentMonths || 0));
+    if (!depositMonths && !paymentMonths) return "-";
+    return `押${depositMonths}付${paymentMonths}`;
+  });
 
   const emit = defineEmits<{
     addLeaseFee: [];
