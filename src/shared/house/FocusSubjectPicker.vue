@@ -2,7 +2,7 @@
   <el-dialog
     v-model="visible"
     title="选择集中式项目"
-    width="60vw"
+    width="max(760px, 50vw)"
     append-to-body
     :close-on-click-modal="false"
     :align-center="true"
@@ -18,7 +18,7 @@
             <span class="selected-panel__label">已选项目 / 楼栋</span>
             <span class="selected-panel__badge" :class="{ active: selectedRows.length > 0 }">{{ selectedRows.length }}</span>
           </div>
-          <button v-if="selectedRows.length > 0" class="clear-btn" @click="clearAllSelection">清空全部</button>
+          <button v-if="selectedRows.length > 0" class="clear-btn" @click="clearAllSelection">清空</button>
         </div>
 
         <div class="selected-panel__body">
@@ -27,10 +27,10 @@
               <div class="selected-card__dot" />
               <div class="selected-card__info">
                 <div class="selected-card__name">
-                  <el-tag size="small" effect="plain" class="subject-tag">
+                  <span class="selected-card__type-tag" :class="row.subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS.value ? 'tag--project' : 'tag--building'">
                     {{ row.subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS.value ? "项目" : "楼栋" }}
-                  </el-tag>
-                  <span>{{ row.subjectName }}</span>
+                  </span>
+                  <span class="selected-card__name-text">{{ row.subjectName }}</span>
                 </div>
                 <div class="selected-card__addr">{{ row.address || "暂无地址" }}</div>
               </div>
@@ -50,7 +50,11 @@
               </svg>
             </div>
             <p class="empty-state__text">暂未选择集中式项目</p>
-            <p class="empty-state__hint">右侧可直接选择整项目，也可以选择项目下的多个楼栋</p>
+            <p class="empty-state__hint">
+              右侧可直接选择整项目
+              <br />
+              也可选择项目下的具体楼栋
+            </p>
           </div>
         </div>
       </div>
@@ -89,23 +93,21 @@
                   <div class="project-card__name">{{ project.subjectName }}</div>
                   <div class="project-card__addr">{{ project.address || "暂无地址" }}</div>
                 </div>
-                <div v-if="isProjectSelected(project.subjectId)" class="project-card__check">
+                <div class="project-card__check" :class="{ visible: isProjectSelected(project.subjectId) }">
                   <el-icon><Check /></el-icon>
                 </div>
               </button>
             </div>
-            <el-empty v-else description="暂无可选项目" :image-size="80" />
+            <el-empty v-else description="暂无可选项目" :image-size="60" />
           </div>
 
           <!-- Building Panel -->
           <div v-loading="buildingLoading" class="building-panel">
             <div class="building-panel__header">
-              <div>
-                <div class="building-panel__title">{{ activeProjectName || "请选择左侧项目" }}</div>
-                <div class="building-panel__desc">点击整项目卡片可选中整项目；也可在此选择具体楼栋。</div>
-              </div>
+              <div class="building-panel__title">{{ activeProjectName || "请选择左侧项目" }}</div>
+              <div class="building-panel__desc">点击整项目可选中；也可在此选择具体楼栋</div>
             </div>
-            <div v-if="buildingRows.length" class="building-grid">
+            <div v-if="buildingRows.length" class="building-list">
               <button
                 v-for="building in buildingRows"
                 :key="building.subjectId"
@@ -114,20 +116,29 @@
                 :class="{ 'is-selected': isBuildingSelected(building.subjectId) }"
                 @click="toggleBuilding(building)"
               >
+                <div class="building-card__icon">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="15" height="15">
+                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5" fill="none" />
+                    <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="1.5" />
+                    <line x1="3" y1="15" x2="21" y2="15" stroke="currentColor" stroke-width="1.5" />
+                    <line x1="9" y1="3" x2="9" y2="21" stroke="currentColor" stroke-width="1.5" />
+                    <line x1="15" y1="3" x2="15" y2="21" stroke="currentColor" stroke-width="1.5" />
+                  </svg>
+                </div>
                 <div class="building-card__inner">
                   <div class="building-card__name">{{ building.subjectName }}</div>
                   <div class="building-card__meta">
-                    <span class="meta-item">{{ building.floorTotal || 0 }} 层</span>
+                    <span>{{ building.floorTotal || 0 }} 层</span>
                     <span class="meta-sep">·</span>
-                    <span class="meta-item">每层 {{ building.houseCountPerFloor || 0 }} 套</span>
+                    <span>每层 {{ building.houseCountPerFloor || 0 }} 套</span>
                   </div>
                 </div>
-                <div v-if="isBuildingSelected(building.subjectId)" class="building-card__check">
+                <div class="building-card__check" :class="{ visible: isBuildingSelected(building.subjectId) }">
                   <el-icon><Check /></el-icon>
                 </div>
               </button>
             </div>
-            <el-empty v-else :description="activeProjectId ? '当前项目暂无楼栋' : '请先选择项目'" :image-size="90" />
+            <el-empty v-else :description="activeProjectId ? '当前项目暂无楼栋' : '请先选择项目'" :image-size="70" />
           </div>
         </div>
 
@@ -172,7 +183,7 @@
 
 <script setup lang="ts">
   import { nextTick, reactive, ref } from "vue";
-  import { Close, Check, Refresh, Search } from "@element-plus/icons-vue";
+  import { Check, Close, Refresh, Search } from "@element-plus/icons-vue";
   import { getFocusById, getFocusList } from "@/api/house/focus";
   import type { FocusBuildingDto, FocusCreateDto, FocusListVo, OwnerContractSubjectTypeEnum } from "@/types/generated";
   import { OwnerContractSubjectTypeEnumMeta } from "@/types/generated/enum.meta";
@@ -241,9 +252,7 @@
         await activateProject(projectList.value[0]);
       } else if (activeProjectId.value) {
         const matched = projectList.value.find(item => item.subjectId === activeProjectId.value);
-        if (matched) {
-          await activateProject(matched);
-        }
+        if (matched) await activateProject(matched);
       }
     } finally {
       loading.value = false;
@@ -281,10 +290,6 @@
 
   const isBuildingSelected = (subjectId: string) =>
     selectedRows.value.some(item => item.subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS_BUILDING.value && item.subjectId === subjectId);
-
-  const handleProjectClick = (project: FocusSubjectPickerRow) => {
-    void activateProject(project);
-  };
 
   const handleProjectCardClick = (project: FocusSubjectPickerRow) => {
     void activateProject(project);
@@ -371,26 +376,22 @@
   :deep(.focus-subject-picker-dialog) {
     border-radius: 16px !important;
     overflow: hidden;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12) !important;
-
-    .el-dialog {
-      background: var(--el-bg-color);
-    }
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.14) !important;
 
     .el-dialog__header {
-      padding: 18px 56px 14px 20px !important;
+      padding: 18px 56px 14px 22px !important;
       margin: 0 !important;
       border-bottom: 1px solid var(--el-border-color-light);
     }
 
     .el-dialog__title {
       color: var(--el-text-color-primary);
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
     }
 
     .el-dialog__headerbtn {
-      top: 16px;
+      top: 14px;
       right: 16px;
       width: 28px;
       height: 28px;
@@ -404,7 +405,7 @@
 
     .el-dialog__close {
       color: var(--el-text-color-regular);
-      font-size: 18px;
+      font-size: 16px;
     }
 
     .el-dialog__body {
@@ -418,12 +419,12 @@
   }
 
   /* ─── Body Layout ─────────────────────────────────── */
+  /* 左侧固定 210px，右侧 minmax(0, 1fr) 自适应；整体高度用 clamp 兜底 */
   .focus-subject-picker {
     display: grid;
-    grid-template-columns: 300px minmax(0, 1fr);
-    height: 70vh;
+    grid-template-columns: 250px minmax(0, 1fr);
+    height: clamp(400px, 66vh, 660px);
     overflow: hidden;
-    border: 1px solid var(--el-border-color-lighter);
   }
 
   /* ─── Selected Panel ──────────────────────────────── */
@@ -432,14 +433,13 @@
     background: var(--el-fill-color-lighter);
     display: flex;
     flex-direction: column;
-    height: 100%;
     overflow: hidden;
 
     &__header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 18px 12px;
+      padding: 13px 14px 11px;
       border-bottom: 1px solid var(--el-border-color-lighter);
       flex-shrink: 0;
     }
@@ -447,20 +447,20 @@
     &__header-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
     }
 
     &__label {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--el-text-color-primary);
     }
 
     &__badge {
-      min-width: 20px;
-      height: 20px;
-      padding: 0 6px;
-      border-radius: 10px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 9px;
       background: var(--el-fill-color);
       color: var(--el-text-color-secondary);
       font-size: 11px;
@@ -468,7 +468,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s;
+      transition: all 0.25s;
 
       &.active {
         background: #f97316;
@@ -479,26 +479,24 @@
     &__body {
       flex: 1;
       overflow-y: auto;
-      padding: 12px;
+      padding: 10px;
       min-height: 0;
 
       &::-webkit-scrollbar {
-        width: 4px;
+        width: 3px;
       }
-
       &::-webkit-scrollbar-track {
         background: transparent;
       }
-
       &::-webkit-scrollbar-thumb {
-        background: #ddd;
+        background: #e0e0e0;
         border-radius: 2px;
       }
     }
   }
 
   .clear-btn {
-    font-size: 12px;
+    font-size: 11px;
     color: #f97316;
     background: none;
     border: none;
@@ -508,7 +506,7 @@
     transition: background 0.2s;
 
     &:hover {
-      background: var(--el-color-primary-light-9);
+      background: #fff3eb;
     }
   }
 
@@ -516,31 +514,30 @@
   .selected-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 7px;
   }
 
   .selected-card {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
+    gap: 8px;
+    padding: 9px 10px;
     background: var(--el-bg-color);
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid var(--el-border-color-lighter);
-    transition: all 0.2s;
+    transition: border-color 0.18s;
 
     &:hover {
-      border-color: #fbd5bc;
-      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.08);
+      border-color: #fdba74;
     }
 
     &__dot {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       background: #f97316;
       flex-shrink: 0;
-      margin-top: 6px;
+      margin-top: 5px;
     }
 
     &__info {
@@ -551,18 +548,23 @@
     &__name {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 13px;
+      gap: 5px;
+      line-height: 1.4;
+    }
+
+    &__name-text {
+      font-size: 12px;
       font-weight: 600;
       color: var(--el-text-color-primary);
-      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     &__addr {
-      margin-top: 4px;
+      margin-top: 3px;
       font-size: 11px;
       color: var(--el-text-color-placeholder);
-      line-height: 1.6;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -570,9 +572,9 @@
 
     &__remove {
       flex-shrink: 0;
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
       border: none;
       background: none;
       cursor: pointer;
@@ -580,7 +582,8 @@
       align-items: center;
       justify-content: center;
       color: var(--el-text-color-placeholder);
-      transition: all 0.2s;
+      transition: all 0.18s;
+      font-size: 12px;
 
       &:hover {
         background: #fee2e2;
@@ -589,8 +592,25 @@
     }
   }
 
-  .subject-tag {
+  .selected-card__type-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
     flex-shrink: 0;
+    line-height: 1.6;
+
+    &.tag--project {
+      background: #fff3eb;
+      color: #ea580c;
+    }
+
+    &.tag--building {
+      background: #eef2ff;
+      color: #6366f1;
+    }
   }
 
   /* ─── Empty State ─────────────────────────────────── */
@@ -599,18 +619,18 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 48px 24px;
-    gap: 8px;
+    padding: 32px 16px;
+    gap: 6px;
 
     &__icon {
-      width: 60px;
-      height: 60px;
-      color: var(--el-border-color);
+      width: 52px;
+      height: 52px;
+      color: #d1d5db;
     }
 
     &__text {
       margin: 4px 0 0;
-      font-size: 13px;
+      font-size: 12px;
       color: var(--el-text-color-placeholder);
       font-weight: 500;
     }
@@ -620,7 +640,7 @@
       font-size: 11px;
       color: var(--el-text-color-disabled);
       text-align: center;
-      line-height: 1.6;
+      line-height: 1.7;
     }
   }
 
@@ -628,41 +648,40 @@
   .main-panel {
     display: flex;
     flex-direction: column;
-    height: 100%;
     overflow: hidden;
     background: var(--el-bg-color);
+    min-width: 0;
   }
 
   /* ─── Search Bar ──────────────────────────────────── */
   .search-bar {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 20px;
+    gap: 8px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--el-border-color-light);
-    background: var(--el-bg-color);
     flex-shrink: 0;
 
     &__input-wrap {
       position: relative;
       flex: 1;
-      max-width: 320px;
+      min-width: 0;
     }
 
     &__icon {
       position: absolute;
-      left: 12px;
+      left: 10px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--el-text-color-placeholder);
-      font-size: 14px;
+      font-size: 13px;
       z-index: 1;
     }
 
     :deep(.search-bar__input) {
       .el-input__wrapper {
-        padding-left: 36px;
-        border-radius: 8px;
+        padding-left: 32px;
+        border-radius: 7px;
         box-shadow: 0 0 0 1px var(--el-border-color);
         transition: box-shadow 0.2s;
 
@@ -678,16 +697,17 @@
   .btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 0 16px;
+    gap: 5px;
+    padding: 0 14px;
     height: 34px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     border: none;
-    transition: all 0.2s;
+    transition: all 0.18s;
     white-space: nowrap;
+    flex-shrink: 0;
 
     &--primary {
       background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
@@ -696,13 +716,14 @@
 
       &:hover:not(:disabled) {
         transform: translateY(-1px);
-        box-shadow: 0 4px 16px rgba(249, 115, 22, 0.35);
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
       }
 
       &:disabled {
         opacity: 0.4;
         cursor: not-allowed;
         transform: none;
+        box-shadow: none;
       }
     }
 
@@ -714,87 +735,85 @@
       &:hover {
         border-color: #f97316;
         color: #f97316;
-        background: var(--el-color-primary-light-9);
+        background: #fff8f3;
       }
     }
 
     &--confirm {
-      padding-right: 12px;
+      padding-right: 10px;
     }
 
     &__count {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 20px;
-      height: 20px;
-      padding: 0 5px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.3);
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.28);
       font-size: 11px;
       font-weight: 700;
-      margin-left: 2px;
     }
   }
 
-  /* ─── Main Layout ─────────────────────────────────── */
+  /* ─── Main Layout：项目 + 楼栋，比例切分，不用固定px ─ */
   .main-layout {
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-columns: 320px minmax(0, 1fr);
-    gap: 0;
+    grid-template-columns: minmax(0, 50fr) minmax(0, 50fr);
+    gap: 12px;
+    padding: 14px 16px;
     overflow: hidden;
-    padding: 16px;
-    gap: 16px;
   }
 
   /* ─── Project Panel ───────────────────────────────── */
   .project-panel {
     border: 1px solid var(--el-border-color-light);
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--el-bg-color);
     overflow: hidden;
     display: flex;
     flex-direction: column;
 
     &__header {
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--el-border-color-light);
       background: var(--el-fill-color-extra-light);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      color: var(--el-text-color-primary);
+      color: var(--el-text-color-secondary);
+      letter-spacing: 0.3px;
       flex-shrink: 0;
     }
   }
 
   .project-list {
     flex: 1;
-    padding: 10px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     overflow-y: auto;
+    min-height: 0;
 
     &::-webkit-scrollbar {
-      width: 4px;
+      width: 3px;
     }
-
     &::-webkit-scrollbar-track {
       background: transparent;
     }
-
     &::-webkit-scrollbar-thumb {
-      background: #ddd;
+      background: #e0e0e0;
       border-radius: 2px;
     }
   }
 
   .project-card {
     position: relative;
-    padding: 11px 14px;
-    border-radius: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
     border: 1.5px solid var(--el-border-color-light);
     background: var(--el-bg-color);
     text-align: left;
@@ -803,25 +822,31 @@
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 
-    &:hover:not(.is-selected) {
+    /* 仅激活（预览楼栋），未选中 */
+    &.is-active:not(.is-selected) {
+      background: #fffbf7;
+      border-color: #fdba74;
+    }
+
+    /* hover 未激活未选中 */
+    &:hover:not(.is-active):not(.is-selected) {
       border-color: #fdba74;
       background: #fffbf7;
     }
 
-    &.is-active:not(.is-selected) {
-      border-color: #fdba74;
-      background: #fff7ed;
-    }
-
+    /* 选中态 */
     &.is-selected {
       border-color: #f97316;
       border-width: 2px;
-      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+      background: #fff7ed;
 
       .project-card__name {
         color: #c2410c;
+      }
+      .project-card__addr {
+        color: #fb923c;
       }
     }
 
@@ -838,89 +863,99 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: color 0.18s;
     }
 
     &__addr {
-      margin-top: 5px;
+      margin-top: 4px;
       font-size: 11px;
       color: var(--el-text-color-secondary);
-      line-height: 1.5;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: color 0.18s;
     }
 
+    /* 勾选圆圈：始终占位，选中时点亮 */
     &__check {
       flex-shrink: 0;
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: #f97316;
+      background: transparent;
+      border: 1.5px solid var(--el-border-color);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
-      font-size: 11px;
+      color: transparent;
+      font-size: 10px;
+      transition: all 0.18s;
+
+      &.visible {
+        background: #f97316;
+        border-color: #f97316;
+        color: #fff;
+      }
     }
   }
 
   /* ─── Building Panel ──────────────────────────────── */
   .building-panel {
     border: 1px solid var(--el-border-color-light);
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--el-bg-color);
     overflow: hidden;
     display: flex;
     flex-direction: column;
 
     &__header {
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--el-border-color-light);
       background: var(--el-fill-color-extra-light);
       flex-shrink: 0;
     }
 
     &__title {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--el-text-color-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     &__desc {
-      margin-top: 3px;
+      margin-top: 2px;
       font-size: 11px;
-      color: var(--el-text-color-secondary);
-      line-height: 1.6;
+      color: var(--el-text-color-placeholder);
     }
   }
 
-  .building-grid {
+  .building-list {
     flex: 1;
-    padding: 12px;
-    display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 10px;
-    align-content: start;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     overflow-y: auto;
+    min-height: 0;
 
     &::-webkit-scrollbar {
-      width: 4px;
+      width: 3px;
     }
-
     &::-webkit-scrollbar-track {
       background: transparent;
     }
-
     &::-webkit-scrollbar-thumb {
-      background: #ddd;
+      background: #e0e0e0;
       border-radius: 2px;
     }
   }
 
   .building-card {
     position: relative;
-    padding: 12px 14px;
-    border-radius: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
     border: 1.5px solid var(--el-border-color-light);
     background: var(--el-bg-color);
     text-align: left;
@@ -928,26 +963,40 @@
     transition: all 0.18s ease;
     width: 100%;
     display: flex;
-    align-items: flex-start;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
 
     &:hover:not(.is-selected) {
       border-color: #fdba74;
       background: #fffbf7;
+
+      .building-card__icon {
+        color: #f97316;
+      }
     }
 
     &.is-selected {
       border-color: #f97316;
       border-width: 2px;
-      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+      background: #fff7ed;
 
       .building-card__name {
         color: #c2410c;
       }
-
       .building-card__meta {
-        color: #ea580c;
+        color: #fb923c;
       }
+      .building-card__icon {
+        color: #f97316;
+      }
+    }
+
+    &__icon {
+      flex-shrink: 0;
+      color: var(--el-text-color-placeholder);
+      transition: color 0.18s;
+      display: flex;
+      align-items: center;
     }
 
     &__inner {
@@ -959,11 +1008,15 @@
       font-size: 13px;
       font-weight: 600;
       color: var(--el-text-color-primary);
-      line-height: 1.5;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.18s;
     }
 
     &__meta {
-      margin-top: 6px;
+      margin-top: 4px;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -974,25 +1027,28 @@
 
     &__check {
       flex-shrink: 0;
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: #f97316;
+      background: transparent;
+      border: 1.5px solid var(--el-border-color);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
-      font-size: 11px;
-      margin-top: 1px;
+      color: transparent;
+      font-size: 10px;
+      transition: all 0.18s;
+
+      &.visible {
+        background: #f97316;
+        border-color: #f97316;
+        color: #fff;
+      }
     }
   }
 
-  .meta-item {
-    display: inline;
-  }
-
   .meta-sep {
-    color: var(--el-border-color);
+    color: #d1d5db;
   }
 
   /* ─── Pagination Bar ──────────────────────────────── */
@@ -1000,20 +1056,24 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 20px;
+    padding: 10px 16px;
     border-top: 1px solid var(--el-border-color-light);
     flex-shrink: 0;
+    gap: 12px;
 
     &__total {
       font-size: 12px;
       color: var(--el-text-color-placeholder);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     :deep(.el-pagination) {
+      flex-wrap: nowrap;
+
       .el-pager li:not(.is-disabled).is-active {
         background: #f97316;
       }
-
       .btn-prev,
       .btn-next {
         border-radius: 6px;
@@ -1046,16 +1106,14 @@
   /* ─── List Transition ─────────────────────────────── */
   .list-enter-active,
   .list-leave-active {
-    transition: all 0.25s ease;
+    transition: all 0.22s ease;
   }
-
   .list-enter-from {
     opacity: 0;
-    transform: translateX(-12px);
+    transform: translateX(-10px);
   }
-
   .list-leave-to {
     opacity: 0;
-    transform: translateX(12px);
+    transform: translateX(10px);
   }
 </style>
