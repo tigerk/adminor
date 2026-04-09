@@ -1,5 +1,5 @@
 <template>
-  <el-card shadow="never" class="form-card">
+  <el-card shadow="never" class="form-card form-card--subject">
     <template #header>
       <div class="card-header">
         <div class="header-inline">
@@ -12,7 +12,7 @@
           <el-tag effect="plain">已配置：{{ configuredSubjectCount }} {{ currentSubjectUnit }}</el-tag>
           <el-button type="primary" size="small" @click="emit('openPicker')">
             <Plus />
-            选择{{ currentSubjectTypeLabel }}
+            选择房源
           </el-button>
         </div>
       </div>
@@ -20,18 +20,6 @@
 
     <el-form-item label-width="0" prop="contractSubjectList">
       <div class="selected-house-wrapper">
-        <div class="subject-type-grid">
-          <button
-            v-for="option in SUBJECT_TYPE_OPTIONS"
-            :key="option.value"
-            type="button"
-            :class="['subject-type-card', { 'is-active': selectedSubjectType === option.value }]"
-            @click="emit('subjectTypeChange', option.value)"
-          >
-            <div class="subject-type-card__title">{{ option.label }}</div>
-            <div class="subject-type-card__desc">{{ option.desc }}</div>
-          </button>
-        </div>
         <div v-if="form.contractSubjectList.length" class="selected-house-panel">
           <div class="selected-house-tags">
             <div v-for="item in form.contractSubjectList" :key="`${item.subjectType}-${item.subjectId}`" class="selected-house-chip">
@@ -45,7 +33,7 @@
             </div>
           </div>
         </div>
-        <el-empty v-else :description="`请选择一个或多个${currentSubjectTypeLabel}`" :image-size="90" />
+        <el-empty v-else description="点击右上角“选择房源”，先确认签约类型后再选择具体房源" :image-size="90" />
       </div>
     </el-form-item>
   </el-card>
@@ -54,7 +42,6 @@
 <script setup lang="ts">
   import type { OwnerContractSubjectTypeEnum } from "@/types/generated";
   import Plus from "~icons/ep/plus";
-  import { SUBJECT_TYPE_OPTIONS } from "../model/ownerContractFormOptions";
   import type { OwnerContractForm } from "../model/ownerContractFormTypes";
 
   defineProps<{
@@ -69,7 +56,6 @@
 
   const emit = defineEmits<{
     openPicker: [];
-    subjectTypeChange: [type: OwnerContractSubjectTypeEnum];
     clearSelection: [];
     removeSubject: [subjectType: OwnerContractSubjectTypeEnum, subjectId: string];
   }>();

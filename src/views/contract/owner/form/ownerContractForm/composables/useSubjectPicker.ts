@@ -12,7 +12,7 @@ export function useSubjectPicker(form: OwnerContractForm) {
 
   const currentSubjectTypeLabel = computed(() => {
     if (selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.FOCUS.value) return "集中式";
-    return "房源";
+    return "整/合租";
   });
   const currentSubjectTypeDesc = computed(() => {
     if (selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.FOCUS.value) {

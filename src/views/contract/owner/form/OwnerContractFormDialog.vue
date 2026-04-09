@@ -8,8 +8,7 @@
       :current-subject-type-desc="currentSubjectTypeDesc"
       :current-subject-unit="currentSubjectUnit"
       :get-subject-type-short-label="getSubjectTypeShortLabel"
-      @open-picker="openSubjectPicker"
-      @subject-type-change="handleSubjectTypeChange"
+      @open-picker="openSubjectPickerStep"
       @clear-selection="clearSubjectSelection"
       @remove-subject="removeSubject"
     />
@@ -41,6 +40,35 @@
     <HousePicker ref="housePickerRef" @confirm="handleHouseConfirm" />
     <FocusSubjectPicker ref="focusSubjectPickerRef" @confirm="handleFocusSubjectConfirm" />
 
+    <el-dialog v-model="subjectTypeDialogVisible" title="选择签约类型" width="560px" append-to-body destroy-on-close>
+      <div class="subject-picker-step">
+        <div class="subject-picker-step__header">
+          <div class="subject-picker-step__title">第一步：先确认本次合同按哪种类型签约</div>
+          <div class="subject-picker-step__desc">确认后会自动打开对应的选择器。房源进入房源选择，集中式进入项目 / 楼栋选择。</div>
+        </div>
+
+        <div class="subject-type-grid">
+          <button
+            v-for="option in SUBJECT_TYPE_OPTIONS"
+            :key="option.value"
+            type="button"
+            :class="['subject-type-card', { 'is-active': pendingSubjectType === option.value }]"
+            @click="pendingSubjectType = option.value"
+          >
+            <div class="subject-type-card__title">{{ option.label }}</div>
+            <div class="subject-type-card__desc">{{ option.desc }}</div>
+          </button>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="subject-picker-step__footer mt-4">
+          <el-button @click="subjectTypeDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSubjectTypeStepConfirm">下一步</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="previewVisible" top="10px" title="业主合同预览" width="80%" destroy-on-close append-to-body>
       <iframe v-if="pdfUrl" title="业主合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
     </el-dialog>
@@ -61,6 +89,7 @@
   import SubjectSection from "./ownerContractForm/sections/SubjectSection.vue";
   import { useOwnerContractForm } from "./ownerContractForm/composables/useOwnerContractForm";
   import { useSubjectPicker } from "./ownerContractForm/composables/useSubjectPicker";
+  import { SUBJECT_TYPE_OPTIONS } from "./ownerContractForm/model/ownerContractFormOptions";
 
   defineOptions({ name: "OwnerContractFormDialog" });
 
@@ -125,6 +154,20 @@
   const focusSubjectPickerRef = ref<InstanceType<typeof FocusSubjectPicker>>();
   const previewVisible = ref(false);
   const pdfUrl = ref("");
+  const subjectTypeDialogVisible = ref(false);
+  const pendingSubjectType = ref<OwnerContractSubjectTypeEnum>(selectedSubjectType.value);
+
+  function openSubjectPickerStep() {
+    pendingSubjectType.value = selectedSubjectType.value;
+    subjectTypeDialogVisible.value = true;
+  }
+
+  async function handleSubjectTypeStepConfirm() {
+    await handleSubjectTypeChange(pendingSubjectType.value);
+    if (selectedSubjectType.value !== pendingSubjectType.value) return;
+    subjectTypeDialogVisible.value = false;
+    openSubjectPicker();
+  }
 
   function openSubjectPicker() {
     if (selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.FOCUS.value) {
@@ -182,4 +225,27 @@
 
 <style lang="scss">
   @use "./ownerContractForm/styles/ownerContractForm.scss";
+
+  .subject-picker-step__header {
+    margin-bottom: 16px;
+  }
+
+  .subject-picker-step__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .subject-picker-step__desc {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--el-text-color-secondary);
+  }
+
+  .subject-picker-step__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
 </style>

@@ -149,7 +149,7 @@ export const SETTLEMENT_TIMING_OPTIONS = [
 
 export const SUBJECT_TYPE_OPTIONS = [
   {
-    label: "房源",
+    label: "整/合租",
     value: OwnerContractSubjectTypeEnumMeta.HOUSE.value as OwnerContractSubjectTypeEnum,
     desc: "逐套选择，适合分散式和单套托管。"
   },
