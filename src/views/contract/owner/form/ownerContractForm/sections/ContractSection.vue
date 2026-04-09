@@ -37,6 +37,14 @@
           </div>
         </div>
 
+        <el-alert
+          v-if="masterLeaseBillLocked && form.ownerContract.cooperationMode === 'MASTER_LEASE'"
+          :title="masterLeaseBillLockReason"
+          type="warning"
+          :closable="false"
+          class="mb-4"
+        />
+
         <el-row :gutter="16" class="contract-entry-row">
           <el-col :span="8">
             <el-form-item label="合同模板" prop="ownerContract.contractTemplateId">
@@ -73,15 +81,16 @@
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
                 class="w-full"
+                :disabled="masterLeaseBillLocked && form.ownerContract.cooperationMode === 'MASTER_LEASE'"
               />
             </el-form-item>
           </el-col>
           <el-col :span="6">
             <el-form-item label=" ">
               <el-button-group>
-                <el-button plain @click="emit('applyYearShortcut', 1)">1 年</el-button>
-                <el-button plain @click="emit('applyYearShortcut', 3)">3 年</el-button>
-                <el-button plain @click="emit('applyYearShortcut', 5)">5 年</el-button>
+                <el-button plain :disabled="masterLeaseBillLocked && form.ownerContract.cooperationMode === 'MASTER_LEASE'" @click="emit('applyYearShortcut', 1)">1 年</el-button>
+                <el-button plain :disabled="masterLeaseBillLocked && form.ownerContract.cooperationMode === 'MASTER_LEASE'" @click="emit('applyYearShortcut', 3)">3 年</el-button>
+                <el-button plain :disabled="masterLeaseBillLocked && form.ownerContract.cooperationMode === 'MASTER_LEASE'" @click="emit('applyYearShortcut', 5)">5 年</el-button>
               </el-button-group>
             </el-form-item>
           </el-col>
@@ -109,6 +118,8 @@
   const form = defineModel<OwnerContractForm>("form", { required: true });
 
   const props = defineProps<{
+    masterLeaseBillLocked: boolean;
+    masterLeaseBillLockReason: string;
     contractTemplates: ContractTemplateListVo[];
     contractDateRange: string[];
   }>();

@@ -7178,6 +7178,14 @@ export type OwnerDetailVo = {
      */
     ownerLeaseFreeRuleList?: Array<OwnerLeaseFreeRuleDto>;
     /**
+     * 包租账单条款是否已锁定
+     */
+    masterLeaseBillLocked?: boolean;
+    /**
+     * 包租账单条款锁定原因
+     */
+    masterLeaseBillLockReason?: string;
+    /**
      * 创建人
      */
     createBy?: string;

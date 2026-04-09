@@ -12,7 +12,7 @@
               <el-segmented v-model="form.ownerType" :options="OWNER_TYPE_OPTIONS" />
             </el-form-item>
             <el-form-item prop="ownerContract.cooperationMode" class="card-header-form__item">
-              <el-segmented v-model="form.ownerContract.cooperationMode" :options="COOPERATION_MODE_OPTIONS" />
+              <el-segmented v-model="form.ownerContract.cooperationMode" :options="COOPERATION_MODE_OPTIONS" :disabled="masterLeaseBillLocked" />
             </el-form-item>
           </el-space>
         </div>
@@ -247,6 +247,7 @@
   const form = defineModel<OwnerContractForm>("form", { required: true });
 
   defineProps<{
+    masterLeaseBillLocked: boolean;
     ownerTagOptions: { label: string; value: string }[];
     queryOwnerSuggestions: (q: string, cb: (items: OwnerSuggestionItem[]) => void) => void;
     handleOwnerSuggestionSelect: (item: OwnerSuggestionItem) => void;

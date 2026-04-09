@@ -2,6 +2,7 @@
   <el-form ref="formRef" :model="form" :rules="rules" label-position="top" label-width="100px" class="owner-contract-form mb-4">
     <SubjectSection
       :form="form"
+      :master-lease-bill-locked="masterLeaseBillLocked"
       :configured-subject-count="configuredSubjectCount"
       :selected-subject-type="selectedSubjectType"
       :current-subject-type-label="currentSubjectTypeLabel"
@@ -15,6 +16,7 @@
 
     <OwnerSection
       v-model:form="form"
+      :master-lease-bill-locked="masterLeaseBillLocked"
       :owner-tag-options="ownerTagOptions"
       :query-owner-suggestions="queryOwnerSuggestions"
       :handle-owner-suggestion-select="handleOwnerSuggestionSelect"
@@ -22,10 +24,19 @@
       @fill-payee-from-contact="fillPayeeFromContact"
     />
 
-    <ContractSection v-model:form="form" v-model:contract-date-range="contractDateRange" :contract-templates="contractTemplates" @apply-year-shortcut="applyYearShortcut" />
+    <ContractSection
+      v-model:form="form"
+      v-model:contract-date-range="contractDateRange"
+      :master-lease-bill-locked="masterLeaseBillLocked"
+      :master-lease-bill-lock-reason="masterLeaseBillLockReason"
+      :contract-templates="contractTemplates"
+      @apply-year-shortcut="applyYearShortcut"
+    />
 
     <ClauseSection
       v-model:form="form"
+      :master-lease-bill-locked="masterLeaseBillLocked"
+      :master-lease-bill-lock-reason="masterLeaseBillLockReason"
       :other-fee-type-options="otherFeeTypeOptions"
       :settlement-fee-cascader-values="settlementFeeCascaderValues"
       :lease-fee-cascader-values="leaseFeeCascaderValues"
@@ -157,6 +168,10 @@
   const pdfUrl = ref("");
   const subjectTypeDialogVisible = ref(false);
   const pendingLeaseMode = ref<SubjectLeaseModeValue>(LeaseModeEnumMeta.SCATTER.code as SubjectLeaseModeValue);
+  const masterLeaseBillLocked = computed(() => props.isEdit && form.ownerContract.cooperationMode === "MASTER_LEASE" && Boolean(props.formInline?.masterLeaseBillLocked));
+  const masterLeaseBillLockReason = computed(
+    () => props.formInline?.masterLeaseBillLockReason || "该包租合同已发生付款或结算，账单条款已锁定；如需调整，请走合同变更。"
+  );
 
   const currentLeaseMode = computed<SubjectLeaseModeValue>(() =>
     selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.HOUSE.value

@@ -75,7 +75,16 @@ function useOwnerContract() {
 
           const resp = isEdit ? await updateOwnerContract(payload as OwnerUpdateDto) : await createOwnerContract(payload);
           if (resp.code === 0) {
-            message(isEdit ? "业主合同更新成功" : "业主合同创建成功", { type: "success" });
+            const cooperationMode = formInstance?.form?.ownerContract?.cooperationMode;
+            const successText =
+              cooperationMode === "MASTER_LEASE"
+                ? isEdit
+                  ? "业主合同更新成功，包租账单计划已自动重建"
+                  : "业主合同创建成功，包租账单计划已自动生成"
+                : isEdit
+                  ? "业主合同更新成功"
+                  : "业主合同创建成功";
+            message(successText, { type: "success" });
             onSuccess?.();
             done();
           } else {

@@ -67,10 +67,10 @@
   }));
 
   const form = reactive<OwnerBillPaymentCreateDto>({
-    billId: props.billId,
+    billId: String(props.billId),
     payAmount: Number(props.unpaidAmount || 0),
     payTime: "",
-    payChannel: "",
+    payChannel: undefined,
     thirdTradeNo: "",
     remark: "",
     voucherUrls: []
@@ -104,7 +104,7 @@
     await formRef.value?.validate();
     return {
       ...form,
-      billId: props.billId
+      billId: String(props.billId)
     };
   }
 

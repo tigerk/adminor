@@ -1,24 +1,31 @@
 <template>
   <div>
+    <el-alert
+      v-if="masterLeaseBillLocked"
+      :title="masterLeaseBillLockReason"
+      type="warning"
+      :closable="false"
+      class="mb-4"
+    />
     <el-row :gutter="20">
       <el-col :span="4">
         <el-form-item label="总月租金">
-          <el-input-number v-model="form.ownerLeaseRule.rentAmount" :min="0" :precision="2" class="w-full" />
+          <el-input-number v-model="form.ownerLeaseRule.rentAmount" :min="0" :precision="2" class="w-full" :disabled="masterLeaseBillLocked" />
         </el-form-item>
       </el-col>
       <el-col :span="4">
         <el-form-item label="总押金">
-          <el-input-number v-model="form.ownerLeaseRule.depositAmount" :min="0" :precision="2" class="w-full" />
+          <el-input-number v-model="form.ownerLeaseRule.depositAmount" :min="0" :precision="2" class="w-full" :disabled="masterLeaseBillLocked" />
         </el-form-item>
       </el-col>
       <el-col :span="4">
         <el-form-item label="押金月数">
-          <el-input-number v-model="form.ownerLeaseRule.depositMonths" :min="0" class="w-full" />
+          <el-input-number v-model="form.ownerLeaseRule.depositMonths" :min="0" class="w-full" :disabled="masterLeaseBillLocked" />
         </el-form-item>
       </el-col>
       <el-col :span="4">
         <el-form-item label="付款月数">
-          <el-input-number v-model="form.ownerLeaseRule.paymentMonths" :min="1" class="w-full" />
+          <el-input-number v-model="form.ownerLeaseRule.paymentMonths" :min="1" class="w-full" :disabled="masterLeaseBillLocked" />
         </el-form-item>
       </el-col>
       <el-col :span="4">
@@ -40,24 +47,24 @@
       </el-col>
       <el-col :span="4">
         <el-form-item label="付款日设置">
-          <el-select v-model="form.ownerLeaseRule.rentDueType" class="w-full">
+          <el-select v-model="form.ownerLeaseRule.rentDueType" class="w-full" :disabled="masterLeaseBillLocked">
             <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
       </el-col>
       <el-col :span="4">
         <el-form-item label="每月付款日">
-          <el-input-number v-model="form.ownerLeaseRule.rentDueDay" :min="1" :max="31" class="w-full" />
+          <el-input-number v-model="form.ownerLeaseRule.rentDueDay" :min="1" :max="31" class="w-full" :disabled="masterLeaseBillLocked" />
         </el-form-item>
       </el-col>
       <el-col :span="4">
         <el-form-item label="首付日期">
-          <el-date-picker v-model="form.ownerLeaseRule.firstPayDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
+          <el-date-picker v-model="form.ownerLeaseRule.firstPayDate" type="date" value-format="YYYY-MM-DD" class="w-full" :disabled="masterLeaseBillLocked" />
         </el-form-item>
       </el-col>
       <el-col :span="4">
         <el-form-item label="折算方式">
-          <el-select v-model="form.ownerLeaseRule.prorateType" class="w-full">
+          <el-select v-model="form.ownerLeaseRule.prorateType" class="w-full" :disabled="masterLeaseBillLocked">
             <el-option v-for="item in PRORATE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -70,7 +77,7 @@
           <div class="sub-panel__title">其他费用</div>
           <div class="sub-panel__desc">参考退租费用，支持前置选择收 / 支和金额方式。</div>
         </div>
-        <el-button type="primary" plain @click="emit('addLeaseFee')">添加费用</el-button>
+        <el-button type="primary" plain :disabled="masterLeaseBillLocked" @click="emit('addLeaseFee')">添加费用</el-button>
       </div>
       <div class="fee-table-wrapper">
         <table class="fee-table fee-table--master-lease">
@@ -89,7 +96,7 @@
             </tr>
             <tr v-for="(fee, index) in form.ownerLeaseRule.otherFeeList" :key="index">
               <td>
-                <el-radio-group v-model="fee.feeDirection" class="direction-radio-group" size="small">
+                <el-radio-group v-model="fee.feeDirection" class="direction-radio-group" size="small" :disabled="masterLeaseBillLocked">
                   <el-radio-button label="IN">收</el-radio-button>
                   <el-radio-button label="OUT">支</el-radio-button>
                 </el-radio-group>
@@ -102,18 +109,19 @@
                   clearable
                   filterable
                   class="w-full"
+                  :disabled="masterLeaseBillLocked"
                   @change="value => emit('leaseFeeTypeChange', value, index)"
                 />
               </td>
               <td>
-                <el-select v-model="fee.paymentMethod" class="w-full">
+                <el-select v-model="fee.paymentMethod" class="w-full" :disabled="masterLeaseBillLocked">
                   <el-option v-for="item in PAYMENT_METHOD_OPTIONS_REF" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </td>
               <td>
-                <el-input v-model.number="fee.priceInput" type="number" class="w-full" placeholder="请输入">
+                <el-input v-model.number="fee.priceInput" type="number" class="w-full" placeholder="请输入" :disabled="masterLeaseBillLocked">
                   <template #prepend>
-                    <el-select v-model="fee.priceMethod" style="width: 140px">
+                    <el-select v-model="fee.priceMethod" style="width: 140px" :disabled="masterLeaseBillLocked">
                       <el-option v-for="item in PRICE_METHOD_OPTIONS_REF" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                   </template>
@@ -121,7 +129,7 @@
                 </el-input>
               </td>
               <td class="text-center">
-                <el-button link type="danger" @click="form.ownerLeaseRule.otherFeeList?.splice(index, 1)">删除</el-button>
+                <el-button link type="danger" :disabled="masterLeaseBillLocked" @click="form.ownerLeaseRule.otherFeeList?.splice(index, 1)">删除</el-button>
               </td>
             </tr>
           </tbody>
@@ -135,7 +143,7 @@
           <div class="sub-panel__title">包租免租规则</div>
           <div class="sub-panel__desc">按合同级统一设置，非必填。</div>
         </div>
-        <el-button type="primary" plain @click="emit('addLeaseFreeRule')">新增规则</el-button>
+        <el-button type="primary" plain :disabled="masterLeaseBillLocked" @click="emit('addLeaseFreeRule')">新增规则</el-button>
       </div>
       <div class="fee-table-wrapper">
         <table class="fee-table fee-table--master-lease lease-free-table">
@@ -154,17 +162,17 @@
             </tr>
             <tr v-for="(row, index) in form.ownerLeaseFreeRuleList" :key="index">
               <td>
-                <el-select v-model="row.freeType" class="w-full">
+                <el-select v-model="row.freeType" class="w-full" :disabled="masterLeaseBillLocked">
                   <el-option v-for="item in FREE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </td>
-              <td><el-date-picker v-model="row.startDate" type="date" value-format="YYYY-MM-DD" class="w-full" /></td>
-              <td><el-date-picker v-model="row.endDate" type="date" value-format="YYYY-MM-DD" class="w-full" /></td>
+              <td><el-date-picker v-model="row.startDate" type="date" value-format="YYYY-MM-DD" class="w-full" :disabled="masterLeaseBillLocked" /></td>
+              <td><el-date-picker v-model="row.endDate" type="date" value-format="YYYY-MM-DD" class="w-full" :disabled="masterLeaseBillLocked" /></td>
               <td>
                 <template v-if="row.calcMode === 'RATIO'">
-                  <el-input v-model.number="row.freeRatio" type="number" class="w-full" placeholder="请输入">
+                  <el-input v-model.number="row.freeRatio" type="number" class="w-full" placeholder="请输入" :disabled="masterLeaseBillLocked">
                     <template #prepend>
-                      <el-select v-model="row.calcMode" style="width: 140px">
+                      <el-select v-model="row.calcMode" style="width: 140px" :disabled="masterLeaseBillLocked">
                         <el-option v-for="item in LEASE_FREE_CALC_MODE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
                       </el-select>
                     </template>
@@ -172,9 +180,9 @@
                   </el-input>
                 </template>
                 <template v-else>
-                  <el-input v-model.number="row.freeAmount" type="number" class="w-full" placeholder="请输入">
+                  <el-input v-model.number="row.freeAmount" type="number" class="w-full" placeholder="请输入" :disabled="masterLeaseBillLocked">
                     <template #prepend>
-                      <el-select v-model="row.calcMode" style="width: 140px">
+                      <el-select v-model="row.calcMode" style="width: 140px" :disabled="masterLeaseBillLocked">
                         <el-option v-for="item in LEASE_FREE_CALC_MODE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
                       </el-select>
                     </template>
@@ -183,7 +191,7 @@
                 </template>
               </td>
               <td class="text-center">
-                <el-button link type="danger" @click="form.ownerLeaseFreeRuleList.splice(index, 1)">删除</el-button>
+                <el-button link type="danger" :disabled="masterLeaseBillLocked" @click="form.ownerLeaseFreeRuleList.splice(index, 1)">删除</el-button>
               </td>
             </tr>
           </tbody>
@@ -206,10 +214,12 @@
   import type { OwnerContractForm } from "../model/ownerContractFormTypes";
 
   const props = defineProps<{
+    masterLeaseBillLocked: boolean;
+    masterLeaseBillLockReason: string;
     otherFeeTypeOptions: any[];
     leaseFeeCascaderValues: Record<number, any[]>;
   }>();
-  const { otherFeeTypeOptions, leaseFeeCascaderValues } = toRefs(props);
+  const { otherFeeTypeOptions, leaseFeeCascaderValues, masterLeaseBillLocked, masterLeaseBillLockReason } = toRefs(props);
 
   const form = defineModel<OwnerContractForm>("form", { required: true });
   const localLeaseFeeCascaderValues = reactive<Record<number, any[]>>({});

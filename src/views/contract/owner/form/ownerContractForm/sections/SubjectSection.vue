@@ -10,7 +10,7 @@
           <el-tag effect="plain">类型：{{ currentSubjectTypeLabel }}</el-tag>
           <el-tag effect="plain">已选：{{ form.contractSubjectList.length }} {{ currentSubjectUnit }}</el-tag>
           <el-tag effect="plain">已配置：{{ configuredSubjectCount }} {{ currentSubjectUnit }}</el-tag>
-          <el-button type="primary" size="small" @click="emit('openPicker')">
+          <el-button type="primary" size="small" :disabled="masterLeaseBillLocked" @click="emit('openPicker')">
             <Plus />
             选择房源
           </el-button>
@@ -29,7 +29,7 @@
                 </el-tag>
                 <div class="selected-house-chip__title">{{ item.subjectName || "未命名房源" }}</div>
               </div>
-              <el-button link type="danger" @click="emit('removeSubject', item.subjectType, item.subjectId)">移除</el-button>
+              <el-button link type="danger" :disabled="masterLeaseBillLocked" @click="emit('removeSubject', item.subjectType, item.subjectId)">移除</el-button>
             </div>
           </div>
         </div>
@@ -46,6 +46,7 @@
 
   defineProps<{
     form: OwnerContractForm;
+    masterLeaseBillLocked: boolean;
     configuredSubjectCount: number;
     selectedSubjectType: OwnerContractSubjectTypeEnum;
     currentSubjectTypeLabel: string;

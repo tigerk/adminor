@@ -32,6 +32,8 @@
 
     <MasterLeaseClause
       v-model:form="form"
+      :master-lease-bill-locked="masterLeaseBillLocked"
+      :master-lease-bill-lock-reason="masterLeaseBillLockReason"
       :other-fee-type-options="otherFeeTypeOptions"
       :lease-fee-cascader-values="leaseFeeCascaderValues"
       @add-lease-fee="emit('addLeaseFee')"
@@ -50,6 +52,8 @@
   const form = defineModel<OwnerContractForm>("form", { required: true });
 
   defineProps<{
+    masterLeaseBillLocked: boolean;
+    masterLeaseBillLockReason: string;
     otherFeeTypeOptions: any[];
     settlementFeeCascaderValues: Record<string, any[]>;
     leaseFeeCascaderValues: Record<number, any[]>;
