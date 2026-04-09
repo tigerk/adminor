@@ -32,18 +32,6 @@
             <div class="subject-type-card__desc">{{ option.desc }}</div>
           </button>
         </div>
-
-        <div class="subject-selection-summary">
-          <div class="subject-selection-summary__left">
-            <div class="subject-selection-summary__title">当前按{{ currentSubjectTypeLabel }}签约</div>
-            <div class="subject-selection-summary__desc">{{ currentSubjectTypeDesc }}</div>
-          </div>
-          <div class="subject-selection-summary__actions">
-            <el-button plain @click="emit('openPicker')">选择{{ currentSubjectTypeLabel }}</el-button>
-            <el-button v-if="form.contractSubjectList.length" text type="danger" @click="emit('clearSelection')">清空已选</el-button>
-          </div>
-        </div>
-
         <div v-if="form.contractSubjectList.length" class="selected-house-panel">
           <div class="selected-house-tags">
             <div v-for="item in form.contractSubjectList" :key="`${item.subjectType}-${item.subjectId}`" class="selected-house-chip">
