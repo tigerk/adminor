@@ -171,6 +171,7 @@
   import { nextTick, reactive, ref } from "vue";
   import { Close, House, Refresh, Search } from "@element-plus/icons-vue";
   import { getHouseList } from "@/api/house/house";
+  import { LeaseModeEnumMeta } from "@/types/generated/enum.meta";
   import { getRentalTypeLabel } from "@/utils/house";
   import type { HouseListVo, HouseQueryDto } from "@/types";
 
@@ -198,6 +199,7 @@
   type HousePickerShowOptions = {
     selected?: any[];
     excludeOwnerContractId?: string | number;
+    leaseMode?: number | string;
   };
 
   const emit = defineEmits<{
@@ -218,6 +220,7 @@
   });
 
   const excludeOwnerContractId = ref<string>("");
+  const leaseMode = ref<number>(LeaseModeEnumMeta.SCATTER.code);
 
   const getRentalTagClass = (rentalType?: number) => {
     return rentalType === 1 ? "rental-tag--whole" : "rental-tag--room";
@@ -250,10 +253,11 @@
   const getList = async () => {
     loading.value = true;
     try {
-      const requestParams: HouseQueryDto = {
+      const requestParams: HouseQueryDto & { leaseMode?: number | string } = {
         currentPage: String(queryParams.currentPage),
         pageSize: String(queryParams.pageSize),
         keywords: queryParams.keywords,
+        leaseMode: leaseMode.value,
         excludeOwnerContractId: excludeOwnerContractId.value || undefined
       };
       const res = await getHouseList(requestParams);
@@ -338,6 +342,7 @@
     visible.value = true;
     const resolvedOptions = Array.isArray(options) ? { selected: options } : options || {};
     excludeOwnerContractId.value = resolvedOptions.excludeOwnerContractId ? String(resolvedOptions.excludeOwnerContractId) : "";
+    leaseMode.value = Number(resolvedOptions.leaseMode || LeaseModeEnumMeta.SCATTER.code);
     selectedRows.value = (resolvedOptions.selected || []).map((item: any) => ({
       houseId: String(item.houseId || ""),
       houseName: item.houseName || "-",

@@ -2,7 +2,6 @@ import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS } from "@/constants";
 import type {
   OwnerBearTypeEnum,
   OwnerCooperationModeEnum,
-  OwnerContractSubjectTypeEnum,
   OwnerFreeCalcModeEnum,
   OwnerFreeTypeEnum,
   OwnerIncomeBasisEnum,
@@ -12,9 +11,9 @@ import type {
   OwnerTypeEnum
 } from "@/types/generated";
 import {
+  LeaseModeEnumMeta,
   OwnerBearTypeEnumMeta,
   OwnerCooperationModeEnumMeta,
-  OwnerContractSubjectTypeEnumMeta,
   OwnerFreeCalcModeEnumMeta,
   OwnerFreeTypeEnumMeta,
   OwnerIncomeBasisEnumMeta,
@@ -22,7 +21,15 @@ import {
   OwnerSignStatusEnumMeta,
   OwnerTypeEnumMeta
 } from "@/types/generated/enum.meta";
-import type { GenderValue, IdTypeValue, OwnerContractMediumValue, OwnerPaymentFeeBearTypeValue, OwnerSettlementTimingValue, OwnerSignTypeValue } from "./ownerContractFormTypes";
+import type {
+  GenderValue,
+  IdTypeValue,
+  OwnerContractMediumValue,
+  OwnerPaymentFeeBearTypeValue,
+  OwnerSettlementTimingValue,
+  OwnerSignTypeValue,
+  SubjectLeaseModeValue
+} from "./ownerContractFormTypes";
 import {
   BEAR_TYPE_LABEL_MAP,
   CONTRACT_MEDIUM_LABEL_MAP,
@@ -150,12 +157,12 @@ export const SETTLEMENT_TIMING_OPTIONS = [
 export const SUBJECT_TYPE_OPTIONS = [
   {
     label: "整/合租",
-    value: OwnerContractSubjectTypeEnumMeta.HOUSE.value as OwnerContractSubjectTypeEnum,
+    value: LeaseModeEnumMeta.SCATTER.code as SubjectLeaseModeValue,
     desc: "逐套选择，适合分散式和单套托管。"
   },
   {
     label: "集中式",
-    value: OwnerContractSubjectTypeEnumMeta.FOCUS.value as OwnerContractSubjectTypeEnum,
+    value: LeaseModeEnumMeta.FOCUS.code as SubjectLeaseModeValue,
     desc: "可直接选整项目，也可进入项目勾选多个楼栋。"
   }
 ];

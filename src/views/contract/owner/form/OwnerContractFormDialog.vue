@@ -52,8 +52,8 @@
             v-for="option in SUBJECT_TYPE_OPTIONS"
             :key="option.value"
             type="button"
-            :class="['subject-type-card', { 'is-active': pendingSubjectType === option.value }]"
-            @click="pendingSubjectType = option.value"
+            :class="['subject-type-card', { 'is-active': pendingLeaseMode === option.value }]"
+            @click="pendingLeaseMode = option.value"
           >
             <div class="subject-type-card__title">{{ option.label }}</div>
             <div class="subject-type-card__desc">{{ option.desc }}</div>
@@ -76,13 +76,13 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, ref, watch } from "vue";
+  import { computed, onMounted, ref, watch } from "vue";
   import { previewOwnerContract } from "@/api/contract/owner";
   import FocusSubjectPicker from "@/shared/house/FocusSubjectPicker.vue";
   import HousePicker from "@/shared/house/HousePicker.vue";
   import { message } from "@/utils/message";
   import type { OwnerContractIdDto, OwnerContractSubjectTypeEnum, OwnerDetailVo } from "@/types/generated";
-  import { OwnerContractSubjectTypeEnumMeta } from "@/types/generated/enum.meta";
+  import { LeaseModeEnumMeta, OwnerContractSubjectTypeEnumMeta } from "@/types/generated/enum.meta";
   import ClauseSection from "./ownerContractForm/sections/ClauseSection.vue";
   import ContractSection from "./ownerContractForm/sections/ContractSection.vue";
   import OwnerSection from "./ownerContractForm/sections/OwnerSection.vue";
@@ -90,6 +90,7 @@
   import { useOwnerContractForm } from "./ownerContractForm/composables/useOwnerContractForm";
   import { useSubjectPicker } from "./ownerContractForm/composables/useSubjectPicker";
   import { SUBJECT_TYPE_OPTIONS } from "./ownerContractForm/model/ownerContractFormOptions";
+  import type { SubjectLeaseModeValue } from "./ownerContractForm/model/ownerContractFormTypes";
 
   defineOptions({ name: "OwnerContractFormDialog" });
 
@@ -155,16 +156,29 @@
   const previewVisible = ref(false);
   const pdfUrl = ref("");
   const subjectTypeDialogVisible = ref(false);
-  const pendingSubjectType = ref<OwnerContractSubjectTypeEnum>(selectedSubjectType.value);
+  const pendingLeaseMode = ref<SubjectLeaseModeValue>(LeaseModeEnumMeta.SCATTER.code as SubjectLeaseModeValue);
+
+  const currentLeaseMode = computed<SubjectLeaseModeValue>(() =>
+    selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.HOUSE.value
+      ? (LeaseModeEnumMeta.SCATTER.code as SubjectLeaseModeValue)
+      : (LeaseModeEnumMeta.FOCUS.code as SubjectLeaseModeValue)
+  );
+
+  function getSubjectTypeByLeaseMode(leaseMode: SubjectLeaseModeValue): OwnerContractSubjectTypeEnum {
+    return leaseMode === LeaseModeEnumMeta.FOCUS.code
+      ? (OwnerContractSubjectTypeEnumMeta.FOCUS.value as OwnerContractSubjectTypeEnum)
+      : (OwnerContractSubjectTypeEnumMeta.HOUSE.value as OwnerContractSubjectTypeEnum);
+  }
 
   function openSubjectPickerStep() {
-    pendingSubjectType.value = selectedSubjectType.value;
+    pendingLeaseMode.value = currentLeaseMode.value;
     subjectTypeDialogVisible.value = true;
   }
 
   async function handleSubjectTypeStepConfirm() {
-    await handleSubjectTypeChange(pendingSubjectType.value);
-    if (selectedSubjectType.value !== pendingSubjectType.value) return;
+    const nextSubjectType = getSubjectTypeByLeaseMode(pendingLeaseMode.value);
+    await handleSubjectTypeChange(nextSubjectType);
+    if (selectedSubjectType.value !== nextSubjectType) return;
     subjectTypeDialogVisible.value = false;
     openSubjectPicker();
   }
@@ -172,6 +186,7 @@
   function openSubjectPicker() {
     if (selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.FOCUS.value) {
       focusSubjectPickerRef.value?.show({
+        leaseMode: LeaseModeEnumMeta.FOCUS.code,
         selected: selectedSubjects.value.filter(
           item =>
             item.subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS.value ||
@@ -181,6 +196,7 @@
       return;
     }
     housePickerRef.value?.show({
+      leaseMode: LeaseModeEnumMeta.SCATTER.code,
       selected: selectedSubjects.value.map(item => ({ houseId: item.subjectId, houseName: item.subjectName })),
       excludeOwnerContractId: form.ownerContract.id
     });

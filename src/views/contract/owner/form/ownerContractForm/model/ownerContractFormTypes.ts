@@ -28,6 +28,7 @@ export type OwnerSignTypeValue = "NEW" | "RENEW";
 export type OwnerContractMediumValue = "ELECTRONIC" | "PAPER";
 export type OwnerPaymentFeeBearTypeValue = "PLATFORM_ALL" | "OWNER_ALL" | "BY_INCOME_SHARE";
 export type OwnerSettlementTimingValue = "TENANT_PAYMENT_REALTIME" | "LEASE_START_GENERATE_BILL";
+export type SubjectLeaseModeValue = 1 | 2;
 
 // ─── House picker ─────────────────────────────────────────────────────────────
 

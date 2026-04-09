@@ -1,7 +1,7 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
 import type { ApiListResponse, ApiResponse, PaginationResponse } from "@/types/common";
-import { FocusCreateDto } from "@/types";
+import type { FocusCreateDto, FocusQueryDto } from "@/types";
 
 type ResultList = {
   code: number;
@@ -26,6 +26,6 @@ export const checkFocusCodeExist = (data?: object) => {
 };
 
 /** 获取集中式项目列表 */
-export const getFocusList = (data?: object) => {
+export const getFocusList = (data?: (FocusQueryDto & { leaseMode?: number | string }) | object) => {
   return http.request<ApiResponse<PaginationResponse>>("post", baseUrlApi("focus/list"), { data });
 };

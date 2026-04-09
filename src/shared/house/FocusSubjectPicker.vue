@@ -186,7 +186,7 @@
   import { Check, Close, Refresh, Search } from "@element-plus/icons-vue";
   import { getFocusById, getFocusList } from "@/api/house/focus";
   import type { FocusBuildingDto, FocusCreateDto, FocusListVo, OwnerContractSubjectTypeEnum } from "@/types/generated";
-  import { OwnerContractSubjectTypeEnumMeta } from "@/types/generated/enum.meta";
+  import { LeaseModeEnumMeta, OwnerContractSubjectTypeEnumMeta } from "@/types/generated/enum.meta";
 
   defineOptions({ name: "FocusSubjectPicker" });
 
@@ -203,6 +203,7 @@
 
   type FocusSubjectPickerShowOptions = {
     selected?: FocusSubjectPickerRow[];
+    leaseMode?: number | string;
   };
 
   const emit = defineEmits<{
@@ -219,6 +220,7 @@
   const activeProjectId = ref("");
   const activeProjectName = ref("");
   const activeProjectAddress = ref("");
+  const leaseMode = ref<number>(LeaseModeEnumMeta.FOCUS.code);
 
   const queryParams = reactive({
     currentPage: 1,
@@ -243,7 +245,8 @@
       const res = await getFocusList({
         currentPage: queryParams.currentPage,
         pageSize: queryParams.pageSize,
-        keywords: queryParams.keywords
+        keywords: queryParams.keywords,
+        leaseMode: leaseMode.value
       });
       const rows = (((res as any)?.data?.list || []) as FocusListVo[]).filter(item => item.id);
       projectList.value = rows.map(buildProjectRow);
@@ -359,6 +362,7 @@
   const show = (options?: FocusSubjectPickerShowOptions | FocusSubjectPickerRow[]) => {
     visible.value = true;
     const resolvedOptions = Array.isArray(options) ? { selected: options } : options || {};
+    leaseMode.value = Number(resolvedOptions.leaseMode || LeaseModeEnumMeta.FOCUS.code);
     selectedRows.value = (resolvedOptions.selected || []).map(item => ({ ...item }));
     const firstFocusId =
       selectedRows.value.find(item => item.subjectType === OwnerContractSubjectTypeEnumMeta.FOCUS.value)?.subjectId ||
