@@ -5,52 +5,46 @@
       <div class="detail-header">
         <div class="detail-header__main">
           <div class="detail-header__title">
-            <span>{{ bill.billNo || "包租应付单" }}</span>
-            <el-tag size="small" effect="plain" type="warning">{{ cooperationModeText }}</el-tag>
+            <span>{{ bill.billNo || "业主结算单" }}</span>
+            <el-tag size="small" effect="plain" type="success">轻托管</el-tag>
           </div>
           <div class="detail-header__meta">
             <span>业主：{{ bill.ownerName || "-" }}</span>
             <span>合同：{{ bill.contractNo || "-" }}</span>
             <span>账期：{{ bill.billStart || "-" }} 至 {{ bill.billEnd || "-" }}</span>
-            <span>应付日期：{{ bill.dueDate || "-" }}</span>
           </div>
         </div>
         <div class="detail-header__actions">
           <el-button v-if="showWithdrawAction" type="primary" plain @click="goWithdraw">去提现</el-button>
-          <el-button v-if="showPaymentAction" type="primary" @click="openPaymentDialog">登记付款</el-button>
         </div>
       </div>
 
       <div class="summary-grid">
         <div class="summary-card">
-          <span class="summary-card__label">应付金额</span>
-          <strong class="summary-card__value">¥{{ moneyText(bill.payableAmount) }}</strong>
+          <span class="summary-card__label">收入金额</span>
+          <strong class="summary-card__value">¥{{ moneyText(bill.incomeAmount) }}</strong>
         </div>
         <div class="summary-card">
-          <span class="summary-card__label">已付金额</span>
-          <strong class="summary-card__value summary-card__value--success">¥{{ moneyText(bill.settledAmount) }}</strong>
+          <span class="summary-card__label">费用金额</span>
+          <strong class="summary-card__value summary-card__value--warning">¥{{ moneyText(bill.expenseAmount) }}</strong>
         </div>
         <div class="summary-card">
-          <span class="summary-card__label">未付金额</span>
-          <strong class="summary-card__value summary-card__value--warning">¥{{ moneyText(bill.unpaidAmount) }}</strong>
+          <span class="summary-card__label">结算金额</span>
+          <strong class="summary-card__value summary-card__value--success">¥{{ moneyText(bill.payableAmount) }}</strong>
         </div>
         <div class="summary-card">
-          <span class="summary-card__label">{{ isMasterLease ? "付款状态" : "可提现金额" }}</span>
-          <strong class="summary-card__value" :class="isMasterLease ? '' : 'summary-card__value--primary'">
-            {{ isMasterLease ? settlementStatusText(bill.settlementStatus) : `¥${moneyText(bill.withdrawableAmount)}` }}
-          </strong>
+          <span class="summary-card__label">可提现金额</span>
+          <strong class="summary-card__value summary-card__value--primary">¥{{ moneyText(bill.withdrawableAmount) }}</strong>
         </div>
       </div>
 
       <el-descriptions :column="2" border class="detail-descriptions">
-        <el-descriptions-item label="账单编号">{{ bill.billNo || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="合作模式">{{ cooperationModeText }}</el-descriptions-item>
+        <el-descriptions-item label="结算单号">{{ bill.billNo || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="合作模式">轻托管</el-descriptions-item>
         <el-descriptions-item label="业主">{{ bill.ownerName || "-" }}</el-descriptions-item>
         <el-descriptions-item label="联系电话">{{ bill.ownerPhone || "-" }}</el-descriptions-item>
         <el-descriptions-item label="合同编号">{{ bill.contractNo || "-" }}</el-descriptions-item>
         <el-descriptions-item label="合同房源">{{ bill.subjectName || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="应付日期">{{ bill.dueDate || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="生成时间">{{ bill.generatedAt || "-" }}</el-descriptions-item>
         <el-descriptions-item label="收入金额">¥{{ moneyText(bill.incomeAmount) }}</el-descriptions-item>
         <el-descriptions-item label="费用金额">¥{{ moneyText(bill.expenseAmount) }}</el-descriptions-item>
         <el-descriptions-item label="减免金额">¥{{ moneyText(bill.reductionAmount) }}</el-descriptions-item>
@@ -61,13 +55,14 @@
         <el-descriptions-item label="结算状态">
           <el-tag :type="settlementStatusTagType(bill.settlementStatus)">{{ settlementStatusText(bill.settlementStatus) }}</el-tag>
         </el-descriptions-item>
+        <el-descriptions-item label="生成时间">{{ bill.generatedAt || "-" }}</el-descriptions-item>
         <el-descriptions-item label="更新时间">{{ bill.updateTime || "-" }}</el-descriptions-item>
         <el-descriptions-item label="备注" :span="2">{{ bill.remark || "-" }}</el-descriptions-item>
       </el-descriptions>
 
       <div class="section-block">
         <div class="section-block__header">
-          <span class="section-block__title">账单明细</span>
+          <span class="section-block__title">结算明细</span>
           <span class="section-block__count">共 {{ bill.lineList?.length || 0 }} 项</span>
         </div>
         <el-table :data="bill.lineList || []" border>
@@ -105,61 +100,19 @@
           <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
         </el-table>
       </div>
-
-      <div v-if="isMasterLease" class="section-block">
-        <div class="section-block__header">
-          <span class="section-block__title">付款记录</span>
-          <span class="section-block__count">共 {{ bill.paymentList?.length || 0 }} 条</span>
-        </div>
-        <el-table :data="bill.paymentList || []" border>
-          <el-table-column prop="paymentNo" label="付款单号" min-width="190" />
-          <el-table-column label="付款金额" min-width="120" align="right">
-            <template #default="{ row }">¥{{ moneyText(row.payAmount) }}</template>
-          </el-table-column>
-          <el-table-column label="付款渠道" min-width="120" align="center">
-            <template #default="{ row }">{{ payChannelText(row.payChannel) }}</template>
-          </el-table-column>
-          <el-table-column prop="payTime" label="付款时间" min-width="160" />
-          <el-table-column prop="thirdTradeNo" label="第三方流水号" min-width="180" show-overflow-tooltip />
-          <el-table-column label="支付凭证" min-width="170">
-            <template #default="{ row }">
-              <div v-if="row.voucherUrls?.length" class="voucher-list">
-                <el-image
-                  v-for="(item, index) in row.voucherUrls"
-                  :key="`${row.paymentId || row.paymentNo}-${index}`"
-                  :src="item"
-                  :preview-src-list="row.voucherUrls"
-                  fit="cover"
-                  class="voucher-list__item"
-                  preview-teleported
-                />
-              </div>
-              <span v-else>-</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
-        </el-table>
-      </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed, h, ref } from "vue";
+  import { computed, ref } from "vue";
   import { useRouter } from "vue-router";
-  import { addDialog, closeAllDialog } from "@/components/ReDialog";
-  import { getOwnerBillDetail, createOwnerBillPayment } from "@/api/owner/owner";
-  import OwnerBillPaymentDialog from "@/views/finance/owner-bill/form/OwnerBillPaymentDialog.vue";
+  import { closeAllDialog } from "@/components/ReDialog";
+  import { getOwnerBillDetail } from "@/api/owner/owner";
   import { message } from "@/utils/message";
-  import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
-  import type { OwnerBillDetailVo, OwnerBillPaymentVo, PaymentFlowChannelEnum } from "@/types/generated";
+  import type { OwnerBillDetailVo } from "@/types/generated";
 
-  defineOptions({ name: "OwnerBillDetailDialog" });
-
-  type OwnerBillDetailView = OwnerBillDetailVo & {
-    dueDate?: string;
-    paymentList?: OwnerBillPaymentVo[];
-  };
+  defineOptions({ name: "OwnerSettlementBillDetailDialog" });
 
   const props = defineProps<{
     billId: string | number;
@@ -167,13 +120,7 @@
 
   const router = useRouter();
   const loading = ref(false);
-  const paymentFormRef = ref();
-  const bill = ref<OwnerBillDetailView>({});
-
-  const payChannelLabelMap = Object.values(PaymentFlowChannelEnumMeta).reduce<Record<string, string>>((acc, item) => {
-    acc[item.value] = item.label || item.value;
-    return acc;
-  }, {});
+  const bill = ref<OwnerBillDetailVo>({});
 
   const approvalStatusMap: Record<number, string> = {
     1: "审批中",
@@ -181,22 +128,16 @@
     3: "已驳回",
     4: "已撤回"
   };
-
   const settlementStatusMap: Record<number, string> = {
     0: "未结算",
     1: "部分结算",
     2: "已结算"
   };
 
-  const cooperationModeText = computed(() => (bill.value.cooperationMode === "MASTER_LEASE" ? "包租应付" : "轻托管"));
-  const isMasterLease = computed(() => bill.value.cooperationMode === "MASTER_LEASE");
-  const showPaymentAction = computed(() => isMasterLease.value && Number(bill.value.unpaidAmount || 0) > 0);
-  const showWithdrawAction = computed(() => !isMasterLease.value && Number(bill.value.withdrawableAmount || 0) > 0);
-
+  const showWithdrawAction = computed(() => Number(bill.value.withdrawableAmount || 0) > 0);
   const moneyText = (value?: number) => Number(value || 0).toFixed(2);
   const approvalStatusText = (value?: number) => approvalStatusMap[value ?? 0] || `状态${value ?? "-"}`;
   const settlementStatusText = (value?: number) => settlementStatusMap[value ?? 0] || `状态${value ?? "-"}`;
-  const payChannelText = (value?: string) => (value ? payChannelLabelMap[value] || value : "-");
 
   const approvalStatusTagType = (value?: number) => {
     if (value === 2) return "success";
@@ -216,10 +157,10 @@
     try {
       const resp = await getOwnerBillDetail({ billId: String(props.billId) });
       if (resp.code !== 0 || !resp.data) {
-        message(resp.message || "获取包租应付单详情失败", { type: "error" });
+        message(resp.message || "获取业主结算单详情失败", { type: "error" });
         return;
       }
-      bill.value = resp.data as OwnerBillDetailView;
+      bill.value = resp.data;
     } finally {
       loading.value = false;
     }
@@ -234,49 +175,6 @@
       }
     });
     closeAllDialog();
-  }
-
-  function openPaymentDialog() {
-    if (!bill.value.billId || Number(bill.value.unpaidAmount || 0) <= 0) {
-      message("当前账单无可登记付款金额", { type: "warning" });
-      return;
-    }
-
-    addDialog({
-      title: "登记付款",
-      props: {
-        billId: String(bill.value.billId),
-        unpaidAmount: Number(bill.value.unpaidAmount || 0)
-      },
-      width: "720px",
-      lockScroll: true,
-      alignCenter: true,
-      draggable: true,
-      closeOnClickModal: false,
-      destroyOnClose: true,
-      contentRenderer: () =>
-        h(OwnerBillPaymentDialog, {
-          ref: paymentFormRef,
-          billId: String(bill.value.billId),
-          unpaidAmount: Number(bill.value.unpaidAmount || 0)
-        }),
-      beforeSure: async done => {
-        try {
-          const payload = await paymentFormRef.value?.validateAndBuildPayload?.();
-          if (!payload) return;
-          const resp = await createOwnerBillPayment(payload);
-          if (resp.code === 0) {
-            message("付款登记成功", { type: "success" });
-            await fetchDetail();
-            done();
-            return;
-          }
-          message(resp.message || "付款登记失败", { type: "error" });
-        } catch (error: any) {
-          message(error?.message || "付款登记失败，请检查表单后重试", { type: "warning" });
-        }
-      }
-    });
   }
 
   fetchDetail();
@@ -367,57 +265,31 @@
 
   .detail-descriptions,
   .section-block {
-    width: 100%;
+    margin-top: 0;
   }
 
   .section-block {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 14px;
+    padding: 16px;
+    background: var(--el-fill-color-blank);
   }
 
   .section-block__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    margin-bottom: 12px;
   }
 
   .section-block__title {
-    color: var(--el-text-color-primary);
     font-size: 15px;
     font-weight: 600;
+    color: var(--el-text-color-primary);
   }
 
   .section-block__count {
     color: var(--el-text-color-secondary);
-    font-size: 13px;
-  }
-
-  .voucher-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .voucher-list__item {
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    border: 1px solid var(--el-border-color-light);
-    overflow: hidden;
-    background: var(--el-fill-color-light);
-  }
-
-  @media (max-width: 960px) {
-    .detail-header,
-    .detail-header__actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .summary-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+    font-size: 12px;
   }
 </style>

@@ -59,7 +59,7 @@ export default [
     path: "/finance/owner-bill",
     component: Layout,
     meta: {
-      title: "业主账单",
+      title: "业主结算单",
       showLink: false
     },
     children: [
@@ -68,7 +68,26 @@ export default [
         name: "OwnerBillEntry",
         component: () => import("@/views/finance/owner-bill/index.vue"),
         meta: {
-          title: "业主账单",
+          title: "业主结算单",
+          showLink: false
+        }
+      }
+    ]
+  },
+  {
+    path: "/finance/owner-payable-bill",
+    component: Layout,
+    meta: {
+      title: "包租应付单",
+      showLink: false
+    },
+    children: [
+      {
+        path: "",
+        name: "OwnerPayableBillEntry",
+        component: () => import("@/views/finance/owner-payable-bill/index.vue"),
+        meta: {
+          title: "包租应付单",
           showLink: false
         }
       }

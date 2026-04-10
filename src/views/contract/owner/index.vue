@@ -129,8 +129,8 @@
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item @click="openEdit(row.contractId)">编辑合同</el-dropdown-item>
-                    <el-dropdown-item @click="goOwnerBills(row)">查看账单</el-dropdown-item>
-                    <el-dropdown-item @click="goOwnerWithdraws(row)">查看提现</el-dropdown-item>
+                    <el-dropdown-item @click="goOwnerBills(row)">{{ billEntryText(row) }}</el-dropdown-item>
+                    <el-dropdown-item v-if="row.cooperationMode !== 'MASTER_LEASE'" @click="goOwnerWithdraws(row)">查看提现</el-dropdown-item>
                     <el-dropdown-item @click="handleToggleStatus(row)">
                       {{ row.status === "ACTIVE" ? "停用合同" : "启用合同" }}
                     </el-dropdown-item>
@@ -427,7 +427,7 @@
   function goOwnerBills(row?: OwnerListRow) {
     if (!row?.ownerId) return;
     router.push({
-      path: "/finance/owner-bill",
+      path: row.cooperationMode === "MASTER_LEASE" ? "/finance/owner-payable-bill" : "/finance/owner-bill",
       query: {
         ownerId: String(row.ownerId),
         contractId: row.contractId ? String(row.contractId) : ""
@@ -444,6 +444,10 @@
         contractId: row.contractId ? String(row.contractId) : ""
       }
     });
+  }
+
+  function billEntryText(row?: OwnerListRow) {
+    return row?.cooperationMode === "MASTER_LEASE" ? "查看应付单" : "查看结算单";
   }
 
   watch(previewVisible, value => {

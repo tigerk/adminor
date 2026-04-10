@@ -80,7 +80,7 @@ export const createDefaultRentFreeRule = (): OwnerRentFreeRuleForm => ({
 
 export const createDefaultLeaseFreeRule = (): OwnerLeaseFreeRuleDto => ({
   freeType: "BUILT_IN",
-  calcMode: "FIXED",
+  calcMode: "BY_DAYS",
   freeAmount: 0,
   freeRatio: 0,
   status: "ACTIVE"
@@ -557,7 +557,12 @@ export function useOwnerContractForm() {
         billingStart: contractDateRange.value[0],
         billingEnd: contractDateRange.value[1]
       };
-      payload.ownerLeaseFreeRuleList = form.ownerLeaseFreeRuleList;
+      payload.ownerLeaseFreeRuleList = form.ownerLeaseFreeRuleList.map(item => ({
+        ...item,
+        calcMode: "BY_DAYS",
+        freeAmount: 0,
+        freeRatio: 0
+      }));
     } else {
       payload.ownerLeaseFreeRuleList = [];
     }

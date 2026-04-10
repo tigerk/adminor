@@ -7,7 +7,7 @@
             <el-input v-model="queryForm.ownerName" placeholder="业主名称" clearable class="owner-filter-input" @keyup.enter="fetchData" />
           </el-form-item>
           <el-form-item>
-            <el-input v-model="queryForm.billNo" placeholder="账单编号" clearable class="owner-filter-input" @keyup.enter="fetchData" />
+            <el-input v-model="queryForm.billNo" placeholder="结算单号" clearable class="owner-filter-input" @keyup.enter="fetchData" />
           </el-form-item>
           <el-form-item>
             <el-select v-model="queryForm.approvalStatus" placeholder="审批状态" clearable class="owner-filter-select">
@@ -34,17 +34,21 @@
     <el-row class="bg-bg_color w-full px-4 pb-4">
       <el-col :span="24">
         <el-table v-loading="loading" :data="tableData" border>
-        <el-table-column prop="billNo" label="账单编号" min-width="180" />
+        <el-table-column prop="billNo" label="结算单号" min-width="180" />
         <el-table-column prop="ownerName" label="业主" min-width="140" />
         <el-table-column prop="ownerPhone" label="联系电话" min-width="140" />
         <el-table-column prop="contractNo" label="合同编号" min-width="180" />
-        <el-table-column label="合作模式" min-width="110" align="center">
-          <template #default="{ row }">{{ cooperationModeLabelMap[row.cooperationMode || "LIGHT_MANAGED"] }}</template>
-        </el-table-column>
+        <el-table-column prop="subjectName" label="合同房源" min-width="180" show-overflow-tooltip />
         <el-table-column label="账期" min-width="200">
           <template #default="{ row }">{{ row.billStart || "-" }} 至 {{ row.billEnd || "-" }}</template>
         </el-table-column>
-        <el-table-column label="应付金额" min-width="120" align="right">
+        <el-table-column label="收入金额" min-width="120" align="right">
+          <template #default="{ row }">{{ moneyText(row.incomeAmount) }}</template>
+        </el-table-column>
+        <el-table-column label="费用金额" min-width="120" align="right">
+          <template #default="{ row }">{{ moneyText(row.expenseAmount) }}</template>
+        </el-table-column>
+        <el-table-column label="结算金额" min-width="120" align="right">
           <template #default="{ row }">{{ moneyText(row.payableAmount) }}</template>
         </el-table-column>
         <el-table-column label="可提现" min-width="120" align="right">
@@ -92,7 +96,7 @@
   import OwnerPageHeader from "@/shared/owner/OwnerPageHeader.vue";
   import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";
   import "@/shared/owner/panel.scss";
-  import type { OwnerBillListVo, OwnerBillQueryDto, OwnerBillSummaryVo } from "@/types/generated";
+  import type { OwnerBillListVo, OwnerBillQueryDto, OwnerBillSummaryVo, OwnerCooperationModeEnum } from "@/types/generated";
 
   defineOptions({ name: "OwnerBillEntry" });
 
@@ -101,17 +105,13 @@
   type QueryForm = Omit<OwnerBillQueryDto, "currentPage" | "pageSize"> & {
     currentPage: number;
     pageSize: number;
+    cooperationMode?: OwnerCooperationModeEnum;
   };
 
   const loading = ref(false);
   const total = ref(0);
   const tableData = ref<OwnerBillListVo[]>([]);
   const summary = ref<OwnerBillSummaryVo>({});
-
-  const cooperationModeLabelMap = {
-    LIGHT_MANAGED: "轻托管",
-    MASTER_LEASE: "包租"
-  } as const;
   const approvalStatusMap: Record<number, string> = {
     1: "审批中",
     2: "已通过",
@@ -142,14 +142,15 @@
     contractId: String(route.query.contractId || "") || undefined,
     ownerName: "",
     billNo: "",
+    cooperationMode: "LIGHT_MANAGED" as OwnerCooperationModeEnum,
     approvalStatus: undefined,
     settlementStatus: undefined
   });
 
   const summaryCards = computed(() => [
-    { key: "count", label: "账单数", value: numberText(summary.value.billCount) },
+    { key: "count", label: "结算单数", value: numberText(summary.value.billCount) },
     { key: "income", label: "收入总额", value: moneyText(summary.value.totalIncomeAmount) },
-    { key: "payable", label: "应付总额", value: moneyText(summary.value.totalPayableAmount) },
+    { key: "payable", label: "结算总额", value: moneyText(summary.value.totalPayableAmount) },
     { key: "withdrawable", label: "可提现总额", value: moneyText(summary.value.totalWithdrawableAmount) }
   ]);
 
@@ -207,6 +208,7 @@
     queryForm.pageSize = 10;
     queryForm.ownerName = "";
     queryForm.billNo = "";
+    queryForm.cooperationMode = "LIGHT_MANAGED";
     queryForm.approvalStatus = undefined;
     queryForm.settlementStatus = undefined;
     queryForm.ownerId = String(route.query.ownerId || "") || undefined;

@@ -17,8 +17,8 @@
       </div>
       <div class="detail-hero__actions">
         <el-button plain @click="handlePreview(detailData.ownerContract?.id)">预览合同</el-button>
-        <el-button plain type="primary" @click="goOwnerBills(detailData)">查看账单</el-button>
-        <el-button plain type="warning" @click="goOwnerWithdraws(detailData)">查看提现</el-button>
+        <el-button plain type="primary" @click="goOwnerBills(detailData)">{{ billEntryText(detailData) }}</el-button>
+        <el-button v-if="detailData.ownerContract?.cooperationMode !== 'MASTER_LEASE'" plain type="warning" @click="goOwnerWithdraws(detailData)">查看提现</el-button>
         <el-button type="primary" @click="handleEdit">编辑合同</el-button>
       </div>
     </div>
@@ -195,8 +195,7 @@
               <el-descriptions-item label="押金月数">{{ detailData.ownerLeaseRule?.depositMonths || 0 }}</el-descriptions-item>
               <el-descriptions-item label="付款月数">{{ detailData.ownerLeaseRule?.paymentMonths || 0 }}</el-descriptions-item>
               <el-descriptions-item label="付款方式">{{ detailData.ownerLeaseRule?.payWay || "-" }}</el-descriptions-item>
-              <el-descriptions-item label="收租设置">{{ getRentDueTypeText(detailData.ownerLeaseRule) }}</el-descriptions-item>
-              <el-descriptions-item label="首付日期">{{ formatDate(detailData.ownerLeaseRule?.firstPayDate) }}</el-descriptions-item>
+              <el-descriptions-item label="付款设置">{{ getRentDueTypeText(detailData.ownerLeaseRule) }}</el-descriptions-item>
               <el-descriptions-item label="折算方式">{{ prorateTypeLabelMap[detailData.ownerLeaseRule?.prorateType || "BY_DAYS"] }}</el-descriptions-item>
               <el-descriptions-item label="交房日期">{{ formatDate(detailData.ownerLeaseRule?.handoverDate) }}</el-descriptions-item>
               <el-descriptions-item label="承租用途">{{ detailData.ownerLeaseRule?.usageType || "-" }}</el-descriptions-item>
@@ -288,7 +287,7 @@
     LEASE_START_GENERATE_BILL: "起租日直接给业主生成账单"
   } as const;
   const prorateTypeLabelMap = { BY_DAYS: "按天折算", FULL_PERIOD: "整期计费" } as const;
-  const rentDueTypeLabelMap = { EARLY: "提前收租", FIXED: "固定收租", LATE: "延后收租" } as const;
+  const rentDueTypeLabelMap = { EARLY: "提前付款", FIXED: "固定付款", LATE: "延后付款" } as const;
 
   const detailOwnerName = computed(() => {
     if (!detailData.value) return "-";
@@ -329,7 +328,10 @@
   function getRentDueTypeText(rule?: OwnerLeaseRuleDto) {
     if (!rule?.rentDueType) return "-";
     const label = rentDueTypeLabelMap[rule.rentDueType as keyof typeof rentDueTypeLabelMap] || rule.rentDueType;
-    return `${label}${rule.rentDueDay ? ` ${rule.rentDueDay} 日` : ""}`;
+    if (rule.rentDueType === "FIXED") {
+      return `${label}${rule.rentDueDay ? ` ${rule.rentDueDay} 日` : ""}`;
+    }
+    return `${label}${rule.rentDueOffsetDays ? ` ${rule.rentDueOffsetDays} 天` : " 0 天"}`;
   }
 
   function getTemplateLabel(key: string) {
@@ -379,12 +381,20 @@
 
   function goOwnerBills(data?: OwnerDetailVo | null) {
     if (!data?.ownerId) return;
-    router.push({ path: "/finance/owner-bill", query: { ownerId: String(data.ownerId), contractId: String(data.ownerContract?.id || "") } });
+    const isMasterLease = data.ownerContract?.cooperationMode === "MASTER_LEASE";
+    router.push({
+      path: isMasterLease ? "/finance/owner-payable-bill" : "/finance/owner-bill",
+      query: { ownerId: String(data.ownerId), contractId: String(data.ownerContract?.id || "") }
+    });
   }
 
   function goOwnerWithdraws(data?: OwnerDetailVo | null) {
     if (!data?.ownerId) return;
     router.push({ path: "/finance/owner-withdraw", query: { ownerId: String(data.ownerId), contractId: String(data.ownerContract?.id || "") } });
+  }
+
+  function billEntryText(data?: OwnerDetailVo | null) {
+    return data?.ownerContract?.cooperationMode === "MASTER_LEASE" ? "查看应付单" : "查看结算单";
   }
 
   onMounted(async () => {

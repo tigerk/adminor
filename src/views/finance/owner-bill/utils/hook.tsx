@@ -1,12 +1,12 @@
 import { h } from "vue";
 import { addDialog } from "@/components/ReDialog";
-import OwnerBillDetailDialog from "@/views/finance/owner-bill/view/OwnerBillDetailDialog.vue";
+import OwnerSettlementBillDetailDialog from "@/views/finance/owner-bill/view/OwnerSettlementBillDetailDialog.vue";
 
 function useOwnerBillDialog() {
   async function openOwnerBillDetailDialog(billId?: string | number) {
     if (!billId) return;
     addDialog({
-      title: "业主账单详情",
+      title: "业主结算单详情",
       props: {
         billId
       },
@@ -18,7 +18,7 @@ function useOwnerBillDialog() {
       fullscreenIcon: true,
       closeOnClickModal: false,
       hideFooter: true,
-      contentRenderer: () => h(OwnerBillDetailDialog, { billId })
+      contentRenderer: () => h(OwnerSettlementBillDetailDialog, { billId })
     });
   }
 

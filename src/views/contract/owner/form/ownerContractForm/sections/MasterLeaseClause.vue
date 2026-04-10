@@ -45,21 +45,16 @@
           <el-input :model-value="paymentMethodText" readonly disabled />
         </el-form-item>
       </el-col>
-      <el-col :span="4">
-        <el-form-item label="付款日设置">
-          <el-select v-model="form.ownerLeaseRule.rentDueType" class="w-full" :disabled="masterLeaseBillLocked">
-            <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="4">
-        <el-form-item label="每月付款日">
-          <el-input-number v-model="form.ownerLeaseRule.rentDueDay" :min="1" :max="31" class="w-full" :disabled="masterLeaseBillLocked" />
-        </el-form-item>
-      </el-col>
-      <el-col :span="4">
-        <el-form-item label="首付日期">
-          <el-date-picker v-model="form.ownerLeaseRule.firstPayDate" type="date" value-format="YYYY-MM-DD" class="w-full" :disabled="masterLeaseBillLocked" />
+      <el-col :span="8">
+        <el-form-item label="付款设置">
+          <el-input v-model.number="rentDueValue" type="number" class="w-full payment-setting-input" :disabled="masterLeaseBillLocked">
+            <template #prepend>
+              <el-select v-model="form.ownerLeaseRule.rentDueType" style="width: 92px" :disabled="masterLeaseBillLocked">
+                <el-option v-for="item in PAYMENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </template>
+            <template #append>{{ rentDueUnitText }}</template>
+          </el-input>
         </el-form-item>
       </el-col>
       <el-col :span="4">
@@ -141,7 +136,7 @@
       <div class="sub-panel__header">
         <div>
           <div class="sub-panel__title">包租免租规则</div>
-          <div class="sub-panel__desc">按合同级统一设置，非必填。</div>
+          <div class="sub-panel__desc">仅配置免租期，系统会按账期内命中的免租天数自动冲减租金。</div>
         </div>
         <el-button type="primary" plain :disabled="masterLeaseBillLocked" @click="emit('addLeaseFreeRule')">新增规则</el-button>
       </div>
@@ -149,16 +144,15 @@
         <table class="fee-table fee-table--master-lease lease-free-table">
           <thead>
             <tr>
-              <th style="width: 190px">类型</th>
-              <th style="width: 170px">开始日期</th>
-              <th style="width: 170px">结束日期</th>
-              <th style="width: 360px">金额配置</th>
+              <th style="width: 220px">类型</th>
+              <th style="width: 220px">开始日期</th>
+              <th style="width: 220px">结束日期</th>
               <th style="width: 76px">操作</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="!form.ownerLeaseFreeRuleList.length" class="empty-row">
-              <td colspan="5"><div class="empty-state">暂无免租规则，点击右上角"新增规则"添加。</div></td>
+              <td colspan="4"><div class="empty-state">暂无免租规则，点击右上角"新增规则"添加。</div></td>
             </tr>
             <tr v-for="(row, index) in form.ownerLeaseFreeRuleList" :key="index">
               <td>
@@ -168,28 +162,6 @@
               </td>
               <td><el-date-picker v-model="row.startDate" type="date" value-format="YYYY-MM-DD" class="w-full" :disabled="masterLeaseBillLocked" /></td>
               <td><el-date-picker v-model="row.endDate" type="date" value-format="YYYY-MM-DD" class="w-full" :disabled="masterLeaseBillLocked" /></td>
-              <td>
-                <template v-if="row.calcMode === 'RATIO'">
-                  <el-input v-model.number="row.freeRatio" type="number" class="w-full" placeholder="请输入" :disabled="masterLeaseBillLocked">
-                    <template #prepend>
-                      <el-select v-model="row.calcMode" style="width: 140px" :disabled="masterLeaseBillLocked">
-                        <el-option v-for="item in LEASE_FREE_CALC_MODE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-                      </el-select>
-                    </template>
-                    <template #append>%</template>
-                  </el-input>
-                </template>
-                <template v-else>
-                  <el-input v-model.number="row.freeAmount" type="number" class="w-full" placeholder="请输入" :disabled="masterLeaseBillLocked">
-                    <template #prepend>
-                      <el-select v-model="row.calcMode" style="width: 140px" :disabled="masterLeaseBillLocked">
-                        <el-option v-for="item in LEASE_FREE_CALC_MODE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-                      </el-select>
-                    </template>
-                    <template #append>元</template>
-                  </el-input>
-                </template>
-              </td>
               <td class="text-center">
                 <el-button link type="danger" :disabled="masterLeaseBillLocked" @click="form.ownerLeaseFreeRuleList.splice(index, 1)">删除</el-button>
               </td>
@@ -205,7 +177,6 @@
   import { computed, reactive, toRefs, watch } from "vue";
   import {
     FREE_TYPE_OPTIONS,
-    LEASE_FREE_CALC_MODE_OPTIONS,
     PAYMENT_METHOD_OPTIONS_REF,
     PRICE_METHOD_OPTIONS_REF,
     PRORATE_TYPE_OPTIONS,
@@ -229,6 +200,27 @@
     if (!depositMonths && !paymentMonths) return "-";
     return `押${depositMonths}付${paymentMonths}`;
   });
+  const PAYMENT_DUE_TYPE_OPTIONS = RENT_DUE_TYPE_OPTIONS.map(item => ({
+    ...item,
+    label: item.value === "EARLY" ? "提前" : item.value === "LATE" ? "延后" : "固定"
+  }));
+  const rentDueUnitText = computed(() => (form.value.ownerLeaseRule.rentDueType === "FIXED" ? "号付款" : "天"));
+  const rentDueValue = computed({
+    get: () =>
+      form.value.ownerLeaseRule.rentDueType === "FIXED"
+        ? Number(form.value.ownerLeaseRule.rentDueDay || 0)
+        : Number(form.value.ownerLeaseRule.rentDueOffsetDays || 0),
+    set: value => {
+      const normalized = Math.max(0, Number(value || 0));
+      if (form.value.ownerLeaseRule.rentDueType === "FIXED") {
+        form.value.ownerLeaseRule.rentDueDay = normalized;
+        form.value.ownerLeaseRule.rentDueOffsetDays = 0;
+        return;
+      }
+      form.value.ownerLeaseRule.rentDueOffsetDays = normalized;
+      form.value.ownerLeaseRule.rentDueDay = 0;
+    }
+  });
 
   const emit = defineEmits<{
     addLeaseFee: [];
@@ -244,4 +236,26 @@
     },
     { immediate: true, deep: true }
   );
+
+  watch(
+    () => form.value.ownerLeaseRule.rentDueType,
+    value => {
+      if (value === "FIXED") {
+        form.value.ownerLeaseRule.rentDueDay = Math.max(1, Number(form.value.ownerLeaseRule.rentDueDay || 4));
+        form.value.ownerLeaseRule.rentDueOffsetDays = 0;
+        return;
+      }
+      form.value.ownerLeaseRule.rentDueOffsetDays = Math.max(0, Number(form.value.ownerLeaseRule.rentDueOffsetDays || 0));
+      form.value.ownerLeaseRule.rentDueDay = 0;
+    },
+    { immediate: true }
+  );
 </script>
+
+<style scoped lang="scss">
+  .payment-setting-input {
+    :deep(.el-input__inner[type=number]) {
+      text-align: center;
+    }
+  }
+</style>
