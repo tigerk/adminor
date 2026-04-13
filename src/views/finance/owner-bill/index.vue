@@ -1,5 +1,14 @@
 <template>
   <div class="owner-finance-page">
+    <div v-if="showPageIntro" class="bg-bg_color w-full px-4 pt-4">
+      <el-alert class="page-intro-alert" type="info" show-icon closable @close="closePageIntro">
+        <div class="page-intro-alert__content">
+          <span class="page-intro-alert__title">轻托管业主结算单</span>
+          <span class="page-intro-alert__desc">用于管理轻托管模式下按账期生成的业主结算账单</span>
+        </div>
+      </el-alert>
+    </div>
+
     <OwnerPageHeader :summary-span="24" :action-span="0">
       <template #search>
         <el-form :inline="true" :model="queryForm" class="owner-page-search-form">
@@ -34,42 +43,42 @@
     <el-row class="bg-bg_color w-full px-4 pb-4">
       <el-col :span="24">
         <el-table v-loading="loading" :data="tableData" border>
-        <el-table-column prop="billNo" label="结算单号" min-width="180" />
-        <el-table-column prop="ownerName" label="业主" min-width="140" />
-        <el-table-column prop="ownerPhone" label="联系电话" min-width="140" />
-        <el-table-column prop="contractNo" label="合同编号" min-width="180" />
-        <el-table-column prop="subjectName" label="合同房源" min-width="180" show-overflow-tooltip />
-        <el-table-column label="账期" min-width="200">
-          <template #default="{ row }">{{ row.billStart || "-" }} 至 {{ row.billEnd || "-" }}</template>
-        </el-table-column>
-        <el-table-column label="收入金额" min-width="120" align="right">
-          <template #default="{ row }">{{ moneyText(row.incomeAmount) }}</template>
-        </el-table-column>
-        <el-table-column label="费用金额" min-width="120" align="right">
-          <template #default="{ row }">{{ moneyText(row.expenseAmount) }}</template>
-        </el-table-column>
-        <el-table-column label="结算金额" min-width="120" align="right">
-          <template #default="{ row }">{{ moneyText(row.payableAmount) }}</template>
-        </el-table-column>
-        <el-table-column label="可提现" min-width="120" align="right">
-          <template #default="{ row }">{{ moneyText(row.withdrawableAmount) }}</template>
-        </el-table-column>
-        <el-table-column label="审批状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="approvalStatusTagType(row.approvalStatus)">{{ approvalStatusText(row.approvalStatus) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="结算状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="settlementStatusTagType(row.settlementStatus)">{{ settlementStatusText(row.settlementStatus) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="90" fixed="right" align="center">
-          <template #default="{ row }">
-            <el-button link type="primary" @click="openDetail(row.billId)">详情</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          <el-table-column prop="billNo" label="结算单号" min-width="180" />
+          <el-table-column prop="ownerName" label="业主" min-width="140" />
+          <el-table-column prop="ownerPhone" label="联系电话" min-width="140" />
+          <el-table-column prop="contractNo" label="合同编号" min-width="180" />
+          <el-table-column prop="subjectName" label="合同房源" min-width="180" show-overflow-tooltip />
+          <el-table-column label="账期" min-width="200">
+            <template #default="{ row }">{{ row.billStart || "-" }} 至 {{ row.billEnd || "-" }}</template>
+          </el-table-column>
+          <el-table-column label="收入金额" min-width="120" align="right">
+            <template #default="{ row }">{{ moneyText(row.incomeAmount) }}</template>
+          </el-table-column>
+          <el-table-column label="费用金额" min-width="120" align="right">
+            <template #default="{ row }">{{ moneyText(row.expenseAmount) }}</template>
+          </el-table-column>
+          <el-table-column label="结算金额" min-width="120" align="right">
+            <template #default="{ row }">{{ moneyText(row.payableAmount) }}</template>
+          </el-table-column>
+          <el-table-column label="可提现" min-width="120" align="right">
+            <template #default="{ row }">{{ moneyText(row.withdrawableAmount) }}</template>
+          </el-table-column>
+          <el-table-column label="审批状态" min-width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="approvalStatusTagType(row.approvalStatus)">{{ approvalStatusText(row.approvalStatus) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="结算状态" min-width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="settlementStatusTagType(row.settlementStatus)">{{ settlementStatusText(row.settlementStatus) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="90" fixed="right" align="center">
+            <template #default="{ row }">
+              <el-button link type="primary" @click="openDetail(row.billId)">详情</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
 
         <div class="mt-4 flex justify-end">
           <el-pagination
@@ -100,6 +109,8 @@
 
   defineOptions({ name: "OwnerBillEntry" });
 
+  const OWNER_BILL_PAGE_INTRO_STORAGE_KEY = "owner-bill-page-intro-closed";
+
   const route = useRoute();
   const { openOwnerBillDetailDialog } = useOwnerBillDialog();
   type QueryForm = Omit<OwnerBillQueryDto, "currentPage" | "pageSize"> & {
@@ -110,6 +121,7 @@
 
   const loading = ref(false);
   const total = ref(0);
+  const showPageIntro = ref(localStorage.getItem(OWNER_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
   const tableData = ref<OwnerBillListVo[]>([]);
   const summary = ref<OwnerBillSummaryVo>({});
   const approvalStatusMap: Record<number, string> = {
@@ -191,6 +203,11 @@
     return "info";
   }
 
+  function closePageIntro() {
+    showPageIntro.value = false;
+    localStorage.setItem(OWNER_BILL_PAGE_INTRO_STORAGE_KEY, "1");
+  }
+
   async function fetchData() {
     loading.value = true;
     try {
@@ -229,4 +246,54 @@
     flex-direction: column;
   }
 
+  .page-intro-alert__content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    height: 20px;
+  }
+
+  .page-intro-alert__title {
+    flex-shrink: 0;
+    color: var(--el-text-color-primary);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .page-intro-alert__desc {
+    min-width: 0;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  :deep(.page-intro-alert .el-alert__content) {
+    display: flex;
+    align-items: center;
+    min-height: 20px;
+  }
+
+  :deep(.page-intro-alert .el-alert__description) {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    line-height: 20px;
+    margin: 0;
+  }
+
+  :deep(.page-intro-alert) {
+    align-items: center;
+  }
+
+  :deep(.page-intro-alert .el-alert__icon) {
+    display: flex;
+    align-self: center;
+    align-items: center;
+    height: 20px;
+    margin-top: 0;
+    font-size: 16px;
+    line-height: 20px;
+  }
 </style>

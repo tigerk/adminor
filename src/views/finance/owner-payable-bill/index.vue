@@ -1,5 +1,14 @@
 <template>
   <div class="owner-finance-page">
+    <div v-if="showPageIntro" class="bg-bg_color w-full px-4 pt-4">
+      <el-alert class="page-intro-alert" type="info" show-icon closable @close="closePageIntro">
+        <div class="page-intro-alert__content">
+          <span class="page-intro-alert__title">包租应付单</span>
+          <span class="page-intro-alert__desc">用于管理包租模式下按付款设置生成的业主应付账单与付款执行</span>
+        </div>
+      </el-alert>
+    </div>
+
     <OwnerPageHeader :summary-span="24" :action-span="0">
       <template #search>
         <el-form :inline="true" :model="queryForm" class="owner-page-search-form">
@@ -91,6 +100,8 @@
 
   defineOptions({ name: "OwnerPayableBillEntry" });
 
+  const OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY = "owner-payable-bill-page-intro-closed";
+
   const route = useRoute();
   const { openOwnerPayableBillDetailDialog } = useOwnerPayableBillDialog();
   type QueryForm = Omit<OwnerBillQueryDto, "currentPage" | "pageSize"> & {
@@ -101,6 +112,7 @@
 
   const loading = ref(false);
   const total = ref(0);
+  const showPageIntro = ref(localStorage.getItem(OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
   const tableData = ref<OwnerBillListVo[]>([]);
   const summary = ref<OwnerBillSummaryVo>({});
 
@@ -159,6 +171,11 @@
     return "info";
   }
 
+  function closePageIntro() {
+    showPageIntro.value = false;
+    localStorage.setItem(OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY, "1");
+  }
+
   async function fetchData() {
     loading.value = true;
     try {
@@ -194,5 +211,56 @@
   .owner-finance-page {
     display: flex;
     flex-direction: column;
+  }
+
+  .page-intro-alert__content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    height: 20px;
+  }
+
+  .page-intro-alert__title {
+    flex-shrink: 0;
+    color: var(--el-text-color-primary);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .page-intro-alert__desc {
+    min-width: 0;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  :deep(.page-intro-alert .el-alert__content) {
+    display: flex;
+    align-items: center;
+    min-height: 20px;
+  }
+
+  :deep(.page-intro-alert .el-alert__description) {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    line-height: 20px;
+    margin: 0;
+  }
+
+  :deep(.page-intro-alert) {
+    align-items: center;
+  }
+
+  :deep(.page-intro-alert .el-alert__icon) {
+    display: flex;
+    align-self: center;
+    align-items: center;
+    height: 20px;
+    margin-top: 0;
+    font-size: 16px;
+    line-height: 20px;
   }
 </style>
