@@ -3055,6 +3055,10 @@ export type OwnerBillQueryDto = {
      */
     billNo?: string;
     /**
+     * 合作模式
+     */
+    cooperationMode?: OwnerCooperationModeEnum;
+    /**
      * 审批状态
      */
     approvalStatus?: number;
@@ -3063,6 +3067,11 @@ export type OwnerBillQueryDto = {
      */
     settlementStatus?: number;
 };
+
+/**
+ * 业主合作模式枚举
+ */
+export type OwnerCooperationModeEnum = 'LIGHT_MANAGED' | 'MASTER_LEASE';
 
 /**
  * 业主账单汇总VO
@@ -3080,6 +3089,14 @@ export type OwnerBillSummaryVo = {
      * 应付总额
      */
     totalPayableAmount?: number;
+    /**
+     * 已结总额
+     */
+    totalSettledAmount?: number;
+    /**
+     * 未结总额
+     */
+    totalUnpaidAmount?: number;
     /**
      * 可提现总额
      */
@@ -3127,6 +3144,11 @@ export type OwnerBillPaymentCreateDto = {
 };
 
 /**
+ * 业主账单业务类型枚举
+ */
+export type OwnerBillBizTypeEnum = 'LIGHT_MANAGED_SETTLEMENT' | 'MASTER_LEASE_PAYABLE';
+
+/**
  * 业主账单列表VO
  */
 export type OwnerBillListVo = {
@@ -3138,6 +3160,10 @@ export type OwnerBillListVo = {
      * 账单编号
      */
     billNo?: string;
+    /**
+     * 账单业务类型
+     */
+    billBizType?: OwnerBillBizTypeEnum;
     /**
      * 业主ID
      */
@@ -3183,6 +3209,10 @@ export type OwnerBillListVo = {
      */
     billEnd?: string;
     /**
+     * 应付日期
+     */
+    dueDate?: string;
+    /**
      * 收入金额
      */
     incomeAmount?: number;
@@ -3198,6 +3228,14 @@ export type OwnerBillListVo = {
      * 应付金额
      */
     payableAmount?: number;
+    /**
+     * 已结金额
+     */
+    settledAmount?: number;
+    /**
+     * 未结金额
+     */
+    unpaidAmount?: number;
     /**
      * 可提现金额
      */
@@ -3232,11 +3270,6 @@ export type OwnerBillListVo = {
  * 业主合同房源类型枚举
  */
 export type OwnerContractSubjectTypeEnum = 'HOUSE' | 'FOCUS_BUILDING' | 'FOCUS';
-
-/**
- * 业主合作模式枚举
- */
-export type OwnerCooperationModeEnum = 'LIGHT_MANAGED' | 'MASTER_LEASE';
 
 export type PageVoOwnerBillListVo = {
     currentPage?: string;
@@ -3275,6 +3308,10 @@ export type OwnerBillDetailVo = {
      */
     billNo?: string;
     /**
+     * 账单业务类型
+     */
+    billBizType?: OwnerBillBizTypeEnum;
+    /**
      * 业主ID
      */
     ownerId?: string;
@@ -3318,6 +3355,10 @@ export type OwnerBillDetailVo = {
      * 账期结束日期
      */
     billEnd?: string;
+    /**
+     * 应付日期
+     */
+    dueDate?: string;
     /**
      * 收入金额
      */

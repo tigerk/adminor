@@ -6,7 +6,7 @@
         <div class="detail-header__main">
           <div class="detail-header__title">
             <span>{{ bill.billNo || "包租应付单" }}</span>
-            <el-tag size="small" effect="plain" type="warning">{{ cooperationModeText }}</el-tag>
+            <el-tag size="small" effect="plain" type="warning">{{ billBizTypeText }}</el-tag>
           </div>
           <div class="detail-header__meta">
             <span>业主：{{ bill.ownerName || "-" }}</span>
@@ -44,7 +44,7 @@
 
       <el-descriptions :column="2" border class="detail-descriptions">
         <el-descriptions-item label="账单编号">{{ bill.billNo || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="合作模式">{{ cooperationModeText }}</el-descriptions-item>
+        <el-descriptions-item label="账单类型">{{ billBizTypeText }}</el-descriptions-item>
         <el-descriptions-item label="业主">{{ bill.ownerName || "-" }}</el-descriptions-item>
         <el-descriptions-item label="联系电话">{{ bill.ownerPhone || "-" }}</el-descriptions-item>
         <el-descriptions-item label="合同编号">{{ bill.contractNo || "-" }}</el-descriptions-item>
@@ -156,11 +156,6 @@
 
   defineOptions({ name: "OwnerBillDetailDialog" });
 
-  type OwnerBillDetailView = OwnerBillDetailVo & {
-    dueDate?: string;
-    paymentList?: OwnerBillPaymentVo[];
-  };
-
   const props = defineProps<{
     billId: string | number;
   }>();
@@ -168,7 +163,7 @@
   const router = useRouter();
   const loading = ref(false);
   const paymentFormRef = ref();
-  const bill = ref<OwnerBillDetailView>({});
+  const bill = ref<OwnerBillDetailVo>({});
 
   const payChannelLabelMap = Object.values(PaymentFlowChannelEnumMeta).reduce<Record<string, string>>((acc, item) => {
     acc[item.value] = item.label || item.value;
@@ -190,6 +185,10 @@
 
   const cooperationModeText = computed(() => (bill.value.cooperationMode === "MASTER_LEASE" ? "包租应付" : "轻托管"));
   const isMasterLease = computed(() => bill.value.cooperationMode === "MASTER_LEASE");
+  const billBizTypeText = computed(() => {
+    if (bill.value.billBizType === "LIGHT_MANAGED_SETTLEMENT") return "轻托管结算单";
+    return "包租应付单";
+  });
   const showPaymentAction = computed(() => isMasterLease.value && Number(bill.value.unpaidAmount || 0) > 0);
   const showWithdrawAction = computed(() => !isMasterLease.value && Number(bill.value.withdrawableAmount || 0) > 0);
 
@@ -219,7 +218,7 @@
         message(resp.message || "获取包租应付单详情失败", { type: "error" });
         return;
       }
-      bill.value = resp.data as OwnerBillDetailView;
+      bill.value = resp.data;
     } finally {
       loading.value = false;
     }

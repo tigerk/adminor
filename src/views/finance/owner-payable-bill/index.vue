@@ -99,19 +99,10 @@
     cooperationMode?: OwnerCooperationModeEnum;
   };
 
-  type OwnerBillSummaryView = OwnerBillSummaryVo & {
-    totalSettledAmount?: number;
-    totalUnpaidAmount?: number;
-  };
-
   const loading = ref(false);
   const total = ref(0);
-  type OwnerBillListView = OwnerBillListVo & {
-    dueDate?: string;
-  };
-
-  const tableData = ref<OwnerBillListView[]>([]);
-  const summary = ref<OwnerBillSummaryView>({});
+  const tableData = ref<OwnerBillListVo[]>([]);
+  const summary = ref<OwnerBillSummaryVo>({});
 
   const settlementStatusMap: Record<number, string> = {
     0: "未付款",

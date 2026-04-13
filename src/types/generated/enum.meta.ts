@@ -9,15 +9,20 @@ export const OwnerWithdrawOperateEnumMeta = {
   CANCEL: {"value":"CANCEL"}
 } as const;
 
+export const OwnerCooperationModeEnumMeta = {
+  LIGHT_MANAGED: {"value":"LIGHT_MANAGED"},
+  MASTER_LEASE: {"value":"MASTER_LEASE"}
+} as const;
+
+export const OwnerBillBizTypeEnumMeta = {
+  LIGHT_MANAGED_SETTLEMENT: {"value":"LIGHT_MANAGED_SETTLEMENT"},
+  MASTER_LEASE_PAYABLE: {"value":"MASTER_LEASE_PAYABLE"}
+} as const;
+
 export const OwnerContractSubjectTypeEnumMeta = {
   HOUSE: {"value":"HOUSE"},
   FOCUS_BUILDING: {"value":"FOCUS_BUILDING"},
   FOCUS: {"value":"FOCUS"}
-} as const;
-
-export const OwnerCooperationModeEnumMeta = {
-  LIGHT_MANAGED: {"value":"LIGHT_MANAGED"},
-  MASTER_LEASE: {"value":"MASTER_LEASE"}
 } as const;
 
 export const OwnerBearTypeEnumMeta = {

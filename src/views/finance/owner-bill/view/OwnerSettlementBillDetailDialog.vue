@@ -6,7 +6,7 @@
         <div class="detail-header__main">
           <div class="detail-header__title">
             <span>{{ bill.billNo || "业主结算单" }}</span>
-            <el-tag size="small" effect="plain" type="success">轻托管</el-tag>
+            <el-tag size="small" effect="plain" type="success">{{ billBizTypeText }}</el-tag>
           </div>
           <div class="detail-header__meta">
             <span>业主：{{ bill.ownerName || "-" }}</span>
@@ -40,7 +40,7 @@
 
       <el-descriptions :column="2" border class="detail-descriptions">
         <el-descriptions-item label="结算单号">{{ bill.billNo || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="合作模式">轻托管</el-descriptions-item>
+        <el-descriptions-item label="账单类型">{{ billBizTypeText }}</el-descriptions-item>
         <el-descriptions-item label="业主">{{ bill.ownerName || "-" }}</el-descriptions-item>
         <el-descriptions-item label="联系电话">{{ bill.ownerPhone || "-" }}</el-descriptions-item>
         <el-descriptions-item label="合同编号">{{ bill.contractNo || "-" }}</el-descriptions-item>
@@ -135,6 +135,7 @@
   };
 
   const showWithdrawAction = computed(() => Number(bill.value.withdrawableAmount || 0) > 0);
+  const billBizTypeText = computed(() => (bill.value.billBizType === "MASTER_LEASE_PAYABLE" ? "包租应付单" : "轻托管结算单"));
   const moneyText = (value?: number) => Number(value || 0).toFixed(2);
   const approvalStatusText = (value?: number) => approvalStatusMap[value ?? 0] || `状态${value ?? "-"}`;
   const settlementStatusText = (value?: number) => settlementStatusMap[value ?? 0] || `状态${value ?? "-"}`;
