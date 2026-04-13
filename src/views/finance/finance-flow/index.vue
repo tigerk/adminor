@@ -342,6 +342,7 @@
   .pf-page {
     display: flex;
     flex-direction: column;
+    gap: 0 !important;
   }
 
   .summary-row {

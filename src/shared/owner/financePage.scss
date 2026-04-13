@@ -1,0 +1,146 @@
+.pf-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-intro-wrap {
+  margin-top: 4px;
+}
+
+.page-intro-alert__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  height: 20px;
+}
+
+.page-intro-alert__title {
+  flex-shrink: 0;
+  color: var(--el-text-color-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.page-intro-alert__desc {
+  min-width: 0;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.page-intro-alert {
+  align-items: center;
+}
+
+.page-intro-alert .el-alert__content {
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+}
+
+.page-intro-alert .el-alert__description {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  line-height: 20px;
+  margin: 0;
+}
+
+.page-intro-alert .el-alert__icon {
+  display: flex;
+  align-self: center;
+  align-items: center;
+  height: 20px;
+  margin-top: 0;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.page-intro-alert .el-alert__close-btn {
+  align-self: center;
+}
+
+.summary-block {
+  margin-top: 2px;
+}
+
+.filter-card {
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 10px;
+  padding: 10px 14px 2px;
+}
+
+.filter-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.filter-toolbar__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-toolbar__actions {
+  flex-shrink: 0;
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+}
+
+.filter-form .el-form-item {
+  margin-bottom: 8px;
+}
+
+.filter-input {
+  width: 180px;
+}
+
+.filter-input--wide {
+  width: 220px;
+}
+
+.list-card {
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.list-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--el-border-color-light);
+}
+
+.list-card__title {
+  color: var(--el-text-color-primary);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.list-card__body {
+  padding: 0 0 12px;
+}
+
+.list-card__table {
+  padding: 0 16px;
+}
+
+.list-card__pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 16px 0;
+}

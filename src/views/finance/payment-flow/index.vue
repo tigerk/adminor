@@ -307,6 +307,7 @@
   .pf-page {
     display: flex;
     flex-direction: column;
+    gap: 0 !important;
   }
 
   /* ── 汇总卡片：横向紧凑 ── */

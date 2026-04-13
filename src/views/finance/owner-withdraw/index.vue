@@ -1,21 +1,26 @@
 <template>
-  <div class="owner-finance-page">
-    <OwnerPageHeader :summary-span="20" :action-span="4">
-      <template #search>
-      <el-form :inline="true" :model="queryForm" class="owner-page-search-form">
-        <el-form-item>
-          <el-input v-model="queryForm.ownerName" placeholder="业主名称" clearable class="owner-filter-input" @keyup.enter="fetchData" />
+  <div class="pf-page">
+    <div class="summary-block">
+      <OwnerSummaryCards :cards="summaryCards" :columns="6" />
+    </div>
+
+    <div class="filter-card">
+      <div class="filter-toolbar">
+        <div class="filter-toolbar__main">
+      <el-form :inline="true" :model="queryForm" class="filter-form">
+        <el-form-item label="业主名称">
+          <el-input v-model="queryForm.ownerName" placeholder="请输入业主名称" clearable class="filter-input" @keyup.enter="fetchData" />
         </el-form-item>
-        <el-form-item>
-          <el-input v-model="queryForm.applyNo" placeholder="提现单号" clearable class="owner-filter-input" @keyup.enter="fetchData" />
+        <el-form-item label="提现单号">
+          <el-input v-model="queryForm.applyNo" placeholder="请输入提现单号" clearable class="filter-input" @keyup.enter="fetchData" />
         </el-form-item>
-        <el-form-item>
-          <el-select v-model="queryForm.approvalStatus" placeholder="审批状态" clearable class="owner-filter-select">
+        <el-form-item label="审批状态">
+          <el-select v-model="queryForm.approvalStatus" placeholder="请选择审批状态" clearable class="filter-input">
             <el-option v-for="item in approvalStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item>
-          <el-select v-model="queryForm.withdrawStatus" placeholder="打款状态" clearable class="owner-filter-select">
+        <el-form-item label="打款状态">
+          <el-select v-model="queryForm.withdrawStatus" placeholder="请选择打款状态" clearable class="filter-input">
             <el-option v-for="item in withdrawStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -24,19 +29,19 @@
           <el-button @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-      </template>
+        </div>
+        <div class="filter-toolbar__actions">
+          <el-button type="primary" :disabled="!createForm.ownerId" @click="openCreateDialog">发起提现</el-button>
+        </div>
+      </div>
+    </div>
 
-      <template #summary>
-        <OwnerSummaryCards :cards="summaryCards" :columns="6" />
-      </template>
-
-      <template #actions>
-        <el-button type="primary" :disabled="!createForm.ownerId" @click="openCreateDialog">发起提现</el-button>
-      </template>
-    </OwnerPageHeader>
-
-    <el-row class="bg-bg_color w-full px-4 pb-4">
-      <div class="w-full">
+    <div class="list-card">
+      <div class="list-card__header">
+        <div class="list-card__title">业主提现列表</div>
+      </div>
+      <div class="list-card__body">
+        <div class="list-card__table">
         <el-table v-loading="loading" :data="tableData" border>
           <el-table-column prop="applyNo" label="提现单号" min-width="180" />
           <el-table-column prop="ownerName" label="业主" min-width="140" />
@@ -70,8 +75,9 @@
             </template>
           </el-table-column>
         </el-table>
+        </div>
 
-        <div class="mt-4 flex justify-end">
+        <div class="list-card__pagination">
           <el-pagination
             v-model:current-page="queryForm.currentPage"
             v-model:page-size="queryForm.pageSize"
@@ -84,7 +90,7 @@
           />
         </div>
       </div>
-    </el-row>
+    </div>
   </div>
 </template>
 
@@ -97,9 +103,8 @@
     getOwnerWithdrawSummary,
     operateOwnerWithdraw
   } from "@/api/owner/owner";
-  import OwnerPageHeader from "@/shared/owner/OwnerPageHeader.vue";
   import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";
-  import "@/shared/owner/panel.scss";
+  import "@/shared/owner/financePage.scss";
   import useOwnerWithdrawDialog from "@/views/finance/owner-withdraw/utils/hook";
   import type {
     OwnerWithdrawApplyDetailVo,
@@ -331,10 +336,4 @@
   });
 </script>
 
-<style scoped lang="scss">
-  .owner-finance-page {
-    display: flex;
-    flex-direction: column;
-  }
-
-</style>
+<style scoped lang="scss"></style>
