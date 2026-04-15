@@ -2,25 +2,23 @@ import { computed, h, onMounted, reactive, ref } from "vue";
 import type { PaginationProps } from "@pureadmin/table";
 import { useRoute } from "vue-router";
 import { addDialog } from "@/components/ReDialog";
-import { getOwnerBillPage, getOwnerBillSummary } from "@/api/owner/owner";
+import { getOwnerSettlementBillPage, getOwnerSettlementBillSummary, type SettlementBillListVo, type SettlementBillQueryDto, type SettlementBillSummaryVo } from "@/api/owner/owner";
 import OwnerSettlementBillDetailDialog from "@/views/finance/owner-bill/view/OwnerSettlementBillDetailDialog.vue";
-import type { OwnerBillListVo, OwnerBillQueryDto, OwnerBillSummaryVo, OwnerCooperationModeEnum } from "@/types/generated";
 
 const OWNER_BILL_PAGE_INTRO_STORAGE_KEY = "owner-bill-page-intro-closed";
 
 function useOwnerBill() {
   const route = useRoute();
 
-  type QueryForm = Omit<OwnerBillQueryDto, "currentPage" | "pageSize"> & {
+  type QueryForm = Omit<SettlementBillQueryDto, "currentPage" | "pageSize"> & {
     currentPage: number;
     pageSize: number;
-    cooperationMode?: OwnerCooperationModeEnum;
   };
 
   const loading = ref(false);
   const showPageIntro = ref(localStorage.getItem(OWNER_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
-  const tableData = ref<OwnerBillListVo[]>([]);
-  const summary = ref<OwnerBillSummaryVo>({});
+  const tableData = ref<SettlementBillListVo[]>([]);
+  const summary = ref<SettlementBillSummaryVo>({});
 
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -36,7 +34,6 @@ function useOwnerBill() {
     contractId: String(route.query.contractId || "") || undefined,
     ownerName: "",
     billNo: "",
-    cooperationMode: "LIGHT_MANAGED" as OwnerCooperationModeEnum,
     approvalStatus: undefined,
     settlementStatus: undefined
   });
@@ -83,7 +80,7 @@ function useOwnerBill() {
     {
       label: "账期",
       minWidth: 200,
-      cellRenderer: ({ row }) => <span>{row.billStart || "-"} 至 {row.billEnd || "-"}</span>
+      cellRenderer: ({ row }) => <span>{row.billStartDate || "-"} 至 {row.billEndDate || "-"}</span>
     },
     {
       label: "收入金额",
@@ -118,7 +115,7 @@ function useOwnerBill() {
     { label: "操作", fixed: "right", width: 90, align: "center", slot: "operation" }
   ];
 
-  function buildQueryPayload(): OwnerBillQueryDto {
+  function buildQueryPayload(): SettlementBillQueryDto {
     return {
       ...queryForm,
       currentPage: String(pagination.currentPage),
@@ -129,7 +126,7 @@ function useOwnerBill() {
   async function fetchData() {
     loading.value = true;
     try {
-      const [pageResp, summaryResp] = await Promise.all([getOwnerBillPage(buildQueryPayload()), getOwnerBillSummary(buildQueryPayload())]);
+      const [pageResp, summaryResp] = await Promise.all([getOwnerSettlementBillPage(buildQueryPayload()), getOwnerSettlementBillSummary(buildQueryPayload())]);
       tableData.value = pageResp.data?.list || [];
       summary.value = summaryResp.data || {};
       pagination.total = Number(pageResp.data?.total || 0);
@@ -160,7 +157,6 @@ function useOwnerBill() {
     queryForm.pageSize = 10;
     queryForm.ownerName = "";
     queryForm.billNo = "";
-    queryForm.cooperationMode = "LIGHT_MANAGED";
     queryForm.approvalStatus = undefined;
     queryForm.settlementStatus = undefined;
     queryForm.ownerId = String(route.query.ownerId || "") || undefined;
@@ -177,7 +173,7 @@ function useOwnerBill() {
     return `¥${Number(value || 0).toFixed(2)}`;
   }
 
-  function numberText(value?: string) {
+  function numberText(value?: string | number) {
     return String(value || "0");
   }
 
@@ -232,7 +228,7 @@ function useOwnerBill() {
     });
   }
 
-  function handleRowClick(row: OwnerBillListVo) {
+  function handleRowClick(row: SettlementBillListVo) {
     openOwnerBillDetailDialog(row.billId);
   }
 

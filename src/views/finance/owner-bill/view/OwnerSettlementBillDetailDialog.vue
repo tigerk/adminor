@@ -11,7 +11,7 @@
           <div class="detail-header__meta">
             <span>业主：{{ bill.ownerName || "-" }}</span>
             <span>合同：{{ bill.contractNo || "-" }}</span>
-            <span>账期：{{ bill.billStart || "-" }} 至 {{ bill.billEnd || "-" }}</span>
+            <span>账期：{{ bill.billStartDate || "-" }} 至 {{ bill.billEndDate || "-" }}</span>
           </div>
         </div>
         <div class="detail-header__actions">
@@ -78,7 +78,7 @@
           <el-table-column label="金额" min-width="120" align="right">
             <template #default="{ row }">¥{{ moneyText(row.amount) }}</template>
           </el-table-column>
-          <el-table-column prop="bizDate" label="业务日期" min-width="120" />
+          <el-table-column prop="bizTime" label="业务日期" min-width="120" />
           <el-table-column prop="formulaSnapshot" label="计算说明" min-width="240" show-overflow-tooltip />
           <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
         </el-table>
@@ -95,7 +95,7 @@
           <el-table-column label="减免金额" min-width="120" align="right">
             <template #default="{ row }">¥{{ moneyText(row.amount) }}</template>
           </el-table-column>
-          <el-table-column prop="bizDate" label="业务日期" min-width="120" />
+          <el-table-column prop="bizTime" label="业务日期" min-width="120" />
           <el-table-column prop="ruleSnapshot" label="规则快照" min-width="240" show-overflow-tooltip />
           <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
         </el-table>
@@ -108,9 +108,8 @@
   import { computed, ref } from "vue";
   import { useRouter } from "vue-router";
   import { closeAllDialog } from "@/components/ReDialog";
-  import { getOwnerBillDetail } from "@/api/owner/owner";
+  import { getOwnerSettlementBillDetail, type SettlementBillDetailVo } from "@/api/owner/owner";
   import { message } from "@/utils/message";
-  import type { OwnerBillDetailVo } from "@/types/generated";
 
   defineOptions({ name: "OwnerSettlementBillDetailDialog" });
 
@@ -120,7 +119,7 @@
 
   const router = useRouter();
   const loading = ref(false);
-  const bill = ref<OwnerBillDetailVo>({});
+  const bill = ref<SettlementBillDetailVo>({});
 
   const approvalStatusMap: Record<number, string> = {
     1: "审批中",
@@ -135,7 +134,7 @@
   };
 
   const showWithdrawAction = computed(() => Number(bill.value.withdrawableAmount || 0) > 0);
-  const billBizTypeText = computed(() => (bill.value.billBizType === "MASTER_LEASE_PAYABLE" ? "包租应付单" : "轻托管结算单"));
+  const billBizTypeText = computed(() => "轻托管结算单");
   const moneyText = (value?: number) => Number(value || 0).toFixed(2);
   const approvalStatusText = (value?: number) => approvalStatusMap[value ?? 0] || `状态${value ?? "-"}`;
   const settlementStatusText = (value?: number) => settlementStatusMap[value ?? 0] || `状态${value ?? "-"}`;
@@ -156,7 +155,7 @@
   async function fetchDetail() {
     loading.value = true;
     try {
-      const resp = await getOwnerBillDetail({ billId: String(props.billId) });
+      const resp = await getOwnerSettlementBillDetail({ billId: String(props.billId) });
       if (resp.code !== 0 || !resp.data) {
         message(resp.message || "获取业主结算单详情失败", { type: "error" });
         return;

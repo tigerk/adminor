@@ -2,25 +2,39 @@ import { computed, h, onMounted, reactive, ref } from "vue";
 import type { PaginationProps } from "@pureadmin/table";
 import { useRoute } from "vue-router";
 import { addDialog } from "@/components/ReDialog";
-import { getOwnerBillPage, getOwnerBillSummary } from "@/api/owner/owner";
+import {
+  cancelOwnerPayableBill,
+  createOwnerPayableBill,
+  createOwnerPayableBillPayment,
+  getOwnerPayableBillPage,
+  getOwnerPayableBillSummary,
+  updateOwnerPayableBill,
+  type PayableBillCreateDto,
+  type PayableBillListVo,
+  type PayableBillQueryDto,
+  type PayableBillSummaryVo,
+  type PayableBillUpdateDto
+} from "@/api/owner/owner";
 import OwnerBillDetailDialog from "@/views/finance/owner-bill/view/OwnerBillDetailDialog.vue";
-import type { OwnerBillListVo, OwnerBillQueryDto, OwnerBillSummaryVo, OwnerCooperationModeEnum } from "@/types/generated";
+import OwnerPayableBillFormDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillFormDialog.vue";
+import OwnerPayableBillCancelDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillCancelDialog.vue";
+import OwnerBillPaymentDialog from "@/views/finance/owner-bill/form/OwnerBillPaymentDialog.vue";
+import { message } from "@/utils/message";
 
 const OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY = "owner-payable-bill-page-intro-closed";
 
 function useOwnerPayableBill() {
   const route = useRoute();
 
-  type QueryForm = Omit<OwnerBillQueryDto, "currentPage" | "pageSize"> & {
+  type QueryForm = Omit<PayableBillQueryDto, "currentPage" | "pageSize"> & {
     currentPage: number;
     pageSize: number;
-    cooperationMode?: OwnerCooperationModeEnum;
   };
 
   const loading = ref(false);
   const showPageIntro = ref(localStorage.getItem(OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
-  const tableData = ref<OwnerBillListVo[]>([]);
-  const summary = ref<OwnerBillSummaryVo>({});
+  const tableData = ref<PayableBillListVo[]>([]);
+  const summary = ref<PayableBillSummaryVo>({});
 
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -36,14 +50,19 @@ function useOwnerPayableBill() {
     contractId: String(route.query.contractId || "") || undefined,
     ownerName: "",
     billNo: "",
-    cooperationMode: "MASTER_LEASE" as OwnerCooperationModeEnum,
-    settlementStatus: undefined
+    paymentStatus: undefined,
+    billStatus: undefined
   });
 
   const settlementStatusMap: Record<number, string> = {
     0: "未付款",
     1: "部分付款",
     2: "已付款"
+  };
+
+  const billStatusMap: Record<number, string> = {
+    1: "正常",
+    2: "已作废"
   };
 
   const settlementStatusOptions = [
@@ -55,7 +74,7 @@ function useOwnerPayableBill() {
   const summaryCards = computed(() => [
     { key: "count", label: "应付单数", value: numberText(summary.value.billCount) },
     { key: "payable", label: "应付总额", value: moneyText(summary.value.totalPayableAmount) },
-    { key: "settled", label: "已付总额", value: moneyText(summary.value.totalSettledAmount) },
+    { key: "settled", label: "已付总额", value: moneyText(summary.value.totalPaidAmount) },
     { key: "unpaid", label: "未付总额", value: moneyText(summary.value.totalUnpaidAmount) }
   ]);
 
@@ -68,7 +87,7 @@ function useOwnerPayableBill() {
     {
       label: "账期",
       minWidth: 200,
-      cellRenderer: ({ row }) => <span>{row.billStart || "-"} 至 {row.billEnd || "-"}</span>
+      cellRenderer: ({ row }) => <span>{row.billStartDate || "-"} 至 {row.billEndDate || "-"}</span>
     },
     { label: "应付日期", prop: "dueDate", minWidth: 120, align: "center" },
     {
@@ -80,10 +99,10 @@ function useOwnerPayableBill() {
     },
     {
       label: "已付金额",
-      prop: "settledAmount",
+      prop: "paidAmount",
       minWidth: 120,
       align: "right",
-      cellRenderer: ({ row }) => <span class="amount-cell">{moneyText(row.settledAmount)}</span>
+      cellRenderer: ({ row }) => <span class="amount-cell">{moneyText(row.paidAmount)}</span>
     },
     {
       label: "未付金额",
@@ -92,12 +111,13 @@ function useOwnerPayableBill() {
       align: "right",
       cellRenderer: ({ row }) => <span class="amount-cell">{moneyText(row.unpaidAmount)}</span>
     },
-    { label: "付款状态", prop: "settlementStatus", minWidth: 110, align: "center", slot: "settlementStatus" },
+    { label: "付款状态", prop: "paymentStatus", minWidth: 110, align: "center", slot: "settlementStatus" },
+    { label: "单据状态", prop: "billStatus", minWidth: 110, align: "center", slot: "billStatus" },
     { label: "生成时间", prop: "generatedAt", minWidth: 170 },
-    { label: "操作", fixed: "right", width: 90, align: "center", slot: "operation" }
+    { label: "操作", fixed: "right", width: 220, align: "center", slot: "operation" }
   ];
 
-  function buildQueryPayload(): OwnerBillQueryDto {
+  function buildQueryPayload(): PayableBillQueryDto {
     return {
       ...queryForm,
       currentPage: String(pagination.currentPage),
@@ -108,7 +128,7 @@ function useOwnerPayableBill() {
   async function fetchData() {
     loading.value = true;
     try {
-      const [pageResp, summaryResp] = await Promise.all([getOwnerBillPage(buildQueryPayload()), getOwnerBillSummary(buildQueryPayload())]);
+      const [pageResp, summaryResp] = await Promise.all([getOwnerPayableBillPage(buildQueryPayload()), getOwnerPayableBillSummary(buildQueryPayload())]);
       tableData.value = pageResp.data?.list || [];
       summary.value = summaryResp.data || {};
       pagination.total = Number(pageResp.data?.total || 0);
@@ -139,8 +159,8 @@ function useOwnerPayableBill() {
     queryForm.pageSize = 10;
     queryForm.ownerName = "";
     queryForm.billNo = "";
-    queryForm.cooperationMode = "MASTER_LEASE";
-    queryForm.settlementStatus = undefined;
+    queryForm.paymentStatus = undefined;
+    queryForm.billStatus = undefined;
     queryForm.ownerId = String(route.query.ownerId || "") || undefined;
     queryForm.contractId = String(route.query.contractId || "") || undefined;
     fetchData();
@@ -155,12 +175,16 @@ function useOwnerPayableBill() {
     return `¥${Number(value || 0).toFixed(2)}`;
   }
 
-  function numberText(value?: string) {
+  function numberText(value?: string | number) {
     return String(value || "0");
   }
 
   function settlementStatusText(value?: number) {
     return settlementStatusMap[value ?? 0] || `状态${value ?? "-"}`;
+  }
+
+  function billStatusText(value?: number) {
+    return billStatusMap[value ?? 1] || `状态${value ?? "-"}`;
   }
 
   function settlementStatusTagType(value?: number) {
@@ -173,6 +197,11 @@ function useOwnerPayableBill() {
     if (value === 2) return "success";
     if (value === 1) return "warning";
     return "info";
+  }
+
+  function billStatusBadgeType(value?: number) {
+    if (value === 2) return "danger";
+    return "success";
   }
 
   function openOwnerPayableBillDetailDialog(billId?: string | number) {
@@ -192,8 +221,90 @@ function useOwnerPayableBill() {
     });
   }
 
-  function handleRowClick(row: OwnerBillListVo) {
+  function handleRowClick(row: PayableBillListVo) {
     openOwnerPayableBillDetailDialog(row.billId);
+  }
+
+  function openPayableBillFormDialog(row?: PayableBillListVo) {
+    const formRef = ref();
+    const isEdit = !!row?.billId;
+    addDialog({
+      title: isEdit ? "修改包租应付单" : "新增包租应付单",
+      props: { billId: row?.billId },
+      width: "960px",
+      top: "3vh",
+      lockScroll: true,
+      alignCenter: true,
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(OwnerPayableBillFormDialog, { ref: formRef, bill: row }),
+      beforeSure: async done => {
+        const payload = await formRef.value?.validateAndBuildPayload?.();
+        if (!payload) return;
+        const resp = isEdit ? await updateOwnerPayableBill(payload as PayableBillUpdateDto) : await createOwnerPayableBill(payload as PayableBillCreateDto);
+        if (resp.code === 0) {
+          message(isEdit ? "应付单修改成功" : "应付单新增成功", { type: "success" });
+          await fetchData();
+          done();
+          return;
+        }
+        message(resp.message || (isEdit ? "应付单修改失败" : "应付单新增失败"), { type: "error" });
+      }
+    });
+  }
+
+  function openPayableBillCancelDialog(row: PayableBillListVo) {
+    const formRef = ref();
+    addDialog({
+      title: "作废包租应付单",
+      width: "520px",
+      lockScroll: true,
+      alignCenter: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(OwnerPayableBillCancelDialog, { ref: formRef, billNo: row.billNo }),
+      beforeSure: async done => {
+        const payload = await formRef.value?.validateAndBuildPayload?.();
+        if (!payload) return;
+        const resp = await cancelOwnerPayableBill({ billId: row.billId, cancelReason: payload.cancelReason });
+        if (resp.code === 0) {
+          message("应付单作废成功", { type: "success" });
+          await fetchData();
+          done();
+          return;
+        }
+        message(resp.message || "应付单作废失败", { type: "error" });
+      }
+    });
+  }
+
+  function openPayableBillPaymentDialog(row: PayableBillListVo) {
+    const formRef = ref();
+    addDialog({
+      title: "登记付款",
+      width: "720px",
+      lockScroll: true,
+      alignCenter: true,
+      closeOnClickModal: false,
+      contentRenderer: () =>
+        h(OwnerBillPaymentDialog, {
+          ref: formRef,
+          billId: String(row.billId),
+          unpaidAmount: Number(row.unpaidAmount || 0)
+        }),
+      beforeSure: async done => {
+        const payload = await formRef.value?.validateAndBuildPayload?.();
+        if (!payload) return;
+        const resp = await createOwnerPayableBillPayment(payload);
+        if (resp.code === 0) {
+          message("付款登记成功", { type: "success" });
+          await fetchData();
+          done();
+          return;
+        }
+        message(resp.message || "付款登记失败", { type: "error" });
+      }
+    });
   }
 
   onMounted(fetchData);
@@ -213,9 +324,14 @@ function useOwnerPayableBill() {
     handleCurrentChange,
     handleRowClick,
     openOwnerPayableBillDetailDialog,
+    openPayableBillFormDialog,
+    openPayableBillCancelDialog,
+    openPayableBillPaymentDialog,
     closePageIntro,
     settlementStatusText,
+    billStatusText,
     settlementStatusBadgeType,
+    billStatusBadgeType,
     settlementStatusTagType
   };
 }

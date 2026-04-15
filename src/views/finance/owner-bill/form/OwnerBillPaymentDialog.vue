@@ -14,8 +14,8 @@
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item label="付款时间" prop="payTime">
-          <el-date-picker v-model="form.payTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" class="w-full" />
+        <el-form-item label="付款时间" prop="payAt">
+          <el-date-picker v-model="form.payAt" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" class="w-full" />
         </el-form-item>
       </el-col>
       <el-col :span="12">
@@ -50,8 +50,8 @@
   import { reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
   import UploadImage from "@/components/upload/UploadImage.vue";
+  import type { PayableBillPaymentCreateDto } from "@/api/owner/owner";
   import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
-  import type { OwnerBillPaymentCreateDto } from "@/types/generated";
 
   defineOptions({ name: "OwnerBillPaymentDialog" });
 
@@ -66,10 +66,10 @@
     value: item.value
   }));
 
-  const form = reactive<OwnerBillPaymentCreateDto>({
+  const form = reactive<PayableBillPaymentCreateDto>({
     billId: String(props.billId),
     payAmount: Number(props.unpaidAmount || 0),
-    payTime: "",
+    payAt: "",
     payChannel: undefined,
     thirdTradeNo: "",
     remark: "",
@@ -94,7 +94,7 @@
         trigger: "blur"
       }
     ],
-    payTime: [{ required: true, message: "请选择付款时间", trigger: "change" }],
+    payAt: [{ required: true, message: "请选择付款时间", trigger: "change" }],
     payChannel: [{ required: true, message: "请选择付款渠道", trigger: "change" }]
   };
 

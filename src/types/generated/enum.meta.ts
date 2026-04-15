@@ -9,16 +9,6 @@ export const OwnerWithdrawOperateEnumMeta = {
   CANCEL: {"value":"CANCEL"}
 } as const;
 
-export const OwnerCooperationModeEnumMeta = {
-  LIGHT_MANAGED: {"value":"LIGHT_MANAGED"},
-  MASTER_LEASE: {"value":"MASTER_LEASE"}
-} as const;
-
-export const OwnerBillBizTypeEnumMeta = {
-  LIGHT_MANAGED_SETTLEMENT: {"value":"LIGHT_MANAGED_SETTLEMENT"},
-  MASTER_LEASE_PAYABLE: {"value":"MASTER_LEASE_PAYABLE"}
-} as const;
-
 export const OwnerContractSubjectTypeEnumMeta = {
   HOUSE: {"value":"HOUSE"},
   FOCUS_BUILDING: {"value":"FOCUS_BUILDING"},
@@ -34,6 +24,11 @@ export const OwnerBearTypeEnumMeta = {
 export const OwnerContractMediumEnumMeta = {
   ELECTRONIC: {"value":"ELECTRONIC"},
   PAPER: {"value":"PAPER"}
+} as const;
+
+export const OwnerCooperationModeEnumMeta = {
+  LIGHT_MANAGED: {"value":"LIGHT_MANAGED"},
+  MASTER_LEASE: {"value":"MASTER_LEASE"}
 } as const;
 
 export const OwnerFeeModeEnumMeta = {
@@ -231,6 +226,18 @@ export const MultiApproveEnumMeta = {
   AND_SIGN: {"value":"AND_SIGN","code":2,"name":"会签（所有人通过）"}
 } as const;
 
+export const BizOperateBizTypeEnumMeta = {
+  OWNER_PAYABLE_BILL: {"value":"OWNER_PAYABLE_BILL","code":"OWNER_PAYABLE_BILL","name":"包租业主应付单"},
+  OWNER_SETTLEMENT_BILL: {"value":"OWNER_SETTLEMENT_BILL","code":"OWNER_SETTLEMENT_BILL","name":"轻托管业主结算单"}
+} as const;
+
+export const BizOperateTypeEnumMeta = {
+  CREATE: {"value":"CREATE","code":"CREATE","name":"新增"},
+  UPDATE: {"value":"UPDATE","code":"UPDATE","name":"修改"},
+  CANCEL: {"value":"CANCEL","code":"CANCEL","name":"作废"},
+  PAY: {"value":"PAY","code":"PAY","name":"付款"}
+} as const;
+
 export const BookingStatusEnumMeta = {
   BOOKING: {"value":"BOOKING","code":1,"name":"预定中","sortOrder":1},
   CONTRACTED: {"value":"CONTRACTED","code":2,"name":"已转合同","sortOrder":2},
@@ -395,6 +402,7 @@ export const FileAttachBizTypeEnumMeta = {
   OWNER_OTHER_IMAGE: {"value":"OWNER_OTHER_IMAGE","bizType":"owner_other_image"},
   OWNER_BUSINESS_LICENSE: {"value":"OWNER_BUSINESS_LICENSE","bizType":"owner_business_license"},
   OWNER_BILL_PAYMENT_VOUCHER: {"value":"OWNER_BILL_PAYMENT_VOUCHER","bizType":"owner_bill_payment_voucher"},
+  OWNER_PAYABLE_BILL_PAYMENT_VOUCHER: {"value":"OWNER_PAYABLE_BILL_PAYMENT_VOUCHER","bizType":"owner_payable_bill_payment_voucher"},
   DELIVERY_IMAGE: {"value":"DELIVERY_IMAGE","bizType":"delivery_image"},
   CONTRACT_SEAL_IMAGE: {"value":"CONTRACT_SEAL_IMAGE","bizType":"contract_seal_image"}
 } as const;
@@ -534,6 +542,11 @@ export const OwnerAccountFlowChangeTypeEnumMeta = {
   BILL_SETTLE_IN: {"value":"BILL_SETTLE_IN","code":"BILL_SETTLE_IN","name":"账单入账"}
 } as const;
 
+export const OwnerBillBizTypeEnumMeta = {
+  LIGHT_MANAGED_SETTLEMENT: {"value":"LIGHT_MANAGED_SETTLEMENT","code":"LIGHT_MANAGED_SETTLEMENT","name":"轻托管结算单"},
+  MASTER_LEASE_PAYABLE: {"value":"MASTER_LEASE_PAYABLE","code":"MASTER_LEASE_PAYABLE","name":"包租应付单"}
+} as const;
+
 export const OwnerBillItemTypeEnumMeta = {
   RENT: {"value":"RENT","code":"RENT","name":"租金"},
   DEPOSIT: {"value":"DEPOSIT","code":"DEPOSIT","name":"押金"},
@@ -556,6 +569,17 @@ export const OwnerBillSourceTypeEnumMeta = {
 
 export const OwnerBillStatusEnumMeta = {
   NORMAL: {"value":"NORMAL","code":1,"name":"正常"}
+} as const;
+
+export const OwnerPayableBillPaymentStatusEnumMeta = {
+  UNPAID: {"value":"UNPAID","code":0,"name":"未付款"},
+  PART_PAID: {"value":"PART_PAID","code":1,"name":"部分付款"},
+  PAID: {"value":"PAID","code":2,"name":"已付款"}
+} as const;
+
+export const OwnerPayableBillStatusEnumMeta = {
+  NORMAL: {"value":"NORMAL","code":1,"name":"正常"},
+  CANCELED: {"value":"CANCELED","code":2,"name":"已作废"}
 } as const;
 
 export const PayStatusEnumMeta = {

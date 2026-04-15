@@ -21,9 +21,14 @@
     handleCurrentChange,
     handleRowClick,
     openOwnerPayableBillDetailDialog,
+    openPayableBillFormDialog,
+    openPayableBillCancelDialog,
+    openPayableBillPaymentDialog,
     closePageIntro,
     settlementStatusText,
-    settlementStatusBadgeType
+    settlementStatusBadgeType,
+    billStatusText,
+    billStatusBadgeType
   } = useOwnerPayableBill();
 </script>
 
@@ -43,23 +48,26 @@
     </div>
 
     <div class="filter-card -mb-2">
-      <el-form :inline="true" :model="queryForm" class="filter-form">
-        <el-form-item label="业主名称">
-          <el-input v-model="queryForm.ownerName" placeholder="请输入业主名称" clearable class="filter-input" @keyup.enter="fetchData" />
-        </el-form-item>
-        <el-form-item label="应付单号">
-          <el-input v-model="queryForm.billNo" placeholder="请输入应付单号" clearable class="filter-input" @keyup.enter="fetchData" />
-        </el-form-item>
-        <el-form-item label="付款状态">
-          <el-select v-model="queryForm.settlementStatus" placeholder="请选择付款状态" clearable class="filter-input">
-            <el-option v-for="item in settlementStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="fetchData">查询</el-button>
-          <el-button @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
+      <div class="filter-toolbar">
+        <el-form :inline="true" :model="queryForm" class="filter-form">
+          <el-form-item label="业主名称">
+            <el-input v-model="queryForm.ownerName" placeholder="请输入业主名称" clearable class="filter-input" @keyup.enter="fetchData" />
+          </el-form-item>
+          <el-form-item label="应付单号">
+            <el-input v-model="queryForm.billNo" placeholder="请输入应付单号" clearable class="filter-input" @keyup.enter="fetchData" />
+          </el-form-item>
+          <el-form-item label="付款状态">
+            <el-select v-model="queryForm.paymentStatus" placeholder="请选择付款状态" clearable class="filter-input">
+              <el-option v-for="item in settlementStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="fetchData">查询</el-button>
+            <el-button @click="resetQuery">重置</el-button>
+          </el-form-item>
+        </el-form>
+        <el-button type="primary" @click="openPayableBillFormDialog()">新增包租应付单</el-button>
+      </div>
     </div>
 
     <PureTableBar title="包租应付单" :columns="columns" @refresh="fetchData">
@@ -82,13 +90,38 @@
           @row-click="handleRowClick"
         >
           <template #settlementStatus="{ row }">
-            <div class="status-badge" :class="`status-badge--${settlementStatusBadgeType(row.settlementStatus)}`">
+            <div class="status-badge" :class="`status-badge--${settlementStatusBadgeType(row.paymentStatus)}`">
               <span class="status-badge__dot" />
-              {{ settlementStatusText(row.settlementStatus) }}
+              {{ settlementStatusText(row.paymentStatus) }}
+            </div>
+          </template>
+          <template #billStatus="{ row }">
+            <div class="status-badge" :class="`status-badge--${billStatusBadgeType(row.billStatus)}`">
+              <span class="status-badge__dot" />
+              {{ billStatusText(row.billStatus) }}
             </div>
           </template>
           <template #operation="{ row }">
             <el-button link type="primary" @click.stop="openOwnerPayableBillDetailDialog(row.billId)">详情</el-button>
+            <el-button v-if="Number(row.billStatus || 1) === 1 && Number(row.unpaidAmount || 0) > 0" link type="primary" @click.stop="openPayableBillPaymentDialog(row)">
+              登记付款
+            </el-button>
+            <el-button
+              v-if="Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0"
+              link
+              type="primary"
+              @click.stop="openPayableBillFormDialog(row)"
+            >
+              修改
+            </el-button>
+            <el-button
+              v-if="Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0"
+              link
+              type="danger"
+              @click.stop="openPayableBillCancelDialog(row)"
+            >
+              作废
+            </el-button>
           </template>
         </pure-table>
       </template>
