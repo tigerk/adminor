@@ -65,7 +65,7 @@ export default [
     children: [
       {
         path: "",
-        name: "OwnerBillEntry",
+        name: "OwnerSettlementBillEntry",
         component: () => import("@/views/finance/owner-bill/index.vue"),
         meta: {
           title: "业主结算单",

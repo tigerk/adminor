@@ -15,10 +15,10 @@ import {
   type PayableBillSummaryVo,
   type PayableBillUpdateDto
 } from "@/api/owner/owner";
-import OwnerBillDetailDialog from "@/views/finance/owner-bill/view/OwnerBillDetailDialog.vue";
+import OwnerPayableBillDetailDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillDetailDialog.vue";
 import OwnerPayableBillFormDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillFormDialog.vue";
 import OwnerPayableBillCancelDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillCancelDialog.vue";
-import OwnerBillPaymentDialog from "@/views/finance/owner-bill/form/OwnerBillPaymentDialog.vue";
+import OwnerPayableBillPaymentDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillPaymentDialog.vue";
 import { message } from "@/utils/message";
 
 const OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY = "owner-payable-bill-page-intro-closed";
@@ -217,7 +217,7 @@ function useOwnerPayableBill() {
       fullscreenIcon: true,
       closeOnClickModal: false,
       hideFooter: true,
-      contentRenderer: () => h(OwnerBillDetailDialog, { billId })
+      contentRenderer: () => h(OwnerPayableBillDetailDialog, { billId })
     });
   }
 
@@ -287,7 +287,7 @@ function useOwnerPayableBill() {
       alignCenter: true,
       closeOnClickModal: false,
       contentRenderer: () =>
-        h(OwnerBillPaymentDialog, {
+        h(OwnerPayableBillPaymentDialog, {
           ref: formRef,
           billId: String(row.billId),
           unpaidAmount: Number(row.unpaidAmount || 0)

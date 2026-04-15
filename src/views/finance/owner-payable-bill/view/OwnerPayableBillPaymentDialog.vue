@@ -53,7 +53,7 @@
   import type { PayableBillPaymentCreateDto } from "@/api/owner/owner";
   import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
 
-  defineOptions({ name: "OwnerBillPaymentDialog" });
+  defineOptions({ name: "OwnerPayableBillPaymentDialog" });
 
   const props = defineProps<{
     billId: string | number;

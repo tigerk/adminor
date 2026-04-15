@@ -1,5 +1,5 @@
 <template>
-  <div class="owner-bill-detail">
+  <div class="owner-payable-bill-detail">
     <el-skeleton v-if="loading" :rows="10" animated />
     <template v-else>
       <div class="detail-header">
@@ -139,11 +139,11 @@
   import { computed, h, ref } from "vue";
   import { addDialog } from "@/components/ReDialog";
   import { createOwnerPayableBillPayment, getOwnerPayableBillDetail, type PayableBillDetailVo, type PayableBillPaymentCreateDto } from "@/api/owner/owner";
-  import OwnerBillPaymentDialog from "@/views/finance/owner-bill/form/OwnerBillPaymentDialog.vue";
+  import OwnerPayableBillPaymentDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillPaymentDialog.vue";
   import { message } from "@/utils/message";
   import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
 
-  defineOptions({ name: "OwnerBillDetailDialog" });
+  defineOptions({ name: "OwnerPayableBillDetailDialog" });
 
   const props = defineProps<{ billId: string | number }>();
   const loading = ref(false);
@@ -198,7 +198,7 @@
       alignCenter: true,
       closeOnClickModal: false,
       contentRenderer: () =>
-        h(OwnerBillPaymentDialog, {
+        h(OwnerPayableBillPaymentDialog, {
           ref: paymentFormRef,
           billId: String(bill.value.billId),
           unpaidAmount: Number(bill.value.unpaidAmount || 0)
@@ -222,7 +222,7 @@
 </script>
 
 <style scoped lang="scss">
-  .owner-bill-detail { display: flex; flex-direction: column; gap: 16px; }
+  .owner-payable-bill-detail { display: flex; flex-direction: column; gap: 16px; }
   .detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
   .detail-header__main { display: flex; flex-direction: column; gap: 8px; }
   .detail-header__title { display: flex; align-items: center; gap: 10px; color: var(--el-text-color-primary); font-size: 20px; font-weight: 600; }

@@ -7,7 +7,7 @@ import OwnerSettlementBillDetailDialog from "@/views/finance/owner-bill/view/Own
 
 const OWNER_BILL_PAGE_INTRO_STORAGE_KEY = "owner-bill-page-intro-closed";
 
-function useOwnerBill() {
+function useOwnerSettlementBill() {
   const route = useRoute();
 
   type QueryForm = Omit<SettlementBillQueryDto, "currentPage" | "pageSize"> & {
@@ -211,7 +211,7 @@ function useOwnerBill() {
     return "info";
   }
 
-  function openOwnerBillDetailDialog(billId?: string | number) {
+  function openOwnerSettlementBillDetailDialog(billId?: string | number) {
     if (!billId) return;
     addDialog({
       title: "业主结算单详情",
@@ -229,7 +229,7 @@ function useOwnerBill() {
   }
 
   function handleRowClick(row: SettlementBillListVo) {
-    openOwnerBillDetailDialog(row.billId);
+    openOwnerSettlementBillDetailDialog(row.billId);
   }
 
   onMounted(fetchData);
@@ -249,7 +249,7 @@ function useOwnerBill() {
     handleSizeChange,
     handleCurrentChange,
     handleRowClick,
-    openOwnerBillDetailDialog,
+    openOwnerSettlementBillDetailDialog,
     closePageIntro,
     approvalStatusText,
     settlementStatusText,
@@ -260,4 +260,4 @@ function useOwnerBill() {
   };
 }
 
-export default useOwnerBill;
+export default useOwnerSettlementBill;

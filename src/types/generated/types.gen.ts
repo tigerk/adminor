@@ -3146,13 +3146,13 @@ export type OwnerSettlementBillListVo = {
      */
     subjectName?: string;
     /**
-     * 账期开始时间
+     * 账期开始日期
      */
-    billStartTime?: string;
+    billStartDate?: string;
     /**
-     * 账期结束时间
+     * 账期结束日期
      */
-    billEndTime?: string;
+    billEndDate?: string;
     /**
      * 收入金额
      */
@@ -3188,7 +3188,7 @@ export type OwnerSettlementBillListVo = {
     /**
      * 生成时间
      */
-    generatedTime?: string;
+    generatedAt?: string;
 };
 
 export type PageVoOwnerSettlementBillListVo = {
@@ -3260,13 +3260,13 @@ export type OwnerSettlementBillDetailVo = {
      */
     subjectName?: string;
     /**
-     * 账期开始时间
+     * 账期开始日期
      */
-    billStartTime?: string;
+    billStartDate?: string;
     /**
-     * 账期结束时间
+     * 账期结束日期
      */
-    billEndTime?: string;
+    billEndDate?: string;
     /**
      * 收入金额
      */
@@ -3322,11 +3322,11 @@ export type OwnerSettlementBillDetailVo = {
     /**
      * 生成时间
      */
-    generatedTime?: string;
+    generatedAt?: string;
     /**
      * 审批时间
      */
-    approvedTime?: string;
+    approvedAt?: string;
     /**
      * 备注
      */
@@ -3518,17 +3518,17 @@ export type OwnerPayableBillUpdateDto = {
      */
     subjectName?: string;
     /**
-     * 账期开始时间
+     * 账期开始日期
      */
-    billStartTime?: string;
+    billStartDate?: string;
     /**
-     * 账期结束时间
+     * 账期结束日期
      */
-    billEndTime?: string;
+    billEndDate?: string;
     /**
-     * 应付时间
+     * 应付日期
      */
-    dueTime?: string;
+    dueDate?: string;
     /**
      * 备注
      */
@@ -3622,7 +3622,7 @@ export type OwnerPayableBillPaymentCreateDto = {
     /**
      * 付款时间
      */
-    payTime?: string;
+    payAt?: string;
     /**
      * 付款渠道
      */
@@ -3682,17 +3682,17 @@ export type OwnerPayableBillListVo = {
      */
     subjectName?: string;
     /**
-     * 账期开始时间
+     * 账期开始日期
      */
-    billStartTime?: string;
+    billStartDate?: string;
     /**
-     * 账期结束时间
+     * 账期结束日期
      */
-    billEndTime?: string;
+    billEndDate?: string;
     /**
-     * 应付时间
+     * 应付日期
      */
-    dueTime?: string;
+    dueDate?: string;
     /**
      * 应付金额
      */
@@ -3720,11 +3720,11 @@ export type OwnerPayableBillListVo = {
     /**
      * 生成时间
      */
-    generatedTime?: string;
+    generatedAt?: string;
     /**
      * 作废时间
      */
-    cancelTime?: string;
+    cancelAt?: string;
 };
 
 export type PageVoOwnerPayableBillListVo = {
@@ -3850,17 +3850,17 @@ export type OwnerPayableBillDetailVo = {
      */
     subjectName?: string;
     /**
-     * 账期开始时间
+     * 账期开始日期
      */
-    billStartTime?: string;
+    billStartDate?: string;
     /**
-     * 账期结束时间
+     * 账期结束日期
      */
-    billEndTime?: string;
+    billEndDate?: string;
     /**
-     * 应付时间
+     * 应付日期
      */
-    dueTime?: string;
+    dueDate?: string;
     /**
      * 应付金额
      */
@@ -3900,11 +3900,11 @@ export type OwnerPayableBillDetailVo = {
     /**
      * 作废时间
      */
-    cancelTime?: string;
+    cancelAt?: string;
     /**
      * 生成时间
      */
-    generatedTime?: string;
+    generatedAt?: string;
     /**
      * 备注
      */
@@ -3996,7 +3996,7 @@ export type OwnerPayableBillPaymentVo = {
     /**
      * 付款时间
      */
-    payTime?: string;
+    payAt?: string;
     /**
      * 付款渠道
      */
@@ -4050,17 +4050,17 @@ export type OwnerPayableBillCreateDto = {
      */
     subjectName?: string;
     /**
-     * 账期开始时间
+     * 账期开始日期
      */
-    billStartTime?: string;
+    billStartDate?: string;
     /**
-     * 账期结束时间
+     * 账期结束日期
      */
-    billEndTime?: string;
+    billEndDate?: string;
     /**
-     * 应付时间
+     * 应付日期
      */
-    dueTime?: string;
+    dueDate?: string;
     /**
      * 备注
      */
@@ -10529,7 +10529,7 @@ export type TenantParamsEnum = 'CONTRACT_CODE' | 'SIGNED_HOUSE_LIST' | 'TOTAL_AR
 
 export type DeliveryStatusEnum = 'CANCELLED' | 'DRAFT' | 'COMPLETED' | 'SIGNED';
 
-export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_BILL_PAYMENT_VOUCHER' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'CONTRACT_SEAL_IMAGE';
+export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'CONTRACT_SEAL_IMAGE';
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 
@@ -10580,29 +10580,14 @@ export type OwnerAccountFlowBizTypeEnum = 'OWNER_BILL';
 export type OwnerAccountFlowChangeTypeEnum = 'BILL_SETTLE_IN';
 
 /**
- * 业主账单业务类型枚举
+ * 业主单据明细类型枚举
  */
-export type OwnerBillBizTypeEnum = 'LIGHT_MANAGED_SETTLEMENT' | 'MASTER_LEASE_PAYABLE';
+export type OwnerBillingItemTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'MANAGEMENT_FEE';
 
 /**
- * 业主账单明细类型枚举
+ * 业主单据来源类型枚举
  */
-export type OwnerBillItemTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'MANAGEMENT_FEE';
-
-/**
- * 业主账单结算状态枚举
- */
-export type OwnerBillSettlementStatusEnum = 'UNSETTLED' | 'PART_SETTLED' | 'SETTLED';
-
-/**
- * 业主账单来源类型枚举
- */
-export type OwnerBillSourceTypeEnum = 'OWNER_CONTRACT_SUBJECT' | 'OWNER_CONTRACT' | 'OWNER_LEASE_FEE' | 'OWNER_LEASE_FREE_RULE';
-
-/**
- * 业主账单状态枚举
- */
-export type OwnerBillStatusEnum = 'NORMAL';
+export type OwnerBillingSourceTypeEnum = 'OWNER_CONTRACT_SUBJECT' | 'OWNER_CONTRACT' | 'OWNER_LEASE_FEE' | 'OWNER_LEASE_FREE_RULE';
 
 /**
  * 包租业主应付单付款状态枚举
@@ -10613,6 +10598,16 @@ export type OwnerPayableBillPaymentStatusEnum = 'UNPAID' | 'PART_PAID' | 'PAID';
  * 包租业主应付单状态枚举
  */
 export type OwnerPayableBillStatusEnum = 'NORMAL' | 'CANCELED';
+
+/**
+ * 业主结算单状态枚举
+ */
+export type OwnerSettlementBillStatusEnum = 'NORMAL';
+
+/**
+ * 业主结算状态枚举
+ */
+export type OwnerSettlementStatusEnum = 'UNSETTLED' | 'PART_SETTLED' | 'SETTLED';
 
 export type PayStatusEnum = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID';
 

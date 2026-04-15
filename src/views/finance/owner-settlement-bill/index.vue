@@ -2,9 +2,9 @@
   import { PureTableBar } from "@/components/RePureTableBar";
   import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";
   import "@/shared/owner/financePage.scss";
-  import useOwnerBill from "@/views/finance/owner-bill/utils/hook";
+  import useOwnerSettlementBill from "@/views/finance/owner-bill/utils/hook";
 
-  defineOptions({ name: "OwnerBillEntry" });
+  defineOptions({ name: "OwnerSettlementBillEntry" });
 
   const {
     loading,
@@ -21,13 +21,13 @@
     handleSizeChange,
     handleCurrentChange,
     handleRowClick,
-    openOwnerBillDetailDialog,
+    openOwnerSettlementBillDetailDialog,
     closePageIntro,
     approvalStatusText,
     settlementStatusText,
     approvalStatusBadgeType,
     settlementStatusBadgeType
-  } = useOwnerBill();
+  } = useOwnerSettlementBill();
 </script>
 
 <template>
@@ -102,7 +102,7 @@
             </div>
           </template>
           <template #operation="{ row }">
-            <el-button link type="primary" @click.stop="openOwnerBillDetailDialog(row.billId)">详情</el-button>
+            <el-button link type="primary" @click.stop="openOwnerSettlementBillDetailDialog(row.billId)">详情</el-button>
           </template>
         </pure-table>
       </template>
