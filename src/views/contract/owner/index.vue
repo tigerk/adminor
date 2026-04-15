@@ -427,7 +427,7 @@
   function goOwnerBills(row?: OwnerListRow) {
     if (!row?.ownerId) return;
     router.push({
-      path: row.cooperationMode === "MASTER_LEASE" ? "/finance/owner-payable-bill" : "/finance/owner-bill",
+      path: row.cooperationMode === "MASTER_LEASE" ? "/finance/owner-payable-bill" : "/finance/owner-settlement-bill",
       query: {
         ownerId: String(row.ownerId),
         contractId: row.contractId ? String(row.contractId) : ""

@@ -2,7 +2,7 @@
   import { PureTableBar } from "@/components/RePureTableBar";
   import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";
   import "@/shared/owner/financePage.scss";
-  import useOwnerSettlementBill from "@/views/finance/owner-bill/utils/hook";
+  import useOwnerSettlementBill from "@/views/finance/owner-settlement-bill/utils/hook";
 
   defineOptions({ name: "OwnerSettlementBillEntry" });
 

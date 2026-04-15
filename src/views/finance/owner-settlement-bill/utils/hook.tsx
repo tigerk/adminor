@@ -3,9 +3,9 @@ import type { PaginationProps } from "@pureadmin/table";
 import { useRoute } from "vue-router";
 import { addDialog } from "@/components/ReDialog";
 import { getOwnerSettlementBillPage, getOwnerSettlementBillSummary, type SettlementBillListVo, type SettlementBillQueryDto, type SettlementBillSummaryVo } from "@/api/owner/owner";
-import OwnerSettlementBillDetailDialog from "@/views/finance/owner-bill/view/OwnerSettlementBillDetailDialog.vue";
+import OwnerSettlementBillDetailDialog from "@/views/finance/owner-settlement-bill/view/OwnerSettlementBillDetailDialog.vue";
 
-const OWNER_BILL_PAGE_INTRO_STORAGE_KEY = "owner-bill-page-intro-closed";
+const OWNER_SETTLEMENT_BILL_PAGE_INTRO_STORAGE_KEY = "owner-settlement-bill-page-intro-closed";
 
 function useOwnerSettlementBill() {
   const route = useRoute();
@@ -16,7 +16,7 @@ function useOwnerSettlementBill() {
   };
 
   const loading = ref(false);
-  const showPageIntro = ref(localStorage.getItem(OWNER_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
+  const showPageIntro = ref(localStorage.getItem(OWNER_SETTLEMENT_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
   const tableData = ref<SettlementBillListVo[]>([]);
   const summary = ref<SettlementBillSummaryVo>({});
 
@@ -166,7 +166,7 @@ function useOwnerSettlementBill() {
 
   function closePageIntro() {
     showPageIntro.value = false;
-    localStorage.setItem(OWNER_BILL_PAGE_INTRO_STORAGE_KEY, "1");
+    localStorage.setItem(OWNER_SETTLEMENT_BILL_PAGE_INTRO_STORAGE_KEY, "1");
   }
 
   function moneyText(value?: number) {

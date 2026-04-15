@@ -383,7 +383,7 @@
     if (!data?.ownerId) return;
     const isMasterLease = data.ownerContract?.cooperationMode === "MASTER_LEASE";
     router.push({
-      path: isMasterLease ? "/finance/owner-payable-bill" : "/finance/owner-bill",
+      path: isMasterLease ? "/finance/owner-payable-bill" : "/finance/owner-settlement-bill",
       query: { ownerId: String(data.ownerId), contractId: String(data.ownerContract?.id || "") }
     });
   }

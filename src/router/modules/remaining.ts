@@ -56,7 +56,7 @@ export default [
     }
   },
   {
-    path: "/finance/owner-bill",
+    path: "/finance/owner-settlement-bill",
     component: Layout,
     meta: {
       title: "业主结算单",
@@ -66,7 +66,7 @@ export default [
       {
         path: "",
         name: "OwnerSettlementBillEntry",
-        component: () => import("@/views/finance/owner-bill/index.vue"),
+        component: () => import("@/views/finance/owner-settlement-bill/index.vue"),
         meta: {
           title: "业主结算单",
           showLink: false
