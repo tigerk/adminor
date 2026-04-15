@@ -280,7 +280,7 @@
             </div>
 
             <!-- 更新时间 -->
-            <div class="update-time">更新于: {{ item.updateTime }}</div>
+            <div class="update-time">更新于: {{ item.updateAt }}</div>
           </div>
         </el-card>
       </div>

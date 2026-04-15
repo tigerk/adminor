@@ -48,7 +48,7 @@
             <span class="text-value">{{ checkoutDetail.createByName || checkoutDetail.createBy || "-" }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" label-align="right">
-            <span class="text-value">{{ checkoutDetail.createTime || "-" }}</span>
+            <span class="text-value">{{ checkoutDetail.createAt || "-" }}</span>
           </el-descriptions-item>
         </el-descriptions>
       </div>

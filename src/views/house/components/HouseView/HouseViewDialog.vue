@@ -188,7 +188,7 @@
           id: String(Date.now()),
           roomId,
           trackContent: content,
-          createTime: timeStr,
+          createAt: timeStr,
           updateByName: props.detail?.salesman?.nickname || props.detail?.salesmanName || "当前用户"
         });
         message("跟进记录已保存", { type: "success" });

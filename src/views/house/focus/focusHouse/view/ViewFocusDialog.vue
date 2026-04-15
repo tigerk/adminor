@@ -258,7 +258,7 @@
               </div>
               <div class="field">
                 <span class="fl">更新时间</span>
-                <span class="fv fv-muted">{{ focusDetail?.updateTime || focusDetail?.createTime || "-" }}</span>
+                <span class="fv fv-muted">{{ focusDetail?.updateAt || focusDetail?.createAt || "-" }}</span>
               </div>
             </div>
           </div>

@@ -118,9 +118,9 @@
     { label: "操作人", prop: "operatorName", minWidth: 100 },
     {
       label: "流水时间",
-      prop: "flowTime",
+      prop: "flowAt",
       minWidth: 160,
-      formatter: ({ flowTime }) => formatDateTime(flowTime)
+      formatter: ({ flowAt }) => formatDateTime(flowAt)
     }
   ];
 

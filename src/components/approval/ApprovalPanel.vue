@@ -221,10 +221,10 @@
                 {{ instance.applicantName }}
               </el-descriptions-item>
               <el-descriptions-item label="提交时间">
-                {{ instance.createTime }}
+                {{ instance.createAt }}
               </el-descriptions-item>
-              <el-descriptions-item v-if="instance.finishTime" label="完成时间">
-                {{ instance.finishTime }}
+              <el-descriptions-item v-if="instance.finishAt" label="完成时间">
+                {{ instance.finishAt }}
               </el-descriptions-item>
             </el-descriptions>
           </div>
@@ -241,8 +241,8 @@
                 </div>
                 <div class="timeline-body">
                   <span class="approver">审批人：{{ action.approverName }}</span>
-                  <span v-if="action.operateTime" class="time">
-                    {{ action.operateTime }}
+                  <span v-if="action.operateAt" class="time">
+                    {{ action.operateAt }}
                   </span>
                 </div>
                 <div v-if="action.remark" class="timeline-remark">意见：{{ action.remark }}</div>

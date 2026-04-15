@@ -435,7 +435,7 @@
               <span class="db-notice-dot" />
               <div class="db-notice-body">
                 <p class="db-notice-title">{{ notice.title || "未命名公告" }}</p>
-                <p class="db-notice-meta">{{ notice.createByName || "系统" }} · {{ formatTime(notice.publishTime) }}</p>
+                <p class="db-notice-meta">{{ notice.createByName || "系统" }} · {{ formatTime(notice.publishAt) }}</p>
               </div>
               <svg class="db-notice-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="9 18 15 12 9 6" />

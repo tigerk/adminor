@@ -34,7 +34,7 @@
     },
     {
       label: "请求时间",
-      prop: "requestTime"
+      prop: "requestAt"
     },
     {
       label: "请求方法",

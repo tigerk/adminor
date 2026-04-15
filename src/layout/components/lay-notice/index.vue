@@ -57,7 +57,7 @@
       avatar: "",
       title: item?.title ?? "",
       description: item?.content ?? "",
-      datetime: formatTime(item?.createTime),
+      datetime: formatTime(item?.createAt),
       type: "2",
       isRead: item?.isRead ?? false
     }));
@@ -69,7 +69,7 @@
       avatar: "",
       title: item?.title ?? "",
       description: item?.content ?? "",
-      datetime: formatTime(item?.publishTime),
+      datetime: formatTime(item?.publishAt),
       type: "1",
       isRead: item?.isRead ?? false
     }));
@@ -81,7 +81,7 @@
       avatar: "",
       title: item?.title ?? "",
       description: item?.content ?? "",
-      datetime: formatTime(item?.createTime),
+      datetime: formatTime(item?.createAt),
       type: "3",
       status: item?.status,
       priority: item?.priority,

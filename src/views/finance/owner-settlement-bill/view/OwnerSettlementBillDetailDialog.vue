@@ -56,7 +56,7 @@
           <el-tag :type="settlementStatusTagType(bill.settlementStatus)">{{ settlementStatusText(bill.settlementStatus) }}</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="生成时间">{{ bill.generatedAt || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ bill.updateTime || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="更新时间">{{ bill.updateAt || "-" }}</el-descriptions-item>
         <el-descriptions-item label="备注" :span="2">{{ bill.remark || "-" }}</el-descriptions-item>
       </el-descriptions>
 
@@ -78,7 +78,7 @@
           <el-table-column label="金额" min-width="120" align="right">
             <template #default="{ row }">¥{{ moneyText(row.amount) }}</template>
           </el-table-column>
-          <el-table-column prop="bizTime" label="业务日期" min-width="120" />
+          <el-table-column prop="bizDate" label="业务日期" min-width="120" />
           <el-table-column prop="formulaSnapshot" label="计算说明" min-width="240" show-overflow-tooltip />
           <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
         </el-table>
@@ -95,7 +95,7 @@
           <el-table-column label="减免金额" min-width="120" align="right">
             <template #default="{ row }">¥{{ moneyText(row.amount) }}</template>
           </el-table-column>
-          <el-table-column prop="bizTime" label="业务日期" min-width="120" />
+          <el-table-column prop="bizDate" label="业务日期" min-width="120" />
           <el-table-column prop="ruleSnapshot" label="规则快照" min-width="240" show-overflow-tooltip />
           <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
         </el-table>

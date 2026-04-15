@@ -167,7 +167,7 @@
                   </el-space>
                 </el-descriptions-item>
                 <el-descriptions-item label="入住时间" label-align="right">
-                  <el-space :size="8">{{ localFormInline.checkInTime }} 至 {{ localFormInline.checkOutTime }}</el-space>
+                  <el-space :size="8">{{ localFormInline.checkInAt }} 至 {{ localFormInline.checkOutAt }}</el-space>
                 </el-descriptions-item>
                 <el-descriptions-item label="月租金" label-align="right">
                   <span class="rent-price">¥ {{ localFormInline.rentPrice }}</span>
@@ -183,7 +183,7 @@
                   <span class="text-value">{{ getContractNatureName(localFormInline.contractNature) }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="签约时间" label-align="right" :span="2">
-                  <span class="text-value">{{ localFormInline.createTime }}</span>
+                  <span class="text-value">{{ localFormInline.createAt }}</span>
                 </el-descriptions-item>
               </el-descriptions>
               <div class="info-section">
@@ -315,7 +315,7 @@
             :lease-contract="localFormInline.leaseContract"
             :lease-id="localFormInline.leaseId"
             :tenant-status="localFormInline.status"
-            :create-time="localFormInline.createTime"
+            :create-time="localFormInline.createAt"
             :readonly="readonly"
             @contract-signed="leaseId => emit('contract-signed', leaseId)"
             @contract-updated="contract => (localFormInline.leaseContract = contract)"

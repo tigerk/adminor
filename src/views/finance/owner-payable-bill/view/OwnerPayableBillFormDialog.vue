@@ -68,7 +68,7 @@
               <el-input-number v-model="item.amount" :min="0" :precision="2" class="w-full" />
             </el-col>
             <el-col :span="4">
-              <el-date-picker v-model="item.bizTime" type="date" value-format="YYYY-MM-DD" class="w-full" />
+              <el-date-picker v-model="item.bizDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
             </el-col>
             <el-col :span="3">
               <el-input v-model="item.remark" placeholder="备注" />
@@ -109,7 +109,7 @@
     billEndDate: props.bill?.billEndDate || "",
     dueDate: props.bill?.dueDate || "",
     remark: "",
-    lineList: [{ itemName: "", itemType: "", direction: "IN", amount: 0, bizTime: "", remark: "" }]
+    lineList: [{ itemName: "", itemType: "", direction: "IN", amount: 0, bizDate: "", remark: "" }]
   });
 
   const rules: FormRules = {
@@ -123,7 +123,7 @@
   };
 
   function addLine() {
-    form.lineList = [...(form.lineList || []), { itemName: "", itemType: "", direction: "IN", amount: 0, bizTime: "", remark: "" }];
+    form.lineList = [...(form.lineList || []), { itemName: "", itemType: "", direction: "IN", amount: 0, bizDate: "", remark: "" }];
   }
 
   function removeLine(index: number) {

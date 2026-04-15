@@ -175,15 +175,15 @@ function useBooking() {
     },
     {
       label: "到期时间",
-      prop: "expiryTime",
+      prop: "expiryAt",
       width: 160,
-      cellRenderer: ({ row }) => <span style={{ color: new Date(row.expiryTime) < new Date() ? "#f56c6c" : "" }}>{formatDateTime(row.expiryTime)}</span>
+      cellRenderer: ({ row }) => <span style={{ color: new Date(row.expiryAt) < new Date() ? "#f56c6c" : "" }}>{formatDateTime(row.expiryAt)}</span>
     },
     {
       label: "预定时间",
-      prop: "bookingTime",
+      prop: "bookingAt",
       width: 160,
-      cellRenderer: ({ row }) => formatDateTime(row.bookingTime)
+      cellRenderer: ({ row }) => formatDateTime(row.bookingAt)
     },
     {
       label: "操作",

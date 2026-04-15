@@ -31,7 +31,7 @@
         <div class="meta-divider" />
         <div class="meta-item">
           <span class="meta-label">流水时间</span>
-          <span class="meta-value">{{ formatDateTime(detail.flowTime) }}</span>
+          <span class="meta-value">{{ formatDateTime(detail.flowAt) }}</span>
         </div>
       </div>
     </div>
@@ -111,7 +111,7 @@
         </div>
         <div class="info-row">
           <span class="info-row__key">支付时间</span>
-          <span class="info-row__val">{{ formatDateTime(detail.payTime) }}</span>
+          <span class="info-row__val">{{ formatDateTime(detail.payAt) }}</span>
         </div>
         <div class="info-row">
           <span class="info-row__key">交易流水号</span>

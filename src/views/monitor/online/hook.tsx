@@ -42,10 +42,10 @@ export function useRole() {
     },
     {
       label: "登录时间",
-      prop: "loginTime",
+      prop: "loginAt",
       minWidth: 180,
-      formatter: ({ loginTime }) =>
-        dayjs(loginTime).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ loginAt }) =>
+        dayjs(loginAt).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",

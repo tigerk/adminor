@@ -239,9 +239,9 @@ export type UserVo = {
     gender?: number;
     birthday?: string;
     status?: number;
-    createTime?: string;
+    createAt?: string;
     createBy?: string;
-    lastLoginTime?: string;
+    lastLoginAt?: string;
     ipAddress?: string;
     ipSource?: string;
     registerSource?: string;
@@ -290,7 +290,7 @@ export type RoleVo = {
     status?: number;
     createBy?: string;
     createByName?: string;
-    createTime?: string;
+    createAt?: string;
     remark?: string;
     userCount?: string;
 };
@@ -416,7 +416,7 @@ export type SysTodo = {
     /**
      * 处理时间
      */
-    handleTime?: string;
+    handleAt?: string;
     /**
      * 处理备注
      */
@@ -428,7 +428,7 @@ export type SysTodo = {
     /**
      * 已读时间
      */
-    readTime?: string;
+    readAt?: string;
     /**
      * 是否删除：0=否 1=是
      */
@@ -440,7 +440,7 @@ export type SysTodo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新人
      */
@@ -448,7 +448,7 @@ export type SysTodo = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
     /**
      * 执行人昵称
      */
@@ -562,7 +562,7 @@ export type SysMessage = {
     /**
      * 阅读时间
      */
-    readTime?: string;
+    readAt?: string;
     /**
      * 发送方删除：0=否 1=是
      */
@@ -574,7 +574,7 @@ export type SysMessage = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 接收人昵称
      */
@@ -616,7 +616,7 @@ export type SysNotice = {
     /**
      * 发布时间
      */
-    publishTime?: string;
+    publishAt?: string;
     /**
      * 备注
      */
@@ -632,7 +632,7 @@ export type SysNotice = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新者
      */
@@ -640,7 +640,7 @@ export type SysNotice = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
     /**
      * 发布人昵称
      */
@@ -766,7 +766,7 @@ export type SysNoticeCreateDto = {
     /**
      * 发布时间
      */
-    publishTime?: string;
+    publishAt?: string;
     /**
      * 备注
      */
@@ -782,7 +782,7 @@ export type SysNoticeCreateDto = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新者
      */
@@ -790,7 +790,7 @@ export type SysNoticeCreateDto = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type ResponseResultSysNoticeDetailVo = {
@@ -847,9 +847,9 @@ export type MenuVo = {
     showParent?: boolean;
     isPlatform?: boolean;
     createBy?: string;
-    createTime?: string;
+    createAt?: string;
     updateBy?: string;
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type ResponseResultListMenuVo = {
@@ -899,9 +899,9 @@ export type MenuCreateDto = {
      */
     isPlatform?: boolean;
     createBy?: string;
-    createTime?: string;
+    createAt?: string;
     updateBy?: string;
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type ResponseResultVoid = {
@@ -991,7 +991,7 @@ export type DictData = {
     /**
      * 最后模板同步时间
      */
-    syncTime?: string;
+    syncAt?: string;
     /**
      * 备注
      */
@@ -1007,7 +1007,7 @@ export type DictData = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新者
      */
@@ -1015,7 +1015,7 @@ export type DictData = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type PageVoDictData = {
@@ -1089,9 +1089,9 @@ export type DeptVo = {
     status?: number;
     remark?: string;
     isStore?: boolean;
-    createTime?: string;
+    createAt?: string;
     createBy?: string;
-    updateTime?: string;
+    updateAt?: string;
     updateBy?: string;
 };
 
@@ -1142,9 +1142,9 @@ export type DeptCreateDto = {
      * 备注
      */
     remark?: string;
-    createTime?: string;
+    createAt?: string;
     createBy?: string;
-    updateTime?: string;
+    updateAt?: string;
     updateBy?: string;
 };
 
@@ -1199,11 +1199,11 @@ export type BookingListVo = {
     /**
      * 预定时间
      */
-    bookingTime?: string;
+    bookingAt?: string;
     /**
      * 预定到期时间（超过此时间未签合同可视为违约/过期）
      */
-    expiryTime?: string;
+    expiryAt?: string;
     /**
      * 预计租赁开始时间
      */
@@ -1248,7 +1248,7 @@ export type BookingListVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 修改人ID
      */
@@ -1256,7 +1256,7 @@ export type BookingListVo = {
     /**
      * 修改时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 /**
@@ -1773,7 +1773,7 @@ export type RoomDetailVo = {
     /**
      * 空置开始时间
      */
-    vacancyStartTime?: string;
+    vacancyStartAt?: string;
     /**
      * 房间状态
      */
@@ -1924,7 +1924,7 @@ export type RoomListVo = {
     /**
      * 空置开始时间
      */
-    vacancyStartTime?: string;
+    vacancyStartAt?: string;
     /**
      * 面积
      */
@@ -1989,13 +1989,13 @@ export type RoomTrackVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     updateBy?: string;
     updateByName?: string;
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 /**
@@ -2053,7 +2053,7 @@ export type RoomCreateDto = {
     /**
      * 空置开始时间
      */
-    vacancyStartTime?: string;
+    vacancyStartAt?: string;
     /**
      * 房间状态
      */
@@ -2447,7 +2447,7 @@ export type RoomLockRecordVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新人ID
      */
@@ -2459,7 +2459,7 @@ export type RoomLockRecordVo = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type PageVoRoomListVo = {
@@ -2782,7 +2782,7 @@ export type OwnerWithdrawApplyListVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
 };
 
 export type PageVoOwnerWithdrawApplyListVo = {
@@ -2891,7 +2891,7 @@ export type OwnerAccountFlowVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
 };
 
 /**
@@ -2981,11 +2981,11 @@ export type OwnerWithdrawApplyDetailVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
     /**
      * 账户流水列表
      */
@@ -3334,11 +3334,11 @@ export type OwnerSettlementBillDetailVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
     /**
      * 结算单明细
      */
@@ -3384,7 +3384,7 @@ export type OwnerSettlementBillLineVo = {
     /**
      * 业务时间
      */
-    bizTime?: string;
+    bizDate?: string;
     /**
      * 备注
      */
@@ -3396,7 +3396,7 @@ export type OwnerSettlementBillLineVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
 };
 
 /**
@@ -3430,7 +3430,7 @@ export type OwnerSettlementBillReductionVo = {
     /**
      * 业务时间
      */
-    bizTime?: string;
+    bizDate?: string;
     /**
      * 备注
      */
@@ -3482,7 +3482,7 @@ export type OwnerPayableBillLineDto = {
     /**
      * 业务时间
      */
-    bizTime?: string;
+    bizDate?: string;
     /**
      * 备注
      */
@@ -3802,7 +3802,7 @@ export type BizOperateLogVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
 };
 
 /**
@@ -3912,11 +3912,11 @@ export type OwnerPayableBillDetailVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
     /**
      * 明细列表
      */
@@ -3966,7 +3966,7 @@ export type OwnerPayableBillLineVo = {
     /**
      * 业务时间
      */
-    bizTime?: string;
+    bizDate?: string;
     /**
      * 备注
      */
@@ -4016,7 +4016,7 @@ export type OwnerPayableBillPaymentVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
 };
 
 export type ResponseResultOwnerPayableBillDetailVo = {
@@ -4169,7 +4169,7 @@ export type OperationLog = {
     /**
      * 操作时间
      */
-    requestTime?: string;
+    requestAt?: string;
     /**
      * 消耗时间
      */
@@ -4211,7 +4211,7 @@ export type OperationLogDto = {
     /**
      * 操作时间
      */
-    requestTime?: Array<string>;
+    requestAt?: Array<string>;
     /**
      * 操作账号
      */
@@ -4268,7 +4268,7 @@ export type LoginLog = {
     /**
      * 登录时间
      */
-    loginTime?: string;
+    loginAt?: string;
 };
 
 /**
@@ -4288,7 +4288,7 @@ export type LoginLogDto = {
     /**
      * 登录时间
      */
-    loginTime?: Array<string>;
+    loginAt?: Array<string>;
 };
 
 export type PageVoLoginLog = {
@@ -4459,10 +4459,10 @@ export type LeaseCheckoutVo = {
     statusName?: string;
     approvalStatus?: number;
     approvalStatusName?: string;
-    settlementTime?: string;
+    settlementAt?: string;
     createBy?: string;
     createByName?: string;
-    createTime?: string;
+    createAt?: string;
 };
 
 export type PageVoLeaseCheckoutVo = {
@@ -4784,7 +4784,7 @@ export type FocusListVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新人
      */
@@ -4792,7 +4792,7 @@ export type FocusListVo = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
     /**
      * 创建人
      */
@@ -5006,7 +5006,7 @@ export type FocusCreateDto = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新人
      */
@@ -5014,7 +5014,7 @@ export type FocusCreateDto = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 /**
@@ -5190,7 +5190,7 @@ export type FinanceFlowVo = {
     /**
      * 流水发生时间
      */
-    flowTime?: string;
+    flowAt?: string;
     /**
      * 付款方姓名
      */
@@ -5304,11 +5304,11 @@ export type PaymentFlowFinanceItemVo = {
     /**
      * 支付时间
      */
-    payTime?: string;
+    payAt?: string;
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 账单应收日期
      */
@@ -5524,7 +5524,7 @@ export type LeaseBillFinanceItemVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
 };
 
 export type PageVoLeaseBillFinanceItemVo = {
@@ -5840,15 +5840,15 @@ export type FinanceFlowFinanceItemVo = {
     /**
      * 财务流水时间
      */
-    flowTime?: string;
+    flowAt?: string;
     /**
      * 支付时间
      */
-    payTime?: string;
+    payAt?: string;
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
 };
 
 export type PageVoFinanceFlowFinanceItemVo = {
@@ -5986,8 +5986,8 @@ export type DeliveryVo = {
     remark?: string;
     items?: Array<DeliveryItemVo>;
     imageList?: Array<string>;
-    createTime?: string;
-    updateTime?: string;
+    createAt?: string;
+    updateAt?: string;
 };
 
 export type ResponseResultDeliveryVo = {
@@ -6144,7 +6144,7 @@ export type WelcomeNoticeVo = {
     /**
      * 发布时间
      */
-    publishTime?: string;
+    publishAt?: string;
     /**
      * 创建人名称
      */
@@ -6313,7 +6313,7 @@ export type ContractTemplateStatusDto = {
     /**
      * 修改时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type ContractTemplateQueryDto = {
@@ -6403,7 +6403,7 @@ export type ContractTemplateListVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 修改人ID
      */
@@ -6411,7 +6411,7 @@ export type ContractTemplateListVo = {
     /**
      * 修改时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type ResponseResultListContractTemplateListVo = {
@@ -6485,7 +6485,7 @@ export type ContractTemplateCreateDto = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 修改人ID
      */
@@ -6493,7 +6493,7 @@ export type ContractTemplateCreateDto = {
     /**
      * 修改时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 /**
@@ -6567,11 +6567,11 @@ export type ContractSealCreateDto = {
     /**
      * 认证完成时间
      */
-    authTime?: string;
+    authAt?: string;
     /**
      * 授权到期时间
      */
-    expireTime?: string;
+    expireAt?: string;
     /**
      * 各服务商差异化字段,JSON存储
      */
@@ -6583,7 +6583,7 @@ export type ContractSealCreateDto = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 修改人ID
      */
@@ -6591,7 +6591,7 @@ export type ContractSealCreateDto = {
     /**
      * 修改时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 /**
@@ -6703,11 +6703,11 @@ export type ContractSealVo = {
     /**
      * 认证完成时间
      */
-    authTime?: string;
+    authAt?: string;
     /**
      * 授权到期时间
      */
-    expireTime?: string;
+    expireAt?: string;
     /**
      * 各服务商差异化字段,JSON存储
      */
@@ -6715,11 +6715,11 @@ export type ContractSealVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type ResponseResultListContractSealVo = {
@@ -6909,7 +6909,7 @@ export type OwnerContractDto = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新人
      */
@@ -6917,7 +6917,7 @@ export type OwnerContractDto = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 /**
@@ -7646,11 +7646,11 @@ export type OwnerListVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type PageVoOwnerListVo = {
@@ -7738,7 +7738,7 @@ export type OwnerDetailVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新人
      */
@@ -7750,7 +7750,7 @@ export type OwnerDetailVo = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type ResponseResultOwnerDetailVo = {
@@ -7864,8 +7864,8 @@ export type LeaseDto = {
     firstBillDay?: number;
     leaseStart?: string;
     leaseEnd?: string;
-    checkInTime?: string;
-    checkOutTime?: string;
+    checkInAt?: string;
+    checkOutAt?: string;
     originalLeaseStart?: string;
     originalLeaseEnd?: string;
     leaseDurationDays?: number;
@@ -8230,11 +8230,11 @@ export type LeaseListVo = {
     /**
      * 实际入住时间
      */
-    checkInTime?: string;
+    checkInAt?: string;
     /**
      * 实际搬离时间
      */
-    checkOutTime?: string;
+    checkOutAt?: string;
     /**
      * 初始录入租赁开始时间
      */
@@ -8303,7 +8303,7 @@ export type LeaseListVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 修改人ID
      */
@@ -8311,7 +8311,7 @@ export type LeaseListVo = {
     /**
      * 修改时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type PageVoLeaseListVo = {
@@ -8583,7 +8583,7 @@ export type LeaseBillListVo = {
     /**
      * 作废时间
      */
-    voidTime?: string;
+    voidAt?: string;
     /**
      * 作废人
      */
@@ -8635,7 +8635,7 @@ export type LeaseBillListVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
 };
 
 /**
@@ -8753,11 +8753,11 @@ export type LeaseDetailVo = {
     /**
      * 实际入住时间
      */
-    checkInTime?: string;
+    checkInAt?: string;
     /**
      * 实际搬离时间
      */
-    checkOutTime?: string;
+    checkOutAt?: string;
     /**
      * 初始录入租赁开始时间
      */
@@ -8828,7 +8828,7 @@ export type LeaseDetailVo = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 修改人ID
      */
@@ -8836,7 +8836,7 @@ export type LeaseDetailVo = {
     /**
      * 修改时间
      */
-    updateTime?: string;
+    updateAt?: string;
     /**
      * 租客合同
      */
@@ -8906,7 +8906,7 @@ export type PaymentFlowVo = {
     /**
      * 支付完成时间
      */
-    payTime?: string;
+    payAt?: string;
 };
 
 export type ResponseResultLeaseDetailVo = {
@@ -9230,7 +9230,7 @@ export type LeaseBillCollectDto = {
     /**
      * 实际支付日期
      */
-    payTime?: string;
+    payAt?: string;
     /**
      * 本次收款分配明细
      */
@@ -9348,11 +9348,11 @@ export type BookingCreateDto = {
     /**
      * 预定时间
      */
-    bookingTime?: string;
+    bookingAt?: string;
     /**
      * 预定到期时间（超过此时间未签合同可视为违约/过期）
      */
-    expiryTime?: string;
+    expiryAt?: string;
     /**
      * 预计租赁开始时间
      */
@@ -9607,15 +9607,15 @@ export type CompanyOrderRecordVo = {
     /**
      * 购买时间（已支付取支付时间，否则取创建时间）
      */
-    purchaseTime?: string;
+    purchaseAt?: string;
     /**
      * 支付完成时间
      */
-    payTime?: string;
+    payAt?: string;
     /**
      * 支付回调通知时间
      */
-    notifyTime?: string;
+    notifyAt?: string;
     /**
      * 备注
      */
@@ -9785,7 +9785,7 @@ export type CompanyConsumeRecordVo = {
     /**
      * 记录时间
      */
-    createTime?: string;
+    createAt?: string;
 };
 
 export type PageVoCompanyConsumeRecordVo = {
@@ -9867,7 +9867,7 @@ export type ApprovalTodoVo = {
     /**
      * 申请时间
      */
-    applyTime?: string;
+    applyAt?: string;
     /**
      * 操作：1=通过，2=驳回（已办时显示）
      */
@@ -9883,7 +9883,7 @@ export type ApprovalTodoVo = {
     /**
      * 操作时间（已办时显示）
      */
-    operateTime?: string;
+    operateAt?: string;
     /**
      * 实例状态
      */
@@ -9930,7 +9930,7 @@ export type ApprovalActionVo = {
     action?: number;
     actionName?: string;
     remark?: string;
-    operateTime?: string;
+    operateAt?: string;
     status?: number;
     statusName?: string;
 };
@@ -9995,11 +9995,11 @@ export type ApprovalInstanceVo = {
     /**
      * 完成时间
      */
-    finishTime?: string;
+    finishAt?: string;
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 审批动作列表（审批流程时间线）
      */
@@ -10087,7 +10087,7 @@ export type ApprovalFlowVo = {
     bizTypeName?: string;
     enabled?: boolean;
     remark?: string;
-    createTime?: string;
+    createAt?: string;
     nodes?: Array<ApprovalNodeVo>;
 };
 
@@ -10294,7 +10294,7 @@ export type Menu = {
     /**
      * 创建时间
      */
-    createTime?: string;
+    createAt?: string;
     /**
      * 更新者
      */
@@ -10302,7 +10302,7 @@ export type Menu = {
     /**
      * 更新时间
      */
-    updateTime?: string;
+    updateAt?: string;
 };
 
 export type ResponseResultMenu = {

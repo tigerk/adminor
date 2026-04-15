@@ -85,7 +85,7 @@
     leaseContract: LeaseContractVo | null;
     leaseId: string; // 租约ID，用于事件回调
     tenantStatus: number;
-    createTime?: string | Date;
+    createAt?: string | Date;
     readonly?: boolean;
   }
 
@@ -102,8 +102,8 @@
 
   // 格式化创建时间
   const formattedCreateTime = computed(() => {
-    if (!props.createTime) return "";
-    const date = new Date(props.createTime);
+    if (!props.createAt) return "";
+    const date = new Date(props.createAt);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");

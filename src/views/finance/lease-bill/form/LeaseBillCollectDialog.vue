@@ -70,8 +70,8 @@
               <el-option v-for="item in payChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          <el-form-item label="支付时间" prop="payTime" class="no-mb">
-            <el-date-picker v-model="form.payTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" class="w-full" placeholder="请选择支付时间" />
+          <el-form-item label="支付时间" prop="payAt" class="no-mb">
+            <el-date-picker v-model="form.payAt" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" class="w-full" placeholder="请选择支付时间" />
           </el-form-item>
 
           <!-- 行二：交易流水号（独占全行） -->
@@ -268,7 +268,7 @@
     thirdTradeNo: undefined,
     paymentVoucherUrl: undefined,
     payRemark: undefined,
-    payTime: currentDateTime(),
+    payAt: currentDateTime(),
     items: []
   });
 
@@ -287,7 +287,7 @@
   const rules = reactive<FormRules>({
     totalAmount: [{ required: true, message: "请输入本次收款总额", trigger: "blur" }],
     payChannel: [{ required: true, message: "请选择支付方式", trigger: "change" }],
-    payTime: [{ required: true, message: "请选择支付时间", trigger: "change" }]
+    payAt: [{ required: true, message: "请选择支付时间", trigger: "change" }]
   });
 
   const allocatedAmount = computed(() => allocationList.value.reduce((s, i) => s + Number(i.collectAmount ?? 0), 0));
@@ -339,7 +339,7 @@
         collectAmount: Number(i.unpaidAmount ?? 0)
       }));
       paymentVoucherList.value = form.paymentVoucherUrl ? [form.paymentVoucherUrl] : [];
-      if (!form.payTime) form.payTime = currentDateTime();
+      if (!form.payAt) form.payAt = currentDateTime();
       syncItemsToForm();
     },
     { immediate: true, deep: true }

@@ -49,9 +49,9 @@
     },
     {
       label: "发布时间",
-      prop: "publishTime",
+      prop: "publishAt",
       minWidth: 180,
-      formatter: ({ publishTime }) => (publishTime ? dayjs(publishTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+      formatter: ({ publishAt }) => (publishAt ? dayjs(publishAt).format("YYYY-MM-DD HH:mm:ss") : "-")
     },
     {
       label: "已读",

@@ -280,8 +280,8 @@
   const latestPaymentFlow = computed(() => {
     const list = (props.bill?.paymentFlowList || []).slice();
     list.sort((a, b) => {
-      const aTime = a.payTime ? new Date(a.payTime).getTime() : 0;
-      const bTime = b.payTime ? new Date(b.payTime).getTime() : 0;
+      const aTime = a.payAt ? new Date(a.payAt).getTime() : 0;
+      const bTime = b.payAt ? new Date(b.payAt).getTime() : 0;
       return bTime - aTime;
     });
     return list[0];
@@ -298,7 +298,7 @@
     return "-";
   });
 
-  const latestPaymentTimeText = computed(() => latestPaymentFlow.value?.payTime || "-");
+  const latestPaymentTimeText = computed(() => latestPaymentFlow.value?.payAt || "-");
 
   const paymentBadgeClass = computed(() => {
     if (payStatusText.value === "已支付") return "payment-badge--paid";

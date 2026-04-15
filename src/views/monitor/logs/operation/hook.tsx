@@ -13,7 +13,7 @@ export function useRole(tableRef: Ref) {
     currentPage: 1,
     pageSize: 15,
     title: "",
-    requestTime: null,
+    requestAt: null,
     username: ""
   });
 
@@ -143,10 +143,10 @@ export function useRole(tableRef: Ref) {
     },
     {
       label: "请求时间",
-      prop: "requestTime",
+      prop: "requestAt",
       showOverflowTooltip: true,
       width: 180,
-      formatter: ({ requestTime }) => dayjs(requestTime).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ requestAt }) => dayjs(requestAt).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",

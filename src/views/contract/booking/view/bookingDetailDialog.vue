@@ -46,7 +46,7 @@
                 </div>
                 <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                   <el-icon><Clock /></el-icon>
-                  <span>预定于 {{ formatDateTime(formInline.bookingTime) }}</span>
+                  <span>预定于 {{ formatDateTime(formInline.bookingAt) }}</span>
                 </div>
               </div>
             </div>
@@ -125,7 +125,7 @@
               <span class="text-sm font-medium">预定发起时间</span>
             </div>
             <div class="text-xl font-bold text-gray-800 dark:text-gray-200">
-              {{ formatDateTime(formInline.bookingTime) }}
+              {{ formatDateTime(formInline.bookingAt) }}
             </div>
           </div>
 
@@ -142,7 +142,7 @@
             </div>
             <div class="flex items-center justify-between">
               <div class="text-xl font-bold" :class="isExpired ? 'text-red-700 dark:text-red-300' : 'text-gray-800 dark:text-gray-200'">
-                {{ formatDateTime(formInline.expiryTime) }}
+                {{ formatDateTime(formInline.expiryAt) }}
               </div>
             </div>
           </div>
@@ -300,7 +300,7 @@
             </div>
             <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg">
               <span class="text-xs text-gray-500 dark:text-gray-400">录入时间</span>
-              <span class="text-sm text-gray-800 dark:text-gray-200 font-medium">{{ formatDateTime(formInline.createTime) }}</span>
+              <span class="text-sm text-gray-800 dark:text-gray-200 font-medium">{{ formatDateTime(formInline.createAt) }}</span>
             </div>
           </div>
         </div>
@@ -321,7 +321,7 @@
       return false;
     }
 
-    return props.formInline.expiryTime ? new Date(props.formInline.expiryTime) < new Date() : false;
+    return props.formInline.expiryAt ? new Date(props.formInline.expiryAt) < new Date() : false;
   });
 
   const formatDateTime = (val: any) => {

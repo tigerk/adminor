@@ -60,9 +60,9 @@
           </el-form-item>
         </el-col>
         <el-col :span="8">
-          <el-form-item label="到期时间" prop="expiryTime" required>
+          <el-form-item label="到期时间" prop="expiryAt" required>
             <el-date-picker
-              v-model="formInline.expiryTime"
+              v-model="formInline.expiryAt"
               type="datetime"
               placeholder="选择到期时间"
               class="w-full"
@@ -163,7 +163,7 @@
     tenantName: props.formInline?.tenantName || "",
     tenantPhone: props.formInline?.tenantPhone || "",
     bookingAmount: props.formInline?.bookingAmount || null,
-    expiryTime: props.formInline?.expiryTime || null,
+    expiryAt: props.formInline?.expiryAt || null,
     expectedLeaseStart: props.formInline?.expectedLeaseStart || null,
     expectedLeaseEnd: props.formInline?.expectedLeaseEnd || null,
     expectedRentPrice: props.formInline?.expectedRentPrice || null,
@@ -186,7 +186,7 @@
       { required: true, message: "请输入预定金额", trigger: "blur" },
       { type: "number", min: 0, message: "金额不能小于0", trigger: "blur" }
     ],
-    expiryTime: [{ required: true, message: "请选择到期时间", trigger: "change" }],
+    expiryAt: [{ required: true, message: "请选择到期时间", trigger: "change" }],
     expectedLeaseStart: [{ required: true, message: "请选择预计开始时间", trigger: "change" }],
     expectedLeaseEnd: [{ required: true, message: "请选择预计结束时间", trigger: "change" }],
     expectedRentPrice: [

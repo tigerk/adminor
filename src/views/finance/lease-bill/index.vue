@@ -151,9 +151,9 @@
     },
     {
       label: "创建时间",
-      prop: "createTime",
+      prop: "createAt",
       minWidth: 160,
-      formatter: ({ createTime }) => formatDateTime(createTime)
+      formatter: ({ createAt }) => formatDateTime(createAt)
     }
   ];
 

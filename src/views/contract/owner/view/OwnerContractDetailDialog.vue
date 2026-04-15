@@ -99,8 +99,8 @@
             <el-descriptions-item label="合同介质">{{ contractMediumLabelMap[detailData.ownerContract?.contractMedium || "PAPER"] }}</el-descriptions-item>
             <el-descriptions-item label="通知业主">{{ detailData.ownerContract?.notifyOwner ? "是" : "否" }}</el-descriptions-item>
             <el-descriptions-item label="创建人">{{ detailData.createByName || detailData.createBy || "-" }}</el-descriptions-item>
-            <el-descriptions-item label="创建时间">{{ detailData.createTime || "-" }}</el-descriptions-item>
-            <el-descriptions-item label="更新时间">{{ detailData.updateTime || "-" }}</el-descriptions-item>
+            <el-descriptions-item label="创建时间">{{ detailData.createAt || "-" }}</el-descriptions-item>
+            <el-descriptions-item label="更新时间">{{ detailData.updateAt || "-" }}</el-descriptions-item>
             <el-descriptions-item label="备注" :span="3">{{ detailData.ownerContract?.remark || "-" }}</el-descriptions-item>
           </el-descriptions>
         </el-card>

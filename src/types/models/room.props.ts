@@ -10,8 +10,8 @@ export interface RoomLockRecordProps {
   lockStatusName?: string;
   createBy?: string | number;
   createByName?: string;
-  createTime?: string;
+  createAt?: string;
   updateBy?: string | number;
   updateByName?: string;
-  updateTime?: string;
+  updateAt?: string;
 }

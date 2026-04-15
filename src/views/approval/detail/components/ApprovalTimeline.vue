@@ -145,9 +145,9 @@
                   {{ act.statusName }}
                 </span>
               </div>
-              <div v-if="act.operateTime" class="ad-tl__approver-time">
+              <div v-if="act.operateAt" class="ad-tl__approver-time">
                 <el-icon :size="11"><Clock /></el-icon>
-                {{ act.operateTime }}
+                {{ act.operateAt }}
               </div>
               <div v-if="act.remark" class="ad-tl__approver-remark">
                 <el-icon :size="11"><ChatLineSquare /></el-icon>

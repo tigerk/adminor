@@ -72,9 +72,9 @@
     },
     {
       label: "时间",
-      prop: "createTime",
+      prop: "createAt",
       minWidth: 180,
-      formatter: ({ createTime }) => (createTime ? dayjs(createTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+      formatter: ({ createAt }) => (createAt ? dayjs(createAt).format("YYYY-MM-DD HH:mm:ss") : "-")
     },
     {
       label: "已读",

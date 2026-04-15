@@ -28,7 +28,7 @@ export function useEntireEdit() {
       direction: room.direction,
       price: room.price,
       availableDate: room.availableDate,
-      vacancyStartTime: room.vacancyStartTime,
+      vacancyStartAt: room.vacancyStartAt,
       remark: room.remark,
       facilities: room.facilities ?? [],
       tags: room.tags ?? [],

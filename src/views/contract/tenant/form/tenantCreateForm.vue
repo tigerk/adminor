@@ -452,8 +452,8 @@
       leaseStart: props.formInline?.lease?.leaseStart || new Date().toISOString().split("T")[0],
       leaseEnd: props.formInline?.lease?.leaseEnd || new Date().toISOString().split("T")[0],
       leaseDate: props.formInline?.lease?.leaseDate || [],
-      checkInTime: props.formInline?.lease?.checkInTime || null,
-      checkOutTime: props.formInline?.lease?.checkOutTime || null,
+      checkInAt: props.formInline?.lease?.checkInAt || null,
+      checkOutAt: props.formInline?.lease?.checkOutAt || null,
       checkDate: props.formInline?.lease?.checkDate || [],
       contractNature: props.formInline?.lease?.contractNature ?? 1,
       depositMonths: props.formInline?.lease?.depositMonths || 1,
@@ -510,14 +510,14 @@
 
     // 初始化日期范围
     if (props.formInline?.lease) {
-      const { leaseStart, leaseEnd, checkInTime, checkOutTime } = props.formInline.lease;
+      const { leaseStart, leaseEnd, checkInAt, checkOutAt } = props.formInline.lease;
 
       if (leaseStart && leaseEnd) {
         formInline.lease.leaseDate = [leaseStart, leaseEnd];
       }
 
-      if (checkInTime && checkOutTime) {
-        formInline.lease.checkDate = [checkInTime, checkOutTime];
+      if (checkInAt && checkOutAt) {
+        formInline.lease.checkDate = [checkInAt, checkOutAt];
       }
     }
 

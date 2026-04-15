@@ -29,15 +29,15 @@
     { label: "交易流水号", prop: "transactionNo", minWidth: 180, showOverflowTooltip: true },
     {
       label: "购买时间",
-      prop: "purchaseTime",
+      prop: "purchaseAt",
       minWidth: 160,
-      formatter: ({ purchaseTime }) => (purchaseTime ? dayjs(purchaseTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+      formatter: ({ purchaseAt }) => (purchaseAt ? dayjs(purchaseAt).format("YYYY-MM-DD HH:mm:ss") : "-")
     },
     {
       label: "支付时间",
-      prop: "payTime",
+      prop: "payAt",
       minWidth: 160,
-      formatter: ({ payTime }) => (payTime ? dayjs(payTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+      formatter: ({ payAt }) => (payAt ? dayjs(payAt).format("YYYY-MM-DD HH:mm:ss") : "-")
     },
     { label: "备注", prop: "remark", minWidth: 200, showOverflowTooltip: true }
   ];

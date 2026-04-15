@@ -45,9 +45,9 @@
           <el-option label="失败" value="-1" />
         </el-select>
       </el-form-item>
-      <el-form-item label="登录时间" prop="loginTime">
+      <el-form-item label="登录时间" prop="loginAt">
         <el-date-picker
-          v-model="form.loginTime"
+          v-model="form.loginAt"
           :shortcuts="getPickerShortcuts()"
           type="datetimerange"
           range-separator="至"

@@ -64,7 +64,7 @@
       innerArea: r?.area ? `${r.area} m²` : "-",
       floorInfo: `第 ${houseMeta.value.floor} 层 / 共 ${houseMeta.value.floorTotal} 层`,
       availableDate: r?.availableDate || "-",
-      vacancyStart: r?.vacancyStartTime || "-"
+      vacancyStart: r?.vacancyStartAt || "-"
     };
   });
 
@@ -682,7 +682,7 @@
                   <div class="hv-timeline__author-avatar">{{ (rec.updateByName || rec.updateBy || "?").slice(0, 1) }}</div>
                   <span class="hv-timeline__author">{{ rec.updateByName || rec.updateBy || "未知" }}</span>
                 </div>
-                <span class="hv-timeline__time">{{ rec.createTime }}</span>
+                <span class="hv-timeline__time">{{ rec.createAt }}</span>
               </div>
               <p class="hv-timeline__body">{{ rec.trackContent }}</p>
             </div>
@@ -780,7 +780,7 @@
                   <div class="hv-lock-card__meta-sep" />
                   <div class="hv-lock-card__meta-item">
                     <span class="hv-lock-card__meta-label">创建时间</span>
-                    <span class="hv-lock-card__meta-val">{{ row.createTime || "-" }}</span>
+                    <span class="hv-lock-card__meta-val">{{ row.createAt || "-" }}</span>
                   </div>
                   <div class="hv-lock-card__meta-sep" />
                   <div class="hv-lock-card__meta-item">
@@ -790,7 +790,7 @@
                   <div class="hv-lock-card__meta-sep" />
                   <div class="hv-lock-card__meta-item">
                     <span class="hv-lock-card__meta-label">更新时间</span>
-                    <span class="hv-lock-card__meta-val">{{ row.updateTime || "-" }}</span>
+                    <span class="hv-lock-card__meta-val">{{ row.updateAt || "-" }}</span>
                   </div>
                 </div>
               </div>

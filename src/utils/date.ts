@@ -9,7 +9,7 @@ export const getDaysDifference = (targetTime?: string): number => {
   if (!targetTime) return 0;
 
   try {
-    // 1. 将 vacancyStartTime 转换为 Date 对象
+    // 1. 将 vacancyStartAt 转换为 Date 对象
     const targetDate = new Date(targetTime);
     // 2. 获取当前时间
     const now = new Date();

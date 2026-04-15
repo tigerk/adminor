@@ -119,7 +119,7 @@
               <div class="date-range">{{ formatDate(row.contractStart) }} 至 {{ formatDate(row.contractEnd) }}</div>
             </template>
           </el-table-column>
-          <el-table-column prop="updateTime" label="更新时间" min-width="170" />
+          <el-table-column prop="updateAt" label="更新时间" min-width="170" />
           <el-table-column label="操作" width="200" align="center" fixed="right">
             <template #default="{ row }">
               <el-button link type="primary" @click="openDetail(row.contractId)">查看</el-button>
@@ -205,7 +205,7 @@
     totalArea?: number | string;
     configuredSubjectCount?: number;
     ownerTag?: string;
-    updateTime?: string;
+    updateAt?: string;
   };
 
   type OwnerContractTotal = {

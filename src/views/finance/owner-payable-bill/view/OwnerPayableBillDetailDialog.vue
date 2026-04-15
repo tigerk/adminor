@@ -53,7 +53,7 @@
         <el-descriptions-item label="付款状态">
           <el-tag :type="paymentStatusTagType(bill.paymentStatus)">{{ paymentStatusText(bill.paymentStatus) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ bill.updateTime || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="更新时间">{{ bill.updateAt || "-" }}</el-descriptions-item>
         <el-descriptions-item label="作废人">{{ bill.cancelByName || "-" }}</el-descriptions-item>
         <el-descriptions-item label="作废时间">{{ bill.cancelAt || "-" }}</el-descriptions-item>
         <el-descriptions-item label="作废原因" :span="2">{{ bill.cancelReason || "-" }}</el-descriptions-item>
@@ -78,7 +78,7 @@
           <el-table-column label="金额" min-width="120" align="right">
             <template #default="{ row }">¥{{ moneyText(row.amount) }}</template>
           </el-table-column>
-          <el-table-column prop="bizTime" label="业务日期" min-width="120" />
+          <el-table-column prop="bizDate" label="业务日期" min-width="120" />
           <el-table-column prop="formulaSnapshot" label="计算说明" min-width="240" show-overflow-tooltip />
           <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
         </el-table>
@@ -128,7 +128,7 @@
           <el-table-column prop="operateDesc" label="操作" min-width="160" />
           <el-table-column prop="operatorName" label="操作人" min-width="120" />
           <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="createTime" label="操作时间" min-width="180" />
+          <el-table-column prop="createAt" label="操作时间" min-width="180" />
         </el-table>
       </div>
     </template>

@@ -245,7 +245,7 @@ function useTenant() {
     },
     {
       label: "创建时间",
-      prop: "createTime",
+      prop: "createAt",
       minWidth: 180
     },
     {
@@ -405,8 +405,8 @@ function useTenant() {
             const checkDate = curData.lease.checkDate || [];
             curData.lease.leaseStart = leaseDate[0];
             curData.lease.leaseEnd = leaseDate[1];
-            curData.lease.checkInTime = checkDate[0];
-            curData.lease.checkOutTime = checkDate[1];
+            curData.lease.checkInAt = checkDate[0];
+            curData.lease.checkOutAt = checkDate[1];
 
             apiCall(curData).then(resp => {
               if (resp.code === 0) {
@@ -633,7 +633,7 @@ function useTenant() {
             leaseStart: renewStart,
             leaseEnd: renewEnd,
             leaseDate: [renewStart, renewEnd],
-            checkDate: detail.checkOutTime ? [detail.checkOutTime, null] : undefined
+            checkDate: detail.checkOutAt ? [detail.checkOutAt, null] : undefined
           },
           otherFees: detail.otherFees || []
         };

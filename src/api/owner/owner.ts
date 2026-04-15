@@ -59,7 +59,7 @@ export interface SettlementBillLineVo {
   itemName?: string;
   direction?: string;
   amount?: number;
-  bizTime?: string;
+  bizDate?: string;
   formulaSnapshot?: string;
   remark?: string;
 }
@@ -69,7 +69,7 @@ export interface SettlementBillReductionVo {
   reductionType?: string;
   reductionName?: string;
   amount?: number;
-  bizTime?: string;
+  bizDate?: string;
   ruleSnapshot?: string;
   remark?: string;
 }
@@ -83,8 +83,8 @@ export interface SettlementBillDetailVo extends SettlementBillListVo {
   billStatus?: number;
   approvedAt?: string;
   remark?: string;
-  createTime?: string;
-  updateTime?: string;
+  createAt?: string;
+  updateAt?: string;
   lineList?: SettlementBillLineVo[];
   reductionList?: SettlementBillReductionVo[];
 }
@@ -138,7 +138,7 @@ export interface PayableBillLineDto {
   itemName?: string;
   direction?: string;
   amount?: number;
-  bizTime?: string;
+  bizDate?: string;
   formulaSnapshot?: string;
   remark?: string;
 }
@@ -184,7 +184,7 @@ export interface PayableBillPaymentVo {
   thirdTradeNo?: string;
   remark?: string;
   voucherUrls?: string[];
-  createTime?: string;
+  createAt?: string;
 }
 
 export interface BizOperateLogVo {
@@ -193,7 +193,7 @@ export interface BizOperateLogVo {
   operateDesc?: string;
   remark?: string;
   operatorName?: string;
-  createTime?: string;
+  createAt?: string;
 }
 
 export interface PayableBillDetailVo extends PayableBillListVo {
@@ -202,8 +202,8 @@ export interface PayableBillDetailVo extends PayableBillListVo {
   cancelBy?: string | number;
   cancelByName?: string;
   remark?: string;
-  createTime?: string;
-  updateTime?: string;
+  createAt?: string;
+  updateAt?: string;
   lineList?: PayableBillLineDto[];
   paymentList?: PayableBillPaymentVo[];
   operateLogList?: BizOperateLogVo[];

@@ -70,9 +70,9 @@ export function useApprovalTodo() {
     },
     {
       label: "申请时间",
-      prop: "applyTime",
+      prop: "applyAt",
       width: 180,
-      formatter: ({ applyTime }) => (applyTime ? dayjs(applyTime).format("YYYY-MM-DD HH:mm:ss") : "")
+      formatter: ({ applyAt }) => (applyAt ? dayjs(applyAt).format("YYYY-MM-DD HH:mm:ss") : "")
     },
     {
       label: "操作",
@@ -113,9 +113,9 @@ export function useApprovalTodo() {
     },
     {
       label: "操作时间",
-      prop: "operateTime",
+      prop: "operateAt",
       width: 180,
-      formatter: ({ operateTime }) => (operateTime ? dayjs(operateTime).format("YYYY-MM-DD HH:mm:ss") : "")
+      formatter: ({ operateAt }) => (operateAt ? dayjs(operateAt).format("YYYY-MM-DD HH:mm:ss") : "")
     },
     {
       label: "最终状态",
@@ -181,9 +181,9 @@ export function useApprovalTodo() {
     },
     {
       label: "申请时间",
-      prop: "createTime",
+      prop: "createAt",
       width: 180,
-      formatter: ({ createTime }) => (createTime ? dayjs(createTime).format("YYYY-MM-DD HH:mm:ss") : "")
+      formatter: ({ createAt }) => (createAt ? dayjs(createAt).format("YYYY-MM-DD HH:mm:ss") : "")
     },
     {
       label: "操作",

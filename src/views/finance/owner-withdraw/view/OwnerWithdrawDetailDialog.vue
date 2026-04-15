@@ -38,7 +38,7 @@
       <el-table-column label="冻结余额" min-width="160" align="right">
         <template #default="{ row }">{{ moneyText(row.frozenBefore) }} → {{ moneyText(row.frozenAfter) }}</template>
       </el-table-column>
-      <el-table-column prop="createTime" label="时间" min-width="160" />
+      <el-table-column prop="createAt" label="时间" min-width="160" />
       <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
     </el-table>
   </div>

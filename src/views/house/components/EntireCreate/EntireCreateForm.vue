@@ -44,7 +44,7 @@
       area: undefined, // number | undefined，与 RoomCreateDto 类型一致
       price: undefined,
       availableDate: undefined,
-      vacancyStartTime: undefined,
+      vacancyStartAt: undefined,
       remark: undefined,
       imageList: [],
       videoList: [],

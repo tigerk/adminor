@@ -9,8 +9,8 @@
       roomNumber: "",
       houseName: "",
       lockReason: 1,
-      startTime: "",
-      endTime: "",
+      startAt: "",
+      endAt: "",
       remark: ""
     })
   });
@@ -40,9 +40,9 @@
       </el-radio-group>
     </el-form-item>
 
-    <el-form-item v-if="isTimedLock" label="开始时间" prop="startTime">
+    <el-form-item v-if="isTimedLock" label="开始时间" prop="startAt">
       <el-date-picker
-        v-model="newFormInline.startTime"
+        v-model="newFormInline.startAt"
         type="date"
         value-format="YYYY-MM-DD"
         format="YYYY-MM-DD"
@@ -51,9 +51,9 @@
       />
     </el-form-item>
 
-    <el-form-item v-if="isTimedLock" label="结束时间" prop="endTime">
+    <el-form-item v-if="isTimedLock" label="结束时间" prop="endAt">
       <el-date-picker
-        v-model="newFormInline.endTime"
+        v-model="newFormInline.endAt"
         type="date"
         value-format="YYYY-MM-DD"
         format="YYYY-MM-DD"
@@ -67,4 +67,3 @@
     </el-form-item>
   </el-form>
 </template>
-

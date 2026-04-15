@@ -69,12 +69,12 @@
     },
     {
       label: "操作时间",
-      prop: "requestTime",
+      prop: "requestAt",
       minWidth: 180,
       cellRenderer: ({ row }) => (
         <el-space>
           <IconifyIconOnline icon="ri-time-line" />
-          <span>{dayjs(row.requestTime).format("YYYY-MM-DD HH:mm:ss")}</span>
+          <span>{dayjs(row.requestAt).format("YYYY-MM-DD HH:mm:ss")}</span>
         </el-space>
       )
     }

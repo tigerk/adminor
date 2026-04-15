@@ -155,11 +155,11 @@
             <div class="hv-booking__rows">
               <div class="hv-booking__row">
                 <span class="hv-booking__lbl">预定时间</span>
-                <span>{{ formatDate(bookingInfo.bookingTime) }}</span>
+                <span>{{ formatDate(bookingInfo.bookingAt) }}</span>
               </div>
               <div class="hv-booking__row">
                 <span class="hv-booking__lbl">到期时间</span>
-                <span class="c-warning">{{ formatDate(bookingInfo.expiryTime) }}</span>
+                <span class="c-warning">{{ formatDate(bookingInfo.expiryAt) }}</span>
               </div>
             </div>
             <div class="hv-booking__link">

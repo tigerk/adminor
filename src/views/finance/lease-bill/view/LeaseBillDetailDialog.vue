@@ -161,7 +161,7 @@
           </div>
           <div class="info-cell">
             <div class="info-cell__key">最近支付时间</div>
-            <div class="info-cell__val">{{ formatDateTime(latestPaymentFlow?.payTime) }}</div>
+            <div class="info-cell__val">{{ formatDateTime(latestPaymentFlow?.payAt) }}</div>
           </div>
           <div class="info-cell">
             <div class="info-cell__key">累计实收金额</div>
@@ -197,7 +197,7 @@
           </div>
           <div class="void-info-cell">
             <div class="info-cell__key">作废时间</div>
-            <div class="info-cell__val">{{ formatDateTime(bill.voidTime) }}</div>
+            <div class="info-cell__val">{{ formatDateTime(bill.voidAt) }}</div>
           </div>
           <div class="void-info-cell void-info-cell--full">
             <div class="info-cell__key">作废原因</div>
@@ -295,7 +295,7 @@
                 <div class="flow-col flow-col--amount fee-col--positive">¥{{ formatAmount(row.amount) }}</div>
                 <div class="flow-col flow-col--name">{{ getFinanceFlowFeeName(row.bizId) || "—" }}</div>
                 <div class="flow-col flow-col--operator">{{ row.operatorName || "—" }}</div>
-                <div class="flow-col flow-col--time">{{ formatDateTime(row.flowTime) }}</div>
+                <div class="flow-col flow-col--time">{{ formatDateTime(row.flowAt) }}</div>
                 <div class="flow-col flow-col--remark">
                   <el-tooltip v-if="row.remark" :content="row.remark" placement="top" :show-after="200" popper-class="remark-tooltip">
                     <span class="remark-text">{{ row.remark }}</span>
@@ -359,7 +359,7 @@
                   </el-tooltip>
                   <span v-else>—</span>
                 </div>
-                <div class="pay-col pay-col--time">{{ formatDateTime(row.payTime) }}</div>
+                <div class="pay-col pay-col--time">{{ formatDateTime(row.payAt) }}</div>
               </div>
             </div>
           </div>
@@ -417,8 +417,8 @@
   const financeFlowList = computed(() => bill.value.financeFlowList || []);
   const paymentFlowList = computed(() =>
     (bill.value.paymentFlowList || []).slice().sort((a, b) => {
-      const aTime = a.payTime ? new Date(a.payTime).getTime() : 0;
-      const bTime = b.payTime ? new Date(b.payTime).getTime() : 0;
+      const aTime = a.payAt ? new Date(a.payAt).getTime() : 0;
+      const bTime = b.payAt ? new Date(b.payAt).getTime() : 0;
       return bTime - aTime;
     })
   );

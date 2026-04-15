@@ -298,7 +298,7 @@
         </div>
         <div class="ad-grid__cell">
           <span class="ad-grid__k">申请时间</span>
-          <span class="ad-grid__v">{{ detail?.createTime || "-" }}</span>
+          <span class="ad-grid__v">{{ detail?.createAt || "-" }}</span>
         </div>
         <div class="ad-grid__cell">
           <span class="ad-grid__k">当前节点</span>
@@ -311,8 +311,8 @@
         </div>
         <div class="ad-grid__cell">
           <span class="ad-grid__k">完成时间</span>
-          <span class="ad-grid__v" :class="{ 'ad-grid__muted': !detail?.finishTime }">
-            {{ detail?.finishTime || "-" }}
+          <span class="ad-grid__v" :class="{ 'ad-grid__muted': !detail?.finishAt }">
+            {{ detail?.finishAt || "-" }}
           </span>
         </div>
       </div>

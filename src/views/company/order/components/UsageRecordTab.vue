@@ -26,9 +26,9 @@
     { label: "状态", prop: "statusName", minWidth: 90, slot: "statusName" },
     {
       label: "使用时间",
-      prop: "createTime",
+      prop: "createAt",
       minWidth: 160,
-      formatter: ({ createTime }) => (createTime ? dayjs(createTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+      formatter: ({ createAt }) => (createAt ? dayjs(createAt).format("YYYY-MM-DD HH:mm:ss") : "-")
     },
     { label: "备注", prop: "remark", minWidth: 200, showOverflowTooltip: true }
   ];

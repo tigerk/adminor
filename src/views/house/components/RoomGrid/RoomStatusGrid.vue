@@ -109,7 +109,7 @@
                   <div v-else-if="room.occupancyStatus === 0 && room.availableDate">
                     <span class="lease-label">可租日：</span>
                     {{ formatDate(room.availableDate) }}
-                    <span class="lease-days">空 {{ getDaysDifference(room.vacancyStartTime) }} 天</span>
+                    <span class="lease-days">空 {{ getDaysDifference(room.vacancyStartAt) }} 天</span>
                   </div>
                   <div v-else-if="!room.price">
                     <span class="lease-label">暂未定价</span>

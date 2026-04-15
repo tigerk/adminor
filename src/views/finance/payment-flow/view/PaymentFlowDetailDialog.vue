@@ -28,12 +28,12 @@
         <div class="meta-divider" />
         <div class="meta-item">
           <span class="meta-label">支付时间</span>
-          <span class="meta-value">{{ formatDateTime(detail.payTime) }}</span>
+          <span class="meta-value">{{ formatDateTime(detail.payAt) }}</span>
         </div>
         <div class="meta-divider" />
         <div class="meta-item">
           <span class="meta-label">创建时间</span>
-          <span class="meta-value">{{ formatDateTime(detail.createTime) }}</span>
+          <span class="meta-value">{{ formatDateTime(detail.createAt) }}</span>
         </div>
       </div>
     </div>
@@ -189,9 +189,9 @@
             </template>
           </el-table-column>
           <el-table-column prop="operatorName" label="操作人" min-width="100" />
-          <el-table-column prop="flowTime" label="流水时间" min-width="150">
+          <el-table-column prop="flowAt" label="流水时间" min-width="150">
             <template #default="{ row }">
-              {{ formatDateTime(row.flowTime) }}
+              {{ formatDateTime(row.flowAt) }}
             </template>
           </el-table-column>
           <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />

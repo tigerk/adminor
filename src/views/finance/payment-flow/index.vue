@@ -99,15 +99,15 @@
     { label: "操作人", prop: "operatorName", minWidth: 100 },
     {
       label: "支付时间",
-      prop: "payTime",
+      prop: "payAt",
       minWidth: 160,
-      formatter: ({ payTime }) => formatDateTime(payTime)
+      formatter: ({ payAt }) => formatDateTime(payAt)
     },
     {
       label: "创建时间",
-      prop: "createTime",
+      prop: "createAt",
       minWidth: 160,
-      formatter: ({ createTime }) => formatDateTime(createTime)
+      formatter: ({ createAt }) => formatDateTime(createAt)
     }
   ];
 

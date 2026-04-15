@@ -23,7 +23,7 @@
   const formRef = ref();
   const editMeta = reactive({
     createByName: "" as string,
-    publishTime: "" as string
+    publishAt: "" as string
   });
 
   const form = reactive({
@@ -98,9 +98,9 @@
     },
     {
       label: "发布时间",
-      prop: "publishTime",
+      prop: "publishAt",
       minWidth: 180,
-      formatter: ({ publishTime }) => (publishTime ? dayjs(publishTime).format("YYYY-MM-DD HH:mm:ss") : "-")
+      formatter: ({ publishAt }) => (publishAt ? dayjs(publishAt).format("YYYY-MM-DD HH:mm:ss") : "-")
     },
     {
       label: "操作",
@@ -145,7 +145,7 @@
     form.targetScope = 1;
     form.roleIds = [];
     editMeta.createByName = "";
-    editMeta.publishTime = "";
+    editMeta.publishAt = "";
     dialogVisible.value = true;
   }
 
@@ -162,7 +162,7 @@
       form.targetScope = notice.targetScope ?? 1;
       form.roleIds = (data?.roleIds ?? []).map(id => Number(id));
       editMeta.createByName = notice.createByName || "-";
-      editMeta.publishTime = notice.publishTime ? dayjs(notice.publishTime).format("YYYY-MM-DD HH:mm:ss") : "-";
+      editMeta.publishAt = notice.publishAt ? dayjs(notice.publishAt).format("YYYY-MM-DD HH:mm:ss") : "-";
       dialogVisible.value = true;
     } finally {
       dialogLoading.value = false;
@@ -272,7 +272,7 @@
           <el-input :model-value="editMeta.createByName" disabled />
         </el-form-item>
         <el-form-item v-if="form.id" label="发布时间">
-          <el-input :model-value="editMeta.publishTime" disabled />
+          <el-input :model-value="editMeta.publishAt" disabled />
         </el-form-item>
         <el-form-item label="标题" prop="title">
           <el-input v-model="form.title" placeholder="请输入公告标题" maxlength="100" show-word-limit />

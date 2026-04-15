@@ -19,8 +19,8 @@ export function useRoomLock() {
           roomNumber: room.roomNumber ?? "",
           houseName: room.houseName ?? "",
           lockReason: 1,
-          startTime: "",
-          endTime: "",
+          startAt: "",
+          endAt: "",
           remark: ""
         }
       },
@@ -41,8 +41,8 @@ export function useRoomLock() {
           const resp = await lockRoom({
             roomId: curData.roomId,
             lockReason: curData.lockReason,
-            startTime: curData.lockReason === 2 ? curData.startTime : undefined,
-            endTime: curData.lockReason === 2 ? curData.endTime : undefined,
+            startAt: curData.lockReason === 2 ? curData.startAt : undefined,
+            endAt: curData.lockReason === 2 ? curData.endAt : undefined,
             remark: curData.remark
           });
 
@@ -62,4 +62,3 @@ export function useRoomLock() {
     openRoomLockDialog
   };
 }
-
