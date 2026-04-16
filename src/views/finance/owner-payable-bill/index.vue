@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import More from "~icons/ep/more-filled";
+  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import { PureTableBar } from "@/components/RePureTableBar";
   import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";
   import "@/shared/owner/financePage.scss";
@@ -102,26 +104,30 @@
             </div>
           </template>
           <template #operation="{ row }">
-            <el-button link type="primary" @click.stop="openOwnerPayableBillDetailDialog(row.billId)">详情</el-button>
+            <el-button link type="primary" @click.stop="openOwnerPayableBillDetailDialog(row.billId)">查看</el-button>
             <el-button v-if="Number(row.billStatus || 1) === 1 && Number(row.unpaidAmount || 0) > 0" link type="primary" @click.stop="openPayableBillPaymentDialog(row)">
               登记付款
             </el-button>
-            <el-button
-              v-if="Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0"
-              link
-              type="primary"
-              @click.stop="openPayableBillFormDialog(row)"
-            >
-              修改
-            </el-button>
-            <el-button
-              v-if="Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0"
-              link
-              type="danger"
-              @click.stop="openPayableBillCancelDialog(row)"
-            >
-              作废
-            </el-button>
+            <el-dropdown :hide-on-click="false" popper-class="action-dropdown" @click.stop>
+              <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item
+                    v-if="Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0"
+                    @click="openPayableBillFormDialog(row)"
+                  >
+                    修改
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    v-if="Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0"
+                    divided
+                    @click="openPayableBillCancelDialog(row)"
+                  >
+                    <span class="text-danger">作废</span>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </template>
         </pure-table>
       </template>
