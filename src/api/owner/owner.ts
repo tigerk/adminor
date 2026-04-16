@@ -156,9 +156,6 @@ export interface PayableBillPaymentCreateDto {
 export interface PayableBillCreateDto {
   ownerId?: string | number;
   contractId?: string | number;
-  subjectType?: string;
-  subjectId?: string | number;
-  subjectName?: string;
   billStartDate?: string;
   billEndDate?: string;
   dueDate?: string;
@@ -197,7 +194,6 @@ export interface BizOperateLogVo {
 }
 
 export interface PayableBillDetailVo extends PayableBillListVo {
-  subjectId?: string | number;
   cancelReason?: string;
   cancelBy?: string | number;
   cancelByName?: string;

@@ -12,25 +12,6 @@
         </el-form-item>
       </el-col>
       <el-col :span="8">
-        <el-form-item label="房源类型" prop="subjectType">
-          <el-select v-model="form.subjectType" class="w-full">
-            <el-option label="房源" value="HOUSE" />
-            <el-option label="集中式项目" value="FOCUS" />
-            <el-option label="项目楼栋" value="FOCUS_BUILDING" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="8">
-        <el-form-item label="房源ID" prop="subjectId">
-          <el-input v-model="form.subjectId" placeholder="请输入房源ID" />
-        </el-form-item>
-      </el-col>
-      <el-col :span="8">
-        <el-form-item label="房源名称" prop="subjectName">
-          <el-input v-model="form.subjectName" placeholder="请输入房源名称" />
-        </el-form-item>
-      </el-col>
-      <el-col :span="8">
         <el-form-item label="账期开始" prop="billStartDate">
           <el-date-picker v-model="form.billStartDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
         </el-form-item>
@@ -102,9 +83,6 @@
     billId: props.bill?.billId,
     ownerId: props.bill?.ownerId,
     contractId: props.bill?.contractId,
-    subjectType: "HOUSE",
-    subjectId: "",
-    subjectName: props.bill?.subjectName || "",
     billStartDate: props.bill?.billStartDate || "",
     billEndDate: props.bill?.billEndDate || "",
     dueDate: props.bill?.dueDate || "",
@@ -115,8 +93,6 @@
   const rules: FormRules = {
     ownerId: [{ required: true, message: "请输入业主ID", trigger: "blur" }],
     contractId: [{ required: true, message: "请输入合同ID", trigger: "blur" }],
-    subjectType: [{ required: true, message: "请选择房源类型", trigger: "change" }],
-    subjectName: [{ required: true, message: "请输入房源名称", trigger: "blur" }],
     billStartDate: [{ required: true, message: "请选择账期开始", trigger: "change" }],
     billEndDate: [{ required: true, message: "请选择账期结束", trigger: "change" }],
     dueDate: [{ required: true, message: "请选择应付日期", trigger: "change" }]
