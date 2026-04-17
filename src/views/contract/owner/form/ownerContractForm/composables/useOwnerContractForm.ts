@@ -33,6 +33,7 @@ export type SubjectSelectionRow = {
 export const createSettlementItem = (): OwnerSettlementItemForm => ({
   feeDirection: "IN",
   feeType: "",
+  dictDataId: undefined,
   feeName: "",
   transferEnabled: true,
   transferRatio: 100,
@@ -102,7 +103,8 @@ export function cloneSettlementRule(rule?: OwnerSettlementRuleForm): OwnerSettle
     ...(rule || {}),
     settlementItemList: ((rule?.settlementItemList || []) as OwnerSettlementItemForm[]).map(item => ({
       ...createSettlementItem(),
-      ...item
+      ...item,
+      dictDataId: item.dictDataId
     }))
   };
 }
@@ -411,10 +413,11 @@ export function useOwnerContractForm() {
 
   function syncSettlementFeeCascaderValues() {
     const values: Record<string, any[]> = {};
-    (sharedContractSubject.value?.settlementRule.settlementItemList || []).forEach((item, index) => {
-      if (!item.feeType || !otherFeeTypeOptions.value.length) return;
+    ((sharedContractSubject.value?.settlementRule.settlementItemList || []) as OwnerSettlementItemForm[]).forEach((item, index) => {
+      const targetDictDataId = item.dictDataId ?? item.feeType;
+      if (!targetDictDataId || !otherFeeTypeOptions.value.length) return;
       for (const parent of otherFeeTypeOptions.value) {
-        const child = parent.children?.find((option: any) => String(option.value) === String(item.feeType));
+        const child = parent.children?.find((option: any) => String(option.value) === String(targetDictDataId));
         if (child) {
           values[`shared-${index}`] = [parent.value, child.value];
           break;
@@ -435,7 +438,8 @@ export function useOwnerContractForm() {
     const parent = otherFeeTypeOptions.value.find((item: any) => item.value === value[0]);
     const child = parent?.children?.find((item: any) => item.value === value[1]);
     if (!child) return;
-    target.feeType = String(child.value);
+    target.dictDataId = child.value;
+    target.feeType = String(parent?.value || "");
     target.feeName = child.label;
     target.transferEnabled = true;
   }
@@ -532,6 +536,7 @@ export function useOwnerContractForm() {
                 settlementItemList: ((sharedSettlementRule?.settlementItemList || []) as OwnerSettlementItemForm[]).map(si => ({
                   feeDirection: si.feeDirection,
                   feeType: si.feeType,
+                  dictDataId: si.dictDataId,
                   feeName: si.feeName,
                   transferEnabled: si.transferEnabled,
                   transferRatio: si.transferRatio,

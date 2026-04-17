@@ -68,6 +68,7 @@ export type OwnerSettlementItemForm = {
   id?: string | number;
   feeDirection?: "IN" | "OUT";
   feeType?: string;
+  dictDataId?: string | number;
   feeName?: string;
   transferEnabled?: boolean;
   transferRatio?: number;
@@ -117,7 +118,7 @@ export type OwnerContractFormDto = OwnerContractDto & {
 
 // ─── Settlement rule form ─────────────────────────────────────────────────────
 
-export type OwnerSettlementRuleForm = OwnerSettlementRuleDto & {
+export type OwnerSettlementRuleForm = Omit<OwnerSettlementRuleDto, "settlementItemList"> & {
   hasGuaranteedRent?: boolean;
   managementFeeEnabled?: boolean;
   managementFeeMode?: OwnerFeeModeEnum;
