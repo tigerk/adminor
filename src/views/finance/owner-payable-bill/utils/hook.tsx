@@ -80,6 +80,8 @@ function useOwnerPayableBill() {
 
   const columns: TableColumnList = [
     { label: "应付单号", prop: "billNo", minWidth: 180 },
+    { label: "付款状态", prop: "paymentStatus", minWidth: 110, align: "center", slot: "settlementStatus" },
+    { label: "单据状态", prop: "billStatus", minWidth: 110, align: "center", slot: "billStatus" },
     { label: "业主", prop: "ownerName", minWidth: 140 },
     { label: "联系电话", prop: "ownerPhone", minWidth: 140 },
     { label: "合同编号", prop: "contractNo", minWidth: 180 },
@@ -87,7 +89,11 @@ function useOwnerPayableBill() {
     {
       label: "账期",
       minWidth: 200,
-      cellRenderer: ({ row }) => <span>{row.billStartDate || "-"} 至 {row.billEndDate || "-"}</span>
+      cellRenderer: ({ row }) => (
+        <span>
+          {row.billStartDate || "-"} 至 {row.billEndDate || "-"}
+        </span>
+      )
     },
     { label: "应付日期", prop: "dueDate", minWidth: 120, align: "center" },
     {
@@ -111,8 +117,6 @@ function useOwnerPayableBill() {
       align: "right",
       cellRenderer: ({ row }) => <span class="amount-cell">{moneyText(row.unpaidAmount)}</span>
     },
-    { label: "付款状态", prop: "paymentStatus", minWidth: 110, align: "center", slot: "settlementStatus" },
-    { label: "单据状态", prop: "billStatus", minWidth: 110, align: "center", slot: "billStatus" },
     { label: "生成时间", prop: "generatedAt", minWidth: 170 },
     { label: "操作", fixed: "right", width: 220, align: "center", slot: "operation" }
   ];
