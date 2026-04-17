@@ -5,6 +5,7 @@
   import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";
   import "@/shared/owner/financePage.scss";
   import useOwnerPayableBill from "@/views/finance/owner-payable-bill/utils/hook";
+  import { canCancelOwnerPayableBill, canEditOwnerPayableBill, canPayOwnerPayableBill } from "@/views/finance/owner-payable-bill/utils/billAction";
 
   defineOptions({ name: "OwnerPayableBillEntry" });
 
@@ -105,7 +106,7 @@
           </template>
           <template #operation="{ row }">
             <el-button link type="primary" @click.stop="openOwnerPayableBillDetailDialog(row.billId)">查看</el-button>
-            <el-button v-if="Number(row.billStatus || 1) === 1 && Number(row.unpaidAmount || 0) > 0" link type="primary" @click.stop="openPayableBillPaymentDialog(row)">
+            <el-button v-if="canPayOwnerPayableBill(row)" link type="primary" @click.stop="openPayableBillPaymentDialog(row)">
               登记付款
             </el-button>
             <el-dropdown :hide-on-click="false" popper-class="action-dropdown" @click.stop>
@@ -113,13 +114,13 @@
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item
-                    :disabled="!(Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0)"
+                    :disabled="!canEditOwnerPayableBill(row)"
                     @click="openPayableBillFormDialog(row)"
                   >
                     修改账单
                   </el-dropdown-item>
                   <el-dropdown-item
-                    :disabled="!(Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0)"
+                    :disabled="!canCancelOwnerPayableBill(row)"
                     divided
                     @click="openPayableBillCancelDialog(row)"
                   >

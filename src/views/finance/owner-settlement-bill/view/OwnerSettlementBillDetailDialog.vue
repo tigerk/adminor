@@ -220,7 +220,6 @@
   .detail-header__actions {
     display: flex;
     align-items: center;
-    gap: 12px;
   }
 
   .summary-grid {

@@ -16,6 +16,8 @@
           </div>
         </div>
         <div class="detail-header__actions">
+          <el-button :disabled="!showEditAction" @click="openEditDialog">修改账单</el-button>
+          <el-button :disabled="!showCancelAction" @click="openCancelDialog">作废账单</el-button>
           <el-button v-if="showPaymentAction" type="primary" @click="openPaymentDialog">登记付款</el-button>
         </div>
       </div>
@@ -142,7 +144,18 @@
 <script setup lang="ts">
   import { computed, h, ref } from "vue";
   import { addDialog } from "@/components/ReDialog";
-  import { createOwnerPayableBillPayment, getOwnerPayableBillDetail, type PayableBillDetailVo, type PayableBillPaymentCreateDto } from "@/api/owner/owner";
+  import {
+    cancelOwnerPayableBill,
+    createOwnerPayableBillPayment,
+    getOwnerPayableBillDetail,
+    updateOwnerPayableBill,
+    type PayableBillDetailVo,
+    type PayableBillPaymentCreateDto,
+    type PayableBillUpdateDto
+  } from "@/api/owner/owner";
+  import { canCancelOwnerPayableBill, canEditOwnerPayableBill, canPayOwnerPayableBill } from "@/views/finance/owner-payable-bill/utils/billAction";
+  import OwnerPayableBillCancelDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillCancelDialog.vue";
+  import OwnerPayableBillFormDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillFormDialog.vue";
   import OwnerPayableBillPaymentDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillPaymentDialog.vue";
   import { message } from "@/utils/message";
   import { OwnerBillingItemTypeEnumMeta, PaymentFlowChannelEnumMeta } from "@/types";
@@ -172,7 +185,9 @@
     2: "已付款"
   };
 
-  const showPaymentAction = computed(() => Number(bill.value.billStatus || 1) === 1 && Number(bill.value.unpaidAmount || 0) > 0);
+  const showPaymentAction = computed(() => canPayOwnerPayableBill(bill.value));
+  const showEditAction = computed(() => canEditOwnerPayableBill(bill.value));
+  const showCancelAction = computed(() => canCancelOwnerPayableBill(bill.value));
   const moneyText = (value?: number) => Number(value || 0).toFixed(2);
   const paymentStatusText = (value?: number) => paymentStatusMap[value ?? 0] || `状态${value ?? "-"}`;
   const payChannelText = (value?: string) => (value ? payChannelLabelMap[value] || value : "-");
@@ -230,6 +245,64 @@
     });
   }
 
+  function openEditDialog() {
+    if (!showEditAction.value) {
+      return;
+    }
+    const formRef = ref();
+    addDialog({
+      title: "修改包租应付单",
+      props: { billId: bill.value.billId },
+      width: "960px",
+      top: "3vh",
+      lockScroll: true,
+      alignCenter: true,
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(OwnerPayableBillFormDialog, { ref: formRef, bill: bill.value }),
+      beforeSure: async done => {
+        const payload = await formRef.value?.validateAndBuildPayload?.();
+        if (!payload) return;
+        const resp = await updateOwnerPayableBill(payload as PayableBillUpdateDto);
+        if (resp.code === 0) {
+          message("应付单修改成功", { type: "success" });
+          await fetchDetail();
+          done();
+          return;
+        }
+        message(resp.message || "应付单修改失败", { type: "error" });
+      }
+    });
+  }
+
+  function openCancelDialog() {
+    if (!showCancelAction.value) {
+      return;
+    }
+    const formRef = ref();
+    addDialog({
+      title: "作废包租应付单",
+      width: "520px",
+      lockScroll: true,
+      alignCenter: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(OwnerPayableBillCancelDialog, { ref: formRef, billNo: bill.value.billNo }),
+      beforeSure: async done => {
+        const payload = await formRef.value?.validateAndBuildPayload?.();
+        if (!payload) return;
+        const resp = await cancelOwnerPayableBill({ billId: bill.value.billId, cancelReason: payload.cancelReason });
+        if (resp.code === 0) {
+          message("应付单作废成功", { type: "success" });
+          await fetchDetail();
+          done();
+          return;
+        }
+        message(resp.message || "应付单作废失败", { type: "error" });
+      }
+    });
+  }
+
   fetchDetail();
 </script>
 
@@ -268,7 +341,6 @@
   .detail-header__actions {
     display: flex;
     align-items: center;
-    gap: 12px;
   }
   .summary-grid {
     display: grid;
