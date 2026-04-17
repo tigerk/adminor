@@ -59,6 +59,8 @@ export interface setType {
     mobile: boolean;
   };
   hideTabs: boolean;
+  watermarkContent: string;
+  watermarkFont: any;
 }
 
 export type menuType = {

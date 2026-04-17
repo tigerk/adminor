@@ -7,6 +7,7 @@
   import { useLayout } from "./hooks/useLayout";
   import { useAppStoreHook } from "@/store/modules/app";
   import { useSettingStoreHook } from "@/store/modules/settings";
+  import { useUserStoreHook } from "@/store/modules/user";
   import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
   import { h, ref, reactive, computed, onMounted, onBeforeMount, defineComponent } from "vue";
   import { useDark, useGlobal, deviceDetection, useResizeObserver } from "@pureadmin/utils";
@@ -26,6 +27,7 @@
   const { layout } = useLayout();
   const isMobile = deviceDetection();
   const pureSetting = useSettingStoreHook();
+  const userStore = useUserStoreHook();
   const { $storage } = useGlobal<GlobalPropertiesApi>();
 
   const set: setType = reactive({
@@ -52,6 +54,17 @@
 
     hideTabs: computed(() => {
       return $storage?.configure.hideTabs;
+    }),
+
+    watermarkContent: computed(() => {
+      return userStore.nickname || userStore.username || "";
+    }),
+
+    watermarkFont: computed(() => {
+      return {
+        color: isDark.value ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+        fontSize: 16
+      };
     })
   });
 
@@ -136,31 +149,38 @@
 </script>
 
 <template>
-  <div ref="appWrapperRef" :class="['app-wrapper', set.classes]">
-    <div v-show="set.device === 'mobile' && set.sidebar.opened && layout.includes('vertical')" class="app-mask" @click="useAppStoreHook().toggleSideBar()" />
-    <NavVertical v-show="!pureSetting.hiddenSideBar && (layout.includes('vertical') || layout.includes('mix'))" />
-    <NavDouble v-show="layout.includes('double')" />
-    <div :class="[useAppStoreHook().isShowDouble ? 'double-show' : 'double-hidden', 'main-container', pureSetting.hiddenSideBar ? 'main-hidden' : '']">
-      <div v-if="set.fixedHeader">
-        <LayHeader />
-        <!-- 主体内容 -->
-        <LayContent :fixed-header="set.fixedHeader" />
+  <el-watermark :content="set.watermarkContent" :font="set.watermarkFont" class="layout-watermark">
+    <div ref="appWrapperRef" :class="['app-wrapper', set.classes]">
+      <div v-show="set.device === 'mobile' && set.sidebar.opened && layout.includes('vertical')" class="app-mask" @click="useAppStoreHook().toggleSideBar()" />
+      <NavVertical v-show="!pureSetting.hiddenSideBar && (layout.includes('vertical') || layout.includes('mix'))" />
+      <NavDouble v-show="layout.includes('double')" />
+      <div :class="[useAppStoreHook().isShowDouble ? 'double-show' : 'double-hidden', 'main-container', pureSetting.hiddenSideBar ? 'main-hidden' : '']">
+        <div v-if="set.fixedHeader">
+          <LayHeader />
+          <!-- 主体内容 -->
+          <LayContent :fixed-header="set.fixedHeader" />
+        </div>
+        <el-scrollbar v-else>
+          <el-backtop :title="t('buttons.pureBackTop')" :right="10" :bottom="10" target=".main-container .el-scrollbar__wrap">
+            <BackTopIcon />
+          </el-backtop>
+          <LayHeader />
+          <!-- 主体内容 -->
+          <LayContent :fixed-header="set.fixedHeader" />
+        </el-scrollbar>
       </div>
-      <el-scrollbar v-else>
-        <el-backtop :title="t('buttons.pureBackTop')" :right="10" :bottom="10" target=".main-container .el-scrollbar__wrap">
-          <BackTopIcon />
-        </el-backtop>
-        <LayHeader />
-        <!-- 主体内容 -->
-        <LayContent :fixed-header="set.fixedHeader" />
-      </el-scrollbar>
+      <!-- 系统设置 -->
+      <LaySetting />
     </div>
-    <!-- 系统设置 -->
-    <LaySetting />
-  </div>
+  </el-watermark>
 </template>
 
 <style lang="scss" scoped>
+  .layout-watermark {
+    width: 100%;
+    height: 100%;
+  }
+
   .app-wrapper {
     position: relative;
     width: 100%;

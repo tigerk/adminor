@@ -79,9 +79,9 @@ function useOwnerPayableBill() {
   ]);
 
   const columns: TableColumnList = [
+    { label: "付款状态", prop: "paymentStatus", width: 110, align: "center", slot: "settlementStatus", fixed: "left" },
+    { label: "单据状态", prop: "billStatus", width: 90, align: "center", slot: "billStatus", fixed: "left" },
     { label: "应付单号", prop: "billNo", minWidth: 180 },
-    { label: "付款状态", prop: "paymentStatus", minWidth: 110, align: "center", slot: "settlementStatus" },
-    { label: "单据状态", prop: "billStatus", minWidth: 110, align: "center", slot: "billStatus" },
     { label: "业主", prop: "ownerName", minWidth: 140 },
     { label: "联系电话", prop: "ownerPhone", minWidth: 140 },
     { label: "合同编号", prop: "contractNo", minWidth: 180 },
