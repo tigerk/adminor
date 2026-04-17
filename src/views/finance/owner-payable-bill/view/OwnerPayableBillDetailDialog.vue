@@ -39,7 +39,7 @@
         </div>
       </div>
 
-      <el-descriptions :column="2" border class="detail-descriptions">
+      <el-descriptions :column="3" border class="detail-descriptions">
         <el-descriptions-item label="应付单号">{{ bill.billNo || "-" }}</el-descriptions-item>
         <el-descriptions-item label="单据状态">
           <el-tag :type="Number(bill.billStatus || 1) === 2 ? 'danger' : 'success'">{{ Number(bill.billStatus || 1) === 2 ? "已作废" : "正常" }}</el-tag>
@@ -56,8 +56,8 @@
         <el-descriptions-item label="更新时间">{{ bill.updateAt || "-" }}</el-descriptions-item>
         <el-descriptions-item label="作废人">{{ bill.cancelByName || "-" }}</el-descriptions-item>
         <el-descriptions-item label="作废时间">{{ bill.cancelAt || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="作废原因" :span="2">{{ bill.cancelReason || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="备注" :span="2">{{ bill.remark || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="作废原因" :span="3">{{ bill.cancelReason || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="备注" :span="3">{{ bill.remark || "-" }}</el-descriptions-item>
       </el-descriptions>
 
       <div class="section-block">
