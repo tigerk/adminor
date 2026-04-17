@@ -113,17 +113,17 @@
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item
-                    v-if="Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0"
+                    :disabled="!(Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0)"
                     @click="openPayableBillFormDialog(row)"
                   >
-                    修改
+                    修改账单
                   </el-dropdown-item>
                   <el-dropdown-item
-                    v-if="Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0"
+                    :disabled="!(Number(row.billStatus || 1) === 1 && Number(row.paymentStatus || 0) === 0 && Number(row.paidAmount || 0) <= 0)"
                     divided
                     @click="openPayableBillCancelDialog(row)"
                   >
-                    <span class="text-danger">作废</span>
+                    <span class="text-danger">作废账单</span>
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>

@@ -94,7 +94,7 @@
           <span class="section-block__count">共 {{ bill.paymentList?.length || 0 }} 条</span>
         </div>
         <el-table :data="bill.paymentList || []" border>
-          <el-table-column prop="paymentNo" label="付款单号" min-width="190" />
+          <el-table-column prop="paymentNo" label="付款单号" min-width="220" />
           <el-table-column label="付款金额" min-width="120" align="right">
             <template #default="{ row }">¥{{ moneyText(row.payAmount) }}</template>
           </el-table-column>
