@@ -283,8 +283,8 @@
 .mode-guide {
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid #bfdbfe;
-  background: #eff6ff;
+  border: 1px solid var(--el-border-color-light);
+  background: var(--el-fill-color-light);
 }
 
 .mode-guide__header {
@@ -297,13 +297,13 @@
 .mode-guide__title {
   font-size: 15px;
   font-weight: 600;
-  color: #1d4ed8;
+  color: var(--el-color-primary);
 }
 
 .mode-guide__desc {
   margin-top: 4px;
   line-height: 1.7;
-  color: #1e3a8a;
+  color: var(--el-color-primary);
 }
 
 .config-card-grid {
