@@ -3350,11 +3350,11 @@ export type OwnerSettlementBillDetailVo = {
 };
 
 /**
- * 轻托管业主结算单明细VO
+ * 轻托管业主结算单费用VO
  */
 export type OwnerSettlementBillFeeVo = {
     /**
-     * 明细ID
+     * 费用ID
      */
     id?: string;
     /**
@@ -3366,11 +3366,15 @@ export type OwnerSettlementBillFeeVo = {
      */
     sourceId?: string;
     /**
-     * 项目类型
+     * 费用类型
      */
     feeType?: string;
     /**
-     * 项目名称
+     * 费用字典ID
+     */
+    dictDataId?: string;
+    /**
+     * 费用名称
      */
     feeName?: string;
     /**
@@ -3448,11 +3452,11 @@ export type ResponseResultOwnerSettlementBillDetailVo = {
 };
 
 /**
- * 包租业主应付单明细DTO
+ * 包租业主应付单费用DTO
  */
 export type OwnerPayableBillFeeDto = {
     /**
-     * 明细ID
+     * 费用ID
      */
     id?: string;
     /**
@@ -3464,11 +3468,15 @@ export type OwnerPayableBillFeeDto = {
      */
     sourceId?: string;
     /**
-     * 项目类型
+     * 费用类型
      */
     feeType?: string;
     /**
-     * 项目名称
+     * 费用字典ID
+     */
+    dictDataId?: string;
+    /**
+     * 费用名称
      */
     feeName?: string;
     /**
@@ -3505,18 +3513,6 @@ export type OwnerPayableBillUpdateDto = {
      * 合同ID
      */
     contractId?: string;
-    /**
-     * 合同房源类型
-     */
-    subjectType?: OwnerContractSubjectTypeEnum;
-    /**
-     * 合同房源ID
-     */
-    subjectId?: string;
-    /**
-     * 合同房源名称
-     */
-    subjectName?: string;
     /**
      * 账期开始日期
      */
@@ -3673,10 +3669,6 @@ export type OwnerPayableBillListVo = {
      * 合同编号
      */
     contractNo?: string;
-    /**
-     * 合同房源类型
-     */
-    subjectType?: OwnerContractSubjectTypeEnum;
     /**
      * 合同房源名称
      */
@@ -3838,14 +3830,6 @@ export type OwnerPayableBillDetailVo = {
      */
     contractNo?: string;
     /**
-     * 合同房源类型
-     */
-    subjectType?: OwnerContractSubjectTypeEnum;
-    /**
-     * 合同房源ID
-     */
-    subjectId?: string;
-    /**
      * 合同房源名称
      */
     subjectName?: string;
@@ -3932,11 +3916,11 @@ export type OwnerPayableBillDetailVo = {
 };
 
 /**
- * 包租业主应付单明细VO
+ * 包租业主应付单费用VO
  */
 export type OwnerPayableBillFeeVo = {
     /**
-     * 明细ID
+     * 费用ID
      */
     id?: string;
     /**
@@ -3948,11 +3932,15 @@ export type OwnerPayableBillFeeVo = {
      */
     sourceId?: string;
     /**
-     * 项目类型
+     * 费用类型
      */
     feeType?: string;
     /**
-     * 项目名称
+     * 费用字典ID
+     */
+    dictDataId?: string;
+    /**
+     * 费用名称
      */
     feeName?: string;
     /**
@@ -4037,18 +4025,6 @@ export type OwnerPayableBillCreateDto = {
      * 合同ID
      */
     contractId?: string;
-    /**
-     * 合同房源类型
-     */
-    subjectType?: OwnerContractSubjectTypeEnum;
-    /**
-     * 合同房源ID
-     */
-    subjectId?: string;
-    /**
-     * 合同房源名称
-     */
-    subjectName?: string;
     /**
      * 账期开始日期
      */
