@@ -6965,6 +6965,10 @@ export type OwnerIncomeBasisEnum = 'RECEIVED' | 'RECEIVABLE';
  */
 export type OwnerLeaseFeeDto = {
     /**
+     * 费用字典ID
+     */
+    dictDataId?: string;
+    /**
      * 费用科目类型
      */
     feeType?: string;

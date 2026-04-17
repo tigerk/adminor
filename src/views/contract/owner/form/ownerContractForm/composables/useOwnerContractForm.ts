@@ -41,6 +41,9 @@ export const createSettlementItem = (): OwnerSettlementItemForm => ({
 });
 
 export const createLeaseFee = (): OwnerLeaseFeeForm => ({
+  dictDataId: undefined,
+  feeType: "",
+  feeName: "",
   feeDirection: "IN",
   paymentMethod: PAYMENT_METHOD_OPTIONS[0]?.value,
   priceMethod: PRICE_METHOD_OPTIONS[0]?.value,
@@ -385,16 +388,18 @@ export function useOwnerContractForm() {
     const parent = otherFeeTypeOptions.value.find((item: any) => item.value === value[0]);
     const child = parent?.children?.find((item: any) => item.value === value[1]);
     if (!child) return;
-    target.feeType = String(child.value);
+    target.dictDataId = child.value;
+    target.feeType = String(parent?.value || "");
     target.feeName = child.label;
   }
 
   function syncLeaseFeeCascaderValues() {
     const values: Record<number, any[]> = {};
     (form.ownerLeaseRule.otherFeeList || []).forEach((fee, index) => {
-      if (!fee.feeType || !otherFeeTypeOptions.value.length) return;
+      const targetDictDataId = fee.dictDataId ?? fee.feeType;
+      if (!targetDictDataId || !otherFeeTypeOptions.value.length) return;
       for (const parent of otherFeeTypeOptions.value) {
-        const child = parent.children?.find((item: any) => String(item.value) === String(fee.feeType));
+        const child = parent.children?.find((item: any) => String(item.value) === String(targetDictDataId));
         if (child) {
           values[index] = [parent.value, child.value];
           break;

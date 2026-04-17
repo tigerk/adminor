@@ -138,7 +138,7 @@ export type OwnerRentFreeRuleForm = OwnerRentFreeRuleDto & {
 
 // ─── Lease rule form ──────────────────────────────────────────────────────────
 
-export type OwnerLeaseRuleForm = OwnerLeaseRuleDto & {
+export type OwnerLeaseRuleForm = Omit<OwnerLeaseRuleDto, "otherFeeList"> & {
   handoverDate?: string;
   usageType?: string;
   otherFeeList?: OwnerLeaseFeeForm[];
@@ -148,6 +148,7 @@ export type OwnerLeaseRuleForm = OwnerLeaseRuleDto & {
 // ─── Lease fee form ───────────────────────────────────────────────────────────
 
 export type OwnerLeaseFeeForm = {
+  dictDataId?: string | number;
   feeType?: string;
   feeName?: string;
   feeDirection?: "IN" | "OUT";
