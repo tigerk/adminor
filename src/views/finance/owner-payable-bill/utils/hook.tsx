@@ -294,7 +294,8 @@ function useOwnerPayableBill() {
         h(OwnerPayableBillPaymentDialog, {
           ref: formRef,
           billId: String(row.billId),
-          unpaidAmount: Number(row.unpaidAmount || 0)
+          unpaidAmount: Number(row.unpaidAmount || 0),
+          bill: row
         }),
       beforeSure: async done => {
         const payload = await formRef.value?.validateAndBuildPayload?.();

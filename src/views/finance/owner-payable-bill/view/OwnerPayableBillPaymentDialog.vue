@@ -1,15 +1,54 @@
 <template>
   <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
-    <!-- 待付金额 -->
-    <div class="amount-card">
-      <div class="amount-card__left">
-        <span class="amount-card__label">当前未付账单金额</span>
-        <div class="amount-card__value-row">
-          <span class="amount-card__unit">¥</span>
-          <span class="amount-card__value">{{ moneyText(unpaidAmount) }}</span>
+    <div class="info-panel">
+      <div class="info-panel__title">付款信息</div>
+      <div class="info-panel__grid info-panel__grid--amount">
+        <div class="info-item">
+          <div class="info-item__label">应付金额</div>
+          <div class="info-item__value">¥{{ moneyText(props.bill.payableAmount) }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-item__label">已付金额</div>
+          <div class="info-item__value">¥{{ moneyText(props.bill.paidAmount) }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-item__label">未付金额</div>
+          <div class="info-item__value info-item__value--danger">
+            <span class="amount-card__unit">¥</span>
+            <span class="amount-card__value">{{ moneyText(unpaidAmount) }}</span>
+          </div>
         </div>
       </div>
-      <el-tag type="danger" size="small" round>待付款</el-tag>
+    </div>
+
+    <div class="info-panel">
+      <div class="info-panel__title">账单信息</div>
+      <div class="info-panel__grid">
+        <div class="info-item">
+          <div class="info-item__label">合同编号</div>
+          <div class="info-item__value">{{ props.bill.contractNo || "-" }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-item__label">应付单号</div>
+          <div class="info-item__value">{{ props.bill.billNo || "-" }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-item__label">单据状态</div>
+          <div class="info-item__value">{{ billStatusText(props.bill.billStatus) }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-item__label">业主</div>
+          <div class="info-item__value">{{ props.bill.ownerName || "-" }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-item__label">合同房源</div>
+          <div class="info-item__value">{{ props.bill.subjectName || "-" }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-item__label">应付日期</div>
+          <div class="info-item__value">{{ props.bill.dueDate || "-" }}</div>
+        </div>
+      </div>
     </div>
 
     <el-row :gutter="16">
@@ -72,7 +111,7 @@
   import { nextTick, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
   import UploadImage from "@/components/upload/UploadImage.vue";
-  import type { PayableBillPaymentCreateDto } from "@/api/owner/owner";
+  import type { PayableBillListVo, PayableBillPaymentCreateDto } from "@/api/owner/owner";
   import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
 
   defineOptions({ name: "OwnerPayableBillPaymentDialog" });
@@ -80,6 +119,7 @@
   const props = defineProps<{
     billId: string | number;
     unpaidAmount: number;
+    bill: PayableBillListVo;
   }>();
 
   const formRef = ref<FormInstance>();
@@ -124,6 +164,10 @@
   };
 
   const moneyText = (value?: number) => Number(value || 0).toFixed(2);
+
+  function billStatusText(value?: number) {
+    return value === 2 ? "已作废" : "正常";
+  }
 
   function setAmount(type: "full" | "half" | "quarter") {
     activeQuick.value = type;
@@ -217,6 +261,48 @@
     color: var(--el-color-danger);
     font-size: 18px;
     font-weight: 600;
+  }
+
+  .info-panel {
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: var(--el-fill-color-lighter);
+    border: 1px solid var(--el-border-color-lighter);
+  }
+
+  .info-panel__title {
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .info-panel__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 16px;
+  }
+
+  .info-item {
+    min-width: 0;
+  }
+
+  .info-item__label {
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .info-item__value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+    word-break: break-all;
+  }
+
+  .info-item__value--danger {
+    color: var(--el-color-danger);
   }
 
   /* ===== 快捷填入 ===== */

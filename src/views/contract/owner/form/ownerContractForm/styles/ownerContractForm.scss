@@ -612,3 +612,80 @@
   text-align: center;
   color: var(--el-text-color-secondary);
 }
+
+:is(.dark) .sub-panel {
+  border-color: var(--el-border-color);
+  background: var(--el-fill-color-darker);
+}
+
+:is(.dark) .mode-guide {
+  border-color: var(--el-border-color);
+  background: var(--el-fill-color-dark);
+}
+
+:is(.dark) .subject-type-card,
+:is(.dark) .settlement-mode-card,
+:is(.dark) .config-card {
+  border-color: var(--el-border-color);
+  background: var(--el-bg-color-overlay);
+}
+
+:is(.dark) .subject-type-card:hover {
+  border-color: #fb923c;
+  box-shadow: 0 10px 24px rgb(249 115 22 / 0.14);
+}
+
+:is(.dark) .subject-type-card.is-active {
+  border-color: var(--el-color-primary);
+  background: rgb(249 115 22 / 0.14);
+  box-shadow: 0 10px 24px rgb(249 115 22 / 0.18);
+}
+
+:is(.dark) .settlement-mode-card:hover {
+  border-color: #60a5fa;
+  box-shadow: 0 8px 20px rgb(59 130 246 / 0.16);
+}
+
+:is(.dark) .settlement-mode-card.is-active {
+  border-color: var(--el-color-primary);
+  background: rgb(59 130 246 / 0.14);
+  box-shadow: 0 10px 24px rgb(59 130 246 / 0.18);
+}
+
+:is(.dark) .config-card__header {
+  background: var(--el-fill-color-dark);
+  border-bottom-color: var(--el-border-color);
+}
+
+:is(.dark) .config-card__empty,
+:is(.dark) .fee-inline-hint,
+:is(.dark) .choice-group__desc,
+:is(.dark) .empty-state {
+  color: var(--el-text-color-secondary);
+}
+
+:is(.dark) .rule-hint {
+  background: var(--el-fill-color-dark);
+  color: var(--el-text-color-regular);
+}
+
+:is(.dark) .selected-house-chip {
+  border-color: var(--el-border-color);
+  background: var(--el-fill-color-dark);
+}
+
+:is(.dark) .fee-table thead tr {
+  background: var(--el-fill-color-dark);
+}
+
+:is(.dark) .fee-table th {
+  border-bottom-color: var(--el-border-color);
+}
+
+:is(.dark) .fee-table td {
+  border-bottom-color: var(--el-border-color-light);
+}
+
+:is(.dark) .fee-table tbody tr:hover td {
+  background: var(--el-fill-color-dark);
+}

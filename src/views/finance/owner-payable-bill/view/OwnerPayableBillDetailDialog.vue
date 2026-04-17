@@ -212,7 +212,8 @@
         h(OwnerPayableBillPaymentDialog, {
           ref: paymentFormRef,
           billId: String(bill.value.billId),
-          unpaidAmount: Number(bill.value.unpaidAmount || 0)
+          unpaidAmount: Number(bill.value.unpaidAmount || 0),
+          bill: bill.value
         }),
       beforeSure: async done => {
         const payload = await paymentFormRef.value?.validateAndBuildPayload?.();
