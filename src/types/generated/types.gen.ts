@@ -3342,7 +3342,7 @@ export type OwnerSettlementBillDetailVo = {
     /**
      * 结算单明细
      */
-    lineList?: Array<OwnerSettlementBillLineVo>;
+    feeList?: Array<OwnerSettlementBillFeeVo>;
     /**
      * 减免明细
      */
@@ -3352,7 +3352,7 @@ export type OwnerSettlementBillDetailVo = {
 /**
  * 轻托管业主结算单明细VO
  */
-export type OwnerSettlementBillLineVo = {
+export type OwnerSettlementBillFeeVo = {
     /**
      * 明细ID
      */
@@ -3368,11 +3368,11 @@ export type OwnerSettlementBillLineVo = {
     /**
      * 项目类型
      */
-    itemType?: string;
+    feeType?: string;
     /**
      * 项目名称
      */
-    itemName?: string;
+    feeName?: string;
     /**
      * 方向
      */
@@ -3450,7 +3450,7 @@ export type ResponseResultOwnerSettlementBillDetailVo = {
 /**
  * 包租业主应付单明细DTO
  */
-export type OwnerPayableBillLineDto = {
+export type OwnerPayableBillFeeDto = {
     /**
      * 明细ID
      */
@@ -3466,11 +3466,11 @@ export type OwnerPayableBillLineDto = {
     /**
      * 项目类型
      */
-    itemType?: string;
+    feeType?: string;
     /**
      * 项目名称
      */
-    itemName?: string;
+    feeName?: string;
     /**
      * 方向
      */
@@ -3536,7 +3536,7 @@ export type OwnerPayableBillUpdateDto = {
     /**
      * 明细列表
      */
-    lineList?: Array<OwnerPayableBillLineDto>;
+    feeList?: Array<OwnerPayableBillFeeDto>;
     /**
      * 应付单ID
      */
@@ -3920,7 +3920,7 @@ export type OwnerPayableBillDetailVo = {
     /**
      * 明细列表
      */
-    lineList?: Array<OwnerPayableBillLineVo>;
+    feeList?: Array<OwnerPayableBillFeeVo>;
     /**
      * 付款记录
      */
@@ -3934,7 +3934,7 @@ export type OwnerPayableBillDetailVo = {
 /**
  * 包租业主应付单明细VO
  */
-export type OwnerPayableBillLineVo = {
+export type OwnerPayableBillFeeVo = {
     /**
      * 明细ID
      */
@@ -3950,11 +3950,11 @@ export type OwnerPayableBillLineVo = {
     /**
      * 项目类型
      */
-    itemType?: string;
+    feeType?: string;
     /**
      * 项目名称
      */
-    itemName?: string;
+    feeName?: string;
     /**
      * 方向
      */
@@ -4068,7 +4068,7 @@ export type OwnerPayableBillCreateDto = {
     /**
      * 明细列表
      */
-    lineList?: Array<OwnerPayableBillLineDto>;
+    feeList?: Array<OwnerPayableBillFeeDto>;
 };
 
 /**
@@ -4397,8 +4397,8 @@ export type LeaseCheckoutFeeDto = {
     feeType: number;
     feeSubName?: string;
     feeAmount: number;
-    feeStart?: string;
-    feeEnd?: string;
+    feeStartDate?: string;
+    feeEndDate?: string;
     remark?: string;
     billId?: string;
 };
@@ -4412,8 +4412,8 @@ export type LeaseCheckoutFeeVo = {
     feeTypeName?: string;
     feeSubName?: string;
     feeAmount?: number;
-    feeStart?: string;
-    feeEnd?: string;
+    feeStartDate?: string;
+    feeEndDate?: string;
     remark?: string;
     billId?: string;
 };
@@ -4527,8 +4527,8 @@ export type PresetFeeVo = {
     feeType?: number;
     feeSubName?: string;
     feeAmount?: number;
-    feeStart?: string;
-    feeEnd?: string;
+    feeStartDate?: string;
+    feeEndDate?: string;
     remark?: string;
     billId?: string;
 };
@@ -5608,11 +5608,11 @@ export type LeaseBillFeeFinanceItemVo = {
     /**
      * 费用周期开始
      */
-    feeStart?: string;
+    feeStartDate?: string;
     /**
      * 费用周期结束
      */
-    feeEnd?: string;
+    feeEndDate?: string;
     /**
      * 账单应收日期
      */
@@ -5895,7 +5895,7 @@ export type DeliveryItemDto = {
      * 项目编码
      */
     itemCode?: string;
-    itemName: string;
+    feeName: string;
     itemCategory: string;
     /**
      * 项目单位
@@ -5935,7 +5935,7 @@ export type DeliveryItemVo = {
     /**
      * 物品名称
      */
-    itemName?: string;
+    feeName?: string;
     /**
      * 项目分类
      */
@@ -7299,7 +7299,7 @@ export type OwnerSettlementItemDto = {
     /**
      * 费用科目名称
      */
-    itemName?: string;
+    feeName?: string;
     /**
      * 是否转给业主
      */
@@ -8489,11 +8489,11 @@ export type LeaseBillFeeVo = {
     /**
      * 费用周期开始日期
      */
-    feeStart?: string;
+    feeStartDate?: string;
     /**
      * 费用周期结束日期
      */
-    feeEnd?: string;
+    feeEndDate?: string;
     /**
      * 备注
      */
@@ -9089,11 +9089,11 @@ export type LeaseBillFeeDto = {
     /**
      * 费用周期开始日期
      */
-    feeStart?: string;
+    feeStartDate?: string;
     /**
      * 费用周期结束日期
      */
-    feeEnd?: string;
+    feeEndDate?: string;
     /**
      * 备注
      */

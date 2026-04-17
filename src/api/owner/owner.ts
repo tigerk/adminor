@@ -55,8 +55,9 @@ export interface SettlementBillSummaryVo {
 
 export interface SettlementBillLineVo {
   id?: number | string;
-  itemType?: string;
-  itemName?: string;
+  dictDataId?: number | string;
+  feeType?: string;
+  feeName?: string;
   direction?: string;
   amount?: number;
   bizDate?: string;
@@ -85,7 +86,7 @@ export interface SettlementBillDetailVo extends SettlementBillListVo {
   remark?: string;
   createAt?: string;
   updateAt?: string;
-  lineList?: SettlementBillLineVo[];
+  feeList?: SettlementBillLineVo[];
   reductionList?: SettlementBillReductionVo[];
 }
 
@@ -134,8 +135,9 @@ export interface PayableBillLineDto {
   id?: string | number;
   sourceType?: string;
   sourceId?: string | number;
-  itemType?: string;
-  itemName?: string;
+  dictDataId?: string | number;
+  feeType?: string;
+  feeName?: string;
   direction?: string;
   amount?: number;
   bizDate?: string;
@@ -160,7 +162,7 @@ export interface PayableBillCreateDto {
   billEndDate?: string;
   dueDate?: string;
   remark?: string;
-  lineList?: PayableBillLineDto[];
+  feeList?: PayableBillLineDto[];
 }
 
 export interface PayableBillUpdateDto extends PayableBillCreateDto {
@@ -200,7 +202,7 @@ export interface PayableBillDetailVo extends PayableBillListVo {
   remark?: string;
   createAt?: string;
   updateAt?: string;
-  lineList?: PayableBillLineDto[];
+  feeList?: PayableBillLineDto[];
   paymentList?: PayableBillPaymentVo[];
   operateLogList?: BizOperateLogVo[];
 }

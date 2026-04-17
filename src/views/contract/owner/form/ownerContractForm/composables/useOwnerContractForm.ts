@@ -33,7 +33,7 @@ export type SubjectSelectionRow = {
 export const createSettlementItem = (): OwnerSettlementItemForm => ({
   feeDirection: "IN",
   feeType: "",
-  itemName: "",
+  feeName: "",
   transferEnabled: true,
   transferRatio: 100,
   sortOrder: 0,
@@ -431,7 +431,7 @@ export function useOwnerContractForm() {
     const child = parent?.children?.find((item: any) => item.value === value[1]);
     if (!child) return;
     target.feeType = String(child.value);
-    target.itemName = child.label;
+    target.feeName = child.label;
     target.transferEnabled = true;
   }
 
@@ -527,7 +527,7 @@ export function useOwnerContractForm() {
                 settlementItemList: ((sharedSettlementRule?.settlementItemList || []) as OwnerSettlementItemForm[]).map(si => ({
                   feeDirection: si.feeDirection,
                   feeType: si.feeType,
-                  itemName: si.itemName,
+                  feeName: si.feeName,
                   transferEnabled: si.transferEnabled,
                   transferRatio: si.transferRatio,
                   sortOrder: si.sortOrder,

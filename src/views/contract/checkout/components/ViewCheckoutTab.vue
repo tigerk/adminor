@@ -72,9 +72,9 @@
               <span class="fee-amount">{{ row.feeAmount == null ? "-" : `¥${row.feeAmount}` }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="feeStart" label="计费周期" align="center" min-width="180">
+          <el-table-column prop="feeStartDate" label="计费周期" align="center" min-width="180">
             <template #default="{ row }">
-              <span class="text-value">{{ row.feeStart || "-" }} ~ {{ row.feeEnd || "-" }}</span>
+              <span class="text-value">{{ row.feeStartDate || "-" }} ~ {{ row.feeEndDate || "-" }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="remark" label="备注" align="center" min-width="160" show-overflow-tooltip />

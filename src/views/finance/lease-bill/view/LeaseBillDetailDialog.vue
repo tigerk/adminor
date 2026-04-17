@@ -238,7 +238,7 @@
                 <div class="fee-col fee-col--num fee-col--positive">+ {{ row.amount }}元</div>
                 <div class="fee-col fee-col--num">{{ moneyText(row.paidAmount) }}元</div>
                 <div class="fee-col fee-col--num fee-col--positive">+ {{ moneyText(row.unpaidAmount) }}元</div>
-                <div class="fee-col fee-col--period">{{ formatDate(row.feeStart) }} ~ {{ formatDate(row.feeEnd) }}</div>
+                <div class="fee-col fee-col--period">{{ formatDate(row.feeStartDate) }} ~ {{ formatDate(row.feeEndDate) }}</div>
                 <div class="fee-col fee-col--remark">
                   <el-tooltip v-if="row.remark" :content="row.remark" placement="top" :show-after="200" popper-class="remark-tooltip">
                     <span class="remark-text">{{ row.remark }}</span>

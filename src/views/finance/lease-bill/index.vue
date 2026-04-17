@@ -177,7 +177,7 @@
     {
       label: "费用周期",
       minWidth: 190,
-      formatter: ({ feeStart, feeEnd }) => `${formatDate(feeStart)} ~ ${formatDate(feeEnd)}`
+      formatter: ({ feeStartDate, feeEndDate }) => `${formatDate(feeStartDate)} ~ ${formatDate(feeEndDate)}`
     },
     {
       label: "应收",

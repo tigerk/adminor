@@ -174,9 +174,9 @@
               </td>
               <td>
                 <div class="period-picker">
-                  <el-date-picker v-model="fee.feeStart" type="date" value-format="YYYY-MM-DD" format="YYYY-MM-DD" placeholder="开始日期" style="width: 130px" />
+                  <el-date-picker v-model="fee.feeStartDate" type="date" value-format="YYYY-MM-DD" format="YYYY-MM-DD" placeholder="开始日期" style="width: 130px" />
                   <span class="period-sep">至</span>
-                  <el-date-picker v-model="fee.feeEnd" type="date" value-format="YYYY-MM-DD" format="YYYY-MM-DD" placeholder="结束日期" style="width: 130px" />
+                  <el-date-picker v-model="fee.feeEndDate" type="date" value-format="YYYY-MM-DD" format="YYYY-MM-DD" placeholder="结束日期" style="width: 130px" />
                 </div>
               </td>
               <td>
@@ -348,8 +348,8 @@
     paidAmount: fee?.paidAmount,
     unpaidAmount: fee?.unpaidAmount,
     payStatus: fee?.payStatus,
-    feeStart: fee?.feeStart || form.billStart,
-    feeEnd: fee?.feeEnd || form.billEnd,
+    feeStartDate: fee?.feeStartDate || form.billStart,
+    feeEndDate: fee?.feeEndDate || form.billEnd,
     remark: fee?.remark || "",
     feeTypeCascade: undefined
   });
@@ -366,8 +366,8 @@
         paidAmount: item.paidAmount,
         unpaidAmount: item.unpaidAmount,
         payStatus: item.payStatus,
-        feeStart: item.feeStart,
-        feeEnd: item.feeEnd,
+        feeStartDate: item.feeStartDate,
+        feeEndDate: item.feeEndDate,
         remark: item.remark
       })
     );
@@ -400,8 +400,8 @@
 
   const syncPeriodToFees = () => {
     feeList.value.forEach(fee => {
-      if (!fee.feeStart) fee.feeStart = form.billStart;
-      if (!fee.feeEnd) fee.feeEnd = form.billEnd;
+      if (!fee.feeStartDate) fee.feeStartDate = form.billStart;
+      if (!fee.feeEndDate) fee.feeEndDate = form.billEnd;
     });
   };
 
@@ -485,7 +485,7 @@
         ElMessage.warning("费用金额必须大于0");
         return false;
       }
-      if (!fee.feeStart || !fee.feeEnd) {
+      if (!fee.feeStartDate || !fee.feeEndDate) {
         ElMessage.warning("请完善费用周期");
         return false;
       }

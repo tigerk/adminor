@@ -55,7 +55,7 @@
                     </template>
                   </el-table-column>
                   <el-table-column label="费用周期" align="center" min-width="200">
-                    <template #default="{ row: fee }">{{ fee.feeStart?.substring(0, 10) }} ~ {{ fee.feeEnd?.substring(0, 10) }}</template>
+                    <template #default="{ row: fee }">{{ fee.feeStartDate?.substring(0, 10) }} ~ {{ fee.feeEndDate?.substring(0, 10) }}</template>
                   </el-table-column>
                   <el-table-column prop="remark" label="说明" align="center" min-width="200" show-overflow-tooltip />
                 </el-table>
@@ -207,7 +207,7 @@
                     </template>
                   </el-table-column>
                   <el-table-column label="费用周期" align="center" min-width="200">
-                    <template #default="{ row: fee }">{{ fee.feeStart?.substring(0, 10) }} ~ {{ fee.feeEnd?.substring(0, 10) }}</template>
+                    <template #default="{ row: fee }">{{ fee.feeStartDate?.substring(0, 10) }} ~ {{ fee.feeEndDate?.substring(0, 10) }}</template>
                   </el-table-column>
                   <el-table-column prop="remark" label="说明" align="center" min-width="200" show-overflow-tooltip />
                 </el-table>

@@ -68,7 +68,7 @@ export type OwnerSettlementItemForm = {
   id?: string | number;
   feeDirection?: "IN" | "OUT";
   feeType?: string;
-  itemName?: string;
+  feeName?: string;
   transferEnabled?: boolean;
   transferRatio?: number;
   sortOrder?: number;

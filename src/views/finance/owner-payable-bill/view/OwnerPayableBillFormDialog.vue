@@ -29,17 +29,22 @@
       <el-col :span="24">
         <div class="line-header">
           <span>费用明细</span>
-          <el-button link type="primary" @click="addLine">新增明细</el-button>
+          <el-button link type="primary" @click="addFee">新增费用</el-button>
         </div>
-        <div v-for="(item, index) in form.lineList" :key="index" class="line-row">
+        <div v-for="(item, index) in form.feeList" :key="item.uid" class="line-row">
           <el-row :gutter="12">
-            <el-col :span="5">
-              <el-input v-model="item.itemName" placeholder="项目名称" />
+            <el-col :span="7">
+              <el-cascader
+                v-model="item.feeTypeCascade"
+                :options="feeTypeCascadeOptions"
+                :props="{ expandTrigger: 'hover', emitPath: true }"
+                clearable
+                class="w-full"
+                placeholder="请选择费用类型"
+                @change="value => handleFeeTypeCascadeChange(value as string[] | undefined, item)"
+              />
             </el-col>
             <el-col :span="4">
-              <el-input v-model="item.itemType" placeholder="项目类型" />
-            </el-col>
-            <el-col :span="3">
               <el-select v-model="item.direction" class="w-full">
                 <el-option label="收" value="IN" />
                 <el-option label="支" value="OUT" />
@@ -51,13 +56,18 @@
             <el-col :span="4">
               <el-date-picker v-model="item.bizDate" type="date" value-format="YYYY-MM-DD" class="w-full" />
             </el-col>
-            <el-col :span="3">
+            <el-col :span="4">
               <el-input v-model="item.remark" placeholder="备注" />
             </el-col>
             <el-col :span="1">
-              <el-button link type="danger" @click="removeLine(index)">删</el-button>
+              <el-button link type="danger" @click="removeFee(index)">删</el-button>
             </el-col>
           </el-row>
+          <div class="line-meta">
+            <span>费用快照：{{ item.feeName || "-" }}</span>
+            <span>业务分类：{{ item.feeType || "-" }}</span>
+            <span>字典项ID：{{ item.dictDataId || "-" }}</span>
+          </div>
         </div>
       </el-col>
       <el-col :span="24">
@@ -70,14 +80,23 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive, ref } from "vue";
+  import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
-  import type { PayableBillCreateDto, PayableBillListVo, PayableBillUpdateDto } from "@/api/owner/owner";
+  import { getDictDataByParentCode } from "@/api/sys/dict";
+  import { getOwnerPayableBillDetail, type PayableBillCreateDto, type PayableBillDetailVo, type PayableBillLineDto, type PayableBillListVo, type PayableBillUpdateDto } from "@/api/owner/owner";
+  import { message } from "@/utils/message";
 
   defineOptions({ name: "OwnerPayableBillFormDialog" });
 
+  type EditableFeeItem = PayableBillLineDto & {
+    uid: string;
+    feeTypeCascade?: Array<string | number>;
+  };
+
   const props = defineProps<{ bill?: PayableBillListVo }>();
   const formRef = ref<FormInstance>();
+  const loading = ref(false);
+  const feeTypeDictList = ref<any[]>([]);
 
   const form = reactive<PayableBillUpdateDto>({
     billId: props.bill?.billId,
@@ -87,7 +106,7 @@
     billEndDate: props.bill?.billEndDate || "",
     dueDate: props.bill?.dueDate || "",
     remark: "",
-    lineList: [{ itemName: "", itemType: "", direction: "IN", amount: 0, bizDate: "", remark: "" }]
+    feeList: []
   });
 
   const rules: FormRules = {
@@ -98,17 +117,139 @@
     dueDate: [{ required: true, message: "请选择应付日期", trigger: "change" }]
   };
 
-  function addLine() {
-    form.lineList = [...(form.lineList || []), { itemName: "", itemType: "", direction: "IN", amount: 0, bizDate: "", remark: "" }];
-  }
+  const feeList = ref<EditableFeeItem[]>([]);
 
-  function removeLine(index: number) {
-    form.lineList?.splice(index, 1);
-  }
+  const feeTypeCascadeOptions = computed(() =>
+    feeTypeDictList.value.map(group => ({
+      label: group.name,
+      value: group.dictCode,
+      children: (group.dictDataList || []).map(item => ({
+        label: item.feeName || item.name,
+        value: item.id
+      }))
+    }))
+  );
+
+  const toEditableFee = (fee?: PayableBillLineDto): EditableFeeItem => ({
+    uid: `${Date.now()}-${Math.random()}`,
+    id: fee?.id,
+    sourceType: fee?.sourceType,
+    sourceId: fee?.sourceId,
+    dictDataId: fee?.dictDataId,
+    feeType: fee?.feeType,
+    feeName: fee?.feeName,
+    direction: fee?.direction || "OUT",
+    amount: fee?.amount || 0,
+    bizDate: fee?.bizDate || "",
+    formulaSnapshot: fee?.formulaSnapshot,
+    remark: fee?.remark || "",
+    feeTypeCascade: undefined
+  });
+
+  const resetForm = () => {
+    form.billId = props.bill?.billId;
+    form.ownerId = props.bill?.ownerId;
+    form.contractId = props.bill?.contractId;
+    form.billStartDate = props.bill?.billStartDate || "";
+    form.billEndDate = props.bill?.billEndDate || "";
+    form.dueDate = props.bill?.dueDate || "";
+    form.remark = "";
+    feeList.value = [toEditableFee()];
+  };
+
+  const resolveFeeCascadeValue = (fee: EditableFeeItem) => {
+    if (!fee.dictDataId) return undefined;
+    const group = feeTypeDictList.value.find(item =>
+      (item.dictDataList || []).some(dictItem => String(dictItem.id) === String(fee.dictDataId))
+    );
+    return group ? [group.dictCode, fee.dictDataId] : undefined;
+  };
+
+  const syncFeeCascade = () => {
+    feeList.value.forEach(fee => {
+      fee.feeTypeCascade = resolveFeeCascadeValue(fee);
+    });
+  };
+
+  const loadFeeTypeDict = async () => {
+    const res = await getDictDataByParentCode({ dictCode: "fee_type" });
+    if (res?.code === 0 && Array.isArray(res.data)) {
+      feeTypeDictList.value = res.data;
+      syncFeeCascade();
+    }
+  };
+
+  const loadDetail = async () => {
+    if (!props.bill?.billId) {
+      resetForm();
+      return;
+    }
+    loading.value = true;
+    try {
+      const res = await getOwnerPayableBillDetail({ billId: props.bill.billId });
+      if (res.code !== 0 || !res.data) {
+        message(res.message || "获取应付单详情失败", { type: "error" });
+        resetForm();
+        return;
+      }
+      const detail: PayableBillDetailVo = res.data;
+      form.billId = detail.billId;
+      form.ownerId = detail.ownerId;
+      form.contractId = detail.contractId;
+      form.billStartDate = detail.billStartDate || "";
+      form.billEndDate = detail.billEndDate || "";
+      form.dueDate = detail.dueDate || "";
+      form.remark = detail.remark || "";
+      feeList.value = (detail.feeList || []).map(item => toEditableFee(item));
+      if (!feeList.value.length) feeList.value = [toEditableFee()];
+      nextTick(syncFeeCascade);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const addFee = () => {
+    feeList.value.push(toEditableFee());
+  };
+
+  const removeFee = (index: number) => {
+    feeList.value.splice(index, 1);
+  };
+
+  const handleFeeTypeCascadeChange = (value: Array<string | number> | undefined, fee: EditableFeeItem) => {
+    if (!value?.length) {
+      fee.feeType = undefined;
+      fee.dictDataId = undefined;
+      fee.feeName = "";
+      return;
+    }
+    const [dictCode, dictDataId] = value;
+    fee.dictDataId = dictDataId;
+
+    const group = feeTypeDictList.value.find(item => item.dictCode === dictCode);
+    const dictItem = group?.dictDataList?.find(item => String(item.id) === String(dictDataId));
+    fee.feeType = "OTHER_FEE";
+    fee.feeName = dictItem?.feeName || dictItem?.name || "";
+  };
+
+  watch(
+    () => props.bill?.billId,
+    () => {
+      loadDetail();
+    },
+    { immediate: true }
+  );
+
+  onMounted(loadFeeTypeDict);
 
   async function validateAndBuildPayload() {
     await formRef.value?.validate();
-    if (!form.lineList?.length) throw new Error("请至少添加一条费用明细");
+    if (!feeList.value.length) throw new Error("请至少添加一条费用明细");
+    const invalidFee = feeList.value.find(item => !item.feeType || !item.feeName || item.amount == null);
+    if (invalidFee) {
+      throw new Error("请完整填写费用类型、金额等信息");
+    }
+    form.feeList = feeList.value.map(({ uid, feeTypeCascade, ...item }) => item);
     return { ...form } as PayableBillCreateDto | PayableBillUpdateDto;
   }
 
@@ -129,5 +270,13 @@
     padding: 12px;
     border: 1px solid var(--el-border-color-light);
     border-radius: 10px;
+  }
+
+  .line-meta {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    color: var(--el-text-color-secondary);
+    font-size: 12px;
   }
 </style>

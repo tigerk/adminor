@@ -150,9 +150,9 @@
               <span class="fee-tag">{{ feeTypeText(item.feeType) }}</span>
             </div>
             <div class="fc fc-cycle">
-              <span class="cycle-date">{{ formatDate(item.feeStart) }}</span>
+              <span class="cycle-date">{{ formatDate(item.feeStartDate) }}</span>
               <span class="cycle-sep">～</span>
-              <span class="cycle-date">{{ formatDate(item.feeEnd) }}</span>
+              <span class="cycle-date">{{ formatDate(item.feeEndDate) }}</span>
             </div>
             <div class="fc fc-amt text-right">
               <span class="n-default">¥{{ moneyText(item.amount) }}</span>

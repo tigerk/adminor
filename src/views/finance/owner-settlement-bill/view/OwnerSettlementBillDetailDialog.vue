@@ -63,11 +63,11 @@
       <div class="section-block">
         <div class="section-block__header">
           <span class="section-block__title">结算明细</span>
-          <span class="section-block__count">共 {{ bill.lineList?.length || 0 }} 项</span>
+          <span class="section-block__count">共 {{ bill.feeList?.length || 0 }} 项</span>
         </div>
-        <el-table :data="bill.lineList || []" border>
-          <el-table-column prop="itemName" label="项目" min-width="160" />
-          <el-table-column prop="itemType" label="类型" min-width="130" />
+        <el-table :data="bill.feeList || []" border>
+          <el-table-column prop="feeName" label="项目" min-width="160" />
+          <el-table-column prop="feeType" label="类型" min-width="130" />
           <el-table-column prop="direction" label="方向" min-width="90" align="center">
             <template #default="{ row }">
               <el-tag size="small" :type="row.direction === 'OUT' ? 'danger' : 'success'">

@@ -145,8 +145,8 @@ export function useCheckout() {
         feeSubName: f.feeSubName,
         feeAmount: f.feeAmount ?? null,
         feeDirection: f.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
-        feeStart: f.feeStart,
-        feeEnd: f.feeEnd,
+        feeStartDate: f.feeStartDate,
+        feeEndDate: f.feeEndDate,
         billId: f.billId,
         remark: f.remark,
         feeTypeCascade: null
@@ -208,8 +208,8 @@ export function useCheckout() {
         feeSubName: f.feeSubName,
         feeAmount: f.feeAmount ?? 0,
         feeDirection: f.feeDirection,
-        feeStart: f.feeStart,
-        feeEnd: f.feeEnd,
+        feeStartDate: f.feeStartDate,
+        feeEndDate: f.feeEndDate,
         billId: f.billId,
         remark: f.remark
       }))
