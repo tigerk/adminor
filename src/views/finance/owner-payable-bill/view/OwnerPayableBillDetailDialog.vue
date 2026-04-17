@@ -67,7 +67,11 @@
         </div>
         <el-table :data="bill.feeList || []" border>
           <el-table-column prop="feeName" label="项目" min-width="160" />
-          <el-table-column prop="feeType" label="类型" min-width="130" />
+          <el-table-column prop="feeType" label="类型" min-width="130">
+            <template #default="{ row }">
+              {{ feeTypeLabelMap[row.feeType] || "-" }}
+            </template>
+          </el-table-column>
           <el-table-column prop="direction" label="方向" min-width="90" align="center">
             <template #default="{ row }">
               <el-tag size="small" :type="row.direction === 'OUT' ? 'danger' : 'success'">
@@ -141,7 +145,7 @@
   import { createOwnerPayableBillPayment, getOwnerPayableBillDetail, type PayableBillDetailVo, type PayableBillPaymentCreateDto } from "@/api/owner/owner";
   import OwnerPayableBillPaymentDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillPaymentDialog.vue";
   import { message } from "@/utils/message";
-  import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
+  import { OwnerBillingItemTypeEnumMeta, PaymentFlowChannelEnumMeta } from "@/types";
 
   defineOptions({ name: "OwnerPayableBillDetailDialog" });
 
@@ -150,6 +154,13 @@
   const paymentFormRef = ref();
   const bill = ref<PayableBillDetailVo>({});
 
+  // 账单类型map
+  const feeTypeLabelMap = Object.values(OwnerBillingItemTypeEnumMeta).reduce<Record<string, string>>((acc, item) => {
+    acc[item.value] = item.name || item.value;
+    return acc;
+  }, {});
+
+  // 支付渠道类型map
   const payChannelLabelMap = Object.values(PaymentFlowChannelEnumMeta).reduce<Record<string, string>>((acc, item) => {
     acc[item.value] = item.label || item.value;
     return acc;
@@ -222,23 +233,107 @@
 </script>
 
 <style scoped lang="scss">
-  .owner-payable-bill-detail { display: flex; flex-direction: column; gap: 16px; }
-  .detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-  .detail-header__main { display: flex; flex-direction: column; gap: 8px; }
-  .detail-header__title { display: flex; align-items: center; gap: 10px; color: var(--el-text-color-primary); font-size: 20px; font-weight: 600; }
-  .detail-header__meta { display: flex; flex-wrap: wrap; gap: 12px 20px; color: var(--el-text-color-secondary); font-size: 13px; }
-  .detail-header__actions { display: flex; align-items: center; gap: 12px; }
-  .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-  .summary-card { display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px solid var(--el-border-color-light); border-radius: 14px; background: var(--el-fill-color-blank); }
-  .summary-card__label { color: var(--el-text-color-secondary); font-size: 13px; }
-  .summary-card__value { color: var(--el-text-color-primary); font-size: 22px; font-weight: 600; line-height: 1.2; }
-  .summary-card__value--success { color: var(--el-color-success); }
-  .summary-card__value--warning { color: var(--el-color-warning); }
-  .detail-descriptions, .section-block { margin-top: 0; }
-  .section-block { border: 1px solid var(--el-border-color-light); border-radius: 14px; padding: 16px; background: var(--el-fill-color-blank); }
-  .section-block__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .section-block__title { color: var(--el-text-color-primary); font-size: 16px; font-weight: 600; }
-  .section-block__count { color: var(--el-text-color-secondary); font-size: 13px; }
-  .voucher-list { display: flex; flex-wrap: wrap; gap: 8px; }
-  .voucher-list__item { width: 44px; height: 44px; border-radius: 8px; overflow: hidden; border: 1px solid var(--el-border-color-light); }
+  .owner-payable-bill-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .detail-header__main {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .detail-header__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--el-text-color-primary);
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .detail-header__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+  }
+  .detail-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 14px;
+    background: var(--el-fill-color-blank);
+  }
+  .summary-card__label {
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+  }
+  .summary-card__value {
+    color: var(--el-text-color-primary);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .summary-card__value--success {
+    color: var(--el-color-success);
+  }
+  .summary-card__value--warning {
+    color: var(--el-color-warning);
+  }
+  .detail-descriptions,
+  .section-block {
+    margin-top: 0;
+  }
+  .section-block {
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 14px;
+    padding: 16px;
+    background: var(--el-fill-color-blank);
+  }
+  .section-block__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .section-block__title {
+    color: var(--el-text-color-primary);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .section-block__count {
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+  }
+  .voucher-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .voucher-list__item {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--el-border-color-light);
+  }
 </style>
