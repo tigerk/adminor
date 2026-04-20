@@ -65,8 +65,8 @@
     const map: Record<PageType, { eyebrow: string; title: string; desc: string }> = {
       login: {
         eyebrow: "Enterprise Platform",
-        title: "租住业务\n智能工作台",
-        desc: "覆盖房源管理、合同签署、财务核算与审批流程，为企业管理员提供一站式租住业务协同平台。"
+        title: "租房Saas\n智能工作台",
+        desc: "覆盖房源管理、合同签署、财务核算与审批流程，为企业管理员提供一站式租房Saas协同平台。"
       },
       register: {
         eyebrow: "Create Workspace",
