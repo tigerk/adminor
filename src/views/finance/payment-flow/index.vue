@@ -179,7 +179,11 @@
       top: "6%",
       hideFooter: true,
       alignCenter: true,
-      contentRenderer: () => h(PaymentFlowDetailDialog, { flowId })
+      contentRenderer: () =>
+        h(PaymentFlowDetailDialog, {
+          flowId,
+          onVoided: () => fetchPage()
+        })
     });
   }
 

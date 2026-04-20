@@ -222,6 +222,9 @@
   } from "@/types/generated/enum.meta";
 
   const props = defineProps<{ flowId: string }>();
+  const emit = defineEmits<{
+    voided: [];
+  }>();
   const loading = ref(false);
   const detail = ref<PaymentFlowFinanceItemVo & { financeFlowList?: FinanceFlowVo[] }>({});
   const canVoidFlow = ref(false);
@@ -293,6 +296,7 @@
       if (resp.code === 0 && resp.data !== false) {
         message("支付流水作废成功", { type: "success" });
         await fetchDetail();
+        emit("voided");
         return;
       }
       message(resp.message || "支付流水作废失败", { type: "warning" });
