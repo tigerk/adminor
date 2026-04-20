@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import { computed, reactive, ref } from "vue";
+  import { computed, onMounted, reactive, ref } from "vue";
   import { useI18n } from "vue-i18n";
-  import { useRouter } from "vue-router";
+  import { useRoute, useRouter } from "vue-router";
   import { debounce } from "@pureadmin/utils";
   import { useEventListener } from "@vueuse/core";
   import type { FormInstance } from "element-plus";
@@ -34,6 +34,7 @@
   type LoginMode = "account" | "phone" | "qrcode";
 
   const router = useRouter();
+  const route = useRoute();
   const loading = ref(false);
   const showPassword = ref(false);
   const disabled = ref(false);
@@ -134,6 +135,12 @@
   useEventListener(document, "keydown", ({ code }) => {
     if (["Enter", "NumpadEnter"].includes(code) && !disabled.value && !loading.value && currentPage.value === "login" && currentLoginMode.value === "account") {
       immediateDebounce(ruleFormRef.value);
+    }
+  });
+
+  onMounted(() => {
+    if (route.query.openTrial === "true") {
+      openTrialApplicationDialog();
     }
   });
 </script>
