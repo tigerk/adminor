@@ -461,7 +461,8 @@ export const PaymentFlowStatusEnumMeta = {
   FAILED: {"value":"FAILED","code":3,"label":"支付失败"},
   CLOSED: {"value":"CLOSED","code":4,"label":"已关闭"},
   REFUNDING: {"value":"REFUNDING","code":5,"label":"退款中"},
-  REFUNDED: {"value":"REFUNDED","code":6,"label":"已退款"}
+  REFUNDED: {"value":"REFUNDED","code":6,"label":"已退款"},
+  VOIDED: {"value":"VOIDED","code":7,"label":"已作废"}
 } as const;
 
 export const DecorationTypeEnumMeta = {

@@ -7,6 +7,7 @@
         <div class="pfd-hero__no">{{ detail.paymentNo || "—" }}</div>
       </div>
       <div class="pfd-hero__right">
+        <el-button v-if="canVoidFlow" type="danger" round plain @click="handleVoidFlow">作废支付流水</el-button>
         <div class="status-badge" :class="`status-badge--${statusBadgeType(detail.status)}`">
           <span class="status-badge__dot" />
           {{ statusText(detail.status) }}
@@ -204,8 +205,10 @@
 <script setup lang="ts">
   import { onMounted, ref } from "vue";
   import dayjs from "dayjs";
+  import { ElMessageBox } from "element-plus";
   import type { FinanceFlowVo, PaymentFlowFinanceItemVo } from "@/types";
-  import { getFinancePaymentFlowDetail } from "@/api/finance/paymentFlow";
+  import { getFinancePaymentFlowDetail, voidFinancePaymentFlow } from "@/api/finance/paymentFlow";
+  import { message } from "@/utils/message";
   import {
     BizApprovalStatusEnumMeta,
     FinanceBizTypeEnumMeta,
@@ -219,6 +222,7 @@
   const props = defineProps<{ flowId: string }>();
   const loading = ref(false);
   const detail = ref<PaymentFlowFinanceItemVo & { financeFlowList?: FinanceFlowVo[] }>({});
+  const canVoidFlow = ref(false);
 
   async function fetchDetail() {
     if (!props.flowId) return;
@@ -226,6 +230,7 @@
     try {
       const { data } = await getFinancePaymentFlowDetail({ id: props.flowId });
       detail.value = data || {};
+      canVoidFlow.value = detail.value.status === PaymentFlowStatusEnumMeta.SUCCESS.code;
     } finally {
       loading.value = false;
     }
@@ -252,16 +257,44 @@
       [PaymentFlowStatusEnumMeta.FAILED.code]: "支付失败",
       [PaymentFlowStatusEnumMeta.CLOSED.code]: "已关闭",
       [PaymentFlowStatusEnumMeta.REFUNDING.code]: "退款中",
-      [PaymentFlowStatusEnumMeta.REFUNDED.code]: "已退款"
+      [PaymentFlowStatusEnumMeta.REFUNDED.code]: "已退款",
+      [PaymentFlowStatusEnumMeta.VOIDED.code]: "已作废"
     };
     return status !== undefined ? (map[status] ?? "—") : "—";
   }
 
   function statusBadgeType(status?: number): "warning" | "success" | "info" | "danger" {
     if (status === PaymentFlowStatusEnumMeta.SUCCESS.code) return "success";
+    if (status === PaymentFlowStatusEnumMeta.VOIDED.code || status === PaymentFlowStatusEnumMeta.REFUNDED.code) return "danger";
     if (status === PaymentFlowStatusEnumMeta.CLOSED.code || status === PaymentFlowStatusEnumMeta.FAILED.code) return "info";
-    if (status === PaymentFlowStatusEnumMeta.REFUNDED.code) return "danger";
     return "warning";
+  }
+
+  async function handleVoidFlow() {
+    if (!canVoidFlow.value || !detail.value.id) {
+      message("仅支付成功流水允许作废", { type: "warning" });
+      return;
+    }
+    try {
+      const { value } = await ElMessageBox.prompt("作废后将同步作废关联财务流水，并重新计算租客账单已付/待付金额。", "作废支付流水", {
+        confirmButtonText: "确认作废",
+        cancelButtonText: "取消",
+        inputType: "textarea",
+        inputPlaceholder: "请输入作废原因",
+        inputPattern: /\S+/,
+        inputErrorMessage: "请输入作废原因"
+      });
+      const resp = await voidFinancePaymentFlow({
+        id: String(detail.value.id),
+        voidReason: value
+      });
+      if (resp.code === 0 && resp.data !== false) {
+        message("支付流水作废成功", { type: "success" });
+        await fetchDetail();
+        return;
+      }
+      message(resp.message || "支付流水作废失败", { type: "warning" });
+    } catch {}
   }
 
   function approvalStatusText(status?: number) {

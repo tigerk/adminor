@@ -5,7 +5,9 @@ import type {
   PaymentFlowIdDto,
   ResponseResultPageVoPaymentFlowFinanceItemVo,
   ResponseResultPaymentFlowFinanceItemVo,
-  ResponseResultPaymentFlowFinanceSummaryVo
+  ResponseResultPaymentFlowFinanceSummaryVo,
+  ApiResponse,
+  PaymentFlowVoidDto
 } from "@/types";
 
 export const getFinancePaymentFlowPage = (data?: PaymentFlowFinanceQueryDto) => {
@@ -18,4 +20,8 @@ export const getFinancePaymentFlowSummary = (data?: PaymentFlowFinanceQueryDto) 
 
 export const getFinancePaymentFlowDetail = (data: PaymentFlowIdDto) => {
   return http.request<ResponseResultPaymentFlowFinanceItemVo>("post", baseUrlApi(`finance/payment-flow/detail`), { data });
+};
+
+export const voidFinancePaymentFlow = (data: PaymentFlowVoidDto) => {
+  return http.request<ApiResponse>("post", baseUrlApi("finance/payment-flow/void"), { data });
 };

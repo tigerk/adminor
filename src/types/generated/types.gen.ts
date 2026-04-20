@@ -5052,6 +5052,24 @@ export type FocusHouseDto = {
 };
 
 /**
+ * 支付流水作废DTO
+ */
+export type PaymentFlowVoidDto = {
+    /**
+     * 支付流水ID
+     */
+    id?: string;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
+    /**
+     * 操作人ID
+     */
+    updateBy?: string;
+};
+
+/**
  * 租客支付流水查询DTO
  */
 export type PaymentFlowFinanceQueryDto = {
@@ -10573,7 +10591,7 @@ export type PaymentFlowChannelEnum = 'CASH' | 'TRANSFER' | 'ALIPAY' | 'WECHAT' |
 
 export type PaymentFlowDirectionEnum = 'IN' | 'OUT';
 
-export type PaymentFlowStatusEnum = 'PENDING' | 'PENDING_APPROVAL' | 'SUCCESS' | 'FAILED' | 'CLOSED' | 'REFUNDING' | 'REFUNDED';
+export type PaymentFlowStatusEnum = 'PENDING' | 'PENDING_APPROVAL' | 'SUCCESS' | 'FAILED' | 'CLOSED' | 'REFUNDING' | 'REFUNDED' | 'VOIDED';
 
 export type DecorationTypeEnum = 'LUXURY' | 'SIMPLE' | 'DETAILED' | 'RAW' | 'WATER' | 'SIMPLEST' | 'UNDECORATED';
 
@@ -12455,6 +12473,24 @@ export type CreateHouse1Responses = {
 };
 
 export type CreateHouse1Response = CreateHouse1Responses[keyof CreateHouse1Responses];
+
+export type VoidPaymentFlowData = {
+    body: PaymentFlowVoidDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/finance/payment-flow/void';
+};
+
+export type VoidPaymentFlowResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type VoidPaymentFlowResponse = VoidPaymentFlowResponses[keyof VoidPaymentFlowResponses];
 
 export type Summary2Data = {
     body: PaymentFlowFinanceQueryDto;
