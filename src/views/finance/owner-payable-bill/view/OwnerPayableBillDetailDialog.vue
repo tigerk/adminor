@@ -42,7 +42,6 @@
       </div>
 
       <el-descriptions :column="3" border class="detail-descriptions">
-        <el-descriptions-item label="应付单号">{{ bill.billNo || "-" }}</el-descriptions-item>
         <el-descriptions-item label="单据状态">
           <el-tag :type="Number(bill.billStatus || 1) === 2 ? 'danger' : 'success'">{{ Number(bill.billStatus || 1) === 2 ? "已作废" : "正常" }}</el-tag>
         </el-descriptions-item>
@@ -51,6 +50,8 @@
         <el-descriptions-item label="合同编号">{{ bill.contractNo || "-" }}</el-descriptions-item>
         <el-descriptions-item label="合同房源">{{ bill.subjectName || "-" }}</el-descriptions-item>
         <el-descriptions-item label="应付日期">{{ bill.dueDate || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="开始日期">{{ bill.billStartDate || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="结束日期">{{ bill.billEndDate || "-" }}</el-descriptions-item>
         <el-descriptions-item label="生成时间">{{ bill.generatedAt || "-" }}</el-descriptions-item>
         <el-descriptions-item label="付款状态">
           <el-tag :type="paymentStatusTagType(bill.paymentStatus)">{{ paymentStatusText(bill.paymentStatus) }}</el-tag>
@@ -84,7 +85,6 @@
           <el-table-column label="金额" min-width="120" align="right">
             <template #default="{ row }">¥{{ moneyText(row.amount) }}</template>
           </el-table-column>
-          <el-table-column prop="bizDate" label="业务日期" min-width="120" />
           <el-table-column prop="formulaSnapshot" label="计算说明" min-width="240" show-overflow-tooltip />
           <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
         </el-table>
