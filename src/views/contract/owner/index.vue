@@ -1,60 +1,58 @@
 <template>
-  <div class="main owner-contract-page">
-    <OwnerPageHeader>
-      <template #search>
-        <el-form :inline="true" :model="queryForm" class="owner-page-search-form">
-          <el-form-item>
-            <el-input v-model="queryForm.ownerName" placeholder="业主姓名/企业名称" clearable class="owner-filter-input" @keyup.enter="handleSearch" @clear="handleSearch">
+  <div class="pf-page owner-contract-page">
+    <div class="filter-card -mb-2">
+      <div class="filter-toolbar">
+        <el-form :inline="true" :model="queryForm" class="filter-form">
+          <el-form-item label="业主名称">
+            <el-input v-model="queryForm.ownerName" placeholder="请输入业主姓名/企业名称" clearable class="filter-input" @keyup.enter="handleSearch" @clear="handleSearch">
               <template #prefix>
                 <IconifyIconOffline :icon="User" />
               </template>
             </el-input>
           </el-form-item>
-          <el-form-item>
-            <el-input v-model="queryForm.ownerPhone" placeholder="联系电话" clearable class="owner-filter-input" @keyup.enter="handleSearch" @clear="handleSearch">
+          <el-form-item label="联系电话">
+            <el-input v-model="queryForm.ownerPhone" placeholder="请输入联系电话" clearable class="filter-input" @keyup.enter="handleSearch" @clear="handleSearch">
               <template #prefix>
                 <IconifyIconOffline :icon="Phone" />
               </template>
             </el-input>
           </el-form-item>
-          <el-form-item>
-            <el-select v-model="queryForm.ownerType" placeholder="业主类型" clearable class="owner-filter-select" @change="handleSearch">
+          <el-form-item label="业主类型">
+            <el-select v-model="queryForm.ownerType" placeholder="请选择业主类型" clearable class="filter-input-sm" @change="handleSearch">
               <el-option v-for="item in ownerTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          <el-form-item>
-            <el-select v-model="queryForm.cooperationMode" placeholder="委托模式" clearable class="owner-filter-select" @change="handleSearch">
+          <el-form-item label="委托模式">
+            <el-select v-model="queryForm.cooperationMode" placeholder="请选择委托模式" clearable class="filter-input-sm" @change="handleSearch">
               <el-option v-for="item in cooperationModeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          <el-form-item>
-            <el-select v-model="queryForm.signStatus" placeholder="签署状态" clearable class="owner-filter-select-sm" @change="handleSearch">
+          <el-form-item label="签署状态">
+            <el-select v-model="queryForm.signStatus" placeholder="请选择签署状态" clearable class="filter-input-sm" @change="handleSearch">
               <el-option v-for="item in signStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          <el-form-item>
-            <el-select v-model="queryForm.status" placeholder="合同状态" clearable class="owner-filter-select-sm" @change="handleSearch">
+          <el-form-item label="合同状态">
+            <el-select v-model="queryForm.status" placeholder="请选择合同状态" clearable class="filter-input-sm" @change="handleSearch">
               <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button :icon="useRenderIcon(Search)" type="primary" @click="handleSearch">搜索</el-button>
+            <el-button :icon="useRenderIcon(Search)" type="primary" @click="handleSearch">查询</el-button>
             <el-button :icon="useRenderIcon(Refresh)" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
-      </template>
-
-      <template #summary>
-        <OwnerSummaryFilterTabs v-model="summaryFilter" :items="summaryCards" @update:model-value="handleSummaryFilterChange" />
-      </template>
-
-      <template #actions>
         <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openCreateDialog">添加业主合同</el-button>
-      </template>
-    </OwnerPageHeader>
+      </div>
+    </div>
 
-    <el-row class="bg-bg_color w-full px-4 pb-4">
-      <el-col :span="24">
+    <PureTableBar title="业主合同" @refresh="loadList">
+      <template #buttons>
+        <div class="summary-block summary-block--toolbar">
+          <OwnerSummaryFilterTabs v-model="summaryFilter" :items="summaryCards" @update:model-value="handleSummaryFilterChange" />
+        </div>
+      </template>
+      <template #default>
         <el-table v-loading="loading" :data="tableData" border row-key="contractId">
           <el-table-column label="状态" width="100" align="center" fixed>
             <template #default="{ row }">
@@ -156,8 +154,8 @@
             @size-change="handlePageSizeChange"
           />
         </div>
-      </el-col>
-    </el-row>
+      </template>
+    </PureTableBar>
 
     <el-dialog v-model="previewVisible" top="10px" title="业主合同预览" width="80%" destroy-on-close>
       <iframe v-if="pdfUrl" title="业主合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
@@ -170,9 +168,9 @@
   import { ElMessageBox } from "element-plus";
   import { useRouter } from "vue-router";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+  import { PureTableBar } from "@/components/RePureTableBar";
   import { message } from "@/utils/message";
   import useOwnerContract from "@/views/contract/owner/utils/hook";
-  import OwnerPageHeader from "@/shared/owner/OwnerPageHeader.vue";
   import OwnerSummaryFilterTabs from "@/shared/owner/OwnerSummaryFilterTabs.vue";
   import { deleteOwnerContract, getOwnerContractList, getOwnerContractTotal, previewOwnerContract, updateOwnerContractStatus } from "@/api/contract/owner";
   import Search from "~icons/ri/search-line";
@@ -184,6 +182,7 @@
   import type { OwnerContractIdDto, OwnerContractStatusDto, OwnerCooperationModeEnum, OwnerListVo, OwnerQueryDto, OwnerSignStatusEnum, OwnerTypeEnum } from "@/types/generated";
   import { OwnerCooperationModeEnumMeta, OwnerSignStatusEnumMeta, OwnerTypeEnumMeta } from "@/types/generated/enum.meta";
   import "@/shared/owner/panel.scss";
+  import "@/shared/owner/financePage.scss";
 
   defineOptions({ name: "ContractOwner" });
 

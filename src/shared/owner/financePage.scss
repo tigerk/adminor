@@ -67,6 +67,11 @@
   margin-top: 2px;
 }
 
+.summary-block--toolbar {
+  margin-top: 0;
+  margin-right: 8px;
+}
+
 .filter-card {
   background: var(--el-bg-color);
   border: 1px solid var(--el-border-color-light);
@@ -79,6 +84,19 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.contract-page .filter-toolbar {
+  flex-wrap: wrap;
+}
+
+.contract-page .filter-toolbar > .el-button {
+  margin-left: auto;
+}
+
+.contract-page .filter-form {
+  flex: 1;
+  min-width: 0;
 }
 
 .filter-toolbar__main {
@@ -106,6 +124,18 @@
 
 .filter-input--wide {
   width: 220px;
+}
+
+.filter-input-sm {
+  width: 140px;
+}
+
+.owner-contract-page .filter-input {
+  width: 220px;
+}
+
+.owner-contract-page .filter-input-sm {
+  width: 150px;
 }
 
 .list-card {
