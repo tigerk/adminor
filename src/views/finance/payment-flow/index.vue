@@ -21,7 +21,7 @@
     tenantName: "",
     tenantPhone: "",
     roomKeyword: "",
-    status: 1
+    status: null
   });
 
   const pagination = reactive<PaginationProps>({
@@ -32,6 +32,7 @@
   });
 
   const statusTabs = [
+    { label: "全部", value: null, color: "amber" },
     { label: "待审批", value: PaymentFlowStatusEnumMeta.PENDING_APPROVAL.code, color: "amber" },
     { label: "支付成功", value: PaymentFlowStatusEnumMeta.SUCCESS.code, color: "emerald" },
     { label: "已关闭", value: PaymentFlowStatusEnumMeta.CLOSED.code, color: "slate" }
