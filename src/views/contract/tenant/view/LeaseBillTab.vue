@@ -11,7 +11,8 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <el-button type="primary" size="small" :icon="Refresh" :loading="loading" @click="fetchBillData">刷新</el-button>
+            <el-button type="primary" plain size="small" @click="handleCreate">添加租客账单</el-button>
+            <el-button type="primary" plain size="small" :icon="Refresh" :loading="loading" @click="fetchBillData">刷新</el-button>
           </div>
         </div>
       </div>
@@ -274,7 +275,7 @@
   import { Refresh } from "@element-plus/icons-vue";
   import { ElMessageBox } from "element-plus";
   import { LeaseBillListVo } from "@/types";
-  import { collectLeaseBill, getLeaseBillDetail, getHistoryLeaseBillList, getLeaseBillList, updateLeaseBill, voidLeaseBill } from "@/api/contract/tenant";
+  import { collectLeaseBill, createLeaseBill, getLeaseBillDetail, getHistoryLeaseBillList, getLeaseBillList, updateLeaseBill, voidLeaseBill } from "@/api/contract/tenant";
   import { addDialog } from "@/components/ReDialog";
   import { message } from "@/utils/message";
   import LeaseBillDetailDialog from "@/views/finance/lease-bill/view/LeaseBillDetailDialog.vue";
@@ -285,6 +286,8 @@
 
   interface Props {
     leaseId: string;
+    tenantName?: string;
+    tenantPhone?: string;
   }
 
   const props = defineProps<Props>();
@@ -385,6 +388,40 @@
     message(`标记坏账：第${row.sortOrder}期`, { type: "info" });
   };
 
+  const handleCreate = () => {
+    const editRef = ref<InstanceType<typeof LeaseBillEditDialog>>();
+    addDialog({
+      title: "添加租客账单",
+      width: "70%",
+      top: "6%",
+      alignCenter: true,
+      lockScroll: true,
+      closeOnClickModal: false,
+      contentRenderer: () =>
+        h(LeaseBillEditDialog, {
+          ref: editRef,
+          leaseId: props.leaseId,
+          tenantName: props.tenantName,
+          tenantPhone: props.tenantPhone
+        }),
+      beforeSure: async done => {
+        const formInstance = editRef.value;
+        if (!formInstance) return;
+        const valid = await formInstance.validate();
+        if (!valid) return;
+        const payload = formInstance.getFormData();
+        const resp = await createLeaseBill(payload);
+        if (resp.code === 0 && resp.data !== false) {
+          message("租客账单创建成功", { type: "success" });
+          fetchBillData();
+          done();
+        } else {
+          message(resp.message || "租客账单创建失败", { type: "warning" });
+        }
+      }
+    });
+  };
+
   const handleVoid = async (row: LeaseBillListVo) => {
     if (isVoided(row)) {
       message("账单已作废", { type: "warning" });
@@ -443,7 +480,14 @@
       alignCenter: true,
       lockScroll: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(LeaseBillEditDialog, { ref: editRef, bill: billData }),
+      contentRenderer: () =>
+        h(LeaseBillEditDialog, {
+          ref: editRef,
+          bill: billData,
+          leaseId: props.leaseId,
+          tenantName: props.tenantName,
+          tenantPhone: props.tenantPhone
+        }),
       beforeSure: async done => {
         const formInstance = editRef.value;
         if (!formInstance) return;

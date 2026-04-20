@@ -7267,7 +7267,7 @@ export type OwnerRentFreeRuleDto = {
 /**
  * 轻托管分账费用科目DTO
  */
-export type OwnerSettlementItemDto = {
+export type OwnerSettlementFeeDto = {
     /**
      * 收支方向: IN/OUT
      */
@@ -7276,6 +7276,10 @@ export type OwnerSettlementItemDto = {
      * 费用科目类型
      */
     feeType?: string;
+    /**
+     * 费用字典ID
+     */
+    dictDataId?: string;
     /**
      * 费用科目名称
      */
@@ -7370,7 +7374,7 @@ export type OwnerSettlementRuleDto = {
     /**
      * 分账费用科目列表
      */
-    settlementItemList?: Array<OwnerSettlementItemDto>;
+    settlementItemList?: Array<OwnerSettlementFeeDto>;
     /**
      * 生效开始日期
      */
@@ -9163,6 +9167,48 @@ export type ResponseResultLeaseBillListVo = {
     code?: number;
     message?: string;
     data?: LeaseBillListVo;
+};
+
+/**
+ * 租客账单新增DTO
+ */
+export type LeaseBillCreateDto = {
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 账单顺序
+     */
+    sortOrder?: number;
+    /**
+     * 账单类型
+     */
+    billType?: number;
+    /**
+     * 账单周期开始日期
+     */
+    billStart?: string;
+    /**
+     * 账单周期结束日期
+     */
+    billEnd?: string;
+    /**
+     * 应收日期
+     */
+    dueDate?: string;
+    /**
+     * 备注信息
+     */
+    remark?: string;
+    /**
+     * 是否历史账单
+     */
+    historical?: boolean;
+    /**
+     * 账单费用明细
+     */
+    feeList?: Array<LeaseBillFeeDto>;
 };
 
 /**
@@ -13297,6 +13343,24 @@ export type GetBillDetailResponses = {
 };
 
 export type GetBillDetailResponse = GetBillDetailResponses[keyof GetBillDetailResponses];
+
+export type CreateBillData = {
+    body: LeaseBillCreateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/bill/create';
+};
+
+export type CreateBillResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type CreateBillResponse = CreateBillResponses[keyof CreateBillResponses];
 
 export type CollectBillData = {
     body: LeaseBillCollectDto;

@@ -10,7 +10,8 @@ import type {
   LeaseContractVo,
   LeaseDetailVo,
   LeaseListVo,
-  LeaseQueryDto
+  LeaseQueryDto,
+  LeaseBillCreateDto
 } from "@/types";
 
 /** 获取租客统计 */
@@ -66,6 +67,11 @@ export const getHistoryLeaseBillList = (data?: object) => {
 /** 获取租客账单详情 */
 export const getLeaseBillDetail = (data?: { billId: string }) => {
   return http.request<ApiResponse<LeaseBillListVo>>("post", baseUrlApi("contract/lease/bill/detail"), { data });
+};
+
+/** 新增租客账单 */
+export const createLeaseBill = (data?: LeaseBillCreateDto) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/lease/bill/create"), { data });
 };
 
 /** 更新租客账单 */

@@ -2,10 +2,12 @@
   <div class="bill-edit-dialog">
     <div class="hero-card">
       <div class="hero-main">
-        <div class="hero-label">编辑账单</div>
-        <div class="hero-title">第{{ form.sortOrder || "-" }}期 · {{ billTypeText }}</div>
+        <div class="hero-label">{{ isCreate ? "新增账单" : "编辑账单" }}</div>
+        <div class="hero-title">{{ isCreate ? "手工补录租客账单" : `第${form.sortOrder || "-"}期 · ${billTypeText}` }}</div>
         <div class="hero-meta">
-          <span>账单ID：{{ form.id || "-" }}</span>
+          <span>{{ isCreate ? `租约ID：${leaseIdText}` : `账单ID：${form.id || "-"}` }}</span>
+          <span>租客姓名：{{ tenantNameText }}</span>
+          <span>联系电话：{{ tenantPhoneText }}</span>
           <span>账期：{{ form.billStart || "-" }} ~ {{ form.billEnd || "-" }}</span>
         </div>
       </div>
@@ -31,7 +33,7 @@
         <el-row :gutter="16">
           <el-col :span="6">
             <el-form-item label="账单编号">
-              <el-input :model-value="form.id" disabled />
+              <el-input :model-value="isCreate ? '-' : form.id" disabled />
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -218,10 +220,14 @@
   import type { CascaderOption, FormInstance, FormRules } from "element-plus";
   import { CirclePlus, Delete, Tickets } from "@element-plus/icons-vue";
   import type { LeaseBillFeeDto, LeaseBillListVo, LeaseBillUpdateDto } from "@/types";
+  import type { LeaseBillCreateDto } from "@/api/contract/tenant";
   import { getDictDataByParentCode } from "@/api/sys/dict";
 
   interface Props {
-    bill: LeaseBillListVo;
+    bill?: LeaseBillListVo | null;
+    leaseId?: string;
+    tenantName?: string;
+    tenantPhone?: string;
   }
 
   interface DictDataItem {
@@ -242,6 +248,10 @@
   }
 
   const props = defineProps<Props>();
+  const isCreate = computed(() => !props.bill?.id);
+  const leaseIdText = computed(() => props.leaseId || "-");
+  const tenantNameText = computed(() => props.tenantName || props.bill?.payerName || "-");
+  const tenantPhoneText = computed(() => props.tenantPhone || props.bill?.payerPhone || "-");
 
   const formRef = ref<FormInstance>();
   const form = reactive<LeaseBillUpdateDto>({} as LeaseBillUpdateDto);
@@ -355,22 +365,40 @@
   });
 
   const syncFromProps = () => {
-    Object.assign(form, props.bill || {});
-    feeList.value = (props.bill?.feeList || []).map(item =>
-      toEditableFee({
-        id: item.id,
-        feeType: item.feeType,
-        dictDataId: item.dictDataId,
-        feeName: item.feeName,
-        amount: item.amount,
-        paidAmount: item.paidAmount,
-        unpaidAmount: item.unpaidAmount,
-        payStatus: item.payStatus,
-        feeStartDate: item.feeStartDate,
-        feeEndDate: item.feeEndDate,
-        remark: item.remark
-      })
-    );
+    if (props.bill?.id) {
+      Object.assign(form, props.bill || {});
+      feeList.value = (props.bill?.feeList || []).map(item =>
+        toEditableFee({
+          id: item.id,
+          feeType: item.feeType,
+          dictDataId: item.dictDataId,
+          feeName: item.feeName,
+          amount: item.amount,
+          paidAmount: item.paidAmount,
+          unpaidAmount: item.unpaidAmount,
+          payStatus: item.payStatus,
+          feeStartDate: item.feeStartDate,
+          feeEndDate: item.feeEndDate,
+          remark: item.remark
+        })
+      );
+    } else {
+      Object.assign(form, {
+        id: undefined,
+        sortOrder: 1,
+        billType: 3,
+        billStart: "",
+        billEnd: "",
+        totalAmount: 0,
+        paidAmount: 0,
+        unpaidAmount: 0,
+        dueDate: "",
+        payStatus: 0,
+        remark: "",
+        historical: false
+      });
+      feeList.value = [];
+    }
     nextTickResolveCascade();
   };
 
@@ -501,20 +529,37 @@
     return validateFeeList();
   };
 
-  const getFormData = (): LeaseBillUpdateDto => ({
-    id: form.id,
-    sortOrder: form.sortOrder,
-    billType: form.billType,
-    carryOverFromBillId: form.carryOverFromBillId,
-    carryOverToBillId: form.carryOverToBillId,
-    billStart: form.billStart,
-    billEnd: form.billEnd,
-    totalAmount: form.totalAmount,
-    dueDate: form.dueDate,
-    remark: form.remark,
-    historical: form.historical,
-    feeList: feeList.value.map(({ uid, feeTypeCascade, ...fee }) => fee)
-  });
+  const buildFeePayload = () => feeList.value.map(({ uid, feeTypeCascade, ...fee }) => fee);
+
+  const getFormData = (): LeaseBillUpdateDto | LeaseBillCreateDto => {
+    if (isCreate.value) {
+      return {
+        leaseId: props.leaseId,
+        sortOrder: form.sortOrder,
+        billType: form.billType,
+        billStart: form.billStart,
+        billEnd: form.billEnd,
+        dueDate: form.dueDate,
+        remark: form.remark,
+        historical: form.historical,
+        feeList: buildFeePayload()
+      };
+    }
+    return {
+      id: form.id,
+      sortOrder: form.sortOrder,
+      billType: form.billType,
+      carryOverFromBillId: form.carryOverFromBillId,
+      carryOverToBillId: form.carryOverToBillId,
+      billStart: form.billStart,
+      billEnd: form.billEnd,
+      totalAmount: form.totalAmount,
+      dueDate: form.dueDate,
+      remark: form.remark,
+      historical: form.historical,
+      feeList: buildFeePayload()
+    };
+  };
 
   defineExpose({
     validate,

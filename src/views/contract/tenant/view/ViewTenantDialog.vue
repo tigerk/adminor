@@ -295,7 +295,7 @@
             </el-space>
           </template>
           <div class="tab-content">
-            <LeaseBillTab :lease-id="localFormInline.leaseId" />
+            <LeaseBillTab :lease-id="localFormInline.leaseId" :tenant-name="localFormInline.tenantName" :tenant-phone="localFormInline.tenantPhone" />
           </div>
         </el-tab-pane>
 
