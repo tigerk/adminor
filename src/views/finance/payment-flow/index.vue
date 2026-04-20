@@ -35,7 +35,8 @@
     { label: "全部", value: null, color: "amber" },
     { label: "待审批", value: PaymentFlowStatusEnumMeta.PENDING_APPROVAL.code, color: "amber" },
     { label: "支付成功", value: PaymentFlowStatusEnumMeta.SUCCESS.code, color: "emerald" },
-    { label: "已关闭", value: PaymentFlowStatusEnumMeta.CLOSED.code, color: "slate" }
+    { label: "已关闭", value: PaymentFlowStatusEnumMeta.CLOSED.code, color: "slate" },
+    { label: "已作废", value: PaymentFlowStatusEnumMeta.VOIDED.code, color: "slate" },
   ];
 
   const summaryCards = computed(() => [
@@ -69,7 +70,7 @@
     {
       label: "状态",
       prop: "status",
-      minWidth: 140,
+      width: 110,
       align: "center",
       slot: "status",
       fixed: "left"
@@ -187,12 +188,13 @@
   }
 
   function statusText(status?: number) {
-    const map: Record<number, string> = { 1: "待审批", 2: "支付成功", 4: "已关闭" };
+    const map: Record<number, string> = { 1: "待审批", 2: "支付成功", 4: "已关闭", 7: "已作废" };
     return map[status ?? -1] ?? "—";
   }
 
   function statusConfig(status?: number): { type: "warning" | "success" | "info" | "danger" | "primary"; dot: string } {
     if (status === 2) return { type: "success", dot: "bg-emerald-500" };
+    if (status === 7) return { type: "danger", dot: "bg-red-500" };
     if (status === 4) return { type: "info", dot: "bg-slate-400" };
     return { type: "warning", dot: "bg-amber-400" };
   }
@@ -530,6 +532,15 @@
     background: #f59e0b;
   }
 
+  .status-badge--danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+  .status-badge--danger .status-badge__dot {
+    background: #ef4444;
+  }
+
   .status-badge--success {
     background: #d1fae5;
     color: #065f46;
@@ -557,6 +568,12 @@
   :is(.dark) .status-badge--info {
     background: rgba(100, 116, 139, 0.15);
     color: #94a3b8;
+  }
+
+  :is(.dark) .status-badge--danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.35);
   }
 
   /* ── 金额列 ── */

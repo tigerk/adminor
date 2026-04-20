@@ -4,14 +4,16 @@
     <div class="pfd-hero">
       <div class="pfd-hero__left">
         <span class="pfd-hero__label">支付流水号</span>
-        <div class="pfd-hero__no">{{ detail.paymentNo || "—" }}</div>
+        <div class="pfd-hero__main">
+          <div class="pfd-hero__no">{{ detail.paymentNo || "—" }}</div>
+          <div class="status-badge" :class="`status-badge--${statusBadgeType(detail.status)}`">
+            <span class="status-badge__dot" />
+            {{ statusText(detail.status) }}
+          </div>
+        </div>
       </div>
       <div class="pfd-hero__right">
         <el-button v-if="canVoidFlow" type="danger" round plain @click="handleVoidFlow">作废支付流水</el-button>
-        <div class="status-badge" :class="`status-badge--${statusBadgeType(detail.status)}`">
-          <span class="status-badge__dot" />
-          {{ statusText(detail.status) }}
-        </div>
       </div>
     </div>
 
@@ -374,12 +376,19 @@
   }
 
   .pfd-hero__no {
-    margin-top: 4px;
     font-size: 20px;
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--el-text-color-primary);
     font-variant-numeric: tabular-nums;
+  }
+
+  .pfd-hero__main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+    flex-wrap: wrap;
   }
 
   .pfd-hero__right {
@@ -435,6 +444,15 @@
     background: #94a3b8;
   }
 
+  .status-badge--danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+  .status-badge--danger .status-badge__dot {
+    background: #ef4444;
+  }
+
   :is(.dark) .status-badge--warning {
     background: rgba(245, 158, 11, 0.15);
     color: #fbbf24;
@@ -449,6 +467,11 @@
     background: rgba(100, 116, 139, 0.15);
     color: #94a3b8;
     border-color: rgba(100, 116, 139, 0.3);
+  }
+  :is(.dark) .status-badge--danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.35);
   }
 
   /* ── 审批状态 ── */
