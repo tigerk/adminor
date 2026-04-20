@@ -65,13 +65,13 @@
   const heroContent = computed(() => {
     const map: Record<PageType, { eyebrow: string; title: string; desc: string }> = {
       login: {
-        eyebrow: "Enterprise Platform",
-        title: "租房Saas\n智能工作台",
-        desc: "覆盖房源管理、合同签署、财务核算与审批流程，为企业管理员提供一站式租房Saas协同平台。"
+        eyebrow: "一站式租赁管理平台",
+        title: "让租赁运营\n高效透明可追溯",
+        desc: "覆盖房源管理、合同签署、财务核算与审批流程，为房东与租赁团队提供从录入到结算的完整业务闭环。"
       },
       register: {
         eyebrow: "Create Workspace",
-        title: "创建你的\n业务工作台",
+        title: "开启你的\n智能管理之旅",
         desc: "按步骤完成主体信息、联系人和安全设置，系统会自动初始化公司档案与默认权限。"
       },
       forgot: {
@@ -178,27 +178,27 @@
 
       <div class="brand-cards">
         <div class="brand-card">
-          <div class="brand-card__num">24h</div>
+          <div class="brand-card__num">6</div>
           <div class="brand-card__label">
-            在线服务
+            核心模块
             <br />
-            全天响应
+            开箱即用
           </div>
         </div>
         <div class="brand-card">
-          <div class="brand-card__num">3m</div>
+          <div class="brand-card__num">3</div>
           <div class="brand-card__label">
-            管理员
+            多端协同
             <br />
-            快速开通
+            实时同步
           </div>
         </div>
         <div class="brand-card">
-          <div class="brand-card__num">100%</div>
+          <div class="brand-card__num">0</div>
           <div class="brand-card__label">
-            统一链路
+            限时免费
             <br />
-            安全校验
+            全功能体验
           </div>
         </div>
       </div>
@@ -482,7 +482,7 @@
   }
 
   .brand-hero {
-    max-width: 430px;
+    max-width: 460px;
   }
 
   .brand-hero__eyebrow {
@@ -490,11 +490,11 @@
     align-items: center;
     gap: 8px;
     padding: 6px 14px;
-    margin-bottom: 22px;
+    margin-bottom: 28px;
     font-size: 11px;
     font-weight: 600;
     font-family: var(--mono);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--accent);
     background: var(--accent-bg);
@@ -511,23 +511,24 @@
   }
 
   .brand-hero h1 {
-    margin: 0 0 18px;
+    margin: 0 0 22px;
     font-family: var(--serif);
-    font-size: clamp(48px, 5vw, 70px);
+    font-size: clamp(46px, 4.8vw, 64px);
     font-weight: 400;
-    line-height: 0.98;
-    letter-spacing: -0.04em;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
     white-space: pre-line;
   }
 
   .brand-hero h1 em {
     display: block;
-    font-style: italic;
+    font-style: normal;
+    font-weight: 700;
     color: var(--accent);
   }
 
   .brand-hero p {
-    max-width: 400px;
+    max-width: 380px;
     font-size: 15px;
     line-height: 1.85;
     color: var(--text-soft);
@@ -541,7 +542,7 @@
   }
 
   .brand-card {
-    padding: 18px 18px 16px;
+    padding: 20px 18px 16px;
     background: var(--surface-solid);
     border: 1px solid var(--border);
     border-radius: 16px;
