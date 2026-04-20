@@ -382,7 +382,7 @@
 
 <style scoped lang="scss">
   .tad {
-    --bg: #f6f3ee;
+    --bg: #faf7f2;
     --surface-solid: #fff;
     --border: rgba(28, 25, 23, 0.08);
     --border-strong: rgba(28, 25, 23, 0.15);
@@ -395,8 +395,8 @@
     --accent-border: var(--el-color-primary-light-7);
     --success: #15803d;
     --danger: #dc2626;
-    --radius-sm: 14px;
-    --radius-xs: 10px;
+    --radius-sm: 16px;
+    --radius-xs: 12px;
     --sans: "DM Sans", -apple-system, sans-serif;
     --mono: "JetBrains Mono", monospace;
     --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -442,7 +442,7 @@
 
     h3 {
       margin: 14px 0 8px;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 700;
       color: var(--text);
     }
@@ -450,9 +450,9 @@
     p {
       margin: 0 0 20px;
       font-size: 14px;
-      line-height: 1.7;
+      line-height: 1.8;
       color: var(--text-soft);
-      max-width: 300px;
+      max-width: 320px;
 
       strong {
         color: var(--text);
@@ -492,7 +492,7 @@
 
   /* Head */
   .tad-head {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 
     h3 {
       margin: 0 0 4px;
@@ -503,8 +503,8 @@
 
     p {
       margin: 0;
-      font-size: 13px;
-      line-height: 1.55;
+      font-size: 14px;
+      line-height: 1.7;
       color: var(--text-soft);
     }
   }
@@ -532,7 +532,7 @@
     :deep(.el-input__wrapper) {
       height: 48px;
       background: var(--bg) !important;
-      border: 1.5px solid var(--border) !important;
+      border: 1px solid var(--border) !important;
       border-radius: var(--radius-xs) !important;
       box-shadow: none !important;
       transition: all 0.2s var(--ease);
@@ -542,7 +542,7 @@
       }
       &.is-focus {
         border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px var(--accent-bg) !important;
+        box-shadow: 0 0 0 4px var(--accent-bg) !important;
         background: var(--surface-solid) !important;
       }
     }
@@ -565,7 +565,7 @@
   .tad-textarea {
     :deep(.el-textarea__inner) {
       background: var(--bg) !important;
-      border: 1.5px solid var(--border) !important;
+      border: 1px solid var(--border) !important;
       border-radius: var(--radius-xs) !important;
       box-shadow: none !important;
       font-size: 13.5px;
@@ -579,7 +579,7 @@
       }
       &:focus {
         border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px var(--accent-bg) !important;
+        box-shadow: 0 0 0 4px var(--accent-bg) !important;
         background: var(--surface-solid) !important;
       }
     }
@@ -640,18 +640,15 @@
     align-items: center;
     gap: 5px;
     margin-bottom: 7px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text-soft);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-family: var(--mono);
+    color: var(--text);
+    font-family: var(--sans);
 
     svg {
-      width: 12px;
-      height: 12px;
+      width: 13px;
+      height: 13px;
       color: var(--accent);
-      opacity: 0.8;
       flex-shrink: 0;
     }
   }
@@ -688,7 +685,7 @@
     width: 120px;
     height: 48px;
     overflow: hidden;
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xs);
     background: var(--bg);
     cursor: pointer;
@@ -754,7 +751,7 @@
     white-space: nowrap;
     color: var(--accent);
     background: var(--accent-bg);
-    border: 1.5px solid var(--accent-border);
+    border: 1px solid var(--accent-border);
     border-radius: var(--radius-xs);
     cursor: pointer;
     transition: all 0.15s var(--ease);
@@ -794,7 +791,7 @@
     height: 48px;
     padding: 0 14px;
     background: var(--bg);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xs);
     cursor: pointer;
     transition: all 0.15s var(--ease);
@@ -805,7 +802,7 @@
     }
     &.open {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-bg);
+      box-shadow: 0 0 0 4px var(--accent-bg);
     }
   }
 
@@ -834,7 +831,7 @@
     right: 0;
     z-index: 500;
     background: var(--surface-solid);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xs);
     box-shadow: var(--shadow-panel);
     overflow: hidden;
@@ -910,13 +907,13 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    height: 26px;
-    padding: 0 9px;
+    height: 28px;
+    padding: 0 10px;
     font-size: 12.5px;
     color: var(--text-soft);
     background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.14s var(--ease);
     white-space: nowrap;
@@ -952,20 +949,20 @@
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 20px;
+    margin-top: 24px;
     padding-top: 16px;
     border-top: 1px solid var(--border);
   }
 
   .btn-cancel {
-    height: 44px;
+    height: 46px;
     padding: 0 20px;
     font-size: 14px;
     font-weight: 600;
     color: var(--text-soft);
     background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-xs);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.2s var(--ease);
     font-family: var(--sans);
@@ -981,14 +978,14 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 44px;
+    height: 46px;
     padding: 0 24px;
     font-size: 14px;
     font-weight: 700;
     color: white;
     background: var(--accent);
     border: none;
-    border-radius: var(--radius-xs);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.25s var(--ease);
     font-family: var(--sans);
