@@ -49,7 +49,7 @@
                       <el-tag v-else type="info">其他费用</el-tag>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="name" label="费用名称" align="center" min-width="140" />
+                  <el-table-column prop="feeName" label="费用名称" align="center" min-width="140" />
                   <el-table-column prop="amount" label="金额" align="center" width="110">
                     <template #default="{ row: fee }">
                       <span class="fee-amount">¥{{ fee.amount }}</span>
