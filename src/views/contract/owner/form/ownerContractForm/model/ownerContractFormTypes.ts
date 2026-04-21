@@ -68,7 +68,7 @@ export type OwnerSettlementItemForm = {
   id?: string | number;
   feeDirection?: "IN" | "OUT";
   feeType?: string;
-  dictDataId?: string | number;
+  dictDataId?: string;
   feeName?: string;
   transferEnabled?: boolean;
   transferRatio?: number;
@@ -149,7 +149,7 @@ export type OwnerLeaseRuleForm = Omit<OwnerLeaseRuleDto, "otherFeeList"> & {
 // ─── Lease fee form ───────────────────────────────────────────────────────────
 
 export type OwnerLeaseFeeForm = {
-  dictDataId?: string | number;
+  dictDataId?: string;
   feeType?: string;
   feeName?: string;
   feeDirection?: "IN" | "OUT";

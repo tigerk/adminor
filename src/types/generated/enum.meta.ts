@@ -539,7 +539,8 @@ export const OwnerAccountFlowBizTypeEnumMeta = {
 } as const;
 
 export const OwnerAccountFlowChangeTypeEnumMeta = {
-  BILL_SETTLE_IN: {"value":"BILL_SETTLE_IN","code":"BILL_SETTLE_IN","name":"账单入账"}
+  BILL_SETTLE_IN: {"value":"BILL_SETTLE_IN","code":"BILL_SETTLE_IN","name":"账单入账"},
+  BILL_SETTLE_OUT: {"value":"BILL_SETTLE_OUT","code":"BILL_SETTLE_OUT","name":"账单冲减"}
 } as const;
 
 export const OwnerBillingItemTypeEnumMeta = {
@@ -550,6 +551,7 @@ export const OwnerBillingItemTypeEnumMeta = {
 } as const;
 
 export const OwnerBillingSourceTypeEnumMeta = {
+  PAYMENT_FLOW: {"value":"PAYMENT_FLOW","code":"PAYMENT_FLOW","name":"支付流水"},
   OWNER_CONTRACT_SUBJECT: {"value":"OWNER_CONTRACT_SUBJECT","code":"OWNER_CONTRACT_SUBJECT","name":"业主合同房源"},
   OWNER_CONTRACT: {"value":"OWNER_CONTRACT","code":"OWNER_CONTRACT","name":"业主合同"},
   OWNER_LEASE_FEE: {"value":"OWNER_LEASE_FEE","code":"OWNER_LEASE_FEE","name":"包租其他费用"},

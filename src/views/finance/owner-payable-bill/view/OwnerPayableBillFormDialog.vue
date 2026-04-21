@@ -93,12 +93,16 @@
     feeTypeCascade?: Array<string | number>;
   };
 
+  type PayableBillFormState = Omit<PayableBillUpdateDto, "feeList"> & {
+    feeList: EditableFeeItem[];
+  };
+
   const props = defineProps<{ bill?: PayableBillListVo }>();
   const formRef = ref<FormInstance>();
   const loading = ref(false);
   const feeTypeDictList = ref<any[]>([]);
 
-  const form = reactive<PayableBillUpdateDto>({
+  const form = reactive<PayableBillFormState>({
     billId: props.bill?.billId,
     ownerId: props.bill?.ownerId,
     contractId: props.bill?.contractId,
@@ -249,8 +253,11 @@
     if (invalidFee) {
       throw new Error("请完整填写费用类型、金额等信息");
     }
-    form.feeList = feeList.value.map(({ uid, feeTypeCascade, ...item }) => item);
-    return { ...form } as PayableBillCreateDto | PayableBillUpdateDto;
+    const payload = {
+      ...form,
+      feeList: feeList.value.map(({ uid, feeTypeCascade, ...item }) => item)
+    };
+    return payload as PayableBillCreateDto | PayableBillUpdateDto;
   }
 
   defineExpose({ validateAndBuildPayload });

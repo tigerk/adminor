@@ -1635,6 +1635,10 @@ export type LeaseLiteVo = {
  */
 export type OtherFeeDto = {
     /**
+     * 房间ID
+     */
+    roomId?: string;
+    /**
      * 其他费用类型（如：装修/维修/房屋维修、随房租付、按固定金额等）
      */
     dictDataId?: string;
@@ -10621,7 +10625,7 @@ export type OwnerAccountFlowBizTypeEnum = 'OWNER_BILL';
 /**
  * 业主账户流水变动类型枚举
  */
-export type OwnerAccountFlowChangeTypeEnum = 'BILL_SETTLE_IN';
+export type OwnerAccountFlowChangeTypeEnum = 'BILL_SETTLE_IN' | 'BILL_SETTLE_OUT';
 
 /**
  * 业主单据明细类型枚举
@@ -10631,7 +10635,7 @@ export type OwnerBillingItemTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'MANAG
 /**
  * 业主单据来源类型枚举
  */
-export type OwnerBillingSourceTypeEnum = 'OWNER_CONTRACT_SUBJECT' | 'OWNER_CONTRACT' | 'OWNER_LEASE_FEE' | 'OWNER_LEASE_FREE_RULE';
+export type OwnerBillingSourceTypeEnum = 'PAYMENT_FLOW' | 'OWNER_CONTRACT_SUBJECT' | 'OWNER_CONTRACT' | 'OWNER_LEASE_FEE' | 'OWNER_LEASE_FREE_RULE';
 
 /**
  * 包租业主应付单付款状态枚举

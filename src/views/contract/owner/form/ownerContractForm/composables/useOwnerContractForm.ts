@@ -390,7 +390,7 @@ export function useOwnerContractForm() {
     const parent = otherFeeTypeOptions.value.find((item: any) => item.value === value[0]);
     const child = parent?.children?.find((item: any) => item.value === value[1]);
     if (!child) return;
-    target.dictDataId = child.value;
+    target.dictDataId = String(child.value);
     target.feeType = String(parent?.value || "");
     target.feeName = child.label;
   }
@@ -438,7 +438,7 @@ export function useOwnerContractForm() {
     const parent = otherFeeTypeOptions.value.find((item: any) => item.value === value[0]);
     const child = parent?.children?.find((item: any) => item.value === value[1]);
     if (!child) return;
-    target.dictDataId = child.value;
+    target.dictDataId = String(child.value);
     target.feeType = String(parent?.value || "");
     target.feeName = child.label;
     target.transferEnabled = true;

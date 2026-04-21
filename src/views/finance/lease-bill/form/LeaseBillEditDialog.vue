@@ -219,8 +219,7 @@
   import { ElMessage } from "element-plus";
   import type { CascaderOption, FormInstance, FormRules } from "element-plus";
   import { CirclePlus, Delete, Tickets } from "@element-plus/icons-vue";
-  import type { LeaseBillFeeDto, LeaseBillListVo, LeaseBillUpdateDto } from "@/types";
-  import type { LeaseBillCreateDto } from "@/api/contract/tenant";
+  import type { LeaseBillCreateDto, LeaseBillFeeDto, LeaseBillListVo, LeaseBillUpdateDto } from "@/types";
   import { getDictDataByParentCode } from "@/api/sys/dict";
 
   interface Props {

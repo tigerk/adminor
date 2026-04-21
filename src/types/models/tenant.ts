@@ -1,9 +1,15 @@
 import type { LeaseDto, RoomListVo, TenantCreateDto, BookingListVo } from "@/types";
 
+export interface LeaseRoomRentItem {
+  roomId?: string;
+  rentPrice?: number;
+}
+
 export interface LeaseProps extends LeaseDto {
   leaseDate?: string[];
   checkDate?: string[];
   roomList?: Array<RoomListVo>;
+  roomRentList?: Array<LeaseRoomRentItem>;
 }
 
 /** 租客创建表单 */

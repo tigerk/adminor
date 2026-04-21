@@ -1,7 +1,7 @@
 <template>
   <div class="other-fee-select">
     <div class="section">
-      <h4 class="section-title">
+      <h4 v-if="!props.hideTitle" class="section-title">
         其他费用
         <span class="section-subtitle">(租金以外的费用,适用于所有支付方式)</span>
       </h4>
@@ -84,10 +84,12 @@
 
   interface Props {
     modelValue?: OtherFeeDto[];
+    hideTitle?: boolean;
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    modelValue: () => []
+    modelValue: () => [],
+    hideTitle: false
   });
 
   const emit = defineEmits<(e: "update:modelValue", value: OtherFeeDto[]) => void>();

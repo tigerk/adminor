@@ -249,6 +249,56 @@
               />
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row class="mb-4">
+          <el-col :span="24">
+            <el-form-item label="房间配置明细" required>
+              <div class="room-config-panel">
+                <div class="room-config-panel__head">
+                  <div class="room-config-panel__title">按房间分别配置租金和费用项</div>
+                  <div class="room-config-panel__desc">合同级字段统一维护，房间级租金和费用单独配置，系统会自动汇总到月租金总计。</div>
+                </div>
+                <div v-if="roomConfigs.length === 0" class="room-config-empty">请先选择房源</div>
+                <div v-else class="room-config-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th style="width: 34%">房间</th>
+                        <th style="width: 20%">月租金</th>
+                        <th style="width: 16%">费用项</th>
+                        <th style="width: 18%">费用合计</th>
+                        <th style="width: 12%">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="item in roomConfigs" :key="item.roomId">
+                        <td>
+                          <div class="room-config-table__room">{{ item.roomLabel }}</div>
+                        </td>
+                        <td>
+                          <el-input :model-value="item.rentPrice" type="number" placeholder="请输入月租金" @update:model-value="value => handleRoomRentChange(item.roomId, value)">
+                            <template #prefix>¥</template>
+                            <template #append>元/月</template>
+                          </el-input>
+                        </td>
+                        <td>
+                          <span class="room-config-table__meta">{{ item.feeList.length }} 项</span>
+                        </td>
+                        <td>
+                          <span class="room-config-table__amount">¥{{ calculateRoomFeeTotal(item).toFixed(2) }}</span>
+                        </td>
+                        <td class="text-center">
+                          <el-button type="primary" link @click="openRoomFeeDialog(item)">配置费用</el-button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
           <el-col :span="5">
             <el-form-item label="租金信息">
               <div class="rent-info-container">
@@ -267,11 +317,11 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="月租金" prop="lease.rentPrice" required>
+            <el-form-item label="月租金总计" prop="lease.rentPrice" required>
               <div>
                 <!-- 月租金输入 -->
                 <div class="rent-input">
-                  <el-input v-model="formInline.lease.rentPrice" type="number" placeholder="请输入月租金" class="rent-price-input">
+                  <el-input v-model="formInline.lease.rentPrice" type="number" readonly placeholder="按房间自动汇总" class="rent-price-input">
                     <template #prefix>
                       <span class="currency-symbol">¥</span>
                     </template>
@@ -329,8 +379,9 @@
       </div>
     </div>
     <div>
+      <div class="mb-2 room-config-section-hint">全局其他费用：作用于整份租约，不区分具体房间。</div>
       <!-- 其他费用配置 -->
-      <OtherFeeSelect v-model="formInline.otherFees" />
+      <OtherFeeSelect v-model="sharedOtherFees" />
     </div>
     <div class="mb-1">
       <el-row :gutter="20">
@@ -373,10 +424,35 @@
       </el-row>
     </div>
   </el-form>
+  <el-dialog
+    v-model="roomFeeDialogVisible"
+    destroy-on-close
+    width="960px"
+    :title="activeRoomConfig ? `配置房间费用 · ${activeRoomConfig.roomLabel}` : '配置房间费用'"
+    @closed="handleRoomFeeDialogClose"
+  >
+    <div v-if="activeRoomConfig" class="room-fee-dialog">
+      <div class="room-fee-dialog__summary">
+        <div class="room-fee-dialog__item">
+          <span class="room-fee-dialog__label">房间</span>
+          <span class="room-fee-dialog__value">{{ activeRoomConfig.roomLabel }}</span>
+        </div>
+        <div class="room-fee-dialog__item">
+          <span class="room-fee-dialog__label">月租金</span>
+          <span class="room-fee-dialog__value">¥{{ activeRoomConfig.rentPrice.toFixed(2) }}</span>
+        </div>
+      </div>
+      <OtherFeeSelect v-model="roomFeeDraft" hide-title />
+    </div>
+    <template #footer>
+      <el-button @click="handleRoomFeeDialogClose">取消</el-button>
+      <el-button type="primary" @click="handleRoomFeeDialogSave">确定</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, reactive, ref } from "vue";
+  import { computed, onMounted, reactive, ref, watch } from "vue";
   import type { FormInstance } from "element-plus";
   import {
     FIRST_BILL_DAY_OPTIONS,
@@ -388,7 +464,7 @@
     LEASE_CONTRACT_NATURE_OPTIONS,
     TENANT_TYPE_OPTIONS
   } from "@/constants";
-  import type { TenantsCreateFormProps } from "@/types";
+  import type { OtherFeeDto, TenantsCreateFormProps } from "@/types";
   import { tenantCompanyFormRules, tenantFormRules } from "@/views/contract/tenant/utils/rule";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/upload/UploadImage.vue";
@@ -406,12 +482,35 @@
     isEdit?: boolean; // 新增：标识是否为编辑模式
   }
 
+  interface RoomSelectionItem {
+    label: string;
+    value: string | number;
+    description?: string;
+    extra?: any;
+  }
+
+  interface RoomConfigItem {
+    roomId: string;
+    roomLabel: string;
+    rentPrice: number;
+    feeList: RoomScopedOtherFee[];
+  }
+
+  type RoomScopedOtherFee = OtherFeeDto & {
+    roomId?: string | number;
+  };
+
   const props = defineProps<FormProps>();
 
   // 表单引用
   const ruleFormRef = ref<FormInstance>();
 
-  const roomSelection = ref([]);
+  const roomSelection = ref<RoomSelectionItem[]>([]);
+  const roomConfigs = ref<RoomConfigItem[]>([]);
+  const sharedOtherFees = ref<RoomScopedOtherFee[]>([]);
+  const roomFeeDialogVisible = ref(false);
+  const editingRoomId = ref<string>("");
+  const roomFeeDraft = ref<RoomScopedOtherFee[]>([]);
 
   // 表单数据 - 确保正确初始化
   const formInline = reactive<TenantsCreateFormProps>({
@@ -448,6 +547,7 @@
     lease: props.formInline?.lease || {
       contractTemplateId: props.formInline?.lease?.contractTemplateId || null,
       roomIds: props.formInline?.lease?.roomIds || [],
+      roomRentList: props.formInline?.lease?.roomRentList || [],
       tenantType: props.formInline?.lease?.tenantType ?? 0,
       leaseStart: props.formInline?.lease?.leaseStart || new Date().toISOString().split("T")[0],
       leaseEnd: props.formInline?.lease?.leaseEnd || new Date().toISOString().split("T")[0],
@@ -501,6 +601,7 @@
         extra: item
       }));
     }
+    buildRoomConfigs();
   };
 
   // 组件挂载时执行
@@ -639,6 +740,25 @@
     }
   ];
 
+  watch(
+    roomConfigs,
+    () => {
+      syncRoomSelectionPrices();
+      calculateTotalRent();
+      syncRoomRentListToForm();
+      syncOtherFeesToForm();
+    },
+    { deep: true }
+  );
+
+  watch(
+    sharedOtherFees,
+    () => {
+      syncOtherFeesToForm();
+    },
+    { deep: true }
+  );
+
   // 计算押金金额
   const depositAmount = computed(() => {
     const price = Number(formInline.lease.rentPrice) || 0;
@@ -675,11 +795,10 @@
     roomSelection.value = rooms.map(item => ({
       label: formatRoomSelectName(item),
       value: item.roomId,
+      description: formatRoomSelectDescription(item),
       extra: item
     }));
-
-    // 触发价格计算
-    calculateTotalRent();
+    buildRoomConfigs();
   };
 
   // 移除房源
@@ -690,16 +809,127 @@
     }
 
     roomSelection.value.splice(index, 1);
-    calculateTotalRent();
+    buildRoomConfigs();
   };
 
-  // 统一计算租金
-  const calculateTotalRent = () => {
-    let rentPrice = 0;
-    roomSelection.value.forEach(item => {
-      rentPrice += Number(item.extra?.price || 0);
+  const activeRoomConfig = computed(() => roomConfigs.value.find(item => item.roomId === editingRoomId.value) || null);
+
+  const cloneFeeItem = (fee?: RoomScopedOtherFee | null): RoomScopedOtherFee => ({
+    roomId: fee?.roomId ?? undefined,
+    dictDataId: fee?.dictDataId ?? undefined,
+    name: fee?.name ?? "",
+    paymentMethod: fee?.paymentMethod ?? 0,
+    priceMethod: fee?.priceMethod ?? 1,
+    priceInput: fee?.priceInput ?? undefined
+  });
+
+  const cloneFeeList = (list?: RoomScopedOtherFee[] | null) => (list || []).map(item => cloneFeeItem(item));
+
+  const normalizeMoney = (value: unknown) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const buildRoomConfigs = () => {
+    const feeBucket = new Map<string, RoomScopedOtherFee[]>();
+    const sharedFees: RoomScopedOtherFee[] = [];
+
+    ((formInline.otherFees as RoomScopedOtherFee[]) || []).forEach(fee => {
+      if (!fee.roomId) {
+        sharedFees.push(cloneFeeItem(fee));
+        return;
+      }
+      const roomId = String(fee.roomId);
+      const list = feeBucket.get(roomId) || [];
+      list.push(cloneFeeItem(fee));
+      feeBucket.set(roomId, list);
     });
-    formInline.lease.rentPrice = rentPrice;
+
+    const previousConfigMap = new Map(roomConfigs.value.map(item => [item.roomId, item]));
+    const roomRentMap = new Map((formInline.lease.roomRentList || []).map(item => [String(item.roomId || ""), normalizeMoney(item.rentPrice)]));
+    roomConfigs.value = roomSelection.value.map(room => {
+      const roomId = String(room.value);
+      const previous = previousConfigMap.get(roomId);
+      return {
+        roomId,
+        roomLabel: room.label,
+        rentPrice: normalizeMoney(previous?.rentPrice ?? roomRentMap.get(roomId) ?? room.extra?.price),
+        feeList: cloneFeeList(feeBucket.get(roomId) || previous?.feeList || [])
+      };
+    });
+    sharedOtherFees.value = sharedFees;
+  };
+
+  const syncRoomSelectionPrices = () => {
+    roomSelection.value.forEach(item => {
+      const matched = roomConfigs.value.find(config => config.roomId === String(item.value));
+      if (!matched) return;
+      item.extra = {
+        ...(item.extra || {}),
+        price: matched.rentPrice
+      };
+    });
+  };
+
+  const syncOtherFeesToForm = () => {
+    const roomFeeList = roomConfigs.value.flatMap(config =>
+      config.feeList
+        .filter(fee => fee.dictDataId || fee.name)
+        .map(fee => ({
+          ...cloneFeeItem(fee),
+          roomId: config.roomId
+        }))
+    );
+    formInline.otherFees = [...cloneFeeList(sharedOtherFees.value).filter(fee => fee.dictDataId || fee.name), ...roomFeeList] as OtherFeeDto[];
+  };
+
+  const syncRoomRentListToForm = () => {
+    formInline.lease.roomRentList = roomConfigs.value.map(item => ({
+      roomId: item.roomId,
+      rentPrice: item.rentPrice
+    }));
+  };
+
+  const calculateRoomFeeTotal = (config: RoomConfigItem) =>
+    config.feeList.reduce((sum, fee) => {
+      const feeValue = normalizeMoney(fee.priceInput);
+      if (fee.priceMethod === 2) {
+        return sum + (config.rentPrice * feeValue) / 100;
+      }
+      return sum + feeValue;
+    }, 0);
+
+  const calculateTotalRent = () => {
+    formInline.lease.rentPrice = roomConfigs.value.reduce((sum, item) => sum + normalizeMoney(item.rentPrice), 0);
+  };
+
+  const handleRoomRentChange = (roomId: string, value: number | string) => {
+    const target = roomConfigs.value.find(item => item.roomId === roomId);
+    if (!target) return;
+    target.rentPrice = normalizeMoney(value);
+  };
+
+  const openRoomFeeDialog = (config: RoomConfigItem) => {
+    editingRoomId.value = config.roomId;
+    roomFeeDraft.value = cloneFeeList(config.feeList);
+    roomFeeDialogVisible.value = true;
+  };
+
+  const handleRoomFeeDialogSave = () => {
+    const target = roomConfigs.value.find(item => item.roomId === editingRoomId.value);
+    if (!target) {
+      roomFeeDialogVisible.value = false;
+      return;
+    }
+    target.feeList = cloneFeeList(roomFeeDraft.value);
+    roomFeeDialogVisible.value = false;
+    editingRoomId.value = "";
+  };
+
+  const handleRoomFeeDialogClose = () => {
+    roomFeeDialogVisible.value = false;
+    editingRoomId.value = "";
+    roomFeeDraft.value = [];
   };
 
   defineExpose({
@@ -806,6 +1036,112 @@
     }
   }
 
+  .room-config-panel {
+    width: 100%;
+    border: 1px solid var(--el-border-color);
+    border-radius: 6px;
+    background: var(--el-bg-color);
+    overflow: hidden;
+  }
+
+  .room-config-panel__head {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--el-border-color-light);
+    background: var(--el-fill-color-lighter);
+  }
+
+  .room-config-panel__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .room-config-panel__desc {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .room-config-section-hint {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .room-config-empty {
+    padding: 28px 0;
+    text-align: center;
+    color: var(--el-text-color-secondary);
+  }
+
+  .room-config-table {
+    width: 100%;
+    overflow-x: auto;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--el-border-color-light);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--el-text-color-regular);
+      background: var(--el-fill-color-light);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+  }
+
+  .room-config-table__room {
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+  }
+
+  .room-config-table__meta {
+    color: var(--el-text-color-regular);
+  }
+
+  .room-config-table__amount {
+    font-weight: 600;
+    color: var(--el-color-primary);
+  }
+
+  .room-fee-dialog__summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .room-fee-dialog__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    background: var(--el-fill-color-lighter);
+  }
+
+  .room-fee-dialog__label {
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .room-fee-dialog__value {
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
   // 响应式设计
   @media (max-width: 768px) {
     .payment-method {
@@ -830,6 +1166,10 @@
       .room-tags-box.disabled-box::after {
         background-color: rgba(0, 0, 0, 0.2);
       }
+    }
+
+    .room-config-panel {
+      border-color: var(--el-border-color);
     }
   }
 </style>

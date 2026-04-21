@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
+  import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
   import { pinyin } from "pinyin-pro";
   import { isPhone } from "@pureadmin/utils";
   import type { FormInstance, FormRules } from "element-plus";
@@ -22,6 +22,8 @@
   const keyword = ref("");
   const cityOptions = ref<CityOption[]>([]);
   const submitSuccess = ref(false);
+  const cityPickerRef = ref<HTMLDivElement>();
+  const citySearchInputRef = ref<HTMLInputElement>();
   const getRootElement = () => (typeof document !== "undefined" ? document.documentElement : null);
   const isDark = ref(getRootElement()?.classList.contains("dark") ?? false);
   let themeObserver: MutationObserver | null = null;
@@ -59,6 +61,19 @@
 
   const hasValidPhone = computed(() => /^1\d{10}$/.test(form.phone));
 
+  /** Form completion progress (0~100) */
+  const formProgress = computed(() => {
+    let filled = 0;
+    const total = 3;
+    if (hasValidPhone.value) filled++;
+    if (form.verifyCode.length === 4) filled++;
+    if (form.regionId) filled++;
+    return Math.round((filled / total) * 100);
+  });
+
+  /** Whether all required fields are filled (controls submit button) */
+  const canSubmit = computed(() => hasValidPhone.value && form.verifyCode.length === 4 && !!form.regionId);
+
   const syncTheme = () => {
     isDark.value = getRootElement()?.classList.contains("dark") ?? false;
   };
@@ -90,15 +105,44 @@
     captchaImageUrl.value = `${baseUrlApi(`captcha/${form.phone}`)}?t=${Date.now()}`;
   };
 
+  const openCityPanel = () => {
+    cityPanelVisible.value = true;
+    nextTick(() => {
+      citySearchInputRef.value?.focus();
+    });
+  };
+
+  const closeCityPanel = () => {
+    cityPanelVisible.value = false;
+    keyword.value = "";
+  };
+
   const toggleCityPanel = () => {
-    cityPanelVisible.value = !cityPanelVisible.value;
+    if (cityPanelVisible.value) {
+      closeCityPanel();
+    } else {
+      openCityPanel();
+    }
   };
 
   const selectCity = (city: CityOption) => {
     form.regionId = city.id;
     form.cityName = city.name;
-    cityPanelVisible.value = false;
-    keyword.value = "";
+    closeCityPanel();
+  };
+
+  const handleClickOutside = (e: MouseEvent) => {
+    if (!cityPanelVisible.value) return;
+    if (cityPickerRef.value && !cityPickerRef.value.contains(e.target as Node)) {
+      closeCityPanel();
+    }
+  };
+
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === "Escape" && cityPanelVisible.value) {
+      e.stopPropagation();
+      closeCityPanel();
+    }
   };
 
   const fetchCities = async () => {
@@ -172,6 +216,8 @@
   onMounted(() => {
     fetchCities();
     syncTheme();
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeydown);
     const root = getRootElement();
     if (root && typeof MutationObserver !== "undefined") {
       themeObserver = new MutationObserver(syncTheme);
@@ -184,6 +230,8 @@
 
   onBeforeUnmount(() => {
     useVerifyCode().end();
+    document.removeEventListener("mousedown", handleClickOutside);
+    document.removeEventListener("keydown", handleKeydown);
     themeObserver?.disconnect();
   });
 </script>
@@ -220,6 +268,14 @@
           <p>留下手机号和所在城市，我们会在审核后协助开通试用环境</p>
         </div>
 
+        <!-- Progress bar -->
+        <div class="tad-progress">
+          <div class="tad-progress__track">
+            <div class="tad-progress__bar" :style="{ width: `${formProgress}%` }" />
+          </div>
+          <span class="tad-progress__label">{{ formProgress }}%</span>
+        </div>
+
         <el-form ref="ruleFormRef" :model="form" :rules="rules" label-position="top" class="tad-form">
           <!-- Phone -->
           <div class="form-group">
@@ -230,6 +286,11 @@
               </svg>
               手机号码
               <em class="req">*</em>
+              <Transition name="tad-check">
+                <svg v-if="hasValidPhone" class="field-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+              </Transition>
             </label>
             <el-form-item prop="phone">
               <el-input v-model="form.phone" clearable maxlength="11" placeholder="请输入手机号码" class="tad-input" />
@@ -269,6 +330,11 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
               短信验证码
               <em class="req">*</em>
+              <Transition name="tad-check">
+                <svg v-if="form.verifyCode.length === 4" class="field-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+              </Transition>
             </label>
             <el-form-item prop="verifyCode">
               <div class="tad-row">
@@ -293,9 +359,14 @@
               </svg>
               所在城市
               <em class="req">*</em>
+              <Transition name="tad-check">
+                <svg v-if="form.regionId" class="field-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+              </Transition>
             </label>
             <el-form-item prop="regionId">
-              <div class="tad-city">
+              <div ref="cityPickerRef" class="tad-city">
                 <button type="button" class="tad-city__trigger" :class="{ open: cityPanelVisible }" @click="toggleCityPanel">
                   <span :class="form.cityName ? 'tad-city__val' : 'tad-city__ph'">
                     {{ form.cityName || "选择所在城市" }}
@@ -312,7 +383,7 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="M21 21l-4.35-4.35" />
                       </svg>
-                      <input v-model="keyword" placeholder="搜索城市名称…" class="tad-city__sinput" />
+                      <input ref="citySearchInputRef" v-model="keyword" placeholder="搜索城市名称…" class="tad-city__sinput" />
                     </div>
                     <div class="tad-city__scroll">
                       <div v-if="cityLoading" class="tad-city__empty">
@@ -367,12 +438,17 @@
 
         <div class="tad-footer">
           <button type="button" class="btn-cancel" @click="closeAllDialog()">取消</button>
-          <button type="button" class="btn-submit" :disabled="loading" @click="handleSubmit">
-            {{ loading ? "提交中…" : "提交申请" }}
-            <svg v-if="!loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px">
-              <path d="M9 12l2 2 4-4" />
-              <circle cx="12" cy="12" r="10" />
-            </svg>
+          <button type="button" class="btn-submit" :class="{ ready: canSubmit }" :disabled="loading || !canSubmit" @click="handleSubmit">
+            <template v-if="loading">
+              <span class="tad-spin tad-spin--white" />
+              提交中…
+            </template>
+            <template v-else>
+              提交申请
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </template>
           </button>
         </div>
       </div>
@@ -492,14 +568,7 @@
 
   /* Head */
   .tad-head {
-    margin-bottom: 24px;
-
-    h3 {
-      margin: 0 0 4px;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-    }
+    margin-bottom: 20px;
 
     p {
       margin: 0;
@@ -507,6 +576,38 @@
       line-height: 1.7;
       color: var(--text-soft);
     }
+  }
+
+  /* Progress */
+  .tad-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .tad-progress__track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .tad-progress__bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.35s var(--ease);
+  }
+
+  .tad-progress__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-faint);
+    font-family: var(--mono);
+    min-width: 32px;
+    text-align: right;
   }
 
   /* Form */
@@ -592,7 +693,7 @@
     }
   }
 
-  /* 深色模式下强制覆盖 Element Plus 默认白色背景 */
+  /* Dark mode overrides for Element Plus inputs */
   :global(html.dark) .tad-input :deep(.el-input__wrapper),
   :global(body.dark) .tad-input :deep(.el-input__wrapper),
   :global(.dark) .tad-input :deep(.el-input__wrapper),
@@ -651,6 +752,14 @@
       color: var(--accent);
       flex-shrink: 0;
     }
+  }
+
+  .field-check {
+    width: 14px;
+    height: 14px;
+    color: var(--success);
+    margin-left: auto;
+    flex-shrink: 0;
   }
 
   .req {
@@ -1001,15 +1110,15 @@
       transition: transform 0.5s;
     }
 
-    &:hover::before {
+    &.ready:hover::before {
       transform: translateX(100%);
     }
-    &:hover {
+    &.ready:hover {
       transform: translateY(-1px);
       box-shadow: var(--shadow-btn-accent);
     }
     &:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
@@ -1025,6 +1134,11 @@
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: tad-spin 0.65s linear infinite;
+
+    &--white {
+      border-color: rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+    }
   }
 
   /* Transitions */
@@ -1068,6 +1182,21 @@
     transform: translateY(-5px);
   }
 
+  .tad-check-enter-active {
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .tad-check-leave-active {
+    transition: all 0.12s var(--ease);
+  }
+  .tad-check-enter-from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  .tad-check-leave-to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
   @keyframes tad-spin {
     to {
       transform: rotate(360deg);
@@ -1104,4 +1233,3 @@
     }
   }
 </style>
-const syncTheme = () => { isDark.value = document.documentElement.classList.contains("dark"); };
