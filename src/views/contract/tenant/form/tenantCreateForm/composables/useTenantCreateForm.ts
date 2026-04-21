@@ -21,7 +21,6 @@ export interface RoomConfigItem {
 
 export function useTenantCreateForm(formInline: any, roomSelection: { value: RoomSelectionItem[] }) {
   const roomConfigs = ref<RoomConfigItem[]>([]);
-  const sharedOtherFees = ref<RoomScopedOtherFee[]>([]);
   const expandedRoomId = ref<string>("");
 
   const cloneFeeItem = (fee?: RoomScopedOtherFee | null): RoomScopedOtherFee => ({
@@ -52,15 +51,14 @@ export function useTenantCreateForm(formInline: any, roomSelection: { value: Roo
   };
 
   const syncOtherFeesToForm = () => {
-    const roomFeeList = roomConfigs.value.flatMap(config =>
+    formInline.otherFees = roomConfigs.value.flatMap(config =>
       config.feeList
         .filter(fee => fee.dictDataId || fee.name)
         .map(fee => ({
           ...cloneFeeItem(fee),
           roomId: config.roomId
         }))
-    );
-    formInline.otherFees = [...cloneFeeList(sharedOtherFees.value).filter(fee => fee.dictDataId || fee.name), ...roomFeeList] as OtherFeeDto[];
+    ) as OtherFeeDto[];
   };
 
   const syncRoomRentListToForm = () => {
@@ -76,11 +74,11 @@ export function useTenantCreateForm(formInline: any, roomSelection: { value: Roo
 
   const buildRoomConfigs = () => {
     const feeBucket = new Map<string, RoomScopedOtherFee[]>();
-    const sharedFees: RoomScopedOtherFee[] = [];
+    const orphanFees: RoomScopedOtherFee[] = [];
 
     ((formInline.otherFees as RoomScopedOtherFee[]) || []).forEach(fee => {
       if (!fee.roomId) {
-        sharedFees.push(cloneFeeItem(fee));
+        orphanFees.push(cloneFeeItem(fee));
         return;
       }
       const roomId = String(fee.roomId);
@@ -101,7 +99,9 @@ export function useTenantCreateForm(formInline: any, roomSelection: { value: Roo
         feeList: cloneFeeList(feeBucket.get(roomId) || previous?.feeList || [])
       };
     });
-    sharedOtherFees.value = sharedFees;
+    if (orphanFees.length > 0 && roomConfigs.value.length > 0) {
+      roomConfigs.value[0].feeList.push(...cloneFeeList(orphanFees));
+    }
     if (roomConfigs.value.length === 0) {
       expandedRoomId.value = "";
     } else if (!roomConfigs.value.some(item => item.roomId === expandedRoomId.value)) {
@@ -139,17 +139,8 @@ export function useTenantCreateForm(formInline: any, roomSelection: { value: Roo
     { deep: true }
   );
 
-  watch(
-    sharedOtherFees,
-    () => {
-      syncOtherFeesToForm();
-    },
-    { deep: true }
-  );
-
   return {
     roomConfigs,
-    sharedOtherFees,
     expandedRoomId,
     buildRoomConfigs,
     handleRoomRentChange,

@@ -1637,7 +1637,7 @@ export type OtherFeeDto = {
     /**
      * 房间ID
      */
-    roomId?: string;
+    roomId: string;
     /**
      * 其他费用类型（如：装修/维修/房屋维修、随房租付、按固定金额等）
      */
@@ -8483,6 +8483,10 @@ export type LeaseBillFeeVo = {
      */
     billId?: string;
     /**
+     * 房间ID
+     */
+    roomId?: string;
+    /**
      * 费用类型：RENTAL/DEPOSIT/OTHER_FEE
      */
     feeType?: string;
@@ -9082,6 +9086,10 @@ export type LeaseBillFeeDto = {
      * 费用项ID
      */
     id?: string;
+    /**
+     * 房间ID
+     */
+    roomId?: string;
     /**
      * 费用类型：RENTAL/DEPOSIT/OTHER_FEE
      */
