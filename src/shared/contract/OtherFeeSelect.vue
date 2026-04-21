@@ -1,10 +1,16 @@
 <template>
   <div class="other-fee-select">
     <div class="section">
-      <h4 v-if="!props.hideTitle" class="section-title">
-        其他费用
-        <span class="section-subtitle">(租金以外的费用,适用于所有支付方式)</span>
-      </h4>
+      <div class="section-header">
+        <h4 class="section-title">
+          {{ props.title || "其他费用" }}
+          <span v-if="props.subTitle" class="section-subtitle">{{ props.subTitle }}</span>
+        </h4>
+        <el-button type="primary" plain size="small" @click="addOtherFee">
+          <el-icon><Plus /></el-icon>
+          其他费用
+        </el-button>
+      </div>
 
       <div v-if="modelValue && modelValue.length > 0" class="fee-table-wrapper">
         <table class="fee-table">
@@ -13,7 +19,7 @@
               <th style="width: 200px">费用类型</th>
               <th style="width: 150px">付款方式</th>
               <th style="width: 300px">金额</th>
-              <th style="width: 60px">操作</th>
+              <th style="width: 30px">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -65,12 +71,6 @@
           </tbody>
         </table>
       </div>
-      <div class="text-left">
-        <el-button type="primary" plain size="small" style="margin-top: 12px" @click="addOtherFee">
-          <el-icon><Plus /></el-icon>
-          其他费用
-        </el-button>
-      </div>
     </div>
   </div>
 </template>
@@ -84,12 +84,14 @@
 
   interface Props {
     modelValue?: OtherFeeDto[];
-    hideTitle?: boolean;
+    title?: string;
+    subTitle?: string;
   }
 
   const props = withDefaults(defineProps<Props>(), {
     modelValue: () => [],
-    hideTitle: false
+    title: "",
+    subTitle: ""
   });
 
   const emit = defineEmits<(e: "update:modelValue", value: OtherFeeDto[]) => void>();
@@ -191,8 +193,15 @@
       margin-bottom: 25px;
     }
 
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
     .section-title {
-      margin: 0 0 8px 0;
+      margin: 0;
       font-size: 15px;
       font-weight: 600;
       color: var(--el-text-color-primary);
@@ -209,7 +218,7 @@
 
     .fee-table-wrapper {
       border: 1px solid var(--el-border-color);
-      border-radius: 4px;
+      border-radius: 12px;
       overflow: hidden;
       margin-bottom: 4px;
       background-color: var(--el-bg-color);

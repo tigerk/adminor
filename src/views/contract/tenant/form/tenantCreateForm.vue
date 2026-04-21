@@ -381,7 +381,7 @@
     <div>
       <div class="mb-2 room-config-section-hint">全局其他费用：作用于整份租约，不区分具体房间。</div>
       <!-- 其他费用配置 -->
-      <OtherFeeSelect v-model="sharedOtherFees" />
+      <OtherFeeSelect v-model="sharedOtherFees" title="其他费用" sub-title="(租金以外的费用,适用于所有支付方式)" />
     </div>
     <div class="mb-1">
       <el-row :gutter="20">
