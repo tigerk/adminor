@@ -215,6 +215,9 @@
       extra: item
     }));
 
+    // 同步更新表单数据，触发表单验证
+    formInline.roomIds = rooms.map(item => item.roomId);
+
     // 触发价格计算
     calculateTotalRent();
   };
@@ -222,6 +225,8 @@
   // 移除房源
   const handleRemoveRoom = (index: number) => {
     roomSelection.value.splice(index, 1);
+    // 同步更新表单数据
+    formInline.roomIds = roomSelection.value.map(item => item.value);
     calculateTotalRent();
   };
 

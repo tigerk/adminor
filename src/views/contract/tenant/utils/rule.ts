@@ -28,6 +28,7 @@ const validateIdNo = (rule: any, value: any, callback: any, formInline: any) => 
 export const tenantFormRules = (formInline: any) =>
   reactive<FormRules>({
     "lease.roomIds": [{ required: true, message: "请选择房间", trigger: "change" }],
+    "lease.contractTemplateId": [{ required: true, message: "请选择合同模板", trigger: "change" }],
     "lease.contractTemplateOptions": [{ required: true, message: "请选择租客合同模板", trigger: "change" }],
     "tenantPersonal.name": [
       { required: true, message: "请输入租客姓名", trigger: "blur" },
@@ -49,6 +50,7 @@ export const tenantFormRules = (formInline: any) =>
 export const tenantCompanyFormRules = (formInline: any) =>
   reactive<FormRules>({
     "lease.roomIds": [{ required: true, message: "请选择房间", trigger: "change" }],
+    "lease.contractTemplateId": [{ required: true, message: "请选择合同模板", trigger: "change" }],
     "lease.contractTemplateOptions": [{ required: true, message: "请选择租客合同模板", trigger: "change" }],
     "tenantCompany.companyName": [
       { required: true, message: "请输入企业名称", trigger: "blur" },

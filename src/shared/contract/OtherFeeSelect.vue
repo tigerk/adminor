@@ -71,6 +71,7 @@
           </tbody>
         </table>
       </div>
+      <div v-else class="empty-state">暂无配置费用</div>
     </div>
   </div>
 </template>
@@ -190,7 +191,6 @@
 <style scoped lang="scss">
   .other-fee-select {
     .section {
-      margin-bottom: 25px;
     }
 
     .section-header {
@@ -283,6 +283,13 @@
 
     .readonly-placeholder {
       color: var(--el-text-color-placeholder);
+    }
+
+    .empty-state {
+      padding: 10px 0;
+      text-align: center;
+      color: var(--el-text-color-secondary);
+      font-size: 14px;
     }
   }
 </style>

@@ -4,45 +4,6 @@
   </div>
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
     <div class="section-tenant-info">
-      <!-- 房源选择区域 - 编辑模式完全禁用 -->
-      <div class="mb-4 house-selector-info" :class="{ 'edit-mode': props.isEdit }">
-        <div class="flex justify-between items-center mb-2">
-          <el-text type="primary" size="large" tag="b">房源信息</el-text>
-
-          <!-- 编辑模式：显示提示标签 -->
-          <el-tag v-if="props.isEdit" type="info" size="small" effect="plain">
-            <el-space>
-              <el-icon class="mr-1"><Lock /></el-icon>
-              编辑模式下不可修改房源
-            </el-space>
-          </el-tag>
-
-          <!-- 新增模式：显示选择按钮 -->
-          <el-button v-else type="primary" link :icon="Plus" @click="roomPickerRef.show(roomSelection)">选择房源</el-button>
-        </div>
-
-        <!-- 房源标签展示区域 -->
-        <div v-if="roomSelection.length > 0" class="room-tags-box p-1 border rounded-md" :class="{ 'disabled-box': props.isEdit }">
-          <el-tag
-            v-for="(room, index) in roomSelection"
-            :key="room.value"
-            :closable="!props.isEdit"
-            :disable-transitions="props.isEdit"
-            class="m-1"
-            size="large"
-            :class="{ 'disabled-tag': props.isEdit }"
-            @close="handleRemoveRoom(index)"
-          >
-            {{ room.label }} |
-            <span class="text-orange-500">¥{{ room.extra?.price }}</span>
-          </el-tag>
-        </div>
-
-        <!-- 空状态 -->
-        <div v-else class="text-center">{{ props.isEdit ? "暂无房源信息" : "请点击右上方 选择房源" }}</div>
-
-        <el-form-item prop="lease.roomIds" label-width="0" class="!m-0" />
-      </div>
       <!-- 房源选择器 - 仅在非编辑模式下显示 -->
       <RoomPicker v-if="!props.isEdit" ref="roomPickerRef" @confirm="handleRoomConfirmed" />
       <div class="section-header">
@@ -196,22 +157,154 @@
         </div>
       </div>
     </div>
-    <div class="mb-4 tenant-contract-info">
+    <div class="mb-2 tenant-contract-info">
       <div class="mb-4">
         <el-space spacer="|">
           <el-text type="primary" size="large" tag="b">租约信息</el-text>
         </el-space>
       </div>
       <div>
-        <el-row :gutter="20">
-          <el-col :span="3">
-            <el-form-item label="签约类型" prop="lease.contractNature">
-              <el-select v-model="formInline.lease.contractNature" default-first-option placeholder="签约类型" class="w-full" clearable>
-                <el-option v-for="item in LEASE_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
+        <el-row class="mb-4">
+          <el-col :span="24">
+            <el-form-item label="租金与费用配置" required>
+              <div class="room-config-panel">
+                <div class="room-config-panel__head">
+                  <div class="room-config-panel__title">按房间配置租金和费用</div>
+                  <div class="room-config-panel__desc">各房间独立配置，系统自动汇总月租金总计。房间费用在当前区域直接展开维护，不再单独打开弹框。</div>
+                </div>
+                <div class="room-config-panel__selector" :class="{ 'room-config-panel__selector--edit': props.isEdit }">
+                  <div class="room-config-panel__selector-top">
+                    <div class="room-config-panel__selector-title">房源信息</div>
+                    <div class="room-config-panel__selector-actions">
+                      <el-tag v-if="props.isEdit" type="info" size="small" effect="plain">
+                        <el-space>
+                          <el-icon class="mr-1"><Lock /></el-icon>
+                          编辑模式下不可修改房源
+                        </el-space>
+                      </el-tag>
+                      <el-button v-else type="primary" :icon="Plus" @click="roomPickerRef.show(roomSelection)">选择房间</el-button>
+                    </div>
+                  </div>
+                  <div v-if="roomSelection.length > 0" class="room-config-panel__selector-list" :class="{ 'disabled-box': props.isEdit }">
+                    <el-tag
+                      v-for="(room, index) in roomSelection"
+                      :key="room.value"
+                      :closable="!props.isEdit"
+                      :disable-transitions="props.isEdit"
+                      class="m-1"
+                      size="large"
+                      :class="{ 'disabled-tag': props.isEdit }"
+                      @close="handleRemoveRoom(index)"
+                    >
+                      {{ room.label }} |
+                      <span class="text-orange-500">¥{{ room.extra?.price }}</span>
+                    </el-tag>
+                  </div>
+                  <div v-else class="room-config-panel__selector-empty">{{ props.isEdit ? "暂无房源信息" : "请先选择房源，再逐个房间配置租金和费用。" }}</div>
+                  <el-form-item prop="lease.roomIds" label-width="0" class="!m-0" />
+                </div>
+                <div v-if="roomConfigs.length === 0" class="room-config-empty">请先选择房源</div>
+                <div v-else class="room-config-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th style="width: 34%">房间</th>
+                        <th style="width: 20%">月租金</th>
+                        <th style="width: 16%">费用项</th>
+                        <th style="width: 18%">费用合计</th>
+                        <th style="width: 12%">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template v-for="item in roomConfigs" :key="item.roomId">
+                        <tr :class="{ 'room-config-table__summary-row--expanded': expandedRoomId === item.roomId }">
+                          <td>
+                            <div class="room-config-table__room">{{ item.roomLabel }}</div>
+                          </td>
+                          <td>
+                            <div class="room-rent-input">
+                              <span class="room-rent-input__prefix">¥</span>
+                              <el-input
+                                :model-value="item.rentPrice"
+                                type="number"
+                                placeholder="请输入月租金"
+                                @update:model-value="value => handleRoomRentChange(item.roomId, value)"
+                              >
+                                <template #append>元/月</template>
+                              </el-input>
+                            </div>
+                          </td>
+                          <td>
+                            <span class="room-config-table__meta">{{ item.feeList.length }} 项</span>
+                          </td>
+                          <td>
+                            <span class="room-config-table__amount">¥{{ calculateRoomFeeTotal(item).toFixed(2) }}</span>
+                          </td>
+                          <td class="text-center">
+                            <el-button type="primary" link @click="toggleRoomExpand(item.roomId)">
+                              {{ expandedRoomId === item.roomId ? "收起" : "展开配置" }}
+                            </el-button>
+                          </td>
+                        </tr>
+                        <tr v-if="expandedRoomId === item.roomId" class="room-config-table__detail-row">
+                          <td colspan="5" class="room-config-table__detail-cell">
+                            <div class="room-config-detail">
+                              <OtherFeeSelect v-model="item.feeList" :title="`${item.roomLabel} · 费用项配置`" sub-title="按当前房间单独维护费用项。" />
+                            </div>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+                <div v-if="roomConfigs.length > 0" class="room-config-summary-bar">
+                  <div class="room-config-summary-bar__item">
+                    <span class="room-config-summary-bar__label">月租金总计</span>
+                    <span class="room-config-summary-bar__value">¥ {{ Number(formInline.lease.rentPrice || 0).toFixed(2) }}</span>
+                    <span class="room-config-summary-bar__suffix">/月</span>
+                  </div>
+                  <div class="room-config-summary-bar__item">
+                    <span class="room-config-summary-bar__label">押</span>
+                    <el-select v-model="formInline.lease.depositMonths" class="room-config-summary-bar__select" placeholder="押金">
+                      <el-option v-for="item in depositMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                  </div>
+                  <div class="room-config-summary-bar__item">
+                    <span class="room-config-summary-bar__label">付</span>
+                    <el-select v-model="formInline.lease.paymentMonths" class="room-config-summary-bar__select" placeholder="付款">
+                      <el-option v-for="item in paymentMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                  </div>
+                  <div class="room-config-summary-bar__item">
+                    <span class="room-config-summary-bar__label">押金</span>
+                    <span class="room-config-summary-bar__value">¥{{ depositAmount }}</span>
+                  </div>
+                  <div class="room-config-summary-bar__item">
+                    <span class="room-config-summary-bar__label">首次支付</span>
+                    <span class="room-config-summary-bar__value room-config-summary-bar__value--accent">¥{{ totalFirstPayment || "0.00" }}</span>
+                  </div>
+                </div>
+              </div>
             </el-form-item>
           </el-col>
-          <el-col :span="5">
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <el-form-item label="月租金总计" prop="lease.rentPrice" required>
+              <div>
+                <!-- 月租金输入 -->
+                <div class="rent-input">
+                  <el-input v-model="formInline.lease.rentPrice" type="number" readonly placeholder="按房间自动汇总" class="rent-price-input">
+                    <template #prefix>
+                      <span class="currency-symbol">¥</span>
+                    </template>
+                    <template #append>元/月</template>
+                  </el-input>
+                </div>
+              </div>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
             <el-form-item label="合同周期" prop="lease.leaseDate">
               <el-date-picker
                 v-model="formInline.lease.leaseDate"
@@ -230,7 +323,7 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="5">
+          <el-col :span="6">
             <el-form-item label="入离日期" prop="lease.checkDate">
               <el-date-picker
                 v-model="formInline.lease.checkDate"
@@ -250,111 +343,22 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row class="mb-4">
-          <el-col :span="24">
-            <el-form-item label="房间配置明细" required>
-              <div class="room-config-panel">
-                <div class="room-config-panel__head">
-                  <div class="room-config-panel__title">按房间分别配置租金和费用项</div>
-                  <div class="room-config-panel__desc">合同级字段统一维护，房间级租金和费用单独配置，系统会自动汇总到月租金总计。</div>
-                </div>
-                <div v-if="roomConfigs.length === 0" class="room-config-empty">请先选择房源</div>
-                <div v-else class="room-config-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th style="width: 34%">房间</th>
-                        <th style="width: 20%">月租金</th>
-                        <th style="width: 16%">费用项</th>
-                        <th style="width: 18%">费用合计</th>
-                        <th style="width: 12%">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="item in roomConfigs" :key="item.roomId">
-                        <td>
-                          <div class="room-config-table__room">{{ item.roomLabel }}</div>
-                        </td>
-                        <td>
-                          <el-input :model-value="item.rentPrice" type="number" placeholder="请输入月租金" @update:model-value="value => handleRoomRentChange(item.roomId, value)">
-                            <template #prefix>¥</template>
-                            <template #append>元/月</template>
-                          </el-input>
-                        </td>
-                        <td>
-                          <span class="room-config-table__meta">{{ item.feeList.length }} 项</span>
-                        </td>
-                        <td>
-                          <span class="room-config-table__amount">¥{{ calculateRoomFeeTotal(item).toFixed(2) }}</span>
-                        </td>
-                        <td class="text-center">
-                          <el-button type="primary" link @click="openRoomFeeDialog(item)">配置费用</el-button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </el-form-item>
-          </el-col>
-        </el-row>
         <el-row :gutter="20">
-          <el-col :span="5">
-            <el-form-item label="租金信息">
-              <div class="rent-info-container">
-                <!-- 押付方式 -->
-                <div class="payment-method">
-                  <el-select v-model="formInline.lease.depositMonths" class="deposit-select" placeholder="押金">
-                    <template #prefix>押</template>
-                    <el-option v-for="item in depositMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
-                  <el-select v-model="formInline.lease.paymentMonths" class="payment-select" placeholder="付款">
-                    <template #prefix>付</template>
-                    <el-option v-for="item in paymentMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
-                </div>
-              </div>
+          <el-col :span="6">
+            <el-form-item label="签约类型" prop="lease.contractNature">
+              <el-select v-model="formInline.lease.contractNature" default-first-option placeholder="签约类型" class="w-full" clearable>
+                <el-option v-for="item in LEASE_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="月租金总计" prop="lease.rentPrice" required>
-              <div>
-                <!-- 月租金输入 -->
-                <div class="rent-input">
-                  <el-input v-model="formInline.lease.rentPrice" type="number" readonly placeholder="按房间自动汇总" class="rent-price-input">
-                    <template #prefix>
-                      <span class="currency-symbol">¥</span>
-                    </template>
-                    <template #append>元/月</template>
-                  </el-input>
-                </div>
-              </div>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row class="mb-4">
-          <el-col :span="13">&nbsp;</el-col>
-          <el-col :span="11">
-            <!-- 计算提示 -->
-            <div v-if="depositAmount || totalFirstPayment" class="rent-summary">
-              <el-text type="info" size="small">
-                押金：
-                <span class="amount">¥{{ depositAmount }} 元</span>
-                {{ totalFirstPayment ? `，首次支付：` : "" }}
-                <span v-if="totalFirstPayment" class="amount">¥{{ totalFirstPayment }} 元</span>
-              </el-text>
-            </div>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="8">
             <el-form-item label="合同模板" prop="lease.contractTemplateId" required>
               <el-select v-model="formInline.lease.contractTemplateId" placeholder="请选择合同模板">
                 <el-option v-for="item in contractTemplateList" :key="item.id" :label="item.templateName" :value="item.id" />
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="5">
+          <el-col :span="6">
             <el-form-item label="收租设置" prop="lease.rentDueType" required>
               <el-input v-model.number="formInline.lease.rentDueDay" :min="0" placeholder="" type="number" class="text-center rent-due-day-input">
                 <template #prepend>
@@ -368,7 +372,7 @@
               </el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="5">
+          <el-col :span="6">
             <el-form-item label="首期账单收租日" prop="lease.firstBillDay">
               <el-select v-model="formInline.lease.firstBillDay" placeholder="请选择">
                 <el-option v-for="item in FIRST_BILL_DAY_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
@@ -378,7 +382,7 @@
         </el-row>
       </div>
     </div>
-    <div>
+    <div class="mb-3">
       <div class="mb-2 room-config-section-hint">全局其他费用：作用于整份租约，不区分具体房间。</div>
       <!-- 其他费用配置 -->
       <OtherFeeSelect v-model="sharedOtherFees" title="其他费用" sub-title="(租金以外的费用,适用于所有支付方式)" />
@@ -424,31 +428,6 @@
       </el-row>
     </div>
   </el-form>
-  <el-dialog
-    v-model="roomFeeDialogVisible"
-    destroy-on-close
-    width="960px"
-    :title="activeRoomConfig ? `配置房间费用 · ${activeRoomConfig.roomLabel}` : '配置房间费用'"
-    @closed="handleRoomFeeDialogClose"
-  >
-    <div v-if="activeRoomConfig" class="room-fee-dialog">
-      <div class="room-fee-dialog__summary">
-        <div class="room-fee-dialog__item">
-          <span class="room-fee-dialog__label">房间</span>
-          <span class="room-fee-dialog__value">{{ activeRoomConfig.roomLabel }}</span>
-        </div>
-        <div class="room-fee-dialog__item">
-          <span class="room-fee-dialog__label">月租金</span>
-          <span class="room-fee-dialog__value">¥{{ activeRoomConfig.rentPrice.toFixed(2) }}</span>
-        </div>
-      </div>
-      <OtherFeeSelect v-model="roomFeeDraft" hide-title />
-    </div>
-    <template #footer>
-      <el-button @click="handleRoomFeeDialogClose">取消</el-button>
-      <el-button type="primary" @click="handleRoomFeeDialogSave">确定</el-button>
-    </template>
-  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -508,9 +487,7 @@
   const roomSelection = ref<RoomSelectionItem[]>([]);
   const roomConfigs = ref<RoomConfigItem[]>([]);
   const sharedOtherFees = ref<RoomScopedOtherFee[]>([]);
-  const roomFeeDialogVisible = ref(false);
-  const editingRoomId = ref<string>("");
-  const roomFeeDraft = ref<RoomScopedOtherFee[]>([]);
+  const expandedRoomId = ref<string>("");
 
   // 表单数据 - 确保正确初始化
   const formInline = reactive<TenantsCreateFormProps>({
@@ -808,11 +785,13 @@
       return;
     }
 
+    const removedRoomId = String(roomSelection.value[index]?.value || "");
     roomSelection.value.splice(index, 1);
+    if (expandedRoomId.value === removedRoomId) {
+      expandedRoomId.value = "";
+    }
     buildRoomConfigs();
   };
-
-  const activeRoomConfig = computed(() => roomConfigs.value.find(item => item.roomId === editingRoomId.value) || null);
 
   const cloneFeeItem = (fee?: RoomScopedOtherFee | null): RoomScopedOtherFee => ({
     roomId: fee?.roomId ?? undefined,
@@ -858,6 +837,11 @@
       };
     });
     sharedOtherFees.value = sharedFees;
+    if (roomConfigs.value.length === 0) {
+      expandedRoomId.value = "";
+    } else if (!roomConfigs.value.some(item => item.roomId === expandedRoomId.value)) {
+      expandedRoomId.value = roomConfigs.value[0].roomId;
+    }
   };
 
   const syncRoomSelectionPrices = () => {
@@ -909,27 +893,8 @@
     target.rentPrice = normalizeMoney(value);
   };
 
-  const openRoomFeeDialog = (config: RoomConfigItem) => {
-    editingRoomId.value = config.roomId;
-    roomFeeDraft.value = cloneFeeList(config.feeList);
-    roomFeeDialogVisible.value = true;
-  };
-
-  const handleRoomFeeDialogSave = () => {
-    const target = roomConfigs.value.find(item => item.roomId === editingRoomId.value);
-    if (!target) {
-      roomFeeDialogVisible.value = false;
-      return;
-    }
-    target.feeList = cloneFeeList(roomFeeDraft.value);
-    roomFeeDialogVisible.value = false;
-    editingRoomId.value = "";
-  };
-
-  const handleRoomFeeDialogClose = () => {
-    roomFeeDialogVisible.value = false;
-    editingRoomId.value = "";
-    roomFeeDraft.value = [];
+  const toggleRoomExpand = (roomId: string) => {
+    expandedRoomId.value = expandedRoomId.value === roomId ? "" : roomId;
   };
 
   defineExpose({
@@ -1039,27 +1004,85 @@
   .room-config-panel {
     width: 100%;
     border: 1px solid var(--el-border-color);
-    border-radius: 6px;
+    border-radius: 10px;
     background: var(--el-bg-color);
     overflow: hidden;
   }
 
   .room-config-panel__head {
-    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--el-border-color-light);
-    background: var(--el-fill-color-lighter);
+    background: var(--el-fill-color-light);
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 12px;
+      bottom: 12px;
+      width: 3px;
+      background: var(--el-color-primary);
+      border-radius: 0 2px 2px 0;
+    }
   }
 
   .room-config-panel__title {
     font-size: 14px;
     font-weight: 600;
     color: var(--el-text-color-primary);
+    padding-left: 10px;
+    flex-shrink: 0;
   }
 
   .room-config-panel__desc {
-    margin-top: 4px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
+    padding-left: 10px;
+    flex: 1;
+    text-align: right;
+  }
+
+  .room-config-panel__selector {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--el-border-color-light);
+    background: var(--el-bg-color);
+  }
+
+  .room-config-panel__selector-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .room-config-panel__selector-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .room-config-panel__selector-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .room-config-panel__selector-list {
+    padding: 4px;
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    background: var(--el-fill-color-blank);
+  }
+
+  .room-config-panel__selector-empty {
+    padding: 18px 0 6px;
+    color: var(--el-text-color-secondary);
+    text-align: center;
   }
 
   .room-config-section-hint {
@@ -1102,9 +1125,30 @@
     }
   }
 
+  .room-config-table__summary-row--expanded {
+    background: color-mix(in srgb, var(--el-color-primary) 6%, var(--el-bg-color));
+  }
+
   .room-config-table__room {
     font-weight: 500;
     color: var(--el-text-color-primary);
+  }
+
+  .room-rent-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .room-rent-input__prefix {
+    flex: 0 0 auto;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--el-text-color-regular);
+  }
+
+  .room-rent-input :deep(.el-input__inner) {
+    text-align: center;
   }
 
   .room-config-table__meta {
@@ -1116,30 +1160,70 @@
     color: var(--el-color-primary);
   }
 
-  .room-fee-dialog__summary {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 16px;
+  .room-config-table__detail-row td {
+    padding: 0;
+    border-bottom: 1px solid var(--el-border-color-light);
   }
 
-  .room-fee-dialog__item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 6px;
+  .room-config-table__detail-cell {
+    padding: 0 !important;
+  }
+
+  .room-config-detail {
+    padding: 16px;
+    background: color-mix(in srgb, var(--el-color-primary) 4%, var(--el-fill-color-blank));
+    border-left: 3px solid var(--el-color-primary);
+  }
+
+  .room-config-detail__title {
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-color-primary);
+  }
+
+  .room-config-summary-bar {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(4, minmax(0, 1fr));
+    gap: 0;
+    border-top: 1px solid var(--el-border-color-light);
     background: var(--el-fill-color-lighter);
   }
 
-  .room-fee-dialog__label {
-    font-size: 13px;
+  .room-config-summary-bar__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 64px;
+    padding: 0 16px;
+    border-right: 1px solid var(--el-border-color-light);
+  }
+
+  .room-config-summary-bar__item:last-child {
+    border-right: none;
+  }
+
+  .room-config-summary-bar__label {
+    color: var(--el-text-color-regular);
+    white-space: nowrap;
+  }
+
+  .room-config-summary-bar__value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .room-config-summary-bar__value--accent {
+    color: var(--el-color-danger);
+  }
+
+  .room-config-summary-bar__suffix {
     color: var(--el-text-color-secondary);
   }
 
-  .room-fee-dialog__value {
-    font-weight: 600;
-    color: var(--el-text-color-primary);
+  .room-config-summary-bar__select {
+    width: 120px;
   }
 
   // 响应式设计
@@ -1170,6 +1254,18 @@
 
     .room-config-panel {
       border-color: var(--el-border-color);
+    }
+
+    .room-config-panel__selector-list {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .room-config-table__summary-row--expanded {
+      background: rgba(230, 125, 52, 0.08);
+    }
+
+    .room-config-detail {
+      background: rgba(255, 255, 255, 0.02);
     }
   }
 </style>
