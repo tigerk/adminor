@@ -1,8 +1,6 @@
-// rule.ts
 import { reactive } from "vue";
 import type { FormRules } from "element-plus";
 
-// 手机号验证规则
 const validatePhone = (rule: any, value: any, callback: any) => {
   if (!value) {
     callback(new Error("请输入联系电话"));
@@ -13,7 +11,6 @@ const validatePhone = (rule: any, value: any, callback: any) => {
   }
 };
 
-// 身份证验证规则
 const validateIdNo = (rule: any, value: any, callback: any, formInline: any) => {
   if (!value) {
     callback(new Error("请输入证件号码"));
@@ -24,7 +21,6 @@ const validateIdNo = (rule: any, value: any, callback: any, formInline: any) => 
   }
 };
 
-// 个人租客验证规则
 export const tenantFormRules = (formInline: any) =>
   reactive<FormRules>({
     "lease.roomIds": [{ required: true, message: "请选择房间", trigger: "change" }],
@@ -39,14 +35,12 @@ export const tenantFormRules = (formInline: any) =>
     "tenantPersonal.idNo": [{ required: true, validator: (rule, value, callback) => validateIdNo(rule, value, callback, formInline), trigger: "blur" }],
     "tenantPersonal.phone": [{ required: true, validator: validatePhone, trigger: "blur" }],
     "lease.deptId": [{ required: true, message: "请选择部门", trigger: "change" }],
-    "lease.rentPrice": [{ required: true, message: "请输入月租金", trigger: "blur" }],
     "lease.leaseDate": [{ required: true, message: "请选择合同周期", trigger: "change" }],
     "lease.checkDate": [{ required: true, message: "请选择入离日期", trigger: "change" }],
     "lease.salesmanId": [{ required: true, message: "请选择业务员", trigger: "change" }],
     "lease.rentDueType": [{ required: true, message: "请选择收租设置", trigger: "change" }]
   });
 
-// 企业租客验证规则
 export const tenantCompanyFormRules = (formInline: any) =>
   reactive<FormRules>({
     "lease.roomIds": [{ required: true, message: "请选择房间", trigger: "change" }],
@@ -60,7 +54,6 @@ export const tenantCompanyFormRules = (formInline: any) =>
     "tenantCompany.legalPerson": [{ required: true, message: "请输入法定代表人", trigger: "blur" }],
     "tenantCompany.contactPhone": [{ required: true, validator: validatePhone, trigger: "blur" }],
     "lease.deptId": [{ required: true, message: "请选择部门", trigger: "change" }],
-    "lease.rentPrice": [{ required: true, message: "请输入月租金", trigger: "blur" }],
     "lease.leaseDate": [{ required: true, message: "请选择合同周期", trigger: "change" }],
     "lease.checkDate": [{ required: true, message: "请选择入离日期", trigger: "change" }],
     "lease.salesmanId": [{ required: true, message: "请选择业务员", trigger: "change" }],

@@ -22,8 +22,8 @@ import type {
   LeaseProps
 } from "@/types";
 import { getDictDataByDictCode } from "@/api/sys/dict";
-import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm.vue";
-import TenantMateForm from "@/views/contract/tenant/form/tenantMateForm.vue";
+import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm/index.vue";
+import TenantMateForm from "@/views/contract/tenant/form/tenantCreateForm/tenantMateForm.vue";
 import ViewTenantDialog from "@/views/contract/tenant/view/ViewTenantDialog.vue";
 import { calculateMonthsDifference } from "@/utils/yeah";
 import { convertImage2string } from "@/utils/image";

@@ -2383,11 +2383,11 @@ export type RoomLockDto = {
     /**
      * 开始时间
      */
-    startTime?: string;
+    startAt?: string;
     /**
      * 结束时间
      */
-    endTime?: string;
+    endAt?: string;
     /**
      * 备注
      */
@@ -2423,11 +2423,11 @@ export type RoomLockRecordVo = {
     /**
      * 开始时间
      */
-    startTime?: string;
+    startAt?: string;
     /**
      * 结束时间
      */
-    endTime?: string;
+    endAt?: string;
     /**
      * 锁房备注
      */
@@ -7849,6 +7849,10 @@ export type LeaseDto = {
      */
     roomIds?: Array<string>;
     /**
+     * 租约房间配置
+     */
+    roomRentList?: Array<LeaseRoomDto>;
+    /**
      * 租客类型：0=个人，1=企业
      */
     tenantType?: number;
@@ -7887,6 +7891,20 @@ export type LeaseDto = {
     dealChannel?: string;
     remark?: string;
     createBy?: string;
+};
+
+/**
+ * 租约房间配置
+ */
+export type LeaseRoomDto = {
+    /**
+     * 房间ID
+     */
+    roomId?: string;
+    /**
+     * 房间租金
+     */
+    rentPrice?: number;
 };
 
 export type TenantCompanyDto = {

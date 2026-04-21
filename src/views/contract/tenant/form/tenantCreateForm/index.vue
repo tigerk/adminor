@@ -167,143 +167,30 @@
         <el-row class="mb-4">
           <el-col :span="24">
             <el-form-item label="租金与费用配置" required>
-              <div class="room-config-panel">
-                <div class="room-config-panel__head">
-                  <div class="room-config-panel__title">按房间配置租金和费用</div>
-                  <div class="room-config-panel__desc">各房间独立配置，系统自动汇总月租金总计。房间费用在当前区域直接展开维护，不再单独打开弹框。</div>
-                </div>
-                <div class="room-config-panel__selector" :class="{ 'room-config-panel__selector--edit': props.isEdit }">
-                  <div class="room-config-panel__selector-top">
-                    <div class="room-config-panel__selector-title">房源信息</div>
-                    <div class="room-config-panel__selector-actions">
-                      <el-tag v-if="props.isEdit" type="info" size="small" effect="plain">
-                        <el-space>
-                          <el-icon class="mr-1"><Lock /></el-icon>
-                          编辑模式下不可修改房源
-                        </el-space>
-                      </el-tag>
-                      <el-button v-else type="primary" :icon="Plus" @click="roomPickerRef.show(roomSelection)">选择房间</el-button>
-                    </div>
-                  </div>
-                  <div v-if="roomSelection.length > 0" class="room-config-panel__selector-list" :class="{ 'disabled-box': props.isEdit }">
-                    <el-tag
-                      v-for="(room, index) in roomSelection"
-                      :key="room.value"
-                      :closable="!props.isEdit"
-                      :disable-transitions="props.isEdit"
-                      class="m-1"
-                      size="large"
-                      :class="{ 'disabled-tag': props.isEdit }"
-                      @close="handleRemoveRoom(index)"
-                    >
-                      {{ room.label }} |
-                      <span class="text-orange-500">¥{{ room.extra?.price }}</span>
-                    </el-tag>
-                  </div>
-                  <div v-else class="room-config-panel__selector-empty">{{ props.isEdit ? "暂无房源信息" : "请先选择房源，再逐个房间配置租金和费用。" }}</div>
-                  <el-form-item prop="lease.roomIds" label-width="0" class="!m-0" />
-                </div>
-                <div v-if="roomConfigs.length === 0" class="room-config-empty">请先选择房源</div>
-                <div v-else class="room-config-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th style="width: 34%">房间</th>
-                        <th style="width: 20%">月租金</th>
-                        <th style="width: 16%">费用项</th>
-                        <th style="width: 18%">费用合计</th>
-                        <th style="width: 12%">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <template v-for="item in roomConfigs" :key="item.roomId">
-                        <tr :class="{ 'room-config-table__summary-row--expanded': expandedRoomId === item.roomId }">
-                          <td>
-                            <div class="room-config-table__room">{{ item.roomLabel }}</div>
-                          </td>
-                          <td>
-                            <div class="room-rent-input">
-                              <span class="room-rent-input__prefix">¥</span>
-                              <el-input
-                                :model-value="item.rentPrice"
-                                type="number"
-                                placeholder="请输入月租金"
-                                @update:model-value="value => handleRoomRentChange(item.roomId, value)"
-                              >
-                                <template #append>元/月</template>
-                              </el-input>
-                            </div>
-                          </td>
-                          <td>
-                            <span class="room-config-table__meta">{{ item.feeList.length }} 项</span>
-                          </td>
-                          <td>
-                            <span class="room-config-table__amount">¥{{ calculateRoomFeeTotal(item).toFixed(2) }}</span>
-                          </td>
-                          <td class="text-center">
-                            <el-button type="primary" link @click="toggleRoomExpand(item.roomId)">
-                              {{ expandedRoomId === item.roomId ? "收起" : "展开配置" }}
-                            </el-button>
-                          </td>
-                        </tr>
-                        <tr v-if="expandedRoomId === item.roomId" class="room-config-table__detail-row">
-                          <td colspan="5" class="room-config-table__detail-cell">
-                            <div class="room-config-detail">
-                              <OtherFeeSelect v-model="item.feeList" :title="`${item.roomLabel} · 费用项配置`" sub-title="按当前房间单独维护费用项。" />
-                            </div>
-                          </td>
-                        </tr>
-                      </template>
-                    </tbody>
-                  </table>
-                </div>
-                <div v-if="roomConfigs.length > 0" class="room-config-summary-bar">
-                  <div class="room-config-summary-bar__item">
-                    <span class="room-config-summary-bar__label">月租金总计</span>
-                    <span class="room-config-summary-bar__value">¥ {{ Number(formInline.lease.rentPrice || 0).toFixed(2) }}</span>
-                    <span class="room-config-summary-bar__suffix">/月</span>
-                  </div>
-                  <div class="room-config-summary-bar__item">
-                    <span class="room-config-summary-bar__label">押</span>
-                    <el-select v-model="formInline.lease.depositMonths" class="room-config-summary-bar__select" placeholder="押金">
-                      <el-option v-for="item in depositMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
-                    </el-select>
-                  </div>
-                  <div class="room-config-summary-bar__item">
-                    <span class="room-config-summary-bar__label">付</span>
-                    <el-select v-model="formInline.lease.paymentMonths" class="room-config-summary-bar__select" placeholder="付款">
-                      <el-option v-for="item in paymentMonthsOptions" :key="item.value" :label="item.label" :value="item.value" />
-                    </el-select>
-                  </div>
-                  <div class="room-config-summary-bar__item">
-                    <span class="room-config-summary-bar__label">押金</span>
-                    <span class="room-config-summary-bar__value">¥{{ depositAmount }}</span>
-                  </div>
-                  <div class="room-config-summary-bar__item">
-                    <span class="room-config-summary-bar__label">首次支付</span>
-                    <span class="room-config-summary-bar__value room-config-summary-bar__value--accent">¥{{ totalFirstPayment || "0.00" }}</span>
-                  </div>
-                </div>
-              </div>
+              <RoomConfigSection
+                :is-edit="props.isEdit"
+                :room-selection="roomSelection"
+                :room-configs="roomConfigs"
+                :expanded-room-id="expandedRoomId"
+                :total-rent="formInline.lease.rentPrice"
+                :deposit-months="formInline.lease.depositMonths"
+                :payment-months="formInline.lease.paymentMonths"
+                :deposit-amount="depositAmount"
+                :total-first-payment="totalFirstPayment || '0.00'"
+                :deposit-months-options="depositMonthsOptions"
+                :payment-months-options="paymentMonthsOptions"
+                @pick-rooms="roomPickerRef.show(roomSelection)"
+                @remove-room="handleRemoveRoom"
+                @change-room-rent="handleRoomRentChange"
+                @toggle-room="toggleRoomExpand"
+                @update:deposit-months="value => (formInline.lease.depositMonths = value)"
+                @update:payment-months="value => (formInline.lease.paymentMonths = value)"
+              />
+              <el-form-item prop="lease.roomIds" label-width="0" class="!m-0" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="月租金总计" prop="lease.rentPrice" required>
-              <div>
-                <!-- 月租金输入 -->
-                <div class="rent-input">
-                  <el-input v-model="formInline.lease.rentPrice" type="number" readonly placeholder="按房间自动汇总" class="rent-price-input">
-                    <template #prefix>
-                      <span class="currency-symbol">¥</span>
-                    </template>
-                    <template #append>元/月</template>
-                  </el-input>
-                </div>
-              </div>
-            </el-form-item>
-          </el-col>
           <el-col :span="6">
             <el-form-item label="合同周期" prop="lease.leaseDate">
               <el-date-picker
@@ -431,7 +318,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, reactive, ref, watch } from "vue";
+  import { computed, onMounted, reactive, ref } from "vue";
   import type { FormInstance } from "element-plus";
   import {
     FIRST_BILL_DAY_OPTIONS,
@@ -443,16 +330,18 @@
     LEASE_CONTRACT_NATURE_OPTIONS,
     TENANT_TYPE_OPTIONS
   } from "@/constants";
-  import type { OtherFeeDto, TenantsCreateFormProps } from "@/types";
-  import { tenantCompanyFormRules, tenantFormRules } from "@/views/contract/tenant/utils/rule";
+  import type { TenantsCreateFormProps } from "@/types";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/upload/UploadImage.vue";
-  import { Lock, Plus } from "@element-plus/icons-vue";
+  import { Plus } from "@element-plus/icons-vue";
   import OtherFeeSelect from "@/shared/contract/OtherFeeSelect.vue";
   import DeptTreeSelect from "@/components/org/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import RoomPicker from "@/shared/house/RoomPicker.vue";
+  import RoomConfigSection from "@/views/contract/tenant/form/tenantCreateForm/sections/RoomConfigSection.vue";
+  import { tenantCompanyFormRules, tenantFormRules } from "@/views/contract/tenant/form/tenantCreateForm/model/rules";
+  import { useTenantCreateForm, type RoomSelectionItem } from "@/views/contract/tenant/form/tenantCreateForm/composables/useTenantCreateForm";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions, openTenantMateDialog } = useTenant();
 
@@ -461,33 +350,12 @@
     isEdit?: boolean; // 新增：标识是否为编辑模式
   }
 
-  interface RoomSelectionItem {
-    label: string;
-    value: string | number;
-    description?: string;
-    extra?: any;
-  }
-
-  interface RoomConfigItem {
-    roomId: string;
-    roomLabel: string;
-    rentPrice: number;
-    feeList: RoomScopedOtherFee[];
-  }
-
-  type RoomScopedOtherFee = OtherFeeDto & {
-    roomId?: string | number;
-  };
-
   const props = defineProps<FormProps>();
 
   // 表单引用
   const ruleFormRef = ref<FormInstance>();
 
   const roomSelection = ref<RoomSelectionItem[]>([]);
-  const roomConfigs = ref<RoomConfigItem[]>([]);
-  const sharedOtherFees = ref<RoomScopedOtherFee[]>([]);
-  const expandedRoomId = ref<string>("");
 
   // 表单数据 - 确保正确初始化
   const formInline = reactive<TenantsCreateFormProps>({
@@ -548,6 +416,8 @@
     },
     otherFees: props.formInline?.otherFees || []
   });
+
+  const { roomConfigs, sharedOtherFees, expandedRoomId, buildRoomConfigs, handleRoomRentChange, toggleRoomExpand } = useTenantCreateForm(formInline, roomSelection);
 
   const salesmanList = ref<any[]>([]);
   const contractTemplateList = ref<any[]>([]);
@@ -717,25 +587,6 @@
     }
   ];
 
-  watch(
-    roomConfigs,
-    () => {
-      syncRoomSelectionPrices();
-      calculateTotalRent();
-      syncRoomRentListToForm();
-      syncOtherFeesToForm();
-    },
-    { deep: true }
-  );
-
-  watch(
-    sharedOtherFees,
-    () => {
-      syncOtherFeesToForm();
-    },
-    { deep: true }
-  );
-
   // 计算押金金额
   const depositAmount = computed(() => {
     const price = Number(formInline.lease.rentPrice) || 0;
@@ -791,110 +642,6 @@
       expandedRoomId.value = "";
     }
     buildRoomConfigs();
-  };
-
-  const cloneFeeItem = (fee?: RoomScopedOtherFee | null): RoomScopedOtherFee => ({
-    roomId: fee?.roomId ?? undefined,
-    dictDataId: fee?.dictDataId ?? undefined,
-    name: fee?.name ?? "",
-    paymentMethod: fee?.paymentMethod ?? 0,
-    priceMethod: fee?.priceMethod ?? 1,
-    priceInput: fee?.priceInput ?? undefined
-  });
-
-  const cloneFeeList = (list?: RoomScopedOtherFee[] | null) => (list || []).map(item => cloneFeeItem(item));
-
-  const normalizeMoney = (value: unknown) => {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : 0;
-  };
-
-  const buildRoomConfigs = () => {
-    const feeBucket = new Map<string, RoomScopedOtherFee[]>();
-    const sharedFees: RoomScopedOtherFee[] = [];
-
-    ((formInline.otherFees as RoomScopedOtherFee[]) || []).forEach(fee => {
-      if (!fee.roomId) {
-        sharedFees.push(cloneFeeItem(fee));
-        return;
-      }
-      const roomId = String(fee.roomId);
-      const list = feeBucket.get(roomId) || [];
-      list.push(cloneFeeItem(fee));
-      feeBucket.set(roomId, list);
-    });
-
-    const previousConfigMap = new Map(roomConfigs.value.map(item => [item.roomId, item]));
-    const roomRentMap = new Map((formInline.lease.roomRentList || []).map(item => [String(item.roomId || ""), normalizeMoney(item.rentPrice)]));
-    roomConfigs.value = roomSelection.value.map(room => {
-      const roomId = String(room.value);
-      const previous = previousConfigMap.get(roomId);
-      return {
-        roomId,
-        roomLabel: room.label,
-        rentPrice: normalizeMoney(previous?.rentPrice ?? roomRentMap.get(roomId) ?? room.extra?.price),
-        feeList: cloneFeeList(feeBucket.get(roomId) || previous?.feeList || [])
-      };
-    });
-    sharedOtherFees.value = sharedFees;
-    if (roomConfigs.value.length === 0) {
-      expandedRoomId.value = "";
-    } else if (!roomConfigs.value.some(item => item.roomId === expandedRoomId.value)) {
-      expandedRoomId.value = roomConfigs.value[0].roomId;
-    }
-  };
-
-  const syncRoomSelectionPrices = () => {
-    roomSelection.value.forEach(item => {
-      const matched = roomConfigs.value.find(config => config.roomId === String(item.value));
-      if (!matched) return;
-      item.extra = {
-        ...(item.extra || {}),
-        price: matched.rentPrice
-      };
-    });
-  };
-
-  const syncOtherFeesToForm = () => {
-    const roomFeeList = roomConfigs.value.flatMap(config =>
-      config.feeList
-        .filter(fee => fee.dictDataId || fee.name)
-        .map(fee => ({
-          ...cloneFeeItem(fee),
-          roomId: config.roomId
-        }))
-    );
-    formInline.otherFees = [...cloneFeeList(sharedOtherFees.value).filter(fee => fee.dictDataId || fee.name), ...roomFeeList] as OtherFeeDto[];
-  };
-
-  const syncRoomRentListToForm = () => {
-    formInline.lease.roomRentList = roomConfigs.value.map(item => ({
-      roomId: item.roomId,
-      rentPrice: item.rentPrice
-    }));
-  };
-
-  const calculateRoomFeeTotal = (config: RoomConfigItem) =>
-    config.feeList.reduce((sum, fee) => {
-      const feeValue = normalizeMoney(fee.priceInput);
-      if (fee.priceMethod === 2) {
-        return sum + (config.rentPrice * feeValue) / 100;
-      }
-      return sum + feeValue;
-    }, 0);
-
-  const calculateTotalRent = () => {
-    formInline.lease.rentPrice = roomConfigs.value.reduce((sum, item) => sum + normalizeMoney(item.rentPrice), 0);
-  };
-
-  const handleRoomRentChange = (roomId: string, value: number | string) => {
-    const target = roomConfigs.value.find(item => item.roomId === roomId);
-    if (!target) return;
-    target.rentPrice = normalizeMoney(value);
-  };
-
-  const toggleRoomExpand = (roomId: string) => {
-    expandedRoomId.value = expandedRoomId.value === roomId ? "" : roomId;
   };
 
   defineExpose({
