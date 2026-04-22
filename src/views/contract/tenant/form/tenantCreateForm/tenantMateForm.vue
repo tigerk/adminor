@@ -93,11 +93,10 @@
         </el-card>
       </div>
     </el-form>
-    <el-row class="mt-4">
-      <el-col :span="24" class="text-center">
-        <el-button type="primary" plain class="w-md" @click="addMate">添加同住人</el-button>
-      </el-col>
-    </el-row>
+    <!-- 添加按钮 -->
+    <div class="add-btn-wrapper">
+      <el-button type="primary" plain class="add-mate-btn" :icon="Plus" @click="addMate">添加同住人</el-button>
+    </div>
   </div>
 </template>
 
@@ -108,6 +107,7 @@
   import type { TenantMateVo } from "@/types";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/upload/UploadImage.vue";
+  import { User, UserFilled, Phone, Tickets, Picture, CreditCard, Avatar, Postcard, Files, Plus, Delete } from "@element-plus/icons-vue";
 
   const { tenantSourceOptions, dealChannelOptions, tenantTagOptions } = useTenant();
 
@@ -209,6 +209,29 @@
 
     :deep(.el-form-item__content) {
       min-height: 0;
+    }
+  }
+
+  /* ── 添加按钮 ── */
+  .add-btn-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0 8px;
+  }
+
+  .add-mate-btn {
+    width: 220px;
+    height: 40px;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    border-style: dashed !important;
+    letter-spacing: 0.5px;
+    transition: all 0.25s ease !important;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(var(--el-color-primary-rgb), 0.25);
     }
   }
 </style>
