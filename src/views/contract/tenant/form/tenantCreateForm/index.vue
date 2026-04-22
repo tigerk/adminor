@@ -3,7 +3,7 @@
     <el-alert title="！！！修改租金、合同起止时间、费用项等等时，会重新生成账单、并且使用最新信息重新生成合同，请谨慎修改！" type="error" />
   </div>
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
-    <div class="tenant-form-shell">
+    <div class="tenant-form-shell mb-4">
       <div class="tenant-form-card section-tenant-info">
         <!-- 房源选择器 - 仅在非编辑模式下显示 -->
         <RoomPicker v-if="!props.isEdit" ref="roomPickerRef" @confirm="handleRoomConfirmed" />
@@ -729,12 +729,7 @@
     payload: {} as TenantProfileSearchItem
   });
 
-  const queryTenantSuggestions = (
-    keyword: string,
-    tenantType: number,
-    cb: (items: TenantSuggestionItem[]) => void,
-    state: TenantSuggestionState
-  ) => {
+  const queryTenantSuggestions = (keyword: string, tenantType: number, cb: (items: TenantSuggestionItem[]) => void, state: TenantSuggestionState) => {
     const text = keyword.trim();
     if (!text) {
       cb([]);
@@ -754,12 +749,14 @@
           return;
         }
 
-        const items = ((resp.data || []).map(item => ({
-          value: item.tenantName || "",
-          tenantPhone: item.tenantPhone,
-          updateAtText: item.updateAt ? item.updateAt.replace("T", " ").slice(0, 16) : "",
-          payload: item
-        })) as TenantSuggestionItem[]).filter(item => item.value);
+        const items = (
+          (resp.data || []).map(item => ({
+            value: item.tenantName || "",
+            tenantPhone: item.tenantPhone,
+            updateAtText: item.updateAt ? item.updateAt.replace("T", " ").slice(0, 16) : "",
+            payload: item
+          })) as TenantSuggestionItem[]
+        ).filter(item => item.value);
 
         cb(items.length ? items : [createStateSuggestion("无匹配数据", "empty")]);
       })
@@ -771,11 +768,9 @@
       });
   };
 
-  const queryTenantPersonalSuggestions = (queryString: string, cb: (items: TenantSuggestionItem[]) => void) =>
-    queryTenantSuggestions(queryString, 0, cb, personalSuggestionState);
+  const queryTenantPersonalSuggestions = (queryString: string, cb: (items: TenantSuggestionItem[]) => void) => queryTenantSuggestions(queryString, 0, cb, personalSuggestionState);
 
-  const queryTenantCompanySuggestions = (queryString: string, cb: (items: TenantSuggestionItem[]) => void) =>
-    queryTenantSuggestions(queryString, 1, cb, companySuggestionState);
+  const queryTenantCompanySuggestions = (queryString: string, cb: (items: TenantSuggestionItem[]) => void) => queryTenantSuggestions(queryString, 1, cb, companySuggestionState);
 
   const handleTenantPersonalSuggestionSelect = (item: TenantSuggestionItem) => {
     if (!item.payload || item.state) {
@@ -788,7 +783,7 @@
 
     formInline.tenantPersonal = {
       ...formInline.tenantPersonal,
-      id: tenant.id,
+      id: undefined,
       companyId: tenant.companyId,
       name: tenant.name || "",
       gender: tenant.gender,
@@ -815,7 +810,7 @@
 
     formInline.tenantCompany = {
       ...formInline.tenantCompany,
-      id: tenant.id,
+      id: undefined,
       companyName: tenant.companyName || "",
       uscc: tenant.uscc || "",
       legalPerson: tenant.legalPerson || "",
