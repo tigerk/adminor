@@ -65,48 +65,59 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-row :gutter="1" class="mb-4">
-            <el-col :span="24">
-              <el-space spacer="|">
-                <div>
-                  <div class="mb-2">
-                    <span class="font-bold">证件信息</span>
-                  </div>
-                  <el-space>
-                    <UploadImage v-model="formInline.tenantPersonal.idCardFrontList" :limit="1" :width="120" :height="72">
-                      <!-- 使用自定义提示 -->
-                      <template #tip="">
-                        <div class="text-center font-bold text-sm">身份证国徽面</div>
-                      </template>
-                    </UploadImage>
-                    <UploadImage v-model="formInline.tenantPersonal.idCardBackList" :limit="1" :width="120" :height="72">
-                      <!-- 使用自定义提示 -->
-                      <template #tip="">
-                        <div class="text-center font-bold text-sm">身份证人像面</div>
-                      </template>
-                    </UploadImage>
-                    <UploadImage v-model="formInline.tenantPersonal.idCardInHandList" :limit="1" :width="120" :height="72">
-                      <!-- 使用自定义提示 -->
-                      <template #tip="">
-                        <div class="text-center font-bold text-sm">手持身份证照片</div>
-                      </template>
-                    </UploadImage>
-                  </el-space>
+          <div class="section-block mb-4">
+            <div class="upload-section">
+              <div class="upload-group">
+                <div class="upload-group-title">
+                  <el-icon><Picture /></el-icon>
+                  证件照片
                 </div>
-                <div>
-                  <div class="mb-2">
-                    <span class="font-bold">其他照片</span>
+                <div class="upload-items">
+                  <div class="upload-item">
+                    <UploadImage v-model="formInline.tenantPersonal.idCardFrontList" :limit="1" :width="120" :height="76">
+                      <template #tip="">
+                        <div class="upload-tip">
+                          <el-icon><CreditCard /></el-icon>
+                          身份证国徽面
+                        </div>
+                      </template>
+                    </UploadImage>
                   </div>
-                  <UploadImage v-model="formInline.tenantPersonal.otherImageList" :limit="3" :width="120" :height="72">
-                    <!-- 使用自定义提示 -->
-                    <template #tip="">
-                      <div class="font-bold text-sm">其他照片，最多可上传3张</div>
-                    </template>
-                  </UploadImage>
+                  <div class="upload-item">
+                    <UploadImage v-model="formInline.tenantPersonal.idCardBackList" :limit="1" :width="120" :height="76">
+                      <template #tip="">
+                        <div class="upload-tip">
+                          <el-icon><Avatar /></el-icon>
+                          身份证人像面
+                        </div>
+                      </template>
+                    </UploadImage>
+                  </div>
+                  <div class="upload-item">
+                    <UploadImage v-model="formInline.tenantPersonal.idCardInHandList" :limit="1" :width="120" :height="76">
+                      <template #tip="">
+                        <div class="upload-tip">
+                          <el-icon><Postcard /></el-icon>
+                          手持身份证照片
+                        </div>
+                      </template>
+                    </UploadImage>
+                  </div>
+                  <div class="upload-divider" />
+                  <div class="upload-item">
+                    <UploadImage v-model="formInline.tenantPersonal.otherImageList" :limit="3" :width="120" :height="76">
+                      <template #tip="">
+                        <div class="upload-tip">
+                          <el-icon><Files /></el-icon>
+                          其他照片（最多3张）
+                        </div>
+                      </template>
+                    </UploadImage>
+                  </div>
                 </div>
-              </el-space>
-            </el-col>
-          </el-row>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-if="formInline.lease.tenantType === 1">
@@ -139,21 +150,28 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-row :gutter="1" class="mb-4">
-            <el-col :span="24">
-              <div class="mb-2">
-                <span class="font-bold">证件信息</span>
+          <div class="section-block mb-4">
+            <div class="upload-section">
+              <div class="upload-group">
+                <div class="upload-group-title">
+                  <el-icon><Picture /></el-icon>
+                  证件信息
+                </div>
+                <div class="upload-items">
+                  <div class="upload-item">
+                    <UploadImage v-model="formInline.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="76">
+                      <template #tip="">
+                        <div class="upload-tip">
+                          <el-icon><Files /></el-icon>
+                          营业执照
+                        </div>
+                      </template>
+                    </UploadImage>
+                  </div>
+                </div>
               </div>
-              <el-space>
-                <UploadImage v-model="formInline.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="72">
-                  <!-- 使用自定义提示 -->
-                  <template #tip="">
-                    <div class="text-center font-bold text-sm">营业执照</div>
-                  </template>
-                </UploadImage>
-              </el-space>
-            </el-col>
-          </el-row>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -328,7 +346,7 @@
   import type { TenantsCreateFormProps } from "@/types";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/upload/UploadImage.vue";
-  import { Plus } from "@element-plus/icons-vue";
+  import { Avatar, CreditCard, Files, Picture, Plus, Postcard } from "@element-plus/icons-vue";
   import DeptTreeSelect from "@/components/org/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
@@ -972,6 +990,68 @@
 
     :deep(.el-form-item__content) {
       min-height: 0;
+    }
+  }
+
+  .upload-section {
+    margin-top: 4px;
+  }
+
+  .upload-group {
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .upload-group-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 14px;
+
+    .el-icon {
+      color: var(--el-color-primary);
+    }
+  }
+
+  .upload-items {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .upload-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .upload-divider {
+    width: 1px;
+    height: 80px;
+    background: #e8e8e8;
+    margin: 0 4px;
+    align-self: center;
+  }
+
+  .upload-tip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    margin-top: 6px;
+
+    .el-icon {
+      font-size: 13px;
+      color: var(--el-color-primary);
     }
   }
 
