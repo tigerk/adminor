@@ -28,17 +28,17 @@
               </el-form-item>
             </el-col>
 
-            <el-col :span="3">
-              <el-form-item label="证件类型" :prop="`${index}.idType`" required>
-                <el-select v-model="tenant.idType" placeholder="请选择证件类型" class="w-full">
-                  <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
+            <el-col :span="8">
+              <el-form-item label="证件信息" :prop="`${index}.idNo`" required>
+                <el-input v-model="tenant.idNo" placeholder="请输入证件号码" clearable maxlength="20">
+                  <template #prepend>
+                    <el-select v-model="tenant.idType" placeholder="证件类型" style="width: 120px">
+                      <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                  </template>
+                </el-input>
               </el-form-item>
-            </el-col>
-            <el-col :span="5">
-              <el-form-item label="证件号码" :prop="`${index}.idNo`" required>
-                <el-input v-model="tenant.idNo" placeholder="请输入证件号码" clearable maxlength="20" />
-              </el-form-item>
+              <el-form-item :prop="`${index}.idType`" required class="hidden-form-item" />
             </el-col>
             <el-col :span="5">
               <el-form-item label="租客标签" :prop="`${index}.tags`">
@@ -95,7 +95,7 @@
     </el-form>
     <el-row class="mt-4">
       <el-col :span="24" class="text-center">
-        <el-button type="default" class="dashed-border w-md" @click="addMate">添加同住人</el-button>
+        <el-button type="primary" plain class="w-md" @click="addMate">添加同住人</el-button>
       </el-col>
     </el-row>
   </div>
@@ -142,7 +142,7 @@
     tenantId: null,
     name: "",
     gender: null,
-    idType: null,
+    idType: 0,
     idNo: "",
     phone: "",
     tags: [],
@@ -202,5 +202,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+
+  .hidden-form-item {
+    margin: 0;
+
+    :deep(.el-form-item__content) {
+      min-height: 0;
+    }
   }
 </style>
