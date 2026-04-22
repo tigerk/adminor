@@ -3,329 +3,348 @@
     <el-alert title="！！！修改租金、合同起止时间、费用项等等时，会重新生成账单、并且使用最新信息重新生成合同，请谨慎修改！" type="error" />
   </div>
   <el-form ref="ruleFormRef" :model="formInline" :rules="rules" label-width="100px" label-position="top">
-    <div class="section-tenant-info">
-      <!-- 房源选择器 - 仅在非编辑模式下显示 -->
-      <RoomPicker v-if="!props.isEdit" ref="roomPickerRef" @confirm="handleRoomConfirmed" />
-      <div class="section-header">
-        <el-row :gutter="20">
-          <el-col :span="16">
-            <el-space spacer=" | ">
+    <div class="tenant-form-shell">
+      <div class="tenant-form-card section-tenant-info">
+        <!-- 房源选择器 - 仅在非编辑模式下显示 -->
+        <RoomPicker v-if="!props.isEdit" ref="roomPickerRef" @confirm="handleRoomConfirmed" />
+        <div class="tenant-form-section-head">
+          <div class="tenant-form-section-head__main">
+            <div class="tenant-form-section-head__title">租客信息</div>
+            <div class="tenant-form-section-head__desc">先确认租客身份，再补充证件和联系方式。主租客与同住人使用同一套资料结构，减少后续维护成本。</div>
+          </div>
+          <div class="tenant-form-section-head__meta">
+            <div class="tenant-form-pill">
+              <span class="tenant-form-pill__label">租客类型</span>
               <el-tooltip content="请选择租客类型" placement="right">
                 <el-segmented v-model="formInline.lease.tenantType" :options="tenantTypeOptions" />
               </el-tooltip>
-            </el-space>
-          </el-col>
-          <el-col :span="8" class="text-right">
-            <el-space spacer=" ">
-              <el-text v-if="formInline.tenantMateList != null">同住人 {{ formInline.tenantMateList.length }} 人</el-text>
-              <el-button type="primary" :icon="Plus" @click="handleAddTenantMate">添加同住人</el-button>
-            </el-space>
-          </el-col>
-        </el-row>
+            </div>
+            <div class="tenant-form-pill">
+              <span class="tenant-form-pill__label">同住人</span>
+              <span class="tenant-form-pill__value">{{ formInline.tenantMateList?.length || 0 }} 人</span>
+              <el-button type="primary" plain :icon="Plus" @click="handleAddTenantMate">添加同住人</el-button>
+            </div>
+          </div>
+        </div>
+        <div class="tenant-form-card__body">
+          <div v-if="formInline.lease.tenantType === 0">
+            <el-row :gutter="20">
+              <el-col :span="5">
+                <el-form-item label="姓名" prop="tenantPersonal.name">
+                  <el-input v-model="formInline.tenantPersonal.name" placeholder="请输入租客姓名" clearable maxlength="20" show-word-limit />
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="2">
+                <el-form-item label="&nbsp;" prop="gender">
+                  <el-segmented v-model="formInline.tenantPersonal.gender" :options="genderOptions" />
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="4">
+                <el-form-item label="联系电话" prop="tenantPersonal.phone">
+                  <el-input v-model="formInline.tenantPersonal.phone" placeholder="请输入联系电话" clearable maxlength="30" />
+                </el-form-item>
+              </el-col>
+
+              <el-col :span="8">
+                <el-form-item label="证件信息" prop="tenantPersonal.idNo">
+                  <el-input v-model="formInline.tenantPersonal.idNo" placeholder="请输入证件号码" clearable maxlength="20">
+                    <template #prepend>
+                      <el-select v-model="formInline.tenantPersonal.idType" placeholder="证件类型" style="width: 120px">
+                        <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                      </el-select>
+                    </template>
+                  </el-input>
+                </el-form-item>
+                <el-form-item prop="tenantPersonal.idType" class="hidden-form-item" />
+              </el-col>
+              <el-col :span="5">
+                <el-form-item label="租客标签" prop="tags">
+                  <el-select v-model="formInline.tenantPersonal.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
+                    <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <div class="section-block mb-4">
+              <div class="upload-section">
+                <div class="upload-group">
+                  <div class="upload-group-title">
+                    <el-icon><Picture /></el-icon>
+                    证件照片
+                  </div>
+                  <div class="upload-items">
+                    <div class="upload-item">
+                      <UploadImage v-model="formInline.tenantPersonal.idCardFrontList" :limit="1" :width="120" :height="76">
+                        <template #tip="">
+                          <div class="upload-tip">
+                            <el-icon><CreditCard /></el-icon>
+                            身份证国徽面
+                          </div>
+                        </template>
+                      </UploadImage>
+                    </div>
+                    <div class="upload-item">
+                      <UploadImage v-model="formInline.tenantPersonal.idCardBackList" :limit="1" :width="120" :height="76">
+                        <template #tip="">
+                          <div class="upload-tip">
+                            <el-icon><Avatar /></el-icon>
+                            身份证人像面
+                          </div>
+                        </template>
+                      </UploadImage>
+                    </div>
+                    <div class="upload-item">
+                      <UploadImage v-model="formInline.tenantPersonal.idCardInHandList" :limit="1" :width="120" :height="76">
+                        <template #tip="">
+                          <div class="upload-tip">
+                            <el-icon><Postcard /></el-icon>
+                            手持身份证照片
+                          </div>
+                        </template>
+                      </UploadImage>
+                    </div>
+                    <div class="upload-divider" />
+                    <div class="upload-item">
+                      <UploadImage v-model="formInline.tenantPersonal.otherImageList" :limit="3" :width="120" :height="76">
+                        <template #tip="">
+                          <div class="upload-tip">
+                            <el-icon><Files /></el-icon>
+                            其他照片（最多3张）
+                          </div>
+                        </template>
+                      </UploadImage>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="formInline.lease.tenantType === 1">
+            <el-row :gutter="20">
+              <el-col :span="6">
+                <el-form-item label="企业名称" prop="tenantCompany.companyName">
+                  <el-input v-model="formInline.tenantCompany.companyName" placeholder="请输入企业名称" clearable maxlength="20" show-word-limit />
+                </el-form-item>
+              </el-col>
+              <el-col :span="5">
+                <el-form-item label="统一社会信用代码" prop="tenantCompany.uscc">
+                  <el-input v-model="formInline.tenantCompany.uscc" placeholder="请输入统一社会信用代码" clearable maxlength="20" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="4">
+                <el-form-item label="法定代表人" prop="tenantCompany.legalPerson">
+                  <el-input v-model="formInline.tenantCompany.legalPerson" placeholder="请输入法定代表人" clearable maxlength="30" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="4">
+                <el-form-item label="联系电话" prop="tenantCompany.contactPhone">
+                  <el-input v-model="formInline.tenantCompany.contactPhone" placeholder="请输入联系电话" clearable maxlength="30" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="5">
+                <el-form-item label="租客标签" prop="tags">
+                  <el-select v-model="formInline.tenantCompany.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
+                    <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <div class="section-block mb-4">
+              <div class="upload-section">
+                <div class="upload-group">
+                  <div class="upload-group-title">
+                    <el-icon><Picture /></el-icon>
+                    证件信息
+                  </div>
+                  <div class="upload-items">
+                    <div class="upload-item">
+                      <UploadImage v-model="formInline.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="76">
+                        <template #tip="">
+                          <div class="upload-tip">
+                            <el-icon><Files /></el-icon>
+                            营业执照
+                          </div>
+                        </template>
+                      </UploadImage>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="mt-4">
-        <div class="mb-2"><el-text type="primary" size="large" tag="b">租客信息</el-text></div>
-        <div v-if="formInline.lease.tenantType === 0">
+      <div class="tenant-form-card mb-2 tenant-contract-info">
+        <div class="tenant-form-section-head tenant-form-section-head--compact">
+          <div class="tenant-form-section-head__main">
+            <div class="tenant-form-section-head__title">租约信息</div>
+            <div class="tenant-form-section-head__desc">房源、房间租金和费用都在同一段完成配置，底部自动汇总首期支付金额。</div>
+          </div>
+        </div>
+        <div class="tenant-form-card__body">
+          <el-row class="mb-4">
+            <el-col :span="24">
+              <el-form-item label="租金与费用配置" required>
+                <RoomConfigSection
+                  :is-edit="props.isEdit"
+                  :room-selection="roomSelection"
+                  :room-configs="roomConfigs"
+                  :expanded-room-id="expandedRoomId"
+                  :total-rent="formInline.lease.rentPrice"
+                  :deposit-months="formInline.lease.depositMonths"
+                  :payment-months="formInline.lease.paymentMonths"
+                  :deposit-amount="depositAmount"
+                  :total-first-payment="totalFirstPayment || '0.00'"
+                  :deposit-months-options="depositMonthsOptions"
+                  :payment-months-options="paymentMonthsOptions"
+                  @pick-rooms="roomPickerRef.show(roomSelection)"
+                  @remove-room="handleRemoveRoom"
+                  @change-room-rent="handleRoomRentChange"
+                  @toggle-room="toggleRoomExpand"
+                  @update:deposit-months="value => (formInline.lease.depositMonths = value)"
+                  @update:payment-months="value => (formInline.lease.paymentMonths = value)"
+                />
+                <el-form-item prop="lease.roomIds" label-width="0" class="!m-0" />
+              </el-form-item>
+            </el-col>
+          </el-row>
           <el-row :gutter="20">
-            <el-col :span="5">
-              <el-form-item label="姓名" prop="tenantPersonal.name">
-                <el-input v-model="formInline.tenantPersonal.name" placeholder="请输入租客姓名" clearable maxlength="20" show-word-limit />
-              </el-form-item>
-            </el-col>
-
-            <el-col :span="2">
-              <el-form-item label="&nbsp;" prop="gender">
-                <el-segmented v-model="formInline.tenantPersonal.gender" :options="genderOptions" />
-              </el-form-item>
-            </el-col>
-
-            <el-col :span="4">
-              <el-form-item label="联系电话" prop="tenantPersonal.phone">
-                <el-input v-model="formInline.tenantPersonal.phone" placeholder="请输入联系电话" clearable maxlength="30" />
-              </el-form-item>
-            </el-col>
-
             <el-col :span="8">
-              <el-form-item label="证件信息" prop="tenantPersonal.idNo">
-                <el-input v-model="formInline.tenantPersonal.idNo" placeholder="请输入证件号码" clearable maxlength="20">
+              <el-form-item label="签约类型" prop="lease.contractNature">
+                <el-select v-model="formInline.lease.contractNature" default-first-option placeholder="签约类型" class="w-full" clearable>
+                  <el-option v-for="item in LEASE_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="合同周期" prop="lease.leaseDate">
+                <el-date-picker
+                  v-model="formInline.lease.leaseDate"
+                  type="daterange"
+                  class="w-[240px]!"
+                  unlink-panels
+                  range-separator="至"
+                  start-placeholder="开始时间"
+                  end-placeholder="结束时间"
+                  format="YYYY-MM-DD"
+                  value-format="YYYY-MM-DD"
+                  :shortcuts="leaseDateShortCut"
+                  :popper-options="{
+                    placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
+                  }"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="入离日期" prop="lease.checkDate">
+                <el-date-picker
+                  v-model="formInline.lease.checkDate"
+                  type="daterange"
+                  class="w-[240px]!"
+                  unlink-panels
+                  range-separator="至"
+                  start-placeholder="开始时间"
+                  end-placeholder="结束时间"
+                  format="YYYY-MM-DD"
+                  value-format="YYYY-MM-DD"
+                  :shortcuts="leaseDateShortCut"
+                  :popper-options="{
+                    placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
+                  }"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="合同模板" prop="lease.contractTemplateId" required>
+                <el-select v-model="formInline.lease.contractTemplateId" placeholder="请选择合同模板">
+                  <el-option v-for="item in contractTemplateList" :key="item.id" :label="item.templateName" :value="item.id" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="收租设置" prop="lease.rentDueType" required>
+                <el-input v-model.number="formInline.lease.rentDueDay" :min="0" placeholder="" type="number" class="text-center rent-due-day-input">
                   <template #prepend>
-                    <el-select v-model="formInline.tenantPersonal.idType" placeholder="证件类型" style="width: 120px">
-                      <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                    <el-select v-model="formInline.lease.rentDueType" placeholder="选择" style="width: 80px">
+                      <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
+                  </template>
+                  <template #append>
+                    {{ formInline.lease.rentDueType == 2 ? "号收租" : "天" }}
                   </template>
                 </el-input>
               </el-form-item>
-              <el-form-item prop="tenantPersonal.idType" class="hidden-form-item" />
             </el-col>
-            <el-col :span="5">
-              <el-form-item label="租客标签" prop="tags">
-                <el-select v-model="formInline.tenantPersonal.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
-                  <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+            <el-col :span="8">
+              <el-form-item label="首期账单收租日" prop="lease.firstBillDay">
+                <el-select v-model="formInline.lease.firstBillDay" placeholder="请选择">
+                  <el-option v-for="item in FIRST_BILL_DAY_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </el-form-item>
             </el-col>
           </el-row>
-          <div class="section-block mb-4">
-            <div class="upload-section">
-              <div class="upload-group">
-                <div class="upload-group-title">
-                  <el-icon><Picture /></el-icon>
-                  证件照片
-                </div>
-                <div class="upload-items">
-                  <div class="upload-item">
-                    <UploadImage v-model="formInline.tenantPersonal.idCardFrontList" :limit="1" :width="120" :height="76">
-                      <template #tip="">
-                        <div class="upload-tip">
-                          <el-icon><CreditCard /></el-icon>
-                          身份证国徽面
-                        </div>
-                      </template>
-                    </UploadImage>
-                  </div>
-                  <div class="upload-item">
-                    <UploadImage v-model="formInline.tenantPersonal.idCardBackList" :limit="1" :width="120" :height="76">
-                      <template #tip="">
-                        <div class="upload-tip">
-                          <el-icon><Avatar /></el-icon>
-                          身份证人像面
-                        </div>
-                      </template>
-                    </UploadImage>
-                  </div>
-                  <div class="upload-item">
-                    <UploadImage v-model="formInline.tenantPersonal.idCardInHandList" :limit="1" :width="120" :height="76">
-                      <template #tip="">
-                        <div class="upload-tip">
-                          <el-icon><Postcard /></el-icon>
-                          手持身份证照片
-                        </div>
-                      </template>
-                    </UploadImage>
-                  </div>
-                  <div class="upload-divider" />
-                  <div class="upload-item">
-                    <UploadImage v-model="formInline.tenantPersonal.otherImageList" :limit="3" :width="120" :height="76">
-                      <template #tip="">
-                        <div class="upload-tip">
-                          <el-icon><Files /></el-icon>
-                          其他照片（最多3张）
-                        </div>
-                      </template>
-                    </UploadImage>
-                  </div>
-                </div>
-              </div>
-            </div>
+        </div>
+      </div>
+      <div class="tenant-form-card tenant-form-card--plain mb-1">
+        <div class="tenant-form-section-head tenant-form-section-head--compact">
+          <div class="tenant-form-section-head__main">
+            <div class="tenant-form-section-head__title">补充说明</div>
+            <div class="tenant-form-section-head__desc">记录合同特殊约定、交付说明或其他补充信息。</div>
           </div>
         </div>
-
-        <div v-if="formInline.lease.tenantType === 1">
+        <div class="tenant-form-card__body tenant-form-card__body--compact">
+          <el-row :gutter="20">
+            <el-col :span="24">
+              <el-form-item label="合同补充说明" prop="formInline.lease.remark">
+                <el-input v-model="formInline.lease.remark" type="textarea" :rows="4" placeholder="请输入备注信息" maxlength="500" show-word-limit />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
+      </div>
+      <div class="tenant-form-card">
+        <div class="tenant-form-section-head tenant-form-section-head--compact">
+          <div class="tenant-form-section-head__main">
+            <div class="tenant-form-section-head__title">负责人信息</div>
+            <div class="tenant-form-section-head__desc">用于确定签约归属、渠道来源和后续责任人。</div>
+          </div>
+        </div>
+        <div class="tenant-form-card__body tenant-form-card__body--compact">
           <el-row :gutter="20">
             <el-col :span="6">
-              <el-form-item label="企业名称" prop="tenantCompany.companyName">
-                <el-input v-model="formInline.tenantCompany.companyName" placeholder="请输入企业名称" clearable maxlength="20" show-word-limit />
+              <el-form-item label="签约部门" prop="lease.deptId" required>
+                <DeptTreeSelect v-model="formInline.lease.deptId" :emit-on-default="true" @dept-selected="handleDeptSelected" />
               </el-form-item>
             </el-col>
-            <el-col :span="5">
-              <el-form-item label="统一社会信用代码" prop="tenantCompany.uscc">
-                <el-input v-model="formInline.tenantCompany.uscc" placeholder="请输入统一社会信用代码" clearable maxlength="20" />
+            <el-col :span="6">
+              <el-form-item label="签约人" prop="lease.salesmanId" required>
+                <el-select v-model="formInline.lease.salesmanId" filterable placeholder="请选择签约人" clearable>
+                  <el-option v-for="item in salesmanList" :key="item.id" :label="item.name" :value="item.id" />
+                </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="4">
-              <el-form-item label="法定代表人" prop="tenantCompany.legalPerson">
-                <el-input v-model="formInline.tenantCompany.legalPerson" placeholder="请输入法定代表人" clearable maxlength="30" />
+            <el-col :span="6">
+              <el-form-item label="成交渠道" prop="lease.dealChannel">
+                <el-select v-model="formInline.lease.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
+                  <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="4">
-              <el-form-item label="联系电话" prop="tenantCompany.contactPhone">
-                <el-input v-model="formInline.tenantCompany.contactPhone" placeholder="请输入联系电话" clearable maxlength="30" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="5">
-              <el-form-item label="租客标签" prop="tags">
-                <el-select v-model="formInline.tenantCompany.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
-                  <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+            <el-col :span="6">
+              <el-form-item label="租客来源" prop="lease.tenantSource">
+                <el-select v-model="formInline.lease.tenantSource" placeholder="请选择租客来源" class="w-full" clearable collapse-tags collapse-tags-tooltip>
+                  <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </el-form-item>
             </el-col>
           </el-row>
-          <div class="section-block mb-4">
-            <div class="upload-section">
-              <div class="upload-group">
-                <div class="upload-group-title">
-                  <el-icon><Picture /></el-icon>
-                  证件信息
-                </div>
-                <div class="upload-items">
-                  <div class="upload-item">
-                    <UploadImage v-model="formInline.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="76">
-                      <template #tip="">
-                        <div class="upload-tip">
-                          <el-icon><Files /></el-icon>
-                          营业执照
-                        </div>
-                      </template>
-                    </UploadImage>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
-    </div>
-    <div class="mb-2 tenant-contract-info">
-      <div class="mb-4">
-        <el-space spacer="|">
-          <el-text type="primary" size="large" tag="b">租约信息</el-text>
-        </el-space>
-      </div>
-      <div>
-        <el-row class="mb-4">
-          <el-col :span="24">
-            <el-form-item label="租金与费用配置" required>
-              <RoomConfigSection
-                :is-edit="props.isEdit"
-                :room-selection="roomSelection"
-                :room-configs="roomConfigs"
-                :expanded-room-id="expandedRoomId"
-                :total-rent="formInline.lease.rentPrice"
-                :deposit-months="formInline.lease.depositMonths"
-                :payment-months="formInline.lease.paymentMonths"
-                :deposit-amount="depositAmount"
-                :total-first-payment="totalFirstPayment || '0.00'"
-                :deposit-months-options="depositMonthsOptions"
-                :payment-months-options="paymentMonthsOptions"
-                @pick-rooms="roomPickerRef.show(roomSelection)"
-                @remove-room="handleRemoveRoom"
-                @change-room-rent="handleRoomRentChange"
-                @toggle-room="toggleRoomExpand"
-                @update:deposit-months="value => (formInline.lease.depositMonths = value)"
-                @update:payment-months="value => (formInline.lease.paymentMonths = value)"
-              />
-              <el-form-item prop="lease.roomIds" label-width="0" class="!m-0" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="签约类型" prop="lease.contractNature">
-              <el-select v-model="formInline.lease.contractNature" default-first-option placeholder="签约类型" class="w-full" clearable>
-                <el-option v-for="item in LEASE_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="合同周期" prop="lease.leaseDate">
-              <el-date-picker
-                v-model="formInline.lease.leaseDate"
-                type="daterange"
-                class="w-[240px]!"
-                unlink-panels
-                range-separator="至"
-                start-placeholder="开始时间"
-                end-placeholder="结束时间"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                :shortcuts="leaseDateShortCut"
-                :popper-options="{
-                  placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
-                }"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="入离日期" prop="lease.checkDate">
-              <el-date-picker
-                v-model="formInline.lease.checkDate"
-                type="daterange"
-                class="w-[240px]!"
-                unlink-panels
-                range-separator="至"
-                start-placeholder="开始时间"
-                end-placeholder="结束时间"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                :shortcuts="leaseDateShortCut"
-                :popper-options="{
-                  placement: 'bottom-start' // 下拉面板出现的位置，或 'top-start'、'bottom-end'、'top-end' 等，具体看 https://popper.js.org/docs/v2/constructors/#options
-                }"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="合同模板" prop="lease.contractTemplateId" required>
-              <el-select v-model="formInline.lease.contractTemplateId" placeholder="请选择合同模板">
-                <el-option v-for="item in contractTemplateList" :key="item.id" :label="item.templateName" :value="item.id" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="收租设置" prop="lease.rentDueType" required>
-              <el-input v-model.number="formInline.lease.rentDueDay" :min="0" placeholder="" type="number" class="text-center rent-due-day-input">
-                <template #prepend>
-                  <el-select v-model="formInline.lease.rentDueType" placeholder="选择" style="width: 80px">
-                    <el-option v-for="item in RENT_DUE_TYPE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
-                </template>
-                <template #append>
-                  {{ formInline.lease.rentDueType == 2 ? "号收租" : "天" }}
-                </template>
-              </el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="首期账单收租日" prop="lease.firstBillDay">
-              <el-select v-model="formInline.lease.firstBillDay" placeholder="请选择">
-                <el-option v-for="item in FIRST_BILL_DAY_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </div>
-    </div>
-    <div class="mb-1">
-      <el-row :gutter="20">
-        <el-col :span="24">
-          <el-form-item label="合同补充说明" prop="formInline.lease.remark">
-            <el-input v-model="formInline.lease.remark" type="textarea" :rows="4" placeholder="请输入备注信息" maxlength="500" show-word-limit />
-          </el-form-item>
-        </el-col>
-      </el-row>
-    </div>
-    <div>
-      <div class="mb-2"><el-text type="primary" size="large" tag="b">负责人信息</el-text></div>
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <el-form-item label="签约部门" prop="lease.deptId" required>
-            <DeptTreeSelect v-model="formInline.lease.deptId" :emit-on-default="true" @dept-selected="handleDeptSelected" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="签约人" prop="lease.salesmanId" required>
-            <el-select v-model="formInline.lease.salesmanId" filterable placeholder="请选择签约人" clearable>
-              <el-option v-for="item in salesmanList" :key="item.id" :label="item.name" :value="item.id" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="成交渠道" prop="lease.dealChannel">
-            <el-select v-model="formInline.lease.dealChannel" placeholder="请选择成交渠道" class="w-full" clearable>
-              <el-option v-for="item in dealChannelOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="租客来源" prop="lease.tenantSource">
-            <el-select v-model="formInline.lease.tenantSource" placeholder="请选择租客来源" class="w-full" clearable collapse-tags collapse-tags-tooltip>
-              <el-option v-for="item in tenantSourceOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
     </div>
   </el-form>
 </template>
@@ -664,6 +683,95 @@
 </script>
 
 <style scoped lang="scss">
+  .tenant-form-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .tenant-form-card {
+    border: 1px solid var(--el-border-color);
+    border-radius: 14px;
+    background: var(--el-bg-color);
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  }
+
+  .tenant-form-card--plain {
+    box-shadow: none;
+  }
+
+  .tenant-form-card__body {
+    padding: 18px 18px 8px;
+  }
+
+  .tenant-form-card__body--compact {
+    padding-top: 14px;
+  }
+
+  .tenant-form-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 18px 0;
+  }
+
+  .tenant-form-section-head--compact {
+    padding-bottom: 0;
+  }
+
+  .tenant-form-section-head__main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tenant-form-section-head__title {
+    font-size: 17px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  .tenant-form-section-head__desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--el-text-color-secondary);
+  }
+
+  .tenant-form-section-head__meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .tenant-form-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 8px 12px;
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 12px;
+    background: var(--el-fill-color-lighter);
+  }
+
+  .tenant-form-pill__label {
+    font-size: 12px;
+    white-space: nowrap;
+    color: var(--el-text-color-secondary);
+  }
+
+  .tenant-form-pill__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
   .house-selector-info {
     position: relative;
 
@@ -1057,6 +1165,21 @@
 
   // 响应式设计
   @media (max-width: 768px) {
+    .tenant-form-section-head {
+      flex-direction: column;
+    }
+
+    .tenant-form-section-head__meta {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .tenant-form-pill {
+      width: 100%;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
     .payment-method {
       flex-wrap: wrap;
 
@@ -1075,6 +1198,15 @@
 
   // 深色模式适配
   html.dark {
+    .tenant-form-card {
+      box-shadow: none;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tenant-form-pill {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
     .house-selector-info.edit-mode {
       .room-tags-box.disabled-box::after {
         background-color: rgba(0, 0, 0, 0.2);

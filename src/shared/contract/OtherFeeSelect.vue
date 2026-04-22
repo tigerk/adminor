@@ -122,6 +122,7 @@
 
   const getDefaultOtherFee = (): OtherFeeDto => {
     return {
+      roomId: "",
       dictDataId: null,
       name: null,
       paymentMethod: 0,

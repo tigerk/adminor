@@ -7,6 +7,7 @@ import PriceConfigDialog from "@/views/house/components/PriceConfig/PriceConfigD
 
 function getDefaultOtherFee(): OtherFeeDto {
   return {
+    roomId: "",
     dictDataId: null,
     name: null,
     paymentMethod: 0,

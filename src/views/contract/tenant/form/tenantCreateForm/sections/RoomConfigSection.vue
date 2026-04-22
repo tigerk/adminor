@@ -1,12 +1,27 @@
 <template>
   <div class="room-config-panel">
     <div class="room-config-panel__head">
-      <div class="room-config-panel__title">按房间配置租金和费用</div>
-      <div class="room-config-panel__desc">各房间独立配置，系统自动汇总月租金总计。房间费用在当前区域直接展开维护，不再单独打开弹框。</div>
+      <div class="room-config-panel__head-main">
+        <div class="room-config-panel__title">按房间配置租金和费用</div>
+        <div class="room-config-panel__desc">各房间独立配置，系统自动汇总月租金总计。当前页面内直接展开维护费用，不再切到额外弹框。</div>
+      </div>
+      <div v-if="roomConfigs.length > 0" class="room-config-panel__stats">
+        <div class="room-config-stat">
+          <span class="room-config-stat__label">已选房间</span>
+          <span class="room-config-stat__value">{{ roomConfigs.length }}</span>
+        </div>
+        <div class="room-config-stat">
+          <span class="room-config-stat__label">月租金总计</span>
+          <span class="room-config-stat__value">¥{{ Number(totalRent || 0).toFixed(2) }}</span>
+        </div>
+      </div>
     </div>
     <div class="room-config-panel__selector" :class="{ 'room-config-panel__selector--edit': isEdit }">
       <div class="room-config-panel__selector-top">
-        <div class="room-config-panel__selector-title">房源信息</div>
+        <div>
+          <div class="room-config-panel__selector-title">房源信息</div>
+          <div class="room-config-panel__selector-subtitle">先确认房间范围，再逐个房间配置租金和费用归属。</div>
+        </div>
         <div class="room-config-panel__selector-actions">
           <el-tag v-if="isEdit" type="info" size="small" effect="plain">
             <el-space>
@@ -51,6 +66,7 @@
             <tr :class="{ 'room-config-table__summary-row--expanded': expandedRoomId === item.roomId }">
               <td>
                 <div class="room-config-table__room">{{ item.roomLabel }}</div>
+                <div v-if="getRoomDescription(item.roomId)" class="room-config-table__room-desc">{{ getRoomDescription(item.roomId) }}</div>
               </td>
               <td>
                 <div class="room-rent-input">
@@ -66,13 +82,18 @@
                 </div>
               </td>
               <td>
-                <span class="room-config-table__meta">{{ item.feeList.length }} 项</span>
+                <div class="room-config-table__fee-meta">
+                  <span class="room-config-table__meta">{{ item.feeList.length }} 项</span>
+                  <span class="room-config-table__meta-tag" :class="{ 'room-config-table__meta-tag--empty': item.feeList.length === 0 }">
+                    {{ item.feeList.length === 0 ? "待配置" : "已配置" }}
+                  </span>
+                </div>
               </td>
               <td>
                 <span class="room-config-table__amount">¥{{ calculateRoomFeeTotal(item).toFixed(2) }}</span>
               </td>
               <td class="text-center">
-                <el-button type="primary" link @click="$emit('toggle-room', item.roomId)">
+                <el-button type="primary" link class="room-config-table__toggle-btn" @click="$emit('toggle-room', item.roomId)">
                   {{ expandedRoomId === item.roomId ? "收起" : "展开配置" }}
                 </el-button>
               </td>
@@ -130,7 +151,7 @@
   }
 
   interface RoomScopedOtherFee {
-    roomId?: string;
+    roomId: string;
     dictDataId?: string | null;
     name?: string | null;
     paymentMethod?: number | null;
@@ -145,7 +166,7 @@
     feeList: RoomScopedOtherFee[];
   }
 
-  defineProps<{
+  const props = defineProps<{
     isEdit?: boolean;
     roomSelection: RoomSelectionItem[];
     roomConfigs: RoomConfigItem[];
@@ -176,6 +197,8 @@
       }
       return sum + feeValue;
     }, 0);
+
+  const getRoomDescription = (roomId: string) => props.roomSelection.find(item => String(item.value) === String(roomId))?.description || "";
 </script>
 
 <style scoped lang="scss">
@@ -191,6 +214,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
     padding: 14px 16px;
     border-bottom: 1px solid var(--el-border-color-light);
     background: var(--el-fill-color-light);
@@ -208,20 +232,54 @@
     }
   }
 
+  .room-config-panel__head-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
   .room-config-panel__title {
     padding-left: 10px;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 700;
     color: var(--el-text-color-primary);
-    flex-shrink: 0;
   }
 
   .room-config-panel__desc {
     padding-left: 10px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-    flex: 1;
-    text-align: right;
+    line-height: 1.6;
+  }
+
+  .room-config-panel__stats {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .room-config-stat {
+    min-width: 120px;
+    padding: 10px 12px;
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 10px;
+    background: var(--el-bg-color);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .room-config-stat__label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .room-config-stat__value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
   }
 
   .room-config-panel__selector {
@@ -242,6 +300,12 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--el-text-color-primary);
+  }
+
+  .room-config-panel__selector-subtitle {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
   }
 
   .room-config-panel__selector-actions {
@@ -307,6 +371,13 @@
     color: var(--el-text-color-primary);
   }
 
+  .room-config-table__room-desc {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--el-text-color-secondary);
+  }
+
   .room-rent-input {
     display: flex;
     align-items: center;
@@ -328,9 +399,37 @@
     color: var(--el-text-color-regular);
   }
 
+  .room-config-table__fee-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .room-config-table__meta-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--el-color-success) 12%, var(--el-bg-color));
+    color: var(--el-color-success);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .room-config-table__meta-tag--empty {
+    background: color-mix(in srgb, var(--el-color-warning) 12%, var(--el-bg-color));
+    color: var(--el-color-warning);
+  }
+
   .room-config-table__amount {
     font-weight: 600;
     color: var(--el-color-primary);
+  }
+
+  .room-config-table__toggle-btn {
+    font-weight: 600;
   }
 
   .room-config-table__detail-row td {
@@ -392,9 +491,37 @@
     width: 120px;
   }
 
+  @media (max-width: 900px) {
+    .room-config-panel__head {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .room-config-panel__stats {
+      justify-content: flex-start;
+    }
+
+    .room-config-stat {
+      flex: 1 1 140px;
+    }
+
+    .room-config-panel__selector-top {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .room-config-summary-bar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   html.dark {
     .room-config-panel {
       border-color: var(--el-border-color);
+    }
+
+    .room-config-stat {
+      background: rgba(255, 255, 255, 0.02);
     }
 
     .room-config-panel__selector-list {
