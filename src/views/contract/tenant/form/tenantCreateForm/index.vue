@@ -31,8 +31,40 @@
             <el-row :gutter="20">
               <el-col :span="5">
                 <el-form-item label="姓名" prop="tenantPersonal.name">
-                  <el-input v-model="formInline.tenantPersonal.name" placeholder="请输入租客姓名" clearable maxlength="20" show-word-limit />
+                  <el-autocomplete
+                    v-model="formInline.tenantPersonal.name"
+                    :fetch-suggestions="queryTenantPersonalSuggestions"
+                    :debounce="250"
+                    :trigger-on-focus="false"
+                    value-key="value"
+                    popper-class="tenant-profile-suggestion-popper"
+                    placeholder="请输入租客姓名"
+                    clearable
+                    @select="handleTenantPersonalSuggestionSelect"
+                  >
+                    <template #default="{ item }">
+                      <div class="tenant-suggestion" :class="{ 'tenant-suggestion--state': !!item.state }">
+                        <template v-if="item.state">
+                          <div class="tenant-suggestion__state">
+                            {{ item.value }}
+                          </div>
+                        </template>
+                        <template v-else>
+                          <div class="tenant-suggestion__top">
+                            <div class="tenant-suggestion__title">{{ item.value }}</div>
+                            <span class="tenant-suggestion__tag">个人租客</span>
+                          </div>
+                          <div class="tenant-suggestion__meta-row">
+                            <div class="tenant-suggestion__meta">{{ item.tenantPhone || "无联系电话" }}</div>
+                            <div class="tenant-suggestion__meta">最近更新：{{ item.updateAtText || "—" }}</div>
+                          </div>
+                          <div class="tenant-suggestion__hint">选择后自动回填历史租客资料和证件附件</div>
+                        </template>
+                      </div>
+                    </template>
+                  </el-autocomplete>
                 </el-form-item>
+                <div class="field-tip">输入姓名后可带出历史录入的租客资料和证件附件。</div>
               </el-col>
 
               <el-col :span="2">
@@ -80,7 +112,7 @@
                         <template #tip="">
                           <div class="upload-tip">
                             <el-icon><CreditCard /></el-icon>
-                            身份证国徽面
+                            身份证人像面
                           </div>
                         </template>
                       </UploadImage>
@@ -90,7 +122,7 @@
                         <template #tip="">
                           <div class="upload-tip">
                             <el-icon><Avatar /></el-icon>
-                            身份证人像面
+                            身份证国徽面
                           </div>
                         </template>
                       </UploadImage>
@@ -126,8 +158,40 @@
             <el-row :gutter="20">
               <el-col :span="6">
                 <el-form-item label="企业名称" prop="tenantCompany.companyName">
-                  <el-input v-model="formInline.tenantCompany.companyName" placeholder="请输入企业名称" clearable maxlength="20" show-word-limit />
+                  <el-autocomplete
+                    v-model="formInline.tenantCompany.companyName"
+                    :fetch-suggestions="queryTenantCompanySuggestions"
+                    :debounce="250"
+                    :trigger-on-focus="false"
+                    value-key="value"
+                    popper-class="tenant-profile-suggestion-popper"
+                    placeholder="请输入企业名称"
+                    clearable
+                    @select="handleTenantCompanySuggestionSelect"
+                  >
+                    <template #default="{ item }">
+                      <div class="tenant-suggestion" :class="{ 'tenant-suggestion--state': !!item.state }">
+                        <template v-if="item.state">
+                          <div class="tenant-suggestion__state">
+                            {{ item.value }}
+                          </div>
+                        </template>
+                        <template v-else>
+                          <div class="tenant-suggestion__top">
+                            <div class="tenant-suggestion__title">{{ item.value }}</div>
+                            <span class="tenant-suggestion__tag tenant-suggestion__tag--company">企业租客</span>
+                          </div>
+                          <div class="tenant-suggestion__meta-row">
+                            <div class="tenant-suggestion__meta">{{ item.tenantPhone || "无联系电话" }}</div>
+                            <div class="tenant-suggestion__meta">最近更新：{{ item.updateAtText || "—" }}</div>
+                          </div>
+                          <div class="tenant-suggestion__hint">选择后自动回填历史企业租客资料</div>
+                        </template>
+                      </div>
+                    </template>
+                  </el-autocomplete>
                 </el-form-item>
+                <div class="field-tip">输入企业名称后可带出历史录入的企业租客资料。</div>
               </el-col>
               <el-col :span="5">
                 <el-form-item label="统一社会信用代码" prop="tenantCompany.uscc">
@@ -369,6 +433,7 @@
   import DeptTreeSelect from "@/components/org/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
+  import { searchTenantProfiles, type TenantProfileSearchItem } from "@/api/contract/tenant";
   import RoomPicker from "@/shared/house/RoomPicker.vue";
   import RoomConfigSection from "@/views/contract/tenant/form/tenantCreateForm/sections/RoomConfigSection.vue";
   import { tenantCompanyFormRules, tenantFormRules } from "@/views/contract/tenant/form/tenantCreateForm/model/rules";
@@ -457,6 +522,26 @@
   const genderOptions = [...GENDER_OPTIONS];
   const idTypeOptions = [...ID_TYPE_OPTIONS];
   const tenantTypeOptions = [...TENANT_TYPE_OPTIONS];
+
+  interface TenantSuggestionItem {
+    value: string;
+    tenantPhone?: string;
+    updateAtText?: string;
+    payload: TenantProfileSearchItem;
+    state?: "loading" | "empty" | "error";
+  }
+
+  interface TenantSuggestionState {
+    seq: number;
+  }
+
+  const personalSuggestionState = reactive<TenantSuggestionState>({
+    seq: 0
+  });
+
+  const companySuggestionState = reactive<TenantSuggestionState>({
+    seq: 0
+  });
 
   // 初始化 roomSelection
   const initRoomSelection = () => {
@@ -637,6 +722,113 @@
   function handleDeptSelected(deptId: number) {
     return;
   }
+
+  const createStateSuggestion = (text: string, state: TenantSuggestionItem["state"]): TenantSuggestionItem => ({
+    value: text,
+    state,
+    payload: {} as TenantProfileSearchItem
+  });
+
+  const queryTenantSuggestions = (
+    keyword: string,
+    tenantType: number,
+    cb: (items: TenantSuggestionItem[]) => void,
+    state: TenantSuggestionState
+  ) => {
+    const text = keyword.trim();
+    if (!text) {
+      cb([]);
+      return;
+    }
+
+    const currentSeq = ++state.seq;
+    cb([createStateSuggestion("搜索中...", "loading")]);
+
+    void searchTenantProfiles({
+      keyword: text,
+      tenantType,
+      limit: 8
+    })
+      .then(resp => {
+        if (currentSeq !== state.seq) {
+          return;
+        }
+
+        const items = ((resp.data || []).map(item => ({
+          value: item.tenantName || "",
+          tenantPhone: item.tenantPhone,
+          updateAtText: item.updateAt ? item.updateAt.replace("T", " ").slice(0, 16) : "",
+          payload: item
+        })) as TenantSuggestionItem[]).filter(item => item.value);
+
+        cb(items.length ? items : [createStateSuggestion("无匹配数据", "empty")]);
+      })
+      .catch(() => {
+        if (currentSeq !== state.seq) {
+          return;
+        }
+        cb([createStateSuggestion("查询失败，请重试", "error")]);
+      });
+  };
+
+  const queryTenantPersonalSuggestions = (queryString: string, cb: (items: TenantSuggestionItem[]) => void) =>
+    queryTenantSuggestions(queryString, 0, cb, personalSuggestionState);
+
+  const queryTenantCompanySuggestions = (queryString: string, cb: (items: TenantSuggestionItem[]) => void) =>
+    queryTenantSuggestions(queryString, 1, cb, companySuggestionState);
+
+  const handleTenantPersonalSuggestionSelect = (item: TenantSuggestionItem) => {
+    if (!item.payload || item.state) {
+      return;
+    }
+    const tenant = item.payload.tenantPersonal;
+    if (!tenant) {
+      return;
+    }
+
+    formInline.tenantPersonal = {
+      ...formInline.tenantPersonal,
+      id: tenant.id,
+      companyId: tenant.companyId,
+      name: tenant.name || "",
+      gender: tenant.gender,
+      idType: tenant.idType ?? 0,
+      idNo: tenant.idNo || "",
+      phone: tenant.phone || "",
+      tags: [...(tenant.tags || [])],
+      remark: tenant.remark || "",
+      idCardFrontList: [...(tenant.idCardFrontList || [])],
+      idCardBackList: [...(tenant.idCardBackList || [])],
+      idCardInHandList: [...(tenant.idCardInHandList || [])],
+      otherImageList: [...(tenant.otherImageList || [])]
+    };
+  };
+
+  const handleTenantCompanySuggestionSelect = (item: TenantSuggestionItem) => {
+    if (!item.payload || item.state) {
+      return;
+    }
+    const tenant = item.payload.tenantCompany;
+    if (!tenant) {
+      return;
+    }
+
+    formInline.tenantCompany = {
+      ...formInline.tenantCompany,
+      id: tenant.id,
+      companyName: tenant.companyName || "",
+      uscc: tenant.uscc || "",
+      legalPerson: tenant.legalPerson || "",
+      legalPersonIdType: tenant.legalPersonIdType ?? 0,
+      legalPersonIdNo: tenant.legalPersonIdNo || "",
+      contactName: tenant.contactName || "",
+      contactPhone: tenant.contactPhone || "",
+      registeredAddress: tenant.registeredAddress || "",
+      businessLicenseUrls: [...(tenant.businessLicenseList || [])],
+      tags: [...(tenant.tags || [])],
+      remark: tenant.remark || ""
+    };
+  };
 
   // 修改按钮点击事件
   const handleAddTenantMate = () => {
@@ -1099,6 +1291,121 @@
     :deep(.el-form-item__content) {
       min-height: 0;
     }
+  }
+
+  .field-tip {
+    margin-top: -10px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--el-text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tenant-suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 2px 0;
+  }
+
+  .tenant-suggestion--state {
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    gap: 0;
+  }
+
+  .tenant-suggestion__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .tenant-suggestion__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .tenant-suggestion__tag {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--el-color-primary) 12%, var(--el-bg-color));
+    color: var(--el-color-primary);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .tenant-suggestion__tag--company {
+    background: color-mix(in srgb, var(--el-color-success) 12%, var(--el-bg-color));
+    color: var(--el-color-success);
+  }
+
+  .tenant-suggestion__meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .tenant-suggestion__meta {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .tenant-suggestion__hint {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--el-text-color-secondary);
+  }
+
+  .tenant-suggestion__state {
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--el-text-color-secondary);
+    text-align: center;
+  }
+
+  :global(.tenant-profile-suggestion-popper) {
+    border-radius: 14px !important;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14) !important;
+  }
+
+  :global(.tenant-profile-suggestion-popper .el-autocomplete-suggestion__wrap) {
+    padding: 6px;
+  }
+
+  :global(.tenant-profile-suggestion-popper li) {
+    padding: 8px 10px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+  }
+
+  :global(.tenant-profile-suggestion-popper li:last-child) {
+    margin-bottom: 0;
+  }
+
+  :global(.tenant-profile-suggestion-popper li.highlighted) {
+    background: color-mix(in srgb, var(--el-color-primary) 10%, var(--el-bg-color));
+  }
+
+  :global(.tenant-profile-suggestion-popper li:has(.tenant-suggestion--state)) {
+    cursor: default;
+  }
+
+  :global(.tenant-profile-suggestion-popper li.highlighted:has(.tenant-suggestion--state)) {
+    background: var(--el-bg-color);
   }
 
   .upload-section {

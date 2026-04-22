@@ -14,6 +14,50 @@ import type {
   LeaseBillCreateDto
 } from "@/types";
 
+export interface TenantProfileSearchDto {
+  keyword?: string;
+  tenantType?: number;
+  limit?: number;
+}
+
+export interface TenantProfileSearchItem {
+  tenantId?: string;
+  tenantType?: number;
+  tenantName?: string;
+  tenantPhone?: string;
+  updateAt?: string;
+  tenantPersonal?: {
+    id?: string;
+    companyId?: number;
+    name?: string;
+    gender?: number;
+    idType?: number;
+    idNo?: string;
+    phone?: string;
+    tags?: string[];
+    remark?: string;
+    idCardFrontList?: string[];
+    idCardBackList?: string[];
+    idCardInHandList?: string[];
+    otherImageList?: string[];
+  };
+  tenantCompany?: {
+    id?: string;
+    companyName?: string;
+    uscc?: string;
+    legalPerson?: string;
+    legalPersonIdType?: number;
+    legalPersonIdNo?: string;
+    contactName?: string;
+    contactPhone?: string;
+    registeredAddress?: string;
+    tags?: string[];
+    remark?: string;
+    businessLicenseList?: string[];
+    otherImageList?: string[];
+  };
+}
+
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/total"), { data });
@@ -52,6 +96,11 @@ export const updateTenantStatus = (data?: object) => {
 /** 获取租客详情 */
 export const getLeaseDetail = (data?: object) => {
   return http.request<ApiResponse<LeaseDetailVo>>("post", baseUrlApi("contract/lease/detail"), { data });
+};
+
+/** 搜索历史租客资料 */
+export const searchTenantProfiles = (data?: TenantProfileSearchDto) => {
+  return http.request<ApiResponse<TenantProfileSearchItem[]>>("post", baseUrlApi("contract/lease/tenant/profile/search"), { data });
 };
 
 /** 获取租客账单列表 */

@@ -7815,6 +7815,9 @@ export type BookingIdDto = {
     id?: string;
 };
 
+/**
+ * 租约信息
+ */
 export type LeaseDto = {
     /**
      * 租约ID
@@ -7872,25 +7875,86 @@ export type LeaseDto = {
      * 首期账单收租日
      */
     firstBillDay?: number;
+    /**
+     * 租约开始日期
+     */
     leaseStart?: string;
+    /**
+     * 租约结束日期
+     */
     leaseEnd?: string;
+    /**
+     * 入住日期
+     */
     checkInAt?: string;
+    /**
+     * 退租日期
+     */
     checkOutAt?: string;
+    /**
+     * 原租约开始日期
+     */
     originalLeaseStart?: string;
+    /**
+     * 原租约结束日期
+     */
     originalLeaseEnd?: string;
+    /**
+     * 租约时长天数
+     */
     leaseDurationDays?: number;
+    /**
+     * 租金到期类型
+     */
     rentDueType?: number;
+    /**
+     * 租金到期日
+     */
     rentDueDay?: number;
+    /**
+     * 租金到期偏移天数
+     */
     rentDueOffsetDays?: number;
+    /**
+     * 业务员ID
+     */
     salesmanId?: string;
+    /**
+     * 协助人员ID
+     */
     helperId?: string;
+    /**
+     * 签约状态
+     */
     signStatus?: number;
+    /**
+     * 退租状态
+     */
     checkOutStatus?: number;
+    /**
+     * 租约状态
+     */
     status?: number;
+    /**
+     * 租客来源
+     */
     tenantSource?: string;
+    /**
+     * 成交渠道
+     */
     dealChannel?: string;
+    /**
+     * 备注
+     */
     remark?: string;
+    /**
+     * 创建人ID
+     */
     createBy?: string;
+    /**
+     * 创建时间
+     */
+    createAt?: string;
 };
 
 /**
@@ -8173,6 +8237,176 @@ export type TenantTotalVo = {
     statusList?: Array<TenantTotalItemVo>;
 };
 
+export type TenantProfileSearchDto = {
+    /**
+     * 关键字
+     */
+    keyword?: string;
+    /**
+     * 租客类型：0=个人，1=企业
+     */
+    tenantType?: number;
+    /**
+     * 返回数量，默认 10
+     */
+    limit?: number;
+};
+
+export type ResponseResultListTenantProfileSearchVo = {
+    code?: number;
+    message?: string;
+    data?: Array<TenantProfileSearchVo>;
+};
+
+export type TenantCompanyVo = {
+    /**
+     * 企业租客ID
+     */
+    id?: string;
+    /**
+     * 企业名称
+     */
+    companyName?: string;
+    /**
+     * 统一社会信用代码
+     */
+    uscc?: string;
+    /**
+     * 法定代表人
+     */
+    legalPerson?: string;
+    /**
+     * 法人证件类型
+     */
+    legalPersonIdType?: number;
+    /**
+     * 法人证件号码
+     */
+    legalPersonIdNo?: string;
+    /**
+     * 联系人姓名
+     */
+    contactName?: string;
+    /**
+     * 联系电话
+     */
+    contactPhone?: string;
+    /**
+     * 注册地址
+     */
+    registeredAddress?: string;
+    /**
+     * 租客标签
+     */
+    tags?: Array<string>;
+    /**
+     * 租客备注
+     */
+    remark?: string;
+    /**
+     * 租客状态：0=停用，1=启用
+     */
+    status?: number;
+    /**
+     * 营业执照附件列表
+     */
+    businessLicenseList?: Array<string>;
+    /**
+     * 其他附件列表
+     */
+    otherImageList?: Array<string>;
+};
+
+export type TenantPersonalVo = {
+    /**
+     * 租客ID
+     */
+    id?: string;
+    /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
+     * 租客姓名
+     */
+    name?: string;
+    /**
+     * 性别：1=男，2=女
+     */
+    gender?: number;
+    /**
+     * 证件类型：0=身份证，1=护照，2=港澳通行证，3=台胞证
+     */
+    idType?: number;
+    /**
+     * 证件号码
+     */
+    idNo?: string;
+    /**
+     * 联系电话
+     */
+    phone?: string;
+    /**
+     * 租客标签
+     */
+    tags?: Array<string>;
+    /**
+     * 租客备注
+     */
+    remark?: string;
+    /**
+     * 租客状态：0=停用，1=启用
+     */
+    status?: number;
+    /**
+     * 身份证反面附件列表
+     */
+    idCardBackList?: Array<string>;
+    /**
+     * 身份证正面附件列表
+     */
+    idCardFrontList?: Array<string>;
+    /**
+     * 身份证手持附件列表
+     */
+    idCardInHandList?: Array<string>;
+    /**
+     * 其他附件列表
+     */
+    otherImageList?: Array<string>;
+};
+
+export type TenantProfileSearchVo = {
+    /**
+     * 租客ID
+     */
+    tenantId?: string;
+    /**
+     * 租客类型：0=个人，1=企业
+     */
+    tenantType?: number;
+    /**
+     * 展示名称
+     */
+    tenantName?: string;
+    /**
+     * 展示电话
+     */
+    tenantPhone?: string;
+    /**
+     * 最近更新时间
+     */
+    updateAt?: string;
+    /**
+     * 个人租客资料
+     */
+    tenantPersonal?: TenantPersonalVo;
+    /**
+     * 企业租客资料
+     */
+    tenantCompany?: TenantCompanyVo;
+};
+
 export type LeaseListVo = {
     /**
      * 租约 ID
@@ -8350,124 +8584,6 @@ export type ResponseResultPageVoLeaseListVo = {
     code?: number;
     message?: string;
     data?: PageVoLeaseListVo;
-};
-
-export type TenantCompanyVo = {
-    /**
-     * 企业租客ID
-     */
-    id?: string;
-    /**
-     * 企业名称
-     */
-    companyName?: string;
-    /**
-     * 统一社会信用代码
-     */
-    uscc?: string;
-    /**
-     * 法定代表人
-     */
-    legalPerson?: string;
-    /**
-     * 法人证件类型
-     */
-    legalPersonIdType?: number;
-    /**
-     * 法人证件号码
-     */
-    legalPersonIdNo?: string;
-    /**
-     * 联系人姓名
-     */
-    contactName?: string;
-    /**
-     * 联系电话
-     */
-    contactPhone?: string;
-    /**
-     * 注册地址
-     */
-    registeredAddress?: string;
-    /**
-     * 租客标签
-     */
-    tags?: Array<string>;
-    /**
-     * 租客备注
-     */
-    remark?: string;
-    /**
-     * 租客状态：0=停用，1=启用
-     */
-    status?: number;
-    /**
-     * 营业执照附件列表
-     */
-    businessLicenseList?: Array<string>;
-    /**
-     * 其他附件列表
-     */
-    otherImageList?: Array<string>;
-};
-
-export type TenantPersonalVo = {
-    /**
-     * 租客ID
-     */
-    id?: string;
-    /**
-     * 公司ID
-     */
-    companyId?: string;
-    /**
-     * 租客姓名
-     */
-    name?: string;
-    /**
-     * 性别：1=男，2=女
-     */
-    gender?: number;
-    /**
-     * 证件类型：0=身份证，1=护照，2=港澳通行证，3=台胞证
-     */
-    idType?: number;
-    /**
-     * 证件号码
-     */
-    idNo?: string;
-    /**
-     * 联系电话
-     */
-    phone?: string;
-    /**
-     * 租客标签
-     */
-    tags?: Array<string>;
-    /**
-     * 租客备注
-     */
-    remark?: string;
-    /**
-     * 租客状态：0=停用，1=启用
-     */
-    status?: number;
-    /**
-     * 身份证反面附件列表
-     */
-    idCardBackList?: Array<string>;
-    /**
-     * 身份证正面附件列表
-     */
-    idCardFrontList?: Array<string>;
-    /**
-     * 身份证手持附件列表
-     */
-    idCardInHandList?: Array<string>;
-    /**
-     * 其他附件列表
-     */
-    otherImageList?: Array<string>;
 };
 
 /**
@@ -13157,6 +13273,22 @@ export type GetLeaseTotalResponses = {
 };
 
 export type GetLeaseTotalResponse = GetLeaseTotalResponses[keyof GetLeaseTotalResponses];
+
+export type SearchTenantProfilesData = {
+    body: TenantProfileSearchDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/lease/tenant/profile/search';
+};
+
+export type SearchTenantProfilesResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListTenantProfileSearchVo;
+};
+
+export type SearchTenantProfilesResponse = SearchTenantProfilesResponses[keyof SearchTenantProfilesResponses];
 
 export type RenewData = {
     body: TenantCreateDto;
