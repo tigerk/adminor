@@ -5893,7 +5893,7 @@ export type DeliveryItemDto = {
      * 项目编码
      */
     itemCode?: string;
-    feeName: string;
+    itemName: string;
     itemCategory: string;
     /**
      * 项目单位
@@ -5933,7 +5933,7 @@ export type DeliveryItemVo = {
     /**
      * 物品名称
      */
-    feeName?: string;
+    itemName?: string;
     /**
      * 项目分类
      */
