@@ -5886,13 +5886,18 @@ export type ResponseResultString = {
 };
 
 /**
+ * 交割单项目编码枚举
+ */
+export type DeliveryItemCodeEnum = 'WATER_METER' | 'ELECTRICITY_METER' | 'GAS_METER';
+
+/**
  * 交割单项目DTO
  */
 export type DeliveryItemDto = {
     /**
      * 项目编码
      */
-    itemCode?: string;
+    itemCode?: DeliveryItemCodeEnum;
     itemName: string;
     itemCategory: string;
     /**
@@ -5907,6 +5912,10 @@ export type DeliveryItemDto = {
      * 排序顺序
      */
     sortOrder?: number;
+    /**
+     * 读数凭证图片
+     */
+    proofImageList?: Array<string>;
 };
 
 export type DeliveryUpdateDto = {
@@ -5914,6 +5923,7 @@ export type DeliveryUpdateDto = {
     handoverDate: string;
     inspectorId?: string;
     remark?: string;
+    cleanCondition?: string;
     items?: Array<DeliveryItemDto>;
     imageList?: Array<string>;
 };
@@ -5933,7 +5943,7 @@ export type DeliveryItemVo = {
     /**
      * 物品名称
      */
-    feeName?: string;
+    itemName?: string;
     /**
      * 项目分类
      */
@@ -5966,6 +5976,10 @@ export type DeliveryItemVo = {
      * 是否自定义项目
      */
     customized?: boolean;
+    /**
+     * 读数凭证图片
+     */
+    proofImageList?: Array<string>;
 };
 
 /**
@@ -5982,6 +5996,7 @@ export type DeliveryVo = {
     inspectorId?: string;
     inspectorName?: string;
     remark?: string;
+    cleanCondition?: string;
     items?: Array<DeliveryItemVo>;
     imageList?: Array<string>;
     createAt?: string;
@@ -6030,10 +6045,17 @@ export type DeliveryCreateDto = {
     subjectType: string;
     subjectTypeId: string;
     roomId: string;
+    /**
+     * 交割类型编码
+     */
     handoverType: string;
     handoverDate: string;
     inspectorId?: string;
     remark?: string;
+    /**
+     * 清洁情况编码
+     */
+    cleanCondition?: string;
     items?: Array<DeliveryItemDto>;
     imageList?: Array<string>;
     createBy?: string;
@@ -10751,9 +10773,19 @@ export type OwnerParamsEnum = 'CONTRACT_NUMBER' | 'HOUSE_ADDRESS' | 'PROJECT_NAM
 
 export type TenantParamsEnum = 'CONTRACT_CODE' | 'SIGNED_HOUSE_LIST' | 'TOTAL_AREA' | 'OWNER_NAME' | 'OWNER_PHONE' | 'OWNER_ID_CARD' | 'TENANT_NAME' | 'TENANT_PHONE' | 'TENANT_ID_CARD' | 'LEASE_START' | 'LEASE_END' | 'LEASE_DAYS' | 'RENT_PRICE' | 'PAYMENT_MONTHS' | 'DEPOSIT_MONTHS' | 'TENANT_REMARK' | 'OWNER_SIGNATURE' | 'TENANT_SIGNATURE' | 'COMPANY_SEAL' | 'CONTRACT_DATE';
 
+/**
+ * 交割单清洁情况枚举
+ */
+export type DeliveryCleanConditionEnum = 'CLEAN' | 'NORMAL' | 'NEED_CLEANING';
+
+/**
+ * 交割类型枚举
+ */
+export type DeliveryHandoverTypeEnum = 'CHECK_IN' | 'CHECK_OUT';
+
 export type DeliveryStatusEnum = 'CANCELLED' | 'DRAFT' | 'COMPLETED' | 'SIGNED';
 
-export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'CONTRACT_SEAL_IMAGE';
+export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'DELIVERY_WATER_PROOF_IMAGE' | 'DELIVERY_ELECTRICITY_PROOF_IMAGE' | 'DELIVERY_GAS_PROOF_IMAGE' | 'CONTRACT_SEAL_IMAGE';
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 

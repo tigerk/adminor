@@ -18,7 +18,8 @@
     limit: { type: Number, default: 1 },
     width: { type: [Number, String], default: undefined },
     height: { type: [Number, String], default: undefined },
-    maxSizeMb: { type: Number, default: 10 }
+    maxSizeMb: { type: Number, default: 10 },
+    disabled: { type: Boolean, default: false }
   });
 
   const instance = getCurrentInstance();
@@ -201,7 +202,7 @@
   onMounted(initSortable);
 
   // ─── 样式 ──────────────────────────────────────────────────────────
-  const showUploadButton = computed(() => fileList.value.length < props.limit);
+  const showUploadButton = computed(() => !props.disabled && fileList.value.length < props.limit);
 
   const uploadBoxStyle = computed(() => {
     const style: Record<string, string> = {};
@@ -223,6 +224,7 @@
       list-type="picture-card"
       accept="image/jpeg,image/png,image/gif"
       :limit="props.limit"
+      :disabled="props.disabled"
       :http-request="customUpload"
       :on-exceed="onExceed"
       :before-upload="onBefore"
@@ -241,7 +243,7 @@
             <span title="查看" class="action-btn hover:text-primary" @click.stop="handlePictureCardPreview(file)">
               <IconifyIconOffline :icon="Eye" class="hover:scale-125 duration-100" />
             </span>
-            <span title="移除" class="action-btn hover:text-[var(--el-color-danger)]" @click.stop="handleRemove(file)">
+            <span v-if="!props.disabled" title="移除" class="action-btn hover:text-[var(--el-color-danger)]" @click.stop="handleRemove(file)">
               <IconifyIconOffline :icon="Delete" class="hover:scale-125 duration-100" />
             </span>
           </span>
@@ -249,16 +251,18 @@
       </template>
     </el-upload>
 
-    <el-image-viewer
-      v-if="dialogVisible"
-      :initial-index="curOpenImgIndex"
-      :url-list="urlList"
-      :zoom-rate="1.2"
-      :max-scale="7"
-      :min-scale="0.2"
-      @close="dialogVisible = false"
-      @switch="index => (curOpenImgIndex = index)"
-    />
+    <teleport to="body">
+      <el-image-viewer
+        v-if="dialogVisible"
+        :initial-index="curOpenImgIndex"
+        :url-list="urlList"
+        :zoom-rate="1.2"
+        :max-scale="7"
+        :min-scale="0.2"
+        @close="dialogVisible = false"
+        @switch="index => (curOpenImgIndex = index)"
+      />
+    </teleport>
 
     <teleport to="body">
       <div v-if="fileList[curOpenImgIndex] && dialogVisible" class="img-name">

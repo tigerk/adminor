@@ -22,7 +22,7 @@
             <el-descriptions :column="2" size="small">
               <el-descriptions-item label="交割类型">
                 <el-tag :type="delivery.handoverType === 'CHECK_IN' ? 'success' : 'warning'" size="small">
-                  {{ getOptionByCode([...DELIVERY_TYPE_OPTIONS], delivery.handoverType)?.label }}
+                  {{ delivery.handoverType ? handoverTypeLabelMap[delivery.handoverType as DeliveryHandoverTypeEnum] || delivery.handoverType : "—" }}
                 </el-tag>
               </el-descriptions-item>
               <el-descriptions-item label="交割日期">
@@ -32,6 +32,9 @@
                 {{ delivery.inspectorName }}
               </el-descriptions-item>
               <el-descriptions-item label="物品数量">{{ delivery.items?.length || 0 }} 项</el-descriptions-item>
+              <el-descriptions-item v-if="delivery.cleanCondition" label="清洁情况">
+                {{ cleanConditionLabelMap[delivery.cleanCondition] || delivery.cleanCondition }}
+              </el-descriptions-item>
             </el-descriptions>
 
             <div v-if="delivery.remark" class="delivery-remark">
@@ -65,19 +68,41 @@
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue";
-  import type { DeliveryProps, RoomListVo } from "@/types";
+  import type { DeliveryCleanConditionEnum, DeliveryHandoverTypeEnum, DeliveryVo, RoomListVo } from "@/types";
   import { createDelivery, getDeliveryList, updateDelivery } from "@/api/delivery";
   import { convertImage2string } from "@/utils/image";
-  import { DELIVERY_TYPE_OPTIONS, getOptionByCode } from "@/constants";
+  import { DeliveryCleanConditionEnumMeta, DeliveryHandoverTypeEnumMeta } from "@/types";
 
   interface DeliveryTabProps {
     roomList: RoomListVo[];
     subjectTypeId: string;
   }
 
+  type DeliveryCardItem = DeliveryVo & {
+    roomInfo?: {
+      houseName?: string;
+      roomNumber?: string;
+      communityName?: string;
+    };
+  };
+
   const props = defineProps<DeliveryTabProps>();
-  const deliveryList = ref<DeliveryProps[]>([]);
+  const deliveryList = ref<DeliveryCardItem[]>([]);
   const deliveryFormRef = ref();
+  const cleanConditionLabelMap = Object.values(DeliveryCleanConditionEnumMeta).reduce(
+    (acc, item) => {
+      acc[item.code as DeliveryCleanConditionEnum] = item.name;
+      return acc;
+    },
+    {} as Record<DeliveryCleanConditionEnum, string>
+  );
+  const handoverTypeLabelMap = Object.values(DeliveryHandoverTypeEnumMeta).reduce(
+    (acc, item) => {
+      acc[item.code as DeliveryHandoverTypeEnum] = item.name;
+      return acc;
+    },
+    {} as Record<DeliveryHandoverTypeEnum, string>
+  );
 
   // 获取状态标签类型
   const getStatusTagType = (status?: number) => {
@@ -119,13 +144,14 @@
         houseName: room.houseName,
         roomNumber: room.roomNumber
       },
-      id: null, // 实际应从后端获取
+      id: undefined,
       status: 0,
-      handoverType: null,
-      handoverDate: null,
-      inspectorName: null,
+      handoverType: undefined,
+      handoverDate: undefined,
+      inspectorName: undefined,
+      cleanCondition: undefined,
       items: [],
-      remark: null
+      remark: undefined
     }));
 
     // TODO: 实际项目中应该调用API获取交割单列表
@@ -212,7 +238,7 @@
   };
 
   // 编辑交割单
-  const handleEditDelivery = (delivery: DeliveryProps) => {
+  const handleEditDelivery = (delivery: DeliveryCardItem) => {
     const room = props.roomList.find(r => r.roomId === delivery.roomId);
 
     if (!room) {
@@ -274,7 +300,7 @@
   };
 
   // 查看交割单详情
-  const handleViewDelivery = (delivery: DeliveryProps) => {
+  const handleViewDelivery = (delivery: DeliveryCardItem) => {
     const room = props.roomList.find(r => r.roomId === delivery.roomId);
 
     if (!room) {

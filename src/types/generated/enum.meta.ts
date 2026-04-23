@@ -15,6 +15,12 @@ export const OwnerContractSubjectTypeEnumMeta = {
   FOCUS: {"value":"FOCUS"}
 } as const;
 
+export const DeliveryItemCodeEnumMeta = {
+  WATER_METER: {"value":"WATER_METER"},
+  ELECTRICITY_METER: {"value":"ELECTRICITY_METER"},
+  GAS_METER: {"value":"GAS_METER"}
+} as const;
+
 export const OwnerBearTypeEnumMeta = {
   PLATFORM: {"value":"PLATFORM"},
   OWNER: {"value":"OWNER"},
@@ -374,6 +380,17 @@ export const TenantParamsEnumMeta = {
   CONTRACT_DATE: {"value":"${合同时间}","key":"${合同时间}"}
 } as const;
 
+export const DeliveryCleanConditionEnumMeta = {
+  CLEAN: {"value":"CLEAN","code":"CLEAN","name":"整洁"},
+  NORMAL: {"value":"NORMAL","code":"NORMAL","name":"一般"},
+  NEED_CLEANING: {"value":"NEED_CLEANING","code":"NEED_CLEANING","name":"需清洁"}
+} as const;
+
+export const DeliveryHandoverTypeEnumMeta = {
+  CHECK_IN: {"value":"CHECK_IN","code":"CHECK_IN","name":"入住交割"},
+  CHECK_OUT: {"value":"CHECK_OUT","code":"CHECK_OUT","name":"退租交割"}
+} as const;
+
 export const DeliveryStatusEnumMeta = {
   CANCELLED: {"value":"CANCELLED","code":-1,"name":"作废"},
   DRAFT: {"value":"DRAFT","code":0,"name":"待填写"},
@@ -403,6 +420,9 @@ export const FileAttachBizTypeEnumMeta = {
   OWNER_BUSINESS_LICENSE: {"value":"OWNER_BUSINESS_LICENSE","bizType":"owner_business_license"},
   OWNER_PAYABLE_BILL_PAYMENT_VOUCHER: {"value":"OWNER_PAYABLE_BILL_PAYMENT_VOUCHER","bizType":"owner_payable_bill_payment_voucher"},
   DELIVERY_IMAGE: {"value":"DELIVERY_IMAGE","bizType":"delivery_image"},
+  DELIVERY_WATER_PROOF_IMAGE: {"value":"DELIVERY_WATER_PROOF_IMAGE","bizType":"delivery_water_proof_image"},
+  DELIVERY_ELECTRICITY_PROOF_IMAGE: {"value":"DELIVERY_ELECTRICITY_PROOF_IMAGE","bizType":"delivery_electricity_proof_image"},
+  DELIVERY_GAS_PROOF_IMAGE: {"value":"DELIVERY_GAS_PROOF_IMAGE","bizType":"delivery_gas_proof_image"},
   CONTRACT_SEAL_IMAGE: {"value":"CONTRACT_SEAL_IMAGE","bizType":"contract_seal_image"}
 } as const;
 
