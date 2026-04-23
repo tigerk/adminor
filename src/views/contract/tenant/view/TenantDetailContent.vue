@@ -591,30 +591,30 @@
   .tenant-detail-view {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 
     .overview-card,
     .tabs-wrapper {
-      padding: 16px 18px;
+      padding: 14px 16px;
       background: var(--el-bg-color);
       border: 1px solid var(--el-border-color-light);
-      border-radius: 12px;
+      border-radius: 10px;
     }
 
     .overview-card {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
     .overview-section {
       display: grid;
       grid-template-columns: 96px 1fr;
-      gap: 16px;
+      gap: 14px;
       align-items: start;
 
       &--stats {
-        padding-top: 16px;
+        padding-top: 14px;
         border-top: 1px solid var(--el-border-color-lighter);
       }
     }
@@ -640,11 +640,11 @@
     .room-chip-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
 
     .room-chip {
-      padding: 10px 14px;
+      padding: 8px 12px;
       font-size: 13px;
 
       &__name {
@@ -663,7 +663,7 @@
     .summary-strip {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px 18px;
+      gap: 10px 16px;
 
       &__item {
         display: flex;
@@ -693,7 +693,7 @@
     }
 
     :deep(.el-tabs__header) {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .tab-content {
@@ -701,11 +701,11 @@
     }
 
     .info-section {
-      margin-bottom: 18px;
-      padding: 16px 18px;
+      margin-bottom: 12px;
+      padding: 14px 16px;
       background: var(--el-fill-color-blank);
       border: 1px solid var(--el-border-color-lighter);
-      border-radius: 12px;
+      border-radius: 10px;
 
       &:last-child {
         margin-bottom: 0;
@@ -715,14 +715,14 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         font-size: 15px;
         font-weight: 600;
         color: var(--el-text-color-primary);
       }
 
       :deep(.el-descriptions__header) {
-        margin-bottom: 14px;
+        margin-bottom: 12px;
       }
 
       :deep(.el-descriptions__body) {
@@ -734,7 +734,7 @@
       }
 
       :deep(.el-descriptions__cell) {
-        padding-bottom: 12px;
+        padding-bottom: 10px;
       }
 
       .text-value {
@@ -755,7 +755,7 @@
       .photo-wall {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 10px;
         margin-top: 4px;
       }
 
@@ -763,12 +763,12 @@
         padding: 6px;
         background: var(--el-fill-color-light);
         border: 1px solid var(--el-border-color-lighter);
-        border-radius: 12px;
+        border-radius: 10px;
       }
 
       .mate-table,
       .fees-table {
-        margin-top: 12px;
+        margin-top: 10px;
 
         :deep(.el-table__header) th {
           background: var(--el-fill-color-light);
@@ -786,22 +786,22 @@
       .room-fee-list {
         display: flex;
         flex-direction: column;
-        gap: 14px;
-        margin-top: 14px;
+        gap: 12px;
+        margin-top: 12px;
       }
 
       .room-fee-card {
-        padding: 14px 16px;
+        padding: 12px 14px;
         background: var(--el-bg-color);
         border: 1px solid var(--el-border-color-light);
-        border-radius: 12px;
+        border-radius: 10px;
 
         &__head {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 12px;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
         }
 
         &__title {
@@ -813,7 +813,7 @@
         &__summary {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 14px;
           font-size: 13px;
           color: var(--el-text-color-secondary);
 
@@ -827,14 +827,14 @@
       .room-fee-total {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
-        margin-top: 16px;
+        gap: 12px;
+        margin-top: 12px;
 
         &__item {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 14px 16px;
+          padding: 12px 14px;
           background: var(--el-fill-color-light);
           border-radius: 10px;
           color: var(--el-text-color-regular);

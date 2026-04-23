@@ -1,5 +1,5 @@
 <template>
-  <div class="tenant-detail-page">
+  <div class="tenant-detail-page pf-page contract-page">
     <el-page-header class="tenant-detail-page__head" @back="goBack">
       <template #content>
         <div class="tenant-detail-page__meta">
@@ -88,14 +88,14 @@
   .tenant-detail-page {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 12px 16px 20px;
+    gap: 8px;
+    padding: 0;
 
     &__head {
-      padding: 12px 16px;
+      padding: 10px 14px;
       background: var(--el-bg-color);
       border: 1px solid var(--el-border-color-light);
-      border-radius: 12px;
+      border-radius: 10px;
     }
 
     :deep(.el-page-header__left) {
@@ -115,7 +115,7 @@
     &__meta {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
 
     &__title {
