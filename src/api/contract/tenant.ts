@@ -21,7 +21,9 @@ export interface TenantProfileSearchDto {
 }
 
 export interface TenantProfileSearchItem {
-  tenantId?: string;
+  profileId?: string;
+  templateId?: string;
+  sourceTenantId?: string;
   tenantType?: number;
   tenantName?: string;
   tenantPhone?: string;

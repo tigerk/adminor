@@ -525,6 +525,8 @@
 
   interface TenantSuggestionItem {
     value: string;
+    profileId?: string;
+    templateId?: string;
     tenantPhone?: string;
     updateAtText?: string;
     payload: TenantProfileSearchItem;
@@ -752,6 +754,8 @@
         const items = (
           (resp.data || []).map(item => ({
             value: item.tenantName || "",
+            profileId: item.profileId,
+            templateId: item.templateId,
             tenantPhone: item.tenantPhone,
             updateAtText: item.updateAt ? item.updateAt.replace("T", " ").slice(0, 16) : "",
             payload: item
