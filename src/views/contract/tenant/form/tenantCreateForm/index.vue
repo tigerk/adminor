@@ -137,7 +137,6 @@
                         </template>
                       </UploadImage>
                     </div>
-                    <div class="upload-divider" />
                     <div class="upload-item">
                       <UploadImage v-model="formInline.tenantPersonal.otherImageList" :limit="3" :width="120" :height="76">
                         <template #tip="">

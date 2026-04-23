@@ -380,6 +380,7 @@
       deliveryId: item.deliveryId,
       itemCategory: item.itemCategory,
       itemCode: item.itemCode,
+      itemName: item.feeName || "",
       feeName: item.feeName || "",
       itemUnit: item.itemUnit,
       currentValue: item.currentValue || "0",

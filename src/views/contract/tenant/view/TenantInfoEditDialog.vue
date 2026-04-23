@@ -1,151 +1,196 @@
 <template>
-  <el-form ref="formRef" :model="formData" :rules="rules" label-position="top" class="tenant-info-edit-form">
-    <div class="tenant-info-edit-form__head">
-      <div class="tenant-info-edit-form__title">租客信息</div>
+  <el-form ref="formRef" :model="formData" :rules="rules" label-position="top" class="tenant-form">
+    <div class="tenant-form__notice">建议先完成基础信息，再上传证件照片。仅保存当前租客档案，不变更租约配置。</div>
+    <!-- 头部 -->
+    <div class="tenant-form__header">
+      <div class="tenant-form__header-left">
+        <span class="tenant-form__icon-wrap">
+          <el-icon :size="14"><User /></el-icon>
+        </span>
+        <div class="tenant-form__title-wrap">
+          <span class="tenant-form__title">租客信息</span>
+          <span class="tenant-form__subtitle">仅修改租客资料，不影响租约房间、租金与账单配置。</span>
+        </div>
+      </div>
       <el-segmented v-model="formData.tenantType" :options="tenantTypeOptions" />
     </div>
 
+    <!-- ══ 个人租客 ══ -->
     <template v-if="formData.tenantType === 0">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <el-form-item label="姓名" prop="tenantPersonal.name">
-            <el-input v-model="formData.tenantPersonal.name" placeholder="请输入租客姓名" clearable maxlength="20" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="3">
-          <el-form-item label="性别" prop="tenantPersonal.gender">
-            <el-segmented v-model="formData.tenantPersonal.gender" :options="genderOptions" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="5">
-          <el-form-item label="联系电话" prop="tenantPersonal.phone">
-            <el-input v-model="formData.tenantPersonal.phone" placeholder="请输入联系电话" clearable maxlength="30" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="10">
-          <el-form-item label="证件信息" prop="tenantPersonal.idNo">
-            <el-input v-model="formData.tenantPersonal.idNo" placeholder="请输入证件号码" clearable maxlength="20">
-              <template #prepend>
-                <el-select v-model="formData.tenantPersonal.idType" placeholder="证件类型" style="width: 120px">
-                  <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </template>
-            </el-input>
-          </el-form-item>
-          <el-form-item prop="tenantPersonal.idType" class="hidden-form-item" />
-        </el-col>
-      </el-row>
+      <div class="tenant-form__panel">
+        <!-- 信息行：姓名 / 性别 / 联系电话 / 证件信息 / 标签 -->
+        <el-row :gutter="12">
+          <el-col :xl="4" :lg="6" :md="8" :sm="12" :xs="24">
+            <el-form-item label="姓名" prop="tenantPersonal.name">
+              <el-input v-model="formData.tenantPersonal.name" placeholder="请输入姓名" clearable maxlength="20" />
+            </el-form-item>
+          </el-col>
+          <el-col :xl="3" :lg="4" :md="6" :sm="12" :xs="24">
+            <el-form-item label="性别" prop="tenantPersonal.gender">
+              <el-segmented v-model="formData.tenantPersonal.gender" :options="genderOptions" class="w-full" />
+            </el-form-item>
+          </el-col>
+          <el-col :xl="4" :lg="6" :md="10" :sm="12" :xs="24">
+            <el-form-item label="联系电话" prop="tenantPersonal.phone">
+              <el-input v-model="formData.tenantPersonal.phone" placeholder="请输入手机号" clearable maxlength="30" />
+            </el-form-item>
+          </el-col>
+          <el-col :xl="8" :lg="8" :md="24" :sm="24" :xs="24">
+            <el-form-item label="证件信息" prop="tenantPersonal.idNo">
+              <el-input v-model="formData.tenantPersonal.idNo" placeholder="请输入证件号码" clearable maxlength="20">
+                <template #prepend>
+                  <el-select v-model="formData.tenantPersonal.idType" placeholder="证件类型" style="width: 100px">
+                    <el-option v-for="item in idTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </template>
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="tenantPersonal.idType" class="hidden-form-item" />
+          </el-col>
+          <el-col :xl="5" :lg="24" :md="12" :sm="24" :xs="24">
+            <el-form-item label="租客标签" prop="tenantPersonal.tags">
+              <el-select v-model="formData.tenantPersonal.tags" placeholder="请选择租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="3">
+                <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </div>
 
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="租客标签" prop="tenantPersonal.tags">
-            <el-select v-model="formData.tenantPersonal.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
-              <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <div class="upload-group">
-        <div class="upload-group-title">
-          <el-icon><Picture /></el-icon>
-          证件照片
+      <!-- 证件照片上传区 -->
+      <div class="upload-section">
+        <div class="upload-section__header">
+          <div class="upload-section__title">
+            <span class="upload-section__icon">
+              <el-icon :size="13"><Picture /></el-icon>
+            </span>
+            证件照片
+          </div>
+          <span class="upload-section__hint">JPG / PNG / GIF，支持拖拽排序，单张 ≤ 10MB</span>
         </div>
-        <div class="upload-items">
-          <div class="upload-item">
-            <UploadImage v-model="formData.tenantPersonal.idCardFrontList" :limit="1" :width="120" :height="76">
-              <template #tip="">
-                <div class="upload-tip">
-                  <el-icon><CreditCard /></el-icon>
-                  身份证人像面
-                </div>
-              </template>
-            </UploadImage>
+
+        <!-- 一行：4 个上传槽等分 -->
+        <div class="upload-row">
+          <div class="upload-cell">
+            <div class="upload-cell__label">
+              <el-icon :size="11"><CreditCard /></el-icon>
+              身份证人像面
+            </div>
+            <div class="upload-cell__body">
+              <UploadImage v-model="formData.tenantPersonal.idCardFrontList" :limit="1" :width="120" :height="76">
+                <template #tip />
+              </UploadImage>
+            </div>
           </div>
-          <div class="upload-item">
-            <UploadImage v-model="formData.tenantPersonal.idCardBackList" :limit="1" :width="120" :height="76">
-              <template #tip="">
-                <div class="upload-tip">
-                  <el-icon><Avatar /></el-icon>
-                  身份证国徽面
-                </div>
-              </template>
-            </UploadImage>
+
+          <div class="upload-cell">
+            <div class="upload-cell__label">
+              <el-icon :size="11"><Avatar /></el-icon>
+              身份证国徽面
+            </div>
+            <div class="upload-cell__body">
+              <UploadImage v-model="formData.tenantPersonal.idCardBackList" :limit="1" :width="120" :height="76">
+                <template #tip />
+              </UploadImage>
+            </div>
           </div>
-          <div class="upload-item">
-            <UploadImage v-model="formData.tenantPersonal.idCardInHandList" :limit="1" :width="120" :height="76">
-              <template #tip="">
-                <div class="upload-tip">
-                  <el-icon><Postcard /></el-icon>
-                  手持身份证照片
-                </div>
-              </template>
-            </UploadImage>
+
+          <div class="upload-cell">
+            <div class="upload-cell__label">
+              <el-icon :size="11"><Postcard /></el-icon>
+              手持身份证
+            </div>
+            <div class="upload-cell__body">
+              <UploadImage v-model="formData.tenantPersonal.idCardInHandList" :limit="1" :width="120" :height="76">
+                <template #tip />
+              </UploadImage>
+            </div>
           </div>
-          <div class="upload-divider" />
-          <div class="upload-item">
-            <UploadImage v-model="formData.tenantPersonal.otherImageList" :limit="3" :width="120" :height="76">
-              <template #tip="">
-                <div class="upload-tip">
-                  <el-icon><Files /></el-icon>
-                  其他照片（最多3张）
-                </div>
-              </template>
-            </UploadImage>
+
+          <div class="upload-cell upload-cell--wide">
+            <div class="upload-cell__label">
+              <el-icon :size="11"><Files /></el-icon>
+              其他照片
+              <span class="upload-cell__badge">最多 3 张</span>
+            </div>
+            <div class="upload-cell__body upload-cell__body--multi">
+              <UploadImage v-model="formData.tenantPersonal.otherImageList" :limit="3" :width="120" :height="76">
+                <template #tip />
+              </UploadImage>
+            </div>
           </div>
         </div>
       </div>
     </template>
 
+    <!-- ══ 企业租客 ══ -->
     <template v-else>
-      <el-row :gutter="20">
-        <el-col :span="7">
-          <el-form-item label="企业名称" prop="tenantCompany.companyName">
-            <el-input v-model="formData.tenantCompany.companyName" placeholder="请输入企业名称" clearable maxlength="50" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="统一社会信用代码" prop="tenantCompany.uscc">
-            <el-input v-model="formData.tenantCompany.uscc" placeholder="请输入统一社会信用代码" clearable maxlength="20" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="5">
-          <el-form-item label="法定代表人" prop="tenantCompany.legalPerson">
-            <el-input v-model="formData.tenantCompany.legalPerson" placeholder="请输入法定代表人" clearable maxlength="30" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="联系电话" prop="tenantCompany.contactPhone">
-            <el-input v-model="formData.tenantCompany.contactPhone" placeholder="请输入联系电话" clearable maxlength="30" />
-          </el-form-item>
-        </el-col>
-      </el-row>
+      <div class="tenant-form__panel">
+        <el-row :gutter="12">
+          <el-col :xl="6" :lg="8" :md="12" :sm="24" :xs="24">
+            <el-form-item label="企业名称" prop="tenantCompany.companyName">
+              <el-input v-model="formData.tenantCompany.companyName" placeholder="请输入企业名称" clearable maxlength="50" />
+            </el-form-item>
+          </el-col>
+          <el-col :xl="5" :lg="7" :md="12" :sm="24" :xs="24">
+            <el-form-item label="统一社会信用代码" prop="tenantCompany.uscc">
+              <el-input v-model="formData.tenantCompany.uscc" placeholder="请输入 18 位信用代码" clearable maxlength="20" />
+            </el-form-item>
+          </el-col>
+          <el-col :xl="3" :lg="4" :md="12" :sm="24" :xs="24">
+            <el-form-item label="法定代表人" prop="tenantCompany.legalPerson">
+              <el-input v-model="formData.tenantCompany.legalPerson" placeholder="请输入姓名" clearable maxlength="30" />
+            </el-form-item>
+          </el-col>
+          <el-col :xl="4" :lg="5" :md="12" :sm="24" :xs="24">
+            <el-form-item label="联系电话" prop="tenantCompany.contactPhone">
+              <el-input v-model="formData.tenantCompany.contactPhone" placeholder="请输入手机号" clearable maxlength="30" />
+            </el-form-item>
+          </el-col>
+          <el-col :xl="6" :lg="24" :md="12" :sm="24" :xs="24">
+            <el-form-item label="租客标签" prop="tenantCompany.tags">
+              <el-select v-model="formData.tenantCompany.tags" placeholder="请选择租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="3">
+                <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </div>
 
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="租客标签" prop="tenantCompany.tags">
-            <el-select v-model="formData.tenantCompany.tags" placeholder="租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
-              <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <div class="upload-group">
-        <div class="upload-group-title">
-          <el-icon><Picture /></el-icon>
-          营业执照
+      <!-- 营业执照上传区 -->
+      <div class="upload-section">
+        <div class="upload-section__header">
+          <div class="upload-section__title">
+            <span class="upload-section__icon">
+              <el-icon :size="13"><Picture /></el-icon>
+            </span>
+            营业执照
+          </div>
+          <span class="upload-section__hint">JPG / PNG / GIF，支持拖拽排序，单张 ≤ 10MB</span>
         </div>
-        <div class="upload-items">
-          <div class="upload-item">
-            <UploadImage v-model="formData.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="76">
-              <template #tip="">
-                <div class="upload-tip">
-                  <el-icon><Files /></el-icon>
-                  营业执照
-                </div>
-              </template>
-            </UploadImage>
+        <div class="upload-row upload-row--enterprise">
+          <div class="upload-cell">
+            <div class="upload-cell__label">
+              <el-icon :size="11"><Files /></el-icon>
+              营业执照正本
+            </div>
+            <div class="upload-cell__body">
+              <UploadImage v-model="formData.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="76">
+                <template #tip />
+              </UploadImage>
+            </div>
+          </div>
+          <div class="upload-cell upload-cell--wide">
+            <div class="upload-cell__label">
+              <el-icon :size="11"><Files /></el-icon>
+              其他附件
+              <span class="upload-cell__badge">最多 3 张</span>
+            </div>
+            <div class="upload-cell__body upload-cell__body--multi">
+              <UploadImage v-model="formData.tenantCompany.otherImageList" :limit="3" :width="120" :height="76">
+                <template #tip />
+              </UploadImage>
+            </div>
           </div>
         </div>
       </div>
@@ -158,7 +203,7 @@
   import type { FormInstance, FormRules } from "element-plus";
   import { getDictDataByDictCode } from "@/api/sys/dict";
   import UploadImage from "@/components/upload/UploadImage.vue";
-  import { Avatar, CreditCard, Files, Picture, Postcard } from "@element-plus/icons-vue";
+  import { Avatar, CreditCard, Files, Picture, Postcard, User } from "@element-plus/icons-vue";
   import { GENDER_OPTIONS, ID_TYPE_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import type { LeaseDetailVo } from "@/types";
 
@@ -243,7 +288,7 @@
   const fetchTagOptions = async () => {
     const tagResp = await getDictDataByDictCode({ dictCode: "tenant_tags" });
     if (tagResp.code === 0) {
-      tenantTagOptions.value = (tagResp.data || []).map(item => ({
+      tenantTagOptions.value = (tagResp.data || []).map((item: any) => ({
         label: item.name,
         value: item.name
       }));
@@ -253,72 +298,241 @@
 
   const getRef = () => formRef.value;
   const getFormData = () => formData;
-
-  defineExpose({
-    getRef,
-    getFormData
-  });
+  defineExpose({ getRef, getFormData });
 </script>
 
 <style scoped lang="scss">
-  .tenant-info-edit-form {
-    &__head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    &__title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-    }
+  .tenant-form {
+    padding-bottom: 8px;
   }
 
+  /* ── 头部 ── */
+  .tenant-form__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 10px 0 10px;
+  }
+
+  .tenant-form__header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .tenant-form__icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 7px;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    flex-shrink: 0;
+  }
+
+  .tenant-form__title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .tenant-form__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .tenant-form__subtitle {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .tenant-form__notice {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+  }
+
+  .tenant-form__panel {
+    padding: 14px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+    background: var(--el-bg-color-page);
+    margin-bottom: 10px;
+  }
+
+  .tenant-form__panel :deep(.el-form-item) {
+    margin-bottom: 14px;
+  }
+
+  /* ── 隐藏校验占位 ── */
   .hidden-form-item {
     margin: 0;
-
     :deep(.el-form-item__content) {
       min-height: 0;
     }
   }
 
-  .upload-group {
-    margin-top: 8px;
-    padding: 16px;
-    background: var(--el-fill-color-blank);
+  /* ══════════════════════════
+   上传区外壳
+══════════════════════════ */
+  .upload-section {
+    margin-top: 2px;
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    &:hover {
+      box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+    }
   }
 
-  .upload-group-title {
+  /* 标题栏 */
+  .upload-section__header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
-    font-size: 15px;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--el-fill-color-light);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+
+  .upload-section__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--el-text-color-primary);
   }
 
-  .upload-items {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .upload-divider {
-    width: 1px;
-    height: 76px;
-    background: var(--el-border-color-lighter);
-  }
-
-  .upload-tip {
+  .upload-section__icon {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+  }
+
+  .upload-section__hint {
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
+  }
+
+  /* ══════════════════════════
+   核心：一行横排所有上传槽
+══════════════════════════ */
+  .upload-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .upload-row--enterprise {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* 单个上传槽 */
+  .upload-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    min-width: 0;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+    background: var(--el-fill-color-blank);
+
+    /* 宽槽：其他照片，给更多空间排列多张图 */
+    &--wide {
+      grid-column: span 1;
+    }
+  }
+
+  /* 上传槽标签行 */
+  .upload-cell__label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    white-space: nowrap;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .upload-cell__badge {
+    margin-left: 4px;
+    padding: 0 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 18px;
+    background: var(--el-color-info-light-9);
+    color: var(--el-text-color-placeholder);
+  }
+
+  /* 图片内容区 */
+  .upload-cell__body {
+    display: flex;
+    align-items: flex-start;
+
+    :deep(.el-upload__tip) {
+      display: none;
+    }
+
+    /* 多图模式：让图片列表横向排列 */
+    &--multi {
+      :deep(.el-upload-list) {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      :deep(.el-upload-list__item) {
+        margin: 0;
+      }
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .upload-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .upload-row--enterprise {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .tenant-form__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .tenant-form__panel {
+      padding: 10px;
+    }
+
+    .upload-section__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .upload-row {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
