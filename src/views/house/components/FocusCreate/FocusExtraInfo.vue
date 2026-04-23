@@ -145,7 +145,7 @@
   onMounted(async () => {
     const [facilitiesResp, focusTagsResp] = await Promise.all([
       getDictDataByDictCode({
-        dictCode: "house_facilities"
+        dictCode: "focus_facilities"
       }),
       getDictDataByDictCode({
         dictCode: "focus_tags"
