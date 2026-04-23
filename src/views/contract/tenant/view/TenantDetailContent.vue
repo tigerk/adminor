@@ -1,0 +1,879 @@
+<template>
+  <div class="tenant-detail-view">
+    <div class="overview-card">
+      <div class="overview-section">
+        <div class="section-marker">
+          <el-icon class="section-marker__icon"><House /></el-icon>
+          <span class="section-marker__title">房源地址</span>
+        </div>
+        <div class="room-chip-list">
+          <el-tag v-for="room in localFormInline.roomList" :key="room.roomId?.toString()" type="primary" effect="light" class="room-chip">
+            <span class="room-chip__name">{{ room.communityName }} {{ room.doorNumber }}-{{ room.roomNumber }}</span>
+            <el-divider direction="vertical" />
+            <span class="room-chip__rent">{{ room.price ? `${room.price}元/月` : "未设置租金" }}</span>
+          </el-tag>
+          <el-tag type="info" effect="plain" class="room-chip room-chip--meta">房间数量：共{{ localFormInline.roomList?.length || 0 }}间</el-tag>
+          <el-tag type="info" effect="plain" class="room-chip room-chip--meta">总建筑面积：{{ getTotalArea() }}m²</el-tag>
+        </div>
+      </div>
+
+      <div class="overview-section overview-section--stats">
+        <div class="section-marker">
+          <el-icon class="section-marker__icon"><User /></el-icon>
+          <span class="section-marker__title">租约摘要</span>
+        </div>
+        <div class="summary-strip">
+          <div class="summary-strip__item">
+            <span class="summary-strip__label">租客</span>
+            <span class="summary-strip__value">{{ localFormInline.tenantName }}</span>
+          </div>
+          <div class="summary-strip__item">
+            <span class="summary-strip__label">月租金总额</span>
+            <span class="summary-strip__value summary-strip__value--danger">¥{{ localFormInline.rentPrice }}</span>
+            <span class="summary-strip__unit">元/月</span>
+          </div>
+          <div class="summary-strip__item">
+            <span class="summary-strip__label">收款方式</span>
+            <span class="summary-strip__value">押 {{ localFormInline.depositMonths }} 付 {{ localFormInline.paymentMonths }}</span>
+          </div>
+          <div class="summary-strip__item">
+            <span class="summary-strip__label">租期</span>
+            <span class="summary-strip__value">{{ localFormInline.leaseStart }} 至 {{ localFormInline.leaseEnd }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs-wrapper">
+      <el-tabs v-model="activeTab" class="modern-tabs">
+        <el-tab-pane name="tenant">
+          <template #label>
+            <el-space>
+              <el-icon><User /></el-icon>
+              <span>租客信息</span>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <section class="info-section">
+              <el-descriptions title="基本信息" :column="5" class="info-descriptions" size="default">
+                <template #title>
+                  <el-space>
+                    <span>基本信息</span>
+                    <el-tag :type="localFormInline.tenantType === 0 ? 'success' : 'warning'" size="default">
+                      {{ localFormInline.tenantType === 0 ? "个人" : "企业" }}
+                    </el-tag>
+                  </el-space>
+                </template>
+                <el-descriptions-item label="姓名" label-align="right">
+                  <span class="text-value">{{ localFormInline.tenantName }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="性别" label-align="right">
+                  {{ localFormInline.tenantPersonal?.gender === 1 ? "男" : "女" }}
+                </el-descriptions-item>
+                <el-descriptions-item label="联系电话" label-align="right">
+                  <span class="text-value">{{ localFormInline.tenantPhone }}</span>
+                </el-descriptions-item>
+
+                <template v-if="localFormInline.tenantType === 0">
+                  <el-descriptions-item label="证件类型" label-align="right">
+                    <span class="text-value">{{ getIdTypeName(localFormInline.tenantPersonal?.idType) }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="证件号码" label-align="right">
+                    <span class="text-value">{{ localFormInline.tenantPersonal?.idNo }}</span>
+                  </el-descriptions-item>
+                </template>
+                <template v-else>
+                  <el-descriptions-item label="统一社会信用代码" label-align="right" :span="2">
+                    <span class="text-value">{{ localFormInline.tenantCompany?.uscc }}</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="法定代表人" label-align="right">
+                    <span class="text-value">{{ localFormInline.tenantCompany?.legalPerson }}</span>
+                  </el-descriptions-item>
+                </template>
+              </el-descriptions>
+
+              <div class="photo-wall">
+                <div
+                  v-for="(url, index) in [
+                    ...localFormInline.tenantPersonal?.idCardBackList,
+                    ...localFormInline.tenantPersonal?.idCardFrontList,
+                    ...localFormInline.tenantPersonal?.idCardInHandList,
+                    ...localFormInline.tenantPersonal?.otherImageList
+                  ]"
+                  :key="index"
+                  class="photo-item"
+                >
+                  <el-image
+                    style="width: 100px; height: 100px; border-radius: 10px"
+                    :src="url"
+                    :zoom-rate="1.2"
+                    :max-scale="7"
+                    :min-scale="0.2"
+                    :preview-src-list="[url]"
+                    :initial-index="index"
+                    fit="cover"
+                    loading="lazy"
+                    preview-teleported
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section class="info-section">
+              <el-descriptions title="租约信息" :column="5" class="info-descriptions" size="default">
+                <el-descriptions-item label="合同周期" label-align="right">
+                  <el-space :size="8">
+                    <el-tag type="primary">{{ localFormInline.leaseStart }}</el-tag>
+                    <span>至</span>
+                    <el-tag type="primary">{{ localFormInline.leaseEnd }}</el-tag>
+                  </el-space>
+                </el-descriptions-item>
+                <el-descriptions-item label="入住时间" label-align="right">
+                  <el-space :size="8">{{ localFormInline.checkInAt }} 至 {{ localFormInline.checkOutAt }}</el-space>
+                </el-descriptions-item>
+                <el-descriptions-item label="月租金" label-align="right">
+                  <span class="text-value text-value--danger">¥ {{ localFormInline.rentPrice }}</span>
+                  <span class="text-subtle">元/月</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="押付方式" label-align="right">
+                  <span class="text-value">押 {{ localFormInline.depositMonths }} 付 {{ localFormInline.paymentMonths }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="收租设置" label-align="right">
+                  <span class="text-value">{{ getRentDueTypeText(localFormInline.rentDueType, localFormInline.rentDueDay) }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="签约类型" label-align="right">
+                  <span class="text-value">{{ getContractNatureName(localFormInline.contractNature) }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="签约时间" label-align="right" :span="2">
+                  <span class="text-value">{{ localFormInline.createAt }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </section>
+
+            <section class="info-section">
+              <div class="section-title">房间租金与费用明细</div>
+              <div class="room-fee-list">
+                <div v-for="room in roomFeeGroups" :key="room.roomId" class="room-fee-card">
+                  <div class="room-fee-card__head">
+                    <div class="room-fee-card__title">{{ room.roomName }}</div>
+                    <div class="room-fee-card__summary">
+                      <span>月租金 <strong>¥{{ room.rentPriceText }}</strong></span>
+                      <span>其他费用 <strong>¥{{ room.feeTotalText }}</strong></span>
+                    </div>
+                  </div>
+                  <el-table v-if="room.fees.length > 0" :data="room.fees" border stripe class="fees-table">
+                    <el-table-column type="index" label="序号" width="70" align="center" />
+                    <el-table-column prop="name" label="费用名称" align="center" min-width="160" />
+                    <el-table-column label="付款方式" align="center" min-width="120">
+                      <template #default="{ row }">
+                        {{ getOptionByCode([...PAYMENT_METHOD_OPTIONS], row.paymentMethod)?.label || "—" }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="计费方式" align="center" min-width="120">
+                      <template #default="{ row }">
+                        {{ getOptionByCode([...PRICE_METHOD_OPTIONS], row.priceMethod)?.label || "—" }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="费用配置" align="center" min-width="220">
+                      <template #default="{ row }">
+                        {{ formatFeeConfig(row) }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="折算金额" align="center" min-width="120">
+                      <template #default="{ row }">
+                        <span class="fee-amount">¥{{ calculateFeeAmount(row, room.rentPrice).toFixed(2) }}</span>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  <el-empty v-else description="该房间暂无其他费用" :image-size="96" />
+                </div>
+              </div>
+              <div class="room-fee-total">
+                <div class="room-fee-total__item">
+                  <span>月租金总计</span>
+                  <strong>¥{{ totalRentPriceText }}</strong>
+                </div>
+                <div class="room-fee-total__item">
+                  <span>其他费用总计</span>
+                  <strong>¥{{ totalOtherFeeText }}</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="info-section">
+              <el-descriptions title="负责人信息" :column="3" class="info-descriptions" size="default">
+                <el-descriptions-item label="签约部门" label-align="right">
+                  <span class="text-value">{{ localFormInline.deptName }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="签约人" label-align="right">
+                  <span class="text-value">{{ localFormInline.salesmanName }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="成交渠道" label-align="right">
+                  <span class="text-value">{{ localFormInline.dealChannelName }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </section>
+
+            <section class="info-section">
+              <div class="section-title">
+                同住人信息
+                <el-tag type="info" size="small">{{ localFormInline.tenantMateList.length }}人</el-tag>
+              </div>
+              <el-table :data="localFormInline.tenantMateList" border class="mate-table" stripe default-expand-all>
+                <el-table-column type="expand">
+                  <template #default="props">
+                    <div class="photo-wall">
+                      <div
+                        v-for="(url, index) in [...props.row?.idCardBackList, ...props.row?.idCardFrontList, ...props.row?.idCardInHandList, ...props.row?.otherImageList]"
+                        :key="index"
+                        class="photo-item"
+                      >
+                        <el-image
+                          style="width: 100px; height: 100px; border-radius: 10px"
+                          :src="url"
+                          :zoom-rate="1.2"
+                          :max-scale="7"
+                          :min-scale="0.2"
+                          :preview-src-list="[url]"
+                          :initial-index="index"
+                          fit="cover"
+                          loading="lazy"
+                          preview-teleported
+                        />
+                      </div>
+                      <el-text
+                        v-if="[...props.row?.idCardBackList, ...props.row?.idCardFrontList, ...props.row?.idCardInHandList, ...props.row?.otherImageList].length === 0"
+                        class="mx-1"
+                      >
+                        没有证件照片
+                      </el-text>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column type="index" label="序号" width="70" align="center" />
+                <el-table-column prop="name" label="姓名" align="center" min-width="120" />
+                <el-table-column prop="gender" label="性别" align="center" width="80">
+                  <template #default="{ row }">
+                    {{ row.gender === 0 ? "男" : "女" }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="phone" label="联系电话" align="center" min-width="140" />
+                <el-table-column prop="idNo" label="证件号码" align="center" min-width="180" />
+              </el-table>
+            </section>
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane name="bill">
+          <template #label>
+            <el-space class="tab-label">
+              <el-icon><Money /></el-icon>
+              <span>账单信息</span>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <LeaseBillTab :lease-id="localFormInline.leaseId" :tenant-name="localFormInline.tenantName" :tenant-phone="localFormInline.tenantPhone" />
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane name="contract">
+          <template #label>
+            <el-space class="tab-label">
+              <el-icon><Document /></el-icon>
+              <span>合同信息</span>
+              <el-tag :type="localFormInline.leaseContract?.signStatus === 0 ? 'danger' : 'success'" size="default">
+                {{ LEASE_SIGN_STATUS_OPTIONS.find(item => item.value === localFormInline?.leaseContract?.signStatus)?.label || "未知" }}
+              </el-tag>
+            </el-space>
+          </template>
+          <LeaseContractTab
+            :lease-contract="localFormInline.leaseContract"
+            :lease-id="localFormInline.leaseId"
+            :tenant-status="localFormInline.status"
+            :create-time="localFormInline.createAt"
+            :readonly="readonly"
+            @contract-signed="leaseId => emit('contract-signed', leaseId)"
+            @contract-updated="contract => (localFormInline.leaseContract = contract)"
+          />
+        </el-tab-pane>
+
+        <el-tab-pane name="delivery">
+          <template #label>
+            <el-space>
+              <el-icon><Files /></el-icon>
+              <span>物业交割单</span>
+              <el-tag type="info" size="default">{{ localFormInline.roomList?.length || 0 }}间</el-tag>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <DeliveryTab :room-list="localFormInline.roomList" :subject-type-id="localFormInline.leaseId" />
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane v-if="isTerminated" name="checkout">
+          <template #label>
+            <el-space class="tab-label">
+              <el-icon><Money /></el-icon>
+              <span>退租单</span>
+            </el-space>
+          </template>
+          <ViewCheckoutTab :loading="checkoutLoading" :checkout-detail="checkoutDetail" />
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+  import { computed, h, ref, watch } from "vue";
+  import { LeaseCheckoutVo, LeaseDetailVo, TenantsCreateFormProps } from "@/types";
+  import {
+    getOptionByCode,
+    ID_TYPE_OPTIONS,
+    LEASE_CONTRACT_NATURE_OPTIONS,
+    PAYMENT_METHOD_OPTIONS,
+    PRICE_METHOD_OPTIONS,
+    LEASE_SIGN_STATUS_OPTIONS,
+    LEASE_STATUS_MAP
+  } from "@/constants";
+  import { Document, Files, House, Money, User } from "@element-plus/icons-vue";
+  import { message } from "@/utils/message";
+  import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
+  import { getCheckoutByLeaseId } from "@/api/contract/checkout";
+  import { addDialog } from "@/components/ReDialog";
+  import { deviceDetection } from "@/store/utils";
+  import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
+  import useTenant from "@/views/contract/tenant/utils/hook";
+  import DeliveryTab from "@/views/contract/tenant/view/DeliveryTab.vue";
+  import ViewCheckoutTab from "@/views/contract/checkout/components/ViewCheckoutTab.vue";
+  import LeaseContractTab from "@/views/contract/tenant/view/LeaseContractTab.vue";
+  import LeaseBillTab from "@/views/contract/tenant/view/LeaseBillTab.vue";
+
+  const { openTenantDialog } = useTenant();
+
+  interface FormProps {
+    formInline: LeaseDetailVo;
+    readonly?: boolean;
+  }
+
+  const props = withDefaults(defineProps<FormProps>(), {
+    readonly: false
+  });
+  const localFormInline = ref({ ...props.formInline });
+
+  watch(
+    () => props.formInline,
+    newVal => {
+      localFormInline.value = { ...newVal };
+    },
+    { deep: true }
+  );
+
+  const emit = defineEmits<{
+    "contract-signed": [leaseId: string];
+    "contract-updated": [];
+    "lease-updated": [leaseId: string];
+  }>();
+
+  const activeTab = ref("tenant");
+  const isTerminated = computed(() => localFormInline.value.status === LEASE_STATUS_MAP.TERMINATED.code);
+  const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
+  const checkoutLoading = ref(false);
+
+  const fetchCheckoutDetail = async () => {
+    if (!isTerminated.value) return;
+    const leaseId = localFormInline.value.leaseId;
+    if (!leaseId) return;
+    checkoutLoading.value = true;
+    try {
+      const res = await getCheckoutByLeaseId(leaseId);
+      checkoutDetail.value = res.code === 0 ? res.data || null : null;
+    } finally {
+      checkoutLoading.value = false;
+    }
+  };
+
+  watch(
+    () => activeTab.value,
+    tab => {
+      if (tab === "checkout") fetchCheckoutDetail();
+    }
+  );
+
+  watch(
+    () => localFormInline.value.status,
+    status => {
+      if (status === LEASE_STATUS_MAP.TERMINATED.code && activeTab.value === "checkout") {
+        fetchCheckoutDetail();
+      }
+    }
+  );
+
+  const getTotalArea = () => {
+    if (!localFormInline.value.roomList) return 0;
+    return localFormInline.value.roomList.reduce((sum, room) => sum + (room.area || 0), 0);
+  };
+
+  const calculateFeeAmount = (fee: any, roomRentPrice = 0) => {
+    const input = Number(fee?.priceInput || 0);
+    if (fee?.priceMethod === 2) {
+      return (Number(roomRentPrice || 0) * input) / 100;
+    }
+    return input;
+  };
+
+  const formatFeeConfig = (fee: any) => {
+    const input = Number(fee?.priceInput || 0);
+    return fee?.priceMethod === 2 ? `${input}%` : `¥${input.toFixed(2)}`;
+  };
+
+  const roomFeeGroups = computed(() =>
+    (localFormInline.value.roomList || []).map(room => {
+      const roomId = String(room.roomId || "");
+      const rentPrice = Number(room.price || 0);
+      const fees = (localFormInline.value.otherFees || []).filter(fee => String(fee.roomId || "") === roomId);
+      const feeTotal = fees.reduce((sum, fee) => sum + calculateFeeAmount(fee, rentPrice), 0);
+
+      return {
+        roomId,
+        roomName: `${room.communityName || ""} ${room.doorNumber || ""}-${room.roomNumber || ""}`.trim(),
+        rentPrice,
+        rentPriceText: rentPrice.toFixed(2),
+        fees,
+        feeTotal,
+        feeTotalText: feeTotal.toFixed(2)
+      };
+    })
+  );
+
+  const totalRentPriceText = computed(() => roomFeeGroups.value.reduce((sum, room) => sum + room.rentPrice, 0).toFixed(2));
+  const totalOtherFeeText = computed(() => roomFeeGroups.value.reduce((sum, room) => sum + room.feeTotal, 0).toFixed(2));
+
+  const getIdTypeName = (idType: number) => {
+    const option = ID_TYPE_OPTIONS.find(item => item.value === idType);
+    return option?.label || "未知";
+  };
+
+  const getRentDueTypeText = (type: number, day: number) => {
+    if (type === 1) return `提前${day}天收租`;
+    if (type === 2) return `每月${day}号收租`;
+    return "未设置";
+  };
+
+  const getContractNatureName = (nature: number) => {
+    const option = LEASE_CONTRACT_NATURE_OPTIONS.find(item => item.value === nature);
+    return option?.label || "未知";
+  };
+
+  const handleDownloadContract = () => {
+    if (!props.formInline.leaseContract?.contractContent) {
+      message("合同内容为空，无法下载", { type: "warning" });
+      return;
+    }
+    downloadLeaseContract({
+      leaseId: props.formInline.leaseContract.leaseId
+    }).then(res => {
+      const blob = new Blob([res], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `租客合同_${props.formInline.leaseContract.leaseId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    });
+  };
+
+  const handleGenerateContract = () => {
+    const formRef = ref();
+
+    addDialog({
+      title: "重新生成合同，请选择合同模板",
+      props: {
+        formInline: {
+          leaseId: props.formInline.leaseContract.leaseId
+        }
+      },
+      top: "8%",
+      width: "400px",
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, leaseId: props.formInline.leaseContract.leaseId }),
+      beforeSure: done => {
+        const selectedTemplate = formRef.value.getSelectedTemplate();
+        if (!selectedTemplate) {
+          message("请选择合同模板", { type: "warning" });
+          return;
+        }
+        generateLeaseContract({
+          leaseContractId: localFormInline.value.leaseContract.id,
+          leaseId: localFormInline.value.leaseContract.leaseId,
+          contractTemplateId: selectedTemplate
+        }).then(resp => {
+          if (resp.code == 0) {
+            localFormInline.value.leaseContract = resp.data;
+            message("合同生成成功", { type: "success" });
+            emit("contract-updated");
+            done();
+          }
+        });
+      }
+    });
+  };
+
+  const handleSignContract = () => {
+    if (localFormInline.value.leaseContract?.signStatus === 1) {
+      message("合同已签约，无需重复操作", { type: "warning" });
+      return;
+    }
+    updateLeaseContractSignStatus({
+      leaseContractId: localFormInline.value.leaseContract.id,
+      signStatus: 1
+    }).then(resp => {
+      if (resp.code == 0) {
+        message("合同签约成功", { type: "success" });
+        localFormInline.value.leaseContract.signStatus = 1;
+        emit("contract-signed", localFormInline.value.leaseId);
+      } else {
+        message(resp.message || "合同签约修改失败", { type: "warning" });
+      }
+    });
+  };
+
+  const allowEdit = (status: number) => {
+    if (props.readonly) return false;
+    return !(status === LEASE_STATUS_MAP.TERMINATED.code || status === LEASE_STATUS_MAP.EFFECTIVE.code);
+  };
+
+  const editLease = (row: LeaseDetailVo) => {
+    if (!allowEdit(row.status)) {
+      message("已退租或作废租客不能修改", { type: "warning" });
+      return;
+    }
+
+    const tenantCreateFormInline: TenantsCreateFormProps = {
+      lease: {
+        ...row,
+        id: row.leaseId,
+        tenantId: row.tenantId,
+        contractTemplateId: row.leaseContract?.contractTemplateId
+      },
+      tenantPersonal: row.tenantPersonal
+        ? {
+            ...row.tenantPersonal,
+            companyId: row.tenantPersonal.companyId ? String(row.tenantPersonal.companyId) : undefined
+          }
+        : undefined,
+      tenantCompany: row.tenantCompany ? { ...row.tenantCompany } : undefined,
+      tenantMateList: row.tenantMateList,
+      otherFees: row.otherFees,
+      isEdit: true
+    };
+    openTenantDialog("修改租客 " + row.tenantName, tenantCreateFormInline, leaseId => {
+      emit("lease-updated", leaseId);
+    });
+  };
+
+  const editTenantInfo = (row: LeaseDetailVo) => {
+    editLease(row);
+  };
+
+  defineExpose({
+    editLease,
+    editTenantInfo
+  });
+</script>
+
+<style scoped lang="scss">
+  .tenant-detail-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .overview-card,
+    .tabs-wrapper {
+      padding: 16px 18px;
+      background: var(--el-bg-color);
+      border: 1px solid var(--el-border-color-light);
+      border-radius: 12px;
+    }
+
+    .overview-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .overview-section {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 16px;
+      align-items: start;
+
+      &--stats {
+        padding-top: 16px;
+        border-top: 1px solid var(--el-border-color-lighter);
+      }
+    }
+
+    .section-marker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 4px;
+
+      &__icon {
+        font-size: 16px;
+        color: var(--el-text-color-primary);
+      }
+
+      &__title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+      }
+    }
+
+    .room-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .room-chip {
+      padding: 10px 14px;
+      font-size: 13px;
+
+      &__name {
+        font-weight: 500;
+      }
+
+      &__rent {
+        color: var(--el-text-color-secondary);
+      }
+
+      &--meta {
+        background: var(--el-fill-color-light);
+      }
+    }
+
+    .summary-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+
+      &__item {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+      }
+
+      &__label {
+        font-size: 13px;
+        color: var(--el-text-color-regular);
+      }
+
+      &__value {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+
+        &--danger {
+          color: #f56c6c;
+        }
+      }
+
+      &__unit {
+        font-size: 12px;
+        color: var(--el-text-color-secondary);
+      }
+    }
+
+    :deep(.el-tabs__header) {
+      margin-bottom: 16px;
+    }
+
+    .tab-content {
+      min-height: 420px;
+    }
+
+    .info-section {
+      margin-bottom: 18px;
+      padding: 16px 18px;
+      background: var(--el-fill-color-blank);
+      border: 1px solid var(--el-border-color-lighter);
+      border-radius: 12px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+      }
+
+      :deep(.el-descriptions__header) {
+        margin-bottom: 14px;
+      }
+
+      :deep(.el-descriptions__body) {
+        background: transparent;
+      }
+
+      :deep(.el-descriptions__table) {
+        --el-descriptions-table-border: transparent;
+      }
+
+      :deep(.el-descriptions__cell) {
+        padding-bottom: 12px;
+      }
+
+      .text-value {
+        color: var(--el-text-color-primary);
+        font-weight: 500;
+
+        &--danger {
+          color: #f56c6c;
+        }
+      }
+
+      .text-subtle {
+        margin-left: 4px;
+        font-size: 12px;
+        color: var(--el-text-color-secondary);
+      }
+
+      .photo-wall {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 4px;
+      }
+
+      .photo-item {
+        padding: 6px;
+        background: var(--el-fill-color-light);
+        border: 1px solid var(--el-border-color-lighter);
+        border-radius: 12px;
+      }
+
+      .mate-table,
+      .fees-table {
+        margin-top: 12px;
+
+        :deep(.el-table__header) th {
+          background: var(--el-fill-color-light);
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+        }
+
+        .fee-amount {
+          font-size: 15px;
+          font-weight: 600;
+          color: #f56c6c;
+        }
+      }
+
+      .room-fee-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .room-fee-card {
+        padding: 14px 16px;
+        background: var(--el-bg-color);
+        border: 1px solid var(--el-border-color-light);
+        border-radius: 12px;
+
+        &__head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+
+        &__title {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+        }
+
+        &__summary {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          font-size: 13px;
+          color: var(--el-text-color-secondary);
+
+          strong {
+            font-size: 16px;
+            color: var(--el-text-color-primary);
+          }
+        }
+      }
+
+      .room-fee-total {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+
+        &__item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 14px 16px;
+          background: var(--el-fill-color-light);
+          border-radius: 10px;
+          color: var(--el-text-color-regular);
+
+          strong {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f56c6c;
+          }
+        }
+      }
+    }
+
+    :deep(.el-empty) {
+      padding: 36px 0;
+
+      .el-empty__description {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+      }
+    }
+  }
+
+  @media (max-width: 960px) {
+    .tenant-detail-view {
+      .overview-section {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .room-fee-total {
+        grid-template-columns: 1fr;
+      }
+
+      .room-fee-card__head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  }
+</style>

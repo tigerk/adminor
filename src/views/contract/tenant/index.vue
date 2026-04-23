@@ -4,14 +4,14 @@
       <div class="filter-toolbar">
         <el-form ref="queryFormRef" :inline="true" :model="queryForm" class="filter-form">
           <el-form-item label="租客名称">
-            <el-input v-model="queryForm.name" placeholder="请输入租客姓名/企业名称" clearable class="filter-input" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
+            <el-input v-model="queryForm.name" placeholder="请输入租客姓名/企业名称" clearable class="filter-input" @keyup.enter="handleTenantSearch" @clear="handleTenantSearch">
               <template #prefix>
                 <IconifyIconOffline :icon="User" />
               </template>
             </el-input>
           </el-form-item>
           <el-form-item label="联系电话">
-            <el-input v-model="queryForm.phone" placeholder="请输入联系电话" clearable class="filter-input" @keyup.enter="onTenantSearch" @clear="onTenantSearch">
+            <el-input v-model="queryForm.phone" placeholder="请输入联系电话" clearable class="filter-input" @keyup.enter="handleTenantSearch" @clear="handleTenantSearch">
               <template #prefix>
                 <IconifyIconOffline :icon="Phone" />
               </template>
@@ -28,19 +28,19 @@
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-button :icon="useRenderIcon(Search)" type="primary" @click="onTenantSearch">查询</el-button>
-            <el-button :icon="useRenderIcon(Refresh)" @click="() => resetQueryForm(queryFormRef)">重置</el-button>
+            <el-button :icon="useRenderIcon(Search)" type="primary" @click="handleTenantSearch">查询</el-button>
+            <el-button :icon="useRenderIcon(Refresh)" @click="handleReset">重置</el-button>
           </el-form-item>
         </el-form>
         <el-button type="primary" :icon="useRenderIcon(Plus)" @click="openTenantDialog()">添加租客合同</el-button>
       </div>
     </div>
 
-    <PureTableBar title="租客合同" :columns="columns" @refresh="onTenantSearch">
+    <PureTableBar title="租客合同" :columns="columns" @refresh="handleTenantSearch">
       <template #buttons>
         <div class="summary-block summary-block--toolbar">
           <div class="summary-filter-strip">
-            <el-radio-group v-model="queryForm.status" @change="onTenantSearch">
+            <el-radio-group v-model="queryForm.status" @change="handleTenantSearch">
               <el-radio-button v-for="item in tenantStatusTotal" :key="item.status" :value="item.status" :class="['tenant-status-button', `status-${item.status || 'all'}`]">
                 <span class="status-content">
                   <span class="status-dot" :style="{ backgroundColor: item.statusColor }" />
@@ -67,8 +67,8 @@
           :columns="dynamicColumns"
           :pagination="pagination"
           :header-cell-style="{ background: 'var(--el-fill-color-light)', color: 'var(--el-text-color-primary)' }"
-          @page-size-change="handleSizeChange"
-          @page-current-change="handleCurrentChange"
+          @page-size-change="handlePageSizeChange"
+          @page-current-change="handlePageCurrentChange"
         >
           <template #operation="{ row }">
             <el-button class="reset-margin" link type="primary" :icon="useRenderIcon(View)" @click="openTenantViewDialog('查看租客', { leaseId: row.leaseId })">查看</el-button>
@@ -102,8 +102,8 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, ref, watch } from "vue";
-  import { useRoute } from "vue-router";
+  import { onActivated, onMounted, ref, watch } from "vue";
+  import { useRoute, useRouter } from "vue-router";
   import { LEASE_STATUS_OPTIONS, TENANT_TYPE_OPTIONS } from "@/constants";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
@@ -126,9 +126,13 @@
   import { ElMessageBox } from "element-plus";
   import { hideLoading, showLoading } from "@/utils/yeah";
   import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
+  import { useTenantListRefreshVersion } from "@/views/contract/tenant/utils/listRefresh";
 
   const { openLeaseCheckoutDialog } = useCheckoutDialog();
   const route = useRoute();
+  const router = useRouter();
+  const tenantListRefreshVersion = useTenantListRefreshVersion();
+  const lastSeenRefreshVersion = ref(0);
 
   defineOptions({
     name: "ContractTenant"
@@ -158,8 +162,53 @@
   const statusOptions = [{ label: "全部", value: undefined }, ...LEASE_STATUS_OPTIONS];
 
   function applyRouteQuery() {
+    queryForm.name = typeof route.query.name === "string" ? route.query.name : "";
+    queryForm.phone = typeof route.query.phone === "string" ? route.query.phone : "";
+    queryForm.tenantType = typeof route.query.tenantType === "string" && route.query.tenantType !== "" ? Number(route.query.tenantType) : undefined;
     queryForm.status = typeof route.query.status === "string" && route.query.status !== "" ? Number(route.query.status) : undefined;
     queryForm.expiringDaysWithin = typeof route.query.expiringDaysWithin === "string" && route.query.expiringDaysWithin !== "" ? Number(route.query.expiringDaysWithin) : undefined;
+    pagination.currentPage = typeof route.query.page === "string" && route.query.page !== "" ? Number(route.query.page) : 1;
+    pagination.pageSize = typeof route.query.pageSize === "string" && route.query.pageSize !== "" ? Number(route.query.pageSize) : 15;
+  }
+
+  function buildListQuery() {
+    return {
+      name: queryForm.name || undefined,
+      phone: queryForm.phone || undefined,
+      tenantType: queryForm.tenantType != null ? String(queryForm.tenantType) : undefined,
+      status: queryForm.status != null ? String(queryForm.status) : undefined,
+      expiringDaysWithin: queryForm.expiringDaysWithin != null ? String(queryForm.expiringDaysWithin) : undefined,
+      page: pagination.currentPage > 1 ? String(pagination.currentPage) : undefined,
+      pageSize: pagination.pageSize !== 15 ? String(pagination.pageSize) : undefined
+    };
+  }
+
+  function syncListQuery() {
+    router.replace({
+      path: "/contract/tenant",
+      query: buildListQuery()
+    });
+  }
+
+  function handleTenantSearch() {
+    pagination.currentPage = 1;
+    syncListQuery();
+    onTenantSearch();
+  }
+
+  function handleReset() {
+    resetQueryForm(queryFormRef);
+    syncListQuery();
+  }
+
+  function handlePageSizeChange(val: number) {
+    handleSizeChange(val);
+    syncListQuery();
+  }
+
+  function handlePageCurrentChange(val: number) {
+    handleCurrentChange(val);
+    syncListQuery();
   }
 
   const handleConfirmDelete = row => {
@@ -222,20 +271,17 @@
 
   onMounted(() => {
     applyRouteQuery();
-    if (route.query.status || route.query.expiringDaysWithin) {
+    lastSeenRefreshVersion.value = tenantListRefreshVersion.value;
+    onTenantSearch();
+  });
+
+  onActivated(() => {
+    if (tenantListRefreshVersion.value !== lastSeenRefreshVersion.value) {
+      lastSeenRefreshVersion.value = tenantListRefreshVersion.value;
+      applyRouteQuery();
       onTenantSearch();
     }
   });
-
-  watch(
-    () => route.query,
-    () => {
-      applyRouteQuery();
-      if (route.query.status || route.query.expiringDaysWithin) {
-        onTenantSearch();
-      }
-    }
-  );
 </script>
 
 <style lang="scss" scoped>

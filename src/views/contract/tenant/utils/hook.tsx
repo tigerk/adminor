@@ -2,6 +2,7 @@
 import { message } from "@/utils/message";
 import type { PaginationProps } from "@pureadmin/table";
 import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { createTenant, deleteTenant, getLeaseDetail, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
@@ -24,13 +25,14 @@ import type {
 import { getDictDataByDictCode } from "@/api/sys/dict";
 import TenantCreateForm from "@/views/contract/tenant/form/tenantCreateForm/index.vue";
 import TenantMateForm from "@/views/contract/tenant/form/tenantCreateForm/tenantMateForm.vue";
-import ViewTenantDialog from "@/views/contract/tenant/view/ViewTenantDialog.vue";
 import { calculateMonthsDifference } from "@/utils/yeah";
 import { convertImage2string } from "@/utils/image";
 import { addDays, addMonth } from "@/utils/date";
 import { getRoomList } from "@/api/house/room";
 
 function useTenant() {
+  const router = useRouter();
+  const route = useRoute();
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 15,
@@ -532,62 +534,20 @@ function useTenant() {
     row?: { leaseId: string },
     options?: { readonly?: boolean; onContractSigned?: (leaseId: string) => void; onContractUpdated?: () => void }
   ) {
-    // 设置 loading 状态为 true
-    loading.value = true;
+    if (!row?.leaseId) {
+      message("租约信息不完整", { type: "warning" });
+      return;
+    }
 
-    // 从 API 获取租客详情
-    getLeaseDetail({ leaseId: row.leaseId })
-      .then(resp => {
-        loading.value = false;
+    const detailQuery = route.path.startsWith("/contract/tenant")
+      ? { ...route.query, readonly: options?.readonly ? "1" : undefined }
+      : { readonly: options?.readonly ? "1" : undefined };
 
-        if (resp.code === 0) {
-          const tenantDetail = resp.data;
-          // 合并 row 数据和 API 返回的详情数据
-          addDialog({
-            title: `${title} ${tenantDetail?.tenantName}`,
-            props: {
-              formInline: {
-                title,
-                ...tenantDetail
-              },
-              readonly: options?.readonly || false, // 传递只读标志
-              // 传递事件处理器
-              onContractSigned:
-                options?.onContractSigned ||
-                ((leaseId: string) => {
-                  updateTenantRowStatus(leaseId, 1);
-                }),
-              onContractUpdated:
-                options?.onContractUpdated ||
-                (() => {
-                  onTenantSearch();
-                })
-            },
-            top: "1vh",
-            width: "70vw",
-            lockScroll: true,
-            alignCenter: true,
-            draggable: true,
-            fullscreen: false,
-            fullscreenIcon: true,
-            closeOnClickModal: false,
-            hideFooter: true,
-            contentRenderer: () => h(ViewTenantDialog, { ref: formRef, formInline: null }),
-            beforeSure: (done, { options }) => {}
-          });
-        } else {
-          message(resp.message, {
-            type: "error"
-          });
-        }
-      })
-      .catch(error => {
-        // 异常情况下也要设置 loading 状态为 false
-        loading.value = false;
-        message("获取租客详情失败", {
-          type: "error"
-        });
-      });
+    router.push({
+      name: "TenantDetail",
+      params: { leaseId: row.leaseId },
+      query: detailQuery
+    });
   }
 
   // 辅助函数：只更新指定租客的状态（可选，更高效）
