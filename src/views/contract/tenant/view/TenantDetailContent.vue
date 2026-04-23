@@ -1,10 +1,10 @@
 <template>
   <div class="tenant-detail-view">
-    <div class="overview-card">
-      <div class="overview-section">
-        <div class="section-marker">
-          <el-icon class="section-marker__icon"><House /></el-icon>
-          <span class="section-marker__title">房源地址</span>
+    <div class="overview-bar">
+      <div class="overview-bar__section overview-bar__section--rooms">
+        <div class="overview-bar__label">
+          <el-icon><House /></el-icon>
+          <span>房源地址</span>
         </div>
         <div class="room-chip-list">
           <el-tag v-for="room in localFormInline.roomList" :key="room.roomId?.toString()" type="primary" effect="light" class="room-chip">
@@ -17,10 +17,10 @@
         </div>
       </div>
 
-      <div class="overview-section overview-section--stats">
-        <div class="section-marker">
-          <el-icon class="section-marker__icon"><User /></el-icon>
-          <span class="section-marker__title">租约摘要</span>
+      <div class="overview-bar__section overview-bar__section--summary">
+        <div class="overview-bar__label">
+          <el-icon><User /></el-icon>
+          <span>租约摘要</span>
         </div>
         <div class="summary-strip">
           <div class="summary-strip__item">
@@ -157,8 +157,14 @@
                   <div class="room-fee-card__head">
                     <div class="room-fee-card__title">{{ room.roomName }}</div>
                     <div class="room-fee-card__summary">
-                      <span>月租金 <strong>¥{{ room.rentPriceText }}</strong></span>
-                      <span>其他费用 <strong>¥{{ room.feeTotalText }}</strong></span>
+                      <span>
+                        月租金
+                        <strong>¥{{ room.rentPriceText }}</strong>
+                      </span>
+                      <span>
+                        其他费用
+                        <strong>¥{{ room.feeTotalText }}</strong>
+                      </span>
                     </div>
                   </div>
                   <el-table v-if="room.fees.length > 0" :data="room.fees" border stripe class="fees-table">
@@ -201,15 +207,18 @@
             </section>
 
             <section class="info-section">
-              <el-descriptions title="负责人信息" :column="3" class="info-descriptions" size="default">
+              <el-descriptions title="负责人信息" :column="4" class="info-descriptions" size="default">
                 <el-descriptions-item label="签约部门" label-align="right">
-                  <span class="text-value">{{ localFormInline.deptName }}</span>
+                  <span class="text-value">{{ deptNameText }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="签约人" label-align="right">
-                  <span class="text-value">{{ localFormInline.salesmanName }}</span>
+                  <span class="text-value">{{ salesmanNameText }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="租客来源" label-align="right">
+                  <span class="text-value">{{ tenantSourceText }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="成交渠道" label-align="right">
-                  <span class="text-value">{{ localFormInline.dealChannelName }}</span>
+                  <span class="text-value">{{ dealChannelText }}</span>
                 </el-descriptions-item>
               </el-descriptions>
             </section>
@@ -448,6 +457,12 @@
 
   const totalRentPriceText = computed(() => roomFeeGroups.value.reduce((sum, room) => sum + room.rentPrice, 0).toFixed(2));
   const totalOtherFeeText = computed(() => roomFeeGroups.value.reduce((sum, room) => sum + room.feeTotal, 0).toFixed(2));
+  const deptNameText = computed(() => localFormInline.value.deptName || "—");
+  const salesmanNameText = computed(
+    () => localFormInline.value.salesmanName || (localFormInline.value as any).salesman?.realName || (localFormInline.value as any).salesman?.name || "—"
+  );
+  const tenantSourceText = computed(() => localFormInline.value.tenantSourceName || "—");
+  const dealChannelText = computed(() => localFormInline.value.dealChannelName || "—");
 
   const getIdTypeName = (idType: number) => {
     const option = ID_TYPE_OPTIONS.find(item => item.value === idType);
@@ -593,7 +608,7 @@
     flex-direction: column;
     gap: 8px;
 
-    .overview-card,
+    .overview-bar,
     .tabs-wrapper {
       padding: 14px 16px;
       background: var(--el-bg-color);
@@ -601,38 +616,36 @@
       border-radius: 10px;
     }
 
-    .overview-card {
+    .overview-bar {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 10px;
     }
 
-    .overview-section {
-      display: grid;
-      grid-template-columns: 96px 1fr;
-      gap: 14px;
-      align-items: start;
+    .overview-bar__section {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      min-width: 0;
 
-      &--stats {
-        padding-top: 14px;
+      & + .overview-bar__section {
+        padding-top: 10px;
         border-top: 1px solid var(--el-border-color-lighter);
       }
     }
 
-    .section-marker {
+    .overview-bar__label {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding-top: 4px;
+      flex-shrink: 0;
+      min-width: 76px;
+      color: var(--el-text-color-primary);
+      font-size: 14px;
+      font-weight: 600;
 
-      &__icon {
+      .el-icon {
         font-size: 16px;
-        color: var(--el-text-color-primary);
-      }
-
-      &__title {
-        font-size: 14px;
-        font-weight: 600;
         color: var(--el-text-color-primary);
       }
     }
@@ -641,6 +654,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      min-width: 0;
     }
 
     .room-chip {
@@ -664,6 +678,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px 16px;
+      min-width: 0;
 
       &__item {
         display: flex;
@@ -861,9 +876,13 @@
 
   @media (max-width: 960px) {
     .tenant-detail-view {
-      .overview-section {
-        grid-template-columns: 1fr;
+      .overview-bar__section {
+        flex-direction: column;
         gap: 12px;
+      }
+
+      .overview-bar__label {
+        min-width: 0;
       }
 
       .room-fee-total {
