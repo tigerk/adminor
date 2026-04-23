@@ -92,7 +92,6 @@
                       </template>
                     </UploadImage>
                   </div>
-                  <div class="upload-divider" />
                   <div class="upload-item">
                     <UploadImage v-model="tenant.otherImageList" :limit="3" :width="120" :height="76">
                       <template #tip="">
@@ -319,14 +318,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
-
-  .upload-divider {
-    width: 1px;
-    height: 80px;
-    background: #e8e8e8;
-    margin: 0 4px;
-    align-self: center;
   }
 
   .upload-tip {

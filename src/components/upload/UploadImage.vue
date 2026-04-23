@@ -17,7 +17,8 @@
   const props = defineProps({
     limit: { type: Number, default: 1 },
     width: { type: [Number, String], default: undefined },
-    height: { type: [Number, String], default: undefined }
+    height: { type: [Number, String], default: undefined },
+    maxSizeMb: { type: Number, default: 10 }
   });
 
   const instance = getCurrentInstance();
@@ -67,8 +68,8 @@
       message("只能上传图片");
       return false;
     }
-    if (file.size / 1024 / 1024 > 10) {
-      message("单个图片大小不能超过10MB");
+    if (file.size / 1024 / 1024 > props.maxSizeMb) {
+      message(`单个图片大小不能超过${props.maxSizeMb}MB`);
       return false;
     }
     return true;
@@ -268,7 +269,7 @@
     <p class="el-upload__tip">
       <slot name="tip" :limit="props.limit" :file-count="fileList.length">
         <span class="text-amber-600 text-base">图片</span>
-        可拖拽上传最多{{ props.limit }}张，单个不超过2MB且格式为jpeg/png/gif的图片
+        可拖拽上传最多{{ props.limit }}张，单个不超过{{ props.maxSizeMb }}MB且格式为jpeg/png/gif的图片
         <span v-if="fileList.length > 1" class="text-primary font-medium">（直接拖拽图片可调整顺序）</span>
       </slot>
     </p>

@@ -1444,14 +1444,6 @@
     align-items: center;
   }
 
-  .upload-divider {
-    width: 1px;
-    height: 80px;
-    background: #e8e8e8;
-    margin: 0 4px;
-    align-self: center;
-  }
-
   .upload-tip {
     display: flex;
     align-items: center;

@@ -608,7 +608,7 @@
         formInline: row
       },
       top: "5vh",
-      width: "880px",
+      width: "600px",
       lockScroll: true,
       alignCenter: true,
       draggable: true,

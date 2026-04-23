@@ -1,6 +1,5 @@
 <template>
   <el-form ref="formRef" :model="formData" :rules="rules" label-position="top" class="tenant-form">
-    <div class="tenant-form__notice">建议先完成基础信息，再上传证件照片。仅保存当前租客档案，不变更租约配置。</div>
     <!-- 头部 -->
     <div class="tenant-form__header">
       <div class="tenant-form__header-left">
@@ -18,24 +17,25 @@
     <!-- ══ 个人租客 ══ -->
     <template v-if="formData.tenantType === 0">
       <div class="tenant-form__panel">
-        <!-- 信息行：姓名 / 性别 / 联系电话 / 证件信息 / 标签 -->
         <el-row :gutter="12">
-          <el-col :xl="4" :lg="6" :md="8" :sm="12" :xs="24">
+          <el-col :span="8">
             <el-form-item label="姓名" prop="tenantPersonal.name">
               <el-input v-model="formData.tenantPersonal.name" placeholder="请输入姓名" clearable maxlength="20" />
             </el-form-item>
           </el-col>
-          <el-col :xl="3" :lg="4" :md="6" :sm="12" :xs="24">
+          <el-col :span="6">
             <el-form-item label="性别" prop="tenantPersonal.gender">
               <el-segmented v-model="formData.tenantPersonal.gender" :options="genderOptions" class="w-full" />
             </el-form-item>
           </el-col>
-          <el-col :xl="4" :lg="6" :md="10" :sm="12" :xs="24">
+          <el-col :span="10">
             <el-form-item label="联系电话" prop="tenantPersonal.phone">
               <el-input v-model="formData.tenantPersonal.phone" placeholder="请输入手机号" clearable maxlength="30" />
             </el-form-item>
           </el-col>
-          <el-col :xl="8" :lg="8" :md="24" :sm="24" :xs="24">
+        </el-row>
+        <el-row :gutter="12">
+          <el-col :span="14">
             <el-form-item label="证件信息" prop="tenantPersonal.idNo">
               <el-input v-model="formData.tenantPersonal.idNo" placeholder="请输入证件号码" clearable maxlength="20">
                 <template #prepend>
@@ -47,9 +47,9 @@
             </el-form-item>
             <el-form-item prop="tenantPersonal.idType" class="hidden-form-item" />
           </el-col>
-          <el-col :xl="5" :lg="24" :md="12" :sm="24" :xs="24">
+          <el-col :span="10">
             <el-form-item label="租客标签" prop="tenantPersonal.tags">
-              <el-select v-model="formData.tenantPersonal.tags" placeholder="请选择租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="3">
+              <el-select v-model="formData.tenantPersonal.tags" placeholder="请选择租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="1">
                 <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -66,18 +66,16 @@
             </span>
             证件照片
           </div>
-          <span class="upload-section__hint">JPG / PNG / GIF，支持拖拽排序，单张 ≤ 10MB</span>
+          <span class="upload-section__hint">JPG / PNG / GIF，支持拖拽排序，单张 ≤ 2MB</span>
         </div>
-
-        <!-- 一行：4 个上传槽等分 -->
-        <div class="upload-row">
+        <div class="upload-row upload-row--personal-primary">
           <div class="upload-cell">
             <div class="upload-cell__label">
               <el-icon :size="11"><CreditCard /></el-icon>
               身份证人像面
             </div>
             <div class="upload-cell__body">
-              <UploadImage v-model="formData.tenantPersonal.idCardFrontList" :limit="1" :width="120" :height="76">
+              <UploadImage v-model="formData.tenantPersonal.idCardFrontList" :limit="1" :width="120" :height="76" :max-size-mb="2">
                 <template #tip />
               </UploadImage>
             </div>
@@ -89,7 +87,7 @@
               身份证国徽面
             </div>
             <div class="upload-cell__body">
-              <UploadImage v-model="formData.tenantPersonal.idCardBackList" :limit="1" :width="120" :height="76">
+              <UploadImage v-model="formData.tenantPersonal.idCardBackList" :limit="1" :width="120" :height="76" :max-size-mb="2">
                 <template #tip />
               </UploadImage>
             </div>
@@ -101,20 +99,21 @@
               手持身份证
             </div>
             <div class="upload-cell__body">
-              <UploadImage v-model="formData.tenantPersonal.idCardInHandList" :limit="1" :width="120" :height="76">
+              <UploadImage v-model="formData.tenantPersonal.idCardInHandList" :limit="1" :width="120" :height="76" :max-size-mb="2">
                 <template #tip />
               </UploadImage>
             </div>
           </div>
-
-          <div class="upload-cell upload-cell--wide">
+        </div>
+        <div class="upload-row upload-row--single">
+          <div class="upload-cell">
             <div class="upload-cell__label">
               <el-icon :size="11"><Files /></el-icon>
               其他照片
               <span class="upload-cell__badge">最多 3 张</span>
             </div>
             <div class="upload-cell__body upload-cell__body--multi">
-              <UploadImage v-model="formData.tenantPersonal.otherImageList" :limit="3" :width="120" :height="76">
+              <UploadImage v-model="formData.tenantPersonal.otherImageList" :limit="3" :width="120" :height="76" :max-size-mb="2">
                 <template #tip />
               </UploadImage>
             </div>
@@ -127,27 +126,29 @@
     <template v-else>
       <div class="tenant-form__panel">
         <el-row :gutter="12">
-          <el-col :xl="6" :lg="8" :md="12" :sm="24" :xs="24">
+          <el-col :span="9">
             <el-form-item label="企业名称" prop="tenantCompany.companyName">
               <el-input v-model="formData.tenantCompany.companyName" placeholder="请输入企业名称" clearable maxlength="50" />
             </el-form-item>
           </el-col>
-          <el-col :xl="5" :lg="7" :md="12" :sm="24" :xs="24">
+          <el-col :span="9">
             <el-form-item label="统一社会信用代码" prop="tenantCompany.uscc">
               <el-input v-model="formData.tenantCompany.uscc" placeholder="请输入 18 位信用代码" clearable maxlength="20" />
             </el-form-item>
           </el-col>
-          <el-col :xl="3" :lg="4" :md="12" :sm="24" :xs="24">
+          <el-col :span="6">
             <el-form-item label="法定代表人" prop="tenantCompany.legalPerson">
               <el-input v-model="formData.tenantCompany.legalPerson" placeholder="请输入姓名" clearable maxlength="30" />
             </el-form-item>
           </el-col>
-          <el-col :xl="4" :lg="5" :md="12" :sm="24" :xs="24">
+        </el-row>
+        <el-row :gutter="12">
+          <el-col :span="9">
             <el-form-item label="联系电话" prop="tenantCompany.contactPhone">
               <el-input v-model="formData.tenantCompany.contactPhone" placeholder="请输入手机号" clearable maxlength="30" />
             </el-form-item>
           </el-col>
-          <el-col :xl="6" :lg="24" :md="12" :sm="24" :xs="24">
+          <el-col :span="15">
             <el-form-item label="租客标签" prop="tenantCompany.tags">
               <el-select v-model="formData.tenantCompany.tags" placeholder="请选择租客标签" class="w-full" multiple collapse-tags collapse-tags-tooltip :max-collapse-tags="3">
                 <el-option v-for="item in tenantTagOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -166,28 +167,30 @@
             </span>
             营业执照
           </div>
-          <span class="upload-section__hint">JPG / PNG / GIF，支持拖拽排序，单张 ≤ 10MB</span>
+          <span class="upload-section__hint">JPG / PNG / GIF，支持拖拽排序，单张 ≤ 2MB</span>
         </div>
-        <div class="upload-row upload-row--enterprise">
+        <div class="upload-row upload-row--single">
           <div class="upload-cell">
             <div class="upload-cell__label">
               <el-icon :size="11"><Files /></el-icon>
               营业执照正本
             </div>
             <div class="upload-cell__body">
-              <UploadImage v-model="formData.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="76">
+              <UploadImage v-model="formData.tenantCompany.businessLicenseUrls" :limit="1" :width="120" :height="76" :max-size-mb="2">
                 <template #tip />
               </UploadImage>
             </div>
           </div>
-          <div class="upload-cell upload-cell--wide">
+        </div>
+        <div class="upload-row upload-row--single">
+          <div class="upload-cell">
             <div class="upload-cell__label">
               <el-icon :size="11"><Files /></el-icon>
               其他附件
               <span class="upload-cell__badge">最多 3 张</span>
             </div>
             <div class="upload-cell__body upload-cell__body--multi">
-              <UploadImage v-model="formData.tenantCompany.otherImageList" :limit="3" :width="120" :height="76">
+              <UploadImage v-model="formData.tenantCompany.otherImageList" :limit="3" :width="120" :height="76" :max-size-mb="2">
                 <template #tip />
               </UploadImage>
             </div>
@@ -349,16 +352,6 @@
     color: var(--el-text-color-secondary);
   }
 
-  .tenant-form__notice {
-    margin-bottom: 12px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
-    background: var(--el-fill-color-light);
-    border: 1px solid var(--el-border-color-lighter);
-  }
-
   .tenant-form__panel {
     padding: 14px;
     border: 1px solid var(--el-border-color-lighter);
@@ -433,14 +426,16 @@
 ══════════════════════════ */
   .upload-row {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: start;
-    padding: 14px;
+    padding: 14px 14px 0;
     gap: 12px;
   }
 
-  .upload-row--enterprise {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .upload-row--single {
+    grid-template-columns: 1fr;
+    padding-top: 12px;
+    padding-bottom: 14px;
   }
 
   /* 单个上传槽 */
@@ -453,11 +448,6 @@
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 8px;
     background: var(--el-fill-color-blank);
-
-    /* 宽槽：其他照片，给更多空间排列多张图 */
-    &--wide {
-      grid-column: span 1;
-    }
   }
 
   /* 上传槽标签行 */
@@ -509,8 +499,12 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .upload-row--enterprise {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .upload-row--personal-primary {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .upload-row--single {
+      grid-template-columns: 1fr;
     }
   }
 
@@ -533,6 +527,11 @@
 
     .upload-row {
       grid-template-columns: 1fr;
+      padding: 12px 12px 0;
+    }
+
+    .upload-row--single {
+      padding-bottom: 12px;
     }
   }
 </style>
