@@ -11,7 +11,8 @@ import type {
   LeaseDetailVo,
   LeaseListVo,
   LeaseQueryDto,
-  LeaseBillCreateDto
+  LeaseBillCreateDto,
+  TenantInfoUpdateDto
 } from "@/types";
 
 export interface TenantProfileSearchDto {
@@ -83,6 +84,11 @@ export const renewLease = (data?: object) => {
 /** 更新租客 */
 export const updateTenant = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/update"), { data });
+};
+
+/** 仅更新租客信息 */
+export const updateTenantInfo = (data?: TenantInfoUpdateDto) => {
+  return http.request<ApiResponse>("post", baseUrlApi("contract/lease/tenant/info/update"), { data });
 };
 
 /** 删除租客 */

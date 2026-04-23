@@ -226,7 +226,7 @@
   const facilityItemsFiltered = computed(() => {
     return facilityItems.value.filter(item => {
       // 排除水电燃气项
-      return item.itemName !== "水表读数" && item.itemName !== "电表读数" && item.itemName !== "燃气表读数";
+      return item.feeName !== "水表读数" && item.feeName !== "电表读数" && item.feeName !== "燃气表读数";
     });
   });
 
@@ -265,7 +265,7 @@
     items.push(
       {
         itemCategory: "UTILITY",
-        itemName: "水表读数",
+        feeName: "水表读数",
         itemUnit: "m³",
         currentValue: "0",
         damaged: false,
@@ -275,7 +275,7 @@
       },
       {
         itemCategory: "UTILITY",
-        itemName: "电表读数",
+        feeName: "电表读数",
         itemUnit: "kWh",
         currentValue: "0",
         damaged: false,
@@ -285,7 +285,7 @@
       },
       {
         itemCategory: "UTILITY",
-        itemName: "燃气表读数",
+        feeName: "燃气表读数",
         itemUnit: "m³",
         currentValue: "0",
         damaged: false,
@@ -303,7 +303,7 @@
         items.push({
           itemCategory: "FACILITY",
           itemCode: facility.name,
-          itemName: facilityOption?.label || facility.name,
+          feeName: facilityOption?.label || facility.name,
           itemUnit: "个",
           currentValue: String(facility.count || 0),
           damaged: false,
@@ -320,11 +320,11 @@
   // 从items中提取水电燃气读数到meterReadings
   const extractMeterReadings = () => {
     facilityItems.value.forEach(item => {
-      if (item.itemName === "水表读数") {
+      if (item.feeName === "水表读数") {
         meterReadings.water = item.currentValue || "0";
-      } else if (item.itemName === "电表读数") {
+      } else if (item.feeName === "电表读数") {
         meterReadings.electricity = item.currentValue || "0";
-      } else if (item.itemName === "燃气表读数") {
+      } else if (item.feeName === "燃气表读数") {
         meterReadings.gas = item.currentValue || "0";
       }
     });
@@ -339,7 +339,7 @@
     };
 
     const meterName = meterNameMap[type];
-    const item = facilityItems.value.find(item => item.itemName === meterName);
+    const item = facilityItems.value.find(item => item.feeName === meterName);
 
     if (item) {
       item.currentValue = value || "0";
@@ -350,7 +350,7 @@
   const addCustomItem = () => {
     facilityItems.value.push({
       itemCategory: "FACILITY",
-      itemName: "",
+      feeName: "",
       itemUnit: "个",
       currentValue: "0",
       damaged: false,
@@ -380,7 +380,7 @@
       deliveryId: item.deliveryId,
       itemCategory: item.itemCategory,
       itemCode: item.itemCode,
-      itemName: item.itemName || "",
+      feeName: item.feeName || "",
       itemUnit: item.itemUnit,
       currentValue: item.currentValue || "0",
       damaged: item.damaged,

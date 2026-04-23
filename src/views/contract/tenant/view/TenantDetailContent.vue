@@ -348,6 +348,7 @@
   import { Document, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
+  import { updateTenantInfo } from "@/api/contract/tenant";
   import { getCheckoutByLeaseId } from "@/api/contract/checkout";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
@@ -357,6 +358,8 @@
   import ViewCheckoutTab from "@/views/contract/checkout/components/ViewCheckoutTab.vue";
   import LeaseContractTab from "@/views/contract/tenant/view/LeaseContractTab.vue";
   import LeaseBillTab from "@/views/contract/tenant/view/LeaseBillTab.vue";
+  import TenantInfoEditDialog from "@/views/contract/tenant/view/TenantInfoEditDialog.vue";
+  import { convertImage2string } from "@/utils/image";
 
   const { openTenantDialog } = useTenant();
 
@@ -593,7 +596,56 @@
   };
 
   const editTenantInfo = (row: LeaseDetailVo) => {
-    editLease(row);
+    if (!allowEdit(row.status)) {
+      message("已退租或作废租客不能修改", { type: "warning" });
+      return;
+    }
+
+    const formRef = ref();
+    addDialog({
+      title: `修改租客信息 - ${row.tenantName}`,
+      props: {
+        formInline: row
+      },
+      top: "5vh",
+      width: "880px",
+      lockScroll: true,
+      alignCenter: true,
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(TenantInfoEditDialog, { ref: formRef, formInline: row }),
+      beforeSure: async done => {
+        const formInstance = formRef.value;
+        const formRuleRef = formInstance?.getRef?.();
+        const payload = formInstance?.getFormData?.();
+        if (!formRuleRef || !payload) return;
+
+        await formRuleRef.validate(async (valid: boolean) => {
+          if (!valid) return;
+
+          if (payload.tenantType === 0) {
+            payload.tenantPersonal.idCardBackList = convertImage2string(payload.tenantPersonal.idCardBackList || []);
+            payload.tenantPersonal.idCardFrontList = convertImage2string(payload.tenantPersonal.idCardFrontList || []);
+            payload.tenantPersonal.idCardInHandList = convertImage2string(payload.tenantPersonal.idCardInHandList || []);
+            payload.tenantPersonal.otherImageList = convertImage2string(payload.tenantPersonal.otherImageList || []);
+          } else {
+            payload.tenantCompany.businessLicenseUrls = convertImage2string(payload.tenantCompany.businessLicenseUrls || []);
+            payload.tenantCompany.otherImageList = convertImage2string(payload.tenantCompany.otherImageList || []);
+          }
+
+          const resp = await updateTenantInfo(payload);
+          if (resp.code === 0) {
+            message("租客信息修改成功", { type: "success" });
+            emit("lease-updated", row.leaseId);
+            done();
+          } else {
+            message(resp.message || "租客信息修改失败", { type: "error" });
+          }
+        });
+      }
+    });
   };
 
   defineExpose({

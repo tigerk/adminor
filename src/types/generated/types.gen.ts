@@ -5933,7 +5933,7 @@ export type DeliveryItemVo = {
     /**
      * 物品名称
      */
-    itemName?: string;
+    feeName?: string;
     /**
      * 项目分类
      */
@@ -8013,6 +8013,10 @@ export type TenantCompanyDto = {
      */
     businessLicenseUrls?: Array<string>;
     /**
+     * 其他附件
+     */
+    otherImageList?: Array<string>;
+    /**
      * 租客标签 (JSON 格式)
      */
     tags?: Array<string>;
@@ -8413,6 +8417,28 @@ export type TenantProfileSearchVo = {
      * 企业租客资料
      */
     tenantCompany?: TenantCompanyVo;
+};
+
+/**
+ * 租客信息单独更新DTO
+ */
+export type TenantInfoUpdateDto = {
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 租客类型：0=个人，1=企业
+     */
+    tenantType?: number;
+    /**
+     * 个人租客信息
+     */
+    tenantPersonal?: TenantPersonalDto;
+    /**
+     * 企业租客信息
+     */
+    tenantCompany?: TenantCompanyDto;
 };
 
 export type LeaseListVo = {
@@ -13297,6 +13323,24 @@ export type SearchTenantProfilesResponses = {
 };
 
 export type SearchTenantProfilesResponse = SearchTenantProfilesResponses[keyof SearchTenantProfilesResponses];
+
+export type UpdateTenantInfoData = {
+    body: TenantInfoUpdateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/tenant/info/update';
+};
+
+export type UpdateTenantInfoResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type UpdateTenantInfoResponse = UpdateTenantInfoResponses[keyof UpdateTenantInfoResponses];
 
 export type RenewData = {
     body: TenantCreateDto;
