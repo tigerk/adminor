@@ -572,7 +572,7 @@
       tenantPersonal: row.tenantPersonal
         ? {
             ...row.tenantPersonal,
-            companyId: row.tenantPersonal.companyId ? Number(row.tenantPersonal.companyId) : undefined
+            companyId: row.tenantPersonal.companyId ? String(row.tenantPersonal.companyId) : undefined
           }
         : undefined,
       tenantCompany: row.tenantCompany ? { ...row.tenantCompany } : undefined,

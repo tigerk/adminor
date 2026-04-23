@@ -529,7 +529,7 @@
     templateId?: string;
     tenantPhone?: string;
     updateAtText?: string;
-    payload: TenantProfileSearchItem;
+    profileTemplate: TenantProfileSearchItem;
     state?: "loading" | "empty" | "error";
   }
 
@@ -728,7 +728,7 @@
   const createStateSuggestion = (text: string, state: TenantSuggestionItem["state"]): TenantSuggestionItem => ({
     value: text,
     state,
-    payload: {} as TenantProfileSearchItem
+    profileTemplate: {} as TenantProfileSearchItem
   });
 
   const queryTenantSuggestions = (keyword: string, tenantType: number, cb: (items: TenantSuggestionItem[]) => void, state: TenantSuggestionState) => {
@@ -758,7 +758,7 @@
             templateId: item.templateId,
             tenantPhone: item.tenantPhone,
             updateAtText: item.updateAt ? item.updateAt.replace("T", " ").slice(0, 16) : "",
-            payload: item
+            profileTemplate: item
           })) as TenantSuggestionItem[]
         ).filter(item => item.value);
 
@@ -777,55 +777,55 @@
   const queryTenantCompanySuggestions = (queryString: string, cb: (items: TenantSuggestionItem[]) => void) => queryTenantSuggestions(queryString, 1, cb, companySuggestionState);
 
   const handleTenantPersonalSuggestionSelect = (item: TenantSuggestionItem) => {
-    if (!item.payload || item.state) {
+    if (!item.profileTemplate || item.state) {
       return;
     }
-    const tenant = item.payload.tenantPersonal;
-    if (!tenant) {
+    const personalProfile = item.profileTemplate.tenantPersonal;
+    if (!personalProfile) {
       return;
     }
 
     formInline.tenantPersonal = {
       ...formInline.tenantPersonal,
       id: undefined,
-      companyId: tenant.companyId,
-      name: tenant.name || "",
-      gender: tenant.gender,
-      idType: tenant.idType ?? 0,
-      idNo: tenant.idNo || "",
-      phone: tenant.phone || "",
-      tags: [...(tenant.tags || [])],
-      remark: tenant.remark || "",
-      idCardFrontList: [...(tenant.idCardFrontList || [])],
-      idCardBackList: [...(tenant.idCardBackList || [])],
-      idCardInHandList: [...(tenant.idCardInHandList || [])],
-      otherImageList: [...(tenant.otherImageList || [])]
+      companyId: personalProfile.companyId ? String(personalProfile.companyId) : undefined,
+      name: personalProfile.name || "",
+      gender: personalProfile.gender,
+      idType: personalProfile.idType ?? 0,
+      idNo: personalProfile.idNo || "",
+      phone: personalProfile.phone || "",
+      tags: [...(personalProfile.tags || [])],
+      remark: personalProfile.remark || "",
+      idCardFrontList: [...(personalProfile.idCardFrontList || [])],
+      idCardBackList: [...(personalProfile.idCardBackList || [])],
+      idCardInHandList: [...(personalProfile.idCardInHandList || [])],
+      otherImageList: [...(personalProfile.otherImageList || [])]
     };
   };
 
   const handleTenantCompanySuggestionSelect = (item: TenantSuggestionItem) => {
-    if (!item.payload || item.state) {
+    if (!item.profileTemplate || item.state) {
       return;
     }
-    const tenant = item.payload.tenantCompany;
-    if (!tenant) {
+    const companyProfile = item.profileTemplate.tenantCompany;
+    if (!companyProfile) {
       return;
     }
 
     formInline.tenantCompany = {
       ...formInline.tenantCompany,
       id: undefined,
-      companyName: tenant.companyName || "",
-      uscc: tenant.uscc || "",
-      legalPerson: tenant.legalPerson || "",
-      legalPersonIdType: tenant.legalPersonIdType ?? 0,
-      legalPersonIdNo: tenant.legalPersonIdNo || "",
-      contactName: tenant.contactName || "",
-      contactPhone: tenant.contactPhone || "",
-      registeredAddress: tenant.registeredAddress || "",
-      businessLicenseUrls: [...(tenant.businessLicenseList || [])],
-      tags: [...(tenant.tags || [])],
-      remark: tenant.remark || ""
+      companyName: companyProfile.companyName || "",
+      uscc: companyProfile.uscc || "",
+      legalPerson: companyProfile.legalPerson || "",
+      legalPersonIdType: companyProfile.legalPersonIdType ?? 0,
+      legalPersonIdNo: companyProfile.legalPersonIdNo || "",
+      contactName: companyProfile.contactName || "",
+      contactPhone: companyProfile.contactPhone || "",
+      registeredAddress: companyProfile.registeredAddress || "",
+      businessLicenseUrls: [...(companyProfile.businessLicenseList || [])],
+      tags: [...(companyProfile.tags || [])],
+      remark: companyProfile.remark || ""
     };
   };
 

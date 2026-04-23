@@ -649,7 +649,7 @@ function useTenant() {
     if (!vo) return undefined;
     return {
       id: vo.id,
-      companyId: vo.companyId ? Number(vo.companyId) : undefined,
+      companyId: vo.companyId ? String(vo.companyId) : undefined,
       name: vo.name,
       gender: vo.gender,
       idType: vo.idType,

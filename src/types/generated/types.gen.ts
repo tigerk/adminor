@@ -8114,7 +8114,7 @@ export type TenantPersonalDto = {
     /**
      * 公司ID
      */
-    companyId?: number;
+    companyId?: string;
     /**
      * 租户名称
      */
@@ -8378,9 +8378,17 @@ export type TenantPersonalVo = {
 
 export type TenantProfileSearchVo = {
     /**
-     * 租客ID
+     * 资料档案ID
      */
-    tenantId?: string;
+    profileId?: string;
+    /**
+     * 资料模板ID
+     */
+    templateId?: string;
+    /**
+     * 来源租客ID
+     */
+    sourceTenantId?: string;
     /**
      * 租客类型：0=个人，1=企业
      */
