@@ -1,5 +1,5 @@
 <template>
-  <div class="delivery-form-container">
+  <div class="delivery-form-container mb-3">
     <el-form ref="formRef" :model="formData" :rules="rules" label-width="120px" label-position="top">
       <!-- 基本信息 -->
       <div class="form-section">
