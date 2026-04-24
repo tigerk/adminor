@@ -1,10 +1,10 @@
 import { h, ref } from "vue";
-import { addDialog, closeDialog, dialogStore } from "@/components/ReDialog";
+import { addDialog, closeDialog, dialogStore } from "@/components/ReDialog/index";
 import { deviceDetection } from "@pureadmin/utils";
 import { message } from "@/utils/message";
 import { LEASE_STATUS_MAP } from "@/constants";
 import type { LeaseListVo } from "@/types";
-import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
+import CheckoutDialog from "@/views/contract/checkout/form/checkoutCreateForm/CheckoutDialog.vue";
 
 /** 可退租的状态：待签字(1)、在租中(2) */
 const NOT_CAN_CHECKOUT_STATUS: number[] = [LEASE_STATUS_MAP.TERMINATED.code, LEASE_STATUS_MAP.VOIDED.code];

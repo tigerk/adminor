@@ -395,10 +395,10 @@
     LEASE_BILL_TYPE_META,
     SETTLEMENT_METHOD_META
   } from "@/constants";
-  import { CheckoutBankCardTypeEnumMeta, CheckoutBankTypeEnumMeta, IdTypeEnumMeta } from "@/types/generated/enum.meta";
+  import { CheckoutBankCardTypeEnumMeta, CheckoutBankTypeEnumMeta, IdTypeEnumMeta } from "@/types";
   import type { LeaseCheckoutVo, LeaseCheckoutInitVo } from "@/types";
-  import type { CheckoutFeeFormItem, CheckoutDialogFormData } from "@/types/models/checkout";
-  import { getCheckoutByLeaseId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
+  import type { CheckoutFeeFormItem, CheckoutDialogFormData } from "@/types";
+  import { getCheckoutByLeaseId, getCheckoutInitData, saveCheckout } from "@/api/contract/checkout";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import { getDictDataByParentCode } from "@/api/sys/dict";
   import UploadImage from "@/components/upload/UploadImage.vue";
@@ -984,7 +984,6 @@
         };
         const res = await saveCheckout(submitData);
         form.id = res.data;
-        await submitCheckout(form.id!);
         ElMessage.success("退租并结账提交成功");
         emit("success");
         // 由 addDialog 的 beforeSure 传入 done，关闭弹框

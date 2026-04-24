@@ -125,7 +125,7 @@
   import { message } from "@/utils/message";
   import { ElMessageBox } from "element-plus";
   import { hideLoading, showLoading } from "@/utils/yeah";
-  import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
+  import { useCheckoutDialog } from "@/views/contract/checkout/form/checkoutCreateForm/useCheckoutDialog";
   import { useTenantListRefreshVersion } from "@/views/contract/tenant/utils/listRefresh";
 
   const { openLeaseCheckoutDialog } = useCheckoutDialog();

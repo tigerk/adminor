@@ -355,7 +355,7 @@
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import DeliveryTab from "@/views/contract/tenant/view/DeliveryTab.vue";
-  import ViewCheckoutTab from "@/views/contract/checkout/components/ViewCheckoutTab.vue";
+  import ViewCheckoutTab from "@/views/contract/checkout/view/ViewCheckoutTab.vue";
   import LeaseContractTab from "@/views/contract/tenant/view/LeaseContractTab.vue";
   import LeaseBillTab from "@/views/contract/tenant/view/LeaseBillTab.vue";
   import TenantInfoEditDialog from "@/views/contract/tenant/view/TenantInfoEditDialog.vue";

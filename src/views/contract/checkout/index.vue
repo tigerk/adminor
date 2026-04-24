@@ -71,7 +71,7 @@
   import { APPROVAL_STATUS_META, CHECKOUT_STATUS_OPTIONS, CHECKOUT_TYPE_OPTIONS } from "@/constants";
   import { getCheckoutDetail, queryCheckoutList } from "@/api/contract/checkout";
   import type { LeaseCheckoutVo, LeaseCheckoutQueryDto } from "@/types";
-  import ViewCheckoutTab from "@/views/contract/checkout/components/ViewCheckoutTab.vue";
+  import ViewCheckoutTab from "@/views/contract/checkout/view/ViewCheckoutTab.vue";
 
   defineOptions({
     name: "LeaseCheckoutList"

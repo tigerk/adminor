@@ -135,7 +135,7 @@
   import { computed } from "vue";
   import type { LeaseCheckoutVo } from "@/types";
   import { APPROVAL_STATUS_META, CHECKOUT_STATUS_META } from "@/constants";
-  import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
+  import { useCheckoutDialog } from "@/views/contract/checkout/form/checkoutCreateForm/useCheckoutDialog";
 
   const props = defineProps<{
     loading: boolean;

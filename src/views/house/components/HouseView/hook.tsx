@@ -9,7 +9,7 @@ import { getHouseDetail } from "@/api/house/house";
 import { useFocusHouse } from "@/views/house/focus/focusHouse/utils/hook";
 import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
 import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
-import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
+import { useCheckoutDialog } from "@/views/contract/checkout/form/checkoutCreateForm/useCheckoutDialog";
 import useBooking from "@/views/contract/booking/utils/hook";
 
 /** 弹窗内部使用的状态包装（loading + 数据） */
