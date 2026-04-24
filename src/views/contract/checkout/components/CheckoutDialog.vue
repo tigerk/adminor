@@ -497,9 +497,9 @@
   function resolveFeeTypeFromName(feeName?: string | null) {
     const text = `${feeName ?? ""}`.trim();
     if (!text) return null;
-    if (text.includes("租金")) return LEASE_BILL_TYPE_META.RENT.code;
-    if (text.includes("押金")) return LEASE_BILL_TYPE_META.DEPOSIT.code;
-    return LEASE_BILL_TYPE_META.OTHER_FEE.code;
+    if (text.includes("租金")) return LEASE_BILL_TYPE_META.RENT.value;
+    if (text.includes("押金")) return LEASE_BILL_TYPE_META.DEPOSIT.value;
+    return LEASE_BILL_TYPE_META.OTHER_FEE.value;
   }
 
   function handleFeeTypeCascadeChange(val: string[] | null, fee: CheckoutFeeFormItem) {
@@ -512,20 +512,20 @@
 
     const [feeType, dictCode, dictDataId] = val;
     if (feeType === "RENTAL") {
-      fee.feeType = LEASE_BILL_TYPE_META.RENT.code;
+      fee.feeType = LEASE_BILL_TYPE_META.RENT.value;
       fee.dictDataId = undefined;
       fee.feeName = "租金";
       return;
     }
 
     if (feeType === "DEPOSIT") {
-      fee.feeType = LEASE_BILL_TYPE_META.DEPOSIT.code;
+      fee.feeType = LEASE_BILL_TYPE_META.DEPOSIT.value;
       fee.dictDataId = undefined;
       fee.feeName = "押金";
       return;
     }
 
-    fee.feeType = LEASE_BILL_TYPE_META.OTHER_FEE.code;
+    fee.feeType = LEASE_BILL_TYPE_META.OTHER_FEE.value;
     fee.dictDataId = undefined;
     fee.feeName = "";
     if (!dictCode || !dictDataId) {
@@ -539,19 +539,19 @@
   }
 
   function resolveFeeCascadeValue(fee: CheckoutFeeFormItem): string[] | null {
-    if (fee.feeType === LEASE_BILL_TYPE_META.RENT.code) {
+    if (fee.feeType === LEASE_BILL_TYPE_META.RENT.value) {
       return ["RENTAL"];
     }
 
-    if (fee.feeType === LEASE_BILL_TYPE_META.DEPOSIT.code) {
+    if (fee.feeType === LEASE_BILL_TYPE_META.DEPOSIT.value) {
       return ["DEPOSIT"];
     }
 
     if (!feeTypeDictList.value.length) {
-      return fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.code ? ["OTHER_FEE"] : null;
+      return fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.value ? ["OTHER_FEE"] : null;
     }
 
-    if (fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.code && fee.dictDataId) {
+    if (fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.value && fee.dictDataId) {
       for (const group of feeTypeDictList.value) {
         for (const item of group.dictDataList) {
           if (item.id === fee.dictDataId) {
@@ -564,7 +564,7 @@
 
     if (!fee.feeName) return null;
 
-    if (fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.code) {
+    if (fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.value) {
       for (const group of feeTypeDictList.value) {
         for (const item of group.dictDataList) {
           if (item.name === fee.feeName) {
@@ -575,10 +575,10 @@
     }
 
     const resolvedByName = resolveFeeTypeFromName(fee.feeName);
-    if (resolvedByName === LEASE_BILL_TYPE_META.RENT.code) {
+    if (resolvedByName === LEASE_BILL_TYPE_META.RENT.value) {
       return ["RENTAL"];
     }
-    if (resolvedByName === LEASE_BILL_TYPE_META.DEPOSIT.code) {
+    if (resolvedByName === LEASE_BILL_TYPE_META.DEPOSIT.value) {
       return ["DEPOSIT"];
     }
 
@@ -941,7 +941,7 @@
           ElMessage.warning("请选择费用类型");
           return;
         }
-        if (fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.code && !fee.dictDataId) {
+        if (fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.value && !fee.dictDataId) {
           ElMessage.warning("请选择其他费用类型");
           return;
         }
@@ -973,7 +973,7 @@
           feeList: form.feeList.map(f => ({
             id: f.id,
             feeDirection: f.feeDirection,
-            feeType: Number(f.feeType),
+            feeType: f.feeType!,
             dictDataId: f.dictDataId,
             feeName: f.feeName,
             feeAmount: f.feeAmount ?? 0,

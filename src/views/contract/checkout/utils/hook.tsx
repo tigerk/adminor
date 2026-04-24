@@ -210,7 +210,7 @@ export function useCheckout() {
       checkoutType: form.checkoutType as number,
       feeList: form.feeList.map(f => ({
         id: f.id,
-        feeType: Number(f.feeType),
+        feeType: f.feeType!,
         dictDataId: f.dictDataId,
         feeName: f.feeName,
         feeAmount: f.feeAmount ?? 0,

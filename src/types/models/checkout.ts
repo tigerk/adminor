@@ -8,7 +8,7 @@ import type { LeaseCheckoutDto, LeaseCheckoutFeeDto } from "@/types";
 export interface CheckoutFeeProps {
   id?: string;
   feeDirection: number;
-  feeType: number | string | null;
+  feeType: LeaseCheckoutFeeDto["feeType"] | null;
   dictDataId?: string;
   feeName?: string;
   feeAmount: number | null;
@@ -28,7 +28,7 @@ export interface CheckoutFeeProps {
  * - feeTypeCascade 是级联选择器的双向绑定值，提交前无需传给后端
  */
 export interface CheckoutFeeFormItem extends Omit<LeaseCheckoutFeeDto, "feeType" | "feeAmount"> {
-  feeType: number | string | null;
+  feeType: LeaseCheckoutFeeDto["feeType"] | null;
   feeAmount: number | null;
   /** 费用名称快照（后端字段存在，前端允许编辑过程为空） */
   feeName?: string;

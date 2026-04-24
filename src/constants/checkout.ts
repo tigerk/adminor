@@ -22,20 +22,20 @@ export enum FEE_DIRECTION_ENUM {
 }
 
 export const CHECKOUT_FEE_TYPE_CODE_MAP = {
-  RENT: LeaseBillTypeEnumMeta.RENT.code,
-  DEPOSIT: LeaseBillTypeEnumMeta.DEPOSIT.code,
-  OTHER_FEE: LeaseBillTypeEnumMeta.OTHER_FEE.code,
-  WATER: LeaseBillTypeEnumMeta.OTHER_FEE.code,
-  ELECTRIC: LeaseBillTypeEnumMeta.OTHER_FEE.code,
-  GAS: LeaseBillTypeEnumMeta.OTHER_FEE.code,
-  PROPERTY_FEE: LeaseBillTypeEnumMeta.OTHER_FEE.code,
-  CLEANING: LeaseBillTypeEnumMeta.OTHER_FEE.code,
-  DAMAGE: LeaseBillTypeEnumMeta.OTHER_FEE.code,
-  PENALTY: LeaseBillTypeEnumMeta.OTHER_FEE.code,
-  OTHER: LeaseBillTypeEnumMeta.OTHER_FEE.code,
-  RENT_REFUND: LeaseBillTypeEnumMeta.RENT.code,
-  DEPOSIT_REFUND: LeaseBillTypeEnumMeta.DEPOSIT.code,
-  OTHER_REFUND: LeaseBillTypeEnumMeta.OTHER_FEE.code
+  RENT: LeaseBillTypeEnumMeta.RENT.value,
+  DEPOSIT: LeaseBillTypeEnumMeta.DEPOSIT.value,
+  OTHER_FEE: LeaseBillTypeEnumMeta.OTHER_FEE.value,
+  WATER: LeaseBillTypeEnumMeta.OTHER_FEE.value,
+  ELECTRIC: LeaseBillTypeEnumMeta.OTHER_FEE.value,
+  GAS: LeaseBillTypeEnumMeta.OTHER_FEE.value,
+  PROPERTY_FEE: LeaseBillTypeEnumMeta.OTHER_FEE.value,
+  CLEANING: LeaseBillTypeEnumMeta.OTHER_FEE.value,
+  DAMAGE: LeaseBillTypeEnumMeta.OTHER_FEE.value,
+  PENALTY: LeaseBillTypeEnumMeta.OTHER_FEE.value,
+  OTHER: LeaseBillTypeEnumMeta.OTHER_FEE.value,
+  RENT_REFUND: LeaseBillTypeEnumMeta.RENT.value,
+  DEPOSIT_REFUND: LeaseBillTypeEnumMeta.DEPOSIT.value,
+  OTHER_REFUND: LeaseBillTypeEnumMeta.OTHER_FEE.value
 } as const;
 
 export const LEASE_BILL_TYPE_META = LeaseBillTypeEnumMeta;
