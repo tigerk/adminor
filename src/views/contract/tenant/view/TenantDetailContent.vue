@@ -319,7 +319,7 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane v-if="isTerminated" name="checkout">
+        <el-tab-pane name="checkout">
           <template #label>
             <el-space class="tab-label">
               <el-icon><Money /></el-icon>
@@ -393,13 +393,17 @@
   const checkoutLoading = ref(false);
 
   const fetchCheckoutDetail = async () => {
-    if (!isTerminated.value) return;
     const leaseId = localFormInline.value.leaseId;
-    if (!leaseId) return;
+    if (!leaseId) {
+      checkoutDetail.value = null;
+      return;
+    }
     checkoutLoading.value = true;
     try {
       const res = await getCheckoutByLeaseId(leaseId);
       checkoutDetail.value = res.code === 0 ? res.data || null : null;
+    } catch {
+      checkoutDetail.value = null;
     } finally {
       checkoutLoading.value = false;
     }
@@ -413,12 +417,13 @@
   );
 
   watch(
-    () => localFormInline.value.status,
-    status => {
-      if (status === LEASE_STATUS_MAP.TERMINATED.code && activeTab.value === "checkout") {
+    () => localFormInline.value.leaseId,
+    () => {
+      if (activeTab.value === "checkout") {
         fetchCheckoutDetail();
       }
-    }
+    },
+    { immediate: true }
   );
 
   const getTotalArea = () => {
@@ -764,7 +769,7 @@
     }
 
     .tab-content {
-      min-height: 420px;
+      min-height: 510px;
     }
 
     .info-section {

@@ -134,7 +134,6 @@
 <script setup lang="ts">
   import { computed } from "vue";
   import type { LeaseCheckoutVo } from "@/types";
-  import { APPROVAL_STATUS_META, CHECKOUT_STATUS_META } from "@/constants";
   import { useCheckoutDialog } from "@/views/contract/checkout/form/checkoutCreateForm/useCheckoutDialog";
 
   const props = defineProps<{
