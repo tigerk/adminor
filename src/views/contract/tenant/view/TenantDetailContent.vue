@@ -319,11 +319,11 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane name="checkout">
+        <el-tab-pane name="checkout" :disabled="checkoutTabDisabled">
           <template #label>
             <el-space class="tab-label">
               <el-icon><Money /></el-icon>
-              <span>退租单</span>
+              <span>退租单 {{checkoutTabDisabled? "（暂无）": ""}}</span>
             </el-space>
           </template>
           <ViewCheckoutTab :loading="checkoutLoading" :checkout-detail="checkoutDetail" @updated="fetchCheckoutDetail" />
@@ -391,6 +391,7 @@
   const isTerminated = computed(() => localFormInline.value.status === LEASE_STATUS_MAP.TERMINATED.code);
   const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
   const checkoutLoading = ref(false);
+  const checkoutTabDisabled = computed(() => !checkoutLoading.value && !checkoutDetail.value);
 
   const fetchCheckoutDetail = async () => {
     const leaseId = localFormInline.value.leaseId;
@@ -419,9 +420,7 @@
   watch(
     () => localFormInline.value.leaseId,
     () => {
-      if (activeTab.value === "checkout") {
-        fetchCheckoutDetail();
-      }
+      fetchCheckoutDetail();
     },
     { immediate: true }
   );

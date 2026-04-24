@@ -13,7 +13,7 @@
             <el-button type="primary" plain :disabled="!canEdit" @click="handleEditCheckout">修改退租单</el-button>
           </div>
         </div>
-        <el-descriptions :column="3" class="info-descriptions" size="default">
+        <el-descriptions :column="4" class="info-descriptions" size="default">
           <el-descriptions-item label="退租单编号" label-align="right">
             <span class="text-value">{{ checkoutDetail.checkoutCode || "-" }}</span>
           </el-descriptions-item>
@@ -61,14 +61,15 @@
           <el-descriptions-item label="违约原因" label-align="right" :span="2">
             <span class="text-value">{{ checkoutDetail.breachReason || "-" }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="备注" label-align="right" :span="3">
-            <span class="text-value">{{ checkoutDetail.remark || "-" }}</span>
-          </el-descriptions-item>
+
           <el-descriptions-item label="创建人" label-align="right">
             <span class="text-value">{{ checkoutDetail.createByName || checkoutDetail.createBy || "-" }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="创建时间" label-align="right">
             <span class="text-value">{{ checkoutDetail.createAt || "-" }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="备注" label-align="right" :span="4">
+            <span class="text-value">{{ checkoutDetail.remark || "-" }}</span>
           </el-descriptions-item>
         </el-descriptions>
       </div>
