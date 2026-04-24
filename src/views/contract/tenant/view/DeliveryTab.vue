@@ -406,7 +406,6 @@
         }
 
         .delivery-content {
-
           .delivery-info {
             .delivery-remark {
               margin-top: 12px;

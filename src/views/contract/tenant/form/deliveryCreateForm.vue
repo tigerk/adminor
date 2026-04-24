@@ -495,7 +495,11 @@
 
     utilityOrder.forEach(itemCode => {
       const existingItem = utilityItemMap.get(itemCode);
-      items.push(existingItem ? { ...existingItem, itemName: existingItem.itemName || meterItemNameMap[itemCode], sortOrder: sortOrder++, isCustom: false } : createDefaultUtilityItem(itemCode, sortOrder++));
+      items.push(
+        existingItem
+          ? { ...existingItem, itemName: existingItem.itemName || meterItemNameMap[itemCode], sortOrder: sortOrder++, isCustom: false }
+          : createDefaultUtilityItem(itemCode, sortOrder++)
+      );
     });
 
     sourceFacilities.forEach(facility => {
