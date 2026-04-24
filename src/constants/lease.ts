@@ -79,9 +79,9 @@ export const LEASE_STATUS_MAP = {
     name: LEASE_STATUS_META.TERMINATED.name,
     color: LEASE_STATUS_META.TERMINATED.color
   },
-  CANCELLED: {
-    code: LEASE_STATUS_META.CANCELLED.code,
-    name: LEASE_STATUS_META.CANCELLED.name,
-    color: LEASE_STATUS_META.CANCELLED.color
+  VOIDED: {
+    code: LEASE_STATUS_META.VOIDED.code,
+    name: LEASE_STATUS_META.VOIDED.name,
+    color: LEASE_STATUS_META.VOIDED.color
   }
 } as const;

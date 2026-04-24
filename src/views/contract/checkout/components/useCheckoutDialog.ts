@@ -7,7 +7,7 @@ import type { LeaseListVo } from "@/types";
 import CheckoutDialog from "@/views/contract/checkout/components/CheckoutDialog.vue";
 
 /** 可退租的状态：待签字(1)、在租中(2) */
-const CAN_CHECKOUT_STATUS: number[] = [LEASE_STATUS_MAP.TO_SIGN.code, LEASE_STATUS_MAP.EFFECTIVE.code];
+const NOT_CAN_CHECKOUT_STATUS: number[] = [LEASE_STATUS_MAP.TERMINATED.code, LEASE_STATUS_MAP.VOIDED.code];
 
 /**
  * 退租弹框 hook
@@ -23,8 +23,8 @@ export function useCheckoutDialog() {
    * @param onSuccess 退租成功后的回调（刷新列表等）
    */
   function openLeaseCheckoutDialog(row: LeaseListVo, onSuccess?: () => void) {
-    if (!CAN_CHECKOUT_STATUS.includes(row.status)) {
-      message("当前租客状态不允许退租，只有待签字或在租中的租客才能退租", { type: "warning" });
+    if (NOT_CAN_CHECKOUT_STATUS.includes(row.status)) {
+      message("租客已退租或已作废，不允许操作退租！", { type: "warning" });
       return;
     }
 

@@ -574,7 +574,7 @@ export const LeaseStatusEnumMeta = {
   TO_SIGN: {"value":"TO_SIGN","code":1,"name":"待签字","color":"#FF2800","sortOrder":1},
   EFFECTIVE: {"value":"EFFECTIVE","code":2,"name":"在租中","color":"#52C41A","sortOrder":2},
   TERMINATED: {"value":"TERMINATED","code":3,"name":"已退租","color":"#EAA212","sortOrder":3},
-  CANCELLED: {"value":"CANCELLED","code":-1,"name":"已作废","color":"#DBDBDB","sortOrder":4}
+  VOIDED: {"value":"VOIDED","code":-1,"name":"已作废","color":"#DBDBDB","sortOrder":4}
 } as const;
 
 export const OwnerAccountFlowBizTypeEnumMeta = {
