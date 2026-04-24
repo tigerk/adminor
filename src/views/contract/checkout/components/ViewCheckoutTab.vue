@@ -150,7 +150,6 @@
 
   const canEdit = computed(() => {
     return props.checkoutDetail;
-
   });
 
   const cleaningFeeText = computed(() => {
