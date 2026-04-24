@@ -1751,6 +1751,10 @@ export type RoomDetailVo = {
      */
     houseId?: string;
     /**
+     * 房源信息
+     */
+    house?: unknown;
+    /**
      * 房间号
      */
     roomNumber?: string;
@@ -5886,6 +5890,11 @@ export type ResponseResultString = {
 };
 
 /**
+ * 交割单项目分类枚举
+ */
+export type DeliveryItemCategoryEnum = 'FACILITY' | 'UTILITY';
+
+/**
  * 交割单项目编码枚举
  */
 export type DeliveryItemCodeEnum = 'WATER_METER' | 'ELECTRICITY_METER' | 'GAS_METER';
@@ -5899,7 +5908,10 @@ export type DeliveryItemDto = {
      */
     itemCode?: DeliveryItemCodeEnum;
     itemName: string;
-    itemCategory: string;
+    /**
+     * 项目分类
+     */
+    itemCategory: DeliveryItemCategoryEnum;
     /**
      * 项目单位
      */
@@ -5939,7 +5951,7 @@ export type DeliveryItemVo = {
     /**
      * 物品编码
      */
-    itemCode?: string;
+    itemCode?: DeliveryItemCodeEnum;
     /**
      * 物品名称
      */
@@ -5947,7 +5959,7 @@ export type DeliveryItemVo = {
     /**
      * 项目分类
      */
-    itemCategory?: string;
+    itemCategory?: DeliveryItemCategoryEnum;
     /**
      * 前值
      */
@@ -10587,7 +10599,7 @@ export type DictVo = {
     /**
      * 排序
      */
-    sort?: number;
+    sortOrder?: number;
     /**
      * 子项列表
      */
@@ -13408,21 +13420,21 @@ export type GetLeaseListResponses = {
 
 export type GetLeaseListResponse = GetLeaseListResponses[keyof GetLeaseListResponses];
 
-export type GetTenantDetailData = {
+export type GetLeaseDetailData = {
     body: LeaseQueryDto;
     path?: never;
     query?: never;
     url: '/saas/contract/lease/detail';
 };
 
-export type GetTenantDetailResponses = {
+export type GetLeaseDetailResponses = {
     /**
      * OK
      */
     200: ResponseResultLeaseDetailVo;
 };
 
-export type GetTenantDetailResponse = GetTenantDetailResponses[keyof GetTenantDetailResponses];
+export type GetLeaseDetailResponse = GetLeaseDetailResponses[keyof GetLeaseDetailResponses];
 
 export type CreateLeaseData = {
     body: TenantCreateDto;

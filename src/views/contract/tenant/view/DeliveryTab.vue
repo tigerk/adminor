@@ -10,16 +10,21 @@
                 {{ delivery.roomInfo?.communityName }}
                 {{ delivery.roomInfo?.houseName }}-{{ delivery.roomInfo?.roomNumber }}
               </span>
+              <el-tag :type="getStatusTagType(delivery.status)" size="small">
+                {{ getStatusText(delivery.status) }}
+              </el-tag>
             </div>
-            <el-tag :type="getStatusTagType(delivery.status)" size="small">
-              {{ getStatusText(delivery.status) }}
-            </el-tag>
+            <div class="card-footer">
+              <el-button v-if="delivery.id" type="primary" link :icon="View" @click="handleViewDelivery(delivery)">查看详情</el-button>
+              <el-button v-if="delivery.id" type="primary" link :icon="Edit" @click="handleEditDelivery(delivery)">编辑</el-button>
+              <el-button v-if="!delivery.id" type="primary" :icon="Plus" @click="handleCreateDelivery(delivery.roomId)">创建交割单</el-button>
+            </div>
           </div>
         </template>
 
         <div class="delivery-content">
           <div v-if="delivery.id" class="delivery-info">
-            <el-descriptions :column="2" size="small">
+            <el-descriptions :column="5" size="small">
               <el-descriptions-item label="交割类型">
                 <el-tag :type="delivery.handoverType === 'CHECK_IN' ? 'success' : 'warning'" size="small">
                   {{ delivery.handoverType ? handoverTypeLabelMap[delivery.handoverType as DeliveryHandoverTypeEnum] || delivery.handoverType : "—" }}
@@ -37,8 +42,8 @@
               </el-descriptions-item>
             </el-descriptions>
 
-            <div v-if="delivery.remark" class="delivery-remark">
-              <el-text type="info" size="small">备注:{{ delivery.remark }}</el-text>
+            <div class="delivery-remark">
+              <el-text type="info" size="small">备注: {{ delivery.remark }}</el-text>
             </div>
           </div>
 
@@ -46,14 +51,6 @@
             <el-empty description="暂未创建交割单" :image-size="80" />
           </div>
         </div>
-
-        <template #footer>
-          <div class="card-footer">
-            <el-button v-if="delivery.id" type="primary" link :icon="View" @click="handleViewDelivery(delivery)">查看详情</el-button>
-            <el-button v-if="delivery.id" type="primary" link :icon="Edit" @click="handleEditDelivery(delivery)">编辑</el-button>
-            <el-button v-if="!delivery.id" type="primary" :icon="Plus" @click="handleCreateDelivery(delivery.roomId)">创建交割单</el-button>
-          </div>
-        </template>
       </el-card>
     </div>
 
@@ -68,7 +65,7 @@
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
   import DeliveryCreateForm from "@/views/contract/tenant/form/deliveryCreateForm.vue";
-  import type { DeliveryCleanConditionEnum, DeliveryHandoverTypeEnum, DeliveryVo, RoomListVo } from "@/types";
+  import type { DeliveryCleanConditionEnum, DeliveryHandoverTypeEnum, DeliveryItemDto, DeliveryVo, RoomListVo } from "@/types";
   import { createDelivery, getDeliveryList, updateDelivery } from "@/api/delivery";
   import { convertImage2string } from "@/utils/image";
   import { DeliveryCleanConditionEnumMeta, DeliveryHandoverTypeEnumMeta } from "@/types";
@@ -89,6 +86,7 @@
   const props = defineProps<DeliveryTabProps>();
   const deliveryList = ref<DeliveryCardItem[]>([]);
   const deliveryFormRef = ref();
+  const today = () => new Date().toISOString().split("T")[0];
   const cleanConditionLabelMap = Object.values(DeliveryCleanConditionEnumMeta).reduce(
     (acc, item) => {
       acc[item.code as DeliveryCleanConditionEnum] = item.name;
@@ -178,19 +176,23 @@
       return;
     }
 
+    const createFormInline = {
+      subjectType: "tenant",
+      subjectTypeId: props.subjectTypeId,
+      roomId: roomId,
+      handoverType: "CHECK_IN" as DeliveryHandoverTypeEnum,
+      handoverDate: today(),
+      status: 0,
+      items: [],
+      facilities: room.facilities || [],
+      roomData: room,
+      imageList: []
+    };
+
     addDialog({
       title: `创建交割单 - ${room.houseName}-${room.roomNumber}`,
       props: {
-        formInline: {
-          subjectType: "tenant",
-          subjectTypeId: props.subjectTypeId,
-          roomId: roomId,
-          handoverType: "CHECK_IN",
-          status: 0,
-          items: [],
-          facilities: room.facilities || [],
-          imageList: []
-        },
+        formInline: createFormInline,
         isViewMode: false
       },
       top: "2vh",
@@ -203,7 +205,7 @@
       contentRenderer: () =>
         h(DeliveryCreateForm, {
           ref: deliveryFormRef,
-          formInline: null,
+          formInline: createFormInline,
           isViewMode: false
         }),
       beforeSure: (done, { options }) => {
@@ -246,13 +248,23 @@
       return;
     }
 
+    const editFormInline = {
+      ...delivery,
+      subjectType: delivery.subjectType || "tenant",
+      subjectTypeId: delivery.subjectTypeId || props.subjectTypeId,
+      roomId: delivery.roomId || room.roomId,
+      handoverType: (delivery.handoverType || "CHECK_IN") as DeliveryHandoverTypeEnum,
+      handoverDate: delivery.handoverDate || today(),
+      cleanCondition: delivery.cleanCondition as DeliveryCleanConditionEnum | undefined,
+      items: (delivery.items || []) as DeliveryItemDto[],
+      facilities: room.facilities || [],
+      roomData: room
+    };
+
     addDialog({
       title: `编辑交割单 - ${room.houseName}-${room.roomNumber}`,
       props: {
-        formInline: {
-          ...delivery,
-          facilities: room.facilities || []
-        },
+        formInline: editFormInline,
         isViewMode: false
       },
       top: "2vh",
@@ -265,7 +277,7 @@
       contentRenderer: () =>
         h(DeliveryCreateForm, {
           ref: deliveryFormRef,
-          formInline: null,
+          formInline: editFormInline,
           isViewMode: false
         }),
       beforeSure: (done, { options }) => {
@@ -308,13 +320,23 @@
       return;
     }
 
+    const viewFormInline = {
+      ...delivery,
+      subjectType: delivery.subjectType || "tenant",
+      subjectTypeId: delivery.subjectTypeId || props.subjectTypeId,
+      roomId: delivery.roomId || room.roomId,
+      handoverType: (delivery.handoverType || "CHECK_IN") as DeliveryHandoverTypeEnum,
+      handoverDate: delivery.handoverDate || today(),
+      cleanCondition: delivery.cleanCondition as DeliveryCleanConditionEnum | undefined,
+      items: (delivery.items || []) as DeliveryItemDto[],
+      facilities: room.facilities || [],
+      roomData: room
+    };
+
     addDialog({
       title: `查看交割单 - ${room.houseName}-${room.roomNumber}`,
       props: {
-        formInline: {
-          ...delivery,
-          facilities: room.facilities || []
-        },
+        formInline: viewFormInline,
         isViewMode: true
       },
       top: "2vh",
@@ -328,7 +350,7 @@
       contentRenderer: () =>
         h(DeliveryCreateForm, {
           ref: deliveryFormRef,
-          formInline: null,
+          formInline: viewFormInline,
           isViewMode: true
         })
     });
@@ -384,7 +406,6 @@
         }
 
         .delivery-content {
-          min-height: 120px;
 
           .delivery-info {
             .delivery-remark {

@@ -1,5 +1,5 @@
 <template>
-  <div class="delivery-form-container mb-3">
+  <div v-loading="pageLoading" class="delivery-form-container mb-3">
     <el-form ref="formRef" :model="formData" :rules="rules" label-width="120px" label-position="top">
       <!-- 基本信息 -->
       <div class="form-section">
@@ -234,19 +234,32 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
-  import type { DeliveryCleanConditionEnum, DeliveryCreateDto, DeliveryHandoverTypeEnum, DeliveryItemCodeEnum, DeliveryItemDto, DeliveryItemVo, FacilityItemDto } from "@/types";
+  import type {
+    DeliveryCleanConditionEnum,
+    DeliveryCreateDto,
+    DeliveryHandoverTypeEnum,
+    DeliveryItemCategoryEnum,
+    DeliveryItemCodeEnum,
+    DeliveryItemDto,
+    DeliveryItemVo,
+    FacilityItemDto,
+    RoomListVo
+  } from "@/types";
   import { DataLine, Delete, Grid, InfoFilled, Lightning, Picture, Plus } from "@element-plus/icons-vue";
   import UploadImage from "@/components/upload/UploadImage.vue";
   import { getCompanyUserOptions } from "@/api/company";
+  import { getRoomDetail } from "@/api/house/room";
   import { IconifyIconOnline } from "@/components/ReIcon";
   import { getDictDataByDictCode } from "@/api/sys/dict";
-  import { DeliveryCleanConditionEnumMeta, DeliveryHandoverTypeEnumMeta } from "@/types";
+  import { DeliveryCleanConditionEnumMeta, DeliveryHandoverTypeEnumMeta, HouseDetailVo, RoomDetailVo } from "@/types";
   import { useUserStoreHook } from "@/store/modules/user";
+  import { message } from "@/utils/message";
 
   type DeliveryFormData = Omit<DeliveryCreateDto, "handoverType" | "cleanCondition" | "items"> & {
     id?: string;
     status?: number;
     facilities?: FacilityItemDto[];
+    roomData?: RoomListVo;
     handoverType: DeliveryHandoverTypeEnum;
     cleanCondition?: DeliveryCleanConditionEnum;
     items?: DeliverySubmitItem[];
@@ -279,6 +292,8 @@
   const formRef = ref<FormInstance>();
   const inspectorList = ref<any[]>([]);
   const facilityOptions = ref<Array<{ label: string; value: string }>>([]);
+  const pageLoading = ref(false);
+  const latestRoomDetail = ref<RoomDetailVo>();
   const handoverTypeOptions = Object.values(DeliveryHandoverTypeEnumMeta).map(item => ({
     label: item.name,
     value: item.code as DeliveryHandoverTypeEnum
@@ -292,12 +307,17 @@
     electricity: "ELECTRICITY_METER" as DeliveryItemCodeEnum,
     gas: "GAS_METER" as DeliveryItemCodeEnum
   };
+  const deliveryItemCategoryMap = {
+    facility: "FACILITY" as DeliveryItemCategoryEnum,
+    utility: "UTILITY" as DeliveryItemCategoryEnum
+  };
   const meterItemCodeSet = new Set(Object.values(meterItemCodeMap));
   const meterItemNameMap: Record<DeliveryItemCodeEnum, string> = {
     WATER_METER: "水表读数",
     ELECTRICITY_METER: "电表读数",
     GAS_METER: "燃气表读数"
   };
+  const utilityOrder = [meterItemCodeMap.water, meterItemCodeMap.electricity, meterItemCodeMap.gas] as const;
 
   // 表单数据
   const formData = reactive<DeliveryFormData>({
@@ -366,22 +386,8 @@
 
   // 初始化表单数据
   const initFormData = () => {
-    // 如果是编辑模式（有id且有items），从items回显数据
-    if (props.formInline?.id && props.formInline?.items && props.formInline.items.length > 0) {
-      // 回显已有的交割单数据
-      facilityItems.value = props.formInline.items.map((item, index) => ({
-        ...item,
-        itemName: item.itemName || "",
-        damaged: item.damaged || false,
-        sortOrder: index + 1
-      }));
-
-      // 提取水电燃气读数
-      extractMeterReadings();
-    } else {
-      // 新建模式：从房间设施初始化
-      initFacilitiesFromRoom();
-    }
+    facilityItems.value = buildFormItems();
+    extractMeterReadings();
   };
 
   const setDefaultInspector = () => {
@@ -399,71 +405,116 @@
     }
   };
 
-  // 从房间设施初始化物品列表
-  const initFacilitiesFromRoom = () => {
+  const getSourceFacilities = (): FacilityItemDto[] => {
+    if (latestRoomDetail.value) {
+      const latestHouse = latestRoomDetail.value.house as HouseDetailVo | undefined;
+      if (latestHouse?.rentalType === 1) {
+        return latestHouse.houseLayout?.facilities || [];
+      }
+      return latestRoomDetail.value?.facilities || [];
+    }
+
+    const roomData = props.formInline?.roomData;
+    if (roomData) {
+      if (roomData.rentalType === 1) {
+        return roomData.houseLayout?.facilities || [];
+      }
+      return roomData.facilities || [];
+    }
+
+    return props.formInline?.facilities || [];
+  };
+
+  const loadLatestRoomData = async () => {
+    const roomId = props.formInline?.roomId;
+    if (!roomId) return;
+
+    pageLoading.value = true;
+    try {
+      const resp = await getRoomDetail({ roomId });
+      if (resp.code !== 0 || !resp.data) {
+        throw new Error(resp.message || "获取房间详情失败");
+      }
+      latestRoomDetail.value = resp.data;
+    } catch (error: any) {
+      message(error?.message || "获取最新物品清单失败", { type: "warning" });
+    } finally {
+      pageLoading.value = false;
+    }
+  };
+
+  const createDefaultUtilityItem = (itemCode: DeliveryItemCodeEnum, sortOrder: number): DeliveryFormItem => ({
+    itemCategory: deliveryItemCategoryMap.utility,
+    itemCode,
+    itemName: meterItemNameMap[itemCode],
+    itemUnit: "元",
+    currentValue: "0",
+    proofImageList: [],
+    damaged: false,
+    remark: "",
+    sortOrder,
+    isCustom: false
+  });
+
+  const buildSourceFacilityItem = (facility: FacilityItemDto, sortOrder: number, existing?: DeliveryFormItem): DeliveryFormItem => {
+    const facilityOption = facilityOptions.value.find(opt => opt.value === facility.name);
+    return {
+      ...existing,
+      itemCategory: deliveryItemCategoryMap.facility,
+      itemCode: facility.name,
+      itemName: existing?.itemName || facilityOption?.label || facility.name,
+      itemUnit: existing?.itemUnit || "个",
+      currentValue: existing?.currentValue || String(facility.count || 0),
+      damaged: existing?.damaged || false,
+      remark: existing?.remark || "",
+      proofImageList: existing?.proofImageList || [],
+      sortOrder,
+      isCustom: false
+    };
+  };
+
+  const normalizeExistingItem = (item: DeliveryItemVo | DeliverySubmitItem, sortOrder: number): DeliveryFormItem => ({
+    ...item,
+    itemName: item.itemName || "",
+    damaged: item.damaged || false,
+    sortOrder,
+    isCustom: "customized" in item ? item.customized || false : "isCustom" in item ? item.isCustom || false : false
+  });
+
+  const buildFormItems = (): DeliveryFormItem[] => {
+    const sourceFacilities = getSourceFacilities();
+    const existingItems = (props.formInline?.items || []).map((item, index) => normalizeExistingItem(item, index + 1));
+    const utilityItemMap = new Map(
+      existingItems.filter(item => item.itemCategory === deliveryItemCategoryMap.utility && item.itemCode).map(item => [item.itemCode as DeliveryItemCodeEnum, item])
+    );
+    const facilityItemMap = new Map(existingItems.filter(item => item.itemCategory === deliveryItemCategoryMap.facility && item.itemCode).map(item => [item.itemCode, item]));
+    const currentSourceCodes = new Set(sourceFacilities.map(item => item.name).filter(Boolean));
+
     const items: DeliveryFormItem[] = [];
     let sortOrder = 1;
 
-    // 1. 添加水电燃气项（固定项）
-    items.push(
-      {
-        itemCategory: "UTILITY",
-        itemCode: meterItemCodeMap.water,
-        itemName: meterItemNameMap.WATER_METER,
-        itemUnit: "元",
-        currentValue: "0",
-        proofImageList: [],
-        damaged: false,
-        remark: "",
-        sortOrder: sortOrder++,
-        isCustom: false
-      },
-      {
-        itemCategory: "UTILITY",
-        itemCode: meterItemCodeMap.electricity,
-        itemName: meterItemNameMap.ELECTRICITY_METER,
-        itemUnit: "元",
-        currentValue: "0",
-        proofImageList: [],
-        damaged: false,
-        remark: "",
-        sortOrder: sortOrder++,
-        isCustom: false
-      },
-      {
-        itemCategory: "UTILITY",
-        itemCode: meterItemCodeMap.gas,
-        itemName: meterItemNameMap.GAS_METER,
-        itemUnit: "元",
-        currentValue: "0",
-        proofImageList: [],
-        damaged: false,
-        remark: "",
-        sortOrder: sortOrder++,
-        isCustom: false
-      }
-    );
+    utilityOrder.forEach(itemCode => {
+      const existingItem = utilityItemMap.get(itemCode);
+      items.push(existingItem ? { ...existingItem, itemName: existingItem.itemName || meterItemNameMap[itemCode], sortOrder: sortOrder++, isCustom: false } : createDefaultUtilityItem(itemCode, sortOrder++));
+    });
 
-    // 2. 从房间设施添加设施项
-    if (props.formInline?.facilities && props.formInline.facilities.length > 0) {
-      props.formInline.facilities.forEach((facility: FacilityItemDto) => {
-        const facilityOption = facilityOptions.value.find(opt => opt.value === facility.name);
+    sourceFacilities.forEach(facility => {
+      if (!facility?.name) return;
+      items.push(buildSourceFacilityItem(facility, sortOrder++, facilityItemMap.get(facility.name)));
+    });
 
+    existingItems
+      .filter(item => item.itemCategory === deliveryItemCategoryMap.facility)
+      .filter(item => !item.itemCode || !currentSourceCodes.has(item.itemCode))
+      .forEach(item => {
         items.push({
-          itemCategory: "FACILITY",
-          itemCode: facility.name,
-          itemName: facilityOption?.label || facility.name,
-          itemUnit: "个",
-          currentValue: String(facility.count || 0),
-          damaged: false,
-          remark: "",
+          ...item,
           sortOrder: sortOrder++,
-          isCustom: false
+          isCustom: true
         });
       });
-    }
 
-    facilityItems.value = items;
+    return items;
   };
 
   // 从items中提取水电燃气读数到meterReadings
@@ -520,7 +571,7 @@
   // 添加自定义项
   const addCustomItem = () => {
     facilityItems.value.push({
-      itemCategory: "FACILITY",
+      itemCategory: deliveryItemCategoryMap.facility,
       itemName: "",
       itemUnit: "个",
       currentValue: "0",
@@ -589,6 +640,8 @@
     } catch (error) {
       console.error("加载设施字典失败:", error);
     }
+
+    await loadLatestRoomData();
 
     // 初始化表单数据
     initFormData();

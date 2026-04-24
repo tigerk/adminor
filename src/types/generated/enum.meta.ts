@@ -15,6 +15,11 @@ export const OwnerContractSubjectTypeEnumMeta = {
   FOCUS: {"value":"FOCUS"}
 } as const;
 
+export const DeliveryItemCategoryEnumMeta = {
+  FACILITY: {"value":"FACILITY"},
+  UTILITY: {"value":"UTILITY"}
+} as const;
+
 export const DeliveryItemCodeEnumMeta = {
   WATER_METER: {"value":"WATER_METER"},
   ELECTRICITY_METER: {"value":"ELECTRICITY_METER"},

@@ -4,6 +4,7 @@ import type {
   ApiResponse,
   PaginationResponse,
   PriceConfigDto,
+  RoomDetailVo,
   RoomGridDto,
   RoomIdDto,
   RoomListVo,
@@ -25,6 +26,10 @@ export const getRoomList = (data?: RoomQueryDto) => {
  */
 export const getRoomGrid = (data?: RoomQueryDto) => {
   return http.request<ApiResponse<RoomGridDto>>("post", baseUrlApi("room/grid"), { data });
+};
+
+export const getRoomDetail = (data?: RoomIdDto) => {
+  return http.request<ApiResponse<RoomDetailVo>>("post", baseUrlApi("room/detail"), { data });
 };
 
 export const getRoomTotalVo = (data?: RoomQueryDto) => {
