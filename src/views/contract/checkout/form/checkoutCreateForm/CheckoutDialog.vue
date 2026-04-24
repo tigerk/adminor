@@ -166,8 +166,8 @@
               <tr v-for="(fee, index) in form.feeList" :key="index" class="fee-row">
                 <!-- 收支类型 -->
                 <td>
-                  <div class="direction-chip" :class="fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? 'chip-income' : 'chip-expense'" @click="canEdit && toggleDirection(fee)">
-                    {{ fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? "收入" : "支出" }}
+                  <div class="direction-chip" :class="fee.feeDirection === FEE_DIRECTION_ENUM.IN.value ? 'chip-income' : 'chip-expense'" @click="canEdit && toggleDirection(fee)">
+                    {{ fee.feeDirection === FEE_DIRECTION_ENUM.IN.value ? FEE_DIRECTION_ENUM.IN.label : FEE_DIRECTION_ENUM.OUT.label }}
                   </div>
                 </td>
                 <!-- 费用类型（级联） -->
@@ -628,11 +628,11 @@
   });
 
   const incomeTotal = computed(() => {
-    const feeIncome = form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION).reduce((sum, f) => sum + (f.feeAmount || 0), 0);
+    const feeIncome = form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.IN.value).reduce((sum, f) => sum + (f.feeAmount || 0), 0);
     const cleaningIncome = form.addCleaningFee ? Number(form.cleaningFeeAmount || 0) : 0;
     return feeIncome + cleaningIncome;
   });
-  const expenseTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
+  const expenseTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.OUT.value).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
   const finalAmount = computed(() => incomeTotal.value - expenseTotal.value);
 
   const canEdit = computed(() => {
@@ -698,18 +698,18 @@
   }
 
   function toggleDirection(fee: CheckoutFeeFormItem) {
-    fee.feeDirection = fee.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION ? FEE_DIRECTION_ENUM.REFUND : FEE_DIRECTION_ENUM.DEDUCTION;
+    fee.feeDirection = fee.feeDirection === FEE_DIRECTION_ENUM.IN.value ? FEE_DIRECTION_ENUM.OUT.value : FEE_DIRECTION_ENUM.IN.value;
   }
 
   function handleCheckoutTypeChange(val: number) {
     if (val === CHECKOUT_TYPE_META.BREACH.code) {
-      form.feeList = form.feeList.filter(f => !(f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND));
+      form.feeList = form.feeList.filter(f => !(f.feeDirection === FEE_DIRECTION_ENUM.OUT.value && f.feeType === CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND));
     } else if (val === CHECKOUT_TYPE_META.NORMAL.code) {
       form.breachReason = "";
-      const hasDepositRefund = form.feeList.some(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND && f.feeType === CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND);
+      const hasDepositRefund = form.feeList.some(f => f.feeDirection === FEE_DIRECTION_ENUM.OUT.value && f.feeType === CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND);
       if (!hasDepositRefund && initData.value && initData.value.depositAmount && initData.value.depositAmount > 0) {
         const newFee: CheckoutFeeFormItem = {
-          feeDirection: FEE_DIRECTION_ENUM.REFUND,
+          feeDirection: FEE_DIRECTION_ENUM.OUT.value,
           feeType: CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND,
           feeName: "房屋押金",
           feeAmount: initData.value.depositAmount ?? null,
@@ -739,7 +739,7 @@
   function handleAddFee() {
     const today = getTodayStr();
     const newFee: CheckoutFeeFormItem = {
-      feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
+      feeDirection: FEE_DIRECTION_ENUM.IN.value,
       feeType: null,
       feeName: "",
       feeAmount: null,
@@ -827,7 +827,7 @@
     if (res.data.presetFees && res.data.presetFees.length > 0) {
       form.feeList = res.data.presetFees.map<CheckoutFeeFormItem>(pf => {
         const fee: CheckoutFeeFormItem = {
-          feeDirection: pf.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
+          feeDirection: pf.feeDirection ?? FEE_DIRECTION_ENUM.IN.value,
           feeType: pf.feeType ?? null,
           feeName: pf.feeName ?? "",
           feeAmount: pf.feeAmount ?? null,
@@ -864,7 +864,7 @@
     form.feeList = (detail.feeList ?? []).map<CheckoutFeeFormItem>(f => {
       const fee: CheckoutFeeFormItem = {
         id: f.id,
-        feeDirection: f.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
+        feeDirection: f.feeDirection ?? FEE_DIRECTION_ENUM.IN.value,
         feeType: f.feeType ?? null,
         dictDataId: f.dictDataId,
         feeName: f.feeName,

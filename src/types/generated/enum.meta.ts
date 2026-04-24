@@ -112,6 +112,11 @@ export const DeletedEnumMeta = {
   DELETED: {"value":1}
 } as const;
 
+export const FeeDirectionEnumMeta = {
+  IN: {"value":"IN","code":"IN","label":"收入"},
+  OUT: {"value":"OUT","code":"OUT","label":"支出"}
+} as const;
+
 export const GenderEnumMeta = {
   UNKNOWN: {"value":"UNKNOWN","code":0,"name":"未知"},
   MALE: {"value":"MALE","code":1,"name":"男"},

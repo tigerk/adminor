@@ -4389,7 +4389,10 @@ export type LeaseCheckoutDto = {
 
 export type LeaseCheckoutFeeDto = {
     id?: string;
-    feeDirection: number;
+    /**
+     * 收支类型
+     */
+    feeDirection: 'IN' | 'OUT';
     /**
      * 费用类型
      */
@@ -4406,7 +4409,10 @@ export type LeaseCheckoutFeeDto = {
 export type LeaseCheckoutFeeVo = {
     id?: string;
     checkoutId?: string;
-    feeDirection?: number;
+    /**
+     * 收支类型
+     */
+    feeDirection?: 'IN' | 'OUT';
     feeDirectionName?: string;
     /**
      * 费用类型
@@ -10732,6 +10738,8 @@ export type ResponseResultUserVo = {
 export type BooleanEnum = 'FALSE' | 'TRUE';
 
 export type DeletedEnum = 'NOT_DELETED' | 'DELETED';
+
+export type FeeDirectionEnum = 'IN' | 'OUT';
 
 export type GenderEnum = 'UNKNOWN' | 'MALE' | 'FEMALE';
 

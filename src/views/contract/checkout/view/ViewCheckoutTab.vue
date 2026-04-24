@@ -83,6 +83,11 @@
         </div>
         <el-table v-if="checkoutDetail.feeList && checkoutDetail.feeList.length > 0" :data="checkoutDetail.feeList" border stripe class="fees-table">
           <el-table-column type="index" label="序号" width="70" align="center" />
+          <el-table-column prop="feeDirection" label="费用名称" align="center" min-width="140">
+            <template #default="{ row }">
+              {{ isIncomeDirection(row.feeDirection) ? FEE_DIRECTION_ENUM.IN.label : FEE_DIRECTION_ENUM.OUT.label }}
+            </template>
+          </el-table-column>
           <el-table-column prop="feeName" label="费用名称" align="center" min-width="140">
             <template #default="{ row }">
               <span class="text-value">{{ row.feeName || "-" }}</span>
@@ -136,6 +141,7 @@
   import { computed } from "vue";
   import type { LeaseCheckoutVo } from "@/types";
   import { useCheckoutDialog } from "@/views/contract/checkout/form/checkoutCreateForm/useCheckoutDialog";
+  import { FEE_DIRECTION_ENUM } from "@/constants";
 
   const props = defineProps<{
     loading: boolean;
@@ -156,6 +162,10 @@
     if (!props.checkoutDetail) return "-";
     return props.checkoutDetail.addCleaningFee ? `¥${props.checkoutDetail.cleaningFeeAmount || 0}` : "未加收";
   });
+
+  function isIncomeDirection(direction?: string | null) {
+    return direction === FEE_DIRECTION_ENUM.IN.value;
+  }
 
   function handleEditCheckout() {
     if (!props.checkoutDetail?.leaseId) return;

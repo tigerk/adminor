@@ -1,4 +1,4 @@
-import { BizApprovalStatusEnumMeta, CheckoutSettlementMethodEnumMeta, CheckoutStatusEnumMeta, CheckoutTypeEnumMeta, LeaseBillTypeEnumMeta } from "@/types/generated/enum.meta";
+import { BizApprovalStatusEnumMeta, CheckoutSettlementMethodEnumMeta, CheckoutStatusEnumMeta, CheckoutTypeEnumMeta, FeeDirectionEnumMeta, LeaseBillTypeEnumMeta } from "@/types/generated/enum.meta";
 
 export const CHECKOUT_TYPE_META = CheckoutTypeEnumMeta;
 
@@ -16,10 +16,7 @@ export const CHECKOUT_STATUS_OPTIONS = [
   { label: CHECKOUT_STATUS_META.CANCELLED.name, value: CHECKOUT_STATUS_META.CANCELLED.code }
 ] as const;
 
-export enum FEE_DIRECTION_ENUM {
-  DEDUCTION = 1, // 扣款（租客应付）
-  REFUND = 2 // 退款（退还租客）
-}
+export const FEE_DIRECTION_ENUM = FeeDirectionEnumMeta;
 
 export const CHECKOUT_FEE_TYPE_CODE_MAP = {
   RENT: LeaseBillTypeEnumMeta.RENT.value,

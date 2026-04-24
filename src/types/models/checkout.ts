@@ -1,4 +1,4 @@
-import type { LeaseCheckoutDto, LeaseCheckoutFeeDto } from "@/types";
+import type { FeeDirectionEnum, LeaseCheckoutDto, LeaseCheckoutFeeDto } from "@/types";
 
 /**
  * 退租单类型定义（退租并结账）
@@ -7,7 +7,7 @@ import type { LeaseCheckoutDto, LeaseCheckoutFeeDto } from "@/types";
 /** 退租费用明细行（表格行） */
 export interface CheckoutFeeProps {
   id?: string;
-  feeDirection: number;
+  feeDirection: FeeDirectionEnum;
   feeType: LeaseCheckoutFeeDto["feeType"] | null;
   dictDataId?: string;
   feeName?: string;
@@ -27,7 +27,8 @@ export interface CheckoutFeeProps {
  * - feeType / feeAmount 在编辑过程中允许为 null（未填写状态）
  * - feeTypeCascade 是级联选择器的双向绑定值，提交前无需传给后端
  */
-export interface CheckoutFeeFormItem extends Omit<LeaseCheckoutFeeDto, "feeType" | "feeAmount"> {
+export interface CheckoutFeeFormItem extends Omit<LeaseCheckoutFeeDto, "feeDirection" | "feeType" | "feeAmount"> {
+  feeDirection: FeeDirectionEnum;
   feeType: LeaseCheckoutFeeDto["feeType"] | null;
   feeAmount: number | null;
   /** 费用名称快照（后端字段存在，前端允许编辑过程为空） */
