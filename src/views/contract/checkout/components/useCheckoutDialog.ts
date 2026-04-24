@@ -1,5 +1,5 @@
 import { h, ref } from "vue";
-import { addDialog } from "@/components/ReDialog";
+import { addDialog, closeAllDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { message } from "@/utils/message";
 import { LEASE_STATUS_MAP } from "@/constants";
@@ -43,7 +43,14 @@ export function useCheckoutDialog() {
       contentRenderer: () =>
         h(CheckoutDialog, {
           ref: checkoutDialogRef,
-          onSuccess: () => onSuccess?.()
+          onSuccess: () => {
+            closeAllDialog();
+            if (onSuccess) {
+              onSuccess();
+              return;
+            }
+            window.location.reload();
+          }
         }),
       // addDialog 渲染完成后触发，ref 已就绪，安全调用 open()
       open: async () => {
