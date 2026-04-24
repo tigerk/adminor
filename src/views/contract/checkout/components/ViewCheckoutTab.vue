@@ -32,8 +32,14 @@
           <el-descriptions-item label="结算方式" label-align="right">
             <span class="text-value">{{ checkoutDetail.settlementMethodName || "-" }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="预计付款日" label-align="right">
-            <span class="text-value">{{ checkoutDetail.expectedPaymentDate || "-" }}</span>
+          <el-descriptions-item label="结算截止日" label-align="right">
+            <span class="text-value">{{ checkoutDetail.dueDate || "-" }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="支付状态" label-align="right">
+            <span class="text-value">{{ checkoutDetail.paymentStatusName || "-" }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="支付时间" label-align="right">
+            <span class="text-value">{{ checkoutDetail.payAt || "-" }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="退租原因" label-align="right" :span="2">
             <span class="text-value">{{ checkoutDetail.remark || "-" }}</span>
@@ -64,7 +70,7 @@
           <el-table-column type="index" label="序号" width="70" align="center" />
           <el-table-column prop="feeName" label="费用名称" align="center" min-width="140">
             <template #default="{ row }">
-              <span class="text-value">{{ row.feeSubName || row.feeName || "-" }}</span>
+              <span class="text-value">{{ row.feeName || "-" }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="feeAmount" label="金额" align="center" min-width="110">

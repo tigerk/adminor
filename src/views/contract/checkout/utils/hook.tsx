@@ -109,7 +109,7 @@ export function useCheckout() {
             feeName: `${bill.billTypeName ?? ""} (${bill.billPeriod ?? ""})`,
             feeAmount: bill.unpaidAmount ?? 0,
             feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
-            billId: bill.billId
+            leaseBillId: bill.billId
           });
         });
       }
@@ -142,12 +142,13 @@ export function useCheckout() {
       form.feeList = (res.data.feeList ?? []).map<CheckoutFeeFormItem>(f => ({
         id: f.id,
         feeType: f.feeType ?? null,
-        feeSubName: f.feeSubName,
+        dictDataId: f.dictDataId,
+        feeName: f.feeName,
         feeAmount: f.feeAmount ?? null,
         feeDirection: f.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
         feeStartDate: f.feeStartDate,
         feeEndDate: f.feeEndDate,
-        billId: f.billId,
+        leaseBillId: f.leaseBillId,
         remark: f.remark,
         feeTypeCascade: null
       }));
@@ -186,7 +187,8 @@ export function useCheckout() {
       feeName: fee?.feeName ?? "",
       feeAmount: fee?.feeAmount ?? null,
       feeDirection: fee?.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
-      billId: fee?.billId,
+      dictDataId: fee?.dictDataId,
+      leaseBillId: fee?.leaseBillId,
       remark: fee?.remark,
       feeTypeCascade: fee?.feeTypeCascade ?? null
     });
@@ -205,12 +207,13 @@ export function useCheckout() {
       feeList: form.feeList.map(f => ({
         id: f.id,
         feeType: Number(f.feeType),
-        feeSubName: f.feeSubName,
+        dictDataId: f.dictDataId,
+        feeName: f.feeName,
         feeAmount: f.feeAmount ?? 0,
         feeDirection: f.feeDirection,
         feeStartDate: f.feeStartDate,
         feeEndDate: f.feeEndDate,
-        billId: f.billId,
+        leaseBillId: f.leaseBillId,
         remark: f.remark
       }))
     };

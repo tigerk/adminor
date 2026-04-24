@@ -9,13 +9,13 @@ export interface CheckoutFeeProps {
   id?: string;
   feeDirection: number;
   feeType: number | string | null;
+  dictDataId?: string;
   feeName?: string;
-  feeSubName?: string;
   feeAmount: number | null;
   feeStartDate?: string;
   feeEndDate?: string;
   remark?: string;
-  billId?: string;
+  leaseBillId?: string;
   /** 级联选择器绑定值 [parentCode, childId] */
   feeTypeCascade?: [string, string] | null;
 }
@@ -25,13 +25,12 @@ export interface CheckoutFeeProps {
  *
  * 扩展自 LeaseCheckoutFeeDto，差异点：
  * - feeType / feeAmount 在编辑过程中允许为 null（未填写状态）
- * - feeName 是纯前端展示字段（后端 DTO/VO 均无此字段，仅用于列表渲染）
  * - feeTypeCascade 是级联选择器的双向绑定值，提交前无需传给后端
  */
 export interface CheckoutFeeFormItem extends Omit<LeaseCheckoutFeeDto, "feeType" | "feeAmount"> {
   feeType: number | string | null;
   feeAmount: number | null;
-  /** 费用名称（纯前端展示，不提交后端） */
+  /** 费用名称快照（后端字段存在，前端允许编辑过程为空） */
   feeName?: string;
   /** 级联选择器绑定值 [parentDictCode, childItemId]，提交前无需传给后端 */
   feeTypeCascade?: [string, string] | null;

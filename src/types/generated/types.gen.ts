@@ -2632,6 +2632,12 @@ export type RoomGridItemVo = {
     rooms?: Array<RoomListVo>;
 };
 
+export type ResponseResultRoomDetailVo = {
+    code?: number;
+    message?: string;
+    data?: RoomDetailVo;
+};
+
 export type UserRegisterDto = {
     nature: number;
     companyName: string;
@@ -4356,17 +4362,23 @@ export type LeaseCheckoutDto = {
     addCleaningFee?: boolean;
     cleaningFeeAmount?: number;
     feeList?: Array<LeaseCheckoutFeeDto>;
-    expectedPaymentDate?: string;
+    dueDate?: string;
     settlementMethod: number;
     badDebtReason?: string;
     remark?: string;
     attachmentIds?: Array<string>;
     payeeName?: string;
     payeePhone?: string;
-    payeeIdType?: string;
-    payeeIdNumber?: string;
-    bankType?: string;
-    bankCardType?: string;
+    payeeIdType?: number;
+    payeeIdNo?: string;
+    /**
+     * 收款银行类型
+     */
+    bankType?: 'UNIONPAY' | 'ALIPAY' | 'WECHAT';
+    /**
+     * 银行卡类型
+     */
+    bankCardType?: 'DEBIT' | 'CREDIT';
     bankAccount?: string;
     bankName?: string;
     bankBranch?: string;
@@ -4379,12 +4391,13 @@ export type LeaseCheckoutFeeDto = {
     id?: string;
     feeDirection: number;
     feeType: number;
-    feeSubName?: string;
+    dictDataId?: string;
+    feeName?: string;
     feeAmount: number;
     feeStartDate?: string;
     feeEndDate?: string;
     remark?: string;
-    billId?: string;
+    leaseBillId?: string;
 };
 
 export type LeaseCheckoutFeeVo = {
@@ -4394,12 +4407,13 @@ export type LeaseCheckoutFeeVo = {
     feeDirectionName?: string;
     feeType?: number;
     feeTypeName?: string;
-    feeSubName?: string;
+    dictDataId?: string;
+    feeName?: string;
     feeAmount?: number;
     feeStartDate?: string;
     feeEndDate?: string;
     remark?: string;
-    billId?: string;
+    leaseBillId?: string;
 };
 
 export type LeaseCheckoutVo = {
@@ -4424,18 +4438,30 @@ export type LeaseCheckoutVo = {
     incomeAmount?: number;
     expenseAmount?: number;
     finalAmount?: number;
-    expectedPaymentDate?: string;
+    dueDate?: string;
     settlementMethod?: number;
     settlementMethodName?: string;
+    /**
+     * 支付状态
+     */
+    paymentStatus?: 'UNPAID' | 'PAID' | 'NO_PAYMENT_REQUIRED';
+    paymentStatusName?: string;
+    payAt?: string;
     feeList?: Array<LeaseCheckoutFeeVo>;
     remark?: string;
     attachmentUrls?: Array<string>;
     payeeName?: string;
     payeePhone?: string;
-    payeeIdType?: string;
-    payeeIdNumber?: string;
-    bankType?: string;
-    bankCardType?: string;
+    payeeIdType?: number;
+    payeeIdNo?: string;
+    /**
+     * 银行类型
+     */
+    bankType?: 'UNIONPAY' | 'ALIPAY' | 'WECHAT';
+    /**
+     * 银行卡类型
+     */
+    bankCardType?: 'DEBIT' | 'CREDIT';
     bankAccount?: string;
     bankName?: string;
     bankBranch?: string;
@@ -4495,26 +4521,18 @@ export type LeaseCheckoutInitVo = {
     depositMonths?: number;
     unpaidBills?: Array<UnpaidBillVo>;
     unpaidAmount?: number;
-    presetFees?: Array<PresetFeeVo>;
+    presetFees?: Array<LeaseCheckoutFeeVo>;
     payeeInfo?: PayeeInfoVo;
 };
 
 export type PayeeInfoVo = {
     payeeName?: string;
     payeePhone?: string;
-    payeeIdType?: string;
-    payeeIdNumber?: string;
-};
-
-export type PresetFeeVo = {
-    feeDirection?: number;
-    feeType?: number;
-    feeSubName?: string;
-    feeAmount?: number;
-    feeStartDate?: string;
-    feeEndDate?: string;
-    remark?: string;
-    billId?: string;
+    /**
+     * 收款人证件类型
+     */
+    payeeIdType?: number;
+    payeeIdNo?: string;
 };
 
 export type ResponseResultLeaseCheckoutInitVo = {
@@ -10759,7 +10777,13 @@ export type BizOperateTypeEnum = 'CREATE' | 'UPDATE' | 'CANCEL' | 'PAY';
 
 export type BookingStatusEnum = 'BOOKING' | 'CONTRACTED' | 'TENANT_DEFAULTED' | 'OWNER_DEFAULTED' | 'CANCELLED_EXPIRED';
 
+export type CheckoutBankCardTypeEnum = 'DEBIT' | 'CREDIT';
+
+export type CheckoutBankTypeEnum = 'UNIONPAY' | 'ALIPAY' | 'WECHAT';
+
 export type CheckoutFeeTypeEnum = 'RENT' | 'DEPOSIT' | 'WATER' | 'ELECTRIC' | 'GAS' | 'PROPERTY_FEE' | 'CLEANING' | 'DAMAGE' | 'PENALTY' | 'OTHER' | 'RENT_REFUND' | 'DEPOSIT_REFUND' | 'OTHER_REFUND';
+
+export type CheckoutPaymentStatusEnum = 'UNPAID' | 'PAID' | 'NO_PAYMENT_REQUIRED';
 
 export type CheckoutSettlementMethodEnum = 'GENERATE_BILL' | 'OFFLINE_PAYMENT' | 'APPLY_PAYMENT' | 'BAD_DEBT';
 
@@ -10809,7 +10833,7 @@ export type FinanceFlowStatusEnum = 'PENDING' | 'SUCCESS' | 'VOIDED';
 
 export type FinanceFlowTypeEnum = 'RECEIVE' | 'PAY' | 'REFUND' | 'VOID' | 'ADJUST';
 
-export type PaymentFlowBizTypeEnum = 'LEASE_BILL';
+export type PaymentFlowBizTypeEnum = 'LEASE_BILL' | 'TENANT_CHECKOUT';
 
 export type PaymentFlowChannelEnum = 'CASH' | 'TRANSFER' | 'ALIPAY' | 'WECHAT' | 'YEEPAY' | 'POS' | 'OTHER';
 
@@ -11939,6 +11963,22 @@ export type GetRoomGridResponses = {
 };
 
 export type GetRoomGridResponse = GetRoomGridResponses[keyof GetRoomGridResponses];
+
+export type GetRoomDetailData = {
+    body: RoomIdDto;
+    path?: never;
+    query?: never;
+    url: '/saas/room/detail';
+};
+
+export type GetRoomDetailResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultRoomDetailVo;
+};
+
+export type GetRoomDetailResponse = GetRoomDetailResponses[keyof GetRoomDetailResponses];
 
 export type CloseRoomData = {
     body: RoomIdDto;

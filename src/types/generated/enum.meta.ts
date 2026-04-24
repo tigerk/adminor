@@ -257,6 +257,17 @@ export const BookingStatusEnumMeta = {
   CANCELLED_EXPIRED: {"value":"CANCELLED_EXPIRED","code":5,"name":"已取消/过期","sortOrder":5}
 } as const;
 
+export const CheckoutBankCardTypeEnumMeta = {
+  DEBIT: {"value":"DEBIT","code":"DEBIT","name":"借记卡"},
+  CREDIT: {"value":"CREDIT","code":"CREDIT","name":"信用卡"}
+} as const;
+
+export const CheckoutBankTypeEnumMeta = {
+  UNIONPAY: {"value":"UNIONPAY","code":"UNIONPAY","name":"银联"},
+  ALIPAY: {"value":"ALIPAY","code":"ALIPAY","name":"支付宝"},
+  WECHAT: {"value":"WECHAT","code":"WECHAT","name":"微信"}
+} as const;
+
 export const CheckoutFeeTypeEnumMeta = {
   RENT: {"value":"RENT","code":1,"name":"租金","direction":1},
   DEPOSIT: {"value":"DEPOSIT","code":2,"name":"押金","direction":1},
@@ -271,6 +282,12 @@ export const CheckoutFeeTypeEnumMeta = {
   RENT_REFUND: {"value":"RENT_REFUND","code":51,"name":"租金","direction":2},
   DEPOSIT_REFUND: {"value":"DEPOSIT_REFUND","code":52,"name":"押金","direction":2},
   OTHER_REFUND: {"value":"OTHER_REFUND","code":53,"name":"其他退款","direction":2}
+} as const;
+
+export const CheckoutPaymentStatusEnumMeta = {
+  UNPAID: {"value":"UNPAID","code":"UNPAID","name":"待支付"},
+  PAID: {"value":"PAID","code":"PAID","name":"已支付"},
+  NO_PAYMENT_REQUIRED: {"value":"NO_PAYMENT_REQUIRED","code":"NO_PAYMENT_REQUIRED","name":"无需支付"}
 } as const;
 
 export const CheckoutSettlementMethodEnumMeta = {
@@ -461,7 +478,8 @@ export const FinanceFlowTypeEnumMeta = {
 } as const;
 
 export const PaymentFlowBizTypeEnumMeta = {
-  LEASE_BILL: {"value":"LEASE_BILL","code":"LEASE_BILL","label":"租客账单"}
+  LEASE_BILL: {"value":"LEASE_BILL","code":"LEASE_BILL","label":"租客账单"},
+  TENANT_CHECKOUT: {"value":"TENANT_CHECKOUT","code":"TENANT_CHECKOUT","label":"租客退租"}
 } as const;
 
 export const PaymentFlowChannelEnumMeta = {

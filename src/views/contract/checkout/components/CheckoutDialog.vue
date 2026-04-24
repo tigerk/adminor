@@ -262,10 +262,10 @@
           <div class="summary-row-2">
             <div class="summary-field">
               <span class="field-label">
-                预计收/付款时间
+                结算截止日
                 <span class="required">*</span>
               </span>
-              <el-date-picker v-model="form.expectedPaymentDate" type="date" placeholder="请选择" value-format="YYYY-MM-DD" :disabled="!canEdit" style="width: 160px" />
+              <el-date-picker v-model="form.dueDate" type="date" placeholder="请选择" value-format="YYYY-MM-DD" :disabled="!canEdit" style="width: 160px" />
             </div>
             <div class="summary-field">
               <span class="field-label">账单处理方式</span>
@@ -332,12 +332,10 @@
           <div class="payee-cell">
             <span class="cell-label">证件信息</span>
             <div class="inline-fields">
-              <el-select v-model="form.payeeIdType" placeholder="身份证" :disabled="!canEdit" style="width: 100px" size="default">
-                <el-option label="身份证" value="ID_CARD" />
-                <el-option label="护照" value="PASSPORT" />
-                <el-option label="营业执照" value="BUSINESS_LICENSE" />
+              <el-select v-model="form.payeeIdType" placeholder="证件类型" :disabled="!canEdit" style="width: 110px" size="default">
+                <el-option v-for="item in payeeIdTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
-              <el-input v-model="form.payeeIdNumber" placeholder="证件号码" :disabled="!canEdit" style="width: 200px" />
+              <el-input v-model="form.payeeIdNo" placeholder="证件号码" :disabled="!canEdit" style="width: 200px" />
             </div>
           </div>
         </div>
@@ -346,15 +344,12 @@
         <div class="bank-section">
           <span class="bank-section-title">收款银行及账号</span>
           <div class="bank-fields">
-            <el-select v-model="form.bankType" placeholder="银联" :disabled="!canEdit" style="width: 100px" @change="handleBankTypeChange">
-              <el-option label="银联" value="UNIONPAY" />
-              <el-option label="支付宝" value="ALIPAY" />
-              <el-option label="微信" value="WECHAT" />
+            <el-select v-model="form.bankType" placeholder="收款方式" :disabled="!canEdit" style="width: 100px" @change="handleBankTypeChange">
+              <el-option v-for="item in bankTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
             <template v-if="form.bankType === 'UNIONPAY'">
-              <el-select v-model="form.bankCardType" placeholder="借记卡" :disabled="!canEdit" style="width: 96px">
-                <el-option label="借记卡" value="DEBIT" />
-                <el-option label="信用卡" value="CREDIT" />
+              <el-select v-model="form.bankCardType" placeholder="银行卡类型" :disabled="!canEdit" style="width: 96px">
+                <el-option v-for="item in bankCardTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
               <el-input v-model="form.bankAccount" placeholder="银行账号" :disabled="!canEdit" style="width: 200px" />
               <el-input v-model="form.bankName" placeholder="银行名称" :disabled="!canEdit" style="width: 140px" />
@@ -399,6 +394,7 @@
     FEE_DIRECTION_ENUM,
     SETTLEMENT_METHOD_META
   } from "@/constants";
+  import { CheckoutBankCardTypeEnumMeta, CheckoutBankTypeEnumMeta, IdTypeEnumMeta } from "@/types/generated/enum.meta";
   import type { LeaseCheckoutVo, LeaseCheckoutInitVo } from "@/types";
   import type { CheckoutFeeFormItem, CheckoutDialogFormData } from "@/types/models/checkout";
   import { getCheckoutByLeaseId, getCheckoutInitData, saveCheckout, submitCheckout } from "@/api/contract/checkout";
@@ -475,27 +471,71 @@
     }));
   });
 
+  const payeeIdTypeOptions = Object.values(IdTypeEnumMeta).map(item => ({
+    label: item.name,
+    value: item.code
+  }));
+
+  const bankTypeOptions = Object.values(CheckoutBankTypeEnumMeta).map(item => ({
+    label: item.name,
+    value: item.code
+  }));
+
+  const bankCardTypeOptions = Object.values(CheckoutBankCardTypeEnumMeta).map(item => ({
+    label: item.name,
+    value: item.code
+  }));
+
+  function resolveCheckoutFeeTypeCode(name?: string, value?: string, feeDirection?: number) {
+    const text = `${name ?? ""} ${value ?? ""}`.toLowerCase();
+    const refund = feeDirection === FEE_DIRECTION_ENUM.REFUND;
+    if (text.includes("押金")) return refund ? CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND : CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT;
+    if (text.includes("租金")) return refund ? CHECKOUT_FEE_TYPE_CODE_MAP.RENT_REFUND : CHECKOUT_FEE_TYPE_CODE_MAP.RENT;
+    if (text.includes("水")) return CHECKOUT_FEE_TYPE_CODE_MAP.WATER;
+    if (text.includes("电")) return CHECKOUT_FEE_TYPE_CODE_MAP.ELECTRIC;
+    if (text.includes("燃气")) return CHECKOUT_FEE_TYPE_CODE_MAP.GAS;
+    if (text.includes("物业")) return CHECKOUT_FEE_TYPE_CODE_MAP.PROPERTY_FEE;
+    if (text.includes("清洁")) return CHECKOUT_FEE_TYPE_CODE_MAP.CLEANING;
+    if (text.includes("损坏")) return CHECKOUT_FEE_TYPE_CODE_MAP.DAMAGE;
+    if (text.includes("违约")) return CHECKOUT_FEE_TYPE_CODE_MAP.PENALTY;
+    return refund ? CHECKOUT_FEE_TYPE_CODE_MAP.OTHER_REFUND : CHECKOUT_FEE_TYPE_CODE_MAP.OTHER;
+  }
+
   function handleFeeTypeCascadeChange(val: [string, string] | null, fee: CheckoutFeeFormItem) {
     if (!val || val.length < 2) {
       fee.feeType = null;
-      fee.feeSubName = "";
+      fee.dictDataId = undefined;
+      fee.feeName = "";
       return;
     }
     const [parentCode, childId] = val;
-    fee.feeType = childId;
+    fee.dictDataId = childId;
     const group = feeTypeDictList.value.find(g => g.dictCode === parentCode);
     if (group) {
       const child = group.dictDataList.find(c => c.id === childId);
-      fee.feeSubName = child?.name || "";
+      fee.feeName = child?.name || "";
+      fee.feeType = resolveCheckoutFeeTypeCode(child?.name, child?.value, fee.feeDirection);
     }
   }
 
   function resolveFeeCascadeValue(fee: CheckoutFeeFormItem): [string, string] | null {
-    if (!feeTypeDictList.value.length || !fee.feeSubName) return null;
+    if (!feeTypeDictList.value.length) return null;
+
+    if (fee.dictDataId) {
+      for (const group of feeTypeDictList.value) {
+        for (const item of group.dictDataList) {
+          if (item.id === fee.dictDataId) {
+            return [group.dictCode, item.id];
+          }
+        }
+      }
+    }
+
+    if (!fee.feeName) return null;
 
     for (const group of feeTypeDictList.value) {
       for (const item of group.dictDataList) {
-        if (item.name === fee.feeSubName) {
+        if (item.name === fee.feeName) {
           return [group.dictCode, item.id];
         }
       }
@@ -513,7 +553,7 @@
       清洁费: "qingjiefei"
     };
 
-    const targetId = keywordMap[fee.feeSubName];
+    const targetId = keywordMap[fee.feeName];
     if (targetId) {
       for (const group of feeTypeDictList.value) {
         for (const item of group.dictDataList) {
@@ -537,15 +577,15 @@
     addCleaningFee: false,
     cleaningFeeAmount: null,
     feeList: [],
-    expectedPaymentDate: "",
+    dueDate: "",
     settlementMethod: SETTLEMENT_METHOD_META.GENERATE_BILL.code,
     remark: "",
     attachmentIds: [],
     attachmentFiles: [],
     payeeName: "",
     payeePhone: "",
-    payeeIdType: "ID_CARD",
-    payeeIdNumber: "",
+    payeeIdType: 0,
+    payeeIdNo: "",
     bankType: "UNIONPAY",
     bankCardType: "DEBIT",
     bankAccount: "",
@@ -642,7 +682,7 @@
         const newFee: CheckoutFeeFormItem = {
           feeDirection: FEE_DIRECTION_ENUM.REFUND,
           feeType: CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND,
-          feeSubName: "房屋押金",
+          feeName: "房屋押金",
           feeAmount: initData.value.depositAmount ?? null,
           feeStartDate: formatDate(initData.value.leaseStart).replace(/\./g, "-"),
           feeEndDate: formatDate(initData.value.leaseEnd).replace(/\./g, "-"),
@@ -670,7 +710,7 @@
       form.feeList.push({
         feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
         feeType: CHECKOUT_FEE_TYPE_CODE_MAP.CLEANING,
-        feeSubName: "清洁费",
+        feeName: "清洁费",
         feeAmount: form.cleaningFeeAmount || 0,
         feeStartDate: today,
         feeEndDate: today,
@@ -691,7 +731,7 @@
     const newFee: CheckoutFeeFormItem = {
       feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
       feeType: null,
-      feeSubName: "",
+      feeName: "",
       feeAmount: null,
       feeStartDate: today,
       feeEndDate: today,
@@ -711,7 +751,7 @@
 
   function handleBankTypeChange(val: string) {
     if (val !== "UNIONPAY") {
-      form.bankCardType = "";
+      form.bankCardType = undefined;
       form.bankName = "";
       form.bankBranch = "";
     } else {
@@ -760,12 +800,14 @@
     form.tenantId = res.data.tenantId ?? "";
     form.leaseId = leaseId;
     form.actualCheckoutDate = getTodayStr();
-    form.expectedPaymentDate = getTodayStr();
+    form.dueDate = getTodayStr();
     form.checkoutType = CHECKOUT_TYPE_META.NORMAL.code;
 
     if (res.data.payeeInfo) {
       form.payeeName = res.data.payeeInfo.payeeName || "";
       form.payeePhone = res.data.payeeInfo.payeePhone || "";
+      form.payeeIdType = res.data.payeeInfo.payeeIdType ?? 0;
+      form.payeeIdNo = res.data.payeeInfo.payeeIdNo || "";
     }
 
     if (!form.confirmationTemplate && confirmationTemplateOptions.value.length > 0) {
@@ -777,12 +819,12 @@
         const fee: CheckoutFeeFormItem = {
           feeDirection: pf.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
           feeType: pf.feeType ?? null,
-          feeSubName: pf.feeSubName ?? "",
+          feeName: pf.feeName ?? "",
           feeAmount: pf.feeAmount ?? null,
           feeStartDate: pf.feeStartDate?.split("T")[0] ?? getTodayStr(),
           feeEndDate: pf.feeEndDate?.split("T")[0] ?? getTodayStr(),
           remark: pf.remark ?? "",
-          billId: pf.billId,
+          leaseBillId: pf.leaseBillId,
           feeTypeCascade: null
         };
         fee.feeTypeCascade = resolveFeeCascadeValue(fee);
@@ -799,7 +841,7 @@
     form.checkoutType = detail.checkoutType ?? null;
     form.actualCheckoutDate = detail.actualCheckoutDate ?? "";
     form.breachReason = detail.breachReason ?? "";
-    form.expectedPaymentDate = detail.expectedPaymentDate ?? "";
+    form.dueDate = detail.dueDate ?? "";
     form.settlementMethod = detail.settlementMethod ?? SETTLEMENT_METHOD_META.GENERATE_BILL.code;
     form.remark = detail.remark ?? "";
 
@@ -812,12 +854,13 @@
         id: f.id,
         feeDirection: f.feeDirection ?? FEE_DIRECTION_ENUM.DEDUCTION,
         feeType: f.feeType ?? null,
-        feeSubName: f.feeSubName,
+        dictDataId: f.dictDataId,
+        feeName: f.feeName,
         feeAmount: f.feeAmount ?? null,
         feeStartDate: f.feeStartDate,
         feeEndDate: f.feeEndDate,
         remark: f.remark,
-        billId: f.billId,
+        leaseBillId: f.leaseBillId,
         feeTypeCascade: null
       };
       fee.feeTypeCascade = resolveFeeCascadeValue(fee);
@@ -826,8 +869,8 @@
 
     form.payeeName = detail.payeeName ?? "";
     form.payeePhone = detail.payeePhone ?? "";
-    form.payeeIdType = detail.payeeIdType ?? "ID_CARD";
-    form.payeeIdNumber = detail.payeeIdNumber ?? "";
+    form.payeeIdType = detail.payeeIdType ?? 0;
+    form.payeeIdNo = detail.payeeIdNo ?? "";
     form.bankType = detail.bankType ?? "UNIONPAY";
     form.bankCardType = detail.bankCardType ?? "DEBIT";
     form.bankAccount = detail.bankAccount ?? "";
@@ -854,7 +897,9 @@
       presetFees: [],
       payeeInfo: {
         payeeName: detail.payeeName,
-        payeePhone: detail.payeePhone
+        payeePhone: detail.payeePhone,
+        payeeIdType: detail.payeeIdType,
+        payeeIdNo: detail.payeeIdNo
       }
     };
   }
@@ -866,8 +911,8 @@
     formRef.value.validate(async valid => {
       if (!valid) return;
 
-      if (!form.expectedPaymentDate) {
-        ElMessage.warning("请选择预计收/付款时间");
+      if (!form.dueDate) {
+        ElMessage.warning("请选择结算截止日");
         return;
       }
       if (form.feeList.length === 0) {
@@ -892,12 +937,13 @@
             id: f.id,
             feeDirection: f.feeDirection,
             feeType: Number(f.feeType),
-            feeSubName: f.feeSubName,
+            dictDataId: f.dictDataId,
+            feeName: f.feeName,
             feeAmount: f.feeAmount ?? 0,
             feeStartDate: f.feeStartDate,
             feeEndDate: f.feeEndDate,
             remark: f.remark,
-            billId: f.billId
+            leaseBillId: f.leaseBillId
           }))
         };
         const res = await saveCheckout(submitData);
@@ -926,15 +972,15 @@
     form.addCleaningFee = false;
     form.cleaningFeeAmount = null;
     form.feeList = [];
-    form.expectedPaymentDate = "";
+    form.dueDate = "";
     form.settlementMethod = SETTLEMENT_METHOD_META.GENERATE_BILL.code;
     form.remark = "";
     form.attachmentIds = [];
     form.attachmentFiles = [];
     form.payeeName = "";
     form.payeePhone = "";
-    form.payeeIdType = "ID_CARD";
-    form.payeeIdNumber = "";
+    form.payeeIdType = 0;
+    form.payeeIdNo = "";
     form.bankType = "UNIONPAY";
     form.bankCardType = "DEBIT";
     form.bankAccount = "";
