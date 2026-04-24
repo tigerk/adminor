@@ -16,8 +16,8 @@ export interface CheckoutFeeProps {
   feeEndDate?: string;
   remark?: string;
   leaseBillId?: string;
-  /** 级联选择器绑定值 [parentCode, childId] */
-  feeTypeCascade?: [string, string] | null;
+  /** 级联选择器绑定值 */
+  feeTypeCascade?: string[] | null;
 }
 
 /**
@@ -32,8 +32,8 @@ export interface CheckoutFeeFormItem extends Omit<LeaseCheckoutFeeDto, "feeType"
   feeAmount: number | null;
   /** 费用名称快照（后端字段存在，前端允许编辑过程为空） */
   feeName?: string;
-  /** 级联选择器绑定值 [parentDictCode, childItemId]，提交前无需传给后端 */
-  feeTypeCascade?: [string, string] | null;
+  /** 级联选择器绑定值，提交前无需传给后端 */
+  feeTypeCascade?: string[] | null;
 }
 
 /**

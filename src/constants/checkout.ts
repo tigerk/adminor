@@ -1,4 +1,4 @@
-import { BizApprovalStatusEnumMeta, CheckoutFeeTypeEnumMeta, CheckoutSettlementMethodEnumMeta, CheckoutStatusEnumMeta, CheckoutTypeEnumMeta } from "@/types/generated/enum.meta";
+import { BizApprovalStatusEnumMeta, CheckoutSettlementMethodEnumMeta, CheckoutStatusEnumMeta, CheckoutTypeEnumMeta, LeaseBillTypeEnumMeta } from "@/types/generated/enum.meta";
 
 export const CHECKOUT_TYPE_META = CheckoutTypeEnumMeta;
 
@@ -22,20 +22,23 @@ export enum FEE_DIRECTION_ENUM {
 }
 
 export const CHECKOUT_FEE_TYPE_CODE_MAP = {
-  RENT: CheckoutFeeTypeEnumMeta.RENT.code,
-  DEPOSIT: CheckoutFeeTypeEnumMeta.DEPOSIT.code,
-  WATER: CheckoutFeeTypeEnumMeta.WATER.code,
-  ELECTRIC: CheckoutFeeTypeEnumMeta.ELECTRIC.code,
-  GAS: CheckoutFeeTypeEnumMeta.GAS.code,
-  PROPERTY_FEE: CheckoutFeeTypeEnumMeta.PROPERTY_FEE.code,
-  CLEANING: CheckoutFeeTypeEnumMeta.CLEANING.code,
-  DAMAGE: CheckoutFeeTypeEnumMeta.DAMAGE.code,
-  PENALTY: CheckoutFeeTypeEnumMeta.PENALTY.code,
-  OTHER: CheckoutFeeTypeEnumMeta.OTHER.code,
-  RENT_REFUND: CheckoutFeeTypeEnumMeta.RENT_REFUND.code,
-  DEPOSIT_REFUND: CheckoutFeeTypeEnumMeta.DEPOSIT_REFUND.code,
-  OTHER_REFUND: CheckoutFeeTypeEnumMeta.OTHER_REFUND.code
+  RENT: LeaseBillTypeEnumMeta.RENT.code,
+  DEPOSIT: LeaseBillTypeEnumMeta.DEPOSIT.code,
+  OTHER_FEE: LeaseBillTypeEnumMeta.OTHER_FEE.code,
+  WATER: LeaseBillTypeEnumMeta.OTHER_FEE.code,
+  ELECTRIC: LeaseBillTypeEnumMeta.OTHER_FEE.code,
+  GAS: LeaseBillTypeEnumMeta.OTHER_FEE.code,
+  PROPERTY_FEE: LeaseBillTypeEnumMeta.OTHER_FEE.code,
+  CLEANING: LeaseBillTypeEnumMeta.OTHER_FEE.code,
+  DAMAGE: LeaseBillTypeEnumMeta.OTHER_FEE.code,
+  PENALTY: LeaseBillTypeEnumMeta.OTHER_FEE.code,
+  OTHER: LeaseBillTypeEnumMeta.OTHER_FEE.code,
+  RENT_REFUND: LeaseBillTypeEnumMeta.RENT.code,
+  DEPOSIT_REFUND: LeaseBillTypeEnumMeta.DEPOSIT.code,
+  OTHER_REFUND: LeaseBillTypeEnumMeta.OTHER_FEE.code
 } as const;
+
+export const LEASE_BILL_TYPE_META = LeaseBillTypeEnumMeta;
 
 export const SETTLEMENT_METHOD_META = CheckoutSettlementMethodEnumMeta;
 

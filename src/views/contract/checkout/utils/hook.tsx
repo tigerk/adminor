@@ -36,6 +36,8 @@ export function useCheckout() {
     checkoutType: null,
     breachReason: "",
     actualCheckoutDate: "",
+    addCleaningFee: false,
+    cleaningFeeAmount: null,
     settlementMethod: 0,
     depositAmount: 0,
     feeList: [],
@@ -44,7 +46,9 @@ export function useCheckout() {
 
   // 计算扣款总额（收入方向）
   const deductionTotal = computed(() => {
-    return form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION).reduce((sum, f) => sum + (f.feeAmount ?? 0), 0);
+    const feeDeduction = form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION).reduce((sum, f) => sum + (f.feeAmount ?? 0), 0);
+    const cleaningDeduction = form.addCleaningFee ? Number(form.cleaningFeeAmount || 0) : 0;
+    return feeDeduction + cleaningDeduction;
   });
 
   // 计算退款总额（支出方向）

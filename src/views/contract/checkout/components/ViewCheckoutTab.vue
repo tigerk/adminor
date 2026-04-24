@@ -4,7 +4,16 @@
     <el-empty v-else-if="!checkoutDetail" description="暂无退租信息" :image-size="150" />
     <template v-else>
       <div class="info-section">
-        <el-descriptions title="退租概览" :column="3" class="info-descriptions" size="default">
+        <div class="section-header section-header--top">
+          <div class="section-title">
+            <span class="title-icon" />
+            <span class="title-text">退租概览</span>
+          </div>
+          <div class="section-actions">
+            <el-button type="primary" plain :disabled="!canEdit" @click="handleEditCheckout">修改退租单</el-button>
+          </div>
+        </div>
+        <el-descriptions :column="3" class="info-descriptions" size="default">
           <el-descriptions-item label="退租单编号" label-align="right">
             <span class="text-value">{{ checkoutDetail.checkoutCode || "-" }}</span>
           </el-descriptions-item>
@@ -28,6 +37,11 @@
           </el-descriptions-item>
           <el-descriptions-item label="结算金额" label-align="right">
             <span class="text-value">{{ checkoutDetail.finalAmount == null ? "-" : `¥${checkoutDetail.finalAmount}` }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="房屋清洁费" label-align="right">
+            <span class="text-value">
+              {{ cleaningFeeText }}
+            </span>
           </el-descriptions-item>
           <el-descriptions-item label="结算方式" label-align="right">
             <span class="text-value">{{ checkoutDetail.settlementMethodName || "-" }}</span>
@@ -118,12 +132,36 @@
 </template>
 
 <script setup lang="ts">
+  import { computed } from "vue";
   import type { LeaseCheckoutVo } from "@/types";
+  import { APPROVAL_STATUS_META, CHECKOUT_STATUS_META } from "@/constants";
+  import { useCheckoutDialog } from "@/views/contract/checkout/components/useCheckoutDialog";
 
-  defineProps<{
+  const props = defineProps<{
     loading: boolean;
     checkoutDetail: LeaseCheckoutVo | null;
   }>();
+
+  const emit = defineEmits<{
+    updated: [];
+  }>();
+
+  const { openLeaseCheckoutDialogByLeaseId } = useCheckoutDialog();
+
+  const canEdit = computed(() => {
+    if (!props.checkoutDetail) return false;
+    return props.checkoutDetail.status === CHECKOUT_STATUS_META.DRAFT.code || props.checkoutDetail.approvalStatus === APPROVAL_STATUS_META.REJECTED.code;
+  });
+
+  const cleaningFeeText = computed(() => {
+    if (!props.checkoutDetail) return "-";
+    return props.checkoutDetail.addCleaningFee ? `¥${props.checkoutDetail.cleaningFeeAmount || 0}` : "未加收";
+  });
+
+  function handleEditCheckout() {
+    if (!props.checkoutDetail?.leaseId) return;
+    openLeaseCheckoutDialogByLeaseId(props.checkoutDetail.leaseId, () => emit("updated"));
+  }
 </script>
 
 <style scoped lang="scss">
@@ -141,6 +179,9 @@
 
   .section-header {
     margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
     .section-title {
       display: flex;
@@ -153,6 +194,16 @@
         letter-spacing: 0.5px;
       }
     }
+  }
+
+  .section-header--top {
+    margin-bottom: 12px;
+  }
+
+  .section-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .fees-table {

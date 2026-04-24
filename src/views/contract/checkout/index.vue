@@ -56,7 +56,7 @@
       </pure-table>
     </el-row>
     <el-dialog v-model="detailVisible" title="退租详情" width="60%" top="5vh" :destroy-on-close="true" align-center lock-scroll>
-      <ViewCheckoutTab :loading="detailLoading" :checkout-detail="detailData" />
+      <ViewCheckoutTab :loading="detailLoading" :checkout-detail="detailData" @updated="handleDetailUpdated" />
     </el-dialog>
   </div>
 </template>
@@ -204,6 +204,12 @@
     } finally {
       detailLoading.value = false;
     }
+  }
+
+  async function handleDetailUpdated() {
+    await fetchList();
+    if (!detailData.value?.id) return;
+    await openDetail({ id: detailData.value.id } as LeaseCheckoutVo);
   }
 
   onMounted(fetchList);

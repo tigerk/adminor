@@ -1,5 +1,5 @@
 import { h, ref } from "vue";
-import { addDialog, closeAllDialog } from "@/components/ReDialog";
+import { addDialog, closeDialog, dialogStore } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { message } from "@/utils/message";
 import { LEASE_STATUS_MAP } from "@/constants";
@@ -17,6 +17,41 @@ export function useCheckoutDialog() {
   // CheckoutDialog 组件实例 ref，由 contentRenderer 注入
   const checkoutDialogRef = ref<InstanceType<typeof CheckoutDialog>>();
 
+  function openCheckoutDialogByLeaseId(leaseId: string | number, onSuccess?: () => void, title = "租客退租") {
+    const dialogOptions = {
+      title,
+      width: "1020px",
+      alignCenter: true,
+      lockScroll: true,
+      closeOnClickModal: false,
+      draggable: false,
+      destroyOnClose: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      hideFooter: true,
+      contentRenderer: () =>
+        h(CheckoutDialog, {
+          ref: checkoutDialogRef,
+          onSuccess: () => {
+            const dialogIndex = dialogStore.value.length - 1;
+            if (dialogIndex >= 0) {
+              closeDialog(dialogOptions, dialogIndex, { command: "sure" });
+            }
+            if (onSuccess) {
+              onSuccess();
+              return;
+            }
+            window.location.reload();
+          }
+        }),
+      open: async () => {
+        await checkoutDialogRef.value?.open(leaseId);
+      }
+    };
+
+    addDialog(dialogOptions);
+  }
+
   /**
    * 打开退租弹框
    * @param row       租客列表行数据
@@ -28,36 +63,12 @@ export function useCheckoutDialog() {
       return;
     }
 
-    addDialog({
-      title: "租客退租",
-      width: "1020px",
-      alignCenter: true,
-      lockScroll: true,
-      closeOnClickModal: false,
-      draggable: false,
-      destroyOnClose: true,
-      fullscreen: deviceDetection(),
-      fullscreenIcon: true,
-      // 底部由 CheckoutDialog 内部的 .dialog-footer 自行处理
-      hideFooter: true,
-      contentRenderer: () =>
-        h(CheckoutDialog, {
-          ref: checkoutDialogRef,
-          onSuccess: () => {
-            closeAllDialog();
-            if (onSuccess) {
-              onSuccess();
-              return;
-            }
-            window.location.reload();
-          }
-        }),
-      // addDialog 渲染完成后触发，ref 已就绪，安全调用 open()
-      open: async () => {
-        await checkoutDialogRef.value?.open(row.leaseId);
-      }
-    });
+    openCheckoutDialogByLeaseId(row.leaseId, onSuccess);
   }
 
-  return { openLeaseCheckoutDialog };
+  function openLeaseCheckoutDialogByLeaseId(leaseId: string | number, onSuccess?: () => void) {
+    openCheckoutDialogByLeaseId(leaseId, onSuccess, "修改退租单");
+  }
+
+  return { openLeaseCheckoutDialog, openLeaseCheckoutDialogByLeaseId };
 }

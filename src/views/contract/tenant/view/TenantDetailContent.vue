@@ -326,7 +326,7 @@
               <span>退租单</span>
             </el-space>
           </template>
-          <ViewCheckoutTab :loading="checkoutLoading" :checkout-detail="checkoutDetail" />
+          <ViewCheckoutTab :loading="checkoutLoading" :checkout-detail="checkoutDetail" @updated="fetchCheckoutDetail" />
         </el-tab-pane>
       </el-tabs>
     </div>

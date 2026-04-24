@@ -392,6 +392,7 @@
     CHECKOUT_TYPE_META,
     CONTRACT_TYPE_META,
     FEE_DIRECTION_ENUM,
+    LEASE_BILL_TYPE_META,
     SETTLEMENT_METHOD_META
   } from "@/constants";
   import { CheckoutBankCardTypeEnumMeta, CheckoutBankTypeEnumMeta, IdTypeEnumMeta } from "@/types/generated/enum.meta";
@@ -430,6 +431,7 @@
   // ===== 费用类型字典数据 =====
   interface DictDataItem {
     id: string;
+    feeName?: string;
     name: string;
     value: string;
     color?: string;
@@ -461,14 +463,20 @@
   }
 
   const feeTypeCascadeOptions = computed(() => {
-    return feeTypeDictList.value.map(group => ({
-      value: group.dictCode,
+    const otherFeeChildren = feeTypeDictList.value.map(group => ({
       label: group.dictName,
+      value: group.dictCode,
       children: group.dictDataList.map(item => ({
         value: item.id,
-        label: item.name
+        label: item.feeName || item.name
       }))
     }));
+
+    return [
+      { label: "租金", value: "RENTAL" },
+      { label: "押金", value: "DEPOSIT" },
+      { label: "其他费用", value: "OTHER_FEE", children: otherFeeChildren }
+    ];
   });
 
   const payeeIdTypeOptions = Object.values(IdTypeEnumMeta).map(item => ({
@@ -486,80 +494,98 @@
     value: item.code
   }));
 
-  function resolveCheckoutFeeTypeCode(name?: string, value?: string, feeDirection?: number) {
-    const text = `${name ?? ""} ${value ?? ""}`.toLowerCase();
-    const refund = feeDirection === FEE_DIRECTION_ENUM.REFUND;
-    if (text.includes("押金")) return refund ? CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT_REFUND : CHECKOUT_FEE_TYPE_CODE_MAP.DEPOSIT;
-    if (text.includes("租金")) return refund ? CHECKOUT_FEE_TYPE_CODE_MAP.RENT_REFUND : CHECKOUT_FEE_TYPE_CODE_MAP.RENT;
-    if (text.includes("水")) return CHECKOUT_FEE_TYPE_CODE_MAP.WATER;
-    if (text.includes("电")) return CHECKOUT_FEE_TYPE_CODE_MAP.ELECTRIC;
-    if (text.includes("燃气")) return CHECKOUT_FEE_TYPE_CODE_MAP.GAS;
-    if (text.includes("物业")) return CHECKOUT_FEE_TYPE_CODE_MAP.PROPERTY_FEE;
-    if (text.includes("清洁")) return CHECKOUT_FEE_TYPE_CODE_MAP.CLEANING;
-    if (text.includes("损坏")) return CHECKOUT_FEE_TYPE_CODE_MAP.DAMAGE;
-    if (text.includes("违约")) return CHECKOUT_FEE_TYPE_CODE_MAP.PENALTY;
-    return refund ? CHECKOUT_FEE_TYPE_CODE_MAP.OTHER_REFUND : CHECKOUT_FEE_TYPE_CODE_MAP.OTHER;
+  function resolveFeeTypeFromName(feeName?: string | null) {
+    const text = `${feeName ?? ""}`.trim();
+    if (!text) return null;
+    if (text.includes("租金")) return LEASE_BILL_TYPE_META.RENT.code;
+    if (text.includes("押金")) return LEASE_BILL_TYPE_META.DEPOSIT.code;
+    return LEASE_BILL_TYPE_META.OTHER_FEE.code;
   }
 
-  function handleFeeTypeCascadeChange(val: [string, string] | null, fee: CheckoutFeeFormItem) {
-    if (!val || val.length < 2) {
+  function handleFeeTypeCascadeChange(val: string[] | null, fee: CheckoutFeeFormItem) {
+    if (!val || val.length === 0) {
       fee.feeType = null;
       fee.dictDataId = undefined;
       fee.feeName = "";
       return;
     }
-    const [parentCode, childId] = val;
-    fee.dictDataId = childId;
-    const group = feeTypeDictList.value.find(g => g.dictCode === parentCode);
-    if (group) {
-      const child = group.dictDataList.find(c => c.id === childId);
-      fee.feeName = child?.name || "";
-      fee.feeType = resolveCheckoutFeeTypeCode(child?.name, child?.value, fee.feeDirection);
+
+    const [feeType, dictCode, dictDataId] = val;
+    if (feeType === "RENTAL") {
+      fee.feeType = LEASE_BILL_TYPE_META.RENT.code;
+      fee.dictDataId = undefined;
+      fee.feeName = "租金";
+      return;
     }
+
+    if (feeType === "DEPOSIT") {
+      fee.feeType = LEASE_BILL_TYPE_META.DEPOSIT.code;
+      fee.dictDataId = undefined;
+      fee.feeName = "押金";
+      return;
+    }
+
+    fee.feeType = LEASE_BILL_TYPE_META.OTHER_FEE.code;
+    fee.dictDataId = undefined;
+    fee.feeName = "";
+    if (!dictCode || !dictDataId) {
+      return;
+    }
+    const group = feeTypeDictList.value.find(g => g.dictCode === dictCode);
+    const child = group?.dictDataList.find(c => c.id === dictDataId);
+    if (!child) return;
+    fee.dictDataId = child.id;
+    fee.feeName = child.feeName || child.name || "";
   }
 
-  function resolveFeeCascadeValue(fee: CheckoutFeeFormItem): [string, string] | null {
-    if (!feeTypeDictList.value.length) return null;
+  function resolveFeeCascadeValue(fee: CheckoutFeeFormItem): string[] | null {
+    if (fee.feeType === LEASE_BILL_TYPE_META.RENT.code) {
+      return ["RENTAL"];
+    }
 
-    if (fee.dictDataId) {
+    if (fee.feeType === LEASE_BILL_TYPE_META.DEPOSIT.code) {
+      return ["DEPOSIT"];
+    }
+
+    if (!feeTypeDictList.value.length) {
+      return fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.code ? ["OTHER_FEE"] : null;
+    }
+
+    if (fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.code && fee.dictDataId) {
       for (const group of feeTypeDictList.value) {
         for (const item of group.dictDataList) {
           if (item.id === fee.dictDataId) {
-            return [group.dictCode, item.id];
+            return ["OTHER_FEE", group.dictCode, item.id];
           }
         }
       }
+      return ["OTHER_FEE"];
     }
 
     if (!fee.feeName) return null;
 
-    for (const group of feeTypeDictList.value) {
-      for (const item of group.dictDataList) {
-        if (item.name === fee.feeName) {
-          return [group.dictCode, item.id];
+    if (fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.code) {
+      for (const group of feeTypeDictList.value) {
+        for (const item of group.dictDataList) {
+          if (item.name === fee.feeName) {
+            return ["OTHER_FEE", group.dictCode, item.id];
+          }
         }
       }
     }
 
-    const keywordMap: Record<string, string> = {
-      租金: "fangwuzujin",
-      房屋租金: "fangwuzujin",
-      押金: "fangwuyajin",
-      房屋押金: "fangwuyajin",
-      水费: "shuifei",
-      电费: "dianfei",
-      燃气费: "ranqifei",
-      物业费: "wuyefei",
-      清洁费: "qingjiefei"
-    };
+    const resolvedByName = resolveFeeTypeFromName(fee.feeName);
+    if (resolvedByName === LEASE_BILL_TYPE_META.RENT.code) {
+      return ["RENTAL"];
+    }
+    if (resolvedByName === LEASE_BILL_TYPE_META.DEPOSIT.code) {
+      return ["DEPOSIT"];
+    }
 
-    const targetId = keywordMap[fee.feeName];
-    if (targetId) {
-      for (const group of feeTypeDictList.value) {
-        for (const item of group.dictDataList) {
-          if (item.id === targetId || item.value === targetId) {
-            return [group.dictCode, item.id];
-          }
+    for (const group of feeTypeDictList.value) {
+      for (const item of group.dictDataList) {
+        if (item.name === fee.feeName) {
+          return ["OTHER_FEE", group.dictCode, item.id];
         }
       }
     }
@@ -601,7 +627,11 @@
     actualCheckoutDate: [{ required: true, message: "请选择实际离房日期", trigger: "change" }]
   });
 
-  const incomeTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
+  const incomeTotal = computed(() => {
+    const feeIncome = form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.DEDUCTION).reduce((sum, f) => sum + (f.feeAmount || 0), 0);
+    const cleaningIncome = form.addCleaningFee ? Number(form.cleaningFeeAmount || 0) : 0;
+    return feeIncome + cleaningIncome;
+  });
   const expenseTotal = computed(() => form.feeList.filter(f => f.feeDirection === FEE_DIRECTION_ENUM.REFUND).reduce((sum, f) => sum + (f.feeAmount || 0), 0));
   const finalAmount = computed(() => incomeTotal.value - expenseTotal.value);
 
@@ -696,27 +726,8 @@
   }
 
   function handleCleaningFeeChange(val: boolean) {
-    if (val && form.cleaningFeeAmount && form.cleaningFeeAmount > 0) {
-      addCleaningFeeRow();
-    } else if (!val) {
-      form.feeList = form.feeList.filter(f => f.feeType !== CHECKOUT_FEE_TYPE_CODE_MAP.CLEANING);
-    }
-  }
-
-  function addCleaningFeeRow() {
-    const today = getTodayStr();
-    const exists = form.feeList.some(f => f.feeType === CHECKOUT_FEE_TYPE_CODE_MAP.CLEANING);
-    if (!exists) {
-      form.feeList.push({
-        feeDirection: FEE_DIRECTION_ENUM.DEDUCTION,
-        feeType: CHECKOUT_FEE_TYPE_CODE_MAP.CLEANING,
-        feeName: "清洁费",
-        feeAmount: form.cleaningFeeAmount || 0,
-        feeStartDate: today,
-        feeEndDate: today,
-        remark: "",
-        feeTypeCascade: null
-      });
+    if (!val) {
+      form.cleaningFeeAmount = null;
     }
   }
 
@@ -841,6 +852,8 @@
     form.checkoutType = detail.checkoutType ?? null;
     form.actualCheckoutDate = detail.actualCheckoutDate ?? "";
     form.breachReason = detail.breachReason ?? "";
+    form.addCleaningFee = detail.addCleaningFee ?? false;
+    form.cleaningFeeAmount = detail.cleaningFeeAmount ?? null;
     form.dueDate = detail.dueDate ?? "";
     form.settlementMethod = detail.settlementMethod ?? SETTLEMENT_METHOD_META.GENERATE_BILL.code;
     form.remark = detail.remark ?? "";
@@ -915,9 +928,31 @@
         ElMessage.warning("请选择结算截止日");
         return;
       }
-      if (form.feeList.length === 0) {
-        ElMessage.warning("请至少添加一条费用明细");
+      if (!form.feeList.length && !form.addCleaningFee) {
+        ElMessage.warning("请至少添加一条费用明细或加收房屋清洁费");
         return;
+      }
+      if (form.addCleaningFee && (!form.cleaningFeeAmount || Number(form.cleaningFeeAmount) <= 0)) {
+        ElMessage.warning("请输入有效的房屋清洁费金额");
+        return;
+      }
+      for (const fee of form.feeList) {
+        if (!fee.feeType) {
+          ElMessage.warning("请选择费用类型");
+          return;
+        }
+        if (fee.feeType === LEASE_BILL_TYPE_META.OTHER_FEE.code && !fee.dictDataId) {
+          ElMessage.warning("请选择其他费用类型");
+          return;
+        }
+        if (!fee.feeAmount || Number(fee.feeAmount) <= 0) {
+          ElMessage.warning("费用金额必须大于0");
+          return;
+        }
+        if (!fee.feeStartDate || !fee.feeEndDate) {
+          ElMessage.warning("请完善费用周期");
+          return;
+        }
       }
       if (form.settlementMethod === SETTLEMENT_METHOD_META.BAD_DEBT.code && !form.badDebtReason?.trim()) {
         ElMessage.warning("标记坏账时必须填写坏账原因");
@@ -931,6 +966,8 @@
         const submitData = {
           ...form,
           checkoutType: form.checkoutType as number,
+          addCleaningFee: form.addCleaningFee,
+          cleaningFeeAmount: form.addCleaningFee ? form.cleaningFeeAmount : undefined,
           attachmentIds,
           remark: form.settlementMethod === SETTLEMENT_METHOD_META.BAD_DEBT.code ? `${form.remark || ""}${form.remark ? "\n" : ""}【坏账原因】${form.badDebtReason}` : form.remark,
           feeList: form.feeList.map(f => ({

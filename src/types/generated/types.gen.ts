@@ -4390,7 +4390,10 @@ export type LeaseCheckoutDto = {
 export type LeaseCheckoutFeeDto = {
     id?: string;
     feeDirection: number;
-    feeType: number;
+    /**
+     * 费用类型
+     */
+    feeType: 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'RELEASE' | 'DEPOSIT_CARRY_IN' | 'DEPOSIT_CARRY_OUT';
     dictDataId?: string;
     feeName?: string;
     feeAmount: number;
@@ -4405,7 +4408,10 @@ export type LeaseCheckoutFeeVo = {
     checkoutId?: string;
     feeDirection?: number;
     feeDirectionName?: string;
-    feeType?: number;
+    /**
+     * 费用类型
+     */
+    feeType?: 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'RELEASE' | 'DEPOSIT_CARRY_IN' | 'DEPOSIT_CARRY_OUT';
     feeTypeName?: string;
     dictDataId?: string;
     feeName?: string;
@@ -4438,6 +4444,8 @@ export type LeaseCheckoutVo = {
     incomeAmount?: number;
     expenseAmount?: number;
     finalAmount?: number;
+    addCleaningFee?: boolean;
+    cleaningFeeAmount?: number;
     dueDate?: string;
     settlementMethod?: number;
     settlementMethodName?: string;
@@ -10859,7 +10867,7 @@ export type LeaseFirstBillDayEnum = 'FOLLOW_CONTRACT_START' | 'FOLLOW_CONTRACT_C
 
 export type LeaseRentDueTypeEnum = 'EARLY' | 'FIXED' | 'LATE';
 
-export type LeaseStatusEnum = 'PENDING_APPROVAL' | 'TO_SIGN' | 'EFFECTIVE' | 'TERMINATED' | 'CANCELLED';
+export type LeaseStatusEnum = 'PENDING_APPROVAL' | 'TO_SIGN' | 'EFFECTIVE' | 'TERMINATED' | 'VOIDED';
 
 /**
  * 业主账户流水业务类型枚举
