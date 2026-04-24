@@ -636,8 +636,7 @@
   const finalAmount = computed(() => incomeTotal.value - expenseTotal.value);
 
   const canEdit = computed(() => {
-    if (!checkoutDetail.value) return true;
-    return checkoutDetail.value.status === CHECKOUT_STATUS_META.DRAFT.code || checkoutDetail.value.approvalStatus === APPROVAL_STATUS_META.REJECTED.code;
+    return true;
   });
 
   function handleScroll() {

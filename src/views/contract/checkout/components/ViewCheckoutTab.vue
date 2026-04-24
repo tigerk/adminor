@@ -149,8 +149,8 @@
   const { openLeaseCheckoutDialogByLeaseId } = useCheckoutDialog();
 
   const canEdit = computed(() => {
-    if (!props.checkoutDetail) return false;
-    return props.checkoutDetail.status === CHECKOUT_STATUS_META.DRAFT.code || props.checkoutDetail.approvalStatus === APPROVAL_STATUS_META.REJECTED.code;
+    return props.checkoutDetail;
+
   });
 
   const cleaningFeeText = computed(() => {
