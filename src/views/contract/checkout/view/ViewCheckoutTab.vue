@@ -93,16 +93,12 @@
             <span class="info-item__value info-item__value--date">{{ checkoutDetail.createAt || "—" }}</span>
           </div>
           <div class="info-item info-item--placeholder" />
-          <div class="info-item info-item--full">
-            <span class="info-item__label">退租原因</span>
-            <span class="info-item__value">{{ checkoutDetail.remark || "—" }}</span>
-          </div>
           <div v-if="checkoutDetail.breachReason" class="info-item info-item--full">
-            <span class="info-item__label info-item__label--danger">违约原因</span>
+            <span class="info-item__label info-item__label--danger">解约原因</span>
             <span class="info-item__value info-item__value--danger">{{ checkoutDetail.breachReason }}</span>
           </div>
-          <div v-if="checkoutDetail.remark" class="info-item info-item--full info-item--last">
-            <span class="info-item__label">备注</span>
+          <div class="info-item info-item--full info-item--last">
+            <span class="info-item__label">退租备注</span>
             <span class="info-item__value info-item__value--muted">{{ checkoutDetail.remark }}</span>
           </div>
         </div>
@@ -497,14 +493,21 @@
     &--full {
       grid-column: 1 / -1;
       flex-direction: row;
-      align-items: flex-start;
+      align-items: center;
       border-right: none;
-      gap: 0;
+      gap: 12px;
 
       .info-item__label {
         width: 80px;
         min-width: 80px;
-        padding-top: 2px;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .info-item__value {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
       }
     }
 
