@@ -462,9 +462,14 @@
 
   const handleCheckoutUpdated = async () => {
     await fetchCheckoutDetail();
+    if (!checkoutDetail.value) {
+      localFormInline.value.status = LEASE_STATUS_MAP.EFFECTIVE.code;
+      (localFormInline.value as any).checkOutStatus = 0;
+    }
     if (activeTab.value === "operateLog") {
       await fetchOperateLogs();
     }
+    emit("lease-updated", localFormInline.value.leaseId);
   };
 
   watch(
@@ -641,7 +646,12 @@
 
   const allowEdit = (status: number) => {
     if (props.readonly) return false;
-    return !(status === LEASE_STATUS_MAP.TERMINATED.code || status === LEASE_STATUS_MAP.EFFECTIVE.code);
+    return !(status === LEASE_STATUS_MAP.TERMINATED.code || status === LEASE_STATUS_MAP.EFFECTIVE.code || status === LEASE_STATUS_MAP.VOIDED.code);
+  };
+
+  const allowEditTenantInfo = (status: number) => {
+    if (props.readonly) return false;
+    return !(status === LEASE_STATUS_MAP.TERMINATED.code || status === LEASE_STATUS_MAP.VOIDED.code);
   };
 
   const editLease = (row: LeaseDetailVo) => {
@@ -674,7 +684,7 @@
   };
 
   const editTenantInfo = (row: LeaseDetailVo) => {
-    if (!allowEdit(row.status)) {
+    if (!allowEditTenantInfo(row.status)) {
       message("已退租或作废租客不能修改", { type: "warning" });
       return;
     }
