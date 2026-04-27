@@ -5,7 +5,7 @@ import { computed, h, onMounted, reactive, ref, toRaw } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { createTenant, deleteTenant, getLeaseDetail, getTenantList, getTenantTotal, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
+import { createTenant, deleteTenant, getLeaseDetail, getTenantList, getTenantTotal, renewLease, updateTenant, updateTenantStatus } from "@/api/contract/tenant";
 import { getOptionByCode, LEASE_CONTRACT_NATURE_STATUS_MAP, LEASE_SIGN_STATUS_OPTIONS, LEASE_STATUS_OPTIONS } from "@/constants";
 import { usePublicHooks } from "@/utils/publicHooks";
 import { ElMessageBox } from "element-plus";
@@ -395,7 +395,7 @@ function useTenant() {
 
         getFormRuleRef.validate(valid => {
           if (valid) {
-            const apiCall = curData?.lease?.id == null ? createTenant : updateTenant;
+            const apiCall = curData?.lease?.parentLeaseId ? renewLease : curData?.lease?.id == null ? createTenant : updateTenant;
 
             // 处理 imageList 字段，图片对象时，提取 url 字段，字符串时，直接添加
             curData.tenantPersonal.idCardBackList = convertImage2string(curData.tenantPersonal.idCardBackList);
@@ -658,7 +658,7 @@ function useTenant() {
       rentPrice: vo.rentPrice,
       depositMonths: vo.depositMonths,
       paymentMonths: vo.paymentMonths,
-      // firstBillDay: vo.firstBillDay,
+      firstBillDay: vo.firstBillDay,
       rentDueType: vo.rentDueType,
       rentDueDay: vo.rentDueDay,
       rentDueOffsetDays: vo.rentDueOffsetDays,

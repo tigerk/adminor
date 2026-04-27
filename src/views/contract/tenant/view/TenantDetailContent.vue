@@ -525,6 +525,7 @@
       CREATE: "新增",
       SAVE: "保存",
       UPDATE: "修改",
+      RENEW: "续约",
       CANCEL: "取消",
       PAY: "付款"
     };

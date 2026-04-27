@@ -277,7 +277,14 @@
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="签约类型" prop="lease.contractNature">
-                <el-select v-model="formInline.lease.contractNature" default-first-option placeholder="签约类型" class="w-full" clearable>
+                <el-select
+                  v-model="formInline.lease.contractNature"
+                  default-first-option
+                  placeholder="签约类型"
+                  class="w-full"
+                  :clearable="!isRenewForm"
+                  :disabled="isRenewForm"
+                >
                   <el-option v-for="item in LEASE_CONTRACT_NATURE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </el-form-item>
@@ -426,6 +433,7 @@
     TENANT_TYPE_OPTIONS
   } from "@/constants";
   import type { TenantsCreateFormProps } from "@/types";
+  import { ContractNatureEnumMeta } from "@/types/generated/enum.meta";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/upload/UploadImage.vue";
   import { Avatar, CreditCard, Files, Picture, Plus, Postcard } from "@element-plus/icons-vue";
@@ -516,6 +524,11 @@
 
   const salesmanList = ref<any[]>([]);
   const contractTemplateList = ref<any[]>([]);
+  const renewContractNature = ContractNatureEnumMeta.RENEWAL.code;
+  const isRenewForm = computed(() => Boolean(formInline.lease?.parentLeaseId));
+  if (isRenewForm.value) {
+    formInline.lease.contractNature = renewContractNature;
+  }
 
   // 常量选项
   const genderOptions = [...GENDER_OPTIONS];
@@ -570,6 +583,10 @@
 
   // 组件挂载时执行
   onMounted(() => {
+    if (isRenewForm.value) {
+      formInline.lease.contractNature = renewContractNature;
+    }
+
     // 初始化房源选择
     initRoomSelection();
 
@@ -1411,8 +1428,8 @@
   }
 
   .upload-group {
-    background: #fafafa;
-    border: 1px solid #f0f0f0;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
     border-radius: 10px;
     padding: 16px;
   }
@@ -1423,7 +1440,7 @@
     gap: 6px;
     font-size: 13px;
     font-weight: 600;
-    color: #555;
+    color: var(--el-text-color-primary);
     margin-bottom: 14px;
 
     .el-icon {
@@ -1451,7 +1468,7 @@
     justify-content: center;
     font-size: 12px;
     font-weight: 500;
-    color: #666;
+    color: var(--el-text-color-regular);
     margin-top: 6px;
 
     .el-icon {

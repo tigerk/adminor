@@ -164,7 +164,14 @@
               <span class="n-warn">¥{{ moneyText(item.unpaidAmount) }}</span>
             </div>
             <div class="fc fc-collect">
-              <el-input-number v-model="item.collectAmount" :min="0" :max="Number(item.unpaidAmount ?? 0)" :precision="2" controls-position="right" class="collect-num" />
+              <el-input-number
+                v-model="item.collectAmount"
+                :min="collectAmountMin(item)"
+                :max="collectAmountMax(item)"
+                :precision="2"
+                controls-position="right"
+                class="collect-num"
+              />
             </div>
           </div>
 
@@ -176,17 +183,17 @@
 
         <div class="alloc-footer">
           <div class="af-item">
-            <span class="af-label">本次合计</span>
+            <span class="af-label">{{ isRefundBill ? "本次退款" : "本次合计" }}</span>
             <strong class="af-val">¥{{ moneyText(allocatedAmount) }}</strong>
           </div>
           <div class="af-sep" />
           <div class="af-item">
-            <span class="af-label">收款后累计已收</span>
+            <span class="af-label">{{ isRefundBill ? "退款后累计已退" : "收款后累计已收" }}</span>
             <strong class="af-val">¥{{ moneyText(nextPaidAmount) }}</strong>
           </div>
           <div class="af-sep" />
           <div class="af-item">
-            <span class="af-label">收款后待收</span>
+            <span class="af-label">{{ isRefundBill ? "退款后待退" : "收款后待收" }}</span>
             <strong class="af-val" :class="nextUnpaidAmount > 0 ? 'af-val--warn' : 'af-val--ok'">¥{{ moneyText(nextUnpaidAmount) }}</strong>
           </div>
         </div>
@@ -292,10 +299,17 @@
 
   const allocatedAmount = computed(() => allocationList.value.reduce((s, i) => s + Number(i.collectAmount ?? 0), 0));
   const nextPaidAmount = computed(() => Number(props.bill.paidAmount ?? 0) + allocatedAmount.value);
-  const nextUnpaidAmount = computed(() => Math.max(Number(props.bill.totalAmount ?? 0) - nextPaidAmount.value, 0));
+  const nextUnpaidAmount = computed(() => Number(props.bill.totalAmount ?? 0) - nextPaidAmount.value);
+  const isRefundBill = computed(() => Number(props.bill.totalAmount ?? 0) < 0 || Number(props.bill.unpaidAmount ?? 0) < 0);
   const resolvedPayStatus = computed(() => {
+    const total = Number(props.bill.totalAmount ?? 0);
+    if (total < 0) {
+      if (nextPaidAmount.value === 0) return 0;
+      if (nextPaidAmount.value <= total) return 2;
+      return 1;
+    }
     if (nextPaidAmount.value <= 0) return 0;
-    if (nextPaidAmount.value >= Number(props.bill.totalAmount ?? 0)) return 2;
+    if (nextPaidAmount.value >= total) return 2;
     return 1;
   });
   const isOverdue = computed(() => {
@@ -304,8 +318,8 @@
   });
   const displayStatusText = computed(() => ["未支付", "部分支付", "已支付"][resolvedPayStatus.value]);
   const collectProgressPercent = computed(() => {
-    const t = Number(props.bill.totalAmount ?? 0);
-    return t <= 0 ? 0 : Number(Math.min((nextPaidAmount.value / t) * 100, 100).toFixed(2));
+    const t = Math.abs(Number(props.bill.totalAmount ?? 0));
+    return t <= 0 ? 0 : Number(Math.min((Math.abs(nextPaidAmount.value) / t) * 100, 100).toFixed(2));
   });
   const collectProgressText = computed(() => `${collectProgressPercent.value}%`);
   const collectProgressColor = computed(() => ["var(--collect-text-placeholder)", "var(--collect-warning)", "var(--collect-success)"][resolvedPayStatus.value]);
@@ -322,7 +336,7 @@
 
   const syncItemsToForm = () => {
     form.items = allocationList.value
-      .filter(i => Number(i.collectAmount ?? 0) > 0)
+      .filter(i => Number(i.collectAmount ?? 0) !== 0)
       .map<LeaseBillCollectItemDto>(i => ({
         leaseBillFeeId: i.leaseBillFeeId,
         amount: Number(i.collectAmount ?? 0)
@@ -361,6 +375,14 @@
     allocationList.value.forEach(i => {
       i.collectAmount = 0;
     });
+  const collectAmountMin = (item: AllocationItem) => {
+    const unpaidAmount = Number(item.unpaidAmount ?? 0);
+    return unpaidAmount < 0 ? unpaidAmount : 0;
+  };
+  const collectAmountMax = (item: AllocationItem) => {
+    const unpaidAmount = Number(item.unpaidAmount ?? 0);
+    return unpaidAmount < 0 ? 0 : unpaidAmount;
+  };
 
   const feeTypeText = (t?: string) => (t === "RENTAL" ? "租金" : t === "DEPOSIT" ? "押金" : "其他");
   const moneyText = (v?: number) => Number(v ?? 0).toFixed(2);

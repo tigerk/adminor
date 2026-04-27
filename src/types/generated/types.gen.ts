@@ -3786,6 +3786,14 @@ export type BizOperateLogVo = {
      */
     remark?: string;
     /**
+     * 操作前快照
+     */
+    beforeSnapshot?: string;
+    /**
+     * 操作后快照
+     */
+    afterSnapshot?: string;
+    /**
      * 扩展数据
      */
     extraData?: string;
@@ -9001,6 +9009,10 @@ export type LeaseDetailVo = {
      */
     paymentMonths?: number;
     /**
+     * 首期账单收租日
+     */
+    firstBillDay?: number;
+    /**
      * 租赁开始时间
      */
     leaseStart?: string;
@@ -10801,9 +10813,14 @@ export type MultiApproveEnum = 'OR_SIGN' | 'AND_SIGN';
 export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
 
 /**
+ * 业务日志来源类型枚举
+ */
+export type BizOperateSourceTypeEnum = 'NONE' | 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_PAYABLE_BILL_PAYMENT' | 'OWNER_SETTLEMENT_BILL';
+
+/**
  * 业务操作类型枚举
  */
-export type BizOperateTypeEnum = 'CREATE' | 'SAVE' | 'UPDATE' | 'CANCEL' | 'PAY';
+export type BizOperateTypeEnum = 'CREATE' | 'SAVE' | 'UPDATE' | 'RENEW' | 'CANCEL' | 'PAY';
 
 export type BookingStatusEnum = 'BOOKING' | 'CONTRACTED' | 'TENANT_DEFAULTED' | 'OWNER_DEFAULTED' | 'CANCELLED_EXPIRED';
 
