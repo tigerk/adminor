@@ -9,7 +9,7 @@
       </template>
       <template #extra>
         <div class="tenant-detail-page__actions">
-          <el-button type="primary" plain :disabled="!canEdit" @click="detailContentRef?.editTenantInfo(detail!)">修改租客信息</el-button>
+          <el-button type="primary" plain @click="detailContentRef?.editTenantInfo(detail!)">修改租客信息</el-button>
           <el-button type="primary" :disabled="!canEdit" @click="detailContentRef?.editLease(detail!)">修改租约</el-button>
         </div>
       </template>

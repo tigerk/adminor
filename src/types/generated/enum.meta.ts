@@ -243,12 +243,15 @@ export const MultiApproveEnumMeta = {
 } as const;
 
 export const BizOperateBizTypeEnumMeta = {
+  LEASE: {"value":"LEASE","code":"LEASE","name":"租客合同"},
+  LEASE_CHECKOUT: {"value":"LEASE_CHECKOUT","code":"LEASE_CHECKOUT","name":"租客退租单"},
   OWNER_PAYABLE_BILL: {"value":"OWNER_PAYABLE_BILL","code":"OWNER_PAYABLE_BILL","name":"包租业主应付单"},
   OWNER_SETTLEMENT_BILL: {"value":"OWNER_SETTLEMENT_BILL","code":"OWNER_SETTLEMENT_BILL","name":"轻托管业主结算单"}
 } as const;
 
 export const BizOperateTypeEnumMeta = {
   CREATE: {"value":"CREATE","code":"CREATE","name":"新增"},
+  SAVE: {"value":"SAVE","code":"SAVE","name":"保存"},
   UPDATE: {"value":"UPDATE","code":"UPDATE","name":"修改"},
   CANCEL: {"value":"CANCEL","code":"CANCEL","name":"作废"},
   PAY: {"value":"PAY","code":"PAY","name":"付款"}

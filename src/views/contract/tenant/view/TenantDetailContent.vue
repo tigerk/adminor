@@ -326,7 +326,38 @@
               <span>退租单 {{checkoutTabDisabled? "（暂无）": ""}}</span>
             </el-space>
           </template>
-          <ViewCheckoutTab :loading="checkoutLoading" :checkout-detail="checkoutDetail" @updated="fetchCheckoutDetail" />
+          <ViewCheckoutTab :loading="checkoutLoading" :checkout-detail="checkoutDetail" @updated="handleCheckoutUpdated" />
+        </el-tab-pane>
+
+        <el-tab-pane name="operateLog">
+          <template #label>
+            <el-space class="tab-label">
+              <el-icon><Clock /></el-icon>
+              <span>操作记录</span>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <div v-loading="operateLogLoading" class="operate-log-panel">
+              <el-timeline v-if="operateLogList.length" class="operate-log-timeline">
+                <el-timeline-item v-for="item in operateLogList" :key="item.id" :timestamp="item.createAt || '—'" placement="top">
+                  <div class="operate-log-card">
+                    <div class="operate-log-card__main">
+                      <div class="operate-log-card__title">
+                        <span>{{ item.operateDesc || "业务操作" }}</span>
+                        <el-tag size="small" effect="light">{{ operateTypeText(item.operateType) }}</el-tag>
+                      </div>
+                      <div v-if="item.remark" class="operate-log-card__remark">{{ item.remark }}</div>
+                    </div>
+                    <div class="operate-log-card__operator">
+                      <span>操作人</span>
+                      <strong>{{ item.operatorName || "—" }}</strong>
+                    </div>
+                  </div>
+                </el-timeline-item>
+              </el-timeline>
+              <el-empty v-else description="暂无操作记录" :image-size="100" />
+            </div>
+          </div>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -335,7 +366,7 @@
 
 <script setup lang="ts">
   import { computed, h, ref, watch } from "vue";
-  import { LeaseCheckoutVo, LeaseDetailVo, TenantsCreateFormProps } from "@/types";
+  import { BizOperateLogVo, LeaseCheckoutVo, LeaseDetailVo, TenantsCreateFormProps } from "@/types";
   import {
     getOptionByCode,
     ID_TYPE_OPTIONS,
@@ -345,10 +376,10 @@
     LEASE_SIGN_STATUS_OPTIONS,
     LEASE_STATUS_MAP
   } from "@/constants";
-  import { Document, Files, House, Money, User } from "@element-plus/icons-vue";
+  import { Clock, Document, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
-  import { updateTenantInfo } from "@/api/contract/tenant";
+  import { getLeaseOperateLogList, updateTenantInfo } from "@/api/contract/tenant";
   import { getCheckoutByLeaseId } from "@/api/contract/checkout";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
@@ -392,6 +423,8 @@
   const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
   const checkoutLoading = ref(false);
   const checkoutTabDisabled = computed(() => !checkoutLoading.value && !checkoutDetail.value);
+  const operateLogList = ref<BizOperateLogVo[]>([]);
+  const operateLogLoading = ref(false);
 
   const fetchCheckoutDetail = async () => {
     const leaseId = localFormInline.value.leaseId;
@@ -410,10 +443,35 @@
     }
   };
 
+  const fetchOperateLogs = async () => {
+    const leaseId = localFormInline.value.leaseId;
+    if (!leaseId) {
+      operateLogList.value = [];
+      return;
+    }
+    operateLogLoading.value = true;
+    try {
+      const res = await getLeaseOperateLogList(leaseId);
+      operateLogList.value = res.code === 0 ? res.data || [] : [];
+    } catch {
+      operateLogList.value = [];
+    } finally {
+      operateLogLoading.value = false;
+    }
+  };
+
+  const handleCheckoutUpdated = async () => {
+    await fetchCheckoutDetail();
+    if (activeTab.value === "operateLog") {
+      await fetchOperateLogs();
+    }
+  };
+
   watch(
     () => activeTab.value,
     tab => {
       if (tab === "checkout") fetchCheckoutDetail();
+      if (tab === "operateLog") fetchOperateLogs();
     }
   );
 
@@ -421,9 +479,25 @@
     () => localFormInline.value.leaseId,
     () => {
       fetchCheckoutDetail();
+      if (activeTab.value === "operateLog") {
+        fetchOperateLogs();
+      } else {
+        operateLogList.value = [];
+      }
     },
     { immediate: true }
   );
+
+  const operateTypeText = (type?: string) => {
+    const map: Record<string, string> = {
+      CREATE: "新增",
+      SAVE: "保存",
+      UPDATE: "修改",
+      CANCEL: "取消",
+      PAY: "付款"
+    };
+    return type ? map[type] || type : "操作";
+  };
 
   const getTotalArea = () => {
     if (!localFormInline.value.roomList) return 0;
@@ -642,6 +716,9 @@
           const resp = await updateTenantInfo(payload);
           if (resp.code === 0) {
             message("租客信息修改成功", { type: "success" });
+            if (activeTab.value === "operateLog") {
+              await fetchOperateLogs();
+            }
             emit("lease-updated", row.leaseId);
             done();
           } else {
@@ -914,6 +991,65 @@
             font-size: 18px;
             font-weight: 600;
             color: #f56c6c;
+          }
+        }
+      }
+
+      .operate-log-panel {
+        min-height: 220px;
+        padding: 4px 2px;
+      }
+
+      .operate-log-timeline {
+        padding: 8px 4px 0;
+
+        :deep(.el-timeline-item__timestamp) {
+          color: var(--el-text-color-secondary);
+          font-size: 12px;
+        }
+      }
+
+      .operate-log-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 14px;
+        background: var(--el-bg-color);
+        border: 1px solid var(--el-border-color-light);
+        border-radius: 10px;
+
+        &__main {
+          min-width: 0;
+        }
+
+        &__title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--el-text-color-primary);
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        &__remark {
+          margin-top: 6px;
+          color: var(--el-text-color-secondary);
+          font-size: 13px;
+          line-height: 1.5;
+        }
+
+        &__operator {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-shrink: 0;
+          color: var(--el-text-color-secondary);
+          font-size: 13px;
+
+          strong {
+            color: var(--el-text-color-primary);
+            font-weight: 600;
           }
         }
       }

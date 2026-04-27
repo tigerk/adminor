@@ -4350,6 +4350,10 @@ export type LeaseCheckoutQueryDto = {
     checkoutType?: number;
     status?: number;
     approvalStatus?: number;
+    /**
+     * 取消原因
+     */
+    cancelReason?: string;
 };
 
 export type LeaseCheckoutDto = {
@@ -4463,6 +4467,10 @@ export type LeaseCheckoutVo = {
     payAt?: string;
     feeList?: Array<LeaseCheckoutFeeVo>;
     remark?: string;
+    cancelReason?: string;
+    cancelBy?: string;
+    cancelByName?: string;
+    cancelAt?: string;
     attachmentUrls?: Array<string>;
     payeeName?: string;
     payeePhone?: string;
@@ -8507,6 +8515,12 @@ export type TenantInfoUpdateDto = {
     tenantCompany?: TenantCompanyDto;
 };
 
+export type ResponseResultListBizOperateLogVo = {
+    code?: number;
+    message?: string;
+    data?: Array<BizOperateLogVo>;
+};
+
 export type LeaseListVo = {
     /**
      * 租约 ID
@@ -10784,12 +10798,12 @@ export type MultiApproveEnum = 'OR_SIGN' | 'AND_SIGN';
 /**
  * 业务日志业务类型枚举
  */
-export type BizOperateBizTypeEnum = 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
+export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
 
 /**
  * 业务操作类型枚举
  */
-export type BizOperateTypeEnum = 'CREATE' | 'UPDATE' | 'CANCEL' | 'PAY';
+export type BizOperateTypeEnum = 'CREATE' | 'SAVE' | 'UPDATE' | 'CANCEL' | 'PAY';
 
 export type BookingStatusEnum = 'BOOKING' | 'CONTRACTED' | 'TENANT_DEFAULTED' | 'OWNER_DEFAULTED' | 'CANCELLED_EXPIRED';
 
@@ -13459,6 +13473,24 @@ export type RenewResponses = {
 };
 
 export type RenewResponse = RenewResponses[keyof RenewResponses];
+
+export type GetLeaseOperateLogListData = {
+    body: LeaseQueryDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/operate-log/list';
+};
+
+export type GetLeaseOperateLogListResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListBizOperateLogVo;
+};
+
+export type GetLeaseOperateLogListResponse = GetLeaseOperateLogListResponses[keyof GetLeaseOperateLogListResponses];
 
 export type GetLeaseListData = {
     body: LeaseQueryDto;
