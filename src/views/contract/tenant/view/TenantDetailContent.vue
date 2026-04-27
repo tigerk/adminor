@@ -92,31 +92,32 @@
                 </template>
               </el-descriptions>
 
-              <div class="photo-wall">
-                <div
-                  v-for="(url, index) in [
-                    ...localFormInline.tenantPersonal?.idCardBackList,
-                    ...localFormInline.tenantPersonal?.idCardFrontList,
-                    ...localFormInline.tenantPersonal?.idCardInHandList,
-                    ...localFormInline.tenantPersonal?.otherImageList
-                  ]"
-                  :key="index"
-                  class="photo-item"
-                >
-                  <el-image
-                    style="width: 100px; height: 100px; border-radius: 10px"
-                    :src="url"
-                    :zoom-rate="1.2"
-                    :max-scale="7"
-                    :min-scale="0.2"
-                    :preview-src-list="[url]"
-                    :initial-index="index"
-                    fit="cover"
-                    loading="lazy"
-                    preview-teleported
-                  />
+              <div v-if="hasPersonalPhotos" class="photo-wall photo-wall--grouped">
+                <div v-for="group in personalPhotoGroups" :key="group.key" class="photo-group">
+                  <div class="photo-group__title">
+                    <span>{{ group.label }}</span>
+                    <el-tag size="small" type="info" effect="plain">{{ group.urls.length }} 张</el-tag>
+                  </div>
+                  <div class="photo-group__list">
+                    <div v-for="(url, index) in group.urls" :key="`${group.key}-${url}-${index}`" class="photo-item">
+                      <el-image
+                        style="width: 100px; height: 100px; border-radius: 10px"
+                        :src="url"
+                        :zoom-rate="1.2"
+                        :max-scale="7"
+                        :min-scale="0.2"
+                        :preview-src-list="group.urls"
+                        :initial-index="index"
+                        fit="cover"
+                        loading="lazy"
+                        preview-teleported
+                      />
+                      <div class="photo-item__label">{{ group.label }}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
+              <el-empty v-else description="暂无证件照片" :image-size="72" />
             </section>
 
             <section class="info-section">
@@ -323,7 +324,7 @@
           <template #label>
             <el-space class="tab-label">
               <el-icon><Money /></el-icon>
-              <span>退租单 {{checkoutTabDisabled? "（暂无）": ""}}</span>
+              <span>退租单 {{ checkoutTabDisabled ? "（暂无）" : "" }}</span>
             </el-space>
           </template>
           <ViewCheckoutTab :loading="checkoutLoading" :checkout-detail="checkoutDetail" @updated="handleCheckoutUpdated" />
@@ -503,6 +504,18 @@
     };
     return type ? map[type] || type : "操作";
   };
+
+  const personalPhotoGroups = computed(() => {
+    const tenantPersonal = localFormInline.value.tenantPersonal;
+    return [
+      { key: "idCardFront", label: "身份证人像面", urls: tenantPersonal?.idCardFrontList || [] },
+      { key: "idCardBack", label: "身份证国徽面", urls: tenantPersonal?.idCardBackList || [] },
+      { key: "idCardInHand", label: "手持身份证", urls: tenantPersonal?.idCardInHandList || [] },
+      { key: "otherImage", label: "其他照片", urls: tenantPersonal?.otherImageList || [] }
+    ].filter(item => item.urls.length > 0);
+  });
+
+  const hasPersonalPhotos = computed(() => personalPhotoGroups.value.length > 0);
 
   const getTotalArea = () => {
     if (!localFormInline.value.roomList) return 0;
@@ -913,15 +926,63 @@
       .photo-wall {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 4px;
+        gap: 8px;
+        margin-top: 8px;
+
+        &--grouped {
+          align-items: flex-start;
+        }
+      }
+
+      .photo-group {
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        min-width: 0;
+
+        &__title {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 6px;
+          color: var(--el-text-color-primary);
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        &__list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
       }
 
       .photo-item {
-        padding: 6px;
+        position: relative;
+        padding: 4px;
         background: var(--el-fill-color-light);
         border: 1px solid var(--el-border-color-lighter);
-        border-radius: 10px;
+        border-radius: 9px;
+        line-height: 0;
+
+        &__label {
+          position: absolute;
+          left: 8px;
+          bottom: 8px;
+          max-width: calc(100% - 16px);
+          padding: 3px 6px;
+          overflow: hidden;
+          color: #fff;
+          font-size: 11px;
+          font-weight: 600;
+          line-height: 1;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          background: rgba(0, 0, 0, 0.55);
+          border-radius: 999px;
+          pointer-events: none;
+        }
       }
 
       .mate-table,
