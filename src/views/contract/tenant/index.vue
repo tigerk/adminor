@@ -211,18 +211,27 @@
     syncListQuery();
   }
 
-  const handleConfirmDelete = row => {
-    ElMessageBox.confirm("确认作废该租客吗？", "作废", {
-      confirmButtonText: "确定",
+  const handleConfirmDelete = (row: LeaseListVo) => {
+    if (row.signStatus === 1) {
+      message("租客已签字，不能直接作废；请走租客退租流程", { type: "warning" });
+      return;
+    }
+
+    ElMessageBox.prompt("作废租客会释放房源并终止该租约，请填写作废原因。", "作废租客", {
+      confirmButtonText: "确认作废",
       cancelButtonText: "取消",
-      type: "warning"
+      type: "warning",
+      inputType: "textarea",
+      inputPlaceholder: "请输入作废原因",
+      inputValidator: value => Boolean(value?.trim()),
+      inputErrorMessage: "请输入作废原因"
     })
-      .then(() => handleCancelTenant(row))
+      .then(({ value }) => handleCancelTenant(row, value.trim()))
       .catch(() => {});
   };
 
-  const handleCancelTenant = (row: LeaseListVo) => {
-    cancelTenant({ leaseId: row.leaseId })
+  const handleCancelTenant = (row: LeaseListVo, cancelReason: string) => {
+    cancelTenant({ leaseId: row.leaseId, cancelReason })
       .then(resp => {
         if (resp.code == 0) {
           message("作废租客成功");
