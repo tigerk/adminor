@@ -306,7 +306,7 @@ export const CheckoutStatusEnumMeta = {
   DRAFT: {"value":"DRAFT","code":0,"name":"草稿"},
   PENDING: {"value":"PENDING","code":1,"name":"待确认"},
   COMPLETED: {"value":"COMPLETED","code":2,"name":"已完成"},
-  VOIDED: {"value":"VOIDED","code":3,"name":"已作废"}
+  CANCELLED: {"value":"CANCELLED","code":3,"name":"已取消"}
 } as const;
 
 export const CheckoutTypeEnumMeta = {

@@ -1,11 +1,4 @@
-import {
-  BizApprovalStatusEnumMeta,
-  CheckoutSettlementMethodEnumMeta,
-  CheckoutStatusEnumMeta,
-  CheckoutTypeEnumMeta,
-  FeeDirectionEnumMeta,
-  LeaseBillTypeEnumMeta
-} from "@/types/generated/enum.meta";
+import { BizApprovalStatusEnumMeta, CheckoutSettlementMethodEnumMeta, CheckoutStatusEnumMeta, CheckoutTypeEnumMeta, FeeDirectionEnumMeta, LeaseBillTypeEnumMeta } from "@/types/generated/enum.meta";
 
 export const CHECKOUT_TYPE_META = CheckoutTypeEnumMeta;
 
@@ -20,7 +13,7 @@ export const CHECKOUT_STATUS_OPTIONS = [
   { label: CHECKOUT_STATUS_META.DRAFT.name, value: CHECKOUT_STATUS_META.DRAFT.code },
   { label: CHECKOUT_STATUS_META.PENDING.name, value: CHECKOUT_STATUS_META.PENDING.code },
   { label: CHECKOUT_STATUS_META.COMPLETED.name, value: CHECKOUT_STATUS_META.COMPLETED.code },
-  { label: CHECKOUT_STATUS_META.VOIDED.name, value: CHECKOUT_STATUS_META.VOIDED.code }
+  { label: CHECKOUT_STATUS_META.CANCELLED.name, value: CHECKOUT_STATUS_META.CANCELLED.code }
 ] as const;
 
 export const FEE_DIRECTION_ENUM = FeeDirectionEnumMeta;
