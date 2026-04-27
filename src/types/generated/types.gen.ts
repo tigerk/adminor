@@ -10803,7 +10803,7 @@ export type CheckoutPaymentStatusEnum = 'UNPAID' | 'PAID' | 'NO_PAYMENT_REQUIRED
 
 export type CheckoutSettlementMethodEnum = 'GENERATE_BILL' | 'OFFLINE_PAYMENT' | 'APPLY_PAYMENT' | 'BAD_DEBT';
 
-export type CheckoutStatusEnum = 'DRAFT' | 'PENDING' | 'COMPLETED' | 'CANCELLED';
+export type CheckoutStatusEnum = 'DRAFT' | 'PENDING' | 'COMPLETED' | 'VOIDED';
 
 export type CheckoutTypeEnum = 'NORMAL' | 'BREACH';
 
