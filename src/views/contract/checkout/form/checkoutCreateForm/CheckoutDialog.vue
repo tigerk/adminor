@@ -402,6 +402,7 @@
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import { getDictDataByParentCode } from "@/api/sys/dict";
   import UploadImage from "@/components/upload/UploadImage.vue";
+  import { message } from "@/utils/message";
 
   // ──────────────────────────────────────────────
   // 注意：此组件不再自己管理 el-dialog，
@@ -983,14 +984,19 @@
           }))
         };
         const res = await saveCheckout(submitData);
-        form.id = res.data;
-        ElMessage.success("退租并结账提交成功");
-        emit("success");
-        // 由 addDialog 的 beforeSure 传入 done，关闭弹框
-        done?.();
+        if (res.code === 0) {
+          form.id = res.data;
+          form.id = res.data;
+          message("退租并结账提交成功", { type: "success" });
+          emit("success");
+          // 由 addDialog 的 beforeSure 传入 done，关闭弹框
+          done?.();
+        } else {
+          message(res.message, { type: "error" });
+        }
       } catch (error) {
         console.error("提交失败", error);
-        ElMessage.error("提交失败");
+        message("提交失败", { type: "error" });
       } finally {
         submitting.value = false;
       }

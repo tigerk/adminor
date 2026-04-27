@@ -18,10 +18,16 @@
             </el-tag>
           </div>
         </div>
-        <el-button type="primary" :disabled="!canEdit" @click="handleEditCheckout" class="edit-btn">
-          <el-icon><Edit /></el-icon>
-          修改退租单
-        </el-button>
+        <div class="page-header__actions">
+          <el-button type="primary" :disabled="!canEdit" @click="handleEditCheckout" class="edit-btn">
+            <el-icon><Edit /></el-icon>
+            修改退租单
+          </el-button>
+          <el-button type="danger" plain :disabled="!canCancel" @click="handleCancelCheckout">
+            <el-icon><CircleClose /></el-icon>
+            取消退租单
+          </el-button>
+        </div>
       </div>
 
       <!-- ══ 核心指标卡 ══ -->
@@ -213,10 +219,13 @@
 
 <script setup lang="ts">
   import { computed } from "vue";
-  import { Edit, Picture, ZoomIn } from "@element-plus/icons-vue";
+  import { ElMessage, ElMessageBox } from "element-plus";
+  import { CircleClose, Edit, Picture, ZoomIn } from "@element-plus/icons-vue";
   import type { LeaseCheckoutVo } from "@/types";
+  import { cancelCheckout } from "@/api/contract/checkout";
   import { useCheckoutDialog } from "@/views/contract/checkout/form/checkoutCreateForm/useCheckoutDialog";
-  import { FEE_DIRECTION_ENUM } from "@/constants";
+  import { CHECKOUT_STATUS_META, FEE_DIRECTION_ENUM } from "@/constants";
+  import { CheckoutPaymentStatusEnumMeta } from "@/types";
 
   const props = defineProps<{
     loading: boolean;
@@ -227,7 +236,12 @@
 
   const { openLeaseCheckoutDialogByLeaseId } = useCheckoutDialog();
 
-  const canEdit = computed(() => !!props.checkoutDetail);
+  const canEdit = computed(() => {
+    if (!props.checkoutDetail) return false;
+    return props.checkoutDetail.status !== CHECKOUT_STATUS_META.CANCELLED.code && props.checkoutDetail.paymentStatus !== CheckoutPaymentStatusEnumMeta.PAID.code;
+  });
+
+  const canCancel = computed(() => canEdit.value);
 
   const cleaningFeeText = computed(() => {
     if (!props.checkoutDetail) return "—";
@@ -275,6 +289,29 @@
   function handleEditCheckout() {
     if (!props.checkoutDetail?.leaseId) return;
     openLeaseCheckoutDialogByLeaseId(props.checkoutDetail.leaseId, () => emit("updated"));
+  }
+
+  async function handleCancelCheckout() {
+    if (!props.checkoutDetail?.id) return;
+    try {
+      const { value } = await ElMessageBox.prompt("请输入取消原因", "取消退租单", {
+        confirmButtonText: "确定取消",
+        cancelButtonText: "返回",
+        inputType: "textarea",
+        inputPlaceholder: "请填写取消原因",
+        inputValidator: value => {
+          if (!value?.trim()) return "取消原因不能为空";
+          return true;
+        }
+      });
+      await cancelCheckout(props.checkoutDetail.id, value.trim());
+      ElMessage.success("退租单已取消");
+      emit("updated");
+    } catch (error) {
+      if (error !== "cancel" && error !== "close") {
+        ElMessage.error("取消退租单失败");
+      }
+    }
   }
 </script>
 
@@ -346,6 +383,13 @@
       display: flex;
       gap: 6px;
       align-items: center;
+    }
+
+    &__actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
   }
 
@@ -694,6 +738,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      pointer-events: none;
       opacity: 0;
       transition: opacity 0.18s;
       color: #fff;

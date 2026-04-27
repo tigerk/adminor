@@ -14,8 +14,8 @@ export const saveCheckout = (data: LeaseCheckoutDto) => {
 };
 
 /** 取消退租单 */
-export const cancelCheckout = (checkoutId: string) => {
-  return http.request<ApiResponse<void>>("post", baseUrlApi("lease/checkout/cancel"), { data: { checkoutId } });
+export const cancelCheckout = (checkoutId: string, cancelReason?: string) => {
+  return http.request<ApiResponse<void>>("post", baseUrlApi("lease/checkout/cancel"), { data: { checkoutId, cancelReason } });
 };
 
 /** 获取退租单详情 */
