@@ -597,7 +597,7 @@ function useTenant() {
           },
           otherFees: detail.otherFees || []
         };
-        openTenantDialog("续签租约 " + detail.tenantName, renewData);
+        openTenantDialog("租客续约 " + detail.tenantName, renewData);
       })
       .catch(() => {
         message("获取租约详情失败", { type: "error" });

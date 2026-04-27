@@ -77,7 +77,7 @@ export const createTenant = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/create"), { data });
 };
 
-/** 续签租约 */
+/** 租客续约 */
 export const renewLease = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/renew"), { data });
 };

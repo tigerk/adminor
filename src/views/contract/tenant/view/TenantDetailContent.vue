@@ -338,26 +338,47 @@
             </el-space>
           </template>
           <div class="tab-content">
-            <div v-loading="operateLogLoading" class="operate-log-panel">
-              <el-timeline v-if="operateLogList.length" class="operate-log-timeline">
-                <el-timeline-item v-for="item in operateLogList" :key="item.id" :timestamp="item.createAt || '—'" placement="top">
-                  <div class="operate-log-card">
-                    <div class="operate-log-card__main">
-                      <div class="operate-log-card__title">
+            <section class="info-section operate-log-section">
+              <div class="section-title">
+                操作记录
+                <el-tag type="info" size="small">{{ operateLogList.length }}条</el-tag>
+              </div>
+              <div v-loading="operateLogLoading" class="operate-log-panel">
+                <div v-if="operateLogList.length" class="operate-log-list">
+                  <div v-for="item in operateLogList" :key="item.id" class="operate-record">
+                    <div class="operate-record__side">
+                      <div class="operate-record__title">
                         <span>{{ item.operateDesc || "业务操作" }}</span>
                         <el-tag size="small" effect="light">{{ operateTypeText(item.operateType) }}</el-tag>
                       </div>
-                      <div v-if="item.remark" class="operate-log-card__remark">{{ item.remark }}</div>
+                      <div class="operate-record__meta">
+                        <span>{{ item.createAt || "—" }}</span>
+                        <span>操作人：{{ item.operatorName || "—" }}</span>
+                      </div>
+                      <div v-if="item.remark" class="operate-record__remark">{{ item.remark }}</div>
                     </div>
-                    <div class="operate-log-card__operator">
-                      <span>操作人</span>
-                      <strong>{{ item.operatorName || "—" }}</strong>
+                    <div class="snapshot-diff">
+                      <template v-if="snapshotDiffList(item).length">
+                        <div class="snapshot-diff__head">
+                          <span>变更字段</span>
+                          <span>修改前</span>
+                          <span />
+                          <span>修改后</span>
+                        </div>
+                        <div v-for="diff in snapshotDiffList(item)" :key="diff.key" class="snapshot-diff__row">
+                          <div class="snapshot-diff__field">{{ diff.label }}</div>
+                          <div class="snapshot-diff__value snapshot-diff__value--before">{{ diff.beforeText }}</div>
+                          <div class="snapshot-diff__arrow">→</div>
+                          <div class="snapshot-diff__value snapshot-diff__value--after">{{ diff.afterText }}</div>
+                        </div>
+                      </template>
+                      <div v-else class="snapshot-diff__empty">暂无可展示的字段变更</div>
                     </div>
                   </div>
-                </el-timeline-item>
-              </el-timeline>
-              <el-empty v-else description="暂无操作记录" :image-size="100" />
-            </div>
+                </div>
+                <el-empty v-else description="暂无操作记录" :image-size="100" />
+              </div>
+            </section>
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -400,6 +421,11 @@
     readonly?: boolean;
   }
 
+  type BizOperateLogWithSnapshot = BizOperateLogVo & {
+    beforeSnapshot?: string;
+    afterSnapshot?: string;
+  };
+
   const props = withDefaults(defineProps<FormProps>(), {
     readonly: false
   });
@@ -424,7 +450,7 @@
   const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
   const checkoutLoading = ref(false);
   const checkoutTabDisabled = computed(() => !checkoutLoading.value && !checkoutDetail.value);
-  const operateLogList = ref<BizOperateLogVo[]>([]);
+  const operateLogList = ref<BizOperateLogWithSnapshot[]>([]);
   const operateLogLoading = ref(false);
 
   const fetchCheckoutDetail = async () => {
@@ -453,7 +479,7 @@
     operateLogLoading.value = true;
     try {
       const res = await getLeaseOperateLogList(leaseId);
-      operateLogList.value = res.code === 0 ? res.data || [] : [];
+      operateLogList.value = res.code === 0 ? ((res.data || []) as BizOperateLogWithSnapshot[]) : [];
     } catch {
       operateLogList.value = [];
     } finally {
@@ -577,6 +603,180 @@
   const getContractNatureName = (nature: number) => {
     const option = LEASE_CONTRACT_NATURE_OPTIONS.find(item => item.value === nature);
     return option?.label || "未知";
+  };
+
+  const formatTenantType = (value: unknown) => {
+    if (value === 0 || value === "0") return "个人租客";
+    if (value === 1 || value === "1") return "企业租客";
+    return formatSnapshotValue(value);
+  };
+
+  const formatGender = (value: unknown) => {
+    if (value === 1 || value === "1") return "男";
+    if (value === 0 || value === "0") return "女";
+    return formatSnapshotValue(value);
+  };
+
+  const formatIdType = (value: unknown) => {
+    const idType = Number(value);
+    return Number.isFinite(idType) ? getIdTypeName(idType) : formatSnapshotValue(value);
+  };
+
+  const snapshotFieldConfig: Array<{
+    path: string;
+    label: string;
+    formatter?: (value: unknown) => string;
+  }> = [
+    { path: "tenantType", label: "租客类型", formatter: formatTenantType },
+    { path: "tenant.tenantType", label: "租客类型", formatter: formatTenantType },
+    { path: "tenantName", label: "租客姓名" },
+    { path: "tenant.tenantName", label: "租客姓名" },
+    { path: "tenantPhone", label: "联系电话" },
+    { path: "tenant.tenantPhone", label: "联系电话" },
+    { path: "tenantPersonal.name", label: "姓名" },
+    { path: "tenantPersonal.gender", label: "性别", formatter: formatGender },
+    { path: "tenantPersonal.phone", label: "联系电话" },
+    { path: "tenantPersonal.idType", label: "证件类型", formatter: formatIdType },
+    { path: "tenantPersonal.idNo", label: "证件号码" },
+    { path: "tenantPersonal.tags", label: "租客标签" },
+    { path: "tenantPersonal.tagList", label: "租客标签" },
+    { path: "tenantPersonal.idCardFrontList", label: "身份证人像面" },
+    { path: "tenantPersonal.idCardBackList", label: "身份证国徽面" },
+    { path: "tenantPersonal.idCardInHandList", label: "手持身份证" },
+    { path: "tenantPersonal.otherImageList", label: "其他照片" },
+    { path: "tenantCompany.companyName", label: "企业名称" },
+    { path: "tenantCompany.uscc", label: "统一社会信用代码" },
+    { path: "tenantCompany.legalPerson", label: "法定代表人" },
+    { path: "tenantCompany.contactPhone", label: "联系电话" },
+    { path: "tenantCompany.businessLicenseUrls", label: "营业执照" },
+    { path: "tenantCompany.otherImageList", label: "其他附件" },
+    { path: "checkoutCode", label: "退租单号" },
+    { path: "checkoutType", label: "退租类型" },
+    { path: "actualCheckoutDate", label: "实际退租日" },
+    { path: "dueDate", label: "应付日期" },
+    { path: "depositAmount", label: "押金金额" },
+    { path: "incomeAmount", label: "收入合计" },
+    { path: "expenseAmount", label: "支出合计" },
+    { path: "finalAmount", label: "结算金额" },
+    { path: "paymentStatus", label: "支付状态" },
+    { path: "status", label: "单据状态" },
+    { path: "cancelReason", label: "取消原因" },
+    { path: "remark", label: "备注" }
+  ];
+
+  function parseSnapshot(snapshot?: string) {
+    if (!snapshot) return null;
+    try {
+      return JSON.parse(snapshot);
+    } catch {
+      return null;
+    }
+  }
+
+  function getByPath(data: unknown, path: string) {
+    if (!data || typeof data !== "object") return undefined;
+    return path.split(".").reduce<unknown>((current, key) => {
+      if (!current || typeof current !== "object") return undefined;
+      return (current as Record<string, unknown>)[key];
+    }, data);
+  }
+
+  function stableValue(value: unknown) {
+    if (value === undefined || value === null || value === "") return "";
+    if (Array.isArray(value)) return JSON.stringify(value.map(item => stableValue(item)));
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  }
+
+  function formatSnapshotValue(value: unknown) {
+    if (value === undefined || value === null || value === "") return "—";
+    if (Array.isArray(value)) {
+      if (!value.length) return "—";
+      if (value.every(item => ["string", "number", "boolean"].includes(typeof item))) return value.join("、");
+      return `${value.length} 项`;
+    }
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  }
+
+  function flattenSnapshot(data: unknown, prefix = "", depth = 0, result: Record<string, unknown> = {}) {
+    if (!data || typeof data !== "object" || Array.isArray(data) || depth > 2) return result;
+    Object.entries(data as Record<string, unknown>).forEach(([key, value]) => {
+      const path = prefix ? `${prefix}.${key}` : key;
+      if (["id", "companyId", "createAt", "updateAt", "createBy", "updateBy"].includes(key)) return;
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        flattenSnapshot(value, path, depth + 1, result);
+        return;
+      }
+      result[path] = value;
+    });
+    return result;
+  }
+
+  function fieldLabelFromPath(path: string) {
+    const key = path.split(".").at(-1) || path;
+    const map: Record<string, string> = {
+      tenantName: "租客姓名",
+      tenantPhone: "联系电话",
+      name: "姓名",
+      phone: "联系电话",
+      gender: "性别",
+      idType: "证件类型",
+      idNo: "证件号码",
+      tags: "租客标签",
+      tagList: "租客标签",
+      remark: "备注",
+      status: "状态",
+      cancelReason: "取消原因"
+    };
+    return map[key] || key;
+  }
+
+  const snapshotDiffList = (item: BizOperateLogWithSnapshot) => {
+    const before = parseSnapshot(item.beforeSnapshot);
+    const after = parseSnapshot(item.afterSnapshot);
+    if (!before && !after) return [];
+
+    const configuredDiffList = snapshotFieldConfig
+      .map(field => {
+        const beforeValue = getByPath(before, field.path);
+        const afterValue = getByPath(after, field.path);
+        const beforeStable = stableValue(beforeValue);
+        const afterStable = stableValue(afterValue);
+        if (beforeStable === afterStable) return null;
+        if (!beforeStable && !afterStable) return null;
+
+        return {
+          key: field.path,
+          label: field.label,
+          beforeText: field.formatter ? field.formatter(beforeValue) : formatSnapshotValue(beforeValue),
+          afterText: field.formatter ? field.formatter(afterValue) : formatSnapshotValue(afterValue)
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 12) as Array<{ key: string; label: string; beforeText: string; afterText: string }>;
+    if (configuredDiffList.length) return configuredDiffList;
+
+    const beforeFlat = flattenSnapshot(before);
+    const afterFlat = flattenSnapshot(after);
+    return Array.from(new Set([...Object.keys(beforeFlat), ...Object.keys(afterFlat)]))
+      .map(path => {
+        const beforeValue = beforeFlat[path];
+        const afterValue = afterFlat[path];
+        const beforeStable = stableValue(beforeValue);
+        const afterStable = stableValue(afterValue);
+        if (beforeStable === afterStable) return null;
+        if (!beforeStable && !afterStable) return null;
+
+        return {
+          key: path,
+          label: fieldLabelFromPath(path),
+          beforeText: formatSnapshotValue(beforeValue),
+          afterText: formatSnapshotValue(afterValue)
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 12) as Array<{ key: string; label: string; beforeText: string; afterText: string }>;
   };
 
   const handleDownloadContract = () => {
@@ -1068,60 +1268,124 @@
 
       .operate-log-panel {
         min-height: 220px;
-        padding: 4px 2px;
       }
 
-      .operate-log-timeline {
-        padding: 8px 4px 0;
-
-        :deep(.el-timeline-item__timestamp) {
-          color: var(--el-text-color-secondary);
-          font-size: 12px;
-        }
-      }
-
-      .operate-log-card {
+      .operate-log-list {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 12px 14px;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .operate-record {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        padding: 10px 12px;
         background: var(--el-bg-color);
         border: 1px solid var(--el-border-color-light);
         border-radius: 10px;
 
-        &__main {
+        &__side {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
           min-width: 0;
+          padding-right: 12px;
+          border-right: 1px solid var(--el-border-color-lighter);
         }
 
         &__title {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
           color: var(--el-text-color-primary);
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 600;
         }
 
-        &__remark {
-          margin-top: 6px;
+        &__meta {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
           color: var(--el-text-color-secondary);
           font-size: 13px;
           line-height: 1.5;
         }
 
-        &__operator {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          flex-shrink: 0;
+        &__remark {
+          padding: 7px 9px;
+          background: var(--el-fill-color-lighter);
+          border-radius: 8px;
           color: var(--el-text-color-secondary);
           font-size: 13px;
+          line-height: 1.6;
+        }
+      }
 
-          strong {
-            color: var(--el-text-color-primary);
-            font-weight: 600;
+      .snapshot-diff {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+
+        &__head {
+          display: grid;
+          grid-template-columns: 112px minmax(0, 1fr) 24px minmax(0, 1fr);
+          gap: 8px;
+          padding: 0 10px 2px;
+          color: var(--el-text-color-placeholder);
+          font-size: 12px;
+          line-height: 1.4;
+        }
+
+        &__row {
+          display: grid;
+          grid-template-columns: 112px minmax(0, 1fr) 24px minmax(0, 1fr);
+          gap: 8px;
+          align-items: center;
+          min-width: 0;
+          padding: 8px 10px;
+          background: var(--el-fill-color-light);
+          border: 1px solid var(--el-border-color-lighter);
+          border-radius: 8px;
+        }
+
+        &__field {
+          color: var(--el-text-color-secondary);
+          font-size: 13px;
+          line-height: 1.5;
+        }
+
+        &__value {
+          min-width: 0;
+          font-size: 13px;
+          font-weight: 600;
+          line-height: 1.5;
+          word-break: break-all;
+
+          &--before {
+            color: var(--el-color-danger);
           }
+
+          &--after {
+            color: var(--el-color-success);
+          }
+        }
+
+        &__arrow {
+          flex-shrink: 0;
+          color: var(--el-text-color-placeholder);
+          text-align: center;
+        }
+
+        &__empty {
+          grid-column: 1 / -1;
+          padding: 10px 12px;
+          color: var(--el-text-color-placeholder);
+          font-size: 13px;
+          background: var(--el-fill-color-lighter);
+          border-radius: 8px;
         }
       }
     }
@@ -1155,6 +1419,29 @@
       .room-fee-card__head {
         flex-direction: column;
         align-items: flex-start;
+      }
+
+      .operate-record {
+        grid-template-columns: 1fr;
+      }
+
+      .operate-record__side {
+        padding-right: 0;
+        padding-bottom: 10px;
+        border-right: 0;
+        border-bottom: 1px solid var(--el-border-color-lighter);
+      }
+
+      .snapshot-diff__row {
+        grid-template-columns: 1fr;
+      }
+
+      .snapshot-diff__head {
+        display: none;
+      }
+
+      .snapshot-diff__arrow {
+        display: none;
       }
     }
   }
