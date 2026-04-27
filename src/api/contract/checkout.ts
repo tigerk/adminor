@@ -13,11 +13,6 @@ export const saveCheckout = (data: LeaseCheckoutDto) => {
   return http.request<ApiResponse<string>>("post", baseUrlApi("lease/checkout/save"), { data });
 };
 
-/** 提交退租审批（确定按钮） */
-export const submitCheckout = (checkoutId: string) => {
-  return http.request<ApiResponse<void>>("post", baseUrlApi("lease/checkout/submit"), { data: { checkoutId } });
-};
-
 /** 取消退租单 */
 export const cancelCheckout = (checkoutId: string) => {
   return http.request<ApiResponse<void>>("post", baseUrlApi("lease/checkout/cancel"), { data: { checkoutId } });
