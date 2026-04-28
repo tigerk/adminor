@@ -127,6 +127,8 @@
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item @click="openEdit(row.contractId)">编辑合同</el-dropdown-item>
+                    <el-dropdown-item @click="handleOwnerRenew(row)">业主续约</el-dropdown-item>
+                    <el-dropdown-item @click="handleOwnerCheckout(row)">业主退房</el-dropdown-item>
                     <el-dropdown-item @click="goOwnerBills(row)">{{ billEntryText(row) }}</el-dropdown-item>
                     <el-dropdown-item v-if="row.cooperationMode !== 'MASTER_LEASE'" @click="goOwnerWithdraws(row)">查看提现</el-dropdown-item>
                     <el-dropdown-item @click="handleToggleStatus(row)">
@@ -378,6 +380,16 @@
   function openDetail(contractId?: string) {
     if (!contractId) return;
     openOwnerViewDialog("业主合同详情", { contractId });
+  }
+
+  function handleOwnerRenew(row: OwnerListRow) {
+    if (!row.contractId) return;
+    message("业主续约功能需要后端续约接口支持后接入", { type: "warning" });
+  }
+
+  function handleOwnerCheckout(row: OwnerListRow) {
+    if (!row.contractId) return;
+    message("业主退房功能需要后端退房接口支持后接入", { type: "warning" });
   }
 
   async function handleToggleStatus(row: OwnerListRow) {
