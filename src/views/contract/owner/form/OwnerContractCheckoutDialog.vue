@@ -37,18 +37,26 @@
       <div class="checkout-section__title">在租房间</div>
       <div v-if="leasedRoomList.length" class="leased-room-list">
         <div v-for="room in leasedRoomList" :key="`${room.leaseId}-${room.roomId}`" class="leased-room-card">
-          <div class="leased-room-card__main">
-            <strong>{{ room.roomName || `房间 ${room.roomId || "-"}` }}</strong>
-            <span>{{ formatDate(room.leaseStart) }} 至 {{ formatDate(room.leaseEnd) }}</span>
+          <div class="leased-room-card__top">
+            <strong class="leased-room-card__name" :title="room.roomName || `房间 ${room.roomId || '-'}`">
+              {{ room.roomName || `房间 ${room.roomId || "-"}` }}
+            </strong>
+            <em v-if="leaseStatusText(room)" class="lease-status-pill">{{ leaseStatusText(room) }}</em>
           </div>
-          <div class="leased-room-card__tenant">
-            <span class="leased-room-card__tenant-name">
-              {{ room.tenantName || "-" }}
-              <em v-if="leaseStatusText(room)" class="lease-status-pill">{{ leaseStatusText(room) }}</em>
-            </span>
-            <small>{{ room.tenantPhone || "-" }}</small>
+          <div class="leased-room-card__body">
+            <div class="leased-room-card__item">
+              <span>租客</span>
+              <strong>{{ tenantText(room) }}</strong>
+            </div>
+            <div class="leased-room-card__item">
+              <span>租期</span>
+              <strong>{{ formatDate(room.leaseStart) }} 至 {{ formatDate(room.leaseEnd) }}</strong>
+            </div>
+            <div class="leased-room-card__rent">
+              <span>月租金</span>
+              <strong>{{ moneyText(room.rentPrice) }}</strong>
+            </div>
           </div>
-          <div class="leased-room-card__rent">{{ moneyText(room.rentPrice) }}/月</div>
         </div>
       </div>
       <div v-else class="leased-room-empty">当前业主房源暂无在租房间</div>
@@ -106,7 +114,10 @@
         </el-form-item>
 
         <el-form-item class="checkout-action__date" label="违约金">
-          <el-input-number v-model="form.breachPenaltyAmount" :min="0" :precision="2" :controls="false" placeholder="0.00" class="w-full!" />
+          <el-input-number v-model="form.breachPenaltyAmount" :min="0" :precision="2" :controls="false" placeholder="0.00" class="money-input w-full!">
+            <template #prefix>¥</template>
+            <template #suffix>元</template>
+          </el-input-number>
           <div class="form-tip">{{ isMasterLease ? "提交后生成包租应付冲减单" : "提交后生成业主结算扣减单" }}</div>
         </el-form-item>
       </div>
@@ -197,6 +208,11 @@
     if (current.leaseStatusName) return current.leaseStatusName;
     if (current.leaseStatus === undefined || current.leaseStatus === null) return "";
     return Object.values(LEASE_STATUS_META).find(item => item.code === current.leaseStatus)?.name || "";
+  }
+
+  function tenantText(room: OwnerCheckoutLeaseRoomVo) {
+    const name = room.tenantName || "-";
+    return room.tenantPhone ? `${name}（${room.tenantPhone}）` : name;
   }
 
   async function loadFinanceSummary() {
@@ -328,61 +344,90 @@
 
   .leased-room-list {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
     gap: 10px;
   }
 
   .leased-room-card {
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: center;
-    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 12px;
     background: var(--el-fill-color-extra-light);
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 8px;
 
-    &__main,
-    &__tenant {
+    &__top {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      justify-content: space-between;
       min-width: 0;
-
-      strong,
-      span,
-      small {
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      strong,
-      span {
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--el-text-color-primary);
-      }
-
-      small,
-      > span + span {
-        margin-top: 3px;
-        font-size: 12px;
-        font-weight: 400;
-        color: var(--el-text-color-secondary);
-      }
     }
 
-    &__rent {
+    &__name {
+      min-width: 0;
       font-size: 13px;
       font-weight: 800;
-      color: var(--el-color-primary);
+      line-height: 20px;
+      color: var(--el-text-color-primary);
+      word-break: break-all;
+    }
+
+    &__body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr) auto;
+      gap: 10px;
+      align-items: end;
+      min-width: 0;
+    }
+
+    &__item {
+      min-width: 0;
+    }
+
+    &__item span,
+    &__rent span {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--el-text-color-secondary);
+    }
+
+    &__item strong,
+    &__item small {
+      display: block;
+      overflow: hidden;
+      font-size: 12px;
+      line-height: 18px;
+      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    &__tenant-name {
-      display: inline-flex !important;
-      align-items: center;
-      gap: 6px;
-      max-width: 100%;
+    &__item strong {
+      font-weight: 700;
+      color: var(--el-text-color-primary);
+    }
+
+    &__item small {
+      margin-top: 1px;
+      color: var(--el-text-color-secondary);
+    }
+
+    &__rent {
+      min-width: 86px;
+      text-align: right;
+
+      strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 800;
+        line-height: 20px;
+        color: var(--el-color-primary);
+        white-space: nowrap;
+      }
     }
   }
 
@@ -516,6 +561,16 @@
     .checkout-action__textarea-grid,
     .leased-room-list {
       grid-template-columns: 1fr;
+    }
+
+    .leased-room-card__body {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+
+    .leased-room-card__rent {
+      min-width: 0;
+      text-align: left;
     }
   }
 </style>
