@@ -74,7 +74,7 @@
     </div>
 
     <!-- 合同模板表格 -->
-    <el-row v-if="viewMode === 'template'" class="bg-bg_color w-full px-4 pt-0 overflow-auto">
+    <el-row v-if="viewMode === 'template'" class="bg-bg_color w-full p-2 overflow-auto">
       <pure-table
         border
         row-key="id"
@@ -83,7 +83,7 @@
         :loading="loading"
         :loading-config="{ background: 'transparent' }"
         adaptive
-        :adaptiveConfig="{ offsetBottom: 72 }"
+        :adaptiveConfig="{ offsetBottom: 82 }"
         :data="contractTemplateList"
         :size="tableSize as any"
         :columns="columns"

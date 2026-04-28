@@ -1,7 +1,7 @@
 <template>
-  <div class="room-status-grid">
+  <div class="room-status-grid" :class="{ 'is-empty': isEmpty }">
     <!-- 房间网格容器 -->
-    <div ref="scrollContainer" v-loading="loading" class="room-grid-container full-height">
+    <div ref="scrollContainer" v-loading="loading" class="room-grid-container" :class="{ 'full-height': !isEmpty, 'is-empty': isEmpty }">
       <!-- 按小区分组 -->
       <div v-for="community in processedRoomGroups" :key="community.communityId" class="property-group">
         <!-- 小区头部 -->
@@ -172,7 +172,9 @@
       </div>
 
       <!-- 空状态 -->
-      <el-empty v-if="!loading && processedRoomGroups.length === 0" description="暂无房间数据" />
+      <div v-if="isEmpty" class="room-grid-empty">
+        <el-empty description="暂无房间数据" :image-size="110" />
+      </div>
     </div>
 
     <!-- 加载更多触发器 -->
@@ -191,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-  import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+  import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
   import { CircleClose, CloseBold, EditPen, Loading, Location, Lock, OfficeBuilding, Open, Setting, Unlock, User } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
@@ -223,6 +225,8 @@
     handleDropdownAction,
     getRoomDisplayStatus
   } = useRoomGrid(queryForm);
+
+  const isEmpty = computed(() => !loading.value && processedRoomGroups.value.length === 0);
 
   // 监听查询条件变化
   watch(
@@ -264,19 +268,52 @@
   .room-status-grid {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-height: 0;
     background-color: var(--el-bg-color);
+
+    &.is-empty {
+      display: flex;
+      min-height: max(320px, calc(100vh - 300px));
+      padding: 16px 24px 0;
+      background: transparent;
+    }
   }
 
   .room-grid-container {
-    flex: 1;
     padding: 16px;
     overflow-y: auto;
     background: var(--el-fill-color-lighter);
     transition: background-color 0.3s;
 
     &.full-height {
-      height: 100%;
+      flex: 1;
+      min-height: 0;
+    }
+
+    &.is-empty {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+  }
+
+  .room-grid-empty {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+    border-radius: 8px;
+
+    :deep(.el-empty) {
+      padding: 24px 0;
+    }
+
+    :deep(.el-empty__description) {
+      margin-top: 8px;
     }
   }
 
