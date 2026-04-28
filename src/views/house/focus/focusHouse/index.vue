@@ -114,7 +114,7 @@
 </script>
 
 <template>
-  <div class="focus-house-container">
+  <div class="main focus-house-container">
     <!-- 搜索栏 -->
     <el-card class="search-card" shadow="never">
       <div class="search-header-flex">
@@ -319,7 +319,7 @@
   }
 
   .search-card {
-    margin: 16px;
+    margin: 8px;
     border-radius: 8px;
 
     :deep(.el-card__body) {
@@ -330,12 +330,12 @@
   .card-list-container {
     flex: 1;
     overflow-y: auto;
-    padding: 0 16px 16px;
+    padding: 0 8px 8px;
   }
 
   .skeleton-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
   }
 
@@ -346,7 +346,7 @@
 
   .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
   }
 
@@ -593,7 +593,15 @@
     }
   }
 
+  @media (max-width: 1280px) {
+    .skeleton-container,
+    .card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 768px) {
+    .skeleton-container,
     .card-grid {
       grid-template-columns: 1fr;
     }
