@@ -102,6 +102,9 @@
       <!-- 全屏图标模式：改造为新样式 -->
       <div v-if="options?.fullscreenIcon" class="dialog-header">
         <div class="header-left">
+          <span class="header-mark" aria-hidden="true">
+            <IconifyIconOffline icon="ri/window-line" />
+          </span>
           <span :id="titleId" class="header-title">{{ options?.title }}</span>
         </div>
         <!-- 全屏切换按钮，保留原有功能，仅样式换成 el-button circle -->
@@ -172,14 +175,30 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 7px;
-    border-bottom: 1px solid var(--el-border-color-lighter);
+    padding-bottom: 0px;
   }
 
   .header-left {
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+
+  .header-mark {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    color: var(--el-color-primary);
+    background: color-mix(in srgb, var(--el-color-primary) 10%, transparent);
+    flex-shrink: 0;
+  }
+
+  .header-mark :deep(svg) {
+    width: 14px;
+    height: 14px;
   }
 
   .header-title {
