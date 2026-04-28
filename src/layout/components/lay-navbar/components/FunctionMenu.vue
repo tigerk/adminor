@@ -24,7 +24,7 @@
             </el-dropdown-item>
             <el-dropdown-item class="menu-item" @click="handleMenuClick('owner-contract')">
               <div class="menu-content">
-                <div class="icon-wrapper primary-light">
+                <div class="icon-wrapper primary">
                   <el-icon><DocumentChecked /></el-icon>
                 </div>
                 <span class="menu-text">业主合同</span>
@@ -70,70 +70,70 @@
           </div>
 
           <!-- 分组：客户管理 -->
-          <div class="menu-group">
-            <div class="group-title">客户管理</div>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('potential-customer')">
-              <div class="menu-content">
-                <div class="icon-wrapper info">
-                  <el-icon><User /></el-icon>
-                </div>
-                <span class="menu-text">潜在客户</span>
-              </div>
-            </el-dropdown-item>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('potential-owner')">
-              <div class="menu-content">
-                <div class="icon-wrapper warning">
-                  <el-icon><UserFilled /></el-icon>
-                </div>
-                <span class="menu-text">潜在业主</span>
-              </div>
-            </el-dropdown-item>
-          </div>
+<!--          <div class="menu-group">-->
+<!--            <div class="group-title">客户管理</div>-->
+<!--            <el-dropdown-item class="menu-item" @click="handleMenuClick('potential-customer')">-->
+<!--              <div class="menu-content">-->
+<!--                <div class="icon-wrapper info">-->
+<!--                  <el-icon><User /></el-icon>-->
+<!--                </div>-->
+<!--                <span class="menu-text">潜在客户</span>-->
+<!--              </div>-->
+<!--            </el-dropdown-item>-->
+<!--            <el-dropdown-item class="menu-item" @click="handleMenuClick('potential-owner')">-->
+<!--              <div class="menu-content">-->
+<!--                <div class="icon-wrapper warning">-->
+<!--                  <el-icon><UserFilled /></el-icon>-->
+<!--                </div>-->
+<!--                <span class="menu-text">潜在业主</span>-->
+<!--              </div>-->
+<!--            </el-dropdown-item>-->
+<!--          </div>-->
 
-          <!-- 分组：工单服务 -->
-          <div class="menu-group">
-            <div class="group-title">工单服务</div>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('billing')">
-              <div class="menu-content">
-                <div class="icon-wrapper success">
-                  <el-icon><Tickets /></el-icon>
-                </div>
-                <span class="menu-text">账单</span>
-              </div>
-            </el-dropdown-item>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('maintenance')">
-              <div class="menu-content">
-                <div class="icon-wrapper warning">
-                  <el-icon><Tools /></el-icon>
-                </div>
-                <span class="menu-text">维修</span>
-              </div>
-            </el-dropdown-item>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('cleaning')">
-              <div class="menu-content">
-                <div class="icon-wrapper info">
-                  <el-icon><Brush /></el-icon>
-                </div>
-                <span class="menu-text">保洁</span>
-              </div>
-            </el-dropdown-item>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('delivery')">
-              <div class="menu-content">
-                <div class="icon-wrapper primary">
-                  <el-icon><Van /></el-icon>
-                </div>
-                <span class="menu-text">配货</span>
-              </div>
-            </el-dropdown-item>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('other-work-order')">
-              <div class="menu-content">
-                <div class="icon-wrapper gray">
-                  <el-icon><List /></el-icon>
-                </div>
-                <span class="menu-text">其他工单</span>
-              </div>
-            </el-dropdown-item>
-          </div>
+<!--          &lt;!&ndash; 分组：工单服务 &ndash;&gt;-->
+<!--          <div class="menu-group">-->
+<!--            <div class="group-title">工单服务</div>-->
+<!--            <el-dropdown-item class="menu-item" @click="handleMenuClick('billing')">-->
+<!--              <div class="menu-content">-->
+<!--                <div class="icon-wrapper success">-->
+<!--                  <el-icon><Tickets /></el-icon>-->
+<!--                </div>-->
+<!--                <span class="menu-text">账单</span>-->
+<!--              </div>-->
+<!--            </el-dropdown-item>-->
+<!--            <el-dropdown-item class="menu-item" @click="handleMenuClick('maintenance')">-->
+<!--              <div class="menu-content">-->
+<!--                <div class="icon-wrapper warning">-->
+<!--                  <el-icon><Tools /></el-icon>-->
+<!--                </div>-->
+<!--                <span class="menu-text">维修</span>-->
+<!--              </div>-->
+<!--            </el-dropdown-item>-->
+<!--            <el-dropdown-item class="menu-item" @click="handleMenuClick('cleaning')">-->
+<!--              <div class="menu-content">-->
+<!--                <div class="icon-wrapper info">-->
+<!--                  <el-icon><Brush /></el-icon>-->
+<!--                </div>-->
+<!--                <span class="menu-text">保洁</span>-->
+<!--              </div>-->
+<!--            </el-dropdown-item>-->
+<!--            <el-dropdown-item class="menu-item" @click="handleMenuClick('delivery')">-->
+<!--              <div class="menu-content">-->
+<!--                <div class="icon-wrapper primary">-->
+<!--                  <el-icon><Van /></el-icon>-->
+<!--                </div>-->
+<!--                <span class="menu-text">配货</span>-->
+<!--              </div>-->
+<!--            </el-dropdown-item>-->
+<!--            <el-dropdown-item class="menu-item" @click="handleMenuClick('other-work-order')">-->
+<!--              <div class="menu-content">-->
+<!--                <div class="icon-wrapper gray">-->
+<!--                  <el-icon><List /></el-icon>-->
+<!--                </div>-->
+<!--                <span class="menu-text">其他工单</span>-->
+<!--              </div>-->
+<!--            </el-dropdown-item>-->
+<!--          </div>-->
         </el-dropdown-menu>
       </template>
     </el-dropdown>
