@@ -1589,6 +1589,14 @@ export type LeaseLiteVo = {
      */
     tenantPhone?: string;
     /**
+     * 房间ID
+     */
+    roomId?: string;
+    /**
+     * 房间名称
+     */
+    roomName?: string;
+    /**
      * 租金价格
      */
     rentPrice?: number;
@@ -3132,6 +3140,10 @@ export type OwnerSettlementBillListVo = {
      */
     billNo?: string;
     /**
+     * 账单业务场景
+     */
+    billScene?: string;
+    /**
      * 业主ID
      */
     ownerId?: string;
@@ -3241,6 +3253,10 @@ export type OwnerSettlementBillDetailVo = {
      * 结算单号
      */
     billNo?: string;
+    /**
+     * 账单业务场景
+     */
+    billScene?: string;
     /**
      * 业主ID
      */
@@ -3664,6 +3680,10 @@ export type OwnerPayableBillListVo = {
      */
     billNo?: string;
     /**
+     * 账单业务场景
+     */
+    billScene?: string;
+    /**
      * 业主ID
      */
     ownerId?: string;
@@ -3831,6 +3851,10 @@ export type OwnerPayableBillDetailVo = {
      * 应付单号
      */
     billNo?: string;
+    /**
+     * 账单业务场景
+     */
+    billScene?: string;
     /**
      * 业主ID
      */
@@ -8000,6 +8024,10 @@ export type OwnerContractCheckoutDto = {
      */
     settlementRemark?: string;
     /**
+     * 业主退房违约金
+     */
+    breachPenaltyAmount?: number;
+    /**
      * 是否释放房源
      */
     releaseSubject?: boolean;
@@ -8007,6 +8035,64 @@ export type OwnerContractCheckoutDto = {
      * 是否作废退房日之后未付款账单
      */
     voidUnpaidFutureBills?: boolean;
+};
+
+/**
+ * 业主退房在租房间信息VO
+ */
+export type OwnerCheckoutLeaseRoomVo = {
+    /**
+     * 房间ID
+     */
+    roomId?: string;
+    /**
+     * 房间名称
+     */
+    roomName?: string;
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 租客ID
+     */
+    tenantId?: string;
+    /**
+     * 租客姓名
+     */
+    tenantName?: string;
+    /**
+     * 租客电话
+     */
+    tenantPhone?: string;
+    /**
+     * 房间月租金
+     */
+    rentPrice?: number;
+    /**
+     * 租约开始日期
+     */
+    leaseStart?: string;
+    /**
+     * 租约结束日期
+     */
+    leaseEnd?: string;
+};
+
+/**
+ * 业主合同退房初始化VO
+ */
+export type OwnerContractCheckoutInitVo = {
+    /**
+     * 在租房间列表
+     */
+    leasedRoomList?: Array<OwnerCheckoutLeaseRoomVo>;
+};
+
+export type ResponseResultOwnerContractCheckoutInitVo = {
+    code?: number;
+    message?: string;
+    data?: OwnerContractCheckoutInitVo;
 };
 
 /**
@@ -11071,14 +11157,19 @@ export type OwnerAccountFlowBizTypeEnum = 'OWNER_BILL';
 export type OwnerAccountFlowChangeTypeEnum = 'BILL_SETTLE_IN' | 'BILL_SETTLE_OUT';
 
 /**
+ * 业主账单业务场景枚举
+ */
+export type OwnerBillSceneEnum = 'REGULAR' | 'REALTIME_SETTLEMENT' | 'CHECKOUT_PENALTY';
+
+/**
  * 业主单据明细类型枚举
  */
-export type OwnerBillingItemTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'MANAGEMENT_FEE';
+export type OwnerBillingItemTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'MANAGEMENT_FEE' | 'BREACH_PENALTY';
 
 /**
  * 业主单据来源类型枚举
  */
-export type OwnerBillingSourceTypeEnum = 'PAYMENT_FLOW' | 'OWNER_CONTRACT_SUBJECT' | 'OWNER_CONTRACT' | 'OWNER_LEASE_FEE' | 'OWNER_LEASE_FREE_RULE';
+export type OwnerBillingSourceTypeEnum = 'PAYMENT_FLOW' | 'OWNER_CONTRACT_SUBJECT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_LEASE_FEE' | 'OWNER_LEASE_FREE_RULE';
 
 /**
  * 包租业主应付单付款状态枚举
@@ -13592,6 +13683,22 @@ export type CheckoutResponses = {
 };
 
 export type CheckoutResponse = CheckoutResponses[keyof CheckoutResponses];
+
+export type CheckoutInitData = {
+    body: OwnerContractIdDto;
+    path?: never;
+    query?: never;
+    url: '/saas/contract/owner/checkout/init';
+};
+
+export type CheckoutInitResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultOwnerContractCheckoutInitVo;
+};
+
+export type CheckoutInitResponse = CheckoutInitResponses[keyof CheckoutInitResponses];
 
 export type UpdateLeaseData = {
     body: TenantCreateDto;

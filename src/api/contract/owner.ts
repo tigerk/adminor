@@ -9,6 +9,7 @@ import type {
   OwnerRenewDto,
   OwnerUpdateDto,
   ResponseResultLong,
+  ResponseResultOwnerContractCheckoutInitVo,
   ResponseResultOwnerDetailVo,
   ResponseResultPageVoOwnerListVo
 } from "@/types/generated";
@@ -43,6 +44,10 @@ export const renewOwnerContract = (data: OwnerRenewDto) => {
 
 export const checkoutOwnerContract = (data: OwnerContractCheckoutDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/checkout"), { data });
+};
+
+export const getOwnerContractCheckoutInit = (data: OwnerContractIdDto) => {
+  return http.request<ResponseResultOwnerContractCheckoutInitVo>("post", baseUrlApi("contract/owner/checkout/init"), { data });
 };
 
 export const updateOwnerContractStatus = (data: OwnerContractStatusDto) => {

@@ -609,17 +609,25 @@ export const OwnerAccountFlowChangeTypeEnumMeta = {
   BILL_SETTLE_OUT: {"value":"BILL_SETTLE_OUT","code":"BILL_SETTLE_OUT","name":"账单冲减"}
 } as const;
 
+export const OwnerBillSceneEnumMeta = {
+  REGULAR: {"value":"REGULAR","code":"REGULAR","name":"正常账单"},
+  REALTIME_SETTLEMENT: {"value":"REALTIME_SETTLEMENT","code":"REALTIME_SETTLEMENT","name":"租客支付实时分账"},
+  CHECKOUT_PENALTY: {"value":"CHECKOUT_PENALTY","code":"CHECKOUT_PENALTY","name":"业主退房违约金"}
+} as const;
+
 export const OwnerBillingItemTypeEnumMeta = {
   RENT: {"value":"RENT","code":"RENT","name":"租金"},
   DEPOSIT: {"value":"DEPOSIT","code":"DEPOSIT","name":"押金"},
   OTHER_FEE: {"value":"OTHER_FEE","code":"OTHER_FEE","name":"其他费用"},
-  MANAGEMENT_FEE: {"value":"MANAGEMENT_FEE","code":"MANAGEMENT_FEE","name":"管理费"}
+  MANAGEMENT_FEE: {"value":"MANAGEMENT_FEE","code":"MANAGEMENT_FEE","name":"管理费"},
+  BREACH_PENALTY: {"value":"BREACH_PENALTY","code":"BREACH_PENALTY","name":"违约金"}
 } as const;
 
 export const OwnerBillingSourceTypeEnumMeta = {
   PAYMENT_FLOW: {"value":"PAYMENT_FLOW","code":"PAYMENT_FLOW","name":"支付流水"},
   OWNER_CONTRACT_SUBJECT: {"value":"OWNER_CONTRACT_SUBJECT","code":"OWNER_CONTRACT_SUBJECT","name":"业主合同房源"},
   OWNER_CONTRACT: {"value":"OWNER_CONTRACT","code":"OWNER_CONTRACT","name":"业主合同"},
+  OWNER_CONTRACT_CHECKOUT: {"value":"OWNER_CONTRACT_CHECKOUT","code":"OWNER_CONTRACT_CHECKOUT","name":"业主退房单"},
   OWNER_LEASE_FEE: {"value":"OWNER_LEASE_FEE","code":"OWNER_LEASE_FEE","name":"包租其他费用"},
   OWNER_LEASE_FREE_RULE: {"value":"OWNER_LEASE_FREE_RULE","code":"OWNER_LEASE_FREE_RULE","name":"包租免租规则"}
 } as const;
