@@ -2,9 +2,11 @@ import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
 import type {
   OwnerContractIdDto,
+  OwnerContractCheckoutDto,
   OwnerContractStatusDto,
   OwnerCreateDto,
   OwnerQueryDto,
+  OwnerRenewDto,
   OwnerUpdateDto,
   ResponseResultLong,
   ResponseResultOwnerDetailVo,
@@ -33,6 +35,14 @@ export const previewOwnerContract = (data: OwnerContractIdDto) => {
 
 export const updateOwnerContract = (data: OwnerUpdateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/update"), { data });
+};
+
+export const renewOwnerContract = (data: OwnerRenewDto) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/renew"), { data });
+};
+
+export const checkoutOwnerContract = (data: OwnerContractCheckoutDto) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/checkout"), { data });
 };
 
 export const updateOwnerContractStatus = (data: OwnerContractStatusDto) => {

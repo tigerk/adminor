@@ -1,11 +1,13 @@
 import { h, ref } from "vue";
+import dayjs from "dayjs";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { message } from "@/utils/message";
-import { createOwnerContract, getOwnerContractDetail, updateOwnerContract } from "@/api/contract/owner";
+import { checkoutOwnerContract, createOwnerContract, getOwnerContractDetail, renewOwnerContract, updateOwnerContract } from "@/api/contract/owner";
 import OwnerContractFormDialog from "@/views/contract/owner/form/OwnerContractFormDialog.vue";
+import OwnerContractCheckoutDialog from "@/views/contract/owner/form/OwnerContractCheckoutDialog.vue";
 import OwnerContractDetailDialog from "@/views/contract/owner/view/OwnerContractDetailDialog.vue";
-import type { OwnerContractIdDto, OwnerDetailVo, OwnerUpdateDto } from "@/types/generated";
+import type { OwnerContractIdDto, OwnerDetailVo, OwnerListVo, OwnerUpdateDto } from "@/types/generated";
 
 function useOwnerContract() {
   const formRef = ref();
@@ -100,6 +102,112 @@ function useOwnerContract() {
     });
   }
 
+  function openOwnerRenewDialog(row?: { contractId?: string | number } | null, onSuccess?: () => void) {
+    if (!row?.contractId) return;
+    getOwnerContractDetail({ contractId: row.contractId } as OwnerContractIdDto).then(resp => {
+      if (resp.code !== 0 || !resp.data) {
+        message(resp.message || "获取业主合同详情失败", { type: "error" });
+        return;
+      }
+      const sourceContractId = row.contractId;
+      const detail = resp.data as OwnerDetailVo;
+      const contract = (detail.ownerContract || {}) as any;
+      const renewStart = contract.contractEnd ? dayjs(contract.contractEnd).add(1, "day").format("YYYY-MM-DD") : "";
+      const renewEnd = contract.contractEnd ? dayjs(contract.contractEnd).add(1, "year").format("YYYY-MM-DD") : "";
+      const renewDetail = {
+        ...detail,
+        ownerContract: {
+          ...contract,
+          contractStart: renewStart,
+          contractEnd: renewEnd,
+          contractNature: 2,
+          signStatus: "PENDING",
+          status: "ACTIVE"
+        }
+      } as OwnerDetailVo;
+
+      addDialog({
+        title: "业主续约",
+        props: {
+          formInline: renewDetail,
+          isEdit: false
+        },
+        top: "1vh",
+        width: "1180px",
+        lockScroll: true,
+        alignCenter: true,
+        draggable: true,
+        fullscreen: deviceDetection(),
+        fullscreenIcon: true,
+        closeOnClickModal: false,
+        destroyOnClose: true,
+        contentRenderer: () => h(OwnerContractFormDialog, { ref: formRef, formInline: renewDetail, isEdit: false }),
+        beforeSure: async done => {
+          const formInstance = formRef.value;
+          try {
+            const payload = await formInstance?.validateAndBuildPayload?.();
+            if (!payload) {
+              message("请填写完整信息", { type: "warning" });
+              return;
+            }
+            const result = await renewOwnerContract({ ...(payload as any), sourceContractId });
+            if (result.code === 0) {
+              message("业主续约成功", { type: "success" });
+              onSuccess?.();
+              done();
+            } else {
+              message(result.message || "业主续约失败", { type: "error" });
+            }
+          } catch (error: any) {
+            const formEl = formInstance?.getRef?.();
+            const firstFieldKey = error?.fields ? Object.keys(error.fields)[0] : "";
+            if (firstFieldKey) formEl?.scrollToField?.(firstFieldKey);
+            message(resolveSubmitErrorMessage(error), { type: "warning" });
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * @description 打开业主退房对话框
+   * @param row
+   * @param onSuccess
+   */
+  function openOwnerCheckoutDialog(row?: (OwnerListVo & { contractId?: string | number }) | null, onSuccess?: () => void) {
+    if (!row?.contractId) return;
+    const checkoutFormRef = ref();
+    addDialog({
+      title: "业主退房",
+      props: {
+        formInline: row
+      },
+      width: "720px",
+      lockScroll: true,
+      alignCenter: true,
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      destroyOnClose: true,
+      contentRenderer: () => h(OwnerContractCheckoutDialog, { ref: checkoutFormRef, formInline: row }),
+      beforeSure: async done => {
+        try {
+          const payload = await checkoutFormRef.value?.validateAndBuildPayload?.();
+          const resp = await checkoutOwnerContract(payload);
+          if (resp.code === 0) {
+            message("业主退房已完成", { type: "success" });
+            onSuccess?.();
+            done();
+          } else {
+            message(resp.message || "业主退房失败", { type: "error" });
+          }
+        } catch (error: any) {
+          message(resolveSubmitErrorMessage(error), { type: "warning" });
+        }
+      }
+    });
+  }
+
   function openOwnerViewDialog(title = "业主合同详情", row?: { contractId?: string | number } | OwnerDetailVo | null) {
     if ((row as { contractId?: string | number } | undefined)?.contractId && !("ownerContract" in (row || {}))) {
       getOwnerContractDetail({ contractId: (row as { contractId?: string | number }).contractId } as OwnerContractIdDto).then(resp => {
@@ -136,6 +244,8 @@ function useOwnerContract() {
 
   return {
     openOwnerDialog,
+    openOwnerRenewDialog,
+    openOwnerCheckoutDialog,
     openOwnerViewDialog
   };
 }

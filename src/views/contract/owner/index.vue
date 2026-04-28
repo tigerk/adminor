@@ -219,7 +219,7 @@
   };
 
   const router = useRouter();
-  const { openOwnerDialog, openOwnerViewDialog } = useOwnerContract();
+  const { openOwnerDialog, openOwnerRenewDialog, openOwnerCheckoutDialog, openOwnerViewDialog } = useOwnerContract();
   const loading = ref(false);
   const tableData = ref<OwnerListRow[]>([]);
   const total = ref(0);
@@ -384,12 +384,12 @@
 
   function handleOwnerRenew(row: OwnerListRow) {
     if (!row.contractId) return;
-    message("业主续约功能需要后端续约接口支持后接入", { type: "warning" });
+    openOwnerRenewDialog({ contractId: row.contractId }, loadList);
   }
 
   function handleOwnerCheckout(row: OwnerListRow) {
     if (!row.contractId) return;
-    message("业主退房功能需要后端退房接口支持后接入", { type: "warning" });
+    openOwnerCheckoutDialog(row, loadList);
   }
 
   async function handleToggleStatus(row: OwnerListRow) {

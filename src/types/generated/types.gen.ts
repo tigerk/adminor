@@ -6983,6 +6983,42 @@ export type OwnerContractDto = {
      */
     remark?: string;
     /**
+     * 原业主合同ID
+     */
+    parentContractId?: string;
+    /**
+     * 合同性质：1=新签，2=续约
+     */
+    contractNature?: number;
+    /**
+     * 续约来源合同编号快照
+     */
+    renewFromContractNo?: string;
+    /**
+     * 退房状态：0=未退房，1=已退房
+     */
+    checkoutStatus?: number;
+    /**
+     * 退房日期
+     */
+    checkoutDate?: string;
+    /**
+     * 退房原因
+     */
+    checkoutReason?: string;
+    /**
+     * 退房操作人ID
+     */
+    checkoutBy?: string;
+    /**
+     * 退房操作人名称
+     */
+    checkoutByName?: string;
+    /**
+     * 退房操作时间
+     */
+    checkoutAt?: string;
+    /**
      * 创建人
      */
     createBy?: string;
@@ -7650,6 +7686,48 @@ export type ResponseResultOwnerContractTotalVo = {
 };
 
 /**
+ * 业主合同续约DTO
+ */
+export type OwnerRenewDto = {
+    /**
+     * 业主类型
+     */
+    ownerType?: OwnerTypeEnum;
+    /**
+     * 个人业主信息
+     */
+    ownerPersonal?: OwnerPersonalDto;
+    /**
+     * 企业业主信息
+     */
+    ownerCompany?: OwnerCompanyDto;
+    /**
+     * 业主合同
+     */
+    ownerContract?: OwnerContractDto;
+    /**
+     * 合同房源列表
+     */
+    contractSubjectList?: Array<OwnerContractSubjectDto>;
+    /**
+     * 包租规则
+     */
+    ownerLeaseRule?: OwnerLeaseRuleDto;
+    /**
+     * 包租免租规则列表
+     */
+    ownerLeaseFreeRuleList?: Array<OwnerLeaseFreeRuleDto>;
+    /**
+     * 创建人
+     */
+    createBy?: string;
+    /**
+     * 续约来源业主合同ID
+     */
+    sourceContractId?: string;
+};
+
+/**
  * 业主合同ID DTO
  */
 export type OwnerContractIdDto = {
@@ -7731,6 +7809,22 @@ export type OwnerListVo = {
      * 状态
      */
     status?: 'ACTIVE' | 'DISABLED';
+    /**
+     * 合同性质：1=新签，2=续约
+     */
+    contractNature?: number;
+    /**
+     * 退房状态：0=未退房，1=已退房
+     */
+    checkoutStatus?: number;
+    /**
+     * 退房日期
+     */
+    checkoutDate?: string;
+    /**
+     * 退房原因
+     */
+    checkoutReason?: string;
     /**
      * 创建时间
      */
@@ -7883,6 +7977,36 @@ export type OwnerCreateDto = {
      * 创建人
      */
     createBy?: string;
+};
+
+/**
+ * 业主合同退房DTO
+ */
+export type OwnerContractCheckoutDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
+    /**
+     * 退房日期
+     */
+    checkoutDate?: string;
+    /**
+     * 退房原因
+     */
+    checkoutReason?: string;
+    /**
+     * 结算说明
+     */
+    settlementRemark?: string;
+    /**
+     * 是否释放房源
+     */
+    releaseSubject?: boolean;
+    /**
+     * 是否作废退房日之后未付款账单
+     */
+    voidUnpaidFutureBills?: boolean;
 };
 
 /**
@@ -8282,6 +8406,10 @@ export type LeaseQueryDto = {
      * N天内到期合同
      */
     expiringDaysWithin?: number;
+    /**
+     * 作废原因
+     */
+    cancelReason?: string;
 };
 
 export type ResponseResultTenantTotalVo = {
@@ -8672,6 +8800,18 @@ export type LeaseListVo = {
      * 合同备注
      */
     remark?: string;
+    /**
+     * 作废原因
+     */
+    cancelReason?: string;
+    /**
+     * 作废人ID
+     */
+    cancelBy?: string;
+    /**
+     * 作废时间
+     */
+    cancelAt?: string;
     /**
      * 是否删除
      */
@@ -9087,6 +9227,18 @@ export type LeaseDetailVo = {
      * 合同备注
      */
     remark?: string;
+    /**
+     * 作废原因
+     */
+    cancelReason?: string;
+    /**
+     * 作废人ID
+     */
+    cancelBy?: string;
+    /**
+     * 作废时间
+     */
+    cancelAt?: string;
     /**
      * 是否删除
      */
@@ -10810,17 +10962,17 @@ export type MultiApproveEnum = 'OR_SIGN' | 'AND_SIGN';
 /**
  * 业务日志业务类型枚举
  */
-export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
+export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
 
 /**
  * 业务日志来源类型枚举
  */
-export type BizOperateSourceTypeEnum = 'NONE' | 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_PAYABLE_BILL_PAYMENT' | 'OWNER_SETTLEMENT_BILL';
+export type BizOperateSourceTypeEnum = 'NONE' | 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_PAYABLE_BILL_PAYMENT' | 'OWNER_SETTLEMENT_BILL';
 
 /**
  * 业务操作类型枚举
  */
-export type BizOperateTypeEnum = 'CREATE' | 'SAVE' | 'UPDATE' | 'RENEW' | 'CANCEL' | 'PAY';
+export type BizOperateTypeEnum = 'CREATE' | 'SAVE' | 'UPDATE' | 'RENEW' | 'CHECKOUT' | 'CANCEL' | 'PAY';
 
 export type BookingStatusEnum = 'BOOKING' | 'CONTRACTED' | 'TENANT_DEFAULTED' | 'OWNER_DEFAULTED' | 'CANCELLED_EXPIRED';
 
@@ -13321,6 +13473,24 @@ export type TotalResponses = {
 
 export type TotalResponse = TotalResponses[keyof TotalResponses];
 
+export type RenewData = {
+    body: OwnerRenewDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/renew';
+};
+
+export type RenewResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type RenewResponse = RenewResponses[keyof RenewResponses];
+
 export type PreviewData = {
     body: OwnerContractIdDto;
     path?: never;
@@ -13405,6 +13575,24 @@ export type Create5Responses = {
 
 export type Create5Response = Create5Responses[keyof Create5Responses];
 
+export type CheckoutData = {
+    body: OwnerContractCheckoutDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/checkout';
+};
+
+export type CheckoutResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type CheckoutResponse = CheckoutResponses[keyof CheckoutResponses];
+
 export type UpdateLeaseData = {
     body: TenantCreateDto;
     path?: never;
@@ -13473,7 +13661,7 @@ export type UpdateTenantInfoResponses = {
 
 export type UpdateTenantInfoResponse = UpdateTenantInfoResponses[keyof UpdateTenantInfoResponses];
 
-export type RenewData = {
+export type Renew1Data = {
     body: TenantCreateDto;
     path?: never;
     query: {
@@ -13482,14 +13670,14 @@ export type RenewData = {
     url: '/saas/contract/lease/renew';
 };
 
-export type RenewResponses = {
+export type Renew1Responses = {
     /**
      * OK
      */
     200: ResponseResultLong;
 };
 
-export type RenewResponse = RenewResponses[keyof RenewResponses];
+export type Renew1Response = Renew1Responses[keyof Renew1Responses];
 
 export type GetLeaseOperateLogListData = {
     body: LeaseQueryDto;
@@ -13642,7 +13830,9 @@ export type DeleteContractResponse = DeleteContractResponses[keyof DeleteContrac
 export type CancelTenantData = {
     body: LeaseQueryDto;
     path?: never;
-    query?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
     url: '/saas/contract/lease/cancel';
 };
 
