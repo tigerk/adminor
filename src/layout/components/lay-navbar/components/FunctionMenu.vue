@@ -22,14 +22,22 @@
                 <span class="menu-text">租客合同</span>
               </div>
             </el-dropdown-item>
-            <!--            <el-dropdown-item class="menu-item" @click="handleMenuClick('owner-contract')">-->
-            <!--              <div class="menu-content">-->
-            <!--                <div class="icon-wrapper primary-light">-->
-            <!--                  <el-icon><DocumentChecked /></el-icon>-->
-            <!--                </div>-->
-            <!--                <span class="menu-text">房东合同</span>-->
-            <!--              </div>-->
-            <!--            </el-dropdown-item>-->
+            <el-dropdown-item class="menu-item" @click="handleMenuClick('owner-contract')">
+              <div class="menu-content">
+                <div class="icon-wrapper primary-light">
+                  <el-icon><DocumentChecked /></el-icon>
+                </div>
+                <span class="menu-text">业主合同</span>
+              </div>
+            </el-dropdown-item>
+            <el-dropdown-item class="menu-item" @click="handleMenuClick('reservation')">
+              <div class="menu-content">
+                <div class="icon-wrapper danger">
+                  <el-icon><Edit /></el-icon>
+                </div>
+                <span class="menu-text">添加预定</span>
+              </div>
+            </el-dropdown-item>
           </div>
 
           <!-- 分组：房源管理 -->
@@ -78,14 +86,6 @@
                   <el-icon><UserFilled /></el-icon>
                 </div>
                 <span class="menu-text">潜在业主</span>
-              </div>
-            </el-dropdown-item>
-            <el-dropdown-item class="menu-item" @click="handleMenuClick('reservation')">
-              <div class="menu-content">
-                <div class="icon-wrapper danger">
-                  <el-icon><Edit /></el-icon>
-                </div>
-                <span class="menu-text">添加预定</span>
               </div>
             </el-dropdown-item>
           </div>
@@ -141,19 +141,21 @@
 </template>
 
 <script setup lang="ts">
-  import { Brush, Calendar, Document, Edit, House, List, OfficeBuilding, Plus, Tickets, Tools, User, UserFilled, Van } from "@element-plus/icons-vue";
+  import { Brush, Calendar, Document, Edit, House, List, OfficeBuilding, Plus, Tickets, Tools, User, UserFilled, Van, DocumentChecked } from "@element-plus/icons-vue";
   import { ElMessage } from "element-plus";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
   import useBooking from "@/views/contract/booking/utils/hook";
+  import useOwnerContract from "@/views/contract/owner/utils/hook";
 
   const { openFocusEditDialog } = useFocusEdit();
   const { openEntireEditDialog } = useEntireEdit();
   const { openShareEditDialog } = useShareEdit();
   const { openBookingDialog } = useBooking();
   const { openTenantDialog } = useTenant();
+  const { openOwnerDialog } = useOwnerContract();
 
   // 处理下拉菜单显示状态变化
   const handleVisibleChange = (visible: boolean) => {
@@ -219,7 +221,7 @@
   };
 
   const handleOwnerContract = () => {
-    ElMessage.success("打开房东合同模块");
+    openOwnerDialog("添加业主合同");
   };
 
   const handleSharedRental = () => {
