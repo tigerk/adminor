@@ -5,13 +5,14 @@ import { getOwnerContractDetail, getOwnerContractList } from "@/api/contract/own
 import { getDictDataByDictCode, getDictDataByParentCode } from "@/api/sys/dict";
 import { PAYMENT_METHOD_OPTIONS, PRICE_METHOD_OPTIONS } from "@/constants";
 import { OwnerContractSubjectTypeEnumMeta } from "@/types/generated/enum.meta";
-import type { ContractTemplateListVo, OwnerContractSubjectTypeEnum, OwnerCreateDto, OwnerDetailVo, OwnerLeaseFreeRuleDto, OwnerListVo, OwnerUpdateDto } from "@/types/generated";
+import type { ContractTemplateListVo, OwnerContractSubjectTypeEnum, OwnerCreateDto, OwnerDetailVo, OwnerListVo, OwnerUpdateDto } from "@/types/generated";
 import { createOwnerContractRules } from "../model/ownerContractFormRules";
 import type {
   ContractSubjectFormItem,
   ContractTemplateParamItem,
   OwnerContractForm,
   OwnerLeaseFeeForm,
+  OwnerLeaseFreeRuleForm,
   OwnerRentFreeRuleForm,
   OwnerSettlementItemForm,
   OwnerSettlementRuleForm,
@@ -69,7 +70,7 @@ export const createDefaultSettlementRule = (): OwnerSettlementRuleForm => ({
   settlementTiming: "TENANT_PAYMENT_REALTIME",
   rentFreeEnabled: false,
   settlementItemList: [],
-  status: "ACTIVE"
+  status: 1
 });
 
 export const createDefaultRentFreeRule = (): OwnerRentFreeRuleForm => ({
@@ -79,15 +80,15 @@ export const createDefaultRentFreeRule = (): OwnerRentFreeRuleForm => ({
   ownerRatio: 0,
   platformRatio: 1,
   calcMode: "BY_DAYS",
-  status: "ACTIVE"
+  status: 1
 });
 
-export const createDefaultLeaseFreeRule = (): OwnerLeaseFreeRuleDto => ({
+export const createDefaultLeaseFreeRule = (): OwnerLeaseFreeRuleForm => ({
   freeType: "BUILT_IN",
   calcMode: "BY_DAYS",
   freeAmount: 0,
   freeRatio: 0,
-  status: "ACTIVE"
+  status: 1
 });
 
 function buildMasterLeasePayWay(depositMonths?: number, paymentMonths?: number) {
@@ -123,13 +124,13 @@ export const createSubjectRule = (subjectType: OwnerContractSubjectTypeEnum, sub
 });
 
 export const createDefaultForm = (): OwnerContractForm => ({
-  ownerType: "PERSONAL",
+  ownerType: 0,
   ownerPersonal: {
     name: "",
     phone: "",
-    idType: "ID_CARD",
+    idType: 0,
     idNo: "",
-    gender: "MALE",
+    gender: 1,
     idCardFrontList: [],
     idCardBackList: [],
     idCardInHandList: [],
@@ -137,12 +138,12 @@ export const createDefaultForm = (): OwnerContractForm => ({
     tags: [],
     payeeName: "",
     payeePhone: "",
-    payeeIdType: "ID_CARD",
+    payeeIdType: 0,
     payeeIdNo: "",
     bankAccountName: "",
     bankAccountNo: "",
     bankName: "",
-    status: "ACTIVE"
+    status: 1
   },
   ownerCompany: {
     name: "",
@@ -150,19 +151,19 @@ export const createDefaultForm = (): OwnerContractForm => ({
     uscc: "",
     contactName: "",
     legalPerson: "",
-    legalPersonIdType: "ID_CARD",
+    legalPersonIdType: 0,
     legalPersonIdNo: "",
     registeredAddress: "",
     tags: [],
     businessLicenseUrls: [],
     payeeName: "",
     payeePhone: "",
-    payeeIdType: "ID_CARD",
+    payeeIdType: 0,
     payeeIdNo: "",
     bankAccountName: "",
     bankAccountNo: "",
     bankName: "",
-    status: "ACTIVE"
+    status: 1
   },
   ownerContract: {
     cooperationMode: "LIGHT_MANAGED",
@@ -170,9 +171,9 @@ export const createDefaultForm = (): OwnerContractForm => ({
     contractMedium: "PAPER",
     signType: "NEW",
     notifyOwner: false,
-    signStatus: "PENDING",
-    status: "ACTIVE",
-    approvalStatus: "APPROVED",
+    signStatus: 0,
+    status: 1,
+    approvalStatus: 2,
     contractStart: "",
     contractEnd: "",
     remark: ""
@@ -184,7 +185,7 @@ export const createDefaultForm = (): OwnerContractForm => ({
     depositMonths: 1,
     paymentMonths: 1,
     payWay: "",
-    rentDueType: "FIXED",
+    rentDueType: 2,
     rentDueDay: 4,
     rentDueOffsetDays: 0,
     firstPayDate: "",
@@ -194,7 +195,7 @@ export const createDefaultForm = (): OwnerContractForm => ({
     billingEnd: "",
     prorateType: "BY_DAYS",
     otherFeeList: [],
-    status: "ACTIVE"
+    status: 1
   },
   ownerLeaseFreeRuleList: []
 });
@@ -214,7 +215,7 @@ export function useOwnerContractForm() {
 
   const sharedContractSubject = computed(() => form.contractSubjectList[0]);
   const configuredSubjectCount = computed(() => form.contractSubjectList.filter(item => isConfigured(item)).length);
-  const currentPayeeForm = computed(() => (form.ownerType === "PERSONAL" ? form.ownerPersonal : form.ownerCompany));
+  const currentPayeeForm = computed(() => (form.ownerType === 0 ? form.ownerPersonal : form.ownerCompany));
 
   function isConfigured(item: ContractSubjectFormItem) {
     if (form.ownerContract.cooperationMode === "MASTER_LEASE") return true;
@@ -279,7 +280,7 @@ export function useOwnerContractForm() {
     resetForm();
     if (!detail) return;
     const raw = detail as any;
-    form.ownerType = detail.ownerType || "PERSONAL";
+    form.ownerType = detail.ownerType ?? 0;
     form.ownerPersonal = { ...createDefaultForm().ownerPersonal, ...(raw.ownerPersonal || {}) };
     form.ownerCompany = { ...createDefaultForm().ownerCompany, ...(raw.ownerCompany || {}) };
     form.ownerContract = { ...createDefaultForm().ownerContract, ...(raw.ownerContract || {}) };
@@ -342,16 +343,16 @@ export function useOwnerContractForm() {
     const resp = await getOwnerContractDetail({ contractId: item.contractId });
     const detail = resp.data;
     if (!detail) return;
-    if (form.ownerType === "PERSONAL" && detail.ownerPersonal) {
-      form.ownerPersonal = { ...form.ownerPersonal, ...detail.ownerPersonal };
+    if (form.ownerType === 0 && detail.ownerPersonal) {
+      form.ownerPersonal = { ...form.ownerPersonal, ...(detail.ownerPersonal as any) };
     }
-    if (form.ownerType === "COMPANY" && detail.ownerCompany) {
-      form.ownerCompany = { ...form.ownerCompany, ...detail.ownerCompany };
+    if (form.ownerType === 1 && detail.ownerCompany) {
+      form.ownerCompany = { ...form.ownerCompany, ...(detail.ownerCompany as any) };
     }
   }
 
   function fillPayeeFromOwner() {
-    if (form.ownerType === "PERSONAL") {
+    if (form.ownerType === 0) {
       form.ownerPersonal.payeeName = form.ownerPersonal.name;
       form.ownerPersonal.payeePhone = form.ownerPersonal.phone;
       form.ownerPersonal.payeeIdType = form.ownerPersonal.idType;
@@ -367,7 +368,7 @@ export function useOwnerContractForm() {
   }
 
   function fillPayeeFromContact() {
-    if (form.ownerType !== "COMPANY") return;
+    if (form.ownerType !== 1) return;
     form.ownerCompany.payeeName = form.ownerCompany.contactName || form.ownerCompany.legalPerson;
     form.ownerCompany.payeePhone = form.ownerCompany.contactPhone;
     form.ownerCompany.payeeIdType = form.ownerCompany.legalPersonIdType;
@@ -512,6 +513,7 @@ export function useOwnerContractForm() {
   function buildSubmitPayload(): OwnerCreateDto | OwnerUpdateDto {
     const ownerContract = {
       ...form.ownerContract,
+      status: form.ownerContract.signStatus === 1 ? 2 : 1,
       contractStart: contractDateRange.value[0],
       contractEnd: contractDateRange.value[1]
     };
@@ -556,7 +558,7 @@ export function useOwnerContractForm() {
       }))
     };
 
-    if (form.ownerType === "PERSONAL") payload.ownerPersonal = { ...form.ownerPersonal };
+    if (form.ownerType === 0) payload.ownerPersonal = { ...form.ownerPersonal };
     else payload.ownerCompany = { ...form.ownerCompany };
 
     if (form.ownerContract.cooperationMode === "MASTER_LEASE") {

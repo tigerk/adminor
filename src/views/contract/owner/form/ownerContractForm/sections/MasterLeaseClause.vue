@@ -202,17 +202,17 @@
   });
   const PAYMENT_DUE_TYPE_OPTIONS = RENT_DUE_TYPE_OPTIONS.map(item => ({
     ...item,
-    label: item.value === "EARLY" ? "提前" : item.value === "LATE" ? "延后" : "固定"
+    label: item.value === 1 ? "提前" : item.value === 3 ? "延后" : "固定"
   }));
-  const rentDueUnitText = computed(() => (form.value.ownerLeaseRule.rentDueType === "FIXED" ? "号付款" : "天"));
+  const rentDueUnitText = computed(() => (form.value.ownerLeaseRule.rentDueType === 2 ? "号付款" : "天"));
   const rentDueValue = computed({
     get: () =>
-      form.value.ownerLeaseRule.rentDueType === "FIXED"
+      form.value.ownerLeaseRule.rentDueType === 2
         ? Number(form.value.ownerLeaseRule.rentDueDay || 0)
         : Number(form.value.ownerLeaseRule.rentDueOffsetDays || 0),
     set: value => {
       const normalized = Math.max(0, Number(value || 0));
-      if (form.value.ownerLeaseRule.rentDueType === "FIXED") {
+      if (form.value.ownerLeaseRule.rentDueType === 2) {
         form.value.ownerLeaseRule.rentDueDay = normalized;
         form.value.ownerLeaseRule.rentDueOffsetDays = 0;
         return;
@@ -240,7 +240,7 @@
   watch(
     () => form.value.ownerLeaseRule.rentDueType,
     value => {
-      if (value === "FIXED") {
+      if (value === 2) {
         form.value.ownerLeaseRule.rentDueDay = Math.max(1, Number(form.value.ownerLeaseRule.rentDueDay || 4));
         form.value.ownerLeaseRule.rentDueOffsetDays = 0;
         return;

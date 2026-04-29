@@ -4,26 +4,28 @@ import type {
   OwnerContractDto,
   OwnerCooperationModeEnum,
   OwnerContractSubjectTypeEnum,
+  OwnerCreateDto,
   OwnerFreeCalcModeEnum,
   OwnerFreeTypeEnum,
   OwnerIncomeBasisEnum,
-  OwnerLeaseFreeRuleDto,
   OwnerLeaseRuleDto,
   OwnerPersonalDto,
   OwnerRentFreeRuleDto,
   OwnerSettlementModeEnum,
   OwnerSettlementRuleDto,
-  OwnerSignStatusEnum,
-  OwnerTypeEnum,
   OwnerFeeModeEnum
 } from "@/types/generated";
 
 // ─── Primitive alias types ────────────────────────────────────────────────────
 
-export type IdTypeValue = "ID_CARD" | "PASSPORT" | "HONGKONG_MACAO" | "TAIWAN";
-export type GenderValue = "UNKNOWN" | "MALE" | "FEMALE";
-export type StatusValue = "ACTIVE" | "DISABLED";
-export type ApprovalStatusValue = "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN";
+export type IdTypeValue = NonNullable<OwnerPersonalDto["idType"]>;
+export type GenderValue = NonNullable<OwnerPersonalDto["gender"]>;
+export type StatusValue = NonNullable<OwnerPersonalDto["status"]>;
+export type OwnerTypeCode = NonNullable<OwnerCreateDto["ownerType"]>;
+export type OwnerSignStatusCode = NonNullable<OwnerContractDto["signStatus"]>;
+export type OwnerContractStatusValue = NonNullable<OwnerContractDto["status"]>;
+export type ApprovalStatusValue = NonNullable<OwnerContractDto["approvalStatus"]>;
+export type LeaseRentDueTypeCode = NonNullable<OwnerLeaseRuleDto["rentDueType"]>;
 export type OwnerSignTypeValue = "NEW" | "RENEW";
 export type OwnerContractMediumValue = "ELECTRONIC" | "PAPER";
 export type OwnerPaymentFeeBearTypeValue = "PLATFORM_ALL" | "OWNER_ALL" | "BY_INCOME_SHARE";
@@ -79,7 +81,9 @@ export type OwnerSettlementItemForm = {
 
 // ─── Owner personal form ──────────────────────────────────────────────────────
 
-export type OwnerPersonalForm = OwnerPersonalDto & {
+export type OwnerPersonalForm = Omit<OwnerPersonalDto, "gender" | "idType" | "payeeIdType" | "status"> & {
+  gender?: GenderValue;
+  idType?: IdTypeValue;
   payeeName?: string;
   payeePhone?: string;
   payeeIdType?: IdTypeValue;
@@ -91,11 +95,13 @@ export type OwnerPersonalForm = OwnerPersonalDto & {
   idCardBackList?: string[];
   idCardInHandList?: string[];
   otherImageList?: string[];
+  status?: StatusValue;
 };
 
 // ─── Owner company form ───────────────────────────────────────────────────────
 
-export type OwnerCompanyForm = OwnerCompanyDto & {
+export type OwnerCompanyForm = Omit<OwnerCompanyDto, "legalPersonIdType" | "payeeIdType" | "status"> & {
+  legalPersonIdType?: IdTypeValue;
   payeeName?: string;
   payeePhone?: string;
   payeeIdType?: IdTypeValue;
@@ -104,21 +110,23 @@ export type OwnerCompanyForm = OwnerCompanyDto & {
   bankAccountNo?: string;
   bankName?: string;
   businessLicenseUrls?: string[];
+  status?: StatusValue;
 };
 
 // ─── Owner contract form ──────────────────────────────────────────────────────
 
-export type OwnerContractFormDto = OwnerContractDto & {
+export type OwnerContractFormDto = Omit<OwnerContractDto, "signStatus" | "status" | "approvalStatus"> & {
   signType?: OwnerSignTypeValue;
   contractMedium?: OwnerContractMediumValue;
   notifyOwner?: boolean;
-  status?: StatusValue;
+  signStatus?: OwnerSignStatusCode;
+  status?: OwnerContractStatusValue;
   approvalStatus?: ApprovalStatusValue;
 };
 
 // ─── Settlement rule form ─────────────────────────────────────────────────────
 
-export type OwnerSettlementRuleForm = Omit<OwnerSettlementRuleDto, "settlementItemList"> & {
+export type OwnerSettlementRuleForm = Omit<OwnerSettlementRuleDto, "settlementItemList" | "status"> & {
   hasGuaranteedRent?: boolean;
   managementFeeEnabled?: boolean;
   managementFeeMode?: OwnerFeeModeEnum;
@@ -132,18 +140,30 @@ export type OwnerSettlementRuleForm = Omit<OwnerSettlementRuleDto, "settlementIt
 
 // ─── Rent free rule form ──────────────────────────────────────────────────────
 
-export type OwnerRentFreeRuleForm = OwnerRentFreeRuleDto & {
+export type OwnerRentFreeRuleForm = Omit<OwnerRentFreeRuleDto, "status"> & {
   enabled?: boolean;
   status?: StatusValue;
 };
 
 // ─── Lease rule form ──────────────────────────────────────────────────────────
 
-export type OwnerLeaseRuleForm = Omit<OwnerLeaseRuleDto, "otherFeeList"> & {
+export type OwnerLeaseRuleForm = Omit<OwnerLeaseRuleDto, "otherFeeList" | "rentDueType" | "status"> & {
   handoverDate?: string;
   usageType?: string;
+  rentDueType?: LeaseRentDueTypeCode;
   otherFeeList?: OwnerLeaseFeeForm[];
   status?: StatusValue;
+};
+
+export type OwnerLeaseFreeRuleForm = {
+  freeType?: OwnerFreeTypeEnum;
+  startDate?: string;
+  endDate?: string;
+  calcMode?: OwnerFreeCalcModeEnum;
+  freeAmount?: number;
+  freeRatio?: number;
+  status?: StatusValue;
+  remark?: string;
 };
 
 // ─── Lease fee form ───────────────────────────────────────────────────────────
@@ -168,8 +188,8 @@ export type OwnerContractSubjectFormDto = {
   subjectId?: string | number;
   subjectName?: string;
   remark?: string;
-  settlementRule?: OwnerSettlementRuleDto;
-  rentFreeRule?: OwnerRentFreeRuleDto;
+  settlementRule?: OwnerSettlementRuleForm;
+  rentFreeRule?: OwnerRentFreeRuleForm;
 };
 
 export type ContractSubjectFormItem = OwnerContractSubjectFormDto & {
@@ -183,13 +203,13 @@ export type ContractSubjectFormItem = OwnerContractSubjectFormDto & {
 // ─── Root form ────────────────────────────────────────────────────────────────
 
 export type OwnerContractForm = {
-  ownerType: OwnerTypeEnum;
+  ownerType: OwnerTypeCode;
   ownerPersonal: OwnerPersonalForm;
   ownerCompany: OwnerCompanyForm;
   ownerContract: OwnerContractFormDto;
   contractSubjectList: ContractSubjectFormItem[];
   ownerLeaseRule: OwnerLeaseRuleForm;
-  ownerLeaseFreeRuleList: OwnerLeaseFreeRuleDto[];
+  ownerLeaseFreeRuleList: OwnerLeaseFreeRuleForm[];
 };
 
 // ─── Label maps ───────────────────────────────────────────────────────────────
@@ -204,9 +224,9 @@ export const CONTRACT_MEDIUM_LABEL_MAP: Record<OwnerContractMediumValue, string>
   PAPER: "纸质合同"
 };
 
-export const SIGN_STATUS_LABEL_MAP: Record<OwnerSignStatusEnum, string> = {
-  PENDING: "待签字",
-  SIGNED: "已签字"
+export const SIGN_STATUS_LABEL_MAP: Record<OwnerSignStatusCode, string> = {
+  0: "待签字",
+  1: "已签字"
 };
 
 export const INCOME_BASIS_LABEL_MAP: Record<OwnerIncomeBasisEnum, string> = {
@@ -272,7 +292,7 @@ export const COOPERATION_MODE_LABEL_MAP: Record<string, string> = {
   MASTER_LEASE: "包租模式"
 };
 
-export const OWNER_TYPE_LABEL_MAP: Record<string, string> = {
-  PERSONAL: "个人业主",
-  COMPANY: "企业业主"
+export const OWNER_TYPE_LABEL_MAP: Record<OwnerTypeCode, string> = {
+  0: "个人业主",
+  1: "企业业主"
 };

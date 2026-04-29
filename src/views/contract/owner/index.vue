@@ -27,6 +27,11 @@
               <el-option v-for="item in cooperationModeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
+          <el-form-item label="合同状态">
+            <el-select v-model="queryForm.status" placeholder="请选择合同状态" clearable class="filter-input-sm" @change="handleSearch">
+              <el-option v-for="item in contractStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
           <el-form-item label="签署状态">
             <el-select v-model="queryForm.signStatus" placeholder="请选择签署状态" clearable class="filter-input-sm" @change="handleSearch">
               <el-option v-for="item in signStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -66,10 +71,17 @@
           @page-size-change="handlePageSizeChange"
           @page-current-change="handlePageCurrentChange"
         >
+          <template #status="{ row }">
+            <div class="table-cell-center">
+              <el-tag :type="contractStatusTypeMap[row.status ?? 1]">
+                {{ contractStatusLabelMap[row.status ?? 1] }}
+              </el-tag>
+            </div>
+          </template>
           <template #signStatus="{ row }">
             <div class="table-cell-center">
-              <el-tag :type="row.signStatus === 'SIGNED' ? 'success' : 'info'">
-                {{ signStatusLabelMap[row.signStatus || "PENDING"] }}
+              <el-tag :type="row.signStatus === 1 ? 'success' : 'info'">
+                {{ signStatusLabelMap[row.signStatus ?? 0] }}
               </el-tag>
             </div>
           </template>
@@ -152,8 +164,8 @@
   import User from "~icons/ep/user";
   import Phone from "~icons/ep/phone";
   import More from "~icons/ep/more-filled";
-  import type { OwnerContractIdDto, OwnerCooperationModeEnum, OwnerListVo, OwnerQueryDto, OwnerSignStatusEnum, OwnerTypeEnum } from "@/types/generated";
-  import { OwnerCooperationModeEnumMeta, OwnerSignStatusEnumMeta, OwnerTypeEnumMeta } from "@/types/generated/enum.meta";
+  import type { OwnerContractIdDto, OwnerCooperationModeEnum, OwnerListVo, OwnerQueryDto } from "@/types/generated";
+  import { OwnerContractStatusEnumMeta, OwnerCooperationModeEnumMeta, OwnerSignStatusEnumMeta, OwnerTypeEnumMeta } from "@/types/generated/enum.meta";
   import "@/shared/owner/panel.scss";
   import "@/shared/owner/financePage.scss";
 
@@ -164,11 +176,14 @@
     pageSize: number;
     ownerName: string;
     ownerPhone: string;
-    ownerType?: OwnerTypeEnum;
+    ownerType?: OwnerQueryDto["ownerType"];
     cooperationMode?: OwnerCooperationModeEnum;
-    signStatus?: OwnerSignStatusEnum;
+    status?: OwnerContractStatus;
+    signStatus?: OwnerQueryDto["signStatus"];
     expiringDaysWithin?: number;
   };
+
+  type OwnerContractStatus = NonNullable<OwnerQueryDto["status"]>;
 
   type OwnerListRow = OwnerListVo & {
     subjectNames?: string;
@@ -181,8 +196,11 @@
 
   type OwnerContractTotal = {
     total?: number;
+    pendingApprovalTotal?: number;
     pendingSignTotal?: number;
     signedTotal?: number;
+    checkedOutTotal?: number;
+    voidedTotal?: number;
     expiring30DaysTotal?: number;
   };
 
@@ -198,8 +216,11 @@
   });
   const totalStats = reactive<OwnerContractTotal>({
     total: 0,
+    pendingApprovalTotal: 0,
     pendingSignTotal: 0,
     signedTotal: 0,
+    checkedOutTotal: 0,
+    voidedTotal: 0,
     expiring30DaysTotal: 0
   });
 
@@ -209,44 +230,68 @@
     ownerName: "",
     ownerPhone: ""
   });
-  const summaryFilter = ref<"ALL" | "PENDING" | "SIGNED" | "EXPIRING_30">("ALL");
+  const summaryFilter = ref<"ALL" | "PENDING_APPROVAL" | "PENDING_SIGN" | "SIGNED" | "CHECKED_OUT" | "VOIDED" | "EXPIRING_30">("ALL");
   const previewVisible = ref(false);
   const pdfUrl = ref("");
 
-  const ownerTypeLabelMap: Record<OwnerTypeEnum, string> = {
-    PERSONAL: "个人",
-    COMPANY: "企业"
+  const ownerTypeLabelMap: Record<number, string> = {
+    [OwnerTypeEnumMeta.PERSONAL.code]: "个人",
+    [OwnerTypeEnumMeta.COMPANY.code]: "企业"
   };
   const cooperationModeLabelMap: Record<OwnerCooperationModeEnum, string> = {
     LIGHT_MANAGED: "轻托管",
     MASTER_LEASE: "包租"
   };
-  const signStatusLabelMap: Record<OwnerSignStatusEnum, string> = {
-    PENDING: "待签字",
-    SIGNED: "已签字"
+  const signStatusLabelMap: Record<number, string> = {
+    [OwnerSignStatusEnumMeta.PENDING.code]: "待签字",
+    [OwnerSignStatusEnumMeta.SIGNED.code]: "已签字"
+  };
+  const contractStatusLabelMap: Record<number, string> = {
+    [OwnerContractStatusEnumMeta.PENDING_APPROVAL.code]: "待审核",
+    [OwnerContractStatusEnumMeta.PENDING_SIGN.code]: "待签字",
+    [OwnerContractStatusEnumMeta.SIGNED.code]: "已签字",
+    [OwnerContractStatusEnumMeta.CHECKED_OUT.code]: "已退房",
+    [OwnerContractStatusEnumMeta.VOIDED.code]: "已作废"
+  };
+  const contractStatusTypeMap: Record<number, "success" | "info" | "warning" | "danger"> = {
+    [OwnerContractStatusEnumMeta.PENDING_APPROVAL.code]: "warning",
+    [OwnerContractStatusEnumMeta.PENDING_SIGN.code]: "info",
+    [OwnerContractStatusEnumMeta.SIGNED.code]: "success",
+    [OwnerContractStatusEnumMeta.CHECKED_OUT.code]: "warning",
+    [OwnerContractStatusEnumMeta.VOIDED.code]: "danger"
   };
 
   const ownerTypeOptions = [
-    { label: ownerTypeLabelMap.PERSONAL, value: OwnerTypeEnumMeta.PERSONAL.value as OwnerTypeEnum },
-    { label: ownerTypeLabelMap.COMPANY, value: OwnerTypeEnumMeta.COMPANY.value as OwnerTypeEnum }
+    { label: ownerTypeLabelMap[OwnerTypeEnumMeta.PERSONAL.code], value: OwnerTypeEnumMeta.PERSONAL.code },
+    { label: ownerTypeLabelMap[OwnerTypeEnumMeta.COMPANY.code], value: OwnerTypeEnumMeta.COMPANY.code }
   ];
   const cooperationModeOptions = [
-    { label: cooperationModeLabelMap.LIGHT_MANAGED, value: OwnerCooperationModeEnumMeta.LIGHT_MANAGED.value as OwnerCooperationModeEnum },
-    { label: cooperationModeLabelMap.MASTER_LEASE, value: OwnerCooperationModeEnumMeta.MASTER_LEASE.value as OwnerCooperationModeEnum }
+    { label: cooperationModeLabelMap.LIGHT_MANAGED, value: OwnerCooperationModeEnumMeta.LIGHT_MANAGED.code as OwnerCooperationModeEnum },
+    { label: cooperationModeLabelMap.MASTER_LEASE, value: OwnerCooperationModeEnumMeta.MASTER_LEASE.code as OwnerCooperationModeEnum }
   ];
   const signStatusOptions = [
-    { label: signStatusLabelMap.PENDING, value: OwnerSignStatusEnumMeta.PENDING.value as OwnerSignStatusEnum },
-    { label: signStatusLabelMap.SIGNED, value: OwnerSignStatusEnumMeta.SIGNED.value as OwnerSignStatusEnum }
+    { label: signStatusLabelMap[OwnerSignStatusEnumMeta.PENDING.code], value: OwnerSignStatusEnumMeta.PENDING.code },
+    { label: signStatusLabelMap[OwnerSignStatusEnumMeta.SIGNED.code], value: OwnerSignStatusEnumMeta.SIGNED.code }
   ];
+  const contractStatusOptions = Object.keys(contractStatusLabelMap).map(value => {
+    const code = Number(value);
+    return {
+      label: contractStatusLabelMap[code],
+      value: code
+    };
+  });
   const summaryCards = computed(() => [
     { key: "ALL", label: "全部", total: totalStats.total || 0, color: "#6b7280" },
-    { key: "PENDING", label: "待签字", total: totalStats.pendingSignTotal || 0, color: "#f59e0b" },
+    { key: "PENDING_APPROVAL", label: "待审核", total: totalStats.pendingApprovalTotal || 0, color: "#f59e0b" },
+    { key: "PENDING_SIGN", label: "待签字", total: totalStats.pendingSignTotal || 0, color: "#f59e0b" },
     { key: "SIGNED", label: "已签字", total: totalStats.signedTotal || 0, color: "#2563eb" },
+    { key: "CHECKED_OUT", label: "已退房", total: totalStats.checkedOutTotal || 0, color: "#8b5cf6" },
+    { key: "VOIDED", label: "已作废", total: totalStats.voidedTotal || 0, color: "#ef4444" },
     { key: "EXPIRING_30", label: "30天内到期", total: totalStats.expiring30DaysTotal || 0, color: "#ef4444" }
   ]);
 
   const columns: TableColumnList = [
-    { label: "签署状态", width: 100, align: "center", fixed: "left", slot: "signStatus" },
+    { label: "合同状态", width: 100, align: "center", fixed: "left", slot: "status" },
     { label: "业主信息", minWidth: 180, align: "center", slot: "ownerInfo" },
     { label: "委托模式", width: 120, align: "center", slot: "cooperationMode" },
     { label: "合同编号", prop: "contractNo", minWidth: 220 },
@@ -277,6 +322,7 @@
       ownerPhone: queryForm.ownerPhone || undefined,
       ownerType: queryForm.ownerType,
       cooperationMode: queryForm.cooperationMode,
+      status: queryForm.status,
       signStatus: queryForm.signStatus,
       expiringDaysWithin: queryForm.expiringDaysWithin,
       currentPage: String(pagination.currentPage),
@@ -338,6 +384,7 @@
     queryForm.ownerPhone = "";
     queryForm.ownerType = undefined;
     queryForm.cooperationMode = undefined;
+    queryForm.status = undefined;
     queryForm.signStatus = undefined;
     queryForm.expiringDaysWithin = undefined;
     summaryFilter.value = "ALL";
@@ -346,10 +393,14 @@
 
   function handleSummaryFilterChange(value: typeof summaryFilter.value) {
     summaryFilter.value = value;
+    queryForm.status = undefined;
     queryForm.signStatus = undefined;
     queryForm.expiringDaysWithin = undefined;
-    if (value === "PENDING") queryForm.signStatus = "PENDING";
-    if (value === "SIGNED") queryForm.signStatus = "SIGNED";
+    if (value === "PENDING_APPROVAL") queryForm.status = 0;
+    if (value === "PENDING_SIGN") queryForm.status = 1;
+    if (value === "SIGNED") queryForm.status = 2;
+    if (value === "CHECKED_OUT") queryForm.status = 3;
+    if (value === "VOIDED") queryForm.status = -1;
     if (value === "EXPIRING_30") queryForm.expiringDaysWithin = 30;
     handleSearch();
   }
@@ -379,7 +430,7 @@
   }
 
   function canVoidContract(row: OwnerListRow) {
-    return row.signStatus !== "SIGNED";
+    return [0, 1].includes(row.status ?? 1);
   }
 
   async function handleVoidContract(row: OwnerListRow) {

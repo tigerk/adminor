@@ -2832,7 +2832,7 @@ export type OwnerWithdrawOperateDto = {
     /**
      * 操作类型
      */
-    operateType?: OwnerWithdrawOperateEnum;
+    operateType?: string;
     /**
      * 失败或驳回原因
      */
@@ -2846,11 +2846,6 @@ export type OwnerWithdrawOperateDto = {
      */
     channel?: string;
 };
-
-/**
- * 业主提现操作类型枚举
- */
-export type OwnerWithdrawOperateEnum = 'APPROVE' | 'REJECT' | 'PAYING' | 'SUCCESS' | 'FAIL' | 'CANCEL';
 
 /**
  * 业主提现申请ID DTO
@@ -3123,11 +3118,6 @@ export type ResponseResultOwnerSettlementBillSummaryVo = {
 };
 
 /**
- * 业主合同房源类型枚举
- */
-export type OwnerContractSubjectTypeEnum = 'HOUSE' | 'FOCUS_BUILDING' | 'FOCUS';
-
-/**
  * 轻托管业主结算单列表VO
  */
 export type OwnerSettlementBillListVo = {
@@ -3166,7 +3156,7 @@ export type OwnerSettlementBillListVo = {
     /**
      * 合同房源类型
      */
-    subjectType?: OwnerContractSubjectTypeEnum;
+    subjectType?: string;
     /**
      * 合同房源名称
      */
@@ -3280,7 +3270,7 @@ export type OwnerSettlementBillDetailVo = {
     /**
      * 合同房源类型
      */
-    subjectType?: OwnerContractSubjectTypeEnum;
+    subjectType?: string;
     /**
      * 合同房源ID
      */
@@ -3666,7 +3656,7 @@ export type OwnerPayableBillPaymentCreateDto = {
     /**
      * 付款渠道
      */
-    payChannel?: 'CASH' | 'TRANSFER' | 'ALIPAY' | 'WECHAT' | 'YEEPAY' | 'POS' | 'OTHER';
+    payChannel?: string;
     /**
      * 第三方流水号
      */
@@ -4048,7 +4038,7 @@ export type OwnerPayableBillPaymentVo = {
     /**
      * 付款渠道
      */
-    payChannel?: 'CASH' | 'TRANSFER' | 'ALIPAY' | 'WECHAT' | 'YEEPAY' | 'POS' | 'OTHER';
+    payChannel?: string;
     /**
      * 第三方流水号
      */
@@ -6854,11 +6844,6 @@ export type OwnerContractVoidDto = {
 };
 
 /**
- * 业主承担方枚举
- */
-export type OwnerBearTypeEnum = 'PLATFORM' | 'OWNER' | 'SHARED';
-
-/**
  * 业主企业信息DTO
  */
 export type OwnerCompanyDto = {
@@ -6885,7 +6870,7 @@ export type OwnerCompanyDto = {
     /**
      * 法人证件类型
      */
-    legalPersonIdType?: 'ID_CARD' | 'PASSPORT' | 'HONGKONG_MACAO' | 'TAIWAN';
+    legalPersonIdType?: number;
     /**
      * 法人证件号码
      */
@@ -6909,7 +6894,7 @@ export type OwnerCompanyDto = {
     /**
      * 收款人证件类型
      */
-    payeeIdType?: 'ID_CARD' | 'PASSPORT' | 'HONGKONG_MACAO' | 'TAIWAN';
+    payeeIdType?: number;
     /**
      * 收款人证件号码
      */
@@ -6945,7 +6930,7 @@ export type OwnerCompanyDto = {
     /**
      * 状态
      */
-    status?: 'ACTIVE' | 'DISABLED';
+    status?: number;
     /**
      * 创建人
      */
@@ -6971,7 +6956,7 @@ export type OwnerContractDto = {
     /**
      * 合作模式
      */
-    cooperationMode?: OwnerCooperationModeEnum;
+    cooperationMode?: string;
     /**
      * 合同编号
      */
@@ -6987,15 +6972,15 @@ export type OwnerContractDto = {
     /**
      * 签署状态
      */
-    signStatus?: OwnerSignStatusEnum;
+    signStatus?: number;
     /**
      * 签约类型
      */
-    signType?: OwnerSignTypeEnum;
+    signType?: string;
     /**
      * 合同介质
      */
-    contractMedium?: OwnerContractMediumEnum;
+    contractMedium?: string;
     /**
      * 是否通知业主
      */
@@ -7011,11 +6996,11 @@ export type OwnerContractDto = {
     /**
      * 状态
      */
-    status?: 'ACTIVE' | 'DISABLED';
+    status?: number;
     /**
      * 审批状态
      */
-    approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
+    approvalStatus?: number;
     /**
      * 备注
      */
@@ -7075,11 +7060,6 @@ export type OwnerContractDto = {
 };
 
 /**
- * 业主合同介质枚举
- */
-export type OwnerContractMediumEnum = 'ELECTRONIC' | 'PAPER';
-
-/**
  * 业主合同房源DTO
  */
 export type OwnerContractSubjectDto = {
@@ -7090,7 +7070,7 @@ export type OwnerContractSubjectDto = {
     /**
      * 合同房源类型
      */
-    subjectType?: OwnerContractSubjectTypeEnum;
+    subjectType?: string;
     /**
      * 合同房源ID
      */
@@ -7114,31 +7094,6 @@ export type OwnerContractSubjectDto = {
 };
 
 /**
- * 业主合作模式枚举
- */
-export type OwnerCooperationModeEnum = 'LIGHT_MANAGED' | 'MASTER_LEASE';
-
-/**
- * 业主费用计算方式枚举
- */
-export type OwnerFeeModeEnum = 'RATIO' | 'FIXED';
-
-/**
- * 业主免租计算方式枚举
- */
-export type OwnerFreeCalcModeEnum = 'BY_DAYS' | 'FIXED' | 'RATIO';
-
-/**
- * 业主免租类型枚举
- */
-export type OwnerFreeTypeEnum = 'BUILT_IN' | 'OUTSIDE';
-
-/**
- * 业主结算收入口径枚举
- */
-export type OwnerIncomeBasisEnum = 'RECEIVED' | 'RECEIVABLE';
-
-/**
  * 包租其他费用DTO
  */
 export type OwnerLeaseFeeDto = {
@@ -7157,7 +7112,7 @@ export type OwnerLeaseFeeDto = {
     /**
      * 收支方向
      */
-    feeDirection?: 'IN' | 'OUT';
+    feeDirection?: string;
     /**
      * 付款方式代码
      */
@@ -7187,7 +7142,7 @@ export type OwnerLeaseFreeRuleDto = {
     /**
      * 免租类型
      */
-    freeType?: OwnerFreeTypeEnum;
+    freeType?: string;
     /**
      * 开始日期
      */
@@ -7199,7 +7154,7 @@ export type OwnerLeaseFreeRuleDto = {
     /**
      * 计算方式
      */
-    calcMode?: OwnerFreeCalcModeEnum;
+    calcMode?: string;
     /**
      * 免租金额
      */
@@ -7211,7 +7166,7 @@ export type OwnerLeaseFreeRuleDto = {
     /**
      * 状态
      */
-    status?: 'ACTIVE' | 'DISABLED';
+    status?: number;
     /**
      * 备注
      */
@@ -7245,7 +7200,7 @@ export type OwnerLeaseRuleDto = {
     /**
      * 收租类型
      */
-    rentDueType?: 'EARLY' | 'FIXED' | 'LATE';
+    rentDueType?: number;
     /**
      * 固定收租日
      */
@@ -7277,11 +7232,11 @@ export type OwnerLeaseRuleDto = {
     /**
      * 折算方式
      */
-    prorateType?: OwnerProrateTypeEnum;
+    prorateType?: string;
     /**
      * 状态
      */
-    status?: 'ACTIVE' | 'DISABLED';
+    status?: number;
     /**
      * 备注
      */
@@ -7291,11 +7246,6 @@ export type OwnerLeaseRuleDto = {
      */
     otherFeeList?: Array<OwnerLeaseFeeDto>;
 };
-
-/**
- * 业主支付手续费承担方式枚举
- */
-export type OwnerPaymentFeeBearTypeEnum = 'PLATFORM_ALL' | 'OWNER_ALL' | 'BY_INCOME_SHARE';
 
 /**
  * 业主个人信息DTO
@@ -7316,11 +7266,11 @@ export type OwnerPersonalDto = {
     /**
      * 性别
      */
-    gender?: 'UNKNOWN' | 'MALE' | 'FEMALE';
+    gender?: number;
     /**
      * 证件类型
      */
-    idType?: 'ID_CARD' | 'PASSPORT' | 'HONGKONG_MACAO' | 'TAIWAN';
+    idType?: number;
     /**
      * 证件号码
      */
@@ -7340,7 +7290,7 @@ export type OwnerPersonalDto = {
     /**
      * 收款人证件类型
      */
-    payeeIdType?: 'ID_CARD' | 'PASSPORT' | 'HONGKONG_MACAO' | 'TAIWAN';
+    payeeIdType?: number;
     /**
      * 收款人证件号码
      */
@@ -7384,17 +7334,12 @@ export type OwnerPersonalDto = {
     /**
      * 状态
      */
-    status?: 'ACTIVE' | 'DISABLED';
+    status?: number;
     /**
      * 创建人
      */
     createBy?: string;
 };
-
-/**
- * 业主包租折算方式枚举
- */
-export type OwnerProrateTypeEnum = 'BY_DAYS' | 'FULL_PERIOD';
 
 /**
  * 轻托管免租规则DTO
@@ -7407,7 +7352,7 @@ export type OwnerRentFreeRuleDto = {
     /**
      * 免租类型
      */
-    freeType?: OwnerFreeTypeEnum;
+    freeType?: string;
     /**
      * 开始日期
      */
@@ -7419,7 +7364,7 @@ export type OwnerRentFreeRuleDto = {
     /**
      * 承担方式
      */
-    bearType?: OwnerBearTypeEnum;
+    bearType?: string;
     /**
      * 业主承担比例
      */
@@ -7431,11 +7376,11 @@ export type OwnerRentFreeRuleDto = {
     /**
      * 计算方式
      */
-    calcMode?: OwnerFreeCalcModeEnum;
+    calcMode?: string;
     /**
      * 状态
      */
-    status?: 'ACTIVE' | 'DISABLED';
+    status?: number;
     /**
      * 备注
      */
@@ -7481,22 +7426,17 @@ export type OwnerSettlementFeeDto = {
 };
 
 /**
- * 业主轻托管结算模式枚举
- */
-export type OwnerSettlementModeEnum = 'FIXED' | 'SHARE_GROSS' | 'SHARE_NET' | 'GUARANTEE_PLUS_SHARE' | 'AGENCY';
-
-/**
  * 轻托管结算规则DTO
  */
 export type OwnerSettlementRuleDto = {
     /**
      * 收入口径
      */
-    incomeBasis?: OwnerIncomeBasisEnum;
+    incomeBasis?: string;
     /**
      * 结算模式
      */
-    settlementMode?: OwnerSettlementModeEnum;
+    settlementMode?: string;
     /**
      * 保底租金
      */
@@ -7508,7 +7448,7 @@ export type OwnerSettlementRuleDto = {
     /**
      * 佣金方式
      */
-    commissionMode?: OwnerFeeModeEnum;
+    commissionMode?: string;
     /**
      * 佣金值
      */
@@ -7516,7 +7456,7 @@ export type OwnerSettlementRuleDto = {
     /**
      * 服务费方式
      */
-    serviceFeeMode?: OwnerFeeModeEnum;
+    serviceFeeMode?: string;
     /**
      * 服务费值
      */
@@ -7528,7 +7468,7 @@ export type OwnerSettlementRuleDto = {
     /**
      * 管理费方式
      */
-    managementFeeMode?: OwnerFeeModeEnum;
+    managementFeeMode?: string;
     /**
      * 管理费值
      */
@@ -7536,15 +7476,15 @@ export type OwnerSettlementRuleDto = {
     /**
      * 税费承担方式
      */
-    bearTaxType?: OwnerBearTypeEnum;
+    bearTaxType?: string;
     /**
      * 支付手续费承担方式
      */
-    paymentFeeBearType?: OwnerPaymentFeeBearTypeEnum;
+    paymentFeeBearType?: string;
     /**
      * 分账时间
      */
-    settlementTiming?: OwnerSettlementTimingEnum;
+    settlementTiming?: string;
     /**
      * 是否启用免租规则
      */
@@ -7564,32 +7504,12 @@ export type OwnerSettlementRuleDto = {
     /**
      * 状态
      */
-    status?: 'ACTIVE' | 'DISABLED';
+    status?: number;
     /**
      * 备注
      */
     remark?: string;
 };
-
-/**
- * 业主分账时间枚举
- */
-export type OwnerSettlementTimingEnum = 'TENANT_PAYMENT_REALTIME' | 'LEASE_START_GENERATE_BILL';
-
-/**
- * 业主合同签署状态枚举
- */
-export type OwnerSignStatusEnum = 'PENDING' | 'SIGNED';
-
-/**
- * 业主签约类型枚举
- */
-export type OwnerSignTypeEnum = 'NEW' | 'RENEW';
-
-/**
- * 业主主体类型枚举
- */
-export type OwnerTypeEnum = 'PERSONAL' | 'COMPANY';
 
 /**
  * 业主更新DTO
@@ -7598,7 +7518,7 @@ export type OwnerUpdateDto = {
     /**
      * 业主类型
      */
-    ownerType?: OwnerTypeEnum;
+    ownerType?: number;
     /**
      * 个人业主信息
      */
@@ -7654,19 +7574,19 @@ export type OwnerQueryDto = {
     /**
      * 业主类型
      */
-    ownerType?: OwnerTypeEnum;
+    ownerType?: number;
     /**
      * 合作模式
      */
-    cooperationMode?: OwnerCooperationModeEnum;
+    cooperationMode?: string;
     /**
      * 签署状态
      */
-    signStatus?: OwnerSignStatusEnum;
+    signStatus?: number;
     /**
      * 状态
      */
-    status?: 'ACTIVE' | 'DISABLED';
+    status?: number;
     /**
      * N天内到期合同
      */
@@ -7682,13 +7602,17 @@ export type OwnerContractTotalVo = {
      */
     total?: number;
     /**
-     * 启用中合同数
+     * 待审核合同数
      */
-    activeTotal?: number;
+    pendingApprovalTotal?: number;
     /**
-     * 已停用合同数
+     * 已退房合同数
      */
-    disabledTotal?: number;
+    checkedOutTotal?: number;
+    /**
+     * 已作废合同数
+     */
+    voidedTotal?: number;
     /**
      * 待签字合同数
      */
@@ -7716,7 +7640,7 @@ export type OwnerRenewDto = {
     /**
      * 业主类型
      */
-    ownerType?: OwnerTypeEnum;
+    ownerType?: number;
     /**
      * 个人业主信息
      */
@@ -7776,7 +7700,7 @@ export type OwnerListVo = {
     /**
      * 业主类型
      */
-    ownerType?: OwnerTypeEnum;
+    ownerType?: number;
     /**
      * 业主名称
      */
@@ -7796,7 +7720,7 @@ export type OwnerListVo = {
     /**
      * 合作模式
      */
-    cooperationMode?: OwnerCooperationModeEnum;
+    cooperationMode?: string;
     /**
      * 合同模板名称
      */
@@ -7828,11 +7752,11 @@ export type OwnerListVo = {
     /**
      * 签署状态
      */
-    signStatus?: OwnerSignStatusEnum;
+    signStatus?: number;
     /**
      * 状态
      */
-    status?: 'ACTIVE' | 'DISABLED';
+    status?: number;
     /**
      * 合同性质：1=新签，2=续约
      */
@@ -7884,7 +7808,7 @@ export type OwnerDetailVo = {
     /**
      * 业主类型
      */
-    ownerType?: OwnerTypeEnum;
+    ownerType?: number;
     /**
      * 个人业主信息
      */
@@ -7972,7 +7896,7 @@ export type OwnerCreateDto = {
     /**
      * 业主类型
      */
-    ownerType?: OwnerTypeEnum;
+    ownerType?: number;
     /**
      * 个人业主信息
      */
@@ -11043,7 +10967,7 @@ export type ApprovalActionStatusEnum = 'PENDING' | 'APPROVED' | 'SKIPPED';
 
 export type ApprovalActionTypeEnum = 'APPROVE' | 'REJECT' | 'TRANSFER';
 
-export type ApprovalBizTypeEnum = 'TENANT_CHECKIN' | 'TENANT_CHECKOUT' | 'HOUSE_CREATE' | 'PAYMENT_FLOW';
+export type ApprovalBizTypeEnum = 'TENANT_CHECKIN' | 'OWNER_CONTRACT' | 'TENANT_CHECKOUT' | 'HOUSE_CREATE' | 'PAYMENT_FLOW';
 
 export type ApprovalInstanceStatusEnum = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN' | 'CANCELLED';
 
@@ -11165,6 +11089,11 @@ export type OwnerAccountFlowBizTypeEnum = 'OWNER_BILL';
 export type OwnerAccountFlowChangeTypeEnum = 'BILL_SETTLE_IN' | 'BILL_SETTLE_OUT';
 
 /**
+ * 业主承担方枚举
+ */
+export type OwnerBearTypeEnum = 'PLATFORM' | 'OWNER' | 'SHARED';
+
+/**
  * 业主账单业务场景枚举
  */
 export type OwnerBillSceneEnum = 'REGULAR' | 'REALTIME_SETTLEMENT' | 'CHECKOUT_PENALTY';
@@ -11180,6 +11109,46 @@ export type OwnerBillingItemTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'MANAG
 export type OwnerBillingSourceTypeEnum = 'PAYMENT_FLOW' | 'OWNER_CONTRACT_SUBJECT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_LEASE_FEE' | 'OWNER_LEASE_FREE_RULE';
 
 /**
+ * 业主合同介质枚举
+ */
+export type OwnerContractMediumEnum = 'ELECTRONIC' | 'PAPER';
+
+/**
+ * 业主合同状态枚举
+ */
+export type OwnerContractStatusEnum = 'PENDING_APPROVAL' | 'PENDING_SIGN' | 'SIGNED' | 'CHECKED_OUT' | 'VOIDED';
+
+/**
+ * 业主合同房源类型枚举
+ */
+export type OwnerContractSubjectTypeEnum = 'HOUSE' | 'FOCUS_BUILDING' | 'FOCUS';
+
+/**
+ * 业主合作模式枚举
+ */
+export type OwnerCooperationModeEnum = 'LIGHT_MANAGED' | 'MASTER_LEASE';
+
+/**
+ * 业主费用计算方式枚举
+ */
+export type OwnerFeeModeEnum = 'RATIO' | 'FIXED';
+
+/**
+ * 业主免租计算方式枚举
+ */
+export type OwnerFreeCalcModeEnum = 'BY_DAYS' | 'FIXED' | 'RATIO';
+
+/**
+ * 业主免租类型枚举
+ */
+export type OwnerFreeTypeEnum = 'BUILT_IN' | 'OUTSIDE';
+
+/**
+ * 业主结算收入口径枚举
+ */
+export type OwnerIncomeBasisEnum = 'RECEIVED' | 'RECEIVABLE';
+
+/**
  * 包租业主应付单付款状态枚举
  */
 export type OwnerPayableBillPaymentStatusEnum = 'UNPAID' | 'PART_PAID' | 'PAID';
@@ -11190,14 +11159,54 @@ export type OwnerPayableBillPaymentStatusEnum = 'UNPAID' | 'PART_PAID' | 'PAID';
 export type OwnerPayableBillStatusEnum = 'NORMAL' | 'VOIDED';
 
 /**
+ * 业主支付手续费承担方式枚举
+ */
+export type OwnerPaymentFeeBearTypeEnum = 'PLATFORM_ALL' | 'OWNER_ALL' | 'BY_INCOME_SHARE';
+
+/**
+ * 业主包租折算方式枚举
+ */
+export type OwnerProrateTypeEnum = 'BY_DAYS' | 'FULL_PERIOD';
+
+/**
  * 业主结算单状态枚举
  */
 export type OwnerSettlementBillStatusEnum = 'NORMAL';
 
 /**
+ * 业主轻托管结算模式枚举
+ */
+export type OwnerSettlementModeEnum = 'FIXED' | 'SHARE_GROSS' | 'SHARE_NET' | 'GUARANTEE_PLUS_SHARE' | 'AGENCY';
+
+/**
  * 业主结算状态枚举
  */
 export type OwnerSettlementStatusEnum = 'UNSETTLED' | 'PART_SETTLED' | 'SETTLED';
+
+/**
+ * 业主分账时间枚举
+ */
+export type OwnerSettlementTimingEnum = 'TENANT_PAYMENT_REALTIME' | 'LEASE_START_GENERATE_BILL';
+
+/**
+ * 业主合同签署状态枚举
+ */
+export type OwnerSignStatusEnum = 'PENDING' | 'SIGNED';
+
+/**
+ * 业主签约类型枚举
+ */
+export type OwnerSignTypeEnum = 'NEW' | 'RENEW';
+
+/**
+ * 业主主体类型枚举
+ */
+export type OwnerTypeEnum = 'PERSONAL' | 'COMPANY';
+
+/**
+ * 业主提现操作类型枚举
+ */
+export type OwnerWithdrawOperateEnum = 'APPROVE' | 'REJECT' | 'PAYING' | 'SUCCESS' | 'FAIL' | 'CANCEL';
 
 export type PayStatusEnum = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID';
 

@@ -6,9 +6,7 @@ import type {
   OwnerFreeTypeEnum,
   OwnerIncomeBasisEnum,
   OwnerProrateTypeEnum,
-  OwnerSettlementModeEnum,
-  OwnerSignStatusEnum,
-  OwnerTypeEnum
+  OwnerSettlementModeEnum
 } from "@/types/generated";
 import {
   LeaseModeEnumMeta,
@@ -19,11 +17,11 @@ import {
   OwnerIncomeBasisEnumMeta,
   OwnerProrateTypeEnumMeta,
   OwnerSignStatusEnumMeta,
-  OwnerTypeEnumMeta
+  OwnerTypeEnumMeta,
+  IdTypeEnumMeta,
+  GenderEnumMeta
 } from "@/types/generated/enum.meta";
 import type {
-  GenderValue,
-  IdTypeValue,
   OwnerContractMediumValue,
   OwnerPaymentFeeBearTypeValue,
   OwnerSettlementTimingValue,
@@ -47,21 +45,21 @@ import {
 } from "./ownerContractFormTypes";
 
 export const ID_TYPE_OPTIONS = [
-  { label: "身份证", value: "ID_CARD" as IdTypeValue },
-  { label: "护照", value: "PASSPORT" as IdTypeValue },
-  { label: "港澳通行证", value: "HONGKONG_MACAO" as IdTypeValue },
-  { label: "台胞证", value: "TAIWAN" as IdTypeValue }
+  { label: "身份证", value: IdTypeEnumMeta.ID_CARD.code },
+  { label: "护照", value: IdTypeEnumMeta.PASSPORT.code },
+  { label: "港澳通行证", value: IdTypeEnumMeta.HONGKONG_MACAO.code },
+  { label: "台胞证", value: IdTypeEnumMeta.TAIWAN.code }
 ];
 
 export const GENDER_OPTIONS = [
-  { label: "未知", value: "UNKNOWN" as GenderValue },
-  { label: "男", value: "MALE" as GenderValue },
-  { label: "女", value: "FEMALE" as GenderValue }
+  { label: "未知", value: GenderEnumMeta.UNKNOWN.code },
+  { label: "男", value: GenderEnumMeta.MALE.code },
+  { label: "女", value: GenderEnumMeta.FEMALE.code }
 ];
 
 export const OWNER_TYPE_OPTIONS = [
-  { label: OWNER_TYPE_LABEL_MAP.PERSONAL, value: OwnerTypeEnumMeta.PERSONAL.value as OwnerTypeEnum },
-  { label: OWNER_TYPE_LABEL_MAP.COMPANY, value: OwnerTypeEnumMeta.COMPANY.value as OwnerTypeEnum }
+  { label: OWNER_TYPE_LABEL_MAP[OwnerTypeEnumMeta.PERSONAL.code], value: OwnerTypeEnumMeta.PERSONAL.code },
+  { label: OWNER_TYPE_LABEL_MAP[OwnerTypeEnumMeta.COMPANY.code], value: OwnerTypeEnumMeta.COMPANY.code }
 ];
 
 export const COOPERATION_MODE_OPTIONS = [
@@ -70,8 +68,8 @@ export const COOPERATION_MODE_OPTIONS = [
 ];
 
 export const SIGN_STATUS_OPTIONS = [
-  { label: SIGN_STATUS_LABEL_MAP.PENDING, value: OwnerSignStatusEnumMeta.PENDING.value as OwnerSignStatusEnum },
-  { label: SIGN_STATUS_LABEL_MAP.SIGNED, value: OwnerSignStatusEnumMeta.SIGNED.value as OwnerSignStatusEnum }
+  { label: SIGN_STATUS_LABEL_MAP[OwnerSignStatusEnumMeta.PENDING.code], value: OwnerSignStatusEnumMeta.PENDING.code },
+  { label: SIGN_STATUS_LABEL_MAP[OwnerSignStatusEnumMeta.SIGNED.code], value: OwnerSignStatusEnumMeta.SIGNED.code }
 ];
 
 export const SETTLEMENT_MODE_OPTIONS = [
@@ -168,9 +166,9 @@ export const SUBJECT_TYPE_OPTIONS = [
 ];
 
 export const RENT_DUE_TYPE_OPTIONS = [
-  { label: "提前收租", value: "EARLY" as const },
-  { label: "固定日期付款", value: "FIXED" as const },
-  { label: "延后付款", value: "LATE" as const }
+  { label: "提前收租", value: 1 },
+  { label: "固定日期付款", value: 2 },
+  { label: "延后付款", value: 3 }
 ];
 
 export const PAYMENT_METHOD_OPTIONS_REF = PAYMENT_METHOD_OPTIONS;

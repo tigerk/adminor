@@ -28,7 +28,7 @@
           </div>
         </div>
 
-        <template v-if="form.ownerType === 'PERSONAL'">
+        <template v-if="form.ownerType === 0">
           <el-row :gutter="16">
             <el-col :span="8">
               <el-form-item label="姓名" prop="ownerPersonal.name">
@@ -192,22 +192,22 @@
           </div>
           <el-space wrap>
             <el-button plain @click="emit('fillPayeeFromOwner')">收款人同业主</el-button>
-            <el-button v-if="form.ownerType === 'COMPANY'" plain @click="emit('fillPayeeFromContact')">收款人同联系人</el-button>
+            <el-button v-if="form.ownerType === 1" plain @click="emit('fillPayeeFromContact')">收款人同联系人</el-button>
           </el-space>
         </div>
         <el-row :gutter="16">
           <el-col :span="8">
-            <el-form-item label="收款人姓名" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.payeeName' : 'ownerCompany.payeeName'">
+            <el-form-item label="收款人姓名" :prop="form.ownerType === 0 ? 'ownerPersonal.payeeName' : 'ownerCompany.payeeName'">
               <el-input v-model="currentPayeeForm.payeeName" placeholder="请输入收款人姓名" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="收款人电话" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.payeePhone' : 'ownerCompany.payeePhone'">
+            <el-form-item label="收款人电话" :prop="form.ownerType === 0 ? 'ownerPersonal.payeePhone' : 'ownerCompany.payeePhone'">
               <el-input v-model="currentPayeeForm.payeePhone" placeholder="请输入收款人电话" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="收款人证件信息" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.payeeIdNo' : 'ownerCompany.payeeIdNo'">
+            <el-form-item label="收款人证件信息" :prop="form.ownerType === 0 ? 'ownerPersonal.payeeIdNo' : 'ownerCompany.payeeIdNo'">
               <el-input v-model="currentPayeeForm.payeeIdNo" placeholder="请输入收款人证件号码">
                 <template #prepend>
                   <el-select v-model="currentPayeeForm.payeeIdType" style="width: 128px">
@@ -218,12 +218,12 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="银行卡开户名" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.bankAccountName' : 'ownerCompany.bankAccountName'">
+            <el-form-item label="银行卡开户名" :prop="form.ownerType === 0 ? 'ownerPersonal.bankAccountName' : 'ownerCompany.bankAccountName'">
               <el-input v-model="currentPayeeForm.bankAccountName" placeholder="请输入开户名" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="银行卡号" :prop="form.ownerType === 'PERSONAL' ? 'ownerPersonal.bankAccountNo' : 'ownerCompany.bankAccountNo'">
+            <el-form-item label="银行卡号" :prop="form.ownerType === 0 ? 'ownerPersonal.bankAccountNo' : 'ownerCompany.bankAccountNo'">
               <el-input v-model="currentPayeeForm.bankAccountNo" placeholder="请输入银行卡号" />
             </el-form-item>
           </el-col>
@@ -253,7 +253,7 @@
     handleOwnerSuggestionSelect: (item: OwnerSuggestionItem) => void;
   }>();
 
-  const currentPayeeForm = computed<OwnerPersonalForm | OwnerCompanyForm>(() => (form.value.ownerType === "PERSONAL" ? form.value.ownerPersonal : form.value.ownerCompany));
+  const currentPayeeForm = computed<OwnerPersonalForm | OwnerCompanyForm>(() => (form.value.ownerType === 0 ? form.value.ownerPersonal : form.value.ownerCompany));
 
   const emit = defineEmits<{
     fillPayeeFromOwner: [];

@@ -4,15 +4,15 @@
       <div class="detail-hero__main">
         <div class="detail-hero__title">
           {{ detailOwnerName }}
-          <el-tag size="small" effect="plain">{{ ownerTypeLabelMap[detailData.ownerType || "PERSONAL"] }}</el-tag>
+          <el-tag size="small" effect="plain">{{ ownerTypeLabelMap[detailData.ownerType ?? 0] }}</el-tag>
           <el-tag size="small" :type="detailData.ownerContract?.cooperationMode === 'MASTER_LEASE' ? 'warning' : 'success'" effect="plain">
             {{ cooperationModeLabelMap[detailData.ownerContract?.cooperationMode || "LIGHT_MANAGED"] }}
           </el-tag>
         </div>
         <div class="detail-hero__meta">
           <span>合同编号：{{ detailData.ownerContract?.contractNo || "-" }}</span>
-          <span>签署状态：{{ signStatusLabelMap[detailData.ownerContract?.signStatus || "PENDING"] }}</span>
-          <span>合同状态：{{ statusLabelMap[detailData.ownerContract?.status || "ACTIVE"] }}</span>
+          <span>签署状态：{{ signStatusLabelMap[detailData.ownerContract?.signStatus ?? 0] }}</span>
+          <span>合同状态：{{ statusLabelMap[detailData.ownerContract?.status ?? 1] }}</span>
         </div>
       </div>
       <div class="detail-hero__actions">
@@ -46,7 +46,7 @@
         <el-card shadow="never" class="detail-card">
           <template #header><span>业主信息</span></template>
           <el-descriptions :column="3" border>
-            <template v-if="detailData.ownerType === 'PERSONAL'">
+            <template v-if="detailData.ownerType === 0">
               <el-descriptions-item label="姓名">{{ detailData.ownerPersonal?.name || "-" }}</el-descriptions-item>
               <el-descriptions-item label="联系电话">{{ detailData.ownerPersonal?.phone || "-" }}</el-descriptions-item>
               <el-descriptions-item label="证件号码">{{ detailData.ownerPersonal?.idNo || "-" }}</el-descriptions-item>
@@ -65,7 +65,7 @@
           </el-descriptions>
 
           <div class="image-preview-group">
-            <template v-if="detailData.ownerType === 'PERSONAL'">
+            <template v-if="detailData.ownerType === 0">
               <div v-for="card in personalImageCards" :key="card.label" class="image-preview-card">
                 <div class="image-preview-card__label">{{ card.label }}</div>
                 <el-image v-if="card.url" :src="card.url" fit="cover" class="image-preview-card__image" :preview-src-list="[card.url]" preview-teleported />
@@ -94,7 +94,7 @@
           <el-descriptions :column="3" border>
             <el-descriptions-item label="合同模板">{{ detailData.contractTemplateName || detailTemplate?.templateName || detailData.ownerContract?.contractTemplateId || "-" }}</el-descriptions-item>
             <el-descriptions-item label="合同周期">{{ formatDate(detailData.ownerContract?.contractStart) }} 至 {{ formatDate(detailData.ownerContract?.contractEnd) }}</el-descriptions-item>
-            <el-descriptions-item label="签署状态">{{ signStatusLabelMap[detailData.ownerContract?.signStatus || "PENDING"] }}</el-descriptions-item>
+            <el-descriptions-item label="签署状态">{{ signStatusLabelMap[detailData.ownerContract?.signStatus ?? 0] }}</el-descriptions-item>
             <el-descriptions-item label="签约类型">{{ signTypeLabelMap[detailData.ownerContract?.signType || "NEW"] }}</el-descriptions-item>
             <el-descriptions-item label="合同介质">{{ contractMediumLabelMap[detailData.ownerContract?.contractMedium || "PAPER"] }}</el-descriptions-item>
             <el-descriptions-item label="通知业主">{{ detailData.ownerContract?.notifyOwner ? "是" : "否" }}</el-descriptions-item>
@@ -270,12 +270,12 @@
   const previewVisible = ref(false);
   const pdfUrl = ref("");
 
-  const ownerTypeLabelMap = { PERSONAL: "个人", COMPANY: "企业" } as const;
+  const ownerTypeLabelMap = { 0: "个人", 1: "企业" } as const;
   const cooperationModeLabelMap = { LIGHT_MANAGED: "轻托管", MASTER_LEASE: "包租" } as const;
-  const signStatusLabelMap = { PENDING: "待签字", SIGNED: "已签字" } as const;
+  const signStatusLabelMap = { 0: "待签字", 1: "已签字" } as const;
   const signTypeLabelMap = { NEW: "新签", RENEW: "续签" } as const;
   const contractMediumLabelMap = { ELECTRONIC: "电子合同", PAPER: "纸质合同" } as const;
-  const statusLabelMap = { ACTIVE: "启用", DISABLED: "停用" } as const;
+  const statusLabelMap = { 0: "待审核", 1: "待签字", 2: "已签字", 3: "已退房", [-1]: "已作废" } as const;
   const settlementModeLabelMap = { FIXED: "固定保底", SHARE_GROSS: "毛收分成", SHARE_NET: "净收分成", GUARANTEE_PLUS_SHARE: "保底加分成", AGENCY: "代收代付" } as const;
   const incomeBasisLabelMap = { RECEIVED: "按实收", RECEIVABLE: "按应收" } as const;
   const feeModeLabelMap = { RATIO: "按比例", FIXED: "固定金额" } as const;
@@ -287,11 +287,11 @@
     LEASE_START_GENERATE_BILL: "起租日直接给业主生成账单"
   } as const;
   const prorateTypeLabelMap = { BY_DAYS: "按天折算", FULL_PERIOD: "整期计费" } as const;
-  const rentDueTypeLabelMap = { EARLY: "提前付款", FIXED: "固定付款", LATE: "延后付款" } as const;
+  const rentDueTypeLabelMap = { 1: "提前付款", 2: "固定付款", 3: "延后付款" } as const;
 
   const detailOwnerName = computed(() => {
     if (!detailData.value) return "-";
-    return detailData.value.ownerType === "COMPANY" ? detailData.value.ownerCompany?.name || "-" : detailData.value.ownerPersonal?.name || "-";
+    return detailData.value.ownerType === 1 ? detailData.value.ownerCompany?.name || "-" : detailData.value.ownerPersonal?.name || "-";
   });
   const detailTemplate = computed(() => contractTemplates.value.find(item => String(item.id || "") === String(detailData.value?.ownerContract?.contractTemplateId || "")));
   const detailTemplatePlaceholders = computed(() => extractTemplatePlaceholders(detailData.value?.ownerContract?.contractContent || detailTemplate.value?.templateContent));
@@ -327,8 +327,9 @@
 
   function getRentDueTypeText(rule?: OwnerLeaseRuleDto) {
     if (!rule?.rentDueType) return "-";
-    const label = rentDueTypeLabelMap[rule.rentDueType as keyof typeof rentDueTypeLabelMap] || rule.rentDueType;
-    if (rule.rentDueType === "FIXED") {
+    const rentDueType = rule.rentDueType as keyof typeof rentDueTypeLabelMap;
+    const label = rentDueTypeLabelMap[rentDueType] || rule.rentDueType;
+    if (rentDueType === 2) {
       return `${label}${rule.rentDueDay ? ` ${rule.rentDueDay} 日` : ""}`;
     }
     return `${label}${rule.rentDueOffsetDays ? ` ${rule.rentDueOffsetDays} 天` : " 0 天"}`;

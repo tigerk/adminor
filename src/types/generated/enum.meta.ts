@@ -1,20 +1,5 @@
 // AUTO GENERATED - DO NOT EDIT
 
-export const OwnerWithdrawOperateEnumMeta = {
-  APPROVE: {"value":"APPROVE"},
-  REJECT: {"value":"REJECT"},
-  PAYING: {"value":"PAYING"},
-  SUCCESS: {"value":"SUCCESS"},
-  FAIL: {"value":"FAIL"},
-  CANCEL: {"value":"CANCEL"}
-} as const;
-
-export const OwnerContractSubjectTypeEnumMeta = {
-  HOUSE: {"value":"HOUSE"},
-  FOCUS_BUILDING: {"value":"FOCUS_BUILDING"},
-  FOCUS: {"value":"FOCUS"}
-} as const;
-
 export const DeliveryItemCategoryEnumMeta = {
   FACILITY: {"value":"FACILITY"},
   UTILITY: {"value":"UTILITY"}
@@ -24,82 +9,6 @@ export const DeliveryItemCodeEnumMeta = {
   WATER_METER: {"value":"WATER_METER"},
   ELECTRICITY_METER: {"value":"ELECTRICITY_METER"},
   GAS_METER: {"value":"GAS_METER"}
-} as const;
-
-export const OwnerBearTypeEnumMeta = {
-  PLATFORM: {"value":"PLATFORM"},
-  OWNER: {"value":"OWNER"},
-  SHARED: {"value":"SHARED"}
-} as const;
-
-export const OwnerContractMediumEnumMeta = {
-  ELECTRONIC: {"value":"ELECTRONIC"},
-  PAPER: {"value":"PAPER"}
-} as const;
-
-export const OwnerCooperationModeEnumMeta = {
-  LIGHT_MANAGED: {"value":"LIGHT_MANAGED"},
-  MASTER_LEASE: {"value":"MASTER_LEASE"}
-} as const;
-
-export const OwnerFeeModeEnumMeta = {
-  RATIO: {"value":"RATIO"},
-  FIXED: {"value":"FIXED"}
-} as const;
-
-export const OwnerFreeCalcModeEnumMeta = {
-  BY_DAYS: {"value":"BY_DAYS"},
-  FIXED: {"value":"FIXED"},
-  RATIO: {"value":"RATIO"}
-} as const;
-
-export const OwnerFreeTypeEnumMeta = {
-  BUILT_IN: {"value":"BUILT_IN"},
-  OUTSIDE: {"value":"OUTSIDE"}
-} as const;
-
-export const OwnerIncomeBasisEnumMeta = {
-  RECEIVED: {"value":"RECEIVED"},
-  RECEIVABLE: {"value":"RECEIVABLE"}
-} as const;
-
-export const OwnerPaymentFeeBearTypeEnumMeta = {
-  PLATFORM_ALL: {"value":"PLATFORM_ALL"},
-  OWNER_ALL: {"value":"OWNER_ALL"},
-  BY_INCOME_SHARE: {"value":"BY_INCOME_SHARE"}
-} as const;
-
-export const OwnerProrateTypeEnumMeta = {
-  BY_DAYS: {"value":"BY_DAYS"},
-  FULL_PERIOD: {"value":"FULL_PERIOD"}
-} as const;
-
-export const OwnerSettlementModeEnumMeta = {
-  FIXED: {"value":"FIXED"},
-  SHARE_GROSS: {"value":"SHARE_GROSS"},
-  SHARE_NET: {"value":"SHARE_NET"},
-  GUARANTEE_PLUS_SHARE: {"value":"GUARANTEE_PLUS_SHARE"},
-  AGENCY: {"value":"AGENCY"}
-} as const;
-
-export const OwnerSettlementTimingEnumMeta = {
-  TENANT_PAYMENT_REALTIME: {"value":"TENANT_PAYMENT_REALTIME"},
-  LEASE_START_GENERATE_BILL: {"value":"LEASE_START_GENERATE_BILL"}
-} as const;
-
-export const OwnerSignStatusEnumMeta = {
-  PENDING: {"value":"PENDING"},
-  SIGNED: {"value":"SIGNED"}
-} as const;
-
-export const OwnerSignTypeEnumMeta = {
-  NEW: {"value":"NEW"},
-  RENEW: {"value":"RENEW"}
-} as const;
-
-export const OwnerTypeEnumMeta = {
-  PERSONAL: {"value":"PERSONAL"},
-  COMPANY: {"value":"COMPANY"}
 } as const;
 
 export const BooleanEnumMeta = {
@@ -209,6 +118,7 @@ export const ApprovalActionTypeEnumMeta = {
 
 export const ApprovalBizTypeEnumMeta = {
   TENANT_CHECKIN: {"value":"TENANT_CHECKIN","code":"TENANT_CHECKIN","name":"租客入住","tableName":"tenant","pkField":"id"},
+  OWNER_CONTRACT: {"value":"OWNER_CONTRACT","code":"OWNER_CONTRACT","name":"业主合同","tableName":"owner_contract","pkField":"id"},
   TENANT_CHECKOUT: {"value":"TENANT_CHECKOUT","code":"TENANT_CHECKOUT","name":"租客退租","tableName":"lease_checkout","pkField":"id"},
   HOUSE_CREATE: {"value":"HOUSE_CREATE","code":"HOUSE_CREATE","name":"房源录入","tableName":"house","pkField":"id"},
   PAYMENT_FLOW: {"value":"PAYMENT_FLOW","code":"PAYMENT_FLOW","name":"支付流水","tableName":"payment_flow","pkField":"id"}
@@ -609,6 +519,12 @@ export const OwnerAccountFlowChangeTypeEnumMeta = {
   BILL_SETTLE_OUT: {"value":"BILL_SETTLE_OUT","code":"BILL_SETTLE_OUT","name":"账单冲减"}
 } as const;
 
+export const OwnerBearTypeEnumMeta = {
+  PLATFORM: {"value":"PLATFORM","code":"PLATFORM","name":"平台承担"},
+  OWNER: {"value":"OWNER","code":"OWNER","name":"业主承担"},
+  SHARED: {"value":"SHARED","code":"SHARED","name":"共同承担"}
+} as const;
+
 export const OwnerBillSceneEnumMeta = {
   REGULAR: {"value":"REGULAR","code":"REGULAR","name":"正常账单"},
   REALTIME_SETTLEMENT: {"value":"REALTIME_SETTLEMENT","code":"REALTIME_SETTLEMENT","name":"租客支付实时分账"},
@@ -632,6 +548,51 @@ export const OwnerBillingSourceTypeEnumMeta = {
   OWNER_LEASE_FREE_RULE: {"value":"OWNER_LEASE_FREE_RULE","code":"OWNER_LEASE_FREE_RULE","name":"包租免租规则"}
 } as const;
 
+export const OwnerContractMediumEnumMeta = {
+  ELECTRONIC: {"value":"ELECTRONIC","code":"ELECTRONIC","name":"电子合同"},
+  PAPER: {"value":"PAPER","code":"PAPER","name":"纸质合同"}
+} as const;
+
+export const OwnerContractStatusEnumMeta = {
+  PENDING_APPROVAL: {"value":"PENDING_APPROVAL","code":0,"name":"待审核"},
+  PENDING_SIGN: {"value":"PENDING_SIGN","code":1,"name":"待签字"},
+  SIGNED: {"value":"SIGNED","code":2,"name":"已签字"},
+  CHECKED_OUT: {"value":"CHECKED_OUT","code":3,"name":"已退房"},
+  VOIDED: {"value":"VOIDED","code":-1,"name":"已作废"}
+} as const;
+
+export const OwnerContractSubjectTypeEnumMeta = {
+  HOUSE: {"value":"HOUSE","code":"HOUSE","name":"房源"},
+  FOCUS_BUILDING: {"value":"FOCUS_BUILDING","code":"FOCUS_BUILDING","name":"项目楼栋"},
+  FOCUS: {"value":"FOCUS","code":"FOCUS","name":"集中式项目"}
+} as const;
+
+export const OwnerCooperationModeEnumMeta = {
+  LIGHT_MANAGED: {"value":"LIGHT_MANAGED","code":"LIGHT_MANAGED","name":"轻托管"},
+  MASTER_LEASE: {"value":"MASTER_LEASE","code":"MASTER_LEASE","name":"包租"}
+} as const;
+
+export const OwnerFeeModeEnumMeta = {
+  RATIO: {"value":"RATIO","code":"RATIO","name":"按比例"},
+  FIXED: {"value":"FIXED","code":"FIXED","name":"固定金额"}
+} as const;
+
+export const OwnerFreeCalcModeEnumMeta = {
+  BY_DAYS: {"value":"BY_DAYS","code":"BY_DAYS","name":"按天分摊"},
+  FIXED: {"value":"FIXED","code":"FIXED","name":"固定金额"},
+  RATIO: {"value":"RATIO","code":"RATIO","name":"按比例"}
+} as const;
+
+export const OwnerFreeTypeEnumMeta = {
+  BUILT_IN: {"value":"BUILT_IN","code":"BUILT_IN","name":"内置免租"},
+  OUTSIDE: {"value":"OUTSIDE","code":"OUTSIDE","name":"外置免租"}
+} as const;
+
+export const OwnerIncomeBasisEnumMeta = {
+  RECEIVED: {"value":"RECEIVED","code":"RECEIVED","name":"按实收"},
+  RECEIVABLE: {"value":"RECEIVABLE","code":"RECEIVABLE","name":"按应收"}
+} as const;
+
 export const OwnerPayableBillPaymentStatusEnumMeta = {
   UNPAID: {"value":"UNPAID","code":0,"name":"未付款"},
   PART_PAID: {"value":"PART_PAID","code":1,"name":"部分付款"},
@@ -643,14 +604,62 @@ export const OwnerPayableBillStatusEnumMeta = {
   VOIDED: {"value":"VOIDED","code":2,"name":"已作废"}
 } as const;
 
+export const OwnerPaymentFeeBearTypeEnumMeta = {
+  PLATFORM_ALL: {"value":"PLATFORM_ALL","code":"PLATFORM_ALL","name":"公司承担100%"},
+  OWNER_ALL: {"value":"OWNER_ALL","code":"OWNER_ALL","name":"业主承担100%"},
+  BY_INCOME_SHARE: {"value":"BY_INCOME_SHARE","code":"BY_INCOME_SHARE","name":"各自承担自己所得"}
+} as const;
+
+export const OwnerProrateTypeEnumMeta = {
+  BY_DAYS: {"value":"BY_DAYS","code":"BY_DAYS","name":"按天折算"},
+  FULL_PERIOD: {"value":"FULL_PERIOD","code":"FULL_PERIOD","name":"整期计费"}
+} as const;
+
 export const OwnerSettlementBillStatusEnumMeta = {
   NORMAL: {"value":"NORMAL","code":1,"name":"正常"}
+} as const;
+
+export const OwnerSettlementModeEnumMeta = {
+  FIXED: {"value":"FIXED","code":"FIXED","name":"固定保底"},
+  SHARE_GROSS: {"value":"SHARE_GROSS","code":"SHARE_GROSS","name":"毛收分成"},
+  SHARE_NET: {"value":"SHARE_NET","code":"SHARE_NET","name":"按净收入分成"},
+  GUARANTEE_PLUS_SHARE: {"value":"GUARANTEE_PLUS_SHARE","code":"GUARANTEE_PLUS_SHARE","name":"保底加分成"},
+  AGENCY: {"value":"AGENCY","code":"AGENCY","name":"代收代付"}
 } as const;
 
 export const OwnerSettlementStatusEnumMeta = {
   UNSETTLED: {"value":"UNSETTLED","code":0,"name":"未结算"},
   PART_SETTLED: {"value":"PART_SETTLED","code":1,"name":"部分结算"},
   SETTLED: {"value":"SETTLED","code":2,"name":"已结算"}
+} as const;
+
+export const OwnerSettlementTimingEnumMeta = {
+  TENANT_PAYMENT_REALTIME: {"value":"TENANT_PAYMENT_REALTIME","code":"TENANT_PAYMENT_REALTIME","name":"租客支付实时分账"},
+  LEASE_START_GENERATE_BILL: {"value":"LEASE_START_GENERATE_BILL","code":"LEASE_START_GENERATE_BILL","name":"起租日生成账单"}
+} as const;
+
+export const OwnerSignStatusEnumMeta = {
+  PENDING: {"value":"PENDING","code":0,"name":"待签字"},
+  SIGNED: {"value":"SIGNED","code":1,"name":"已签字"}
+} as const;
+
+export const OwnerSignTypeEnumMeta = {
+  NEW: {"value":"NEW","code":"NEW","name":"新签"},
+  RENEW: {"value":"RENEW","code":"RENEW","name":"续签"}
+} as const;
+
+export const OwnerTypeEnumMeta = {
+  PERSONAL: {"value":"PERSONAL","code":0,"name":"个人业主"},
+  COMPANY: {"value":"COMPANY","code":1,"name":"企业业主"}
+} as const;
+
+export const OwnerWithdrawOperateEnumMeta = {
+  APPROVE: {"value":"APPROVE","name":"审批通过"},
+  REJECT: {"value":"REJECT","name":"审批驳回"},
+  PAYING: {"value":"PAYING","name":"标记打款中"},
+  SUCCESS: {"value":"SUCCESS","name":"打款成功"},
+  FAIL: {"value":"FAIL","name":"打款失败"},
+  CANCEL: {"value":"CANCEL","name":"取消提现"}
 } as const;
 
 export const PayStatusEnumMeta = {

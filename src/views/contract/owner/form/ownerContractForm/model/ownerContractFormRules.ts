@@ -29,7 +29,7 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
       {
         trigger: "blur",
         validator: (_, value, callback) => {
-          if (getForm().ownerType !== "PERSONAL") return callback();
+          if (getForm().ownerType !== 0) return callback();
           return value ? callback() : callback(new Error("请输入业主姓名"));
         }
       }
@@ -39,7 +39,7 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
       {
         trigger: "blur",
         validator: (_, value, callback) => {
-          if (getForm().ownerType !== "PERSONAL") return callback();
+          if (getForm().ownerType !== 0) return callback();
           return value ? callback() : callback(new Error("请输入联系电话"));
         }
       }
@@ -49,7 +49,7 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
       {
         trigger: "blur",
         validator: (_, value, callback) => {
-          if (getForm().ownerType !== "PERSONAL") return callback();
+          if (getForm().ownerType !== 0) return callback();
           return value ? callback() : callback(new Error("请输入证件号"));
         }
       }
@@ -59,7 +59,7 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
       {
         trigger: "change",
         validator: (_, value, callback) => {
-          if (getForm().ownerType !== "PERSONAL") return callback();
+          if (getForm().ownerType !== 0) return callback();
           return value?.length ? callback() : callback(new Error("请上传身份证国徽面"));
         }
       }
@@ -69,7 +69,7 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
       {
         trigger: "change",
         validator: (_, value, callback) => {
-          if (getForm().ownerType !== "PERSONAL") return callback();
+          if (getForm().ownerType !== 0) return callback();
           return value?.length ? callback() : callback(new Error("请上传身份证人像面"));
         }
       }
@@ -80,7 +80,7 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
       {
         trigger: "blur",
         validator: (_, value, callback) => {
-          if (getForm().ownerType !== "COMPANY") return callback();
+          if (getForm().ownerType !== 1) return callback();
           return value ? callback() : callback(new Error("请输入企业名称"));
         }
       }
@@ -90,7 +90,7 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
       {
         trigger: "blur",
         validator: (_, value, callback) => {
-          if (getForm().ownerType !== "COMPANY") return callback();
+          if (getForm().ownerType !== 1) return callback();
           return value ? callback() : callback(new Error("请输入统一社会信用代码"));
         }
       }
@@ -100,7 +100,7 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
       {
         trigger: "blur",
         validator: (_, value, callback) => {
-          if (getForm().ownerType !== "COMPANY") return callback();
+          if (getForm().ownerType !== 1) return callback();
           return value ? callback() : callback(new Error("请输入联系人"));
         }
       }
@@ -110,7 +110,7 @@ export function createOwnerContractRules(getForm: () => OwnerContractForm): Form
       {
         trigger: "blur",
         validator: (_, value, callback) => {
-          if (getForm().ownerType !== "COMPANY") return callback();
+          if (getForm().ownerType !== 1) return callback();
           return value ? callback() : callback(new Error("请输入联系电话"));
         }
       }

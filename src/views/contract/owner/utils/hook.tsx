@@ -121,8 +121,8 @@ function useOwnerContract() {
           contractStart: renewStart,
           contractEnd: renewEnd,
           contractNature: 2,
-          signStatus: "PENDING",
-          status: "ACTIVE"
+          signStatus: 0,
+          status: 1
         }
       } as OwnerDetailVo;
 

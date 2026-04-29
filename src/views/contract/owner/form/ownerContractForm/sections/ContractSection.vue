@@ -21,7 +21,7 @@
           <el-tag effect="plain">签约类型：{{ SIGN_TYPE_LABEL_MAP[form.ownerContract.signType || "NEW"] }}</el-tag>
           <el-tag effect="plain">合同类型：{{ CONTRACT_MEDIUM_LABEL_MAP[form.ownerContract.contractMedium || "PAPER"] }}</el-tag>
           <el-tag effect="plain">短信通知：{{ form.ownerContract.notifyOwner ? "通知业主" : "不通知" }}</el-tag>
-          <el-tag effect="plain">签署状态：{{ SIGN_STATUS_LABEL_MAP[form.ownerContract.signStatus || "PENDING"] }}</el-tag>
+          <el-tag effect="plain">签署状态：{{ SIGN_STATUS_LABEL_MAP[form.ownerContract.signStatus ?? 0] }}</el-tag>
         </div>
       </div>
 

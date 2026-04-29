@@ -103,14 +103,17 @@
     </section>
 
     <section class="checkout-section checkout-action mb-4">
-      <div class="checkout-section__title">退房操作</div>
-      <el-alert class="checkout-action__alert" type="warning" :closable="false" show-icon>
-        <template #title>业主退房会停用当前业主合同；已付款账单不会被直接修改。</template>
+      <div class="checkout-action__title-row">
+        <div class="checkout-section__title">退房操作</div>
+        <span class="checkout-mode-pill" :class="{ 'is-early': isBeforeEffectiveContract }">{{ checkoutModeText }}</span>
+      </div>
+      <el-alert class="checkout-action__alert" :type="isBeforeEffectiveContract ? 'info' : 'warning'" :closable="false" show-icon>
+        <template #title>{{ checkoutAlertText }}</template>
       </el-alert>
 
       <div class="checkout-action__fields">
-        <el-form-item class="checkout-action__date" label="退房日期" prop="checkoutDate" required>
-          <el-date-picker v-model="form.checkoutDate" type="date" value-format="YYYY-MM-DD" placeholder="请选择退房日期" class="w-full!" />
+        <el-form-item class="checkout-action__date" :label="checkoutDateLabel" prop="checkoutDate" required>
+          <el-date-picker v-model="form.checkoutDate" type="date" value-format="YYYY-MM-DD" :placeholder="checkoutDatePlaceholder" class="w-full!" />
         </el-form-item>
 
         <el-form-item class="checkout-action__date" label="违约金">
@@ -137,8 +140,8 @@
       </div>
 
       <div class="checkout-action__textarea-grid">
-        <el-form-item label="退房原因" prop="checkoutReason" required>
-          <el-input v-model="form.checkoutReason" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入业主退房原因" />
+        <el-form-item :label="checkoutReasonLabel" prop="checkoutReason" required>
+          <el-input v-model="form.checkoutReason" type="textarea" :rows="3" maxlength="500" show-word-limit :placeholder="checkoutReasonPlaceholder" />
         </el-form-item>
 
         <el-form-item class="mb-0!" label="结算说明">
@@ -151,6 +154,7 @@
 
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref } from "vue";
+  import dayjs from "dayjs";
   import type { FormInstance, FormRules } from "element-plus";
   import { getOwnerContractCheckoutInit } from "@/api/contract/owner";
   import { LEASE_STATUS_META } from "@/constants";
@@ -183,15 +187,55 @@
   });
   const isMasterLease = computed(() => props.formInline?.cooperationMode === "MASTER_LEASE");
   const cooperationModeLabel = computed(() => (isMasterLease.value ? "包租" : "轻托管"));
+  const contractStartDate = computed(() => dateText(props.formInline?.contractStart));
+  const isBeforeEffectiveContract = computed(() => {
+    if (props.formInline?.signStatus !== 1 || !contractStartDate.value) return false;
+    return dayjs().startOf("day").isBefore(dayjs(contractStartDate.value), "day");
+  });
+  const checkoutModeText = computed(() => (isBeforeEffectiveContract.value ? "提前解约" : "正常退房"));
+  const checkoutDateLabel = computed(() => (isBeforeEffectiveContract.value ? "解约日期" : "退房日期"));
+  const checkoutDatePlaceholder = computed(() => (isBeforeEffectiveContract.value ? "请选择解约日期" : "请选择退房日期"));
+  const checkoutReasonLabel = computed(() => (isBeforeEffectiveContract.value ? "解约原因" : "退房原因"));
+  const checkoutReasonPlaceholder = computed(() => (isBeforeEffectiveContract.value ? "请输入业主提前解约原因" : "请输入业主退房原因"));
+  const checkoutAlertText = computed(() =>
+    isBeforeEffectiveContract.value
+      ? "当前业主合同已签约但尚未生效，将按提前解约处理；解约日期允许早于合同开始日期。"
+      : "业主退房会停用当前业主合同；已付款账单不会被直接修改。"
+  );
 
   const rules: FormRules = {
-    checkoutDate: [{ required: true, message: "请选择退房日期", trigger: "change" }],
-    checkoutReason: [{ required: true, message: "请输入退房原因", trigger: "blur" }]
+    checkoutDate: [{ validator: validateCheckoutDate, trigger: "change" }],
+    checkoutReason: [{ validator: validateCheckoutReason, trigger: "blur" }]
   };
+
+  function dateText(value?: string | number | Date) {
+    if (!value) return "";
+    return String(value).slice(0, 10);
+  }
 
   function formatDate(value?: string | number | Date) {
     if (!value) return "-";
-    return String(value).slice(0, 10);
+    return dateText(value);
+  }
+
+  function validateCheckoutDate(_: unknown, value: string | undefined, callback: (error?: Error) => void) {
+    if (!value) {
+      callback(new Error(isBeforeEffectiveContract.value ? "请选择解约日期" : "请选择退房日期"));
+      return;
+    }
+    if (!isBeforeEffectiveContract.value && contractStartDate.value && dayjs(value).isBefore(dayjs(contractStartDate.value), "day")) {
+      callback(new Error("退房日期不能早于合同开始日期"));
+      return;
+    }
+    callback();
+  }
+
+  function validateCheckoutReason(_: unknown, value: string | undefined, callback: (error?: Error) => void) {
+    if (!value?.trim()) {
+      callback(new Error(isBeforeEffectiveContract.value ? "请输入解约原因" : "请输入退房原因"));
+      return;
+    }
+    callback();
   }
 
   function formatArea(value?: string | number) {
@@ -246,12 +290,21 @@
     }
   }
 
+  function initDefaultCheckoutDate() {
+    if (isBeforeEffectiveContract.value && !form.checkoutDate) {
+      form.checkoutDate = dayjs().format("YYYY-MM-DD");
+    }
+  }
+
   async function validateAndBuildPayload() {
     await formRef.value?.validate();
     return { ...form };
   }
 
-  onMounted(loadDialogData);
+  onMounted(() => {
+    initDefaultCheckoutDate();
+    loadDialogData();
+  });
 
   defineExpose({ validateAndBuildPayload });
 </script>
@@ -461,6 +514,18 @@
   }
 
   .checkout-action {
+    &__title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+
+      .checkout-section__title {
+        margin-bottom: 0;
+      }
+    }
+
     &__alert {
       margin-bottom: 10px;
 
@@ -491,6 +556,26 @@
       :deep(.el-form-item) {
         margin-bottom: 0;
       }
+    }
+  }
+
+  .checkout-mode-pill {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--el-color-warning);
+    background: var(--el-color-warning-light-9);
+    border: 1px solid var(--el-color-warning-light-7);
+    border-radius: 999px;
+
+    &.is-early {
+      color: var(--el-color-primary);
+      background: var(--el-color-primary-light-9);
+      border-color: var(--el-color-primary-light-7);
     }
   }
 
