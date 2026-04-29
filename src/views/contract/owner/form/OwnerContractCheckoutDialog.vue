@@ -154,8 +154,8 @@
   import type { FormInstance, FormRules } from "element-plus";
   import { getOwnerContractCheckoutInit } from "@/api/contract/owner";
   import { LEASE_STATUS_META } from "@/constants";
-  import { getOwnerPayableBillSummary, getOwnerSettlementBillSummary, getOwnerWithdrawSummary, type PayableBillSummaryVo, type SettlementBillSummaryVo } from "@/api/owner/owner";
-  import type { OwnerCheckoutLeaseRoomVo, OwnerContractCheckoutDto, OwnerListVo, OwnerWithdrawSummaryVo } from "@/types/generated";
+  import { getOwnerPayableBillSummary, getOwnerSettlementBillSummary, getOwnerWithdrawSummary, type SettlementBillSummaryVo } from "@/api/owner/owner";
+  import type { OwnerCheckoutLeaseRoomVo, OwnerContractCheckoutDto, OwnerListVo, OwnerPayableBillSummaryVo, OwnerWithdrawSummaryVo } from "@/types/generated";
 
   type OwnerCheckoutLeaseRoomWithStatus = OwnerCheckoutLeaseRoomVo & {
     leaseStatus?: number;
@@ -168,7 +168,7 @@
 
   const formRef = ref<FormInstance>();
   const loading = ref(false);
-  const payableSummary = ref<PayableBillSummaryVo>({});
+  const payableSummary = ref<OwnerPayableBillSummaryVo>({});
   const settlementSummary = ref<SettlementBillSummaryVo>({});
   const withdrawSummary = ref<OwnerWithdrawSummaryVo>({});
   const leasedRoomList = ref<OwnerCheckoutLeaseRoomVo[]>([]);

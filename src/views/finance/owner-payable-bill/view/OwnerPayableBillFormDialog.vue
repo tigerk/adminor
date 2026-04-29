@@ -83,26 +83,34 @@
   import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
   import { getDictDataByParentCode } from "@/api/sys/dict";
-  import { getOwnerPayableBillDetail, type PayableBillCreateDto, type PayableBillDetailVo, type PayableBillLineDto, type PayableBillListVo, type PayableBillUpdateDto } from "@/api/owner/owner";
+  import { getOwnerPayableBillDetail } from "@/api/owner/owner";
+  import type {
+    OwnerPayableBillCreateDto,
+    OwnerPayableBillDetailVo,
+    OwnerPayableBillFeeDto,
+    OwnerPayableBillFeeVo,
+    OwnerPayableBillListVo,
+    OwnerPayableBillUpdateDto
+  } from "@/types/generated";
   import { message } from "@/utils/message";
 
   defineOptions({ name: "OwnerPayableBillFormDialog" });
 
-  type EditableFeeItem = PayableBillLineDto & {
+  type EditableFeeItem = OwnerPayableBillFeeDto & {
     uid: string;
     feeTypeCascade?: Array<string | number>;
   };
 
-  type PayableBillFormState = Omit<PayableBillUpdateDto, "feeList"> & {
+  type OwnerPayableBillFormState = Omit<OwnerPayableBillUpdateDto, "feeList"> & {
     feeList: EditableFeeItem[];
   };
 
-  const props = defineProps<{ bill?: PayableBillListVo }>();
+  const props = defineProps<{ bill?: OwnerPayableBillListVo }>();
   const formRef = ref<FormInstance>();
   const loading = ref(false);
   const feeTypeDictList = ref<any[]>([]);
 
-  const form = reactive<PayableBillFormState>({
+  const form = reactive<OwnerPayableBillFormState>({
     billId: props.bill?.billId,
     ownerId: props.bill?.ownerId,
     contractId: props.bill?.contractId,
@@ -134,7 +142,7 @@
     }))
   );
 
-  const toEditableFee = (fee?: PayableBillLineDto): EditableFeeItem => ({
+  const toEditableFee = (fee?: OwnerPayableBillFeeDto | OwnerPayableBillFeeVo): EditableFeeItem => ({
     uid: `${Date.now()}-${Math.random()}`,
     id: fee?.id,
     sourceType: fee?.sourceType,
@@ -196,7 +204,7 @@
         resetForm();
         return;
       }
-      const detail: PayableBillDetailVo = res.data;
+      const detail: OwnerPayableBillDetailVo = res.data;
       form.billId = detail.billId;
       form.ownerId = detail.ownerId;
       form.contractId = detail.contractId;
@@ -228,7 +236,7 @@
       return;
     }
     const [dictCode, dictDataId] = value;
-    fee.dictDataId = dictDataId;
+    fee.dictDataId = String(dictDataId);
 
     const group = feeTypeDictList.value.find(item => item.dictCode === dictCode);
     const dictItem = group?.dictDataList?.find(item => String(item.id) === String(dictDataId));
@@ -257,7 +265,7 @@
       ...form,
       feeList: feeList.value.map(({ uid, feeTypeCascade, ...item }) => item)
     };
-    return payload as PayableBillCreateDto | PayableBillUpdateDto;
+    return payload as OwnerPayableBillCreateDto | OwnerPayableBillUpdateDto;
   }
 
   defineExpose({ validateAndBuildPayload });

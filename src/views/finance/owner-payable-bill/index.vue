@@ -5,7 +5,7 @@
   import OwnerSummaryCards from "@/shared/owner/OwnerSummaryCards.vue";
   import "@/shared/owner/financePage.scss";
   import useOwnerPayableBill from "@/views/finance/owner-payable-bill/utils/hook";
-  import { canCancelOwnerPayableBill, canEditOwnerPayableBill, canPayOwnerPayableBill } from "@/views/finance/owner-payable-bill/utils/billAction";
+  import { canEditOwnerPayableBill, canPayOwnerPayableBill, canVoidOwnerPayableBill } from "@/views/finance/owner-payable-bill/utils/billAction";
 
   defineOptions({ name: "OwnerPayableBillEntry" });
 
@@ -25,7 +25,7 @@
     handleRowClick,
     openOwnerPayableBillDetailDialog,
     openPayableBillFormDialog,
-    openPayableBillCancelDialog,
+    openPayableBillVoidDialog,
     openPayableBillPaymentDialog,
     closePageIntro,
     settlementStatusText,
@@ -120,9 +120,9 @@
                     修改账单
                   </el-dropdown-item>
                   <el-dropdown-item
-                    :disabled="!canCancelOwnerPayableBill(row)"
+                    :disabled="!canVoidOwnerPayableBill(row)"
                     divided
-                    @click="openPayableBillCancelDialog(row)"
+                    @click="openPayableBillVoidDialog(row)"
                   >
                     <span class="text-danger">作废账单</span>
                   </el-dropdown-item>

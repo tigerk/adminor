@@ -1,10 +1,10 @@
-import type { PayableBillListVo } from "@/api/owner/owner";
+import type { OwnerPayableBillListVo } from "@/types/generated";
 
 /**
  * 获取账单状态值
  * @param row
  */
-function billStatusValue(row?: Pick<PayableBillListVo, "billStatus">) {
+function billStatusValue(row?: Pick<OwnerPayableBillListVo, "billStatus">) {
   return Number(row?.billStatus || 1);
 }
 
@@ -12,7 +12,7 @@ function billStatusValue(row?: Pick<PayableBillListVo, "billStatus">) {
  * 获取支付状态值
  * @param row
  */
-function paymentStatusValue(row?: Pick<PayableBillListVo, "paymentStatus">) {
+function paymentStatusValue(row?: Pick<OwnerPayableBillListVo, "paymentStatus">) {
   return Number(row?.paymentStatus || 0);
 }
 
@@ -20,7 +20,7 @@ function paymentStatusValue(row?: Pick<PayableBillListVo, "paymentStatus">) {
  * 获取已支付金额值
  * @param row
  */
-function paidAmountValue(row?: Pick<PayableBillListVo, "paidAmount">) {
+function paidAmountValue(row?: Pick<OwnerPayableBillListVo, "paidAmount">) {
   return Number(row?.paidAmount || 0);
 }
 
@@ -28,7 +28,7 @@ function paidAmountValue(row?: Pick<PayableBillListVo, "paidAmount">) {
  * 获取未支付金额值
  * @param row
  */
-function unpaidAmountValue(row?: Pick<PayableBillListVo, "unpaidAmount">) {
+function unpaidAmountValue(row?: Pick<OwnerPayableBillListVo, "unpaidAmount">) {
   return Number(row?.unpaidAmount || 0);
 }
 
@@ -36,7 +36,7 @@ function unpaidAmountValue(row?: Pick<PayableBillListVo, "unpaidAmount">) {
  * 是否可支付
  * @param row
  */
-export function canPayOwnerPayableBill(row?: Pick<PayableBillListVo, "billStatus" | "unpaidAmount">) {
+export function canPayOwnerPayableBill(row?: Pick<OwnerPayableBillListVo, "billStatus" | "unpaidAmount">) {
   return billStatusValue(row) === 1 && unpaidAmountValue(row) > 0;
 }
 
@@ -44,14 +44,14 @@ export function canPayOwnerPayableBill(row?: Pick<PayableBillListVo, "billStatus
  * 是否可编辑
  * @param row
  */
-export function canEditOwnerPayableBill(row?: Pick<PayableBillListVo, "billStatus" | "paymentStatus" | "paidAmount">) {
+export function canEditOwnerPayableBill(row?: Pick<OwnerPayableBillListVo, "billStatus" | "paymentStatus" | "paidAmount">) {
   return billStatusValue(row) === 1 && paymentStatusValue(row) === 0 && paidAmountValue(row) <= 0;
 }
 
 /**
- * 是否可取消
+ * 是否可作废
  * @param row
  */
-export function canCancelOwnerPayableBill(row?: Pick<PayableBillListVo, "billStatus" | "paymentStatus" | "paidAmount">) {
+export function canVoidOwnerPayableBill(row?: Pick<OwnerPayableBillListVo, "billStatus" | "paymentStatus" | "paidAmount">) {
   return canEditOwnerPayableBill(row);
 }

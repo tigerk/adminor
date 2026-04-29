@@ -111,7 +111,7 @@
   import { nextTick, reactive, ref } from "vue";
   import type { FormInstance, FormRules } from "element-plus";
   import UploadImage from "@/components/upload/UploadImage.vue";
-  import type { PayableBillListVo, PayableBillPaymentCreateDto } from "@/api/owner/owner";
+  import type { OwnerPayableBillListVo, OwnerPayableBillPaymentCreateDto } from "@/types/generated";
   import { PaymentFlowChannelEnumMeta } from "@/types/generated/enum.meta";
 
   defineOptions({ name: "OwnerPayableBillPaymentDialog" });
@@ -119,7 +119,7 @@
   const props = defineProps<{
     billId: string | number;
     unpaidAmount: number;
-    bill: PayableBillListVo;
+    bill: OwnerPayableBillListVo;
   }>();
 
   const formRef = ref<FormInstance>();
@@ -131,7 +131,7 @@
   const amountInputRef = ref();
   const activeQuick = ref<"full" | "half" | "quarter">("full");
 
-  const form = reactive<PayableBillPaymentCreateDto>({
+  const form = reactive<OwnerPayableBillPaymentCreateDto>({
     billId: String(props.billId),
     payAmount: Number(props.unpaidAmount || 0),
     payAt: "",

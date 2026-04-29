@@ -17,7 +17,7 @@
         </div>
         <div class="detail-header__actions">
           <el-button :disabled="!showEditAction" @click="openEditDialog">修改账单</el-button>
-          <el-button :disabled="!showCancelAction" @click="openCancelDialog">作废账单</el-button>
+          <el-button :disabled="!showVoidAction" @click="openVoidDialog">作废账单</el-button>
           <el-button v-if="showPaymentAction" type="primary" @click="openPaymentDialog">登记付款</el-button>
         </div>
       </div>
@@ -57,9 +57,9 @@
           <el-tag :type="paymentStatusTagType(bill.paymentStatus)">{{ paymentStatusText(bill.paymentStatus) }}</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="更新时间">{{ bill.updateAt || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="作废人">{{ bill.cancelByName || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="作废时间">{{ bill.cancelAt || "-" }}</el-descriptions-item>
-        <el-descriptions-item label="作废原因" :span="3">{{ bill.cancelReason || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="作废人">{{ bill.voidByName || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="作废时间">{{ bill.voidAt || "-" }}</el-descriptions-item>
+        <el-descriptions-item label="作废原因" :span="3">{{ bill.voidReason || "-" }}</el-descriptions-item>
         <el-descriptions-item label="备注" :span="3">{{ bill.remark || "-" }}</el-descriptions-item>
       </el-descriptions>
 
@@ -145,16 +145,14 @@
   import { computed, h, ref } from "vue";
   import { addDialog } from "@/components/ReDialog";
   import {
-    cancelOwnerPayableBill,
     createOwnerPayableBillPayment,
     getOwnerPayableBillDetail,
     updateOwnerPayableBill,
-    type PayableBillDetailVo,
-    type PayableBillPaymentCreateDto,
-    type PayableBillUpdateDto
+    voidOwnerPayableBill
   } from "@/api/owner/owner";
-  import { canCancelOwnerPayableBill, canEditOwnerPayableBill, canPayOwnerPayableBill } from "@/views/finance/owner-payable-bill/utils/billAction";
-  import OwnerPayableBillCancelDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillCancelDialog.vue";
+  import type { OwnerPayableBillDetailVo, OwnerPayableBillPaymentCreateDto, OwnerPayableBillUpdateDto } from "@/types/generated";
+  import { canEditOwnerPayableBill, canPayOwnerPayableBill, canVoidOwnerPayableBill } from "@/views/finance/owner-payable-bill/utils/billAction";
+  import OwnerPayableBillVoidDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillVoidDialog.vue";
   import OwnerPayableBillFormDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillFormDialog.vue";
   import OwnerPayableBillPaymentDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillPaymentDialog.vue";
   import { message } from "@/utils/message";
@@ -165,7 +163,7 @@
   const props = defineProps<{ billId: string | number }>();
   const loading = ref(false);
   const paymentFormRef = ref();
-  const bill = ref<PayableBillDetailVo>({});
+  const bill = ref<OwnerPayableBillDetailVo>({});
 
   // 账单类型map
   const feeTypeLabelMap = Object.values(OwnerBillingItemTypeEnumMeta).reduce<Record<string, string>>((acc, item) => {
@@ -187,7 +185,7 @@
 
   const showPaymentAction = computed(() => canPayOwnerPayableBill(bill.value));
   const showEditAction = computed(() => canEditOwnerPayableBill(bill.value));
-  const showCancelAction = computed(() => canCancelOwnerPayableBill(bill.value));
+  const showVoidAction = computed(() => canVoidOwnerPayableBill(bill.value));
   const moneyText = (value?: number) => Number(value || 0).toFixed(2);
   const paymentStatusText = (value?: number) => paymentStatusMap[value ?? 0] || `状态${value ?? "-"}`;
   const payChannelText = (value?: string) => (value ? payChannelLabelMap[value] || value : "-");
@@ -233,7 +231,7 @@
       beforeSure: async done => {
         const payload = await paymentFormRef.value?.validateAndBuildPayload?.();
         if (!payload) return;
-        const resp = await createOwnerPayableBillPayment(payload as PayableBillPaymentCreateDto);
+        const resp = await createOwnerPayableBillPayment(payload as OwnerPayableBillPaymentCreateDto);
         if (resp.code === 0) {
           message("付款登记成功", { type: "success" });
           await fetchDetail();
@@ -264,7 +262,7 @@
       beforeSure: async done => {
         const payload = await formRef.value?.validateAndBuildPayload?.();
         if (!payload) return;
-        const resp = await updateOwnerPayableBill(payload as PayableBillUpdateDto);
+        const resp = await updateOwnerPayableBill(payload as OwnerPayableBillUpdateDto);
         if (resp.code === 0) {
           message("应付单修改成功", { type: "success" });
           await fetchDetail();
@@ -276,8 +274,8 @@
     });
   }
 
-  function openCancelDialog() {
-    if (!showCancelAction.value) {
+  function openVoidDialog() {
+    if (!showVoidAction.value) {
       return;
     }
     const formRef = ref();
@@ -287,11 +285,11 @@
       lockScroll: true,
       alignCenter: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(OwnerPayableBillCancelDialog, { ref: formRef, billNo: bill.value.billNo }),
+      contentRenderer: () => h(OwnerPayableBillVoidDialog, { ref: formRef, billNo: bill.value.billNo }),
       beforeSure: async done => {
         const payload = await formRef.value?.validateAndBuildPayload?.();
         if (!payload) return;
-        const resp = await cancelOwnerPayableBill({ billId: bill.value.billId, cancelReason: payload.cancelReason });
+        const resp = await voidOwnerPayableBill({ billId: bill.value.billId, voidReason: payload.voidReason });
         if (resp.code === 0) {
           message("应付单作废成功", { type: "success" });
           await fetchDetail();

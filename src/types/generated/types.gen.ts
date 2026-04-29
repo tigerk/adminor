@@ -3482,6 +3482,20 @@ export type ResponseResultOwnerSettlementBillDetailVo = {
 };
 
 /**
+ * 包租业主应付单作废DTO
+ */
+export type OwnerPayableBillVoidDto = {
+    /**
+     * 应付单ID
+     */
+    billId?: string;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
+};
+
+/**
  * 包租业主应付单费用DTO
  */
 export type OwnerPayableBillFeeDto = {
@@ -3624,7 +3638,7 @@ export type OwnerPayableBillSummaryVo = {
     /**
      * 作废数量
      */
-    canceledCount?: string;
+    voidedCount?: string;
 };
 
 export type ResponseResultOwnerPayableBillSummaryVo = {
@@ -3750,7 +3764,7 @@ export type OwnerPayableBillListVo = {
     /**
      * 作废时间
      */
-    cancelAt?: string;
+    voidAt?: string;
 };
 
 export type PageVoOwnerPayableBillListVo = {
@@ -3918,19 +3932,19 @@ export type OwnerPayableBillDetailVo = {
     /**
      * 作废原因
      */
-    cancelReason?: string;
+    voidReason?: string;
     /**
      * 作废操作人ID
      */
-    cancelBy?: string;
+    voidBy?: string;
     /**
      * 作废操作人名称
      */
-    cancelByName?: string;
+    voidByName?: string;
     /**
      * 作废时间
      */
-    cancelAt?: string;
+    voidAt?: string;
     /**
      * 生成时间
      */
@@ -4091,20 +4105,6 @@ export type OwnerPayableBillCreateDto = {
      * 明细列表
      */
     feeList?: Array<OwnerPayableBillFeeDto>;
-};
-
-/**
- * 包租业主应付单作废DTO
- */
-export type OwnerPayableBillCancelDto = {
-    /**
-     * 应付单ID
-     */
-    billId?: string;
-    /**
-     * 作废原因
-     */
-    cancelReason?: string;
 };
 
 /**
@@ -6837,6 +6837,20 @@ export type ContractSealDeleteDto = {
      * 合同电子印章ID
      */
     id: string;
+};
+
+/**
+ * 业主合同作废DTO
+ */
+export type OwnerContractVoidDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
 };
 
 /**
@@ -11173,7 +11187,7 @@ export type OwnerPayableBillPaymentStatusEnum = 'UNPAID' | 'PART_PAID' | 'PAID';
 /**
  * 包租业主应付单状态枚举
  */
-export type OwnerPayableBillStatusEnum = 'NORMAL' | 'CANCELED';
+export type OwnerPayableBillStatusEnum = 'NORMAL' | 'VOIDED';
 
 /**
  * 业主结算单状态枚举
@@ -12428,6 +12442,24 @@ export type Detail1Responses = {
 
 export type Detail1Response = Detail1Responses[keyof Detail1Responses];
 
+export type VoidBillData = {
+    body: OwnerPayableBillVoidDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/owner/payable-bill/void';
+};
+
+export type VoidBillResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type VoidBillResponse = VoidBillResponses[keyof VoidBillResponses];
+
 export type Update1Data = {
     body: OwnerPayableBillUpdateDto;
     path?: never;
@@ -12529,24 +12561,6 @@ export type Create2Responses = {
 };
 
 export type Create2Response = Create2Responses[keyof Create2Responses];
-
-export type CancelData = {
-    body: OwnerPayableBillCancelDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/owner/payable-bill/cancel';
-};
-
-export type CancelResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLong;
-};
-
-export type CancelResponse = CancelResponses[keyof CancelResponses];
 
 export type GetMyOperationListData = {
     body: MineLogDto;
@@ -13506,6 +13520,24 @@ export type Create4Responses = {
 
 export type Create4Response = Create4Responses[keyof Create4Responses];
 
+export type VoidContractData = {
+    body: OwnerContractVoidDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/void';
+};
+
+export type VoidContractResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type VoidContractResponse = VoidContractResponses[keyof VoidContractResponses];
+
 export type Update4Data = {
     body: OwnerUpdateDto;
     path?: never;
@@ -13605,24 +13637,6 @@ export type Detail5Responses = {
 };
 
 export type Detail5Response = Detail5Responses[keyof Detail5Responses];
-
-export type Delete6Data = {
-    body: OwnerContractIdDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/contract/owner/delete';
-};
-
-export type Delete6Responses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLong;
-};
-
-export type Delete6Response = Delete6Responses[keyof Delete6Responses];
 
 export type Create5Data = {
     body: OwnerCreateDto;
@@ -13928,7 +13942,7 @@ export type CancelTenantResponses = {
 
 export type CancelTenantResponse = CancelTenantResponses[keyof CancelTenantResponses];
 
-export type VoidBillData = {
+export type VoidBill1Data = {
     body: LeaseBillVoidDto;
     path?: never;
     query: {
@@ -13937,14 +13951,14 @@ export type VoidBillData = {
     url: '/saas/contract/lease/bill/void';
 };
 
-export type VoidBillResponses = {
+export type VoidBill1Responses = {
     /**
      * OK
      */
     200: ResponseResultBoolean;
 };
 
-export type VoidBillResponse = VoidBillResponses[keyof VoidBillResponses];
+export type VoidBill1Response = VoidBill1Responses[keyof VoidBill1Responses];
 
 export type UpdateBillData = {
     body: LeaseBillUpdateDto;
@@ -14202,21 +14216,21 @@ export type ListRoleIdsResponses = {
 
 export type ListRoleIdsResponse = ListRoleIdsResponses[keyof ListRoleIdsResponses];
 
-export type Delete7Data = {
+export type Delete6Data = {
     body: Array<string>;
     path?: never;
     query?: never;
     url: '/saas/company/user/delete';
 };
 
-export type Delete7Responses = {
+export type Delete6Responses = {
     /**
      * OK
      */
     200: ResponseResultInteger;
 };
 
-export type Delete7Response = Delete7Responses[keyof Delete7Responses];
+export type Delete6Response = Delete6Responses[keyof Delete6Responses];
 
 export type Create6Data = {
     body: UserCreateDto;
@@ -15023,21 +15037,21 @@ export type CaptchaResponses = {
     200: unknown;
 };
 
-export type Delete8Data = {
+export type Delete7Data = {
     body?: never;
     path?: never;
     query?: never;
     url: '/saas/sys/dict/delete/{id}';
 };
 
-export type Delete8Responses = {
+export type Delete7Responses = {
     /**
      * OK
      */
     200: ResponseResultBoolean;
 };
 
-export type Delete8Response = Delete8Responses[keyof Delete8Responses];
+export type Delete7Response = Delete7Responses[keyof Delete7Responses];
 
 export type Index3Data = {
     body?: never;

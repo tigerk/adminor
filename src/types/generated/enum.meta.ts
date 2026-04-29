@@ -640,7 +640,7 @@ export const OwnerPayableBillPaymentStatusEnumMeta = {
 
 export const OwnerPayableBillStatusEnumMeta = {
   NORMAL: {"value":"NORMAL","code":1,"name":"正常"},
-  CANCELED: {"value":"CANCELED","code":2,"name":"已作废"}
+  VOIDED: {"value":"VOIDED","code":2,"name":"已作废"}
 } as const;
 
 export const OwnerSettlementBillStatusEnumMeta = {

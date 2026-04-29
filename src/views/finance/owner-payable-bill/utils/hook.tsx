@@ -3,21 +3,23 @@ import type { PaginationProps } from "@pureadmin/table";
 import { useRoute } from "vue-router";
 import { addDialog } from "@/components/ReDialog";
 import {
-  cancelOwnerPayableBill,
   createOwnerPayableBill,
   createOwnerPayableBillPayment,
   getOwnerPayableBillPage,
   getOwnerPayableBillSummary,
   updateOwnerPayableBill,
-  type PayableBillCreateDto,
-  type PayableBillListVo,
-  type PayableBillQueryDto,
-  type PayableBillSummaryVo,
-  type PayableBillUpdateDto
+  voidOwnerPayableBill
 } from "@/api/owner/owner";
+import type {
+  OwnerPayableBillCreateDto,
+  OwnerPayableBillListVo,
+  OwnerPayableBillQueryDto,
+  OwnerPayableBillSummaryVo,
+  OwnerPayableBillUpdateDto
+} from "@/types/generated";
 import OwnerPayableBillDetailDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillDetailDialog.vue";
 import OwnerPayableBillFormDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillFormDialog.vue";
-import OwnerPayableBillCancelDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillCancelDialog.vue";
+import OwnerPayableBillVoidDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillVoidDialog.vue";
 import OwnerPayableBillPaymentDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillPaymentDialog.vue";
 import { message } from "@/utils/message";
 
@@ -26,15 +28,15 @@ const OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY = "owner-payable-bill-page-intro
 function useOwnerPayableBill() {
   const route = useRoute();
 
-  type QueryForm = Omit<PayableBillQueryDto, "currentPage" | "pageSize"> & {
+  type QueryForm = Omit<OwnerPayableBillQueryDto, "currentPage" | "pageSize"> & {
     currentPage: number;
     pageSize: number;
   };
 
   const loading = ref(false);
   const showPageIntro = ref(localStorage.getItem(OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
-  const tableData = ref<PayableBillListVo[]>([]);
-  const summary = ref<PayableBillSummaryVo>({});
+  const tableData = ref<OwnerPayableBillListVo[]>([]);
+  const summary = ref<OwnerPayableBillSummaryVo>({});
 
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -121,7 +123,7 @@ function useOwnerPayableBill() {
     { label: "操作", fixed: "right", width: 220, align: "center", slot: "operation" }
   ];
 
-  function buildQueryPayload(): PayableBillQueryDto {
+  function buildQueryPayload(): OwnerPayableBillQueryDto {
     return {
       ...queryForm,
       currentPage: String(pagination.currentPage),
@@ -225,11 +227,11 @@ function useOwnerPayableBill() {
     });
   }
 
-  function handleRowClick(row: PayableBillListVo) {
+  function handleRowClick(row: OwnerPayableBillListVo) {
     openOwnerPayableBillDetailDialog(row.billId);
   }
 
-  function openPayableBillFormDialog(row?: PayableBillListVo) {
+  function openPayableBillFormDialog(row?: OwnerPayableBillListVo) {
     const formRef = ref();
     const isEdit = !!row?.billId;
     addDialog({
@@ -246,7 +248,7 @@ function useOwnerPayableBill() {
       beforeSure: async done => {
         const payload = await formRef.value?.validateAndBuildPayload?.();
         if (!payload) return;
-        const resp = isEdit ? await updateOwnerPayableBill(payload as PayableBillUpdateDto) : await createOwnerPayableBill(payload as PayableBillCreateDto);
+        const resp = isEdit ? await updateOwnerPayableBill(payload as OwnerPayableBillUpdateDto) : await createOwnerPayableBill(payload as OwnerPayableBillCreateDto);
         if (resp.code === 0) {
           message(isEdit ? "应付单修改成功" : "应付单新增成功", { type: "success" });
           await fetchData();
@@ -258,7 +260,7 @@ function useOwnerPayableBill() {
     });
   }
 
-  function openPayableBillCancelDialog(row: PayableBillListVo) {
+  function openPayableBillVoidDialog(row: OwnerPayableBillListVo) {
     const formRef = ref();
     addDialog({
       title: "作废包租应付单",
@@ -266,11 +268,11 @@ function useOwnerPayableBill() {
       lockScroll: true,
       alignCenter: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(OwnerPayableBillCancelDialog, { ref: formRef, billNo: row.billNo }),
+      contentRenderer: () => h(OwnerPayableBillVoidDialog, { ref: formRef, billNo: row.billNo }),
       beforeSure: async done => {
         const payload = await formRef.value?.validateAndBuildPayload?.();
         if (!payload) return;
-        const resp = await cancelOwnerPayableBill({ billId: row.billId, cancelReason: payload.cancelReason });
+        const resp = await voidOwnerPayableBill({ billId: row.billId, voidReason: payload.voidReason });
         if (resp.code === 0) {
           message("应付单作废成功", { type: "success" });
           await fetchData();
@@ -282,7 +284,7 @@ function useOwnerPayableBill() {
     });
   }
 
-  function openPayableBillPaymentDialog(row: PayableBillListVo) {
+  function openPayableBillPaymentDialog(row: OwnerPayableBillListVo) {
     const formRef = ref();
     addDialog({
       title: "登记付款",
@@ -330,7 +332,7 @@ function useOwnerPayableBill() {
     handleRowClick,
     openOwnerPayableBillDetailDialog,
     openPayableBillFormDialog,
-    openPayableBillCancelDialog,
+    openPayableBillVoidDialog,
     openPayableBillPaymentDialog,
     closePageIntro,
     settlementStatusText,

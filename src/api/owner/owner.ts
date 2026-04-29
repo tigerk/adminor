@@ -1,10 +1,19 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
 import type {
+  OwnerPayableBillCreateDto,
+  OwnerPayableBillIdDto,
+  OwnerPayableBillPaymentCreateDto,
+  OwnerPayableBillQueryDto,
+  OwnerPayableBillUpdateDto,
+  OwnerPayableBillVoidDto,
   OwnerWithdrawCreateDto,
   OwnerWithdrawApplyIdDto,
   OwnerWithdrawApplyQueryDto,
   OwnerWithdrawOperateDto,
+  ResponseResultOwnerPayableBillDetailVo,
+  ResponseResultOwnerPayableBillSummaryVo,
+  ResponseResultPageVoOwnerPayableBillListVo,
   ResponseResultOwnerWithdrawApplyDetailVo,
   ResponseResultOwnerWithdrawSummaryVo,
   ResponseResultPageVoOwnerWithdrawApplyListVo,
@@ -90,123 +99,6 @@ export interface SettlementBillDetailVo extends SettlementBillListVo {
   reductionList?: SettlementBillReductionVo[];
 }
 
-export interface PayableBillQueryDto {
-  currentPage?: string;
-  pageSize?: string;
-  ownerId?: string;
-  contractId?: string;
-  ownerName?: string;
-  billNo?: string;
-  paymentStatus?: number;
-  billStatus?: number;
-}
-
-export interface PayableBillListVo {
-  billId?: number | string;
-  billNo?: string;
-  ownerId?: number | string;
-  ownerName?: string;
-  ownerPhone?: string;
-  contractId?: number | string;
-  contractNo?: string;
-  subjectName?: string;
-  billStartDate?: string;
-  billEndDate?: string;
-  dueDate?: string;
-  payableAmount?: number;
-  paidAmount?: number;
-  unpaidAmount?: number;
-  adjustAmount?: number;
-  paymentStatus?: number;
-  billStatus?: number;
-  generatedAt?: string;
-  cancelAt?: string;
-}
-
-export interface PayableBillSummaryVo {
-  billCount?: number | string;
-  totalPayableAmount?: number;
-  totalPaidAmount?: number;
-  totalUnpaidAmount?: number;
-  canceledCount?: number | string;
-}
-
-export interface PayableBillLineDto {
-  id?: string | number;
-  sourceType?: string;
-  sourceId?: string | number;
-  dictDataId?: string | number;
-  feeType?: string;
-  feeName?: string;
-  direction?: string;
-  amount?: number;
-  bizDate?: string;
-  formulaSnapshot?: string;
-  remark?: string;
-}
-
-export interface PayableBillPaymentCreateDto {
-  billId?: string | number;
-  payAmount?: number;
-  payAt?: string;
-  payChannel?: string;
-  thirdTradeNo?: string;
-  remark?: string;
-  voucherUrls?: string[];
-}
-
-export interface PayableBillCreateDto {
-  ownerId?: string | number;
-  contractId?: string | number;
-  billStartDate?: string;
-  billEndDate?: string;
-  dueDate?: string;
-  remark?: string;
-  feeList?: PayableBillLineDto[];
-}
-
-export interface PayableBillUpdateDto extends PayableBillCreateDto {
-  billId?: string | number;
-}
-
-export interface PayableBillCancelDto {
-  billId?: string | number;
-  cancelReason?: string;
-}
-
-export interface PayableBillPaymentVo {
-  paymentId?: number | string;
-  paymentNo?: string;
-  payAmount?: number;
-  payAt?: string;
-  payChannel?: string;
-  thirdTradeNo?: string;
-  remark?: string;
-  voucherUrls?: string[];
-  createAt?: string;
-}
-
-export interface BizOperateLogVo {
-  id?: number | string;
-  operateType?: string;
-  operateDesc?: string;
-  remark?: string;
-  operatorName?: string;
-  createAt?: string;
-}
-
-export interface PayableBillDetailVo extends PayableBillListVo {
-  cancelReason?: string;
-  cancelBy?: string | number;
-  cancelByName?: string;
-  remark?: string;
-  createAt?: string;
-  updateAt?: string;
-  feeList?: PayableBillLineDto[];
-  paymentList?: PayableBillPaymentVo[];
-  operateLogList?: BizOperateLogVo[];
-}
-
 type ResponseResultPage<T> = {
   code?: number;
   message?: string;
@@ -237,31 +129,31 @@ export const getOwnerSettlementBillDetail = (data: { billId: string | number }) 
   return http.request<ResponseResultData<SettlementBillDetailVo>>("post", baseUrlApi("owner/settlement-bill/detail"), { data });
 };
 
-export const getOwnerPayableBillPage = (data?: PayableBillQueryDto) => {
-  return http.request<ResponseResultPage<PayableBillListVo>>("post", baseUrlApi("owner/payable-bill/page"), { data });
+export const getOwnerPayableBillPage = (data?: OwnerPayableBillQueryDto) => {
+  return http.request<ResponseResultPageVoOwnerPayableBillListVo>("post", baseUrlApi("owner/payable-bill/page"), { data });
 };
 
-export const getOwnerPayableBillSummary = (data?: PayableBillQueryDto) => {
-  return http.request<ResponseResultData<PayableBillSummaryVo>>("post", baseUrlApi("owner/payable-bill/summary"), { data });
+export const getOwnerPayableBillSummary = (data?: OwnerPayableBillQueryDto) => {
+  return http.request<ResponseResultOwnerPayableBillSummaryVo>("post", baseUrlApi("owner/payable-bill/summary"), { data });
 };
 
-export const getOwnerPayableBillDetail = (data: { billId: string | number }) => {
-  return http.request<ResponseResultData<PayableBillDetailVo>>("post", baseUrlApi("owner/payable-bill/detail"), { data });
+export const getOwnerPayableBillDetail = (data: OwnerPayableBillIdDto) => {
+  return http.request<ResponseResultOwnerPayableBillDetailVo>("post", baseUrlApi("owner/payable-bill/detail"), { data });
 };
 
-export const createOwnerPayableBill = (data: PayableBillCreateDto) => {
+export const createOwnerPayableBill = (data: OwnerPayableBillCreateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("owner/payable-bill/create"), { data });
 };
 
-export const updateOwnerPayableBill = (data: PayableBillUpdateDto) => {
+export const updateOwnerPayableBill = (data: OwnerPayableBillUpdateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("owner/payable-bill/update"), { data });
 };
 
-export const cancelOwnerPayableBill = (data: PayableBillCancelDto) => {
-  return http.request<ResponseResultLong>("post", baseUrlApi("owner/payable-bill/cancel"), { data });
+export const voidOwnerPayableBill = (data: OwnerPayableBillVoidDto) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("owner/payable-bill/void"), { data });
 };
 
-export const createOwnerPayableBillPayment = (data: PayableBillPaymentCreateDto) => {
+export const createOwnerPayableBillPayment = (data: OwnerPayableBillPaymentCreateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("owner/payable-bill/payment/create"), { data });
 };
 
