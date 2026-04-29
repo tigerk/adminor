@@ -231,8 +231,19 @@
             <section class="info-section">
               <div class="section-title">条款信息</div>
               <template v-if="detailData.ownerContract?.cooperationMode === 'LIGHT_MANAGED'">
+                <div class="settlement-mode-summary-list">
+                  <div v-for="item in settlementModeDescriptionList" :key="item.value" class="settlement-mode-summary">
+                    <div class="settlement-mode-summary__main">
+                      <span class="settlement-mode-summary__label">{{ item.label }}</span>
+                      <span class="settlement-mode-summary__desc">{{ item.desc }}</span>
+                    </div>
+                    <div v-if="item.features.length" class="settlement-mode-summary__features">
+                      <el-tag v-for="feature in item.features" :key="feature" size="small" effect="plain">{{ feature }}</el-tag>
+                    </div>
+                  </div>
+                </div>
                 <el-table :data="detailData.contractSubjectList || []" border stripe>
-                  <el-table-column prop="subjectName" label="合同房源" min-width="180" />
+                  <el-table-column prop="subjectName" label="合同房源" min-width="300" />
                   <el-table-column label="结算模式" min-width="120">
                     <template #default="{ row }">{{ settlementModeLabelMap[row.settlementRule?.settlementMode || "FIXED"] }}</template>
                   </el-table-column>
@@ -352,6 +363,7 @@
   import OwnerWithdrawEntry from "@/views/finance/owner-withdraw/index.vue";
   import OwnerPayableBillEntry from "@/views/finance/owner-payable-bill/index.vue";
   import BizOperateLogPanel from "@/shared/biz-operate-log/BizOperateLogPanel.vue";
+  import { SETTLEMENT_MODE_OPTIONS } from "@/views/contract/owner/form/ownerContractForm/model/ownerContractFormOptions";
   import { Clock, Money, User, Wallet } from "@element-plus/icons-vue";
   import { BizApprovalStatusEnumMeta, GenderEnumMeta, IdTypeEnumMeta } from "@/types/generated/enum.meta";
   import type { ContractTemplateListVo, OwnerContractDto, OwnerContractSubjectDto, OwnerDetailVo, OwnerLeaseRuleDto } from "@/types/generated";
@@ -450,6 +462,19 @@
     ].filter(item => item.urls.length > 0);
   });
   const hasOwnerPhotos = computed(() => ownerPhotoGroups.value.length > 0);
+  const settlementModeDescriptionList = computed(() => {
+    const modes = Array.from(new Set((detailData.value?.contractSubjectList || []).map(item => item.settlementRule?.settlementMode || "FIXED").filter(Boolean)));
+    const effectiveModes = modes.length ? modes : ["FIXED"];
+    return effectiveModes.map(mode => {
+      const option = SETTLEMENT_MODE_OPTIONS.find(item => item.value === mode);
+      return {
+        value: mode,
+        label: option?.label || settlementModeLabelMap[mode as keyof typeof settlementModeLabelMap] || String(mode),
+        desc: option?.desc || "当前结算方式暂无说明。",
+        features: option?.features || []
+      };
+    });
+  });
 
   const formatOwnerType = (value: unknown) => {
     if (value === 0 || value === "0") return "个人业主";
@@ -749,6 +774,52 @@
       font-weight: 600;
       color: var(--el-text-color-primary);
       background: var(--el-fill-color-light);
+    }
+  }
+
+  .settlement-mode-summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .settlement-mode-summary {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+
+    &__main {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      min-width: 0;
+    }
+
+    &__label {
+      flex: none;
+      font-size: var(--el-font-size-base);
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+
+    &__desc {
+      min-width: 0;
+      font-size: var(--el-font-size-small);
+      line-height: 1.6;
+      color: var(--el-text-color-secondary);
+    }
+
+    &__features {
+      display: flex;
+      flex: none;
+      gap: 6px;
+      align-items: center;
     }
   }
 
