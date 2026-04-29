@@ -41,104 +41,91 @@
       </div>
     </div>
 
-    <PureTableBar title="业主合同" @refresh="loadList">
+    <PureTableBar title="业主合同" :columns="columns" @refresh="loadList">
       <template #buttons>
         <div class="summary-block summary-block--toolbar">
           <OwnerSummaryFilterTabs v-model="summaryFilter" :items="summaryCards" @update:model-value="handleSummaryFilterChange" />
         </div>
       </template>
-      <template #default>
-        <el-table v-loading="loading" :data="tableData" border row-key="contractId">
-          <el-table-column label="签署状态" width="100" align="center" fixed>
-            <template #default="{ row }">
+      <template #default="{ size, dynamicColumns }">
+        <pure-table
+          border
+          row-key="contractId"
+          alignWhole="center"
+          class="pf-table"
+          :show-overflow-tooltip="false"
+          :loading="loading"
+          :loading-config="{ background: 'transparent' }"
+          adaptive
+          :adaptiveConfig="{ offsetBottom: 82 }"
+          :data="tableData"
+          :size="size"
+          :columns="dynamicColumns"
+          :pagination="pagination"
+          :header-cell-style="{ background: 'var(--el-fill-color-light)', color: 'var(--el-text-color-primary)' }"
+          @page-size-change="handlePageSizeChange"
+          @page-current-change="handlePageCurrentChange"
+        >
+          <template #signStatus="{ row }">
+            <div class="table-cell-center">
               <el-tag :type="row.signStatus === 'SIGNED' ? 'success' : 'info'">
                 {{ signStatusLabelMap[row.signStatus || "PENDING"] }}
               </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="业主信息" min-width="180" align="center">
-            <template #default="{ row }">
-              <div class="owner-cell">
-                <div class="owner-cell__name">{{ row.ownerName || "-" }}</div>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="委托模式" width="120" align="center">
-            <template #default="{ row }">
+            </div>
+          </template>
+          <template #ownerInfo="{ row }">
+            <div class="owner-cell">
+              <div class="owner-cell__name">{{ row.ownerName || "-" }}</div>
+            </div>
+          </template>
+          <template #cooperationMode="{ row }">
+            <div class="table-cell-center">
               <el-tag :type="row.cooperationMode === 'MASTER_LEASE' ? 'warning' : 'success'">
                 {{ cooperationModeLabelMap[row.cooperationMode || "LIGHT_MANAGED"] }}
               </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="contractNo" label="合同编号" min-width="220" />
-          <el-table-column label="合同房源" min-width="360">
-            <template #default="{ row }">
-              <div class="house-summary house-summary--inline">
-                <el-tooltip :content="row.subjectNames || '-'" placement="top" :show-after="200">
-                  <div class="house-summary__title">{{ row.subjectNames || "-" }}</div>
-                </el-tooltip>
-                <div class="house-summary__meta house-summary__meta--inline">
-                  <span>共 {{ row.subjectCount || 0 }} 套</span>
-                  <span>已配置 {{ row.configuredSubjectCount || 0 }} 套</span>
-                </div>
+            </div>
+          </template>
+          <template #subjectNames="{ row }">
+            <div class="house-summary house-summary--inline">
+              <el-tooltip :content="row.subjectNames || '-'" placement="top" :show-after="200">
+                <div class="house-summary__title">{{ row.subjectNames || "-" }}</div>
+              </el-tooltip>
+              <div class="house-summary__meta house-summary__meta--inline">
+                <span>共 {{ row.subjectCount || 0 }} 套</span>
+                <span>已配置 {{ row.configuredSubjectCount || 0 }} 套</span>
               </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="总面积" width="110" align="center">
-            <template #default="{ row }">
-              <span>{{ formatArea(row.totalArea) }} m²</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="手机号" min-width="140" align="center">
-            <template #default="{ row }">
-              <span>{{ row.ownerPhone || "-" }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="contractTemplateName" label="合同模板" min-width="140" show-overflow-tooltip />
-          <el-table-column label="合同周期" min-width="220">
-            <template #default="{ row }">
-              <div class="date-range">{{ formatDate(row.contractStart) }} 至 {{ formatDate(row.contractEnd) }}</div>
-            </template>
-          </el-table-column>
-          <el-table-column label="业主标签" min-width="120" align="center">
-            <template #default="{ row }">
-              <span>{{ row.ownerTag || "-" }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="updateAt" label="更新时间" min-width="170" />
-          <el-table-column label="操作" width="200" align="center" fixed="right">
-            <template #default="{ row }">
-              <el-button link type="primary" @click="openDetail(row.contractId)">查看</el-button>
-              <el-button link type="primary" @click="handlePreview(row.contractId)">预览合同</el-button>
-              <el-dropdown :hide-on-click="false" popper-class="action-dropdown">
-                <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item @click="openEdit(row.contractId)">编辑合同</el-dropdown-item>
-                    <el-dropdown-item @click="handleOwnerRenew(row)">业主续约</el-dropdown-item>
-                    <el-dropdown-item @click="handleOwnerCheckout(row)">业主退房</el-dropdown-item>
-                    <el-dropdown-item v-if="canVoidContract(row)" divided @click="handleVoidContract(row)">
-                      <span class="text-danger">作废合同</span>
-                    </el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <div class="mt-4 flex justify-end">
-          <el-pagination
-            v-model:current-page="queryForm.currentPage"
-            v-model:page-size="queryForm.pageSize"
-            :page-sizes="[10, 20, 30, 50]"
-            background
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="total"
-            @current-change="loadList"
-            @size-change="handlePageSizeChange"
-          />
-        </div>
+            </div>
+          </template>
+          <template #totalArea="{ row }">
+            <span>{{ formatArea(row.totalArea) }} m²</span>
+          </template>
+          <template #ownerPhone="{ row }">
+            <span>{{ row.ownerPhone || "-" }}</span>
+          </template>
+          <template #contractPeriod="{ row }">
+            <div class="date-range">{{ formatDate(row.contractStart) }} 至 {{ formatDate(row.contractEnd) }}</div>
+          </template>
+          <template #ownerTag="{ row }">
+            <span>{{ row.ownerTag || "-" }}</span>
+          </template>
+          <template #operation="{ row }">
+            <el-button link type="primary" @click="openDetail(row.contractId)">查看</el-button>
+            <el-button link type="primary" @click="handlePreview(row.contractId)">预览合同</el-button>
+            <el-dropdown :hide-on-click="false" popper-class="action-dropdown">
+              <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="openEdit(row.contractId)">编辑合同</el-dropdown-item>
+                  <el-dropdown-item @click="handleOwnerRenew(row)">业主续约</el-dropdown-item>
+                  <el-dropdown-item @click="handleOwnerCheckout(row)">业主退房</el-dropdown-item>
+                  <el-dropdown-item v-if="canVoidContract(row)" divided @click="handleVoidContract(row)">
+                    <span class="text-danger">作废合同</span>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </template>
+        </pure-table>
       </template>
     </PureTableBar>
 
@@ -150,6 +137,7 @@
 
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, watch } from "vue";
+  import type { PaginationProps } from "@pureadmin/table";
   import { ElMessageBox } from "element-plus";
   import { useRouter } from "vue-router";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
@@ -202,7 +190,12 @@
   const { openOwnerDialog, openOwnerRenewDialog, openOwnerCheckoutDialog, openOwnerViewDialog } = useOwnerContract();
   const loading = ref(false);
   const tableData = ref<OwnerListRow[]>([]);
-  const total = ref(0);
+  const pagination = reactive<PaginationProps>({
+    total: 0,
+    pageSize: 15,
+    currentPage: 1,
+    background: true
+  });
   const totalStats = reactive<OwnerContractTotal>({
     total: 0,
     pendingSignTotal: 0,
@@ -212,7 +205,7 @@
 
   const queryForm = reactive<QueryForm>({
     currentPage: 1,
-    pageSize: 10,
+    pageSize: 15,
     ownerName: "",
     ownerPhone: ""
   });
@@ -252,6 +245,21 @@
     { key: "EXPIRING_30", label: "30天内到期", total: totalStats.expiring30DaysTotal || 0, color: "#ef4444" }
   ]);
 
+  const columns: TableColumnList = [
+    { label: "签署状态", width: 100, align: "center", fixed: "left", slot: "signStatus" },
+    { label: "业主信息", minWidth: 180, align: "center", slot: "ownerInfo" },
+    { label: "委托模式", width: 120, align: "center", slot: "cooperationMode" },
+    { label: "合同编号", prop: "contractNo", minWidth: 220 },
+    { label: "合同房源", minWidth: 360, slot: "subjectNames" },
+    { label: "总面积", width: 110, align: "center", slot: "totalArea" },
+    { label: "手机号", minWidth: 140, align: "center", slot: "ownerPhone" },
+    { label: "合同模板", prop: "contractTemplateName", minWidth: 140, showOverflowTooltip: true },
+    { label: "合同周期", minWidth: 220, slot: "contractPeriod" },
+    { label: "业主标签", minWidth: 120, align: "center", slot: "ownerTag" },
+    { label: "更新时间", prop: "updateAt", minWidth: 170 },
+    { label: "操作", width: 200, align: "center", fixed: "right", slot: "operation" }
+  ];
+
   function formatDate(value?: string | number | Date) {
     if (!value) return "-";
     if (typeof value === "string") return value.slice(0, 10);
@@ -271,8 +279,8 @@
       cooperationMode: queryForm.cooperationMode,
       signStatus: queryForm.signStatus,
       expiringDaysWithin: queryForm.expiringDaysWithin,
-      currentPage: String(queryForm.currentPage),
-      pageSize: String(queryForm.pageSize)
+      currentPage: String(pagination.currentPage),
+      pageSize: String(pagination.pageSize)
     };
   }
 
@@ -290,7 +298,11 @@
     try {
       const [listResp, totalResp] = await Promise.all([getOwnerContractList(buildListPayload()), getOwnerContractTotal(buildTotalPayload() as any)]);
       tableData.value = (listResp.data?.list || []) as OwnerListRow[];
-      total.value = Number(listResp.data?.total || 0);
+      pagination.total = Number(listResp.data?.total || 0);
+      pagination.currentPage = Number(listResp.data?.currentPage || pagination.currentPage);
+      pagination.pageSize = Number(listResp.data?.pageSize || pagination.pageSize);
+      queryForm.currentPage = pagination.currentPage;
+      queryForm.pageSize = pagination.pageSize;
       Object.assign(totalStats, (totalResp.data || {}) as OwnerContractTotal);
     } finally {
       loading.value = false;
@@ -298,18 +310,30 @@
   }
 
   function handleSearch() {
+    pagination.currentPage = 1;
     queryForm.currentPage = 1;
     loadList();
   }
 
-  function handlePageSizeChange() {
+  function handlePageSizeChange(size: number) {
+    pagination.pageSize = size;
+    pagination.currentPage = 1;
+    queryForm.pageSize = size;
     queryForm.currentPage = 1;
+    loadList();
+  }
+
+  function handlePageCurrentChange(page: number) {
+    pagination.currentPage = page;
+    queryForm.currentPage = page;
     loadList();
   }
 
   function resetQuery() {
     queryForm.currentPage = 1;
-    queryForm.pageSize = 10;
+    queryForm.pageSize = 15;
+    pagination.currentPage = 1;
+    pagination.pageSize = 15;
     queryForm.ownerName = "";
     queryForm.ownerPhone = "";
     queryForm.ownerType = undefined;
