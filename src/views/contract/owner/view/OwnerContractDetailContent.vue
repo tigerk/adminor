@@ -1,66 +1,84 @@
 <template>
   <div v-if="detailData">
-    <div class="detail-hero">
-      <div class="detail-hero__main">
-        <div class="detail-hero__title">
-          {{ detailOwnerName }}
-          <el-tag size="small" effect="plain">{{ ownerTypeLabelMap[detailData.ownerType ?? 0] }}</el-tag>
-          <el-tag size="small" :type="detailData.ownerContract?.cooperationMode === 'MASTER_LEASE' ? 'warning' : 'success'" effect="plain">
-            {{ cooperationModeLabelMap[detailData.ownerContract?.cooperationMode || "LIGHT_MANAGED"] }}
+    <div class="overview-bar">
+      <div class="overview-bar__section overview-bar__section--rooms">
+        <div class="overview-bar__label">
+          <span>合同房源</span>
+        </div>
+        <div class="room-chip-list">
+          <el-tag v-for="subject in detailData.contractSubjectList || []" :key="subject.id || subject.subjectId" type="primary" effect="light" class="room-chip">
+            {{ subject.subjectName || "-" }}
           </el-tag>
-        </div>
-        <div class="detail-hero__meta">
-          <span>合同编号：{{ detailData.ownerContract?.contractNo || "-" }}</span>
-          <span>签署状态：{{ signStatusLabelMap[detailData.ownerContract?.signStatus ?? 0] }}</span>
-          <span>合同状态：{{ statusLabelMap[detailData.ownerContract?.status ?? 1] }}</span>
+          <el-tag type="info" effect="plain" class="room-chip room-chip--meta">房源数量：{{ detailData.subjectCount || 0 }}套</el-tag>
+          <el-tag type="info" effect="plain" class="room-chip room-chip--meta">已配置：{{ detailData.configuredSubjectCount || 0 }}套</el-tag>
+          <el-tag type="info" effect="plain" class="room-chip room-chip--meta">总面积：{{ formatArea(detailData.totalArea) }}m²</el-tag>
         </div>
       </div>
-      <div class="detail-hero__actions">
-        <el-button plain @click="handlePreview(detailData.ownerContract?.id)">预览合同</el-button>
-        <el-button plain type="primary" @click="goOwnerBills(detailData)">{{ billEntryText(detailData) }}</el-button>
-        <el-button v-if="detailData.ownerContract?.cooperationMode !== 'MASTER_LEASE'" plain type="warning" @click="goOwnerWithdraws(detailData)">查看提现</el-button>
-        <el-button type="primary" @click="handleEdit">编辑合同</el-button>
+
+      <div class="overview-bar__section overview-bar__section--summary">
+        <div class="overview-bar__label">
+          <span>合同摘要</span>
+        </div>
+        <div class="summary-strip">
+          <div class="summary-strip__item">
+            <span class="summary-strip__label">业主</span>
+            <span class="summary-strip__value">{{ detailOwnerName }}</span>
+          </div>
+          <div class="summary-strip__item">
+            <span class="summary-strip__label">委托模式</span>
+            <span class="summary-strip__value">{{ cooperationModeLabelMap[detailData.ownerContract?.cooperationMode || "LIGHT_MANAGED"] }}</span>
+          </div>
+          <div class="summary-strip__item">
+            <span class="summary-strip__label">合同编号</span>
+            <span class="summary-strip__value">{{ detailData.ownerContract?.contractNo || "-" }}</span>
+          </div>
+          <div class="summary-strip__item">
+            <span class="summary-strip__label">合同周期</span>
+            <span class="summary-strip__value">{{ formatDate(detailData.ownerContract?.contractStart) }} 至 {{ formatDate(detailData.ownerContract?.contractEnd) }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="detail-metrics">
-      <div class="metric-card">
-        <div class="metric-card__label">合同房源</div>
-        <div class="metric-card__value">{{ detailData.subjectCount || 0 }}</div>
-        <div class="metric-card__unit">个</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-card__label">总面积</div>
-        <div class="metric-card__value">{{ formatArea(detailData.totalArea) }}</div>
-        <div class="metric-card__unit">m²</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-card__label">已配置房源</div>
-        <div class="metric-card__value">{{ detailData.configuredSubjectCount || 0 }}</div>
-        <div class="metric-card__unit">个</div>
-      </div>
-    </div>
-
-    <el-tabs>
-      <el-tab-pane label="基础信息">
+    <el-tabs v-model="activeTab" class="modern-tabs">
+      <el-tab-pane label="业主信息" name="owner">
         <el-card shadow="never" class="detail-card">
           <template #header><span>业主信息</span></template>
           <el-descriptions :column="3" border>
             <template v-if="detailData.ownerType === 0">
               <el-descriptions-item label="姓名">{{ detailData.ownerPersonal?.name || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="性别">{{ genderText(detailData.ownerPersonal?.gender) }}</el-descriptions-item>
               <el-descriptions-item label="联系电话">{{ detailData.ownerPersonal?.phone || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="证件类型">{{ idTypeText(detailData.ownerPersonal?.idType) }}</el-descriptions-item>
               <el-descriptions-item label="证件号码">{{ detailData.ownerPersonal?.idNo || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="标签">{{ tagsText(detailData.ownerPersonal?.tags) }}</el-descriptions-item>
               <el-descriptions-item label="收款人姓名">{{ detailData.ownerPersonal?.payeeName || "-" }}</el-descriptions-item>
               <el-descriptions-item label="收款人电话">{{ detailData.ownerPersonal?.payeePhone || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="收款人证件类型">{{ idTypeText(detailData.ownerPersonal?.payeeIdType) }}</el-descriptions-item>
+              <el-descriptions-item label="收款人证件号码">{{ detailData.ownerPersonal?.payeeIdNo || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="银行卡开户名">{{ detailData.ownerPersonal?.bankAccountName || "-" }}</el-descriptions-item>
               <el-descriptions-item label="银行卡号">{{ detailData.ownerPersonal?.bankAccountNo || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="开户行">{{ detailData.ownerPersonal?.bankName || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="备注" :span="3">{{ detailData.ownerPersonal?.remark || "-" }}</el-descriptions-item>
             </template>
             <template v-else>
               <el-descriptions-item label="企业名称">{{ detailData.ownerCompany?.name || "-" }}</el-descriptions-item>
-              <el-descriptions-item label="联系电话">{{ detailData.ownerCompany?.contactPhone || "-" }}</el-descriptions-item>
               <el-descriptions-item label="统一信用代码">{{ detailData.ownerCompany?.uscc || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="法定代表人">{{ detailData.ownerCompany?.legalPerson || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="法人证件类型">{{ idTypeText(detailData.ownerCompany?.legalPersonIdType) }}</el-descriptions-item>
+              <el-descriptions-item label="法人证件号码">{{ detailData.ownerCompany?.legalPersonIdNo || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="联系人姓名">{{ detailData.ownerCompany?.contactName || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="联系人电话">{{ detailData.ownerCompany?.contactPhone || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="注册地址">{{ detailData.ownerCompany?.registeredAddress || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="标签">{{ tagsText(detailData.ownerCompany?.tags) }}</el-descriptions-item>
               <el-descriptions-item label="收款人姓名">{{ detailData.ownerCompany?.payeeName || "-" }}</el-descriptions-item>
               <el-descriptions-item label="收款人电话">{{ detailData.ownerCompany?.payeePhone || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="收款人证件类型">{{ idTypeText(detailData.ownerCompany?.payeeIdType) }}</el-descriptions-item>
+              <el-descriptions-item label="收款人证件号码">{{ detailData.ownerCompany?.payeeIdNo || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="银行卡开户名">{{ detailData.ownerCompany?.bankAccountName || "-" }}</el-descriptions-item>
               <el-descriptions-item label="银行卡号">{{ detailData.ownerCompany?.bankAccountNo || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="开户行">{{ detailData.ownerCompany?.bankName || "-" }}</el-descriptions-item>
+              <el-descriptions-item label="备注" :span="3">{{ detailData.ownerCompany?.remark || "-" }}</el-descriptions-item>
             </template>
           </el-descriptions>
 
@@ -88,16 +106,27 @@
             </template>
           </div>
         </el-card>
+      </el-tab-pane>
 
+      <el-tab-pane label="合同信息" name="contract">
         <el-card shadow="never" class="detail-card">
           <template #header><span>合同信息</span></template>
           <el-descriptions :column="3" border>
             <el-descriptions-item label="合同模板">{{ detailData.contractTemplateName || detailTemplate?.templateName || detailData.ownerContract?.contractTemplateId || "-" }}</el-descriptions-item>
             <el-descriptions-item label="合同周期">{{ formatDate(detailData.ownerContract?.contractStart) }} 至 {{ formatDate(detailData.ownerContract?.contractEnd) }}</el-descriptions-item>
+            <el-descriptions-item label="合同状态">{{ statusLabelMap[detailData.ownerContract?.status ?? 1] }}</el-descriptions-item>
             <el-descriptions-item label="签署状态">{{ signStatusLabelMap[detailData.ownerContract?.signStatus ?? 0] }}</el-descriptions-item>
             <el-descriptions-item label="签约类型">{{ signTypeLabelMap[detailData.ownerContract?.signType || "NEW"] }}</el-descriptions-item>
+            <el-descriptions-item label="合同性质">{{ contractNatureText(detailData.ownerContract?.contractNature) }}</el-descriptions-item>
             <el-descriptions-item label="合同介质">{{ contractMediumLabelMap[detailData.ownerContract?.contractMedium || "PAPER"] }}</el-descriptions-item>
             <el-descriptions-item label="通知业主">{{ detailData.ownerContract?.notifyOwner ? "是" : "否" }}</el-descriptions-item>
+            <el-descriptions-item label="审批状态">{{ approvalStatusText(detailData.ownerContract?.approvalStatus) }}</el-descriptions-item>
+            <el-descriptions-item label="来源合同">{{ detailData.ownerContract?.renewFromContractNo || detailData.ownerContract?.parentContractId || "-" }}</el-descriptions-item>
+            <el-descriptions-item label="退房状态">{{ detailData.ownerContract?.checkoutStatus === 1 ? "已退房" : "未退房" }}</el-descriptions-item>
+            <el-descriptions-item label="退房日期">{{ formatDate(detailData.ownerContract?.checkoutDate) }}</el-descriptions-item>
+            <el-descriptions-item label="退房操作人">{{ detailData.ownerContract?.checkoutByName || detailData.ownerContract?.checkoutBy || "-" }}</el-descriptions-item>
+            <el-descriptions-item label="退房操作时间">{{ detailData.ownerContract?.checkoutAt || "-" }}</el-descriptions-item>
+            <el-descriptions-item label="退房原因" :span="3">{{ detailData.ownerContract?.checkoutReason || "-" }}</el-descriptions-item>
             <el-descriptions-item label="创建人">{{ detailData.createByName || detailData.createBy || "-" }}</el-descriptions-item>
             <el-descriptions-item label="创建时间">{{ detailData.createAt || "-" }}</el-descriptions-item>
             <el-descriptions-item label="更新时间">{{ detailData.updateAt || "-" }}</el-descriptions-item>
@@ -139,7 +168,7 @@
         </el-card>
       </el-tab-pane>
 
-      <el-tab-pane label="条款信息">
+      <el-tab-pane label="条款信息" name="clause">
         <template v-if="detailData.ownerContract?.cooperationMode === 'LIGHT_MANAGED'">
           <el-card shadow="never" class="detail-card">
             <template #header><span>轻托管合同房源条款</span></template>
@@ -210,26 +239,35 @@
           </el-card>
         </template>
       </el-tab-pane>
-    </el-tabs>
 
-    <el-dialog v-model="previewVisible" top="10px" title="业主合同预览" width="80%" destroy-on-close append-to-body>
-      <iframe v-if="pdfUrl" title="业主合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
-    </el-dialog>
+      <el-tab-pane v-if="isLightManaged" label="业主结算单" name="settlementBill">
+        <OwnerSettlementBillEntry :owner-id="detailData.ownerId" :contract-id="detailData.ownerContract?.id" embedded />
+      </el-tab-pane>
+
+      <el-tab-pane v-if="isLightManaged" label="业主提现" name="withdraw">
+        <OwnerWithdrawEntry :owner-id="detailData.ownerId" :contract-id="detailData.ownerContract?.id" embedded />
+      </el-tab-pane>
+
+      <el-tab-pane v-if="isMasterLease" label="包租应付账单" name="payableBill">
+        <OwnerPayableBillEntry :owner-id="detailData.ownerId" :contract-id="detailData.ownerContract?.id" embedded />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, ref, watch } from "vue";
-  import { useRouter } from "vue-router";
+  import { computed, onMounted, ref } from "vue";
   import { getMyAvailableContractTemplates, getContractTemplateParams } from "@/api/contract/template";
-  import { previewOwnerContract } from "@/api/contract/owner";
-  import useOwnerContract from "@/views/contract/owner/utils/hook";
-  import type { ContractTemplateListVo, OtherFeeDto, OwnerContractSubjectDto, OwnerDetailVo, OwnerLeaseRuleDto, OwnerContractSubjectTypeEnum } from "@/types/generated";
+  import OwnerSettlementBillEntry from "@/views/finance/owner-settlement-bill/index.vue";
+  import OwnerWithdrawEntry from "@/views/finance/owner-withdraw/index.vue";
+  import OwnerPayableBillEntry from "@/views/finance/owner-payable-bill/index.vue";
+  import { BizApprovalStatusEnumMeta, GenderEnumMeta, IdTypeEnumMeta } from "@/types/generated/enum.meta";
+  import type { ContractTemplateListVo, OwnerContractDto, OwnerContractSubjectDto, OwnerDetailVo, OwnerLeaseRuleDto } from "@/types/generated";
 
   type OwnerDetailData = OwnerDetailVo & {
     contractTemplateName?: string;
     contractSubjectList?: Array<OwnerContractSubjectDto & {
-      subjectType?: OwnerContractSubjectTypeEnum;
+      subjectType?: OwnerContractSubjectDto["subjectType"];
       settlementRule?: any;
       rentFreeRule?: any;
     }>;
@@ -251,24 +289,21 @@
       businessLicenseUrls?: string[];
     };
     ownerContract?: OwnerDetailVo["ownerContract"] & {
-      signType?: "NEW" | "RENEW";
-      contractMedium?: "ELECTRONIC" | "PAPER";
+      signType?: OwnerContractDto["signType"];
+      contractMedium?: OwnerContractDto["contractMedium"];
       notifyOwner?: boolean;
     };
     ownerLeaseRule?: OwnerLeaseRuleDto & {
       handoverDate?: string;
       usageType?: string;
-      otherFeeList?: OtherFeeDto[];
+      otherFeeList?: OwnerLeaseRuleDto["otherFeeList"];
     };
   };
   const props = defineProps<{ formInline?: OwnerDetailData | null }>();
-  const router = useRouter();
-  const { openOwnerDialog } = useOwnerContract();
   const detailData = computed(() => props.formInline as OwnerDetailData | null | undefined);
+  const activeTab = ref("owner");
   const contractTemplates = ref<ContractTemplateListVo[]>([]);
   const templateParams = ref<{ key: string; label: string }[]>([]);
-  const previewVisible = ref(false);
-  const pdfUrl = ref("");
 
   const ownerTypeLabelMap = { 0: "个人", 1: "企业" } as const;
   const cooperationModeLabelMap = { LIGHT_MANAGED: "轻托管", MASTER_LEASE: "包租" } as const;
@@ -293,6 +328,8 @@
     if (!detailData.value) return "-";
     return detailData.value.ownerType === 1 ? detailData.value.ownerCompany?.name || "-" : detailData.value.ownerPersonal?.name || "-";
   });
+  const isMasterLease = computed(() => detailData.value?.ownerContract?.cooperationMode === "MASTER_LEASE");
+  const isLightManaged = computed(() => !isMasterLease.value);
   const detailTemplate = computed(() => contractTemplates.value.find(item => String(item.id || "") === String(detailData.value?.ownerContract?.contractTemplateId || "")));
   const detailTemplatePlaceholders = computed(() => extractTemplatePlaceholders(detailData.value?.ownerContract?.contractContent || detailTemplate.value?.templateContent));
   const detailTemplateTextLength = computed(() => getTemplateTextLength(detailData.value?.ownerContract?.contractContent || detailTemplate.value?.templateContent));
@@ -323,6 +360,28 @@
   function formatArea(value?: number | string | null) {
     if (value === null || value === undefined || value === "") return "0";
     return Number(value).toFixed(2);
+  }
+
+  function idTypeText(value?: number) {
+    return Object.values(IdTypeEnumMeta).find(item => item.code === value)?.name || "-";
+  }
+
+  function genderText(value?: number) {
+    return Object.values(GenderEnumMeta).find(item => item.code === value)?.name || "-";
+  }
+
+  function tagsText(value?: string[]) {
+    return value?.length ? value.join("，") : "-";
+  }
+
+  function approvalStatusText(value?: number) {
+    return Object.values(BizApprovalStatusEnumMeta).find(item => item.code === value)?.name || "-";
+  }
+
+  function contractNatureText(value?: number) {
+    if (value === 2) return "续约";
+    if (value === 1) return "新签";
+    return "-";
   }
 
   function getRentDueTypeText(rule?: OwnerLeaseRuleDto) {
@@ -365,97 +424,85 @@
     return keys.map(key => ({ key, label: getTemplateLabel(key), value: mapping[key] || "签约时自动生成" }));
   }
 
-  async function handlePreview(contractId?: string | number) {
-    if (!contractId) return;
-    const resp = await previewOwnerContract({ contractId } as any);
-    const blob = new Blob([resp], { type: "application/pdf" });
-    if (pdfUrl.value) URL.revokeObjectURL(pdfUrl.value);
-    pdfUrl.value = URL.createObjectURL(blob);
-    previewVisible.value = true;
-  }
-
-  function handleEdit() {
-    const contractId = detailData.value?.ownerContract?.id;
-    if (!contractId) return;
-    openOwnerDialog("编辑业主合同", { contractId, isEdit: true });
-  }
-
-  function goOwnerBills(data?: OwnerDetailVo | null) {
-    if (!data?.ownerId) return;
-    const isMasterLease = data.ownerContract?.cooperationMode === "MASTER_LEASE";
-    router.push({
-      path: isMasterLease ? "/finance/owner-payable-bill" : "/finance/owner-settlement-bill",
-      query: { ownerId: String(data.ownerId), contractId: String(data.ownerContract?.id || "") }
-    });
-  }
-
-  function goOwnerWithdraws(data?: OwnerDetailVo | null) {
-    if (!data?.ownerId) return;
-    router.push({ path: "/finance/owner-withdraw", query: { ownerId: String(data.ownerId), contractId: String(data.ownerContract?.id || "") } });
-  }
-
-  function billEntryText(data?: OwnerDetailVo | null) {
-    return data?.ownerContract?.cooperationMode === "MASTER_LEASE" ? "查看应付单" : "查看结算单";
-  }
-
   onMounted(async () => {
     const [templatesResp, paramsResp] = await Promise.all([getMyAvailableContractTemplates({ contractType: 2 }), getContractTemplateParams({ contractType: 2 })]);
     contractTemplates.value = (templatesResp.data || []) as ContractTemplateListVo[];
     templateParams.value = (paramsResp.data || []).map((item: any) => ({ key: item.key || "", label: item.value || item.key || "" }));
   });
 
-  watch(previewVisible, value => {
-    if (!value && pdfUrl.value) {
-      URL.revokeObjectURL(pdfUrl.value);
-      pdfUrl.value = "";
-    }
-  });
 </script>
 
 <style scoped lang="scss">
-  .detail-hero,
-  .detail-metrics,
+  .overview-bar,
   .template-preview-metrics,
   .template-token-list,
   .template-preview-grid {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
 
-  .detail-hero {
+  .overview-bar {
     display: flex;
-    justify-content: space-between;
-    gap: 16px;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 10px;
   }
 
-  .detail-hero__title {
+  .overview-bar__section {
     display: flex;
+    gap: 12px;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .overview-bar__label {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    min-width: 72px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .room-chip-list,
+  .summary-strip {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
     gap: 8px;
     align-items: center;
-    font-size: 20px;
-    font-weight: 700;
+    min-width: 0;
   }
 
-  .detail-hero__meta {
-    display: flex;
-    gap: 16px;
-    margin-top: 8px;
+  .room-chip {
+    max-width: 320px;
+  }
+
+  .summary-strip__item {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    min-height: 28px;
+    padding-right: 14px;
+    border-right: 1px solid var(--el-border-color-lighter);
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+
+  .summary-strip__label {
+    font-size: 13px;
     color: var(--el-text-color-secondary);
-    flex-wrap: wrap;
   }
 
-  .detail-hero__actions {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
+  .summary-strip__value {
+    font-weight: 600;
+    color: var(--el-text-color-primary);
   }
 
-  .detail-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .metric-card,
   .template-preview-metric,
   .template-preview-item {
     border: 1px solid var(--el-border-color-light);
@@ -464,14 +511,12 @@
     padding: 16px;
   }
 
-  .metric-card__label,
   .template-preview-metric__label,
   .template-preview-item__label {
     color: var(--el-text-color-secondary);
     font-size: 12px;
   }
 
-  .metric-card__value,
   .template-preview-metric__value {
     font-size: 24px;
     font-weight: 700;
@@ -479,7 +524,7 @@
   }
 
   .detail-card {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
 
   .template-preview-grid {
@@ -529,5 +574,34 @@
     justify-content: center;
     background: #fff;
     color: var(--el-text-color-secondary);
+  }
+
+  .modern-tabs {
+    :deep(.el-tabs__header) {
+      margin-bottom: 8px;
+      background: var(--el-bg-color);
+      border: 1px solid var(--el-border-color-light);
+      border-radius: 10px;
+    }
+
+    :deep(.el-tabs__nav-wrap) {
+      padding: 0 12px;
+
+      &::after {
+        height: 0;
+      }
+    }
+
+    :deep(.pf-page) {
+      padding: 0;
+    }
+
+    :deep(.summary-block) {
+      margin-bottom: 8px;
+    }
+
+    :deep(.filter-card) {
+      margin-bottom: 8px !important;
+    }
   }
 </style>

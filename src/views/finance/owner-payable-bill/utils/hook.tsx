@@ -25,8 +25,27 @@ import { message } from "@/utils/message";
 
 const OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY = "owner-payable-bill-page-intro-closed";
 
-function useOwnerPayableBill() {
+type OwnerPayableBillHookOptions = {
+  ownerId?: string | number;
+  contractId?: string | number;
+  embedded?: boolean;
+};
+
+function useOwnerPayableBill(options: OwnerPayableBillHookOptions = {}) {
   const route = useRoute();
+
+  function scopedId(value?: string | number | null) {
+    const text = String(value ?? "");
+    return text || undefined;
+  }
+
+  function scopedOwnerId() {
+    return scopedId(options.ownerId ?? (route.query.ownerId as string | undefined));
+  }
+
+  function scopedContractId() {
+    return scopedId(options.contractId ?? (route.query.contractId as string | undefined));
+  }
 
   type QueryForm = Omit<OwnerPayableBillQueryDto, "currentPage" | "pageSize"> & {
     currentPage: number;
@@ -34,7 +53,7 @@ function useOwnerPayableBill() {
   };
 
   const loading = ref(false);
-  const showPageIntro = ref(localStorage.getItem(OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
+  const showPageIntro = ref(!options.embedded && localStorage.getItem(OWNER_PAYABLE_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
   const tableData = ref<OwnerPayableBillListVo[]>([]);
   const summary = ref<OwnerPayableBillSummaryVo>({});
 
@@ -48,8 +67,8 @@ function useOwnerPayableBill() {
   const queryForm = reactive<QueryForm>({
     currentPage: 1,
     pageSize: 10,
-    ownerId: String(route.query.ownerId || "") || undefined,
-    contractId: String(route.query.contractId || "") || undefined,
+    ownerId: scopedOwnerId(),
+    contractId: scopedContractId(),
     ownerName: "",
     billNo: "",
     paymentStatus: undefined,
@@ -167,8 +186,8 @@ function useOwnerPayableBill() {
     queryForm.billNo = "";
     queryForm.paymentStatus = undefined;
     queryForm.billStatus = undefined;
-    queryForm.ownerId = String(route.query.ownerId || "") || undefined;
-    queryForm.contractId = String(route.query.contractId || "") || undefined;
+    queryForm.ownerId = scopedOwnerId();
+    queryForm.contractId = scopedContractId();
     fetchData();
   }
 

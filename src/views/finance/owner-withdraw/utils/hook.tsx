@@ -24,10 +24,29 @@ import type {
 } from "@/types/generated";
 import { message } from "@/utils/message";
 
-function useOwnerWithdraw() {
+type OwnerWithdrawHookOptions = {
+  ownerId?: string | number;
+  contractId?: string | number;
+  embedded?: boolean;
+};
+
+function useOwnerWithdraw(options: OwnerWithdrawHookOptions = {}) {
   const route = useRoute();
   const router = useRouter();
   const createFormRef = ref();
+
+  function scopedId(value?: string | number | null) {
+    const text = String(value ?? "");
+    return text || undefined;
+  }
+
+  function scopedOwnerId() {
+    return scopedId(options.ownerId ?? (route.query.ownerId as string | undefined));
+  }
+
+  function scopedContractId() {
+    return scopedId(options.contractId ?? (route.query.contractId as string | undefined));
+  }
 
   type QueryForm = Omit<OwnerWithdrawApplyQueryDto, "currentPage" | "pageSize"> & {
     currentPage: number;
@@ -78,8 +97,8 @@ function useOwnerWithdraw() {
   const queryForm = reactive<QueryForm>({
     currentPage: 1,
     pageSize: 10,
-    ownerId: String(route.query.ownerId || "") || undefined,
-    contractId: String(route.query.contractId || "") || undefined,
+    ownerId: scopedOwnerId(),
+    contractId: scopedContractId(),
     ownerName: "",
     applyNo: "",
     approvalStatus: undefined,
@@ -88,7 +107,7 @@ function useOwnerWithdraw() {
 
   function createDefaultForm(): OwnerWithdrawCreateDto {
     return {
-      ownerId: String(route.query.ownerId || "") || undefined,
+      ownerId: scopedOwnerId(),
       applyAmount: Number(route.query.applyAmount || 0) || undefined,
       feeAmount: 0,
       payeeName: "",
@@ -184,8 +203,8 @@ function useOwnerWithdraw() {
     queryForm.applyNo = "";
     queryForm.approvalStatus = undefined;
     queryForm.withdrawStatus = undefined;
-    queryForm.ownerId = String(route.query.ownerId || "") || undefined;
-    queryForm.contractId = String(route.query.contractId || "") || undefined;
+    queryForm.ownerId = scopedOwnerId();
+    queryForm.contractId = scopedContractId();
     fetchData();
   }
 

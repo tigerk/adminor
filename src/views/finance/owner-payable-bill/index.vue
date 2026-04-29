@@ -9,6 +9,10 @@
 
   defineOptions({ name: "OwnerPayableBillEntry" });
 
+  const props = withDefaults(defineProps<{ ownerId?: string | number; contractId?: string | number; embedded?: boolean }>(), {
+    embedded: false
+  });
+
   const {
     loading,
     showPageIntro,
@@ -32,7 +36,7 @@
     settlementStatusBadgeType,
     billStatusText,
     billStatusBadgeType
-  } = useOwnerPayableBill();
+  } = useOwnerPayableBill({ ownerId: props.ownerId, contractId: props.contractId, embedded: props.embedded });
 </script>
 
 <template>
@@ -78,7 +82,7 @@
         <pure-table
           row-key="billId"
           adaptive
-          :adaptiveConfig="{ offsetBottom: 80 }"
+          :adaptiveConfig="{ offsetBottom: props.embedded ? 12 : 80 }"
           alignWhole="center"
           table-layout="auto"
           showOverflowTooltip

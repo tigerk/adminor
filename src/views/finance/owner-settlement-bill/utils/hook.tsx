@@ -7,8 +7,27 @@ import OwnerSettlementBillDetailDialog from "@/views/finance/owner-settlement-bi
 
 const OWNER_SETTLEMENT_BILL_PAGE_INTRO_STORAGE_KEY = "owner-settlement-bill-page-intro-closed";
 
-function useOwnerSettlementBill() {
+type OwnerSettlementBillHookOptions = {
+  ownerId?: string | number;
+  contractId?: string | number;
+  embedded?: boolean;
+};
+
+function useOwnerSettlementBill(options: OwnerSettlementBillHookOptions = {}) {
   const route = useRoute();
+
+  function scopedId(value?: string | number | null) {
+    const text = String(value ?? "");
+    return text || undefined;
+  }
+
+  function scopedOwnerId() {
+    return scopedId(options.ownerId ?? (route.query.ownerId as string | undefined));
+  }
+
+  function scopedContractId() {
+    return scopedId(options.contractId ?? (route.query.contractId as string | undefined));
+  }
 
   type QueryForm = Omit<SettlementBillQueryDto, "currentPage" | "pageSize"> & {
     currentPage: number;
@@ -16,7 +35,7 @@ function useOwnerSettlementBill() {
   };
 
   const loading = ref(false);
-  const showPageIntro = ref(localStorage.getItem(OWNER_SETTLEMENT_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
+  const showPageIntro = ref(!options.embedded && localStorage.getItem(OWNER_SETTLEMENT_BILL_PAGE_INTRO_STORAGE_KEY) !== "1");
   const tableData = ref<SettlementBillListVo[]>([]);
   const summary = ref<SettlementBillSummaryVo>({});
 
@@ -30,8 +49,8 @@ function useOwnerSettlementBill() {
   const queryForm = reactive<QueryForm>({
     currentPage: 1,
     pageSize: 10,
-    ownerId: String(route.query.ownerId || "") || undefined,
-    contractId: String(route.query.contractId || "") || undefined,
+    ownerId: scopedOwnerId(),
+    contractId: scopedContractId(),
     ownerName: "",
     billNo: "",
     approvalStatus: undefined,
@@ -159,8 +178,8 @@ function useOwnerSettlementBill() {
     queryForm.billNo = "";
     queryForm.approvalStatus = undefined;
     queryForm.settlementStatus = undefined;
-    queryForm.ownerId = String(route.query.ownerId || "") || undefined;
-    queryForm.contractId = String(route.query.contractId || "") || undefined;
+    queryForm.ownerId = scopedOwnerId();
+    queryForm.contractId = scopedContractId();
     fetchData();
   }
 

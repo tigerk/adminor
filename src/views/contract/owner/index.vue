@@ -151,7 +151,7 @@
   import { computed, onMounted, reactive, ref, watch } from "vue";
   import type { PaginationProps } from "@pureadmin/table";
   import { ElMessageBox } from "element-plus";
-  import { useRouter } from "vue-router";
+  import { useRoute, useRouter } from "vue-router";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
   import { PureTableBar } from "@/components/RePureTableBar";
   import { message } from "@/utils/message";
@@ -205,7 +205,8 @@
   };
 
   const router = useRouter();
-  const { openOwnerDialog, openOwnerRenewDialog, openOwnerCheckoutDialog, openOwnerViewDialog } = useOwnerContract();
+  const route = useRoute();
+  const { openOwnerDialog, openOwnerRenewDialog, openOwnerCheckoutDialog } = useOwnerContract();
   const loading = ref(false);
   const tableData = ref<OwnerListRow[]>([]);
   const pagination = reactive<PaginationProps>({
@@ -416,7 +417,11 @@
 
   function openDetail(contractId?: string) {
     if (!contractId) return;
-    openOwnerViewDialog("业主合同详情", { contractId });
+    router.push({
+      name: "OwnerContractDetail",
+      params: { contractId },
+      query: route.query
+    });
   }
 
   function handleOwnerRenew(row: OwnerListRow) {

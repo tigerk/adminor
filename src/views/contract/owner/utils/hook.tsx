@@ -6,7 +6,6 @@ import { message } from "@/utils/message";
 import { checkoutOwnerContract, createOwnerContract, getOwnerContractDetail, renewOwnerContract, updateOwnerContract } from "@/api/contract/owner";
 import OwnerContractFormDialog from "@/views/contract/owner/form/OwnerContractFormDialog.vue";
 import OwnerContractCheckoutDialog from "@/views/contract/owner/form/OwnerContractCheckoutDialog.vue";
-import OwnerContractDetailDialog from "@/views/contract/owner/view/OwnerContractDetailDialog.vue";
 import type { OwnerContractIdDto, OwnerDetailVo, OwnerListVo, OwnerUpdateDto } from "@/types/generated";
 
 function useOwnerContract() {
@@ -208,45 +207,10 @@ function useOwnerContract() {
     });
   }
 
-  function openOwnerViewDialog(title = "业主合同详情", row?: { contractId?: string | number } | OwnerDetailVo | null) {
-    if ((row as { contractId?: string | number } | undefined)?.contractId && !("ownerContract" in (row || {}))) {
-      getOwnerContractDetail({ contractId: (row as { contractId?: string | number }).contractId } as OwnerContractIdDto).then(resp => {
-        if (resp.code === 0) {
-          innerOpenOwnerViewDialog(title, (resp.data || null) as OwnerDetailVo | null);
-        } else {
-          message(resp.message || "获取业主合同详情失败", { type: "error" });
-        }
-      });
-      return;
-    }
-    innerOpenOwnerViewDialog(title, (row as OwnerDetailVo | null) || null);
-  }
-
-  function innerOpenOwnerViewDialog(title = "业主合同详情", row?: OwnerDetailVo | null) {
-    addDialog({
-      title,
-      props: {
-        formInline: row
-      },
-      top: "1vh",
-      width: "1160px",
-      lockScroll: true,
-      alignCenter: true,
-      draggable: true,
-      fullscreen: false,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      destroyOnClose: true,
-      hideFooter: true,
-      contentRenderer: () => h(OwnerContractDetailDialog, { formInline: (row || null) as any })
-    });
-  }
-
   return {
     openOwnerDialog,
     openOwnerRenewDialog,
-    openOwnerCheckoutDialog,
-    openOwnerViewDialog
+    openOwnerCheckoutDialog
   };
 }
 
