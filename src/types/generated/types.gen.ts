@@ -7616,20 +7616,6 @@ export type OwnerUpdateDto = {
 };
 
 /**
- * 业主合同状态更新DTO
- */
-export type OwnerContractStatusDto = {
-    /**
-     * 业主合同ID
-     */
-    contractId?: string;
-    /**
-     * 状态
-     */
-    status?: 'ACTIVE' | 'DISABLED';
-};
-
-/**
  * 业主查询DTO
  */
 export type OwnerQueryDto = {
@@ -8065,6 +8051,14 @@ export type OwnerCheckoutLeaseRoomVo = {
      * 租客电话
      */
     tenantPhone?: string;
+    /**
+     * 租客合同状态
+     */
+    leaseStatus?: number;
+    /**
+     * 租客合同状态名称
+     */
+    leaseStatusName?: string;
     /**
      * 房间月租金
      */
@@ -13530,24 +13524,6 @@ export type Update4Responses = {
 
 export type Update4Response = Update4Responses[keyof Update4Responses];
 
-export type UpdateStatusData = {
-    body: OwnerContractStatusDto;
-    path?: never;
-    query: {
-        arg1: UserLoginVo;
-    };
-    url: '/saas/contract/owner/updateStatus';
-};
-
-export type UpdateStatusResponses = {
-    /**
-     * OK
-     */
-    200: ResponseResultLong;
-};
-
-export type UpdateStatusResponse = UpdateStatusResponses[keyof UpdateStatusResponses];
-
 export type TotalData = {
     body: OwnerQueryDto;
     path?: never;
@@ -14160,7 +14136,7 @@ export type CancelBookingResponses = {
 
 export type CancelBookingResponse = CancelBookingResponses[keyof CancelBookingResponses];
 
-export type UpdateStatus1Data = {
+export type UpdateStatusData = {
     body: UserUpdateStatusDto;
     path?: never;
     query: {
@@ -14169,14 +14145,14 @@ export type UpdateStatus1Data = {
     url: '/saas/company/user/updateStatus';
 };
 
-export type UpdateStatus1Responses = {
+export type UpdateStatusResponses = {
     /**
      * OK
      */
     200: ResponseResultLong;
 };
 
-export type UpdateStatus1Response = UpdateStatus1Responses[keyof UpdateStatus1Responses];
+export type UpdateStatusResponse = UpdateStatusResponses[keyof UpdateStatusResponses];
 
 export type AssignUserRoleData = {
     body: CompanyUserRoleAssignDto;

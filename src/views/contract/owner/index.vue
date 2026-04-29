@@ -32,11 +32,6 @@
               <el-option v-for="item in signStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          <el-form-item label="合同状态">
-            <el-select v-model="queryForm.status" placeholder="请选择合同状态" clearable class="filter-input-sm" @change="handleSearch">
-              <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
           <el-form-item>
             <el-button :icon="useRenderIcon(Search)" type="primary" @click="handleSearch">查询</el-button>
             <el-button :icon="useRenderIcon(Refresh)" @click="resetQuery">重置</el-button>
@@ -54,13 +49,6 @@
       </template>
       <template #default>
         <el-table v-loading="loading" :data="tableData" border row-key="contractId">
-          <el-table-column label="状态" width="100" align="center" fixed>
-            <template #default="{ row }">
-              <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'">
-                {{ statusLabelMap[row.status || "ACTIVE"] }}
-              </el-tag>
-            </template>
-          </el-table-column>
           <el-table-column label="签署状态" width="100" align="center" fixed>
             <template #default="{ row }">
               <el-tag :type="row.signStatus === 'SIGNED' ? 'success' : 'info'">
@@ -129,11 +117,7 @@
                     <el-dropdown-item @click="openEdit(row.contractId)">编辑合同</el-dropdown-item>
                     <el-dropdown-item @click="handleOwnerRenew(row)">业主续约</el-dropdown-item>
                     <el-dropdown-item @click="handleOwnerCheckout(row)">业主退房</el-dropdown-item>
-                    <el-dropdown-item @click="goOwnerBills(row)">{{ billEntryText(row) }}</el-dropdown-item>
                     <el-dropdown-item v-if="row.cooperationMode !== 'MASTER_LEASE'" @click="goOwnerWithdraws(row)">查看提现</el-dropdown-item>
-                    <el-dropdown-item @click="handleToggleStatus(row)">
-                      {{ row.status === "ACTIVE" ? "停用合同" : "启用合同" }}
-                    </el-dropdown-item>
                     <el-dropdown-item divided @click="handleDelete(row)">
                       <span class="text-danger">删除合同</span>
                     </el-dropdown-item>
@@ -174,14 +158,14 @@
   import { message } from "@/utils/message";
   import useOwnerContract from "@/views/contract/owner/utils/hook";
   import OwnerSummaryFilterTabs from "@/shared/owner/OwnerSummaryFilterTabs.vue";
-  import { deleteOwnerContract, getOwnerContractList, getOwnerContractTotal, previewOwnerContract, updateOwnerContractStatus } from "@/api/contract/owner";
+  import { deleteOwnerContract, getOwnerContractList, getOwnerContractTotal, previewOwnerContract } from "@/api/contract/owner";
   import Search from "~icons/ri/search-line";
   import Refresh from "~icons/ep/refresh";
   import Plus from "~icons/ep/plus";
   import User from "~icons/ep/user";
   import Phone from "~icons/ep/phone";
   import More from "~icons/ep/more-filled";
-  import type { OwnerContractIdDto, OwnerContractStatusDto, OwnerCooperationModeEnum, OwnerListVo, OwnerQueryDto, OwnerSignStatusEnum, OwnerTypeEnum } from "@/types/generated";
+  import type { OwnerContractIdDto, OwnerCooperationModeEnum, OwnerListVo, OwnerQueryDto, OwnerSignStatusEnum, OwnerTypeEnum } from "@/types/generated";
   import { OwnerCooperationModeEnumMeta, OwnerSignStatusEnumMeta, OwnerTypeEnumMeta } from "@/types/generated/enum.meta";
   import "@/shared/owner/panel.scss";
   import "@/shared/owner/financePage.scss";
@@ -196,7 +180,6 @@
     ownerType?: OwnerTypeEnum;
     cooperationMode?: OwnerCooperationModeEnum;
     signStatus?: OwnerSignStatusEnum;
-    status?: "ACTIVE" | "DISABLED";
     expiringDaysWithin?: number;
   };
 
@@ -211,8 +194,6 @@
 
   type OwnerContractTotal = {
     total?: number;
-    activeTotal?: number;
-    disabledTotal?: number;
     pendingSignTotal?: number;
     signedTotal?: number;
     expiring30DaysTotal?: number;
@@ -225,8 +206,6 @@
   const total = ref(0);
   const totalStats = reactive<OwnerContractTotal>({
     total: 0,
-    activeTotal: 0,
-    disabledTotal: 0,
     pendingSignTotal: 0,
     signedTotal: 0,
     expiring30DaysTotal: 0
@@ -238,7 +217,7 @@
     ownerName: "",
     ownerPhone: ""
   });
-  const summaryFilter = ref<"ALL" | "ACTIVE" | "DISABLED" | "PENDING" | "SIGNED" | "EXPIRING_30">("ALL");
+  const summaryFilter = ref<"ALL" | "PENDING" | "SIGNED" | "EXPIRING_30">("ALL");
   const previewVisible = ref(false);
   const pdfUrl = ref("");
 
@@ -254,10 +233,6 @@
     PENDING: "待签字",
     SIGNED: "已签字"
   };
-  const statusLabelMap: Record<"ACTIVE" | "DISABLED", string> = {
-    ACTIVE: "启用",
-    DISABLED: "停用"
-  };
 
   const ownerTypeOptions = [
     { label: ownerTypeLabelMap.PERSONAL, value: OwnerTypeEnumMeta.PERSONAL.value as OwnerTypeEnum },
@@ -271,15 +246,8 @@
     { label: signStatusLabelMap.PENDING, value: OwnerSignStatusEnumMeta.PENDING.value as OwnerSignStatusEnum },
     { label: signStatusLabelMap.SIGNED, value: OwnerSignStatusEnumMeta.SIGNED.value as OwnerSignStatusEnum }
   ];
-  const statusOptions = [
-    { label: "启用", value: "ACTIVE" as const },
-    { label: "停用", value: "DISABLED" as const }
-  ];
-
   const summaryCards = computed(() => [
     { key: "ALL", label: "全部", total: totalStats.total || 0, color: "#6b7280" },
-    { key: "ACTIVE", label: "启用中", total: totalStats.activeTotal || 0, color: "#16a34a" },
-    { key: "DISABLED", label: "已停用", total: totalStats.disabledTotal || 0, color: "#94a3b8" },
     { key: "PENDING", label: "待签字", total: totalStats.pendingSignTotal || 0, color: "#f59e0b" },
     { key: "SIGNED", label: "已签字", total: totalStats.signedTotal || 0, color: "#2563eb" },
     { key: "EXPIRING_30", label: "30天内到期", total: totalStats.expiring30DaysTotal || 0, color: "#ef4444" }
@@ -303,7 +271,6 @@
       ownerType: queryForm.ownerType,
       cooperationMode: queryForm.cooperationMode,
       signStatus: queryForm.signStatus,
-      status: queryForm.status,
       expiringDaysWithin: queryForm.expiringDaysWithin,
       currentPage: String(queryForm.currentPage),
       pageSize: String(queryForm.pageSize)
@@ -349,7 +316,6 @@
     queryForm.ownerType = undefined;
     queryForm.cooperationMode = undefined;
     queryForm.signStatus = undefined;
-    queryForm.status = undefined;
     queryForm.expiringDaysWithin = undefined;
     summaryFilter.value = "ALL";
     loadList();
@@ -357,11 +323,8 @@
 
   function handleSummaryFilterChange(value: typeof summaryFilter.value) {
     summaryFilter.value = value;
-    queryForm.status = undefined;
     queryForm.signStatus = undefined;
     queryForm.expiringDaysWithin = undefined;
-    if (value === "ACTIVE") queryForm.status = "ACTIVE";
-    if (value === "DISABLED") queryForm.status = "DISABLED";
     if (value === "PENDING") queryForm.signStatus = "PENDING";
     if (value === "SIGNED") queryForm.signStatus = "SIGNED";
     if (value === "EXPIRING_30") queryForm.expiringDaysWithin = 30;
@@ -390,19 +353,6 @@
   function handleOwnerCheckout(row: OwnerListRow) {
     if (!row.contractId) return;
     openOwnerCheckoutDialog(row, loadList);
-  }
-
-  async function handleToggleStatus(row: OwnerListRow) {
-    if (!row.contractId) return;
-    const nextStatus = row.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
-    await ElMessageBox.confirm(`确认将合同状态调整为“${statusLabelMap[nextStatus]}”吗？`, "更新状态", { type: "warning" });
-    const resp = await updateOwnerContractStatus({ contractId: row.contractId, status: nextStatus } as OwnerContractStatusDto);
-    if (resp.code === 0) {
-      message(`业主合同已${statusLabelMap[nextStatus]}`, { type: "success" });
-      loadList();
-      return;
-    }
-    message(resp.message || "更新合同状态失败", { type: "error" });
   }
 
   async function handleDelete(row: OwnerListRow) {
@@ -435,17 +385,6 @@
     previewVisible.value = true;
   }
 
-  function goOwnerBills(row?: OwnerListRow) {
-    if (!row?.ownerId) return;
-    router.push({
-      path: row.cooperationMode === "MASTER_LEASE" ? "/finance/owner-payable-bill" : "/finance/owner-settlement-bill",
-      query: {
-        ownerId: String(row.ownerId),
-        contractId: row.contractId ? String(row.contractId) : ""
-      }
-    });
-  }
-
   function goOwnerWithdraws(row?: OwnerListRow) {
     if (!row?.ownerId) return;
     router.push({
@@ -455,10 +394,6 @@
         contractId: row.contractId ? String(row.contractId) : ""
       }
     });
-  }
-
-  function billEntryText(row?: OwnerListRow) {
-    return row?.cooperationMode === "MASTER_LEASE" ? "查看应付单" : "查看结算单";
   }
 
   watch(previewVisible, value => {

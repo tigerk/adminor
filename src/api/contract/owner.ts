@@ -3,7 +3,6 @@ import { baseUrlApi } from "@/api/utils";
 import type {
   OwnerContractIdDto,
   OwnerContractCheckoutDto,
-  OwnerContractStatusDto,
   OwnerCreateDto,
   OwnerQueryDto,
   OwnerRenewDto,
@@ -48,10 +47,6 @@ export const checkoutOwnerContract = (data: OwnerContractCheckoutDto) => {
 
 export const getOwnerContractCheckoutInit = (data: OwnerContractIdDto) => {
   return http.request<ResponseResultOwnerContractCheckoutInitVo>("post", baseUrlApi("contract/owner/checkout/init"), { data });
-};
-
-export const updateOwnerContractStatus = (data: OwnerContractStatusDto) => {
-  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/updateStatus"), { data });
 };
 
 export const deleteOwnerContract = (data: OwnerContractIdDto) => {
