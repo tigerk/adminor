@@ -117,7 +117,6 @@
                     <el-dropdown-item @click="openEdit(row.contractId)">编辑合同</el-dropdown-item>
                     <el-dropdown-item @click="handleOwnerRenew(row)">业主续约</el-dropdown-item>
                     <el-dropdown-item @click="handleOwnerCheckout(row)">业主退房</el-dropdown-item>
-                    <el-dropdown-item v-if="row.cooperationMode !== 'MASTER_LEASE'" @click="goOwnerWithdraws(row)">查看提现</el-dropdown-item>
                     <el-dropdown-item v-if="canVoidContract(row)" divided @click="handleVoidContract(row)">
                       <span class="text-danger">作废合同</span>
                     </el-dropdown-item>
@@ -396,17 +395,6 @@
     }
     pdfUrl.value = URL.createObjectURL(blob);
     previewVisible.value = true;
-  }
-
-  function goOwnerWithdraws(row?: OwnerListRow) {
-    if (!row?.ownerId) return;
-    router.push({
-      path: "/finance/owner-withdraw",
-      query: {
-        ownerId: String(row.ownerId),
-        contractId: row.contractId ? String(row.contractId) : ""
-      }
-    });
   }
 
   watch(previewVisible, value => {
