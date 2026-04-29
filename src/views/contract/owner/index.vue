@@ -129,7 +129,7 @@
                 <el-dropdown-menu>
                   <el-dropdown-item @click="openEdit(row.contractId)">编辑合同</el-dropdown-item>
                   <el-dropdown-item @click="handleOwnerRenew(row)">业主续约</el-dropdown-item>
-                  <el-dropdown-item @click="handleOwnerCheckout(row)">业主退房</el-dropdown-item>
+                  <el-dropdown-item :disabled="!canCheckoutContract(row)" @click="handleOwnerCheckout(row)">业主退房</el-dropdown-item>
                   <el-dropdown-item v-if="canVoidContract(row)" divided @click="handleVoidContract(row)">
                     <span class="text-danger">作废合同</span>
                   </el-dropdown-item>
@@ -426,7 +426,16 @@
 
   function handleOwnerCheckout(row: OwnerListRow) {
     if (!row.contractId) return;
+    if (!canCheckoutContract(row)) {
+      message("当前合同状态不允许业主退房", { type: "warning" });
+      return;
+    }
     openOwnerCheckoutDialog(row, loadList);
+  }
+
+  function canCheckoutContract(row: OwnerListRow) {
+    const disabledStatuses: number[] = [OwnerContractStatusEnumMeta.CHECKED_OUT.code, OwnerContractStatusEnumMeta.VOIDED.code];
+    return !disabledStatuses.includes(row.status ?? OwnerContractStatusEnumMeta.PENDING_SIGN.code);
   }
 
   function canVoidContract(row: OwnerListRow) {
