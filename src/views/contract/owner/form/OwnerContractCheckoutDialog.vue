@@ -102,7 +102,7 @@
       </div>
     </section>
 
-    <section class="checkout-section checkout-action">
+    <section class="checkout-section checkout-action mb-4">
       <div class="checkout-section__title">退房操作</div>
       <el-alert class="checkout-action__alert" type="warning" :closable="false" show-icon>
         <template #title>业主退房会停用当前业主合同；已付款账单不会被直接修改。</template>
