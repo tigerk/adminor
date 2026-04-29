@@ -118,8 +118,8 @@
                     <el-dropdown-item @click="handleOwnerRenew(row)">业主续约</el-dropdown-item>
                     <el-dropdown-item @click="handleOwnerCheckout(row)">业主退房</el-dropdown-item>
                     <el-dropdown-item v-if="row.cooperationMode !== 'MASTER_LEASE'" @click="goOwnerWithdraws(row)">查看提现</el-dropdown-item>
-                    <el-dropdown-item divided @click="handleDelete(row)">
-                      <span class="text-danger">删除合同</span>
+                    <el-dropdown-item v-if="canVoidContract(row)" divided @click="handleVoidContract(row)">
+                      <span class="text-danger">作废合同</span>
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
@@ -158,7 +158,7 @@
   import { message } from "@/utils/message";
   import useOwnerContract from "@/views/contract/owner/utils/hook";
   import OwnerSummaryFilterTabs from "@/shared/owner/OwnerSummaryFilterTabs.vue";
-  import { deleteOwnerContract, getOwnerContractList, getOwnerContractTotal, previewOwnerContract } from "@/api/contract/owner";
+  import { getOwnerContractList, getOwnerContractTotal, previewOwnerContract, voidOwnerContract } from "@/api/contract/owner";
   import Search from "~icons/ri/search-line";
   import Refresh from "~icons/ep/refresh";
   import Plus from "~icons/ep/plus";
@@ -355,20 +355,33 @@
     openOwnerCheckoutDialog(row, loadList);
   }
 
-  async function handleDelete(row: OwnerListRow) {
+  function canVoidContract(row: OwnerListRow) {
+    return row.signStatus !== "SIGNED";
+  }
+
+  async function handleVoidContract(row: OwnerListRow) {
     if (!row.contractId) return;
-    await ElMessageBox.confirm("删除后合同将不再出现在列表中，确认继续吗？", "删除业主合同", {
+    const result = await ElMessageBox.prompt("作废后合同将不再出现在列表中。已签约、已生成账单或已有租客占用的合同不能作废，请走业主退房。", "作废业主合同", {
       type: "warning",
-      confirmButtonText: "删除",
-      confirmButtonClass: "el-button--danger"
+      confirmButtonText: "作废",
+      cancelButtonText: "取消",
+      confirmButtonClass: "el-button--danger",
+      inputType: "textarea",
+      inputPlaceholder: "请输入作废原因",
+      inputValidator: value => {
+        if (!String(value || "").trim()) return "请输入作废原因";
+        if (String(value).trim().length > 500) return "作废原因不能超过 500 字";
+        return true;
+      }
     });
-    const resp = await deleteOwnerContract({ contractId: row.contractId } as OwnerContractIdDto);
+    const voidReason = String(result.value || "").trim();
+    const resp = await voidOwnerContract({ contractId: row.contractId, voidReason });
     if (resp.code === 0) {
-      message("业主合同已删除", { type: "success" });
+      message("业主合同已作废", { type: "success" });
       loadList();
       return;
     }
-    message(resp.message || "删除业主合同失败", { type: "error" });
+    message(resp.message || "作废业主合同失败", { type: "error" });
   }
 
   async function handlePreview(contractId?: string) {

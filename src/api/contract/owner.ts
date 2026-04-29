@@ -13,6 +13,11 @@ import type {
   ResponseResultPageVoOwnerListVo
 } from "@/types/generated";
 
+export type OwnerContractVoidPayload = {
+  contractId: string | number;
+  voidReason: string;
+};
+
 export const getOwnerContractList = (data?: OwnerQueryDto) => {
   return http.request<ResponseResultPageVoOwnerListVo>("post", baseUrlApi("contract/owner/list"), { data });
 };
@@ -49,6 +54,6 @@ export const getOwnerContractCheckoutInit = (data: OwnerContractIdDto) => {
   return http.request<ResponseResultOwnerContractCheckoutInitVo>("post", baseUrlApi("contract/owner/checkout/init"), { data });
 };
 
-export const deleteOwnerContract = (data: OwnerContractIdDto) => {
-  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/delete"), { data });
+export const voidOwnerContract = (data: OwnerContractVoidPayload) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/void"), { data });
 };
