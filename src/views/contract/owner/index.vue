@@ -75,16 +75,6 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="业主标签" min-width="120" align="center">
-            <template #default="{ row }">
-              <span>{{ row.ownerTag || "-" }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="手机号" min-width="140" align="center">
-            <template #default="{ row }">
-              <span>{{ row.ownerPhone || "-" }}</span>
-            </template>
-          </el-table-column>
           <el-table-column label="委托模式" width="120" align="center">
             <template #default="{ row }">
               <el-tag :type="row.cooperationMode === 'MASTER_LEASE' ? 'warning' : 'success'">
@@ -93,7 +83,6 @@
             </template>
           </el-table-column>
           <el-table-column prop="contractNo" label="合同编号" min-width="220" />
-          <el-table-column prop="contractTemplateName" label="合同模板" min-width="140" show-overflow-tooltip />
           <el-table-column label="合同房源" min-width="360">
             <template #default="{ row }">
               <div class="house-summary house-summary--inline">
@@ -112,9 +101,20 @@
               <span>{{ formatArea(row.totalArea) }} m²</span>
             </template>
           </el-table-column>
+          <el-table-column label="手机号" min-width="140" align="center">
+            <template #default="{ row }">
+              <span>{{ row.ownerPhone || "-" }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="contractTemplateName" label="合同模板" min-width="140" show-overflow-tooltip />
           <el-table-column label="合同周期" min-width="220">
             <template #default="{ row }">
               <div class="date-range">{{ formatDate(row.contractStart) }} 至 {{ formatDate(row.contractEnd) }}</div>
+            </template>
+          </el-table-column>
+          <el-table-column label="业主标签" min-width="120" align="center">
+            <template #default="{ row }">
+              <span>{{ row.ownerTag || "-" }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="updateAt" label="更新时间" min-width="170" />
