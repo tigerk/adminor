@@ -338,47 +338,13 @@
             </el-space>
           </template>
           <div class="tab-content">
-            <section class="info-section operate-log-section">
-              <div class="section-title">
-                操作记录
-                <el-tag type="info" size="small">{{ operateLogList.length }}条</el-tag>
-              </div>
-              <div v-loading="operateLogLoading" class="operate-log-panel">
-                <div v-if="operateLogList.length" class="operate-log-list">
-                  <div v-for="item in operateLogList" :key="item.id" class="operate-record">
-                    <div class="operate-record__side">
-                      <div class="operate-record__title">
-                        <span>{{ item.operateDesc || "业务操作" }}</span>
-                        <el-tag size="small" effect="light">{{ operateTypeText(item.operateType) }}</el-tag>
-                      </div>
-                      <div class="operate-record__meta">
-                        <span>{{ item.createAt || "—" }}</span>
-                        <span>操作人：{{ item.operatorName || "—" }}</span>
-                      </div>
-                      <div v-if="item.remark" class="operate-record__remark">{{ item.remark }}</div>
-                    </div>
-                    <div class="snapshot-diff">
-                      <template v-if="snapshotDiffList(item).length">
-                        <div class="snapshot-diff__head">
-                          <span>变更字段</span>
-                          <span>修改前</span>
-                          <span />
-                          <span>修改后</span>
-                        </div>
-                        <div v-for="diff in snapshotDiffList(item)" :key="diff.key" class="snapshot-diff__row">
-                          <div class="snapshot-diff__field">{{ diff.label }}</div>
-                          <div class="snapshot-diff__value snapshot-diff__value--before">{{ diff.beforeText }}</div>
-                          <div class="snapshot-diff__arrow">→</div>
-                          <div class="snapshot-diff__value snapshot-diff__value--after">{{ diff.afterText }}</div>
-                        </div>
-                      </template>
-                      <div v-else class="snapshot-diff__empty">暂无可展示的字段变更</div>
-                    </div>
-                  </div>
-                </div>
-                <el-empty v-else description="暂无操作记录" :image-size="100" />
-              </div>
-            </section>
+            <BizOperateLogPanel
+              v-if="activeTab === 'operateLog'"
+              ref="operateLogPanelRef"
+              :query="leaseOperateLogQuery"
+              :field-config="snapshotFieldConfig"
+              :fallback-label-map="snapshotFallbackLabelMap"
+            />
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -388,7 +354,7 @@
 
 <script setup lang="ts">
   import { computed, h, ref, watch } from "vue";
-  import { BizOperateLogVo, LeaseCheckoutVo, LeaseDetailVo, TenantsCreateFormProps } from "@/types";
+  import { LeaseCheckoutVo, LeaseDetailVo, TenantsCreateFormProps } from "@/types";
   import {
     getOptionByCode,
     ID_TYPE_OPTIONS,
@@ -401,7 +367,7 @@
   import { Clock, Document, Files, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
-  import { getLeaseOperateLogList, updateTenantInfo } from "@/api/contract/tenant";
+  import { updateTenantInfo } from "@/api/contract/tenant";
   import { getCheckoutByLeaseId } from "@/api/contract/checkout";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
@@ -412,6 +378,7 @@
   import LeaseContractTab from "@/views/contract/tenant/view/LeaseContractTab.vue";
   import LeaseBillTab from "@/views/contract/tenant/view/LeaseBillTab.vue";
   import TenantInfoEditDialog from "@/views/contract/tenant/view/TenantInfoEditDialog.vue";
+  import BizOperateLogPanel from "@/shared/biz-operate-log/BizOperateLogPanel.vue";
   import { convertImage2string } from "@/utils/image";
 
   const { openTenantDialog } = useTenant();
@@ -420,11 +387,6 @@
     formInline: LeaseDetailVo;
     readonly?: boolean;
   }
-
-  type BizOperateLogWithSnapshot = BizOperateLogVo & {
-    beforeSnapshot?: string;
-    afterSnapshot?: string;
-  };
 
   const props = withDefaults(defineProps<FormProps>(), {
     readonly: false
@@ -450,8 +412,13 @@
   const checkoutDetail = ref<LeaseCheckoutVo | null>(null);
   const checkoutLoading = ref(false);
   const checkoutTabDisabled = computed(() => !checkoutLoading.value && !checkoutDetail.value);
-  const operateLogList = ref<BizOperateLogWithSnapshot[]>([]);
-  const operateLogLoading = ref(false);
+  const operateLogPanelRef = ref<InstanceType<typeof BizOperateLogPanel>>();
+  const leaseOperateLogQuery = computed(() => ({
+    bizType: "LEASE",
+    bizId: localFormInline.value.leaseId,
+    sourceType: "LEASE",
+    sourceId: localFormInline.value.leaseId
+  }));
 
   const fetchCheckoutDetail = async () => {
     const leaseId = localFormInline.value.leaseId;
@@ -470,23 +437,6 @@
     }
   };
 
-  const fetchOperateLogs = async () => {
-    const leaseId = localFormInline.value.leaseId;
-    if (!leaseId) {
-      operateLogList.value = [];
-      return;
-    }
-    operateLogLoading.value = true;
-    try {
-      const res = await getLeaseOperateLogList(leaseId);
-      operateLogList.value = res.code === 0 ? ((res.data || []) as BizOperateLogWithSnapshot[]) : [];
-    } catch {
-      operateLogList.value = [];
-    } finally {
-      operateLogLoading.value = false;
-    }
-  };
-
   const handleCheckoutUpdated = async () => {
     await fetchCheckoutDetail();
     if (!checkoutDetail.value) {
@@ -494,7 +444,7 @@
       (localFormInline.value as any).checkOutStatus = 0;
     }
     if (activeTab.value === "operateLog") {
-      await fetchOperateLogs();
+      await operateLogPanelRef.value?.reload();
     }
     emit("lease-updated", localFormInline.value.leaseId);
   };
@@ -503,7 +453,6 @@
     () => activeTab.value,
     tab => {
       if (tab === "checkout") fetchCheckoutDetail();
-      if (tab === "operateLog") fetchOperateLogs();
     }
   );
 
@@ -511,26 +460,9 @@
     () => localFormInline.value.leaseId,
     () => {
       fetchCheckoutDetail();
-      if (activeTab.value === "operateLog") {
-        fetchOperateLogs();
-      } else {
-        operateLogList.value = [];
-      }
     },
     { immediate: true }
   );
-
-  const operateTypeText = (type?: string) => {
-    const map: Record<string, string> = {
-      CREATE: "新增",
-      SAVE: "保存",
-      UPDATE: "修改",
-      RENEW: "续约",
-      CANCEL: "取消",
-      PAY: "付款"
-    };
-    return type ? map[type] || type : "操作";
-  };
 
   const personalPhotoGroups = computed(() => {
     const tenantPersonal = localFormInline.value.tenantPersonal;
@@ -665,29 +597,20 @@
     { path: "remark", label: "备注" }
   ];
 
-  function parseSnapshot(snapshot?: string) {
-    if (!snapshot) return null;
-    try {
-      return JSON.parse(snapshot);
-    } catch {
-      return null;
-    }
-  }
-
-  function getByPath(data: unknown, path: string) {
-    if (!data || typeof data !== "object") return undefined;
-    return path.split(".").reduce<unknown>((current, key) => {
-      if (!current || typeof current !== "object") return undefined;
-      return (current as Record<string, unknown>)[key];
-    }, data);
-  }
-
-  function stableValue(value: unknown) {
-    if (value === undefined || value === null || value === "") return "";
-    if (Array.isArray(value)) return JSON.stringify(value.map(item => stableValue(item)));
-    if (typeof value === "object") return JSON.stringify(value);
-    return String(value);
-  }
+  const snapshotFallbackLabelMap: Record<string, string> = {
+    tenantName: "租客姓名",
+    tenantPhone: "联系电话",
+    name: "姓名",
+    phone: "联系电话",
+    gender: "性别",
+    idType: "证件类型",
+    idNo: "证件号码",
+    tags: "租客标签",
+    tagList: "租客标签",
+    remark: "备注",
+    status: "状态",
+    cancelReason: "取消原因"
+  };
 
   function formatSnapshotValue(value: unknown) {
     if (value === undefined || value === null || value === "") return "—";
@@ -699,86 +622,6 @@
     if (typeof value === "object") return JSON.stringify(value);
     return String(value);
   }
-
-  function flattenSnapshot(data: unknown, prefix = "", depth = 0, result: Record<string, unknown> = {}) {
-    if (!data || typeof data !== "object" || Array.isArray(data) || depth > 2) return result;
-    Object.entries(data as Record<string, unknown>).forEach(([key, value]) => {
-      const path = prefix ? `${prefix}.${key}` : key;
-      if (["id", "companyId", "createAt", "updateAt", "createBy", "updateBy"].includes(key)) return;
-      if (value && typeof value === "object" && !Array.isArray(value)) {
-        flattenSnapshot(value, path, depth + 1, result);
-        return;
-      }
-      result[path] = value;
-    });
-    return result;
-  }
-
-  function fieldLabelFromPath(path: string) {
-    const key = path.split(".").at(-1) || path;
-    const map: Record<string, string> = {
-      tenantName: "租客姓名",
-      tenantPhone: "联系电话",
-      name: "姓名",
-      phone: "联系电话",
-      gender: "性别",
-      idType: "证件类型",
-      idNo: "证件号码",
-      tags: "租客标签",
-      tagList: "租客标签",
-      remark: "备注",
-      status: "状态",
-      cancelReason: "取消原因"
-    };
-    return map[key] || key;
-  }
-
-  const snapshotDiffList = (item: BizOperateLogWithSnapshot) => {
-    const before = parseSnapshot(item.beforeSnapshot);
-    const after = parseSnapshot(item.afterSnapshot);
-    if (!before && !after) return [];
-
-    const configuredDiffList = snapshotFieldConfig
-      .map(field => {
-        const beforeValue = getByPath(before, field.path);
-        const afterValue = getByPath(after, field.path);
-        const beforeStable = stableValue(beforeValue);
-        const afterStable = stableValue(afterValue);
-        if (beforeStable === afterStable) return null;
-        if (!beforeStable && !afterStable) return null;
-
-        return {
-          key: field.path,
-          label: field.label,
-          beforeText: field.formatter ? field.formatter(beforeValue) : formatSnapshotValue(beforeValue),
-          afterText: field.formatter ? field.formatter(afterValue) : formatSnapshotValue(afterValue)
-        };
-      })
-      .filter(Boolean)
-      .slice(0, 12) as Array<{ key: string; label: string; beforeText: string; afterText: string }>;
-    if (configuredDiffList.length) return configuredDiffList;
-
-    const beforeFlat = flattenSnapshot(before);
-    const afterFlat = flattenSnapshot(after);
-    return Array.from(new Set([...Object.keys(beforeFlat), ...Object.keys(afterFlat)]))
-      .map(path => {
-        const beforeValue = beforeFlat[path];
-        const afterValue = afterFlat[path];
-        const beforeStable = stableValue(beforeValue);
-        const afterStable = stableValue(afterValue);
-        if (beforeStable === afterStable) return null;
-        if (!beforeStable && !afterStable) return null;
-
-        return {
-          key: path,
-          label: fieldLabelFromPath(path),
-          beforeText: formatSnapshotValue(beforeValue),
-          afterText: formatSnapshotValue(afterValue)
-        };
-      })
-      .filter(Boolean)
-      .slice(0, 12) as Array<{ key: string; label: string; beforeText: string; afterText: string }>;
-  };
 
   const handleDownloadContract = () => {
     if (!props.formInline.leaseContract?.contractContent) {
@@ -941,7 +784,7 @@
           if (resp.code === 0) {
             message("租客信息修改成功", { type: "success" });
             if (activeTab.value === "operateLog") {
-              await fetchOperateLogs();
+              await operateLogPanelRef.value?.reload();
             }
             emit("lease-updated", row.leaseId);
             done();
@@ -1267,128 +1110,6 @@
         }
       }
 
-      .operate-log-panel {
-        min-height: 220px;
-      }
-
-      .operate-log-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .operate-record {
-        display: grid;
-        grid-template-columns: 240px minmax(0, 1fr);
-        gap: 12px;
-        align-items: start;
-        padding: 10px 12px;
-        background: var(--el-bg-color);
-        border: 1px solid var(--el-border-color-light);
-        border-radius: 10px;
-
-        &__side {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          min-width: 0;
-          padding-right: 12px;
-          border-right: 1px solid var(--el-border-color-lighter);
-        }
-
-        &__title {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          color: var(--el-text-color-primary);
-          font-size: 15px;
-          font-weight: 600;
-        }
-
-        &__meta {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          color: var(--el-text-color-secondary);
-          font-size: 13px;
-          line-height: 1.5;
-        }
-
-        &__remark {
-          padding: 7px 9px;
-          background: var(--el-fill-color-lighter);
-          border-radius: 8px;
-          color: var(--el-text-color-secondary);
-          font-size: 13px;
-          line-height: 1.6;
-        }
-      }
-
-      .snapshot-diff {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        min-width: 0;
-
-        &__head {
-          display: grid;
-          grid-template-columns: 112px minmax(0, 1fr) 24px minmax(0, 1fr);
-          gap: 8px;
-          padding: 0 10px 2px;
-          color: var(--el-text-color-placeholder);
-          font-size: 12px;
-          line-height: 1.4;
-        }
-
-        &__row {
-          display: grid;
-          grid-template-columns: 112px minmax(0, 1fr) 24px minmax(0, 1fr);
-          gap: 8px;
-          align-items: center;
-          min-width: 0;
-          padding: 8px 10px;
-          background: var(--el-fill-color-light);
-          border: 1px solid var(--el-border-color-lighter);
-          border-radius: 8px;
-        }
-
-        &__field {
-          color: var(--el-text-color-secondary);
-          font-size: 13px;
-          line-height: 1.5;
-        }
-
-        &__value {
-          min-width: 0;
-          font-size: 13px;
-          font-weight: 600;
-          line-height: 1.5;
-          word-break: break-all;
-
-          &--before {
-            color: var(--el-color-danger);
-          }
-
-          &--after {
-            color: var(--el-color-success);
-          }
-        }
-
-        &__arrow {
-          flex-shrink: 0;
-          color: var(--el-text-color-placeholder);
-          text-align: center;
-        }
-
-        &__empty {
-          grid-column: 1 / -1;
-          padding: 10px 12px;
-          color: var(--el-text-color-placeholder);
-          font-size: 13px;
-          background: var(--el-fill-color-lighter);
-          border-radius: 8px;
-        }
-      }
     }
 
     :deep(.el-empty) {
@@ -1422,28 +1143,6 @@
         align-items: flex-start;
       }
 
-      .operate-record {
-        grid-template-columns: 1fr;
-      }
-
-      .operate-record__side {
-        padding-right: 0;
-        padding-bottom: 10px;
-        border-right: 0;
-        border-bottom: 1px solid var(--el-border-color-lighter);
-      }
-
-      .snapshot-diff__row {
-        grid-template-columns: 1fr;
-      }
-
-      .snapshot-diff__head {
-        display: none;
-      }
-
-      .snapshot-diff__arrow {
-        display: none;
-      }
     }
   }
 </style>
