@@ -302,7 +302,6 @@
       padding: 0 10px 2px;
       font-size: 12px;
       line-height: 1.4;
-      color: var(--el-text-color-placeholder);
     }
 
     &__row {
