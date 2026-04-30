@@ -10,6 +10,11 @@
             </el-tag>
           </div>
           <div class="owner-detail-page__desc">查看业主、合同、房源和结算条款信息。</div>
+          <div v-if="voidInfo" class="owner-detail-page__void-info">
+            <span>作废原因：{{ voidInfo.reason }}</span>
+            <span>作废人：{{ voidInfo.operator }}</span>
+            <span>作废时间：{{ voidInfo.time }}</span>
+          </div>
         </div>
       </template>
       <template #extra>
@@ -42,9 +47,16 @@
   import useOwnerContract from "@/views/contract/owner/utils/hook";
   import OwnerContractDetailContent from "@/views/contract/owner/view/OwnerContractDetailContent.vue";
   import { OwnerContractStatusEnumMeta } from "@/types/generated/enum.meta";
-  import type { OwnerDetailVo, OwnerListVo } from "@/types/generated";
+  import type { OwnerContractDto, OwnerDetailVo, OwnerListVo } from "@/types/generated";
 
   defineOptions({ name: "OwnerContractDetail" });
+
+  type OwnerContractDetailDto = OwnerContractDto & {
+    voidReason?: string;
+    voidBy?: string;
+    voidByName?: string;
+    voidAt?: string;
+  };
 
   const route = useRoute();
   const router = useRouter();
@@ -73,10 +85,19 @@
     [OwnerContractStatusEnumMeta.CHECKED_OUT.code]: "warning",
     [OwnerContractStatusEnumMeta.VOIDED.code]: "danger"
   };
-  const statusCode = computed(() => detail.value?.ownerContract?.status ?? OwnerContractStatusEnumMeta.PENDING_SIGN.code);
+  const ownerContract = computed(() => detail.value?.ownerContract as OwnerContractDetailDto | undefined);
+  const statusCode = computed(() => ownerContract.value?.status ?? OwnerContractStatusEnumMeta.PENDING_SIGN.code);
   const statusText = computed(() => statusLabelMap[statusCode.value] || "-");
   const statusType = computed(() => statusTypeMap[statusCode.value] || "info");
-  const contractId = computed(() => detail.value?.ownerContract?.id || (route.params.contractId as string));
+  const contractId = computed(() => ownerContract.value?.id || (route.params.contractId as string));
+  const voidInfo = computed(() => {
+    if (statusCode.value !== OwnerContractStatusEnumMeta.VOIDED.code) return null;
+    return {
+      reason: ownerContract.value?.voidReason || "-",
+      operator: ownerContract.value?.voidByName || ownerContract.value?.voidBy || "-",
+      time: ownerContract.value?.voidAt || "-"
+    };
+  });
   const ownerPhone = computed(() => (detail.value?.ownerType === 1 ? detail.value.ownerCompany?.contactPhone : detail.value?.ownerPersonal?.phone) || "");
   const subjectNames = computed(() => (detail.value?.contractSubjectList || []).map(item => item.subjectName).filter(Boolean).join("，"));
   const ownerListRow = computed<OwnerListVo | null>(() => {
@@ -262,6 +283,17 @@
     &__desc {
       font-size: 13px;
       color: var(--el-text-color-secondary);
+    }
+
+    &__void-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 14px;
+      align-items: center;
+      margin-top: 2px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--el-color-danger);
     }
 
     &__actions {

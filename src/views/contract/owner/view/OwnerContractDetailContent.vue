@@ -201,28 +201,13 @@
                 <el-descriptions-item label="来源合同" label-align="right">
                   <span class="text-value">{{ detailData.ownerContract?.renewFromContractNo || detailData.ownerContract?.parentContractId || "-" }}</span>
                 </el-descriptions-item>
-                <el-descriptions-item label="退房状态" label-align="right">
-                  <span class="text-value">{{ detailData.ownerContract?.checkoutStatus === 1 ? "已退房" : "未退房" }}</span>
-                </el-descriptions-item>
-                <el-descriptions-item label="退房日期" label-align="right">
-                  <span class="text-value">{{ formatDate(detailData.ownerContract?.checkoutDate) }}</span>
-                </el-descriptions-item>
-                <el-descriptions-item label="退房操作人" label-align="right">
-                  <span class="text-value">{{ detailData.ownerContract?.checkoutByName || detailData.ownerContract?.checkoutBy || "-" }}</span>
-                </el-descriptions-item>
-                <el-descriptions-item label="退房操作时间" label-align="right">
-                  <span class="text-value">{{ detailData.ownerContract?.checkoutAt || "-" }}</span>
-                </el-descriptions-item>
                 <el-descriptions-item label="创建时间" label-align="right">
                   <span class="text-value">{{ detailData.createAt || "-" }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="更新时间" label-align="right">
                   <span class="text-value">{{ detailData.updateAt || "-" }}</span>
                 </el-descriptions-item>
-                <el-descriptions-item label="退房原因" label-align="right" :span="2">
-                  <span class="text-value">{{ detailData.ownerContract?.checkoutReason || "-" }}</span>
-                </el-descriptions-item>
-                <el-descriptions-item label="备注" label-align="right" :span="2">
+                <el-descriptions-item label="备注" label-align="right" :span="4">
                   <span class="text-value">{{ detailData.ownerContract?.remark || "-" }}</span>
                 </el-descriptions-item>
               </el-descriptions>
@@ -346,6 +331,64 @@
           </div>
         </el-tab-pane>
 
+        <el-tab-pane v-if="isCheckedOutContract" name="checkoutInfo">
+          <template #label>
+            <el-space>
+              <el-icon><House /></el-icon>
+              <span>退房信息</span>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <section class="info-section checkout-info-section">
+              <div class="checkout-hero">
+                <div>
+                  <div class="checkout-hero__label">{{ checkoutTypeText }}</div>
+                  <div class="checkout-hero__date">{{ formatDate(ownerContract?.checkoutDate) }}</div>
+                </div>
+                <el-tag type="warning" effect="light">已退房</el-tag>
+              </div>
+
+              <div class="checkout-info-grid">
+                <div class="checkout-info-card">
+                  <span class="checkout-info-card__label">合同周期</span>
+                  <span class="checkout-info-card__value">{{ formatDate(ownerContract?.contractStart) }} 至 {{ formatDate(ownerContract?.contractEnd) }}</span>
+                </div>
+                <div class="checkout-info-card">
+                  <span class="checkout-info-card__label">退房操作人</span>
+                  <span class="checkout-info-card__value">{{ checkoutOperatorText }}</span>
+                </div>
+                <div class="checkout-info-card">
+                  <span class="checkout-info-card__label">退房操作时间</span>
+                  <span class="checkout-info-card__value">{{ ownerContract?.checkoutAt || "-" }}</span>
+                </div>
+                <div class="checkout-info-card">
+                  <span class="checkout-info-card__label">违约金</span>
+                  <span class="checkout-info-card__value">¥{{ formatMoney(ownerContract?.breachPenaltyAmount) }}</span>
+                </div>
+                <div class="checkout-info-card">
+                  <span class="checkout-info-card__label">未付账单处理</span>
+                  <span class="checkout-info-card__value">{{ checkoutBillPolicyText }}</span>
+                </div>
+                <div class="checkout-info-card">
+                  <span class="checkout-info-card__label">房源释放</span>
+                  <span class="checkout-info-card__value">{{ releaseSubjectText }}</span>
+                </div>
+              </div>
+
+              <div class="checkout-note-grid">
+                <div class="checkout-note-card">
+                  <div class="checkout-note-card__label">退房原因</div>
+                  <div class="checkout-note-card__value">{{ ownerContract?.checkoutReason || "-" }}</div>
+                </div>
+                <div class="checkout-note-card">
+                  <div class="checkout-note-card__label">结算说明</div>
+                  <div class="checkout-note-card__value">{{ ownerContract?.settlementRemark || "-" }}</div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </el-tab-pane>
+
         <el-tab-pane name="operateLog">
           <template #label>
             <el-space>
@@ -376,7 +419,7 @@
   import OwnerPayableBillTab from "./OwnerPayableBillTab.vue";
   import BizOperateLogPanel from "@/shared/biz-operate-log/BizOperateLogPanel.vue";
   import { SETTLEMENT_MODE_OPTIONS } from "@/views/contract/owner/form/ownerContractForm/model/ownerContractFormOptions";
-  import { Clock, Money, User, Wallet } from "@element-plus/icons-vue";
+  import { Clock, House, Money, User, Wallet } from "@element-plus/icons-vue";
   import { BizApprovalStatusEnumMeta, GenderEnumMeta, IdTypeEnumMeta } from "@/types/generated/enum.meta";
   import type { ContractTemplateListVo, OwnerContractDto, OwnerContractSubjectDto, OwnerDetailVo, OwnerLeaseRuleDto } from "@/types/generated";
 
@@ -410,6 +453,15 @@
       signType?: OwnerContractDto["signType"];
       contractMedium?: OwnerContractDto["contractMedium"];
       notifyOwner?: boolean;
+      settlementRemark?: string;
+      breachPenaltyAmount?: number | string;
+      releaseSubject?: boolean;
+      voidUnpaidFutureBills?: boolean;
+      checkoutRecordStatus?: number;
+      voidReason?: string;
+      voidBy?: string;
+      voidByName?: string;
+      voidAt?: string;
     };
     ownerLeaseRule?: OwnerLeaseRuleDto & {
       handoverDate?: string;
@@ -448,6 +500,27 @@
   const isMasterLease = computed(() => detailData.value?.ownerContract?.cooperationMode === "MASTER_LEASE");
   const isLightManaged = computed(() => !isMasterLease.value);
   const detailTemplate = computed(() => contractTemplates.value.find(item => String(item.id || "") === String(detailData.value?.ownerContract?.contractTemplateId || "")));
+  const ownerContract = computed(() => detailData.value?.ownerContract);
+  const isCheckedOutContract = computed(() => ownerContract.value?.checkoutStatus === 1 || ownerContract.value?.status === 3 || Boolean(ownerContract.value?.checkoutDate || ownerContract.value?.checkoutReason));
+  const checkoutOperatorText = computed(() => ownerContract.value?.checkoutByName || ownerContract.value?.checkoutBy || "-");
+  const checkoutTypeText = computed(() => {
+    const checkoutDate = ownerContract.value?.checkoutDate;
+    const contractStart = ownerContract.value?.contractStart;
+    if (checkoutDate && contractStart && String(checkoutDate).slice(0, 10) < String(contractStart).slice(0, 10)) {
+      return "生效前解约";
+    }
+    return "业主退房";
+  });
+  const checkoutBillPolicyText = computed(() => {
+    if (ownerContract.value?.voidUnpaidFutureBills === true) return "作废退房日之后未付款账单";
+    if (ownerContract.value?.voidUnpaidFutureBills === false) return "保留退房日之后未付款账单";
+    return "-";
+  });
+  const releaseSubjectText = computed(() => {
+    if (ownerContract.value?.releaseSubject === true) return "释放房源";
+    if (ownerContract.value?.releaseSubject === false) return "不释放房源";
+    return "-";
+  });
   const ownerOperateLogQuery = computed(() => ({
     bizType: "OWNER_CONTRACT",
     bizId: detailData.value?.ownerContract?.id,
@@ -908,6 +981,80 @@
       pointer-events: none;
       background: rgba(0, 0, 0, 0.55);
       border-radius: 999px;
+    }
+  }
+
+  .checkout-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .checkout-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+
+    &__label {
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+    }
+
+    &__date {
+      margin-top: 4px;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--el-text-color-primary);
+    }
+  }
+
+  .checkout-info-grid,
+  .checkout-note-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .checkout-info-card,
+  .checkout-note-card {
+    padding: 12px;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+  }
+
+  .checkout-info-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    &__label {
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+    }
+
+    &__value {
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+  }
+
+  .checkout-note-card {
+    &__label {
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+    }
+
+    &__value {
+      line-height: 1.7;
+      color: var(--el-text-color-primary);
+      white-space: pre-wrap;
     }
   }
 

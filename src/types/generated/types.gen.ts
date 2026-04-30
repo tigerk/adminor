@@ -7042,6 +7042,42 @@ export type OwnerContractDto = {
      */
     checkoutAt?: string;
     /**
+     * 退房结算说明
+     */
+    settlementRemark?: string;
+    /**
+     * 业主退房违约金
+     */
+    breachPenaltyAmount?: number;
+    /**
+     * 是否释放房源
+     */
+    releaseSubject?: boolean;
+    /**
+     * 是否作废退房日之后未付款账单
+     */
+    voidUnpaidFutureBills?: boolean;
+    /**
+     * 退房单状态：1=已提交，2=已完成，3=已取消
+     */
+    checkoutRecordStatus?: number;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
+    /**
+     * 作废操作人ID
+     */
+    voidBy?: string;
+    /**
+     * 作废操作人名称
+     */
+    voidByName?: string;
+    /**
+     * 作废时间
+     */
+    voidAt?: string;
+    /**
      * 创建人
      */
     createBy?: string;
@@ -10286,6 +10322,28 @@ export type ResponseResultPageVoCompanyConsumeRecordVo = {
     code?: number;
     message?: string;
     data?: PageVoCompanyConsumeRecordVo;
+};
+
+/**
+ * 业务操作日志查询DTO
+ */
+export type BizOperateLogQueryDto = {
+    /**
+     * 业务类型
+     */
+    bizType?: string;
+    /**
+     * 业务ID
+     */
+    bizId?: string;
+    /**
+     * 来源类型
+     */
+    sourceType?: string;
+    /**
+     * 来源ID
+     */
+    sourceId?: string;
 };
 
 export type ApprovalQueryDto = {
@@ -14339,6 +14397,24 @@ export type GetConsumePageResponses = {
 
 export type GetConsumePageResponse = GetConsumePageResponses[keyof GetConsumePageResponses];
 
+export type List6Data = {
+    body: BizOperateLogQueryDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/biz/operate-log/list';
+};
+
+export type List6Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListBizOperateLogVo;
+};
+
+export type List6Response = List6Responses[keyof List6Responses];
+
 export type WithdrawApprovalData = {
     body: ApprovalQueryDto;
     path?: never;
@@ -14773,7 +14849,7 @@ export type SelectOneResponses = {
 
 export type SelectOneResponse = SelectOneResponses[keyof SelectOneResponses];
 
-export type List6Data = {
+export type List7Data = {
     body?: never;
     path?: never;
     query: {
@@ -14782,14 +14858,14 @@ export type List6Data = {
     url: '/saas/sys/dict/list';
 };
 
-export type List6Responses = {
+export type List7Responses = {
     /**
      * OK
      */
     200: ResponseResultListDictVo;
 };
 
-export type List6Response = List6Responses[keyof List6Responses];
+export type List7Response = List7Responses[keyof List7Responses];
 
 export type GetDictData = {
     body?: never;
@@ -14860,21 +14936,21 @@ export type PoiTipsResponses = {
 
 export type PoiTipsResponse = PoiTipsResponses[keyof PoiTipsResponses];
 
-export type List7Data = {
+export type List8Data = {
     body?: never;
     path?: never;
     query?: never;
     url: '/saas/region/list';
 };
 
-export type List7Responses = {
+export type List8Responses = {
     /**
      * OK
      */
     200: ResponseResultListRegionVo;
 };
 
-export type List7Response = List7Responses[keyof List7Responses];
+export type List8Response = List8Responses[keyof List8Responses];
 
 export type ThreeListData = {
     body?: never;
