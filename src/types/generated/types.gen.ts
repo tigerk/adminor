@@ -6860,7 +6860,7 @@ export type FileAttachGroupDto = {
 /**
  * 文件附件业务子类型枚举
  */
-export type FileAttachSubtypeEnum = 'SIGNED_CONTRACT' | 'SUPPLEMENT_AGREEMENT' | 'AUTHORIZATION' | 'OWNER_MATERIAL' | 'HOUSE_MATERIAL' | 'OTHER';
+export type FileAttachSubtypeEnum = 'SIGNED_CONTRACT' | 'SUPPLEMENT_AGREEMENT' | 'AUTHORIZATION' | 'OWNER_MATERIAL' | 'TENANT_MATERIAL' | 'HOUSE_MATERIAL' | 'OTHER';
 
 /**
  * 业主企业信息DTO
@@ -9420,6 +9420,10 @@ export type LeaseDetailVo = {
      * 其他费用列表
      */
     otherFees?: Array<OtherFeeDto>;
+    /**
+     * 租约资料附件分组列表
+     */
+    leaseAttachmentGroupList?: Array<FileAttachGroupDto>;
 };
 
 /**
@@ -9848,6 +9852,24 @@ export type LeaseBillCollectDto = {
      * 更新人ID
      */
     updateBy?: string;
+};
+
+/**
+ * 租约资料附件更新DTO
+ */
+export type LeaseAttachmentUpdateDto = {
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 附件URL列表
+     */
+    attachmentUrls?: Array<string>;
+    /**
+     * 附件分组列表
+     */
+    attachmentGroupList?: Array<FileAttachGroupDto>;
 };
 
 /**
@@ -11183,7 +11205,7 @@ export type DeliveryHandoverTypeEnum = 'CHECK_IN' | 'CHECK_OUT';
 
 export type DeliveryStatusEnum = 'CANCELLED' | 'DRAFT' | 'COMPLETED' | 'SIGNED';
 
-export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'DELIVERY_WATER_PROOF_IMAGE' | 'DELIVERY_ELECTRICITY_PROOF_IMAGE' | 'DELIVERY_GAS_PROOF_IMAGE' | 'CONTRACT_SEAL_IMAGE';
+export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'LEASE_ATTACHMENT' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'DELIVERY_WATER_PROOF_IMAGE' | 'DELIVERY_ELECTRICITY_PROOF_IMAGE' | 'DELIVERY_GAS_PROOF_IMAGE' | 'CONTRACT_SEAL_IMAGE';
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 
@@ -13352,7 +13374,7 @@ export type Detail4Responses = {
 
 export type Detail4Response = Detail4Responses[keyof Detail4Responses];
 
-export type UploadImageData = {
+export type UploadFileData = {
     body?: {
         file: Blob | File;
     };
@@ -13361,14 +13383,14 @@ export type UploadImageData = {
     url: '/saas/file/upload';
 };
 
-export type UploadImageResponses = {
+export type UploadFileResponses = {
     /**
      * OK
      */
     200: ResponseResultString;
 };
 
-export type UploadImageResponse = UploadImageResponses[keyof UploadImageResponses];
+export type UploadFileResponse = UploadFileResponses[keyof UploadFileResponses];
 
 export type Update2Data = {
     body: DeliveryUpdateDto;
@@ -14291,6 +14313,24 @@ export type CollectBillResponses = {
 };
 
 export type CollectBillResponse = CollectBillResponses[keyof CollectBillResponses];
+
+export type UpdateLeaseAttachmentsData = {
+    body: LeaseAttachmentUpdateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/attachments/update';
+};
+
+export type UpdateLeaseAttachmentsResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type UpdateLeaseAttachmentsResponse = UpdateLeaseAttachmentsResponses[keyof UpdateLeaseAttachmentsResponses];
 
 export type GetTenantTotalData = {
     body: BookingQueryDto;

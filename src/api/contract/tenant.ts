@@ -13,7 +13,8 @@ import type {
   LeaseQueryDto,
   LeaseBillCreateDto,
   TenantInfoUpdateDto,
-  BizOperateLogVo
+  BizOperateLogVo,
+  FileAttachGroupDto
 } from "@/types";
 
 export interface TenantProfileSearchDto {
@@ -62,6 +63,12 @@ export interface TenantProfileSearchItem {
   };
 }
 
+export interface LeaseAttachmentUpdateDto {
+  leaseId?: string;
+  attachmentUrls?: string[];
+  attachmentGroupList?: FileAttachGroupDto[];
+}
+
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/total"), { data });
@@ -90,6 +97,11 @@ export const updateTenant = (data?: object) => {
 /** 仅更新租客信息 */
 export const updateTenantInfo = (data?: TenantInfoUpdateDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/tenant/info/update"), { data });
+};
+
+/** 更新租约资料附件 */
+export const updateLeaseAttachments = (data?: LeaseAttachmentUpdateDto) => {
+  return http.request<ApiResponse<string>>("post", baseUrlApi("contract/lease/attachments/update"), { data });
 };
 
 /** 获取租约操作记录 */

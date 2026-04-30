@@ -16,6 +16,7 @@ export const FileAttachSubtypeEnumMeta = {
   SUPPLEMENT_AGREEMENT: {"value":"SUPPLEMENT_AGREEMENT"},
   AUTHORIZATION: {"value":"AUTHORIZATION"},
   OWNER_MATERIAL: {"value":"OWNER_MATERIAL"},
+  TENANT_MATERIAL: {"value":"TENANT_MATERIAL"},
   HOUSE_MATERIAL: {"value":"HOUSE_MATERIAL"},
   OTHER: {"value":"OTHER"}
 } as const;
@@ -371,6 +372,7 @@ export const FileAttachBizTypeEnumMeta = {
   TENANT_ID_CARD_IN_HAND: {"value":"TENANT_ID_CARD_IN_HAND","bizType":"tenant_id_card_in_hand"},
   TENANT_OTHER_IMAGE: {"value":"TENANT_OTHER_IMAGE","bizType":"tenant_other_image"},
   CONTRACT_FILE: {"value":"CONTRACT_FILE","bizType":"contract_file"},
+  LEASE_ATTACHMENT: {"value":"LEASE_ATTACHMENT","bizType":"lease_attachment"},
   TENANT_IMAGE: {"value":"TENANT_IMAGE","bizType":"tenant_image"},
   BUSINESS_LICENSE: {"value":"BUSINESS_LICENSE","bizType":"business_license"},
   TENANT_MATE_ID_CARD_FRONT: {"value":"TENANT_MATE_ID_CARD_FRONT","bizType":"tenant_mate_id_card_front"},

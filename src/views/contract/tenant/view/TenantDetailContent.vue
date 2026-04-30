@@ -307,6 +307,18 @@
           />
         </el-tab-pane>
 
+        <el-tab-pane name="attachment">
+          <template #label>
+            <el-space class="tab-label">
+              <el-icon><FolderOpened /></el-icon>
+              <span>资料附件</span>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <TenantAttachmentTab :detail-data="localFormInline" :readonly="readonly" @updated="emit('lease-updated', localFormInline.leaseId)" />
+          </div>
+        </el-tab-pane>
+
         <el-tab-pane name="delivery">
           <template #label>
             <el-space>
@@ -364,7 +376,7 @@
     LEASE_SIGN_STATUS_OPTIONS,
     LEASE_STATUS_MAP
   } from "@/constants";
-  import { Clock, Document, Files, House, Money, User } from "@element-plus/icons-vue";
+  import { Clock, Document, Files, FolderOpened, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
   import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
   import { updateTenantInfo } from "@/api/contract/tenant";
@@ -375,6 +387,7 @@
   import useTenant from "@/views/contract/tenant/utils/hook";
   import DeliveryTab from "@/views/contract/tenant/view/DeliveryTab.vue";
   import ViewCheckoutTab from "@/views/contract/checkout/view/ViewCheckoutTab.vue";
+  import TenantAttachmentTab from "@/views/contract/tenant/view/TenantAttachmentTab.vue";
   import LeaseContractTab from "@/views/contract/tenant/view/LeaseContractTab.vue";
   import LeaseBillTab from "@/views/contract/tenant/view/LeaseBillTab.vue";
   import TenantInfoEditDialog from "@/views/contract/tenant/view/TenantInfoEditDialog.vue";
