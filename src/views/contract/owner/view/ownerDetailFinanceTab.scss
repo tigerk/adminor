@@ -71,6 +71,7 @@
 
 .owner-detail-finance-list {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 10px;
 }
@@ -227,6 +228,7 @@
 
 .owner-detail-finance-empty {
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
   min-height: 260px;

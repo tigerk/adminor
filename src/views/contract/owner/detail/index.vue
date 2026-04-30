@@ -211,7 +211,13 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-height: calc(100vh - 108px);
     padding: 0;
+
+    > :deep(.owner-detail-view) {
+      flex: 1;
+      min-height: 0;
+    }
 
     &__head {
       padding: 10px 14px;

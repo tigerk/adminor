@@ -625,8 +625,10 @@
 <style scoped lang="scss">
   .owner-detail-view {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 8px;
+    min-height: 0;
   }
 
   .template-preview-metrics,
@@ -636,6 +638,10 @@
   }
 
   .tabs-wrapper {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
     padding: 14px 16px;
     background: var(--el-bg-color);
     border: 1px solid var(--el-border-color-light);
@@ -742,7 +748,10 @@
   }
 
   .tab-content {
-    min-height: 810px;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0px;
   }
 
   .info-section {
@@ -903,8 +912,27 @@
   }
 
   .modern-tabs {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+
     :deep(.el-tabs__header) {
       margin-bottom: 14px;
+    }
+
+    :deep(.el-tabs__content) {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    :deep(.el-tab-pane) {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
     }
 
     :deep(.pf-page) {
