@@ -122,7 +122,6 @@
           </template>
           <template #operation="{ row }">
             <el-button link type="primary" @click="openDetail(row.contractId)">查看</el-button>
-            <el-button link type="primary" @click="handlePreview(row.contractId)">预览合同</el-button>
             <el-dropdown :hide-on-click="false" popper-class="action-dropdown">
               <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
               <template #dropdown>
@@ -141,14 +140,11 @@
       </template>
     </PureTableBar>
 
-    <el-dialog v-model="previewVisible" top="10px" title="业主合同预览" width="80%" destroy-on-close>
-      <iframe v-if="pdfUrl" title="业主合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, reactive, ref, watch } from "vue";
+  import { computed, onMounted, reactive, ref } from "vue";
   import type { PaginationProps } from "@pureadmin/table";
   import { ElMessageBox } from "element-plus";
   import { useRoute, useRouter } from "vue-router";
@@ -157,14 +153,14 @@
   import { message } from "@/utils/message";
   import useOwnerContract from "@/views/contract/owner/utils/hook";
   import OwnerSummaryFilterTabs from "@/shared/owner/OwnerSummaryFilterTabs.vue";
-  import { getOwnerContractList, getOwnerContractTotal, previewOwnerContract, voidOwnerContract } from "@/api/contract/owner";
+  import { getOwnerContractList, getOwnerContractTotal, voidOwnerContract } from "@/api/contract/owner";
   import Search from "~icons/ri/search-line";
   import Refresh from "~icons/ep/refresh";
   import Plus from "~icons/ep/plus";
   import User from "~icons/ep/user";
   import Phone from "~icons/ep/phone";
   import More from "~icons/ep/more-filled";
-  import type { OwnerContractIdDto, OwnerCooperationModeEnum, OwnerListVo, OwnerQueryDto } from "@/types/generated";
+  import type { OwnerCooperationModeEnum, OwnerListVo, OwnerQueryDto } from "@/types/generated";
   import { OwnerContractStatusEnumMeta, OwnerCooperationModeEnumMeta, OwnerSignStatusEnumMeta, OwnerTypeEnumMeta } from "@/types/generated/enum.meta";
   import "@/shared/owner/panel.scss";
   import "@/shared/owner/financePage.scss";
@@ -232,8 +228,6 @@
     ownerPhone: ""
   });
   const summaryFilter = ref<"ALL" | "PENDING_APPROVAL" | "PENDING_SIGN" | "SIGNED" | "CHECKED_OUT" | "VOIDED" | "EXPIRING_30">("ALL");
-  const previewVisible = ref(false);
-  const pdfUrl = ref("");
 
   const ownerTypeLabelMap: Record<number, string> = {
     [OwnerTypeEnumMeta.PERSONAL.code]: "个人",
@@ -471,27 +465,6 @@
     }
     message(resp.message || "作废业主合同失败", { type: "error" });
   }
-
-  async function handlePreview(contractId?: string) {
-    if (!contractId) {
-      message("合同未保存，暂不支持预览", { type: "warning" });
-      return;
-    }
-    const resp = await previewOwnerContract({ contractId } as OwnerContractIdDto);
-    const blob = new Blob([resp], { type: "application/pdf" });
-    if (pdfUrl.value) {
-      URL.revokeObjectURL(pdfUrl.value);
-    }
-    pdfUrl.value = URL.createObjectURL(blob);
-    previewVisible.value = true;
-  }
-
-  watch(previewVisible, value => {
-    if (!value && pdfUrl.value) {
-      URL.revokeObjectURL(pdfUrl.value);
-      pdfUrl.value = "";
-    }
-  });
 
   onMounted(loadList);
 </script>

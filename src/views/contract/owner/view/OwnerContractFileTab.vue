@@ -1,42 +1,87 @@
 <template>
   <div class="owner-contract-file-tab">
-    <section class="contract-section contract-summary-section">
+    <section class="contract-section contract-list-section">
       <div class="section-head">
         <div>
-          <div class="section-title">合同摘要</div>
-          <div class="section-desc">查看线上合同内容，支持下载、重新生成或确认线下签约。</div>
+          <div class="section-title">
+            <span>签约合同列表</span>
+            <el-tag size="small" effect="plain">{{ contractList.length }} 份</el-tag>
+          </div>
+          <div class="section-desc">业主可能存在多份签约合同；预览、下载、重新生成、线下签约都针对选中的单份合同执行。</div>
+        </div>
+      </div>
+
+      <div v-if="contractList.length" class="contract-list">
+        <article
+          v-for="item in contractList"
+          :key="contractKey(item)"
+          class="contract-row"
+          :class="{ 'is-active': isSelected(item) }"
+          @click="selectContract(item)"
+        >
+          <div class="contract-row__main">
+            <div class="contract-row__title">
+              <strong>{{ item.contractNo || `合同 ${contractKey(item)}` }}</strong>
+              <el-tag :type="contractStatusTagType(item)" effect="plain">{{ contractStatusText(item) }}</el-tag>
+              <el-tag :type="signStatusTagType(item)" effect="light">{{ signStatusText(item) }}</el-tag>
+            </div>
+            <div class="contract-row__meta">
+              <span>合同周期：{{ formatDate(item.contractStart) }} 至 {{ formatDate(item.contractEnd) }}</span>
+              <span>合同模板：{{ contractTemplateText(item) }}</span>
+              <span>合同介质：{{ contractMediumText(item) }}</span>
+              <span>更新时间：{{ item.updateAt || "-" }}</span>
+            </div>
+          </div>
+          <div class="contract-row__actions" @click.stop>
+            <el-button link type="primary" :disabled="!item.id" @click="handlePreviewContract(item)">预览</el-button>
+            <el-button link type="primary" :disabled="!item.id || !item.contractContent" @click="handleDownloadContract(item)">下载</el-button>
+            <el-button link type="primary" :disabled="!item.id || isReadonlyContract(item)" @click="handleGenerateContract(item)">重新生成</el-button>
+            <el-button link type="primary" :disabled="!canSignContract(item)" @click="openOfflineSignDialog(item)">线下签约</el-button>
+          </div>
+        </article>
+      </div>
+      <el-empty v-else description="暂无签约合同" :image-size="90" />
+    </section>
+
+    <section v-if="selectedContract" class="contract-section contract-detail-section">
+      <div class="section-head section-head--compact">
+        <div>
+          <div class="section-title">当前合同</div>
+          <div class="section-desc">以下信息与操作均来自当前选中的合同。</div>
         </div>
         <el-space wrap>
-          <el-button :icon="Download" :disabled="!contractId || !contract?.contractContent" @click="handleDownloadContract">下载合同</el-button>
-          <el-button :icon="Document" :disabled="!contractId || readonlyContract" @click="handleGenerateContract">重新生成合同</el-button>
-          <el-button type="primary" :icon="Checked" :disabled="!canSignContract" @click="openOfflineSignDialog">线下签约</el-button>
+          <el-button :icon="Download" :disabled="!selectedContract.contractContent" @click="handleDownloadContract(selectedContract)">下载合同</el-button>
+          <el-button :icon="Document" :disabled="isReadonlyContract(selectedContract)" @click="handleGenerateContract(selectedContract)">重新生成合同</el-button>
+          <el-button type="primary" :icon="Checked" :disabled="!canSignContract(selectedContract)" @click="openOfflineSignDialog(selectedContract)">
+            线下签约
+          </el-button>
         </el-space>
       </div>
 
       <div class="contract-summary-grid">
         <div class="summary-item summary-item--wide">
           <span class="summary-item__label">合同编号</span>
-          <strong class="summary-item__value">{{ contract?.contractNo || "-" }}</strong>
+          <strong class="summary-item__value">{{ selectedContract.contractNo || "-" }}</strong>
         </div>
         <div class="summary-item">
           <span class="summary-item__label">签署状态</span>
-          <el-tag :type="signStatusTagType" effect="light">{{ signStatusText }}</el-tag>
+          <el-tag :type="signStatusTagType(selectedContract)" effect="light">{{ signStatusText(selectedContract) }}</el-tag>
         </div>
         <div class="summary-item">
           <span class="summary-item__label">合同介质</span>
-          <strong class="summary-item__value">{{ contractMediumText }}</strong>
+          <strong class="summary-item__value">{{ contractMediumText(selectedContract) }}</strong>
         </div>
         <div class="summary-item">
           <span class="summary-item__label">合同周期</span>
-          <strong class="summary-item__value">{{ formatDate(contract?.contractStart) }} 至 {{ formatDate(contract?.contractEnd) }}</strong>
+          <strong class="summary-item__value">{{ formatDate(selectedContract.contractStart) }} 至 {{ formatDate(selectedContract.contractEnd) }}</strong>
         </div>
         <div class="summary-item">
           <span class="summary-item__label">合同模板</span>
-          <strong class="summary-item__value">{{ detailData?.contractTemplateName || contract?.contractTemplateId || "-" }}</strong>
+          <strong class="summary-item__value">{{ contractTemplateText(selectedContract) }}</strong>
         </div>
         <div class="summary-item">
           <span class="summary-item__label">更新时间</span>
-          <strong class="summary-item__value">{{ contract?.updateAt || "-" }}</strong>
+          <strong class="summary-item__value">{{ selectedContract.updateAt || "-" }}</strong>
         </div>
       </div>
     </section>
@@ -45,22 +90,28 @@
       <div class="section-head section-head--compact">
         <div>
           <div class="section-title">合同内容预览</div>
-          <div class="section-desc">系统生成的合同内容快照，可重新选择模板生成；正文较长时在预览区内滚动查看。</div>
+          <div class="section-desc">系统生成的合同内容快照；正文较长时在预览区内滚动查看。</div>
         </div>
       </div>
-      <div v-if="contract?.contractContent" class="contract-preview" v-html="contract.contractContent" />
+      <div v-if="selectedContract?.contractContent" class="contract-preview" v-html="selectedContract.contractContent" />
       <el-empty v-else description="暂无合同内容" :image-size="96">
-        <el-button type="primary" :icon="Document" :disabled="!contractId || readonlyContract" @click="handleGenerateContract">生成合同内容</el-button>
+        <el-button type="primary" :icon="Document" :disabled="!selectedContract?.id || isReadonlyContract(selectedContract)" @click="handleGenerateContract(selectedContract)">
+          生成合同内容
+        </el-button>
       </el-empty>
     </section>
 
-    <el-dialog v-model="offlineSignVisible" title="线下签约" width="760px" destroy-on-close>
+    <el-dialog v-model="previewVisible" top="10px" :title="previewTitle" width="80%" destroy-on-close append-to-body>
+      <iframe v-if="previewPdfUrl" title="业主合同预览" :src="previewPdfUrl" style="width: 100%; height: 89vh; border: none" />
+    </el-dialog>
+
+    <el-dialog v-model="offlineSignVisible" :title="offlineSignDialogTitle" width="760px" destroy-on-close>
       <div class="offline-sign-dialog">
         <el-alert
           type="warning"
           show-icon
           :closable="false"
-          title="请上传已完成线下签字的纸质合同照片、扫描件或 PDF。确认后，系统会保存这些资料并将合同状态改为已签约。"
+          title="请上传已完成线下签字的纸质合同照片、扫描件或 PDF。确认后，系统会保存这些资料并将当前合同状态改为已签约。"
         />
         <el-upload
           v-model:file-list="offlineSignFileList"
@@ -118,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, h, nextTick, ref, type Ref } from "vue";
+  import { computed, h, nextTick, ref, watch, type Ref } from "vue";
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
   import { Checked, Document, Download, UploadFilled } from "@element-plus/icons-vue";
   import { addDialog } from "@/components/ReDialog";
@@ -127,8 +178,20 @@
   import { message } from "@/utils/message";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
-  import { OwnerContractStatusEnumMeta, OwnerSignStatusEnumMeta } from "@/types/generated/enum.meta";
-  import type { FileAttachSubtypeEnum, OwnerDetailVo } from "@/types/generated";
+  import { OwnerContractMediumEnumMeta, OwnerContractStatusEnumMeta, OwnerSignStatusEnumMeta } from "@/types/generated/enum.meta";
+  import type { FileAttachGroupDto, FileAttachSubtypeEnum, OwnerContractDto, OwnerDetailVo } from "@/types/generated";
+
+  type OwnerContractListItem = OwnerContractDto & {
+    ownerContractId?: string;
+    contractTemplateName?: string;
+    createAt?: string;
+    updateAt?: string;
+    contractAttachmentGroupList?: Array<FileAttachGroupDto>;
+  };
+
+  type OwnerDetailWithDocList = OwnerDetailVo & {
+    ownerContractDocList?: OwnerContractListItem[];
+  };
 
   const signedContractSubtype: FileAttachSubtypeEnum = "SIGNED_CONTRACT";
 
@@ -140,37 +203,111 @@
     updated: [];
   }>();
 
+  const selectedContractId = ref<string>();
+  const previewVisible = ref(false);
+  const previewPdfUrl = ref("");
+  const previewTitle = ref("业主合同预览");
   const offlineSignFileList = ref<UploadFile[]>([]);
   const offlineSignVisible = ref(false);
   const offlineSigning = ref(false);
+  const offlineSignContract = ref<OwnerContractListItem | null>(null);
 
-  const contract = computed(() => props.detailData?.ownerContract);
-  const contractId = computed(() => contract.value?.id);
-  const readonlyContract = computed(() => {
-    const status = contract.value?.status;
-    return status === OwnerContractStatusEnumMeta.CHECKED_OUT.code || status === OwnerContractStatusEnumMeta.VOIDED.code;
+  const contractList = computed<OwnerContractListItem[]>(() => {
+    const detail = props.detailData as OwnerDetailWithDocList | null | undefined;
+    return (detail?.ownerContractDocList || []).filter(item => item?.id);
   });
-  const canSignContract = computed(() => {
-    if (!contractId.value || readonlyContract.value) return false;
-    if (contract.value?.status === OwnerContractStatusEnumMeta.PENDING_APPROVAL.code) return false;
-    return contract.value?.signStatus !== OwnerSignStatusEnumMeta.SIGNED.code;
+
+  const selectedContract = computed(() => {
+    if (!contractList.value.length) return undefined;
+    return contractList.value.find(item => String(item.id) === selectedContractId.value) || contractList.value[0];
   });
-  const signStatusText = computed(() => (contract.value?.signStatus === OwnerSignStatusEnumMeta.SIGNED.code ? "已签字" : "待签字"));
-  const signStatusTagType = computed(() => (contract.value?.signStatus === OwnerSignStatusEnumMeta.SIGNED.code ? "success" : "warning"));
-  const contractMediumText = computed(() => {
-    const value = contract.value?.contractMedium;
-    if (value === "ELECTRONIC") return "电子合同";
-    if (value === "PAPER") return "纸质合同";
-    return value || "-";
-  });
-  const signedContractAttachmentUrls = computed(() => {
-    const group = contract.value?.contractAttachmentGroupList?.find(item => item.bizSubtype === signedContractSubtype);
-    return (group?.attachmentUrls || []).filter(Boolean);
-  });
+
+  const offlineSignDialogTitle = computed(() => `线下签约 - ${offlineSignContract.value?.contractNo || offlineSignContract.value?.id || "合同"}`);
   const offlineSignDisplayFileList = computed(() => offlineSignFileList.value.filter(file => file.status !== "fail"));
   const offlineSignSuccessUrls = computed(() => offlineSignFileList.value.filter(file => file.status === "success" && file.url).map(file => file.url!));
   const offlineSignImagePreviewUrls = computed(() => offlineSignSuccessUrls.value.filter(url => isImageFile(url)));
   const offlineSignUploading = computed(() => offlineSignFileList.value.some(file => file.status === "uploading"));
+
+  watch(
+    contractList,
+    list => {
+      if (!list.length) {
+        selectedContractId.value = undefined;
+        return;
+      }
+      const exists = list.some(item => String(item.id) === selectedContractId.value);
+      if (!exists) {
+        selectedContractId.value = String(list[0].id);
+      }
+    },
+    { immediate: true }
+  );
+
+  watch(previewVisible, value => {
+    if (!value && previewPdfUrl.value) {
+      URL.revokeObjectURL(previewPdfUrl.value);
+      previewPdfUrl.value = "";
+    }
+  });
+
+  function contractKey(item: OwnerContractListItem) {
+    return String(item.id || item.contractNo || "");
+  }
+
+  function selectContract(item: OwnerContractListItem) {
+    if (!item.id) return;
+    selectedContractId.value = String(item.id);
+  }
+
+  function isSelected(item: OwnerContractListItem) {
+    return String(item.id) === selectedContractId.value;
+  }
+
+  function isReadonlyContract(item?: OwnerContractListItem) {
+    const status = item?.status;
+    return status === OwnerContractStatusEnumMeta.CHECKED_OUT.code || status === OwnerContractStatusEnumMeta.VOIDED.code;
+  }
+
+  function canSignContract(item?: OwnerContractListItem) {
+    if (!item?.id || isReadonlyContract(item)) return false;
+    if (item.status === OwnerContractStatusEnumMeta.PENDING_APPROVAL.code) return false;
+    return item.signStatus !== OwnerSignStatusEnumMeta.SIGNED.code;
+  }
+
+  function signStatusText(item?: OwnerContractListItem) {
+    return item?.signStatus === OwnerSignStatusEnumMeta.SIGNED.code ? OwnerSignStatusEnumMeta.SIGNED.name : OwnerSignStatusEnumMeta.PENDING.name;
+  }
+
+  function signStatusTagType(item?: OwnerContractListItem) {
+    return item?.signStatus === OwnerSignStatusEnumMeta.SIGNED.code ? "success" : "warning";
+  }
+
+  function contractStatusText(item?: OwnerContractListItem) {
+    const meta = Object.values(OwnerContractStatusEnumMeta).find(option => option.code === item?.status);
+    return meta?.name || "-";
+  }
+
+  function contractStatusTagType(item?: OwnerContractListItem) {
+    const status = item?.status;
+    if (status === OwnerContractStatusEnumMeta.SIGNED.code) return "success";
+    if (status === OwnerContractStatusEnumMeta.CHECKED_OUT.code) return "warning";
+    if (status === OwnerContractStatusEnumMeta.VOIDED.code) return "danger";
+    return "info";
+  }
+
+  function contractMediumText(item?: OwnerContractListItem) {
+    const meta = Object.values(OwnerContractMediumEnumMeta).find(option => option.code === item?.contractMedium);
+    return meta?.name || item?.contractMedium || "-";
+  }
+
+  function contractTemplateText(item?: OwnerContractListItem) {
+    return item?.contractTemplateName || props.detailData?.contractTemplateName || item?.contractTemplateId || "-";
+  }
+
+  function signedContractAttachmentUrls(item?: OwnerContractListItem) {
+    const group = item?.contractAttachmentGroupList?.find(attachGroup => attachGroup.bizSubtype === signedContractSubtype);
+    return (group?.attachmentUrls || []).filter(Boolean);
+  }
 
   function toUploadFile(url: string, index: number): UploadFile {
     return {
@@ -265,25 +402,35 @@
     window.open(url, "_blank");
   }
 
-  async function handleDownloadContract() {
-    if (!contractId.value) return;
-    const resp = await previewOwnerContract({ contractId: contractId.value });
+  async function handlePreviewContract(item?: OwnerContractListItem) {
+    if (!item?.id) return;
+    const resp = await previewOwnerContract({ ownerContractDocId: item.id });
+    const blob = new Blob([resp], { type: "application/pdf" });
+    if (previewPdfUrl.value) URL.revokeObjectURL(previewPdfUrl.value);
+    previewPdfUrl.value = URL.createObjectURL(blob);
+    previewTitle.value = `业主合同预览 - ${item.contractNo || item.id}`;
+    previewVisible.value = true;
+  }
+
+  async function handleDownloadContract(item?: OwnerContractListItem) {
+    if (!item?.id) return;
+    const resp = await previewOwnerContract({ ownerContractDocId: item.id });
     const blob = new Blob([resp], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `业主合同_${contract.value?.contractNo || contractId.value}.pdf`;
+    a.download = `业主合同_${item.contractNo || item.id}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
   }
 
-  function handleGenerateContract() {
-    if (!contractId.value) return;
+  function handleGenerateContract(item?: OwnerContractListItem) {
+    if (!item?.id) return;
     const formRef = ref();
     addDialog({
-      title: "重新生成业主合同",
+      title: `重新生成业主合同 - ${item.contractNo || item.id}`,
       top: "8%",
       width: "420px",
       draggable: true,
@@ -291,14 +438,14 @@
       fullscreenIcon: true,
       closeOnClickModal: false,
       contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, contractType: 2 }),
-      beforeSure: (done) => {
+      beforeSure: done => {
         const selectedTemplate = formRef.value?.getSelectedTemplate();
         if (!selectedTemplate) {
           message("请选择合同模板", { type: "warning" });
           return;
         }
         generateOwnerContract({
-          contractId: contractId.value!,
+          ownerContractDocId: item.id!,
           contractTemplateId: selectedTemplate
         }).then(resp => {
           if (resp.code === 0) {
@@ -313,14 +460,15 @@
     });
   }
 
-  function openOfflineSignDialog() {
-    if (!contractId.value) return;
-    offlineSignFileList.value = signedContractAttachmentUrls.value.map((url, index) => toUploadFile(url, index));
+  function openOfflineSignDialog(item?: OwnerContractListItem) {
+    if (!item?.id) return;
+    offlineSignContract.value = item;
+    offlineSignFileList.value = signedContractAttachmentUrls(item).map((url, index) => toUploadFile(url, index));
     offlineSignVisible.value = true;
   }
 
   async function confirmOfflineSign() {
-    if (!contractId.value) return;
+    if (!offlineSignContract.value?.id) return;
     if (offlineSignUploading.value) {
       message("文件上传中，请稍后确认", { type: "warning" });
       return;
@@ -332,7 +480,7 @@
     offlineSigning.value = true;
     try {
       const resp = await offlineSignOwnerContract({
-        contractId: contractId.value,
+        ownerContractDocId: offlineSignContract.value.id,
         attachmentUrls: offlineSignSuccessUrls.value
       });
       if (resp.code === 0) {
@@ -364,6 +512,9 @@
   }
 
   .section-title {
+    display: flex;
+    gap: 8px;
+    align-items: center;
     font-size: 15px;
     font-weight: 600;
     color: var(--el-text-color-primary);
@@ -390,6 +541,70 @@
 
   .section-head--compact {
     margin-bottom: 10px;
+  }
+
+  .contract-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .contract-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    cursor: pointer;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+
+    &:hover,
+    &.is-active {
+      background: color-mix(in srgb, var(--el-color-primary) 5%, var(--el-fill-color-blank));
+      border-color: var(--el-color-primary-light-5);
+    }
+
+    &.is-active {
+      box-shadow: inset 3px 0 0 var(--el-color-primary);
+    }
+  }
+
+  .contract-row__main {
+    min-width: 0;
+  }
+
+  .contract-row__title {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+
+    strong {
+      overflow: hidden;
+      color: var(--el-text-color-primary);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .contract-row__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .contract-row__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px 8px;
   }
 
   .contract-summary-grid {
@@ -423,39 +638,13 @@
   }
 
   .contract-preview {
-    max-height: 460px;
+    max-height: 520px;
     overflow: auto;
     padding: 18px;
     color: var(--el-text-color-primary);
     background: var(--el-fill-color-extra-light);
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 8px;
-  }
-
-  .attachment-layout {
-    display: grid;
-    grid-template-columns: minmax(300px, 0.42fr) minmax(0, 1fr);
-    gap: 14px;
-    align-items: stretch;
-  }
-
-  .attachment-list-panel {
-    min-width: 0;
-    min-height: 188px;
-    padding: 12px;
-    background: var(--el-fill-color-extra-light);
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 10px;
-  }
-
-  .attachment-list-head {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--el-text-color-primary);
   }
 
   .attachment-uploader {
@@ -551,20 +740,21 @@
     .contract-summary-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
-    .attachment-layout {
-      grid-template-columns: 1fr;
-    }
-
-    .attachment-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
   }
 
   @media (max-width: 960px) {
-    .section-head {
+    .section-head,
+    .contract-row {
       align-items: flex-start;
+      grid-template-columns: 1fr;
+    }
+
+    .section-head {
       flex-direction: column;
+    }
+
+    .contract-row__actions {
+      justify-content: flex-start;
     }
 
     .contract-summary-grid,

@@ -19,7 +19,6 @@
       </template>
       <template #extra>
         <div class="owner-detail-page__actions">
-          <el-button plain :disabled="!contractId" @click="handlePreview">预览合同</el-button>
           <el-button plain type="primary" :disabled="!contractId" @click="handleEdit">修改合同</el-button>
           <el-button plain type="primary" :disabled="!contractId" @click="handleRenew">业主续约</el-button>
           <el-button plain type="warning" :disabled="!canCheckoutContract" @click="handleCheckout">业主退房</el-button>
@@ -31,18 +30,14 @@
     <el-skeleton v-if="loading" :rows="8" animated />
     <el-empty v-else-if="!detail" description="未找到业主合同详情" />
     <OwnerContractDetailContent v-else :form-inline="detail" @updated="fetchDetail" />
-
-    <el-dialog v-model="previewVisible" top="10px" title="业主合同预览" width="80%" destroy-on-close>
-      <iframe v-if="pdfUrl" title="业主合同预览" :src="pdfUrl" style="width: 100%; height: 89vh; border: none" />
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, ref, watch } from "vue";
+  import { computed, onMounted, ref } from "vue";
   import { ElMessageBox } from "element-plus";
   import { useRoute, useRouter } from "vue-router";
-  import { getOwnerContractDetail, previewOwnerContract, voidOwnerContract } from "@/api/contract/owner";
+  import { getOwnerContractDetail, voidOwnerContract } from "@/api/contract/owner";
   import { message } from "@/utils/message";
   import useOwnerContract from "@/views/contract/owner/utils/hook";
   import OwnerContractDetailContent from "@/views/contract/owner/view/OwnerContractDetailContent.vue";
@@ -63,8 +58,6 @@
   const { openOwnerDialog, openOwnerRenewDialog, openOwnerCheckoutDialog } = useOwnerContract();
   const loading = ref(false);
   const detail = ref<OwnerDetailVo>();
-  const previewVisible = ref(false);
-  const pdfUrl = ref("");
 
   const ownerName = computed(() => {
     if (!detail.value) return "业主合同详情";
@@ -160,15 +153,6 @@
     });
   }
 
-  async function handlePreview() {
-    if (!contractId.value) return;
-    const resp = await previewOwnerContract({ contractId: contractId.value });
-    const blob = new Blob([resp], { type: "application/pdf" });
-    if (pdfUrl.value) URL.revokeObjectURL(pdfUrl.value);
-    pdfUrl.value = URL.createObjectURL(blob);
-    previewVisible.value = true;
-  }
-
   function handleEdit() {
     if (!contractId.value) return;
     openOwnerDialog("编辑业主合同", { contractId: contractId.value, isEdit: true }, fetchDetail);
@@ -218,13 +202,6 @@
   }
 
   onMounted(fetchDetail);
-
-  watch(previewVisible, value => {
-    if (!value && pdfUrl.value) {
-      URL.revokeObjectURL(pdfUrl.value);
-      pdfUrl.value = "";
-    }
-  });
 </script>
 
 <style scoped lang="scss">
