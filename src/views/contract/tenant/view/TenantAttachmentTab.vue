@@ -81,11 +81,6 @@
   import { LeaseStatusEnumMeta } from "@/types/generated/enum.meta";
   import type { FileAttachGroupDto, FileAttachSubtypeEnum, LeaseDetailVo } from "@/types";
 
-  type TenantAttachmentSubtype = FileAttachSubtypeEnum | "TENANT_MATERIAL";
-  type LeaseDetailWithAttachments = LeaseDetailVo & {
-    leaseAttachmentGroupList?: FileAttachGroupDto[];
-  };
-
   const categoryOptions = [
     { value: "SIGNED_CONTRACT", label: "线下签约合同", desc: "纸质合同照片、扫描件、PDF 或签约文件。" },
     { value: "SUPPLEMENT_AGREEMENT", label: "补充协议", desc: "补充协议、变更协议等资料。" },
@@ -94,7 +89,7 @@
     { value: "HOUSE_MATERIAL", label: "房源资料", desc: "房源交接、验收、设备资料等。" },
     { value: "OTHER", label: "其他资料", desc: "无法归入以上分类的业务附件。" }
   ] as const satisfies ReadonlyArray<{
-    value: TenantAttachmentSubtype;
+    value: FileAttachSubtypeEnum;
     label: string;
     desc: string;
   }>;
@@ -102,7 +97,7 @@
   type CategoryCode = (typeof categoryOptions)[number]["value"];
 
   const props = defineProps<{
-    detailData?: LeaseDetailWithAttachments | null;
+    detailData?: LeaseDetailVo | null;
     readonly?: boolean;
   }>();
 
@@ -258,7 +253,7 @@
     if (!leaseId.value) return;
     const attachmentGroupList: FileAttachGroupDto[] = categoryOptions
       .map(category => ({
-        bizSubtype: category.value as FileAttachSubtypeEnum,
+        bizSubtype: category.value,
         attachmentUrls: successUrls(category.value)
       }))
       .filter(group => group.attachmentUrls.length > 0);

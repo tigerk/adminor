@@ -14,7 +14,7 @@ import type {
   LeaseBillCreateDto,
   TenantInfoUpdateDto,
   BizOperateLogVo,
-  FileAttachGroupDto
+  LeaseAttachmentUpdateDto
 } from "@/types";
 
 export interface TenantProfileSearchDto {
@@ -61,12 +61,6 @@ export interface TenantProfileSearchItem {
     businessLicenseList?: string[];
     otherImageList?: string[];
   };
-}
-
-export interface LeaseAttachmentUpdateDto {
-  leaseId?: string;
-  attachmentUrls?: string[];
-  attachmentGroupList?: FileAttachGroupDto[];
 }
 
 /** 获取租客统计 */
