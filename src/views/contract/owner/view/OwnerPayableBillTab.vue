@@ -5,7 +5,7 @@
         <span class="owner-detail-finance-toolbar__main">包租应付账单</span>
         <span class="owner-detail-finance-toolbar__sub">展示当前包租合同下应付业主的账期、付款进度、费用明细和付款记录。</span>
       </div>
-      <el-button :disabled="!ownerIdText" @click="fetchData">刷新</el-button>
+      <el-button :disabled="!contractIdText" @click="fetchData">刷新</el-button>
     </div>
 
     <div class="owner-detail-finance-summary">
@@ -150,9 +150,9 @@
 
 <script setup lang="ts">
   import { computed, ref, watch } from "vue";
-  import { getOwnerPayableBillDetail, getOwnerPayableBillPage, getOwnerPayableBillSummary } from "@/api/owner/owner";
+  import { getOwnerPayableBillDetailListByContract, getOwnerPayableBillSummary } from "@/api/owner/owner";
   import { OwnerPayableBillPaymentStatusEnumMeta, OwnerPayableBillStatusEnumMeta } from "@/types/generated/enum.meta";
-  import type { OwnerPayableBillDetailVo, OwnerPayableBillListVo, OwnerPayableBillQueryDto, OwnerPayableBillSummaryVo } from "@/types/generated";
+  import type { OwnerPayableBillDetailVo, OwnerPayableBillQueryDto, OwnerPayableBillSummaryVo } from "@/types/generated";
   import "./ownerDetailFinanceTab.scss";
 
   defineOptions({ name: "OwnerPayableBillTab" });
@@ -167,15 +167,13 @@
 
   function buildQuery(): OwnerPayableBillQueryDto {
     return {
-      currentPage: "1",
-      pageSize: "10",
       ownerId: ownerIdText.value,
-      contractId: contractIdText.value || undefined
+      contractId: contractIdText.value
     };
   }
 
   async function fetchData() {
-    if (!ownerIdText.value) {
+    if (!ownerIdText.value || !contractIdText.value) {
       summary.value = {};
       detailList.value = [];
       return;
@@ -184,22 +182,12 @@
     loading.value = true;
     try {
       const query = buildQuery();
-      const [pageResp, summaryResp] = await Promise.all([getOwnerPayableBillPage(query), getOwnerPayableBillSummary(query)]);
+      const [detailResp, summaryResp] = await Promise.all([getOwnerPayableBillDetailListByContract(query), getOwnerPayableBillSummary(query)]);
       summary.value = summaryResp.data || {};
-      detailList.value = await fetchDetailList(pageResp.data?.list || []);
+      detailList.value = detailResp.data || [];
     } finally {
       loading.value = false;
     }
-  }
-
-  async function fetchDetailList(list: OwnerPayableBillListVo[]) {
-    return Promise.all(
-      list.map(async item => {
-        if (!item.billId) return item as OwnerPayableBillDetailVo;
-        const resp = await getOwnerPayableBillDetail({ billId: item.billId });
-        return resp.data || (item as OwnerPayableBillDetailVo);
-      })
-    );
   }
 
   function moneyText(value?: number | string | null) {

@@ -3,6 +3,7 @@ import { baseUrlApi } from "@/api/utils";
 import type {
   OwnerContractAttachmentUpdateDto,
   OwnerContractCheckoutDto,
+  OwnerContractDocDto,
   OwnerContractDocIdDto,
   OwnerContractGenerateDto,
   OwnerContractIdDto,
@@ -18,6 +19,8 @@ import type {
   ResponseResultOwnerDetailVo,
   ResponseResultPageVoOwnerListVo
 } from "@/types/generated";
+
+export type OwnerContractDocCreatePayload = Pick<OwnerContractDocDto, "ownerContractId" | "contractTemplateId" | "contractMedium" | "remark">;
 
 export const getOwnerContractList = (data?: OwnerQueryDto) => {
   return http.request<ResponseResultPageVoOwnerListVo>("post", baseUrlApi("contract/owner/list"), { data });
@@ -65,6 +68,10 @@ export const updateOwnerContractAttachments = (data: OwnerContractAttachmentUpda
 
 export const generateOwnerContract = (data: OwnerContractGenerateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/generate"), { data });
+};
+
+export const createOwnerContractDoc = (data: OwnerContractDocCreatePayload) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/doc/create"), { data });
 };
 
 export const updateOwnerContractSignStatus = (data: OwnerContractSignStatusUpdateDto) => {

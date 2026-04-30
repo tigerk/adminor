@@ -5,10 +5,11 @@
         <div>
           <div class="section-title">
             <span>签约合同列表</span>
-            <el-tag size="small" effect="plain">{{ contractList.length }} 份</el-tag>
+            <el-tag type="info" size="small" effect="plain">{{ contractList.length }} 份</el-tag>
           </div>
           <div class="section-desc">业主可能存在多份签约合同；预览、下载、重新生成、线下签约都针对选中的单份合同执行。</div>
         </div>
+        <el-button type="primary" plain :disabled="!canAddContractDoc" @click="openCreateContractDocDialog">添加新合同</el-button>
       </div>
 
       <div v-if="contractList.length" class="contract-list">
@@ -26,10 +27,22 @@
               <el-tag :type="signStatusTagType(item)" effect="light">{{ signStatusText(item) }}</el-tag>
             </div>
             <div class="contract-row__meta">
-              <span>合同周期：{{ formatDate(item.contractStart) }} 至 {{ formatDate(item.contractEnd) }}</span>
-              <span>合同模板：{{ contractTemplateText(item) }}</span>
-              <span>合同介质：{{ contractMediumText(item) }}</span>
-              <span>更新时间：{{ item.updateAt || "-" }}</span>
+              <span class="contract-meta-item">
+                <span class="contract-meta-label">合同周期</span>
+                <strong>{{ formatDate(item.contractStart) }} 至 {{ formatDate(item.contractEnd) }}</strong>
+              </span>
+              <span class="contract-meta-item">
+                <span class="contract-meta-label">合同模板</span>
+                <strong>{{ contractTemplateText(item) }}</strong>
+              </span>
+              <span class="contract-meta-item">
+                <span class="contract-meta-label">合同介质</span>
+                <strong>{{ contractMediumText(item) }}</strong>
+              </span>
+              <span class="contract-meta-item">
+                <span class="contract-meta-label">更新时间</span>
+                <strong>{{ item.updateAt || "-" }}</strong>
+              </span>
             </div>
           </div>
           <div class="contract-row__actions" @click.stop>
@@ -43,122 +56,80 @@
       <el-empty v-else description="暂无签约合同" :image-size="90" />
     </section>
 
-    <section v-if="selectedContract" class="contract-section contract-detail-section">
-      <div class="section-head section-head--compact">
-        <div>
-          <div class="section-title">当前合同</div>
-          <div class="section-desc">以下信息与操作均来自当前选中的合同。</div>
-        </div>
-        <el-space wrap>
-          <el-button :icon="Download" :disabled="!selectedContract.contractContent" @click="handleDownloadContract(selectedContract)">下载合同</el-button>
-          <el-button :icon="Document" :disabled="isReadonlyContract(selectedContract)" @click="handleGenerateContract(selectedContract)">重新生成合同</el-button>
-          <el-button type="primary" :icon="Checked" :disabled="!canSignContract(selectedContract)" @click="openOfflineSignDialog(selectedContract)">
-            线下签约
-          </el-button>
-        </el-space>
-      </div>
-
-      <div class="contract-summary-grid">
-        <div class="summary-item summary-item--wide">
-          <span class="summary-item__label">合同编号</span>
-          <strong class="summary-item__value">{{ contractDocNo(selectedContract) || "-" }}</strong>
-        </div>
-        <div class="summary-item">
-          <span class="summary-item__label">签署状态</span>
-          <el-tag :type="signStatusTagType(selectedContract)" effect="light">{{ signStatusText(selectedContract) }}</el-tag>
-        </div>
-        <div class="summary-item">
-          <span class="summary-item__label">合同介质</span>
-          <strong class="summary-item__value">{{ contractMediumText(selectedContract) }}</strong>
-        </div>
-        <div class="summary-item">
-          <span class="summary-item__label">合同周期</span>
-          <strong class="summary-item__value">{{ formatDate(selectedContract.contractStart) }} 至 {{ formatDate(selectedContract.contractEnd) }}</strong>
-        </div>
-        <div class="summary-item">
-          <span class="summary-item__label">合同模板</span>
-          <strong class="summary-item__value">{{ contractTemplateText(selectedContract) }}</strong>
-        </div>
-        <div class="summary-item">
-          <span class="summary-item__label">更新时间</span>
-          <strong class="summary-item__value">{{ selectedContract.updateAt || "-" }}</strong>
-        </div>
-      </div>
-    </section>
-
-    <section class="contract-section contract-content-section">
-      <div class="section-head section-head--compact">
-        <div>
-          <div class="section-title">合同内容预览</div>
-          <div class="section-desc">系统生成的合同内容快照；正文较长时在预览区内滚动查看。</div>
-        </div>
-      </div>
-      <div v-if="selectedContract?.contractContent" class="contract-preview" v-html="selectedContract.contractContent" />
-      <el-empty v-else description="暂无合同内容" :image-size="96">
-        <el-button type="primary" :icon="Document" :disabled="!selectedContract?.id || isReadonlyContract(selectedContract)" @click="handleGenerateContract(selectedContract)">
-          生成合同内容
-        </el-button>
-      </el-empty>
-    </section>
-
     <el-dialog v-model="previewVisible" top="10px" :title="previewTitle" width="80%" destroy-on-close append-to-body>
       <iframe v-if="previewPdfUrl" title="业主合同预览" :src="previewPdfUrl" style="width: 100%; height: 89vh; border: none" />
     </el-dialog>
 
-    <el-dialog v-model="offlineSignVisible" :title="offlineSignDialogTitle" width="760px" destroy-on-close>
+    <el-dialog v-model="offlineSignVisible" :title="offlineSignDialogTitle" width="860px" destroy-on-close>
       <div class="offline-sign-dialog">
-        <el-alert
-          type="warning"
-          show-icon
-          :closable="false"
-          title="请上传已完成线下签字的纸质合同照片、扫描件或 PDF。确认后，系统会保存这些资料并将当前合同状态改为已签约。"
-        />
-        <el-upload
-          v-model:file-list="offlineSignFileList"
-          class="attachment-uploader offline-sign-uploader"
-          drag
-          multiple
-          :show-file-list="false"
-          :http-request="offlineSignUpload"
-          :before-upload="beforeUpload"
-          accept="image/*,.pdf,.doc,.docx"
-        >
-          <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
-          <div class="el-upload__text">拖拽线下合同文件到这里，或 <em>点击上传</em></div>
-          <template #tip>
-            <div class="el-upload__tip">至少上传 1 个文件；支持图片、PDF、Word，单个文件不超过 20MB。</div>
-          </template>
-        </el-upload>
-
-        <div v-if="offlineSignDisplayFileList.length" class="attachment-grid attachment-grid--dialog">
-          <div v-for="file in offlineSignDisplayFileList" :key="file.uid || file.url || file.name" class="attachment-card">
-            <div class="attachment-card__preview">
-              <el-image
-                v-if="file.url && isImageFile(file.url)"
-                :src="file.url"
-                :preview-src-list="offlineSignImagePreviewUrls"
-                fit="cover"
-                preview-teleported
-              />
-              <div v-else class="attachment-card__file">
-                <el-icon><Document /></el-icon>
-                <span>{{ fileExt(file.name || file.url || "") }}</span>
-              </div>
-            </div>
-            <div class="attachment-card__body">
-              <div class="attachment-card__name" :title="file.name">{{ file.name || fileName(file.url || "") }}</div>
-              <div class="attachment-card__status">
-                <el-progress v-if="file.status === 'uploading'" :percentage="file.percentage || 0" :show-text="false" />
-                <span v-else>{{ file.status === "success" ? "已上传" : "待上传" }}</span>
-              </div>
-            </div>
-            <div class="attachment-card__actions">
-              <el-button link type="primary" :disabled="!file.url" @click="openFile(file.url)">查看</el-button>
-              <el-button link type="danger" @click="removeOfflineSignFile(file)">删除</el-button>
-            </div>
+        <div class="offline-sign-hero">
+          <div class="offline-sign-hero__icon">
+            <el-icon><Document /></el-icon>
+          </div>
+          <div class="offline-sign-hero__body">
+            <div class="offline-sign-hero__title">上传已完成线下签字的合同资料</div>
+            <div class="offline-sign-hero__desc">支持图片、PDF、Word；确认后资料会归档到当前签约合同，并将合同状态改为已签约。</div>
           </div>
         </div>
-        <el-empty v-else description="请先上传线下合同资料" :image-size="72" />
+
+        <div class="offline-sign-layout">
+          <div class="offline-sign-panel offline-sign-panel--upload">
+            <div class="offline-sign-panel__head">
+              <span>上传文件</span>
+              <small>至少 1 个，单个 ≤ 20MB</small>
+            </div>
+            <el-upload
+              v-model:file-list="offlineSignFileList"
+              class="attachment-uploader offline-sign-uploader"
+              drag
+              multiple
+              :show-file-list="false"
+              :http-request="offlineSignUpload"
+              :before-upload="beforeUpload"
+              accept="image/*,.pdf,.doc,.docx"
+            >
+              <div class="offline-upload-box">
+                <el-icon class="offline-upload-box__icon"><UploadFilled /></el-icon>
+                <strong>拖拽文件到这里</strong>
+                <span>或点击选择合同照片、扫描件、PDF、Word</span>
+              </div>
+            </el-upload>
+          </div>
+
+          <div class="offline-sign-panel offline-sign-panel--files">
+            <div class="offline-sign-panel__head">
+              <span>已上传资料</span>
+              <el-tag size="small" effect="plain">{{ offlineSignDisplayFileList.length }} 个</el-tag>
+            </div>
+            <div v-if="offlineSignDisplayFileList.length" class="offline-file-list">
+              <div v-for="file in offlineSignDisplayFileList" :key="file.uid || file.url || file.name" class="offline-file-card">
+                <div class="offline-file-card__preview">
+                  <el-image
+                    v-if="file.url && isImageFile(file.url)"
+                    :src="file.url"
+                    :preview-src-list="offlineSignImagePreviewUrls"
+                    fit="cover"
+                    preview-teleported
+                  />
+                  <div v-else class="offline-file-card__file">
+                    <el-icon><Document /></el-icon>
+                    <span>{{ fileExt(file.name || file.url || "") }}</span>
+                  </div>
+                </div>
+                <div class="offline-file-card__main">
+                  <div class="offline-file-card__name" :title="file.name">{{ file.name || fileName(file.url || "") }}</div>
+                  <el-progress v-if="file.status === 'uploading'" :percentage="file.percentage || 0" :show-text="false" />
+                  <span v-else class="offline-file-card__status">{{ file.status === "success" ? "已上传" : "待上传" }}</span>
+                </div>
+                <div class="offline-file-card__actions">
+                  <el-button link type="primary" :disabled="!file.url" @click="openFile(file.url)">查看</el-button>
+                  <el-button link type="danger" @click="removeOfflineSignFile(file)">删除</el-button>
+                </div>
+              </div>
+            </div>
+            <el-empty v-else description="暂无上传资料" :image-size="72" />
+          </div>
+        </div>
       </div>
       <template #footer>
         <el-button @click="offlineSignVisible = false">取消</el-button>
@@ -171,9 +142,9 @@
 <script setup lang="ts">
   import { computed, h, nextTick, ref, watch, type Ref } from "vue";
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
-  import { Checked, Document, Download, UploadFilled } from "@element-plus/icons-vue";
+  import { Document, UploadFilled } from "@element-plus/icons-vue";
   import { addDialog } from "@/components/ReDialog";
-  import { generateOwnerContract, offlineSignOwnerContract, previewOwnerContract } from "@/api/contract/owner";
+  import { createOwnerContractDoc, generateOwnerContract, offlineSignOwnerContract, previewOwnerContract } from "@/api/contract/owner";
   import { uploadFile } from "@/api/upload";
   import { message } from "@/utils/message";
   import { deviceDetection } from "@/store/utils";
@@ -181,7 +152,7 @@
   import { OwnerContractMediumEnumMeta, OwnerContractStatusEnumMeta, OwnerSignStatusEnumMeta } from "@/types/generated/enum.meta";
   import type { FileAttachSubtypeEnum, OwnerContractDocDto, OwnerDetailVo } from "@/types/generated";
 
-  type OwnerContractListItem = OwnerContractDocDto & { docNo?: string; contractNo?: string };
+  type OwnerContractListItem = OwnerContractDocDto;
 
   const signedContractSubtype: FileAttachSubtypeEnum = "SIGNED_CONTRACT";
 
@@ -205,10 +176,10 @@
   const contractList = computed<OwnerContractListItem[]>(() => {
     return (props.detailData?.ownerContractDocList || []).filter(item => item?.id);
   });
-
-  const selectedContract = computed(() => {
-    if (!contractList.value.length) return undefined;
-    return contractList.value.find(item => String(item.id) === selectedContractId.value) || contractList.value[0];
+  const canAddContractDoc = computed(() => {
+    const contract = props.detailData?.ownerContract;
+    if (!contract?.id) return false;
+    return contract.status !== OwnerContractStatusEnumMeta.CHECKED_OUT.code && contract.status !== OwnerContractStatusEnumMeta.VOIDED.code;
   });
 
   const offlineSignDialogTitle = computed(() => `线下签约 - ${contractDocNo(offlineSignContract.value) || offlineSignContract.value?.id || "合同"}`);
@@ -244,7 +215,7 @@
   }
 
   function contractDocNo(item?: OwnerContractListItem | null) {
-    return item?.docNo || item?.contractNo || "";
+    return item?.docNo || "";
   }
 
   function selectContract(item: OwnerContractListItem) {
@@ -453,6 +424,42 @@
     });
   }
 
+  function openCreateContractDocDialog() {
+    const ownerContractId = props.detailData?.ownerContract?.id;
+    if (!ownerContractId) return;
+    const formRef = ref();
+    addDialog({
+      title: "添加新合同",
+      top: "8%",
+      width: "420px",
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, contractType: 2 }),
+      beforeSure: done => {
+        const selectedTemplate = formRef.value?.getSelectedTemplate();
+        if (!selectedTemplate) {
+          message("请选择合同模板", { type: "warning" });
+          return;
+        }
+        createOwnerContractDoc({
+          ownerContractId,
+          contractTemplateId: String(selectedTemplate),
+          contractMedium: OwnerContractMediumEnumMeta.ELECTRONIC.code
+        }).then(resp => {
+          if (resp.code === 0) {
+            message("新合同已添加", { type: "success" });
+            emit("updated");
+            done();
+            return;
+          }
+          message(resp.message || "添加新合同失败", { type: "error" });
+        });
+      }
+    });
+  }
+
   function openOfflineSignDialog(item?: OwnerContractListItem) {
     if (!item?.id) return;
     offlineSignContract.value = item;
@@ -498,30 +505,29 @@
   }
 
   .contract-section {
-    padding: 14px 16px;
-    background: var(--el-fill-color-blank);
+    padding: 16px 18px 18px;
+    background: var(--el-bg-color);
     border: 1px solid var(--el-border-color-lighter);
-    border-radius: 10px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgb(31 45 61 / 5%);
   }
 
   .section-title {
     display: flex;
     gap: 8px;
     align-items: center;
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 700;
     color: var(--el-text-color-primary);
   }
 
-  .section-desc,
-  .summary-item__label,
-  .attachment-card__status {
+  .section-desc {
     font-size: 13px;
-    color: var(--el-text-color-secondary);
+    color: var(--el-text-color-regular);
   }
 
   .section-desc {
-    margin-top: 4px;
+    margin-top: 6px;
   }
 
   .section-head {
@@ -529,7 +535,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--el-border-color-extra-light);
   }
 
   .section-head--compact {
@@ -545,23 +553,48 @@
   .contract-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 14px;
+    gap: 18px;
     align-items: center;
-    padding: 12px 14px;
+    position: relative;
+    padding: 16px 18px;
     cursor: pointer;
-    background: var(--el-fill-color-extra-light);
+    background: var(--el-fill-color-blank);
     border: 1px solid var(--el-border-color-lighter);
-    border-radius: 10px;
-    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgb(31 45 61 / 4%);
+    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 
-    &:hover,
-    &.is-active {
-      background: color-mix(in srgb, var(--el-color-primary) 5%, var(--el-fill-color-blank));
-      border-color: var(--el-color-primary-light-5);
+    &::before {
+      position: absolute;
+      top: 14px;
+      bottom: 14px;
+      left: 0;
+      width: 3px;
+      content: "";
+      background: transparent;
+      border-radius: 0 4px 4px 0;
+      transition: background 0.18s ease;
+    }
+
+    &:hover {
+      background: var(--el-fill-color-extra-light);
+      border-color: var(--el-border-color);
+      box-shadow: 0 8px 22px rgb(31 45 61 / 8%);
     }
 
     &.is-active {
-      box-shadow: inset 3px 0 0 var(--el-color-primary);
+      background: var(--el-bg-color-overlay);
+      border-color: color-mix(in srgb, var(--el-color-primary) 34%, var(--el-border-color));
+      box-shadow: 0 10px 24px rgb(31 45 61 / 8%);
+    }
+
+    &:hover,
+    &.is-active {
+      transform: translateY(-1px);
+    }
+
+    &.is-active::before {
+      background: var(--el-color-primary);
     }
   }
 
@@ -578,6 +611,8 @@
 
     strong {
       overflow: hidden;
+      font-size: 17px;
+      font-weight: 800;
       color: var(--el-text-color-primary);
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -585,11 +620,34 @@
   }
 
   .contract-row__meta {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .contract-meta-item {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px 18px;
-    margin-top: 8px;
-    font-size: 13px;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 8px 10px;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
+
+    strong {
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--el-text-color-primary);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .contract-meta-label {
+    font-size: 12px;
     color: var(--el-text-color-secondary);
   }
 
@@ -597,47 +655,22 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
-    gap: 4px 8px;
-  }
+    gap: 8px;
+    padding-left: 18px;
+    border-left: 1px solid var(--el-border-color-lighter);
 
-  .contract-summary-grid {
-    display: grid;
-    grid-template-columns: minmax(260px, 1.2fr) repeat(3, minmax(160px, 1fr));
-    gap: 10px;
-  }
+    :deep(.el-button.is-link) {
+      min-height: 30px;
+      padding: 4px 8px;
+      font-weight: 700;
+      color: var(--el-text-color-regular);
+      border-radius: 6px;
 
-  .summary-item {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    min-width: 0;
-    padding: 12px 14px;
-    background: var(--el-fill-color-extra-light);
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 10px;
-  }
-
-  .summary-item--wide {
-    grid-column: span 1;
-  }
-
-  .summary-item__value {
-    overflow: hidden;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--el-text-color-primary);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .contract-preview {
-    max-height: 520px;
-    overflow: auto;
-    padding: 18px;
-    color: var(--el-text-color-primary);
-    background: var(--el-fill-color-extra-light);
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 8px;
+      &:hover {
+        color: var(--el-color-primary);
+        background: var(--el-fill-color-light);
+      }
+    }
   }
 
   .attachment-uploader {
@@ -649,46 +682,166 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      min-height: 188px;
+      min-height: 228px;
       padding: 18px;
       background: var(--el-fill-color-extra-light);
-      border-color: var(--el-border-color);
+      border-color: var(--el-border-color-lighter);
+      border-radius: 12px;
+
+      &:hover {
+        border-color: var(--el-color-primary);
+      }
     }
   }
 
   .offline-sign-dialog {
     display: flex;
     flex-direction: column;
+    gap: 14px;
+  }
+
+  .offline-sign-hero {
+    display: flex;
     gap: 12px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+  }
+
+  .offline-sign-hero__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: var(--el-text-color-regular);
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+
+    .el-icon {
+      font-size: 22px;
+    }
+  }
+
+  .offline-sign-hero__body {
+    min-width: 0;
+  }
+
+  .offline-sign-hero__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  .offline-sign-hero__desc {
+    margin-top: 5px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--el-text-color-regular);
+  }
+
+  .offline-sign-layout {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .offline-sign-panel {
+    padding: 14px;
+    background: var(--el-fill-color-blank);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+  }
+
+  .offline-sign-panel--files {
+    min-height: 308px;
+  }
+
+  .offline-sign-panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+
+    small {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--el-text-color-secondary);
+    }
   }
 
   .offline-sign-uploader {
-    margin-top: 2px;
+    :deep(.el-upload-dragger) {
+      min-height: 238px;
+    }
   }
 
-  .attachment-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
+  .offline-upload-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 100%;
+    color: var(--el-text-color-regular);
+
+    strong {
+      font-size: 16px;
+      color: var(--el-text-color-primary);
+    }
+
+    span {
+      max-width: 210px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--el-text-color-secondary);
+      text-align: center;
+    }
   }
 
-  .attachment-grid--dialog {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    max-height: 420px;
-    overflow: auto;
-    padding-right: 4px;
-  }
-
-  .attachment-card {
-    overflow: hidden;
+  .offline-upload-box__icon {
+    padding: 12px;
+    font-size: 40px;
+    color: var(--el-text-color-secondary);
     background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 16px;
+  }
+
+  .offline-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 280px;
+    overflow: auto;
+    padding-right: 2px;
+  }
+
+  .offline-file-card {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    background: var(--el-fill-color-extra-light);
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 10px;
   }
 
-  .attachment-card__preview {
-    height: 116px;
+  .offline-file-card__preview {
+    width: 76px;
+    height: 58px;
+    overflow: hidden;
     background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 8px;
 
     :deep(.el-image) {
       width: 100%;
@@ -696,43 +849,43 @@
     }
   }
 
-  .attachment-card__file {
+  .offline-file-card__file {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     height: 100%;
     color: var(--el-color-primary);
 
     .el-icon {
-      font-size: 34px;
+      font-size: 22px;
     }
   }
 
-  .attachment-card__body {
-    padding: 10px 12px 4px;
+  .offline-file-card__main {
+    min-width: 0;
   }
 
-  .attachment-card__name {
+  .offline-file-card__name {
     overflow: hidden;
     color: var(--el-text-color-primary);
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .attachment-card__actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    padding: 0 10px 10px;
+  .offline-file-card__status {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--el-color-success);
   }
 
-  @media (max-width: 1280px) {
-    .contract-summary-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .offline-file-card__actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
   }
 
   @media (max-width: 960px) {
@@ -748,12 +901,21 @@
 
     .contract-row__actions {
       justify-content: flex-start;
+      padding-left: 0;
+      border-left: 0;
     }
 
-    .contract-summary-grid,
-    .attachment-grid,
-    .attachment-grid--dialog {
+    .contract-row__meta {
       grid-template-columns: 1fr;
+    }
+
+    .offline-sign-layout,
+    .offline-file-card {
+      grid-template-columns: 1fr;
+    }
+
+    .offline-file-card__actions {
+      justify-content: flex-start;
     }
   }
 </style>

@@ -2,6 +2,7 @@ import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
 import type {
   OwnerPayableBillCreateDto,
+  OwnerPayableBillDetailVo,
   OwnerPayableBillIdDto,
   OwnerPayableBillPaymentCreateDto,
   OwnerPayableBillQueryDto,
@@ -117,6 +118,10 @@ type ResponseResultData<T> = {
   data?: T;
 };
 
+type ResponseResultOwnerPayableBillDetailListVo = Omit<ResponseResultOwnerPayableBillDetailVo, "data"> & {
+  data?: OwnerPayableBillDetailVo[];
+};
+
 export const getOwnerSettlementBillPage = (data?: SettlementBillQueryDto) => {
   return http.request<ResponseResultPage<SettlementBillListVo>>("post", baseUrlApi("owner/settlement-bill/page"), { data });
 };
@@ -139,6 +144,10 @@ export const getOwnerPayableBillSummary = (data?: OwnerPayableBillQueryDto) => {
 
 export const getOwnerPayableBillDetail = (data: OwnerPayableBillIdDto) => {
   return http.request<ResponseResultOwnerPayableBillDetailVo>("post", baseUrlApi("owner/payable-bill/detail"), { data });
+};
+
+export const getOwnerPayableBillDetailListByContract = (data?: OwnerPayableBillQueryDto) => {
+  return http.request<ResponseResultOwnerPayableBillDetailListVo>("post", baseUrlApi("owner/payable-bill/contract-detail-list"), { data });
 };
 
 export const createOwnerPayableBill = (data: OwnerPayableBillCreateDto) => {
