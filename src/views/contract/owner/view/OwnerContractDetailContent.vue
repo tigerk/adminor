@@ -311,7 +311,9 @@
               <span>业主结算单</span>
             </el-space>
           </template>
-          <OwnerSettlementBillEntry :owner-id="detailData.ownerId" :contract-id="detailData.ownerContract?.id" embedded />
+          <div class="tab-content">
+            <OwnerSettlementBillTab :owner-id="detailData.ownerId" :contract-id="detailData.ownerContract?.id" />
+          </div>
         </el-tab-pane>
 
         <el-tab-pane v-if="isLightManaged" name="withdraw">
@@ -321,7 +323,15 @@
               <span>业主提现</span>
             </el-space>
           </template>
-          <OwnerWithdrawEntry :owner-id="detailData.ownerId" :contract-id="detailData.ownerContract?.id" embedded />
+          <div class="tab-content">
+            <OwnerWithdrawTab
+              :owner-id="detailData.ownerId"
+              :contract-id="detailData.ownerContract?.id"
+              :default-payee-name="ownerPayeeInfo.payeeName || ownerPayeeInfo.bankAccountName"
+              :default-payee-account-no="ownerPayeeInfo.bankAccountNo"
+              :default-payee-bank-name="ownerPayeeInfo.bankName"
+            />
+          </div>
         </el-tab-pane>
 
         <el-tab-pane v-if="isMasterLease" name="payableBill">
@@ -331,7 +341,9 @@
               <span>包租应付账单</span>
             </el-space>
           </template>
-          <OwnerPayableBillEntry :owner-id="detailData.ownerId" :contract-id="detailData.ownerContract?.id" embedded />
+          <div class="tab-content">
+            <OwnerPayableBillTab :owner-id="detailData.ownerId" :contract-id="detailData.ownerContract?.id" />
+          </div>
         </el-tab-pane>
 
         <el-tab-pane name="operateLog">
@@ -359,9 +371,9 @@
   import { computed, onMounted, ref } from "vue";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import { getDictDataByDictCode } from "@/api/sys/dict";
-  import OwnerSettlementBillEntry from "@/views/finance/owner-settlement-bill/index.vue";
-  import OwnerWithdrawEntry from "@/views/finance/owner-withdraw/index.vue";
-  import OwnerPayableBillEntry from "@/views/finance/owner-payable-bill/index.vue";
+  import OwnerSettlementBillTab from "./OwnerSettlementBillTab.vue";
+  import OwnerWithdrawTab from "./OwnerWithdrawTab.vue";
+  import OwnerPayableBillTab from "./OwnerPayableBillTab.vue";
   import BizOperateLogPanel from "@/shared/biz-operate-log/BizOperateLogPanel.vue";
   import { SETTLEMENT_MODE_OPTIONS } from "@/views/contract/owner/form/ownerContractForm/model/ownerContractFormOptions";
   import { Clock, Money, User, Wallet } from "@element-plus/icons-vue";
@@ -730,7 +742,7 @@
   }
 
   .tab-content {
-    min-height: 510px;
+    min-height: 810px;
   }
 
   .info-section {
