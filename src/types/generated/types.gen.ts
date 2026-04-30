@@ -4097,6 +4097,12 @@ export type OwnerPayableBillCreateDto = {
     feeList?: Array<OwnerPayableBillFeeDto>;
 };
 
+export type ResponseResultListOwnerPayableBillDetailVo = {
+    code?: number;
+    message?: string;
+    data?: Array<OwnerPayableBillDetailVo>;
+};
+
 /**
  * 个人安全日志DTO
  */
@@ -8126,6 +8132,28 @@ export type OwnerContractGenerateDto = {
      * 合同模板ID
      */
     contractTemplateId?: string;
+};
+
+/**
+ * 新增业主签约合同文档DTO
+ */
+export type OwnerContractDocCreateDto = {
+    /**
+     * 业主合同主单ID
+     */
+    ownerContractId?: string;
+    /**
+     * 合同模板ID
+     */
+    contractTemplateId?: string;
+    /**
+     * 合同介质
+     */
+    contractMedium?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
 };
 
 /**
@@ -12834,6 +12862,22 @@ export type Create2Responses = {
 
 export type Create2Response = Create2Responses[keyof Create2Responses];
 
+export type ContractDetailListData = {
+    body: OwnerPayableBillQueryDto;
+    path?: never;
+    query?: never;
+    url: '/saas/owner/payable-bill/contract-detail-list';
+};
+
+export type ContractDetailListResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListOwnerPayableBillDetailVo;
+};
+
+export type ContractDetailListResponse = ContractDetailListResponses[keyof ContractDetailListResponses];
+
 export type GetMyOperationListData = {
     body: MineLogDto;
     path?: never;
@@ -13981,6 +14025,24 @@ export type GenerateContractResponses = {
 };
 
 export type GenerateContractResponse = GenerateContractResponses[keyof GenerateContractResponses];
+
+export type CreateContractDocData = {
+    body: OwnerContractDocCreateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/contract/doc/create';
+};
+
+export type CreateContractDocResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type CreateContractDocResponse = CreateContractDocResponses[keyof CreateContractDocResponses];
 
 export type UpdateContractAttachmentsData = {
     body: OwnerContractAttachmentUpdateDto;
