@@ -7739,13 +7739,13 @@ export type OwnerRenewDto = {
 };
 
 /**
- * 业主合同ID DTO
+ * 业主合同签约文档ID DTO
  */
-export type OwnerContractIdDto = {
+export type OwnerContractDocIdDto = {
     /**
-     * 业主合同ID
+     * 业主合同签约文档ID
      */
-    contractId?: string;
+    ownerContractDocId?: string;
 };
 
 /**
@@ -7861,6 +7861,98 @@ export type ResponseResultPageVoOwnerListVo = {
 };
 
 /**
+ * 业主合同ID DTO
+ */
+export type OwnerContractIdDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
+};
+
+/**
+ * 业主合同签约文档DTO
+ */
+export type OwnerContractDocDto = {
+    /**
+     * 签约合同文档ID
+     */
+    id?: string;
+    /**
+     * SaaS企业ID
+     */
+    companyId?: string;
+    /**
+     * 业主合同主单ID
+     */
+    ownerContractId?: string;
+    /**
+     * 签约合同编号
+     */
+    contractNo?: string;
+    /**
+     * 合同模板ID
+     */
+    contractTemplateId?: string;
+    /**
+     * 合同模板名称
+     */
+    contractTemplateName?: string;
+    /**
+     * 合同内容快照
+     */
+    contractContent?: string;
+    /**
+     * 合同附件列表
+     */
+    contractAttachmentList?: Array<string>;
+    /**
+     * 合同附件分组列表
+     */
+    contractAttachmentGroupList?: Array<FileAttachGroupDto>;
+    /**
+     * 签署状态
+     */
+    signStatus?: number;
+    /**
+     * 合同介质
+     */
+    contractMedium?: string;
+    /**
+     * 业主合同主单状态
+     */
+    status?: number;
+    /**
+     * 合同开始日期
+     */
+    contractStart?: string;
+    /**
+     * 合同结束日期
+     */
+    contractEnd?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+    /**
+     * 创建人
+     */
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createAt?: string;
+    /**
+     * 更新人
+     */
+    updateBy?: string;
+    /**
+     * 更新时间
+     */
+    updateAt?: string;
+};
+
+/**
  * 业主详情VO
  */
 export type OwnerDetailVo = {
@@ -7884,6 +7976,10 @@ export type OwnerDetailVo = {
      * 业主合同
      */
     ownerContract?: OwnerContractDto;
+    /**
+     * 业主合同签约文档列表
+     */
+    ownerContractDocList?: Array<OwnerContractDocDto>;
     /**
      * 合同模板名称
      */
@@ -7995,9 +8091,9 @@ export type OwnerCreateDto = {
  */
 export type OwnerContractSignStatusUpdateDto = {
     /**
-     * 业主合同ID
+     * 业主合同签约文档ID
      */
-    contractId?: string;
+    ownerContractDocId?: string;
     /**
      * 签署状态 code
      */
@@ -8009,9 +8105,9 @@ export type OwnerContractSignStatusUpdateDto = {
  */
 export type OwnerContractOfflineSignDto = {
     /**
-     * 业主合同ID
+     * 业主合同签约文档ID
      */
-    contractId?: string;
+    ownerContractDocId?: string;
     /**
      * 线下签约合同附件URL列表
      */
@@ -8023,9 +8119,9 @@ export type OwnerContractOfflineSignDto = {
  */
 export type OwnerContractGenerateDto = {
     /**
-     * 业主合同ID
+     * 业主合同签约文档ID
      */
-    contractId?: string;
+    ownerContractDocId?: string;
     /**
      * 合同模板ID
      */
@@ -11205,7 +11301,7 @@ export type DeliveryHandoverTypeEnum = 'CHECK_IN' | 'CHECK_OUT';
 
 export type DeliveryStatusEnum = 'CANCELLED' | 'DRAFT' | 'COMPLETED' | 'SIGNED';
 
-export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'LEASE_ATTACHMENT' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'DELIVERY_WATER_PROOF_IMAGE' | 'DELIVERY_ELECTRICITY_PROOF_IMAGE' | 'DELIVERY_GAS_PROOF_IMAGE' | 'CONTRACT_SEAL_IMAGE';
+export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'OWNER_CONTRACT_DOC' | 'LEASE_ATTACHMENT' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'DELIVERY_WATER_PROOF_IMAGE' | 'DELIVERY_ELECTRICITY_PROOF_IMAGE' | 'DELIVERY_GAS_PROOF_IMAGE' | 'CONTRACT_SEAL_IMAGE';
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 
@@ -13767,7 +13863,7 @@ export type RenewResponses = {
 export type RenewResponse = RenewResponses[keyof RenewResponses];
 
 export type PreviewData = {
-    body: OwnerContractIdDto;
+    body: OwnerContractDocIdDto;
     path?: never;
     query?: never;
     url: '/saas/contract/owner/preview';

@@ -179,19 +179,9 @@
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
   import { OwnerContractMediumEnumMeta, OwnerContractStatusEnumMeta, OwnerSignStatusEnumMeta } from "@/types/generated/enum.meta";
-  import type { FileAttachGroupDto, FileAttachSubtypeEnum, OwnerContractDto, OwnerDetailVo } from "@/types/generated";
+  import type { FileAttachSubtypeEnum, OwnerContractDocDto, OwnerDetailVo } from "@/types/generated";
 
-  type OwnerContractListItem = OwnerContractDto & {
-    ownerContractId?: string;
-    contractTemplateName?: string;
-    createAt?: string;
-    updateAt?: string;
-    contractAttachmentGroupList?: Array<FileAttachGroupDto>;
-  };
-
-  type OwnerDetailWithDocList = OwnerDetailVo & {
-    ownerContractDocList?: OwnerContractListItem[];
-  };
+  type OwnerContractListItem = OwnerContractDocDto;
 
   const signedContractSubtype: FileAttachSubtypeEnum = "SIGNED_CONTRACT";
 
@@ -213,8 +203,7 @@
   const offlineSignContract = ref<OwnerContractListItem | null>(null);
 
   const contractList = computed<OwnerContractListItem[]>(() => {
-    const detail = props.detailData as OwnerDetailWithDocList | null | undefined;
-    return (detail?.ownerContractDocList || []).filter(item => item?.id);
+    return (props.detailData?.ownerContractDocList || []).filter(item => item?.id);
   });
 
   const selectedContract = computed(() => {
@@ -446,7 +435,7 @@
         }
         generateOwnerContract({
           ownerContractDocId: item.id!,
-          contractTemplateId: selectedTemplate
+          contractTemplateId: String(selectedTemplate)
         }).then(resp => {
           if (resp.code === 0) {
             message("合同已重新生成", { type: "success" });

@@ -372,6 +372,7 @@ export const FileAttachBizTypeEnumMeta = {
   TENANT_ID_CARD_IN_HAND: {"value":"TENANT_ID_CARD_IN_HAND","bizType":"tenant_id_card_in_hand"},
   TENANT_OTHER_IMAGE: {"value":"TENANT_OTHER_IMAGE","bizType":"tenant_other_image"},
   CONTRACT_FILE: {"value":"CONTRACT_FILE","bizType":"contract_file"},
+  OWNER_CONTRACT_DOC: {"value":"OWNER_CONTRACT_DOC","bizType":"owner_contract_doc"},
   LEASE_ATTACHMENT: {"value":"LEASE_ATTACHMENT","bizType":"lease_attachment"},
   TENANT_IMAGE: {"value":"TENANT_IMAGE","bizType":"tenant_image"},
   BUSINESS_LICENSE: {"value":"BUSINESS_LICENSE","bizType":"business_license"},

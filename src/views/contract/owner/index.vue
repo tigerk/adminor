@@ -297,7 +297,7 @@
     { label: "合同周期", minWidth: 220, slot: "contractPeriod" },
     { label: "业主标签", minWidth: 120, align: "center", slot: "ownerTag" },
     { label: "更新时间", prop: "updateAt", minWidth: 170 },
-    { label: "操作", width: 200, align: "center", fixed: "right", slot: "operation" }
+    { label: "操作", width: 120, align: "center", fixed: "right", slot: "operation" }
   ];
 
   function formatDate(value?: string | number | Date) {

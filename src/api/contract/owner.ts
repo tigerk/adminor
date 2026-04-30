@@ -2,8 +2,12 @@ import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
 import type {
   OwnerContractAttachmentUpdateDto,
-  OwnerContractIdDto,
   OwnerContractCheckoutDto,
+  OwnerContractDocIdDto,
+  OwnerContractGenerateDto,
+  OwnerContractIdDto,
+  OwnerContractOfflineSignDto,
+  OwnerContractSignStatusUpdateDto,
   OwnerContractVoidDto,
   OwnerCreateDto,
   OwnerQueryDto,
@@ -14,22 +18,6 @@ import type {
   ResponseResultOwnerDetailVo,
   ResponseResultPageVoOwnerListVo
 } from "@/types/generated";
-
-export type OwnerContractDocIdPayload = {
-  ownerContractDocId?: string | number;
-};
-
-export type OwnerContractDocGeneratePayload = OwnerContractDocIdPayload & {
-  contractTemplateId?: string | number;
-};
-
-export type OwnerContractDocSignStatusUpdatePayload = OwnerContractDocIdPayload & {
-  signStatus?: number;
-};
-
-export type OwnerContractDocOfflineSignPayload = OwnerContractDocIdPayload & {
-  attachmentUrls?: string[];
-};
 
 export const getOwnerContractList = (data?: OwnerQueryDto) => {
   return http.request<ResponseResultPageVoOwnerListVo>("post", baseUrlApi("contract/owner/list"), { data });
@@ -47,7 +35,7 @@ export const getOwnerContractDetail = (data: OwnerContractIdDto) => {
   return http.request<ResponseResultOwnerDetailVo>("post", baseUrlApi("contract/owner/detail"), { data });
 };
 
-export const previewOwnerContract = (data: OwnerContractDocIdPayload) => {
+export const previewOwnerContract = (data: OwnerContractDocIdDto) => {
   return http.request<Blob>("post", baseUrlApi("contract/owner/preview"), { data }, { responseType: "blob" });
 };
 
@@ -75,14 +63,14 @@ export const updateOwnerContractAttachments = (data: OwnerContractAttachmentUpda
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/attachments/update"), { data });
 };
 
-export const generateOwnerContract = (data: OwnerContractDocGeneratePayload) => {
+export const generateOwnerContract = (data: OwnerContractGenerateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/generate"), { data });
 };
 
-export const updateOwnerContractSignStatus = (data: OwnerContractDocSignStatusUpdatePayload) => {
+export const updateOwnerContractSignStatus = (data: OwnerContractSignStatusUpdateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/sign/status/update"), { data });
 };
 
-export const offlineSignOwnerContract = (data: OwnerContractDocOfflineSignPayload) => {
+export const offlineSignOwnerContract = (data: OwnerContractOfflineSignDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/offline-sign"), { data });
 };
