@@ -7887,9 +7887,9 @@ export type OwnerContractDocDto = {
      */
     ownerContractId?: string;
     /**
-     * 签约合同编号
+     * 签约合同文档编号
      */
-    contractNo?: string;
+    docNo?: string;
     /**
      * 合同模板ID
      */

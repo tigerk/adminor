@@ -21,7 +21,7 @@
         >
           <div class="contract-row__main">
             <div class="contract-row__title">
-              <strong>{{ item.contractNo || `合同 ${contractKey(item)}` }}</strong>
+              <strong>{{ contractDocNo(item) || `合同 ${contractKey(item)}` }}</strong>
               <el-tag :type="contractStatusTagType(item)" effect="plain">{{ contractStatusText(item) }}</el-tag>
               <el-tag :type="signStatusTagType(item)" effect="light">{{ signStatusText(item) }}</el-tag>
             </div>
@@ -61,7 +61,7 @@
       <div class="contract-summary-grid">
         <div class="summary-item summary-item--wide">
           <span class="summary-item__label">合同编号</span>
-          <strong class="summary-item__value">{{ selectedContract.contractNo || "-" }}</strong>
+          <strong class="summary-item__value">{{ contractDocNo(selectedContract) || "-" }}</strong>
         </div>
         <div class="summary-item">
           <span class="summary-item__label">签署状态</span>
@@ -181,7 +181,7 @@
   import { OwnerContractMediumEnumMeta, OwnerContractStatusEnumMeta, OwnerSignStatusEnumMeta } from "@/types/generated/enum.meta";
   import type { FileAttachSubtypeEnum, OwnerContractDocDto, OwnerDetailVo } from "@/types/generated";
 
-  type OwnerContractListItem = OwnerContractDocDto;
+  type OwnerContractListItem = OwnerContractDocDto & { docNo?: string; contractNo?: string };
 
   const signedContractSubtype: FileAttachSubtypeEnum = "SIGNED_CONTRACT";
 
@@ -211,7 +211,7 @@
     return contractList.value.find(item => String(item.id) === selectedContractId.value) || contractList.value[0];
   });
 
-  const offlineSignDialogTitle = computed(() => `线下签约 - ${offlineSignContract.value?.contractNo || offlineSignContract.value?.id || "合同"}`);
+  const offlineSignDialogTitle = computed(() => `线下签约 - ${contractDocNo(offlineSignContract.value) || offlineSignContract.value?.id || "合同"}`);
   const offlineSignDisplayFileList = computed(() => offlineSignFileList.value.filter(file => file.status !== "fail"));
   const offlineSignSuccessUrls = computed(() => offlineSignFileList.value.filter(file => file.status === "success" && file.url).map(file => file.url!));
   const offlineSignImagePreviewUrls = computed(() => offlineSignSuccessUrls.value.filter(url => isImageFile(url)));
@@ -240,7 +240,11 @@
   });
 
   function contractKey(item: OwnerContractListItem) {
-    return String(item.id || item.contractNo || "");
+    return String(item.id || contractDocNo(item) || "");
+  }
+
+  function contractDocNo(item?: OwnerContractListItem | null) {
+    return item?.docNo || item?.contractNo || "";
   }
 
   function selectContract(item: OwnerContractListItem) {
@@ -397,7 +401,7 @@
     const blob = new Blob([resp], { type: "application/pdf" });
     if (previewPdfUrl.value) URL.revokeObjectURL(previewPdfUrl.value);
     previewPdfUrl.value = URL.createObjectURL(blob);
-    previewTitle.value = `业主合同预览 - ${item.contractNo || item.id}`;
+    previewTitle.value = `业主合同预览 - ${contractDocNo(item) || item.id}`;
     previewVisible.value = true;
   }
 
@@ -408,7 +412,7 @@
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `业主合同_${item.contractNo || item.id}.pdf`;
+    a.download = `业主合同_${contractDocNo(item) || item.id}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -419,7 +423,7 @@
     if (!item?.id) return;
     const formRef = ref();
     addDialog({
-      title: `重新生成业主合同 - ${item.contractNo || item.id}`,
+      title: `重新生成业主合同 - ${contractDocNo(item) || item.id}`,
       top: "8%",
       width: "420px",
       draggable: true,
