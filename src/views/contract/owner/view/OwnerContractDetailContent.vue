@@ -338,51 +338,64 @@
               <span>退房信息</span>
             </el-space>
           </template>
-          <div class="tab-content">
+          <div class="tab-content tab-content--checkout">
             <section class="info-section checkout-info-section">
-              <div class="checkout-hero">
-                <div>
-                  <div class="checkout-hero__label">{{ checkoutTypeText }}</div>
-                  <div class="checkout-hero__date">{{ formatDate(ownerContract?.checkoutDate) }}</div>
+              <div class="checkout-result-banner">
+                <div class="checkout-result-banner__main">
+                  <span class="checkout-result-banner__eyebrow">{{ checkoutTypeText }}</span>
+                  <div class="checkout-result-banner__title">
+                    <span>退房已完成</span>
+                    <el-tag type="warning" effect="light">已退房</el-tag>
+                  </div>
+                  <div class="checkout-result-banner__date">退房日期：{{ formatDate(ownerContract?.checkoutDate) }}</div>
                 </div>
-                <el-tag type="warning" effect="light">已退房</el-tag>
-              </div>
 
-              <div class="checkout-info-grid">
-                <div class="checkout-info-card">
-                  <span class="checkout-info-card__label">合同周期</span>
-                  <span class="checkout-info-card__value">{{ formatDate(ownerContract?.contractStart) }} 至 {{ formatDate(ownerContract?.contractEnd) }}</span>
-                </div>
-                <div class="checkout-info-card">
-                  <span class="checkout-info-card__label">退房操作人</span>
-                  <span class="checkout-info-card__value">{{ checkoutOperatorText }}</span>
-                </div>
-                <div class="checkout-info-card">
-                  <span class="checkout-info-card__label">退房操作时间</span>
-                  <span class="checkout-info-card__value">{{ ownerContract?.checkoutAt || "-" }}</span>
-                </div>
-                <div class="checkout-info-card">
-                  <span class="checkout-info-card__label">违约金</span>
-                  <span class="checkout-info-card__value">¥{{ formatMoney(ownerContract?.breachPenaltyAmount) }}</span>
-                </div>
-                <div class="checkout-info-card">
-                  <span class="checkout-info-card__label">未付账单处理</span>
-                  <span class="checkout-info-card__value">{{ checkoutBillPolicyText }}</span>
-                </div>
-                <div class="checkout-info-card">
-                  <span class="checkout-info-card__label">房源释放</span>
-                  <span class="checkout-info-card__value">{{ releaseSubjectText }}</span>
+                <div class="checkout-result-banner__meta">
+                  <div>
+                    <span>合同周期</span>
+                    <strong>{{ formatDate(ownerContract?.contractStart) }} 至 {{ formatDate(ownerContract?.contractEnd) }}</strong>
+                  </div>
+                  <div>
+                    <span>委托模式</span>
+                    <strong>{{ cooperationModeLabelMap[ownerContract?.cooperationMode || "LIGHT_MANAGED"] }}</strong>
+                  </div>
+                  <div>
+                    <span>操作人</span>
+                    <strong>{{ checkoutOperatorText }}</strong>
+                  </div>
+                  <div>
+                    <span>操作时间</span>
+                    <strong>{{ ownerContract?.checkoutAt || "-" }}</strong>
+                  </div>
                 </div>
               </div>
 
-              <div class="checkout-note-grid">
-                <div class="checkout-note-card">
-                  <div class="checkout-note-card__label">退房原因</div>
-                  <div class="checkout-note-card__value">{{ ownerContract?.checkoutReason || "-" }}</div>
+              <div class="checkout-result-cards">
+                <div class="checkout-result-card checkout-result-card--amount">
+                  <span class="checkout-result-card__label">违约金</span>
+                  <strong class="checkout-result-card__value">{{ checkoutPenaltyText }}</strong>
+                  <span class="checkout-result-card__desc">{{ checkoutBillImpactText }}</span>
                 </div>
-                <div class="checkout-note-card">
-                  <div class="checkout-note-card__label">结算说明</div>
-                  <div class="checkout-note-card__value">{{ ownerContract?.settlementRemark || "-" }}</div>
+                <div class="checkout-result-card">
+                  <span class="checkout-result-card__label">房源释放</span>
+                  <strong class="checkout-result-card__value">{{ releaseSubjectText }}</strong>
+                  <span class="checkout-result-card__desc">决定合同房源是否重新进入可配置状态。</span>
+                </div>
+                <div class="checkout-result-card">
+                  <span class="checkout-result-card__label">未付账单</span>
+                  <strong class="checkout-result-card__value">{{ checkoutBillPolicyText }}</strong>
+                  <span class="checkout-result-card__desc">控制退房日之后未付款账单的保留或作废。</span>
+                </div>
+              </div>
+
+              <div class="checkout-detail-grid">
+                <div class="checkout-text-panel checkout-text-panel--reason">
+                  <div class="checkout-panel-title">退房原因</div>
+                  <div class="checkout-text-panel__body is-strong">{{ ownerContract?.checkoutReason || "-" }}</div>
+                </div>
+                <div class="checkout-text-panel">
+                  <div class="checkout-panel-title">结算说明</div>
+                  <div class="checkout-text-panel__body">{{ ownerContract?.settlementRemark || "-" }}</div>
                 </div>
               </div>
             </section>
@@ -515,6 +528,18 @@
     if (ownerContract.value?.voidUnpaidFutureBills === true) return "作废退房日之后未付款账单";
     if (ownerContract.value?.voidUnpaidFutureBills === false) return "保留退房日之后未付款账单";
     return "-";
+  });
+  const checkoutPenaltyText = computed(() => {
+    const value = ownerContract.value?.breachPenaltyAmount as unknown;
+    if (value === null || value === undefined || value === "") return "未收取";
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount <= 0) return "未收取";
+    return `¥${amount.toFixed(2)}`;
+  });
+  const checkoutBillImpactText = computed(() => {
+    const amount = Number(ownerContract.value?.breachPenaltyAmount || 0);
+    if (!Number.isFinite(amount) || amount <= 0) return "未填写违约金，不生成违约金扣减账单。";
+    return isMasterLease.value ? "违约金会进入包租应付账单，作为业主应退款或后续应付款冲减。" : "违约金会进入业主结算单，作为轻托管业主结算扣减。";
   });
   const releaseSubjectText = computed(() => {
     if (ownerContract.value?.releaseSubject === true) return "释放房源";
@@ -986,75 +1011,179 @@
 
   .checkout-info-section {
     display: flex;
+    flex: 1;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    min-height: 0;
   }
 
-  .checkout-hero {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
+  .tab-content--checkout {
+    .info-section {
+      margin-bottom: 0;
+    }
+  }
+
+  .checkout-result-banner,
+  .checkout-result-card,
+  .checkout-text-panel {
     background: var(--el-fill-color-extra-light);
     border: 1px solid var(--el-border-color-lighter);
-    border-radius: 10px;
-
-    &__label {
-      font-size: 13px;
-      color: var(--el-text-color-secondary);
-    }
-
-    &__date {
-      margin-top: 4px;
-      font-size: 22px;
-      font-weight: 700;
-      line-height: 1.2;
-      color: var(--el-text-color-primary);
-    }
+    border-radius: 12px;
   }
 
-  .checkout-info-grid,
-  .checkout-note-grid {
+  .checkout-result-banner {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 10px;
+    grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.28fr);
+    gap: 18px;
+    padding: 18px 20px;
   }
 
-  .checkout-info-card,
-  .checkout-note-card {
-    padding: 12px;
-    background: var(--el-fill-color-extra-light);
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 10px;
-  }
-
-  .checkout-info-card {
+  .checkout-result-banner__main {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
+    min-width: 0;
+    padding-right: 18px;
+    border-right: 1px solid var(--el-border-color-lighter);
+  }
 
-    &__label {
+  .checkout-result-banner__eyebrow {
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .checkout-result-banner__title {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  .checkout-result-banner__date {
+    font-size: 13px;
+    color: var(--el-text-color-regular);
+  }
+
+  .checkout-result-banner__meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 18px;
+
+    > div {
+      min-width: 0;
+    }
+
+    span {
+      display: block;
+      margin-bottom: 5px;
       font-size: 12px;
       color: var(--el-text-color-secondary);
     }
 
-    &__value {
+    strong {
+      display: block;
+      overflow: hidden;
+      font-size: 14px;
+      color: var(--el-text-color-primary);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .checkout-result-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .checkout-result-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    min-height: 132px;
+    padding: 16px 18px;
+  }
+
+  .checkout-result-card__label {
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .checkout-result-card__value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  .checkout-result-card--amount {
+    .checkout-result-card__value {
+      color: var(--el-color-warning-dark-2);
+    }
+  }
+
+  .checkout-result-card__desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--el-text-color-secondary);
+  }
+
+  .checkout-detail-grid {
+    display: grid;
+    flex: 1;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 12px;
+    min-height: 210px;
+  }
+
+  .checkout-text-panel {
+    min-width: 0;
+    padding: 16px 18px;
+  }
+
+  .checkout-panel-title {
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .checkout-text-panel__body {
+    line-height: 1.8;
+    color: var(--el-text-color-regular);
+    white-space: pre-wrap;
+
+    &.is-strong {
+      font-size: 16px;
       font-weight: 600;
       color: var(--el-text-color-primary);
     }
   }
 
-  .checkout-note-card {
-    &__label {
-      margin-bottom: 6px;
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
+  @media (max-width: 1280px) {
+    .checkout-result-banner,
+    .checkout-detail-grid {
+      grid-template-columns: 1fr;
     }
 
-    &__value {
-      line-height: 1.7;
-      color: var(--el-text-color-primary);
-      white-space: pre-wrap;
+    .checkout-result-banner__main {
+      padding-right: 0;
+      padding-bottom: 14px;
+      border-right: 0;
+      border-bottom: 1px solid var(--el-border-color-lighter);
+    }
+
+    .checkout-result-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 960px) {
+    .checkout-result-banner__meta,
+    .checkout-result-cards {
+      grid-template-columns: 1fr;
     }
   }
 
