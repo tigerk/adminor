@@ -12,11 +12,20 @@
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
   import { message } from "@/utils/message";
 
+  const props = withDefaults(
+    defineProps<{
+      contractType?: number;
+    }>(),
+    {
+      contractType: 1
+    }
+  );
+
   const selectedTemplate = ref<number | null>(null);
   const contractTemplates = ref<any[]>([]);
 
   onMounted(() => {
-    getMyAvailableContractTemplates({ contractType: 1 })
+    getMyAvailableContractTemplates({ contractType: props.contractType })
       .then(resp => {
         contractTemplates.value = resp.data;
       })

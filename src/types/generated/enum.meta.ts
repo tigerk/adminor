@@ -11,6 +11,15 @@ export const DeliveryItemCodeEnumMeta = {
   GAS_METER: {"value":"GAS_METER"}
 } as const;
 
+export const FileAttachSubtypeEnumMeta = {
+  SIGNED_CONTRACT: {"value":"SIGNED_CONTRACT"},
+  SUPPLEMENT_AGREEMENT: {"value":"SUPPLEMENT_AGREEMENT"},
+  AUTHORIZATION: {"value":"AUTHORIZATION"},
+  OWNER_MATERIAL: {"value":"OWNER_MATERIAL"},
+  HOUSE_MATERIAL: {"value":"HOUSE_MATERIAL"},
+  OTHER: {"value":"OTHER"}
+} as const;
+
 export const BooleanEnumMeta = {
   FALSE: {"value":0},
   TRUE: {"value":1}

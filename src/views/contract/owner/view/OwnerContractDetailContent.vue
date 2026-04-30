@@ -33,6 +33,10 @@
             <span class="summary-strip__value">{{ detailData.ownerContract?.contractNo || "-" }}</span>
           </div>
           <div class="summary-strip__item">
+            <span class="summary-strip__label">签署状态</span>
+            <span class="summary-strip__value">{{ signStatusLabelMap[detailData.ownerContract?.signStatus ?? 0] }}</span>
+          </div>
+          <div class="summary-strip__item">
             <span class="summary-strip__label">合同周期</span>
             <span class="summary-strip__value">{{ formatDate(detailData.ownerContract?.contractStart) }} 至 {{ formatDate(detailData.ownerContract?.contractEnd) }}</span>
           </div>
@@ -289,6 +293,30 @@
           </div>
         </el-tab-pane>
 
+        <el-tab-pane name="contractFile">
+          <template #label>
+            <el-space>
+              <el-icon><Document /></el-icon>
+              <span>合同信息</span>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <OwnerContractFileTab :detail-data="detailData" @updated="emit('updated')" />
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane name="attachment">
+          <template #label>
+            <el-space>
+              <el-icon><FolderOpened /></el-icon>
+              <span>资料附件</span>
+            </el-space>
+          </template>
+          <div class="tab-content">
+            <OwnerContractAttachmentTab :detail-data="detailData" @updated="emit('updated')" />
+          </div>
+        </el-tab-pane>
+
         <el-tab-pane v-if="isLightManaged" name="settlementBill">
           <template #label>
             <el-space>
@@ -430,9 +458,11 @@
   import OwnerSettlementBillTab from "./OwnerSettlementBillTab.vue";
   import OwnerWithdrawTab from "./OwnerWithdrawTab.vue";
   import OwnerPayableBillTab from "./OwnerPayableBillTab.vue";
+  import OwnerContractFileTab from "./OwnerContractFileTab.vue";
+  import OwnerContractAttachmentTab from "./OwnerContractAttachmentTab.vue";
   import BizOperateLogPanel from "@/shared/biz-operate-log/BizOperateLogPanel.vue";
   import { SETTLEMENT_MODE_OPTIONS } from "@/views/contract/owner/form/ownerContractForm/model/ownerContractFormOptions";
-  import { Clock, House, Money, User, Wallet } from "@element-plus/icons-vue";
+  import { Clock, Document, FolderOpened, House, Money, User, Wallet } from "@element-plus/icons-vue";
   import { BizApprovalStatusEnumMeta, GenderEnumMeta, IdTypeEnumMeta } from "@/types/generated/enum.meta";
   import type { ContractTemplateListVo, OwnerContractDto, OwnerContractSubjectDto, OwnerDetailVo, OwnerLeaseRuleDto } from "@/types/generated";
 
@@ -471,6 +501,11 @@
       releaseSubject?: boolean;
       voidUnpaidFutureBills?: boolean;
       checkoutRecordStatus?: number;
+      contractAttachmentList?: string[];
+      contractAttachmentGroupList?: Array<{
+        bizSubtype?: string;
+        attachmentUrls?: string[];
+      }>;
       voidReason?: string;
       voidBy?: string;
       voidByName?: string;
@@ -484,6 +519,7 @@
   };
   type OwnerPayeeInfo = Partial<NonNullable<OwnerDetailData["ownerPersonal"]> & NonNullable<OwnerDetailData["ownerCompany"]>>;
   const props = defineProps<{ formInline?: OwnerDetailData | null }>();
+  const emit = defineEmits<{ updated: [] }>();
   const detailData = computed(() => props.formInline as OwnerDetailData | null | undefined);
   const activeTab = ref("owner");
   const contractTemplates = ref<ContractTemplateListVo[]>([]);

@@ -1,8 +1,12 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
 import type {
+  OwnerContractAttachmentUpdateDto,
   OwnerContractIdDto,
   OwnerContractCheckoutDto,
+  OwnerContractGenerateDto,
+  OwnerContractOfflineSignDto,
+  OwnerContractSignStatusUpdateDto,
   OwnerContractVoidDto,
   OwnerCreateDto,
   OwnerQueryDto,
@@ -52,4 +56,20 @@ export const getOwnerContractCheckoutInit = (data: OwnerContractIdDto) => {
 
 export const voidOwnerContract = (data: OwnerContractVoidDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/void"), { data });
+};
+
+export const updateOwnerContractAttachments = (data: OwnerContractAttachmentUpdateDto) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/attachments/update"), { data });
+};
+
+export const generateOwnerContract = (data: OwnerContractGenerateDto) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/generate"), { data });
+};
+
+export const updateOwnerContractSignStatus = (data: OwnerContractSignStatusUpdateDto) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/sign/status/update"), { data });
+};
+
+export const offlineSignOwnerContract = (data: OwnerContractOfflineSignDto) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/offline-sign"), { data });
 };

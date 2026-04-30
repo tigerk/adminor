@@ -6844,6 +6844,25 @@ export type OwnerContractVoidDto = {
 };
 
 /**
+ * 文件附件分组DTO
+ */
+export type FileAttachGroupDto = {
+    /**
+     * 业务子类型 code
+     */
+    bizSubtype?: FileAttachSubtypeEnum;
+    /**
+     * 附件URL列表
+     */
+    attachmentUrls?: Array<string>;
+};
+
+/**
+ * 文件附件业务子类型枚举
+ */
+export type FileAttachSubtypeEnum = 'SIGNED_CONTRACT' | 'SUPPLEMENT_AGREEMENT' | 'AUTHORIZATION' | 'OWNER_MATERIAL' | 'HOUSE_MATERIAL' | 'OTHER';
+
+/**
  * 业主企业信息DTO
  */
 export type OwnerCompanyDto = {
@@ -6969,6 +6988,14 @@ export type OwnerContractDto = {
      * 合同内容快照
      */
     contractContent?: string;
+    /**
+     * 合同附件列表
+     */
+    contractAttachmentList?: Array<string>;
+    /**
+     * 合同附件分组列表
+     */
+    contractAttachmentGroupList?: Array<FileAttachGroupDto>;
     /**
      * 签署状态
      */
@@ -7961,6 +7988,66 @@ export type OwnerCreateDto = {
      * 创建人
      */
     createBy?: string;
+};
+
+/**
+ * 业主合同签约状态更新DTO
+ */
+export type OwnerContractSignStatusUpdateDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
+    /**
+     * 签署状态 code
+     */
+    signStatus?: number;
+};
+
+/**
+ * 业主合同线下签约DTO
+ */
+export type OwnerContractOfflineSignDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
+    /**
+     * 线下签约合同附件URL列表
+     */
+    attachmentUrls?: Array<string>;
+};
+
+/**
+ * 业主合同重新生成DTO
+ */
+export type OwnerContractGenerateDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
+    /**
+     * 合同模板ID
+     */
+    contractTemplateId?: string;
+};
+
+/**
+ * 业主合同附件更新DTO
+ */
+export type OwnerContractAttachmentUpdateDto = {
+    /**
+     * 业主合同ID
+     */
+    contractId?: string;
+    /**
+     * 附件URL列表
+     */
+    attachmentUrls?: Array<string>;
+    /**
+     * 附件分组列表
+     */
+    attachmentGroupList?: Array<FileAttachGroupDto>;
 };
 
 /**
@@ -13722,6 +13809,78 @@ export type Create5Responses = {
 };
 
 export type Create5Response = Create5Responses[keyof Create5Responses];
+
+export type UpdateContractSignStatusData = {
+    body: OwnerContractSignStatusUpdateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/contract/sign/status/update';
+};
+
+export type UpdateContractSignStatusResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type UpdateContractSignStatusResponse = UpdateContractSignStatusResponses[keyof UpdateContractSignStatusResponses];
+
+export type OfflineSignContractData = {
+    body: OwnerContractOfflineSignDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/contract/offline-sign';
+};
+
+export type OfflineSignContractResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type OfflineSignContractResponse = OfflineSignContractResponses[keyof OfflineSignContractResponses];
+
+export type GenerateContractData = {
+    body: OwnerContractGenerateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/contract/generate';
+};
+
+export type GenerateContractResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type GenerateContractResponse = GenerateContractResponses[keyof GenerateContractResponses];
+
+export type UpdateContractAttachmentsData = {
+    body: OwnerContractAttachmentUpdateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/contract/attachments/update';
+};
+
+export type UpdateContractAttachmentsResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type UpdateContractAttachmentsResponse = UpdateContractAttachmentsResponses[keyof UpdateContractAttachmentsResponses];
 
 export type CheckoutData = {
     body: OwnerContractCheckoutDto;
