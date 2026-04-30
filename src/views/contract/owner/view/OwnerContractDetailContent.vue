@@ -501,11 +501,6 @@
       releaseSubject?: boolean;
       voidUnpaidFutureBills?: boolean;
       checkoutRecordStatus?: number;
-      contractAttachmentList?: string[];
-      contractAttachmentGroupList?: Array<{
-        bizSubtype?: string;
-        attachmentUrls?: string[];
-      }>;
       voidReason?: string;
       voidBy?: string;
       voidByName?: string;

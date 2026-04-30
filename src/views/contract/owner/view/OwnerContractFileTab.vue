@@ -128,25 +128,12 @@
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
   import { OwnerContractStatusEnumMeta, OwnerSignStatusEnumMeta } from "@/types/generated/enum.meta";
-  import type { OwnerContractDto, OwnerDetailVo } from "@/types/generated";
+  import type { FileAttachSubtypeEnum, OwnerDetailVo } from "@/types/generated";
 
-  type OwnerContractWithAttachments = OwnerContractDto & {
-    contractAttachmentList?: string[];
-    contractAttachmentGroupList?: AttachmentGroup[];
-  };
-
-  type AttachmentGroup = {
-    bizSubtype?: string;
-    attachmentUrls?: string[];
-  };
-
-  type OwnerDetailWithContractFiles = OwnerDetailVo & {
-    contractTemplateName?: string;
-    ownerContract?: OwnerContractWithAttachments;
-  };
+  const signedContractSubtype: FileAttachSubtypeEnum = "SIGNED_CONTRACT";
 
   const props = defineProps<{
-    detailData?: OwnerDetailWithContractFiles | null;
+    detailData?: OwnerDetailVo | null;
   }>();
 
   const emit = defineEmits<{
@@ -177,7 +164,7 @@
     return value || "-";
   });
   const signedContractAttachmentUrls = computed(() => {
-    const group = contract.value?.contractAttachmentGroupList?.find(item => item.bizSubtype === "SIGNED_CONTRACT");
+    const group = contract.value?.contractAttachmentGroupList?.find(item => item.bizSubtype === signedContractSubtype);
     return (group?.attachmentUrls || []).filter(Boolean);
   });
   const offlineSignDisplayFileList = computed(() => offlineSignFileList.value.filter(file => file.status !== "fail"));

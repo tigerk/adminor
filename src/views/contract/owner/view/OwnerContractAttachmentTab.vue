@@ -31,7 +31,7 @@
             :http-request="options => uploadToCategory(category.value, options)"
             :before-upload="beforeUpload"
             :disabled="attachmentReadonly"
-            accept="image/*,.pdf,.doc,.docx"
+            accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
           >
             <el-button type="primary" plain size="small" :disabled="attachmentReadonly">上传</el-button>
           </el-upload>
@@ -79,31 +79,25 @@
   import { uploadFile } from "@/api/upload";
   import { message } from "@/utils/message";
   import { OwnerContractStatusEnumMeta } from "@/types/generated/enum.meta";
-  import type { OwnerContractAttachmentUpdateDto, OwnerContractDto, OwnerDetailVo } from "@/types/generated";
+  import type { FileAttachGroupDto, FileAttachSubtypeEnum, OwnerContractAttachmentUpdateDto, OwnerDetailVo } from "@/types/generated";
 
   const categoryOptions = [
-    { value: "SIGNED_CONTRACT", label: "线下签约合同", desc: "纸质合同照片、扫描件或签署版 PDF。" },
-    { value: "SUPPLEMENT_AGREEMENT", label: "补充协议", desc: "合同补充协议、变更协议等资料。" },
+    { value: "SIGNED_CONTRACT", label: "线下签约合同", desc: "纸质合同照片、扫描件、PDF 或签约文件。" },
+    { value: "SUPPLEMENT_AGREEMENT", label: "补充协议", desc: "补充协议、变更协议等资料。" },
     { value: "AUTHORIZATION", label: "授权委托书", desc: "业主授权、代理签约等授权文件。" },
     { value: "OWNER_MATERIAL", label: "业主资料", desc: "业主补充证件、证明、收款资料等。" },
     { value: "HOUSE_MATERIAL", label: "房源资料", desc: "房源交接、产权或房源相关证明。" },
     { value: "OTHER", label: "其他资料", desc: "无法归入以上分类的业务附件。" }
-  ] as const;
+  ] as const satisfies ReadonlyArray<{
+    value: FileAttachSubtypeEnum;
+    label: string;
+    desc: string;
+  }>;
 
   type CategoryCode = (typeof categoryOptions)[number]["value"];
-  type AttachmentGroup = {
-    bizSubtype?: string;
-    attachmentUrls?: string[];
-  };
-  type OwnerContractWithAttachmentGroups = OwnerContractDto & {
-    contractAttachmentGroupList?: AttachmentGroup[];
-  };
-  type OwnerDetailWithAttachmentGroups = OwnerDetailVo & {
-    ownerContract?: OwnerContractWithAttachmentGroups;
-  };
 
   const props = defineProps<{
-    detailData?: OwnerDetailWithAttachmentGroups | null;
+    detailData?: OwnerDetailVo | null;
   }>();
 
   const emit = defineEmits<{
@@ -190,13 +184,26 @@
       "image/png",
       "image/gif",
       "image/webp",
+      "image/bmp",
+      "image/svg+xml",
+      "video/mp4",
+      "video/webm",
+      "video/quicktime",
+      "video/x-msvideo",
+      "video/x-matroska",
       "application/pdf",
       "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "text/plain",
+      "text/csv"
     ];
-    const allowExt = /\.(jpg|jpeg|png|gif|webp|pdf|doc|docx)$/i.test(file.name);
+    const allowExt = /\.(jpg|jpeg|png|gif|webp|bmp|svg|mp4|webm|mov|avi|mkv|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)$/i.test(file.name);
     if (!allowTypes.includes(file.type) && !allowExt) {
-      message("仅支持图片、PDF 或 Word 文件", { type: "warning" });
+      message("仅支持图片、视频、PDF、Word、Excel、PPT、TXT 或 CSV 文件", { type: "warning" });
       return false;
     }
     if (file.size / 1024 / 1024 > 20) {
@@ -244,7 +251,7 @@
 
   async function saveAttachments() {
     if (!contractId.value) return;
-    const attachmentGroupList: AttachmentGroup[] = categoryOptions
+    const attachmentGroupList: FileAttachGroupDto[] = categoryOptions
       .map(category => ({
         bizSubtype: category.value,
         attachmentUrls: successUrls(category.value)
@@ -253,7 +260,7 @@
     const resp = await updateOwnerContractAttachments({
       contractId: contractId.value,
       attachmentGroupList
-    } as OwnerContractAttachmentUpdateDto & { attachmentGroupList: AttachmentGroup[] });
+    } as OwnerContractAttachmentUpdateDto);
     if (resp.code === 0) {
       message("资料附件已保存", { type: "success" });
       attachmentDirty.value = false;
