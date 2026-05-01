@@ -23,7 +23,6 @@
           <div class="contract-row__main">
             <div class="contract-row__title">
               <strong>{{ contractDocNo(item) || `合同 ${contractKey(item)}` }}</strong>
-              <el-tag :type="contractStatusTagType(item)" effect="plain">{{ contractStatusText(item) }}</el-tag>
               <el-tag :type="signStatusTagType(item)" effect="light">{{ signStatusText(item) }}</el-tag>
             </div>
             <div class="contract-row__meta">

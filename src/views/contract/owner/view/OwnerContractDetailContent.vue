@@ -283,10 +283,32 @@
                   <el-descriptions-item label="承租用途" label-align="right">{{ detailData.ownerLeaseRule?.usageType || "-" }}</el-descriptions-item>
                 </el-descriptions>
                 <el-table v-if="detailData.ownerLeaseRule?.otherFeeList?.length" :data="detailData.ownerLeaseRule.otherFeeList" border stripe class="mt-3">
-                  <el-table-column prop="name" label="费用名称" min-width="160" />
-                  <el-table-column prop="paymentMethod" label="收支方向" min-width="120" />
-                  <el-table-column prop="priceMethod" label="金额方式" min-width="120" />
-                  <el-table-column prop="priceInput" label="金额/比例" min-width="120" />
+                  <el-table-column label="收支" min-width="100">
+                    <template #default="{ row }">
+                      <el-tag :type="row.feeDirection === 'OUT' ? 'danger' : 'success'" effect="light">
+                        {{ feeDirectionText(row.feeDirection) }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="费用名称" min-width="180">
+                    <template #default="{ row }">
+                      <span class="text-value">{{ row.feeName || "-" }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="付款方式" min-width="140">
+                    <template #default="{ row }">{{ paymentMethodText(row.paymentMethod) }}</template>
+                  </el-table-column>
+                  <el-table-column label="金额方式" min-width="140">
+                    <template #default="{ row }">{{ priceMethodText(row.priceMethod) }}</template>
+                  </el-table-column>
+                  <el-table-column label="金额/比例" min-width="140">
+                    <template #default="{ row }">
+                      <span class="text-value">{{ feePriceText(row) }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="备注" min-width="180" show-overflow-tooltip>
+                    <template #default="{ row }">{{ row.remark || "-" }}</template>
+                  </el-table-column>
                 </el-table>
               </template>
             </section>
@@ -463,8 +485,8 @@
   import BizOperateLogPanel from "@/shared/biz-operate-log/BizOperateLogPanel.vue";
   import { SETTLEMENT_MODE_OPTIONS } from "@/views/contract/owner/form/ownerContractForm/model/ownerContractFormOptions";
   import { Clock, Document, FolderOpened, House, Money, User, Wallet } from "@element-plus/icons-vue";
-  import { BizApprovalStatusEnumMeta, GenderEnumMeta, IdTypeEnumMeta } from "@/types/generated/enum.meta";
-  import type { ContractTemplateListVo, OwnerContractDto, OwnerContractSubjectDto, OwnerDetailVo, OwnerLeaseRuleDto } from "@/types/generated";
+  import { BizApprovalStatusEnumMeta, FeeDirectionEnumMeta, GenderEnumMeta, IdTypeEnumMeta, PaymentMethodEnumMeta, PriceMethodEnumMeta } from "@/types/generated/enum.meta";
+  import type { ContractTemplateListVo, OwnerContractDto, OwnerContractSubjectDto, OwnerDetailVo, OwnerLeaseFeeDto, OwnerLeaseRuleDto } from "@/types/generated";
 
   type OwnerDetailData = OwnerDetailVo & {
     contractTemplateName?: string;
@@ -690,6 +712,25 @@
   function formatMoney(value?: number | string | null) {
     if (value === null || value === undefined || value === "") return "-";
     return Number(value).toFixed(2);
+  }
+
+  function feeDirectionText(value?: string) {
+    return Object.values(FeeDirectionEnumMeta).find(item => item.code === value || item.value === value)?.label || value || "-";
+  }
+
+  function paymentMethodText(value?: number) {
+    return Object.values(PaymentMethodEnumMeta).find(item => item.code === value)?.name || "-";
+  }
+
+  function priceMethodText(value?: number) {
+    return Object.values(PriceMethodEnumMeta).find(item => item.code === value)?.name || "-";
+  }
+
+  function feePriceText(row?: OwnerLeaseFeeDto) {
+    if (!row || row.priceInput === null || row.priceInput === undefined) return "-";
+    const amount = formatMoney(row.priceInput);
+    if (row.priceMethod === PriceMethodEnumMeta.RATIO.code) return `${amount}%`;
+    return `¥${amount}`;
   }
 
   function formatArea(value?: number | string | null) {
