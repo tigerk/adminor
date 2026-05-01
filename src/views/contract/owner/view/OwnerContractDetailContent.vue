@@ -323,7 +323,7 @@
             </el-space>
           </template>
           <div class="tab-content">
-            <OwnerContractFileTab :detail-data="detailData" @updated="emit('updated')" />
+            <OwnerContractDocTab :detail-data="detailData" @updated="emit('updated')" />
           </div>
         </el-tab-pane>
 
@@ -480,7 +480,7 @@
   import OwnerSettlementBillTab from "./OwnerSettlementBillTab.vue";
   import OwnerWithdrawTab from "./OwnerWithdrawTab.vue";
   import OwnerPayableBillTab from "./OwnerPayableBillTab.vue";
-  import OwnerContractFileTab from "./OwnerContractFileTab.vue";
+  import OwnerContractDocTab from "./OwnerContractDocTab.vue";
   import OwnerContractAttachmentTab from "./OwnerContractAttachmentTab.vue";
   import BizOperateLogPanel from "@/shared/biz-operate-log/BizOperateLogPanel.vue";
   import { SETTLEMENT_MODE_OPTIONS } from "@/views/contract/owner/form/ownerContractForm/model/ownerContractFormOptions";

@@ -1,5 +1,5 @@
 <template>
-  <div class="owner-contract-file-tab">
+  <div class="owner-contract-doc-tab">
     <section class="contract-section contract-list-section">
       <div class="section-head">
         <div>
@@ -22,8 +22,16 @@
         >
           <div class="contract-row__main">
             <div class="contract-row__title">
-              <strong>{{ contractDocNo(item) || `合同 ${contractKey(item)}` }}</strong>
-              <el-tag :type="signStatusTagType(item)" effect="light">{{ signStatusText(item) }}</el-tag>
+              <div class="contract-row__title-main">
+                <strong>{{ contractDocNo(item) || `合同 ${contractKey(item)}` }}</strong>
+                <el-tag :type="signStatusTagType(item)" effect="light">{{ signStatusText(item) }}</el-tag>
+              </div>
+              <div class="contract-row__actions" @click.stop>
+                <el-button plain size="small" type="primary" :disabled="!item.id" @click="handlePreviewContract(item)">预览</el-button>
+                <el-button plain size="small" type="primary" :disabled="!item.id || !item.contractContent" @click="handleDownloadContract(item)">下载</el-button>
+                <el-button plain size="small" type="primary" :disabled="!item.id || isReadonlyContract(item)" @click="handleGenerateContract(item)">重新生成</el-button>
+                <el-button plain size="small" type="primary" :disabled="!canSignContract(item)" @click="openOfflineSignDialog(item)">线下签约</el-button>
+              </div>
             </div>
             <div class="contract-row__meta">
               <span class="contract-meta-item">
@@ -43,12 +51,37 @@
                 <strong>{{ item.updateAt || "-" }}</strong>
               </span>
             </div>
-          </div>
-          <div class="contract-row__actions" @click.stop>
-            <el-button link type="primary" :disabled="!item.id" @click="handlePreviewContract(item)">预览</el-button>
-            <el-button link type="primary" :disabled="!item.id || !item.contractContent" @click="handleDownloadContract(item)">下载</el-button>
-            <el-button link type="primary" :disabled="!item.id || isReadonlyContract(item)" @click="handleGenerateContract(item)">重新生成</el-button>
-            <el-button link type="primary" :disabled="!canSignContract(item)" @click="openOfflineSignDialog(item)">线下签约</el-button>
+            <div v-if="signedContractAttachmentUrls(item).length" class="contract-signed-files" @click.stop>
+              <div class="contract-signed-files__head">
+                <div>
+                  <span class="contract-signed-files__title">线下签约资料</span>
+                  <span class="contract-signed-files__desc">已归档到当前签约合同</span>
+                </div>
+                <el-tag size="small" effect="plain">{{ signedContractAttachmentUrls(item).length }} 个</el-tag>
+              </div>
+              <div class="contract-signed-files__list">
+                <div
+                  v-for="(url, index) in signedContractAttachmentUrls(item)"
+                  :key="`${contractKey(item)}-${url}-${index}`"
+                  class="contract-signed-file"
+                  :class="{ 'is-image': isImageFile(url), 'is-file': !isImageFile(url) }"
+                >
+                  <el-image
+                    v-if="isImageFile(url)"
+                    class="contract-signed-file__image"
+                    :src="url"
+                    :preview-src-list="signedContractImageUrls(item)"
+                    :initial-index="signedContractImageUrls(item).indexOf(url)"
+                    fit="cover"
+                    preview-teleported
+                  />
+                  <button v-else type="button" class="contract-signed-file__doc" @click="previewAttachment(url)">
+                    <el-icon><Document /></el-icon>
+                    <span>{{ fileExt(url) }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </article>
       </div>
@@ -57,6 +90,28 @@
 
     <el-dialog v-model="previewVisible" top="10px" :title="previewTitle" width="80%" destroy-on-close append-to-body>
       <iframe v-if="previewPdfUrl" title="业主合同预览" :src="previewPdfUrl" style="width: 100%; height: 89vh; border: none" />
+    </el-dialog>
+
+    <el-dialog v-model="attachmentPreviewVisible" :title="attachmentPreviewTitle" width="72%" top="5vh" destroy-on-close append-to-body>
+      <el-image
+        v-if="attachmentPreviewUrl && isImageFile(attachmentPreviewUrl)"
+        class="attachment-preview-image"
+        :src="attachmentPreviewUrl"
+        fit="contain"
+        :preview-src-list="[attachmentPreviewUrl]"
+        preview-teleported
+      />
+      <iframe
+        v-else-if="attachmentPreviewUrl && isPdfFile(attachmentPreviewUrl)"
+        title="线下签约资料预览"
+        :src="attachmentPreviewUrl"
+        style="width: 100%; height: 72vh; border: none"
+      />
+      <div v-else class="attachment-preview-fallback">
+        <el-icon><Document /></el-icon>
+        <div>当前文件类型暂不支持内嵌预览</div>
+        <el-button type="primary" plain :disabled="!attachmentPreviewUrl" @click="downloadAttachment(attachmentPreviewUrl)">下载文件</el-button>
+      </div>
     </el-dialog>
 
     <el-dialog v-model="offlineSignVisible" :title="offlineSignDialogTitle" width="860px" destroy-on-close>
@@ -121,7 +176,7 @@
                   <span v-else class="offline-file-card__status">{{ file.status === "success" ? "已上传" : "待上传" }}</span>
                 </div>
                 <div class="offline-file-card__actions">
-                  <el-button link type="primary" :disabled="!file.url" @click="openFile(file.url)">查看</el-button>
+                  <el-button link type="primary" :disabled="!file.url" @click="previewAttachment(file.url)">查看</el-button>
                   <el-button link type="danger" @click="removeOfflineSignFile(file)">删除</el-button>
                 </div>
               </div>
@@ -167,10 +222,14 @@
   const previewVisible = ref(false);
   const previewPdfUrl = ref("");
   const previewTitle = ref("业主合同预览");
+  const attachmentPreviewVisible = ref(false);
+  const attachmentPreviewUrl = ref("");
+  const attachmentPreviewTitle = ref("资料预览");
   const offlineSignFileList = ref<UploadFile[]>([]);
   const offlineSignVisible = ref(false);
   const offlineSigning = ref(false);
   const offlineSignContract = ref<OwnerContractListItem | null>(null);
+  const localSignedAttachmentMap = ref<Record<string, string[]>>({});
 
   const contractList = computed<OwnerContractListItem[]>(() => {
     return (props.detailData?.ownerContractDocList || []).filter(item => item?.id);
@@ -269,7 +328,13 @@
 
   function signedContractAttachmentUrls(item?: OwnerContractListItem) {
     const group = item?.contractAttachmentGroupList?.find(attachGroup => attachGroup.bizSubtype === signedContractSubtype);
-    return (group?.attachmentUrls || []).filter(Boolean);
+    const persistedUrls = (group?.attachmentUrls || []).filter(Boolean);
+    const localUrls = item?.id ? localSignedAttachmentMap.value[String(item.id)] || [] : [];
+    return Array.from(new Set([...persistedUrls, ...localUrls]));
+  }
+
+  function signedContractImageUrls(item?: OwnerContractListItem) {
+    return signedContractAttachmentUrls(item).filter(url => isImageFile(url));
   }
 
   function toUploadFile(url: string, index: number): UploadFile {
@@ -301,6 +366,11 @@
   function isImageFile(value?: string) {
     if (!value) return false;
     return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(value.split("?")[0]);
+  }
+
+  function isPdfFile(value?: string) {
+    if (!value) return false;
+    return /\.pdf$/i.test(value.split("?")[0]);
   }
 
   function beforeUpload(file: File) {
@@ -360,9 +430,21 @@
     offlineSignFileList.value = offlineSignFileList.value.filter(item => item.uid !== file.uid);
   }
 
-  function openFile(url?: string) {
+  function previewAttachment(url?: string) {
     if (!url) return;
-    window.open(url, "_blank");
+    attachmentPreviewUrl.value = url;
+    attachmentPreviewTitle.value = `资料预览 - ${fileExt(url)}`;
+    attachmentPreviewVisible.value = true;
+  }
+
+  function downloadAttachment(url?: string) {
+    if (!url) return;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName(url);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   async function handlePreviewContract(item?: OwnerContractListItem) {
@@ -483,6 +565,10 @@
         attachmentUrls: offlineSignSuccessUrls.value
       });
       if (resp.code === 0) {
+        localSignedAttachmentMap.value = {
+          ...localSignedAttachmentMap.value,
+          [String(offlineSignContract.value.id)]: offlineSignSuccessUrls.value
+        };
         message("线下签约已确认", { type: "success" });
         offlineSignVisible.value = false;
         emit("updated");
@@ -496,7 +582,7 @@
 </script>
 
 <style scoped lang="scss">
-  .owner-contract-file-tab {
+  .owner-contract-doc-tab {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -550,10 +636,6 @@
   }
 
   .contract-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 18px;
-    align-items: center;
     position: relative;
     padding: 16px 18px;
     cursor: pointer;
@@ -603,18 +685,36 @@
 
   .contract-row__title {
     display: flex;
-    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+  }
+
+  .contract-row__title-main {
+    display: flex;
+    flex: 1 1 auto;
     gap: 8px;
     align-items: center;
     min-width: 0;
+    min-height: 28px;
 
     strong {
       overflow: hidden;
       font-size: 17px;
       font-weight: 800;
+      line-height: 24px;
       color: var(--el-text-color-primary);
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    :deep(.el-tag) {
+      display: inline-flex;
+      flex-shrink: 0;
+      align-items: center;
+      height: 24px;
+      line-height: 22px;
     }
   }
 
@@ -650,25 +750,133 @@
     color: var(--el-text-color-secondary);
   }
 
+  .contract-signed-files {
+    padding: 12px;
+    margin-top: 12px;
+    background: color-mix(in srgb, var(--el-fill-color-extra-light) 70%, var(--el-bg-color));
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+  }
+
+  .contract-signed-files__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .contract-signed-files__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  .contract-signed-files__desc {
+    margin-left: 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+
+  .contract-signed-files__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .contract-signed-file {
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+
+    &:hover {
+      border-color: var(--el-color-primary-light-5);
+      box-shadow: 0 6px 14px rgb(31 45 61 / 8%);
+      transform: translateY(-1px);
+    }
+  }
+
+  .contract-signed-file__image {
+    display: block;
+    width: 150px;
+    height: 150px;
+    cursor: zoom-in;
+
+    :deep(.el-image__inner) {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .contract-signed-file__doc {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+    color: var(--el-text-color-primary);
+    cursor: pointer;
+    background: var(--el-fill-color-extra-light);
+    border: 0;
+
+    .el-icon {
+      font-size: 32px;
+    }
+
+    span {
+      font-size: 13px;
+      font-weight: 700;
+    }
+  }
+
+  .attachment-preview-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-height: 360px;
+    color: var(--el-text-color-regular);
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+
+    .el-icon {
+      font-size: 44px;
+      color: var(--el-text-color-secondary);
+    }
+  }
+
+  .attachment-preview-image {
+    display: block;
+    width: 100%;
+    height: 72vh;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+
+    :deep(.el-image__inner) {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   .contract-row__actions {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 8px;
-    padding-left: 18px;
-    border-left: 1px solid var(--el-border-color-lighter);
+    flex: 0 0 auto;
+    margin-left: auto;
 
-    :deep(.el-button.is-link) {
-      min-height: 30px;
-      padding: 4px 8px;
+    :deep(.el-button) {
       font-weight: 700;
-      color: var(--el-text-color-regular);
-      border-radius: 6px;
-
-      &:hover {
-        color: var(--el-color-primary);
-        background: var(--el-fill-color-light);
-      }
     }
   }
 
@@ -889,19 +1097,22 @@
 
   @media (max-width: 960px) {
     .section-head,
-    .contract-row {
+    .contract-row__title {
       align-items: flex-start;
-      grid-template-columns: 1fr;
     }
 
     .section-head {
       flex-direction: column;
     }
 
+    .contract-row__title {
+      flex-wrap: wrap;
+    }
+
     .contract-row__actions {
       justify-content: flex-start;
-      padding-left: 0;
-      border-left: 0;
+      width: 100%;
+      margin-left: 0;
     }
 
     .contract-row__meta {
