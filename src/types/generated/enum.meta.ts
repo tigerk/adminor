@@ -164,6 +164,7 @@ export const MultiApproveEnumMeta = {
 
 export const BizOperateBizTypeEnumMeta = {
   LEASE: {"value":"LEASE","code":"LEASE","name":"租客合同"},
+  LEASE_CONTRACT_DOC: {"value":"LEASE_CONTRACT_DOC","code":"LEASE_CONTRACT_DOC","name":"租客签约合同"},
   LEASE_CHECKOUT: {"value":"LEASE_CHECKOUT","code":"LEASE_CHECKOUT","name":"租客退租单"},
   OWNER_CONTRACT: {"value":"OWNER_CONTRACT","code":"OWNER_CONTRACT","name":"业主合同"},
   OWNER_CONTRACT_DOC: {"value":"OWNER_CONTRACT_DOC","code":"OWNER_CONTRACT_DOC","name":"业主签约合同"},
@@ -175,6 +176,7 @@ export const BizOperateBizTypeEnumMeta = {
 export const BizOperateSourceTypeEnumMeta = {
   NONE: {"value":"NONE","code":"","name":"无"},
   LEASE: {"value":"LEASE","code":"LEASE","name":"租约"},
+  LEASE_CONTRACT_DOC: {"value":"LEASE_CONTRACT_DOC","code":"LEASE_CONTRACT_DOC","name":"租客签约合同"},
   LEASE_CHECKOUT: {"value":"LEASE_CHECKOUT","code":"LEASE_CHECKOUT","name":"租客退租单"},
   OWNER_CONTRACT: {"value":"OWNER_CONTRACT","code":"OWNER_CONTRACT","name":"业主合同"},
   OWNER_CONTRACT_CHECKOUT: {"value":"OWNER_CONTRACT_CHECKOUT","code":"OWNER_CONTRACT_CHECKOUT","name":"业主合同退房单"},
@@ -374,6 +376,7 @@ export const FileAttachBizTypeEnumMeta = {
   TENANT_OTHER_IMAGE: {"value":"TENANT_OTHER_IMAGE","bizType":"tenant_other_image"},
   CONTRACT_FILE: {"value":"CONTRACT_FILE","bizType":"contract_file"},
   OWNER_CONTRACT_DOC: {"value":"OWNER_CONTRACT_DOC","bizType":"owner_contract_doc"},
+  LEASE_CONTRACT_DOC: {"value":"LEASE_CONTRACT_DOC","bizType":"lease_contract_doc"},
   LEASE_ATTACHMENT: {"value":"LEASE_ATTACHMENT","bizType":"lease_attachment"},
   TENANT_IMAGE: {"value":"TENANT_IMAGE","bizType":"tenant_image"},
   BUSINESS_LICENSE: {"value":"BUSINESS_LICENSE","bizType":"business_license"},
@@ -502,6 +505,11 @@ export const LeaseCheckOutStatusEnumMeta = {
   RENEW_CHECK_OUT: {"value":"RENEW_CHECK_OUT","code":3,"name":"续约退"},
   RELOCATION_CHECK_OUT: {"value":"RELOCATION_CHECK_OUT","code":4,"name":"换房退"},
   SUBLET_CHECK_OUT: {"value":"SUBLET_CHECK_OUT","code":5,"name":"转租退"}
+} as const;
+
+export const LeaseContractDocStatusEnumMeta = {
+  ACTIVE: {"value":"ACTIVE","code":1,"name":"有效"},
+  VOIDED: {"value":"VOIDED","code":-1,"name":"已作废"}
 } as const;
 
 export const LeaseFirstBillDayEnumMeta = {

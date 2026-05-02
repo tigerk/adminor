@@ -163,6 +163,11 @@ export const generateLeaseContract = (data?: object) => {
   return http.request<ApiResponse<LeaseContractVo>>("post", baseUrlApi("contract/lease/contract/generate"), { data });
 };
 
+/** 新增租客签约合同 */
+export const createLeaseContractDoc = (data?: object) => {
+  return http.request<ApiResponse<string>>("post", baseUrlApi("contract/lease/contract/doc/create"), { data });
+};
+
 /** 下载租客合同 */
 export const downloadLeaseContract = (data?: object) => {
   return http.request<Blob>("post", baseUrlApi("contract/lease/contract/download"), { data }, { responseType: "blob" });
@@ -176,6 +181,21 @@ export const updateLeaseContractSignStatus = (data?: object) => {
 /** 删除租客合同 */
 export const deleteLeaseContract = (data?: object) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/contract/delete"), { data });
+};
+
+/** 租客合同线下签约 */
+export const offlineSignLeaseContract = (data?: object) => {
+  return http.request<ApiResponse<string>>("post", baseUrlApi("contract/lease/contract/offline-sign"), { data });
+};
+
+/** 作废租客签约合同 */
+export const voidLeaseContractDoc = (data?: object) => {
+  return http.request<ApiResponse<string>>("post", baseUrlApi("contract/lease/contract/doc/void"), { data });
+};
+
+/** 还原租客签约合同 */
+export const restoreLeaseContractDoc = (data?: object) => {
+  return http.request<ApiResponse<string>>("post", baseUrlApi("contract/lease/contract/doc/restore"), { data });
 };
 
 /** 作废租客 */

@@ -9344,7 +9344,7 @@ export type LeaseBillListVo = {
 };
 
 /**
- * 租客合同 VO
+ * 租客签约合同文档 VO
  */
 export type LeaseContractVo = {
     /**
@@ -9352,11 +9352,19 @@ export type LeaseContractVo = {
      */
     id?: string;
     /**
+     * 公司ID
+     */
+    companyId?: string;
+    /**
      * 租约ID
      */
     leaseId?: string;
     /**
-     * 合同编号
+     * 签约合同文档编号
+     */
+    docNo?: string;
+    /**
+     * 合同编号，兼容旧前端字段，等同 docNo
      */
     contractCode?: string;
     /**
@@ -9373,9 +9381,69 @@ export type LeaseContractVo = {
      */
     signStatus?: number;
     /**
+     * 合同介质
+     */
+    contractMedium?: string;
+    /**
+     * 文档状态：1=有效，-1=已作废
+     */
+    docStatus?: number;
+    /**
+     * 租约状态
+     */
+    status?: number;
+    /**
+     * 合同开始日期
+     */
+    contractStart?: string;
+    /**
+     * 合同结束日期
+     */
+    contractEnd?: string;
+    /**
+     * 合同附件列表
+     */
+    contractAttachmentList?: Array<string>;
+    /**
+     * 合同附件分组列表
+     */
+    contractAttachmentGroupList?: Array<FileAttachGroupDto>;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
+    /**
+     * 作废操作人ID
+     */
+    voidBy?: string;
+    /**
+     * 作废操作人名称
+     */
+    voidByName?: string;
+    /**
+     * 作废时间
+     */
+    voidAt?: string;
+    /**
      * 合同签约备注
      */
     remark?: string;
+    /**
+     * 创建人
+     */
+    createBy?: string;
+    /**
+     * 创建时间
+     */
+    createAt?: string;
+    /**
+     * 更新人
+     */
+    updateBy?: string;
+    /**
+     * 更新时间
+     */
+    updateAt?: string;
 };
 
 /**
@@ -9559,9 +9627,13 @@ export type LeaseDetailVo = {
      */
     updateAt?: string;
     /**
-     * 租客合同
+     * 租客合同，兼容旧字段，取当前有效签约合同
      */
     leaseContract?: LeaseContractVo;
+    /**
+     * 租客签约合同文档列表
+     */
+    leaseContractDocList?: Array<LeaseContractVo>;
     /**
      * 租客账单列表
      */
@@ -9704,7 +9776,11 @@ export type TenantMateVo = {
  */
 export type LeaseContractSignStatusUpdateDto = {
     /**
-     * 租客合同ID
+     * 租客签约合同文档ID
+     */
+    leaseContractDocId?: string;
+    /**
+     * 租客合同ID，兼容旧字段，等同 leaseContractDocId
      */
     leaseContractId?: string;
     /**
@@ -9714,11 +9790,43 @@ export type LeaseContractSignStatusUpdateDto = {
 };
 
 /**
+ * 租客签约合同文档ID DTO
+ */
+export type LeaseContractDocIdDto = {
+    /**
+     * 租客签约合同文档ID
+     */
+    leaseContractDocId?: string;
+    /**
+     * 租约ID，兼容旧预览/下载入口
+     */
+    leaseId?: string;
+};
+
+/**
+ * 租客合同线下签约DTO
+ */
+export type LeaseContractOfflineSignDto = {
+    /**
+     * 租客签约合同文档ID
+     */
+    leaseContractDocId?: string;
+    /**
+     * 线下签约合同附件URL列表
+     */
+    attachmentUrls?: Array<string>;
+};
+
+/**
  * 租客合同生成 DTO
  */
 export type LeaseContractGenerateDto = {
     /**
-     * 租客合同 ID
+     * 租客签约合同文档 ID
+     */
+    leaseContractDocId?: string;
+    /**
+     * 租客合同 ID，兼容旧字段，等同 leaseContractDocId
      */
     leaseContractId?: string;
     /**
@@ -9742,11 +9850,51 @@ export type ResponseResultLeaseContractVo = {
 };
 
 /**
+ * 作废租客签约合同文档DTO
+ */
+export type LeaseContractDocVoidDto = {
+    /**
+     * 租客签约合同文档ID
+     */
+    leaseContractDocId?: string;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
+};
+
+/**
+ * 新增租客签约合同文档DTO
+ */
+export type LeaseContractDocCreateDto = {
+    /**
+     * 租约ID
+     */
+    leaseId?: string;
+    /**
+     * 合同模板ID
+     */
+    contractTemplateId?: string;
+    /**
+     * 合同介质
+     */
+    contractMedium?: string;
+    /**
+     * 备注
+     */
+    remark?: string;
+};
+
+/**
  * 租客合同删除DTO
  */
 export type LeaseContractDeleteDto = {
     /**
-     * 租客合同ID
+     * 租客签约合同文档ID
+     */
+    leaseContractDocId?: string;
+    /**
+     * 租客合同ID，兼容旧字段，等同 leaseContractDocId
      */
     leaseContractId?: string;
 };
@@ -11305,12 +11453,12 @@ export type MultiApproveEnum = 'OR_SIGN' | 'AND_SIGN';
 /**
  * 业务日志业务类型枚举
  */
-export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_DOC' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
+export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CONTRACT_DOC' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_DOC' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
 
 /**
  * 业务日志来源类型枚举
  */
-export type BizOperateSourceTypeEnum = 'NONE' | 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_PAYABLE_BILL_PAYMENT' | 'OWNER_SETTLEMENT_BILL';
+export type BizOperateSourceTypeEnum = 'NONE' | 'LEASE' | 'LEASE_CONTRACT_DOC' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_PAYABLE_BILL_PAYMENT' | 'OWNER_SETTLEMENT_BILL';
 
 /**
  * 业务操作类型枚举
@@ -11363,7 +11511,7 @@ export type DeliveryHandoverTypeEnum = 'CHECK_IN' | 'CHECK_OUT';
 
 export type DeliveryStatusEnum = 'CANCELLED' | 'DRAFT' | 'COMPLETED' | 'SIGNED';
 
-export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'OWNER_CONTRACT_DOC' | 'LEASE_ATTACHMENT' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'DELIVERY_WATER_PROOF_IMAGE' | 'DELIVERY_ELECTRICITY_PROOF_IMAGE' | 'DELIVERY_GAS_PROOF_IMAGE' | 'CONTRACT_SEAL_IMAGE';
+export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'OWNER_CONTRACT_DOC' | 'LEASE_CONTRACT_DOC' | 'LEASE_ATTACHMENT' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'DELIVERY_WATER_PROOF_IMAGE' | 'DELIVERY_ELECTRICITY_PROOF_IMAGE' | 'DELIVERY_GAS_PROOF_IMAGE' | 'CONTRACT_SEAL_IMAGE';
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 
@@ -11396,6 +11544,11 @@ export type LeaseBillStatusEnum = 'NORMAL' | 'VOIDED';
 export type LeaseBillTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'RELEASE' | 'DEPOSIT_CARRY_IN' | 'DEPOSIT_CARRY_OUT';
 
 export type LeaseCheckOutStatusEnum = 'UN_CHECK_OUT' | 'NORMAL_CHECK_OUT' | 'BREAK_CHECK_OUT' | 'RENEW_CHECK_OUT' | 'RELOCATION_CHECK_OUT' | 'SUBLET_CHECK_OUT';
+
+/**
+ * 租客签约合同文档状态枚举
+ */
+export type LeaseContractDocStatusEnum = 'ACTIVE' | 'VOIDED';
 
 export type LeaseFirstBillDayEnum = 'FOLLOW_CONTRACT_START' | 'FOLLOW_CONTRACT_CREATE';
 
@@ -14336,13 +14489,13 @@ export type UpdateSignStatusResponses = {
     /**
      * OK
      */
-    200: ResponseResultBoolean;
+    200: ResponseResultLong;
 };
 
 export type UpdateSignStatusResponse = UpdateSignStatusResponses[keyof UpdateSignStatusResponses];
 
 export type PreviewLeaseContractData = {
-    body: LeaseQueryDto;
+    body: LeaseContractDocIdDto;
     path?: never;
     query?: never;
     url: '/saas/contract/lease/contract/preview';
@@ -14356,6 +14509,24 @@ export type PreviewLeaseContractResponses = {
 };
 
 export type PreviewLeaseContractResponse = PreviewLeaseContractResponses[keyof PreviewLeaseContractResponses];
+
+export type OfflineSignContract1Data = {
+    body: LeaseContractOfflineSignDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/contract/offline-sign';
+};
+
+export type OfflineSignContract1Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type OfflineSignContract1Response = OfflineSignContract1Responses[keyof OfflineSignContract1Responses];
 
 export type Generate1Data = {
     body: LeaseContractGenerateDto;
@@ -14374,7 +14545,7 @@ export type Generate1Responses = {
 export type Generate1Response = Generate1Responses[keyof Generate1Responses];
 
 export type DownloadData = {
-    body: LeaseQueryDto;
+    body: LeaseContractDocIdDto;
     path?: never;
     query?: never;
     url: '/saas/contract/lease/contract/download';
@@ -14388,6 +14559,60 @@ export type DownloadResponses = {
 };
 
 export type DownloadResponse = DownloadResponses[keyof DownloadResponses];
+
+export type VoidContractDoc1Data = {
+    body: LeaseContractDocVoidDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/contract/doc/void';
+};
+
+export type VoidContractDoc1Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type VoidContractDoc1Response = VoidContractDoc1Responses[keyof VoidContractDoc1Responses];
+
+export type RestoreContractDoc1Data = {
+    body: LeaseContractDocIdDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/contract/doc/restore';
+};
+
+export type RestoreContractDoc1Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type RestoreContractDoc1Response = RestoreContractDoc1Responses[keyof RestoreContractDoc1Responses];
+
+export type CreateContractDoc1Data = {
+    body: LeaseContractDocCreateDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/lease/contract/doc/create';
+};
+
+export type CreateContractDoc1Responses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type CreateContractDoc1Response = CreateContractDoc1Responses[keyof CreateContractDoc1Responses];
 
 export type DeleteContractData = {
     body: LeaseContractDeleteDto;

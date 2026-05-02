@@ -291,19 +291,19 @@
             <el-space class="tab-label">
               <el-icon><Document /></el-icon>
               <span>合同信息</span>
-              <el-tag :type="localFormInline.leaseContract?.signStatus === 0 ? 'danger' : 'success'" size="default">
-                {{ LEASE_SIGN_STATUS_OPTIONS.find(item => item.value === localFormInline?.leaseContract?.signStatus)?.label || "未知" }}
-              </el-tag>
+              <el-tag type="info" size="default" effect="plain">{{ leaseContractCount }}份</el-tag>
+              <el-tag :type="leaseContractSignTagType" size="default" effect="light">{{ leaseContractSignText }}</el-tag>
             </el-space>
           </template>
           <LeaseContractTab
             :lease-contract="localFormInline.leaseContract"
+            :lease-contract-doc-list="leaseContractDocs"
             :lease-id="localFormInline.leaseId"
             :tenant-status="localFormInline.status"
-            :create-time="localFormInline.createAt"
             :readonly="readonly"
             @contract-signed="leaseId => emit('contract-signed', leaseId)"
             @contract-updated="contract => (localFormInline.leaseContract = contract)"
+            @updated="handleContractDocsUpdated"
           />
         </el-tab-pane>
 
@@ -378,12 +378,10 @@
   } from "@/constants";
   import { Clock, Document, Files, FolderOpened, House, Money, User } from "@element-plus/icons-vue";
   import { message } from "@/utils/message";
-  import { downloadLeaseContract, generateLeaseContract, updateLeaseContractSignStatus } from "@/api/contract/tenant";
   import { updateTenantInfo } from "@/api/contract/tenant";
   import { getCheckoutByLeaseId } from "@/api/contract/checkout";
   import { addDialog } from "@/components/ReDialog";
   import { deviceDetection } from "@/store/utils";
-  import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import DeliveryTab from "@/views/contract/tenant/view/DeliveryTab.vue";
   import ViewCheckoutTab from "@/views/contract/checkout/view/ViewCheckoutTab.vue";
@@ -426,6 +424,16 @@
   const checkoutLoading = ref(false);
   const checkoutTabDisabled = computed(() => !checkoutLoading.value && !checkoutDetail.value);
   const operateLogPanelRef = ref<InstanceType<typeof BizOperateLogPanel>>();
+  const leaseContractDocs = computed(() => {
+    const detail = localFormInline.value as LeaseDetailVo & { leaseContractDocList?: NonNullable<LeaseDetailVo["leaseContract"]>[] };
+    return detail.leaseContractDocList?.length ? detail.leaseContractDocList : detail.leaseContract ? [detail.leaseContract] : [];
+  });
+  const leaseContractCount = computed(() => leaseContractDocs.value.length);
+  const leaseContractSignText = computed(() => {
+    const signed = leaseContractDocs.value.some(item => item?.signStatus === 1 && (item as any).docStatus !== -1);
+    return signed ? "已签字" : "待签字";
+  });
+  const leaseContractSignTagType = computed(() => (leaseContractSignText.value === "已签字" ? "success" : "danger"));
   const leaseOperateLogQuery = computed(() => ({
     bizType: "LEASE",
     bizId: localFormInline.value.leaseId,
@@ -460,6 +468,10 @@
       await operateLogPanelRef.value?.reload();
     }
     emit("lease-updated", localFormInline.value.leaseId);
+  };
+
+  const handleContractDocsUpdated = () => {
+    emit("contract-updated");
   };
 
   watch(
@@ -568,6 +580,24 @@
     return Number.isFinite(idType) ? getIdTypeName(idType) : formatSnapshotValue(value);
   };
 
+  const formatSignStatus = (value: unknown) => {
+    if (value === 1 || value === "1") return "已签字";
+    if (value === 0 || value === "0") return "待签字";
+    return formatSnapshotValue(value);
+  };
+
+  const formatDocStatus = (value: unknown) => {
+    if (value === 1 || value === "1") return "有效";
+    if (value === -1 || value === "-1") return "已作废";
+    return formatSnapshotValue(value);
+  };
+
+  const formatContractMedium = (value: unknown) => {
+    if (value === "ELECTRONIC") return "电子合同";
+    if (value === "PAPER") return "纸质合同";
+    return formatSnapshotValue(value);
+  };
+
   const snapshotFieldConfig: Array<{
     path: string;
     label: string;
@@ -596,6 +626,13 @@
     { path: "tenantCompany.contactPhone", label: "联系电话" },
     { path: "tenantCompany.businessLicenseUrls", label: "营业执照" },
     { path: "tenantCompany.otherImageList", label: "其他附件" },
+    { path: "docNo", label: "合同文档编号" },
+    { path: "contractTemplateId", label: "合同模板" },
+    { path: "signStatus", label: "签字状态", formatter: formatSignStatus },
+    { path: "contractMedium", label: "合同介质", formatter: formatContractMedium },
+    { path: "docStatus", label: "合同状态", formatter: formatDocStatus },
+    { path: "voidReason", label: "作废原因" },
+    { path: "signedAttachmentUrls", label: "线下签约资料" },
     { path: "checkoutCode", label: "退租单号" },
     { path: "checkoutType", label: "退租类型" },
     { path: "actualCheckoutDate", label: "实际退租日" },
@@ -620,6 +657,15 @@
     idNo: "证件号码",
     tags: "租客标签",
     tagList: "租客标签",
+    docNo: "合同文档编号",
+    contractTemplateId: "合同模板",
+    signStatus: "签字状态",
+    contractMedium: "合同介质",
+    docStatus: "合同状态",
+    voidReason: "作废原因",
+    voidBy: "作废人",
+    voidAt: "作废时间",
+    signedAttachmentUrls: "线下签约资料",
     remark: "备注",
     status: "状态",
     cancelReason: "取消原因"
@@ -635,84 +681,6 @@
     if (typeof value === "object") return JSON.stringify(value);
     return String(value);
   }
-
-  const handleDownloadContract = () => {
-    if (!props.formInline.leaseContract?.contractContent) {
-      message("合同内容为空，无法下载", { type: "warning" });
-      return;
-    }
-    downloadLeaseContract({
-      leaseId: props.formInline.leaseContract.leaseId
-    }).then(res => {
-      const blob = new Blob([res], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `租客合同_${props.formInline.leaseContract.leaseId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    });
-  };
-
-  const handleGenerateContract = () => {
-    const formRef = ref();
-
-    addDialog({
-      title: "重新生成合同，请选择合同模板",
-      props: {
-        formInline: {
-          leaseId: props.formInline.leaseContract.leaseId
-        }
-      },
-      top: "8%",
-      width: "400px",
-      draggable: true,
-      fullscreen: deviceDetection(),
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(SelectContractTemplateDialog, { ref: formRef, leaseId: props.formInline.leaseContract.leaseId }),
-      beforeSure: done => {
-        const selectedTemplate = formRef.value.getSelectedTemplate();
-        if (!selectedTemplate) {
-          message("请选择合同模板", { type: "warning" });
-          return;
-        }
-        generateLeaseContract({
-          leaseContractId: localFormInline.value.leaseContract.id,
-          leaseId: localFormInline.value.leaseContract.leaseId,
-          contractTemplateId: selectedTemplate
-        }).then(resp => {
-          if (resp.code == 0) {
-            localFormInline.value.leaseContract = resp.data;
-            message("合同生成成功", { type: "success" });
-            emit("contract-updated");
-            done();
-          }
-        });
-      }
-    });
-  };
-
-  const handleSignContract = () => {
-    if (localFormInline.value.leaseContract?.signStatus === 1) {
-      message("合同已签约，无需重复操作", { type: "warning" });
-      return;
-    }
-    updateLeaseContractSignStatus({
-      leaseContractId: localFormInline.value.leaseContract.id,
-      signStatus: 1
-    }).then(resp => {
-      if (resp.code == 0) {
-        message("合同签约成功", { type: "success" });
-        localFormInline.value.leaseContract.signStatus = 1;
-        emit("contract-signed", localFormInline.value.leaseId);
-      } else {
-        message(resp.message || "合同签约修改失败", { type: "warning" });
-      }
-    });
-  };
 
   const allowEdit = (status: number) => {
     if (props.readonly) return false;
