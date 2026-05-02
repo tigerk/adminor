@@ -166,6 +166,7 @@ export const BizOperateBizTypeEnumMeta = {
   LEASE: {"value":"LEASE","code":"LEASE","name":"租客合同"},
   LEASE_CHECKOUT: {"value":"LEASE_CHECKOUT","code":"LEASE_CHECKOUT","name":"租客退租单"},
   OWNER_CONTRACT: {"value":"OWNER_CONTRACT","code":"OWNER_CONTRACT","name":"业主合同"},
+  OWNER_CONTRACT_DOC: {"value":"OWNER_CONTRACT_DOC","code":"OWNER_CONTRACT_DOC","name":"业主签约合同"},
   OWNER_CONTRACT_CHECKOUT: {"value":"OWNER_CONTRACT_CHECKOUT","code":"OWNER_CONTRACT_CHECKOUT","name":"业主合同退房单"},
   OWNER_PAYABLE_BILL: {"value":"OWNER_PAYABLE_BILL","code":"OWNER_PAYABLE_BILL","name":"包租业主应付单"},
   OWNER_SETTLEMENT_BILL: {"value":"OWNER_SETTLEMENT_BILL","code":"OWNER_SETTLEMENT_BILL","name":"轻托管业主结算单"}
@@ -558,6 +559,11 @@ export const OwnerBillingSourceTypeEnumMeta = {
   OWNER_CONTRACT_CHECKOUT: {"value":"OWNER_CONTRACT_CHECKOUT","code":"OWNER_CONTRACT_CHECKOUT","name":"业主退房单"},
   OWNER_LEASE_FEE: {"value":"OWNER_LEASE_FEE","code":"OWNER_LEASE_FEE","name":"包租其他费用"},
   OWNER_LEASE_FREE_RULE: {"value":"OWNER_LEASE_FREE_RULE","code":"OWNER_LEASE_FREE_RULE","name":"包租免租规则"}
+} as const;
+
+export const OwnerContractDocStatusEnumMeta = {
+  ACTIVE: {"value":"ACTIVE","code":1,"name":"有效"},
+  VOIDED: {"value":"VOIDED","code":-1,"name":"已作废"}
 } as const;
 
 export const OwnerContractMediumEnumMeta = {

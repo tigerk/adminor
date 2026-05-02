@@ -31,6 +31,7 @@
                 <el-button plain size="small" type="primary" :disabled="!item.id || !item.contractContent" @click="handleDownloadContract(item)">下载</el-button>
                 <el-button plain size="small" type="primary" :disabled="!item.id || isReadonlyContract(item)" @click="handleGenerateContract(item)">重新生成</el-button>
                 <el-button plain size="small" type="primary" :disabled="!canSignContract(item)" @click="openOfflineSignDialog(item)">线下签约</el-button>
+                <el-button plain size="small" type="danger" :disabled="!canVoidContractDoc(item)" @click="handleVoidContractDoc(item)">作废</el-button>
               </div>
             </div>
             <div class="contract-row__meta">
@@ -80,6 +81,20 @@
                     <span>{{ fileExt(url) }}</span>
                   </button>
                 </div>
+              </div>
+            </div>
+            <div v-if="isVoidedContractDoc(item)" class="contract-row__void" @click.stop>
+              <div class="contract-row__void-item">
+                <span>作废人</span>
+                <strong>{{ item.voidByName || item.voidBy || "-" }}</strong>
+              </div>
+              <div class="contract-row__void-item">
+                <span>作废时间</span>
+                <strong>{{ item.voidAt || "-" }}</strong>
+              </div>
+              <div class="contract-row__void-item contract-row__void-item--full">
+                <span>作废原因</span>
+                <strong>{{ item.voidReason || "-" }}</strong>
               </div>
             </div>
           </div>
@@ -195,10 +210,11 @@
 
 <script setup lang="ts">
   import { computed, h, nextTick, ref, watch, type Ref } from "vue";
+  import { ElMessageBox } from "element-plus";
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
   import { Document, UploadFilled } from "@element-plus/icons-vue";
   import { addDialog } from "@/components/ReDialog";
-  import { createOwnerContractDoc, generateOwnerContract, offlineSignOwnerContract, previewOwnerContract } from "@/api/contract/owner";
+  import { createOwnerContractDoc, generateOwnerContract, offlineSignOwnerContract, previewOwnerContract, voidOwnerContractDoc } from "@/api/contract/owner";
   import { uploadFile } from "@/api/upload";
   import { message } from "@/utils/message";
   import { deviceDetection } from "@/store/utils";
@@ -206,9 +222,16 @@
   import { OwnerContractMediumEnumMeta, OwnerContractStatusEnumMeta, OwnerSignStatusEnumMeta } from "@/types/generated/enum.meta";
   import type { FileAttachSubtypeEnum, OwnerContractDocDto, OwnerDetailVo } from "@/types/generated";
 
-  type OwnerContractListItem = OwnerContractDocDto;
+  type OwnerContractListItem = OwnerContractDocDto & {
+    docStatus?: number;
+    voidReason?: string;
+    voidBy?: string | number;
+    voidByName?: string;
+    voidAt?: string;
+  };
 
   const signedContractSubtype: FileAttachSubtypeEnum = "SIGNED_CONTRACT";
+  const ownerContractDocStatusVoided = -1;
 
   const props = defineProps<{
     detailData?: OwnerDetailVo | null;
@@ -290,17 +313,28 @@
     return status === OwnerContractStatusEnumMeta.CHECKED_OUT.code || status === OwnerContractStatusEnumMeta.VOIDED.code;
   }
 
+  function isVoidedContractDoc(item?: OwnerContractListItem) {
+    return item?.docStatus === ownerContractDocStatusVoided;
+  }
+
   function canSignContract(item?: OwnerContractListItem) {
     if (!item?.id || isReadonlyContract(item)) return false;
+    if (isVoidedContractDoc(item)) return false;
     if (item.status === OwnerContractStatusEnumMeta.PENDING_APPROVAL.code) return false;
     return item.signStatus !== OwnerSignStatusEnumMeta.SIGNED.code;
   }
 
+  function canVoidContractDoc(item?: OwnerContractListItem) {
+    return Boolean(item?.id) && !isReadonlyContract(item) && !isVoidedContractDoc(item);
+  }
+
   function signStatusText(item?: OwnerContractListItem) {
+    if (isVoidedContractDoc(item)) return "已作废";
     return item?.signStatus === OwnerSignStatusEnumMeta.SIGNED.code ? OwnerSignStatusEnumMeta.SIGNED.name : OwnerSignStatusEnumMeta.PENDING.name;
   }
 
   function signStatusTagType(item?: OwnerContractListItem) {
+    if (isVoidedContractDoc(item)) return "danger";
     return item?.signStatus === OwnerSignStatusEnumMeta.SIGNED.code ? "success" : "warning";
   }
 
@@ -503,6 +537,39 @@
         });
       }
     });
+  }
+
+  async function handleVoidContractDoc(item?: OwnerContractListItem) {
+    if (!item?.id) return;
+    let voidReason = "";
+    try {
+      const { value } = await ElMessageBox.prompt("请输入作废原因，提交后该签约合同不可继续签约或重新生成。", `作废签约合同 - ${contractDocNo(item) || item.id}`, {
+        confirmButtonText: "确认作废",
+        cancelButtonText: "取消",
+        inputType: "textarea",
+        inputPlaceholder: "请输入作废原因",
+        inputPattern: /\S+/,
+        inputErrorMessage: "作废原因不能为空",
+        confirmButtonClass: "el-button--danger"
+      });
+      voidReason = String(value || "").trim();
+    } catch {
+      return;
+    }
+    try {
+      const resp = await voidOwnerContractDoc({
+        ownerContractDocId: item.id,
+        voidReason
+      });
+      if (resp.code === 0) {
+        message("签约合同已作废", { type: "success" });
+        emit("updated");
+        return;
+      }
+      message(resp.message || "作废签约合同失败", { type: "error" });
+    } catch (error: any) {
+      message(error?.message || "作废签约合同失败", { type: "error" });
+    }
   }
 
   function openCreateContractDocDialog() {
@@ -748,6 +815,43 @@
   .contract-meta-label {
     font-size: 12px;
     color: var(--el-text-color-secondary);
+  }
+
+  .contract-row__void {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+    gap: 8px;
+    padding: 10px 12px;
+    margin-top: 12px;
+    background: color-mix(in srgb, var(--el-color-danger) 7%, var(--el-bg-color));
+    border: 1px solid color-mix(in srgb, var(--el-color-danger) 22%, var(--el-border-color-lighter));
+    border-radius: 10px;
+  }
+
+  .contract-row__void-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+    font-size: 13px;
+
+    span {
+      flex: 0 0 auto;
+      color: var(--el-text-color-secondary);
+    }
+
+    strong {
+      min-width: 0;
+      overflow: hidden;
+      font-weight: 700;
+      color: var(--el-text-color-primary);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .contract-row__void-item--full {
+    grid-column: 1 / -1;
   }
 
   .contract-signed-files {
@@ -1116,6 +1220,10 @@
     }
 
     .contract-row__meta {
+      grid-template-columns: 1fr;
+    }
+
+    .contract-row__void {
       grid-template-columns: 1fr;
     }
 

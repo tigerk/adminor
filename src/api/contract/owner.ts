@@ -72,6 +72,15 @@ export const createOwnerContractDoc = (data: OwnerContractDocCreateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/doc/create"), { data });
 };
 
+export interface OwnerContractDocVoidPayload {
+  ownerContractDocId?: string | number;
+  voidReason?: string;
+}
+
+export const voidOwnerContractDoc = (data: OwnerContractDocVoidPayload) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/doc/void"), { data });
+};
+
 export const updateOwnerContractSignStatus = (data: OwnerContractSignStatusUpdateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/sign/status/update"), { data });
 };

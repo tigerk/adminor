@@ -7925,6 +7925,10 @@ export type OwnerContractDocDto = {
      */
     contractMedium?: string;
     /**
+     * 文档状态
+     */
+    docStatus?: number;
+    /**
      * 业主合同主单状态
      */
     status?: number;
@@ -7940,6 +7944,22 @@ export type OwnerContractDocDto = {
      * 备注
      */
     remark?: string;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
+    /**
+     * 作废操作人ID
+     */
+    voidBy?: string;
+    /**
+     * 作废操作人名称
+     */
+    voidByName?: string;
+    /**
+     * 作废时间
+     */
+    voidAt?: string;
     /**
      * 创建人
      */
@@ -8132,6 +8152,20 @@ export type OwnerContractGenerateDto = {
      * 合同模板ID
      */
     contractTemplateId?: string;
+};
+
+/**
+ * 业主签约合同作废DTO
+ */
+export type OwnerContractDocVoidDto = {
+    /**
+     * 业主合同签约文档ID
+     */
+    ownerContractDocId?: string;
+    /**
+     * 作废原因
+     */
+    voidReason?: string;
 };
 
 /**
@@ -11271,7 +11305,7 @@ export type MultiApproveEnum = 'OR_SIGN' | 'AND_SIGN';
 /**
  * 业务日志业务类型枚举
  */
-export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
+export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_DOC' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
 
 /**
  * 业务日志来源类型枚举
@@ -11398,6 +11432,11 @@ export type OwnerBillingItemTypeEnum = 'RENT' | 'DEPOSIT' | 'OTHER_FEE' | 'MANAG
  * 业主单据来源类型枚举
  */
 export type OwnerBillingSourceTypeEnum = 'PAYMENT_FLOW' | 'OWNER_CONTRACT_SUBJECT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_LEASE_FEE' | 'OWNER_LEASE_FREE_RULE';
+
+/**
+ * 业主签约合同文档状态枚举
+ */
+export type OwnerContractDocStatusEnum = 'ACTIVE' | 'VOIDED';
 
 /**
  * 业主合同介质枚举
@@ -14025,6 +14064,24 @@ export type GenerateContractResponses = {
 };
 
 export type GenerateContractResponse = GenerateContractResponses[keyof GenerateContractResponses];
+
+export type VoidContractDocData = {
+    body: OwnerContractDocVoidDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/contract/doc/void';
+};
+
+export type VoidContractDocResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type VoidContractDocResponse = VoidContractDocResponses[keyof VoidContractDocResponses];
 
 export type CreateContractDocData = {
     body: OwnerContractDocCreateDto;
