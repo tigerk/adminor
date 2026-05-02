@@ -33,6 +33,16 @@
                 <div class="snapshot-diff__value snapshot-diff__value--after">{{ diff.afterText }}</div>
               </div>
             </template>
+            <template v-else-if="extraDataList(item).length">
+              <div class="snapshot-diff__head snapshot-diff__head--extra">
+                <span>操作信息</span>
+                <span>内容</span>
+              </div>
+              <div v-for="itemData in extraDataList(item)" :key="itemData.key" class="snapshot-diff__row snapshot-diff__row--extra">
+                <div class="snapshot-diff__field">{{ itemData.label }}</div>
+                <div class="snapshot-diff__value">{{ itemData.text }}</div>
+              </div>
+            </template>
             <div v-else class="snapshot-diff__empty">暂无可展示的字段变更</div>
           </div>
         </div>
@@ -57,6 +67,7 @@
   type BizOperateLogWithSnapshot = BizOperateLogVo & {
     beforeSnapshot?: string;
     afterSnapshot?: string;
+    extraData?: string;
   };
 
   const props = withDefaults(
@@ -99,10 +110,19 @@
     return Object.values(BizOperateTypeEnumMeta).find(item => item.code === type)?.name || type;
   };
 
-  function parseSnapshot(snapshot?: string) {
+  function parseSnapshot(snapshot?: unknown) {
     if (!snapshot) return null;
+    if (typeof snapshot === "object") return snapshot;
     try {
-      return JSON.parse(snapshot);
+      const parsed = JSON.parse(String(snapshot));
+      if (typeof parsed === "string") {
+        try {
+          return JSON.parse(parsed);
+        } catch {
+          return parsed;
+        }
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -198,6 +218,19 @@
       })
       .filter(Boolean)
       .slice(0, 12) as Array<{ key: string; label: string; beforeText: string; afterText: string }>;
+  };
+
+  const extraDataList = (item: BizOperateLogWithSnapshot) => {
+    const extraData = parseSnapshot(item.extraData);
+    if (!extraData || typeof extraData !== "object" || Array.isArray(extraData)) return [];
+    return Object.entries(extraData as Record<string, unknown>)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .map(([key, value]) => ({
+        key,
+        label: props.fallbackLabelMap[key] || fieldLabelFromPath(key),
+        text: formatSnapshotValue(value)
+      }))
+      .slice(0, 12);
   };
 
   watch(
@@ -302,6 +335,10 @@
       padding: 0 10px 2px;
       font-size: 12px;
       line-height: 1.4;
+
+      &--extra {
+        grid-template-columns: 112px minmax(0, 1fr);
+      }
     }
 
     &__row {
@@ -314,6 +351,10 @@
       background: var(--el-fill-color-light);
       border: 1px solid var(--el-border-color-lighter);
       border-radius: 8px;
+
+      &--extra {
+        grid-template-columns: 112px minmax(0, 1fr);
+      }
     }
 
     &__field {

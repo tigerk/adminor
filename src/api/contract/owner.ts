@@ -5,6 +5,7 @@ import type {
   OwnerContractCheckoutDto,
   OwnerContractDocCreateDto,
   OwnerContractDocIdDto,
+  OwnerContractDocVoidDto,
   OwnerContractGenerateDto,
   OwnerContractIdDto,
   OwnerContractOfflineSignDto,
@@ -72,13 +73,12 @@ export const createOwnerContractDoc = (data: OwnerContractDocCreateDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/doc/create"), { data });
 };
 
-export interface OwnerContractDocVoidPayload {
-  ownerContractDocId?: string | number;
-  voidReason?: string;
-}
-
-export const voidOwnerContractDoc = (data: OwnerContractDocVoidPayload) => {
+export const voidOwnerContractDoc = (data: OwnerContractDocVoidDto) => {
   return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/doc/void"), { data });
+};
+
+export const restoreOwnerContractDoc = (data: OwnerContractDocIdDto) => {
+  return http.request<ResponseResultLong>("post", baseUrlApi("contract/owner/contract/doc/restore"), { data });
 };
 
 export const updateOwnerContractSignStatus = (data: OwnerContractSignStatusUpdateDto) => {

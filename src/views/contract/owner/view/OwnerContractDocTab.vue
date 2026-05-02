@@ -7,19 +7,13 @@
             <span>签约合同列表</span>
             <el-tag type="info" size="small" effect="plain">{{ contractList.length }} 份</el-tag>
           </div>
-          <div class="section-desc">业主可能存在多份签约合同；预览、下载、重新生成、线下签约都针对选中的单份合同执行。</div>
+          <div class="section-desc">业主可能存在多份签约合同；预览、下载、线下签约都针对选中的单份合同执行。</div>
         </div>
         <el-button type="primary" plain :disabled="!canAddContractDoc" @click="openCreateContractDocDialog">添加新合同</el-button>
       </div>
 
       <div v-if="contractList.length" class="contract-list">
-        <article
-          v-for="item in contractList"
-          :key="contractKey(item)"
-          class="contract-row"
-          :class="{ 'is-active': isSelected(item) }"
-          @click="selectContract(item)"
-        >
+        <article v-for="item in contractList" :key="contractKey(item)" class="contract-row" :class="{ 'is-active': isSelected(item) }" @click="selectContract(item)">
           <div class="contract-row__main">
             <div class="contract-row__title">
               <div class="contract-row__title-main">
@@ -29,8 +23,8 @@
               <div class="contract-row__actions" @click.stop>
                 <el-button plain size="small" type="primary" :disabled="!item.id" @click="handlePreviewContract(item)">预览</el-button>
                 <el-button plain size="small" type="primary" :disabled="!item.id || !item.contractContent" @click="handleDownloadContract(item)">下载</el-button>
-                <el-button plain size="small" type="primary" :disabled="!item.id || isReadonlyContract(item)" @click="handleGenerateContract(item)">重新生成</el-button>
                 <el-button plain size="small" type="primary" :disabled="!canSignContract(item)" @click="openOfflineSignDialog(item)">线下签约</el-button>
+                <el-button v-if="isVoidedContractDoc(item)" plain size="small" type="success" :disabled="!canRestoreContractDoc(item)" @click="handleRestoreContractDoc(item)">还原</el-button>
                 <el-button plain size="small" type="danger" :disabled="!canVoidContractDoc(item)" @click="handleVoidContractDoc(item)">作废</el-button>
               </div>
             </div>
@@ -173,13 +167,7 @@
             <div v-if="offlineSignDisplayFileList.length" class="offline-file-list">
               <div v-for="file in offlineSignDisplayFileList" :key="file.uid || file.url || file.name" class="offline-file-card">
                 <div class="offline-file-card__preview">
-                  <el-image
-                    v-if="file.url && isImageFile(file.url)"
-                    :src="file.url"
-                    :preview-src-list="offlineSignImagePreviewUrls"
-                    fit="cover"
-                    preview-teleported
-                  />
+                  <el-image v-if="file.url && isImageFile(file.url)" :src="file.url" :preview-src-list="offlineSignImagePreviewUrls" fit="cover" preview-teleported />
                   <div v-else class="offline-file-card__file">
                     <el-icon><Document /></el-icon>
                     <span>{{ fileExt(file.name || file.url || "") }}</span>
@@ -214,24 +202,24 @@
   import type { UploadFile, UploadProgressEvent, UploadRequestOptions } from "element-plus";
   import { Document, UploadFilled } from "@element-plus/icons-vue";
   import { addDialog } from "@/components/ReDialog";
-  import { createOwnerContractDoc, generateOwnerContract, offlineSignOwnerContract, previewOwnerContract, voidOwnerContractDoc } from "@/api/contract/owner";
+  import {
+    createOwnerContractDoc,
+    generateOwnerContract,
+    offlineSignOwnerContract,
+    previewOwnerContract,
+    restoreOwnerContractDoc,
+    voidOwnerContractDoc
+  } from "@/api/contract/owner";
   import { uploadFile } from "@/api/upload";
   import { message } from "@/utils/message";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
-  import { OwnerContractMediumEnumMeta, OwnerContractStatusEnumMeta, OwnerSignStatusEnumMeta } from "@/types/generated/enum.meta";
+  import { OwnerContractDocStatusEnumMeta, OwnerContractMediumEnumMeta, OwnerContractStatusEnumMeta, OwnerSignStatusEnumMeta } from "@/types/generated/enum.meta";
   import type { FileAttachSubtypeEnum, OwnerContractDocDto, OwnerDetailVo } from "@/types/generated";
 
-  type OwnerContractListItem = OwnerContractDocDto & {
-    docStatus?: number;
-    voidReason?: string;
-    voidBy?: string | number;
-    voidByName?: string;
-    voidAt?: string;
-  };
+  type OwnerContractListItem = OwnerContractDocDto;
 
   const signedContractSubtype: FileAttachSubtypeEnum = "SIGNED_CONTRACT";
-  const ownerContractDocStatusVoided = -1;
 
   const props = defineProps<{
     detailData?: OwnerDetailVo | null;
@@ -314,7 +302,7 @@
   }
 
   function isVoidedContractDoc(item?: OwnerContractListItem) {
-    return item?.docStatus === ownerContractDocStatusVoided;
+    return item?.docStatus === OwnerContractDocStatusEnumMeta.VOIDED.code;
   }
 
   function canSignContract(item?: OwnerContractListItem) {
@@ -326,6 +314,10 @@
 
   function canVoidContractDoc(item?: OwnerContractListItem) {
     return Boolean(item?.id) && !isReadonlyContract(item) && !isVoidedContractDoc(item);
+  }
+
+  function canRestoreContractDoc(item?: OwnerContractListItem) {
+    return Boolean(item?.id) && !isReadonlyContract(item) && isVoidedContractDoc(item);
   }
 
   function signStatusText(item?: OwnerContractListItem) {
@@ -572,6 +564,30 @@
     }
   }
 
+  async function handleRestoreContractDoc(item?: OwnerContractListItem) {
+    if (!item?.id) return;
+    try {
+      await ElMessageBox.confirm(`确认将签约合同「${contractDocNo(item) || item.id}」还原为有效？`, "还原签约合同", {
+        confirmButtonText: "确认还原",
+        cancelButtonText: "取消",
+        type: "warning"
+      });
+    } catch {
+      return;
+    }
+    try {
+      const resp = await restoreOwnerContractDoc({ ownerContractDocId: item.id });
+      if (resp.code === 0) {
+        message("签约合同已还原", { type: "success" });
+        emit("updated");
+        return;
+      }
+      message(resp.message || "还原签约合同失败", { type: "error" });
+    } catch (error: any) {
+      message(error?.message || "还原签约合同失败", { type: "error" });
+    }
+  }
+
   function openCreateContractDocDialog() {
     const ownerContractId = props.detailData?.ownerContract?.id;
     if (!ownerContractId) return;
@@ -710,7 +726,11 @@
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 12px;
     box-shadow: 0 4px 12px rgb(31 45 61 / 4%);
-    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    transition:
+      border-color 0.18s ease,
+      background 0.18s ease,
+      box-shadow 0.18s ease,
+      transform 0.18s ease;
 
     &::before {
       position: absolute;
@@ -895,7 +915,10 @@
     background: var(--el-bg-color);
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 10px;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      transform 0.18s ease;
 
     &:hover {
       border-color: var(--el-color-primary-light-5);

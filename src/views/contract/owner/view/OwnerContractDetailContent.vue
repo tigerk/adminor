@@ -485,7 +485,17 @@
   import BizOperateLogPanel from "@/shared/biz-operate-log/BizOperateLogPanel.vue";
   import { SETTLEMENT_MODE_OPTIONS } from "@/views/contract/owner/form/ownerContractForm/model/ownerContractFormOptions";
   import { Clock, Document, FolderOpened, House, Money, User, Wallet } from "@element-plus/icons-vue";
-  import { BizApprovalStatusEnumMeta, FeeDirectionEnumMeta, GenderEnumMeta, IdTypeEnumMeta, PaymentMethodEnumMeta, PriceMethodEnumMeta } from "@/types/generated/enum.meta";
+  import {
+    BizApprovalStatusEnumMeta,
+    FeeDirectionEnumMeta,
+    GenderEnumMeta,
+    IdTypeEnumMeta,
+    OwnerContractDocStatusEnumMeta,
+    OwnerContractMediumEnumMeta,
+    OwnerSignStatusEnumMeta,
+    PaymentMethodEnumMeta,
+    PriceMethodEnumMeta
+  } from "@/types/generated/enum.meta";
   import type { ContractTemplateListVo, OwnerContractDto, OwnerContractSubjectDto, OwnerDetailVo, OwnerLeaseFeeDto, OwnerLeaseRuleDto } from "@/types/generated";
 
   type OwnerDetailData = OwnerDetailVo & {
@@ -664,6 +674,30 @@
     return Number.isFinite(code) ? statusLabelMap[code as keyof typeof statusLabelMap] || formatSnapshotValue(value) : formatSnapshotValue(value);
   };
 
+  const formatOwnerContractTemplate = (value: unknown) => {
+    const template = contractTemplates.value.find(item => String(item.id || "") === String(value || ""));
+    return template?.templateName || formatSnapshotValue(value);
+  };
+
+  const formatOwnerDocSignStatus = (value: unknown) => {
+    const code = Number(value);
+    return Object.values(OwnerSignStatusEnumMeta).find(item => item.code === code)?.name || formatSnapshotValue(value);
+  };
+
+  const formatOwnerDocStatus = (value: unknown) => {
+    const code = Number(value);
+    return Object.values(OwnerContractDocStatusEnumMeta).find(item => item.code === code)?.name || formatSnapshotValue(value);
+  };
+
+  const formatOwnerContractMedium = (value: unknown) => {
+    return Object.values(OwnerContractMediumEnumMeta).find(item => item.code === value || item.value === value)?.name || formatSnapshotValue(value);
+  };
+
+  const formatAttachmentUrls = (value: unknown) => {
+    if (!Array.isArray(value) || value.length === 0) return "—";
+    return `${value.length} 个文件`;
+  };
+
   const ownerOperateLogFieldConfig = [
     { path: "ownerType", label: "业主类型", formatter: formatOwnerType },
     { path: "ownerPersonal.name", label: "业主姓名" },
@@ -686,6 +720,22 @@
     { path: "ownerContract.contractEnd", label: "合同结束日" },
     { path: "ownerContract.checkoutReason", label: "退房原因" },
     { path: "ownerContract.voidReason", label: "作废原因" },
+    { path: "docNo", label: "签约合同编号" },
+    { path: "contractTemplateId", label: "合同模板", formatter: formatOwnerContractTemplate },
+    { path: "signStatus", label: "签署状态", formatter: formatOwnerDocSignStatus },
+    { path: "contractMedium", label: "合同介质", formatter: formatOwnerContractMedium },
+    { path: "docStatus", label: "签约合同状态", formatter: formatOwnerDocStatus },
+    { path: "voidReason", label: "作废原因" },
+    { path: "voidBy", label: "作废人" },
+    { path: "voidAt", label: "作废时间" },
+    { path: "docUpdatedAt", label: "签约合同更新时间" },
+    { path: "signedAttachmentUrls", label: "线下签约资料", formatter: formatAttachmentUrls },
+    { path: "signedContractUrls", label: "线下签约合同", formatter: formatAttachmentUrls },
+    { path: "supplementAgreementUrls", label: "补充协议", formatter: formatAttachmentUrls },
+    { path: "authorizationUrls", label: "授权委托书", formatter: formatAttachmentUrls },
+    { path: "ownerMaterialUrls", label: "业主资料", formatter: formatAttachmentUrls },
+    { path: "houseMaterialUrls", label: "房源资料", formatter: formatAttachmentUrls },
+    { path: "otherUrls", label: "其他资料", formatter: formatAttachmentUrls },
     { path: "remark", label: "备注" }
   ];
 
@@ -699,6 +749,24 @@
     remark: "备注",
     status: "状态",
     contractNo: "合同编号",
+    contractId: "业主合同ID",
+    ownerContractDocId: "签约合同ID",
+    contractTemplateId: "合同模板",
+    attachmentCount: "附件数量",
+    docNo: "签约合同编号",
+    signStatus: "签署状态",
+    contractMedium: "合同介质",
+    docStatus: "签约合同状态",
+    signedAttachmentUrls: "线下签约资料",
+    signedContractUrls: "线下签约合同",
+    supplementAgreementUrls: "补充协议",
+    authorizationUrls: "授权委托书",
+    ownerMaterialUrls: "业主资料",
+    houseMaterialUrls: "房源资料",
+    otherUrls: "其他资料",
+    voidBy: "作废人",
+    voidAt: "作废时间",
+    docUpdatedAt: "签约合同更新时间",
     checkoutReason: "退房原因",
     voidReason: "作废原因"
   };

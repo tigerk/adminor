@@ -14083,6 +14083,24 @@ export type VoidContractDocResponses = {
 
 export type VoidContractDocResponse = VoidContractDocResponses[keyof VoidContractDocResponses];
 
+export type RestoreContractDocData = {
+    body: OwnerContractDocIdDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/contract/owner/contract/doc/restore';
+};
+
+export type RestoreContractDocResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultLong;
+};
+
+export type RestoreContractDocResponse = RestoreContractDocResponses[keyof RestoreContractDocResponses];
+
 export type CreateContractDocData = {
     body: OwnerContractDocCreateDto;
     path?: never;
