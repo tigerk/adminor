@@ -188,6 +188,25 @@ export default [
       }
     ]
   },
+  {
+    path: "/recycle/room",
+    component: Layout,
+    meta: {
+      title: "房间回收站",
+      showLink: false
+    },
+    children: [
+      {
+        path: "",
+        name: "RoomRecycle",
+        component: () => import("@/views/recycle/room/index.vue"),
+        meta: {
+          title: "房间回收站",
+          showLink: false
+        }
+      }
+    ]
+  },
   // 下面是一个无layout菜单的例子（一个全屏空白页面），因为这种情况极少发生，所以只需要在前端配置即可（配置路径：src/router/modules/remaining.ts）
   {
     path: "/empty",

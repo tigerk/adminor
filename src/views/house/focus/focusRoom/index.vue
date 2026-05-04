@@ -34,13 +34,10 @@
     isStatusActive,
     displayModeToList,
     displayModeText,
-    tableColumns,
-    isRecycleMode,
+    columns,
     handleDisplayClick,
-    toggleRecycleMode,
     handleRoomAction,
     handleRoomDropdownCommand,
-    handleRestoreRoom,
     isRoomAvailable
   } = userFocusRoom();
 
@@ -108,18 +105,15 @@
         </el-page-header>
       </el-col>
       <el-col :span="12" class="text-right">
-        <el-button plain :disabled="isRecycleMode" @click="handleDisplayClick">
+        <el-button plain @click="handleDisplayClick">
           <IconifyIconOnline icon="flat-color-icons:department" class="mr-1" />
           {{ displayModeToList ? "切换房态模式" : "切换列表模式" }}
-        </el-button>
-        <el-button plain :type="isRecycleMode ? 'primary' : 'default'" @click="toggleRecycleMode">
-          {{ isRecycleMode ? "返回房间列表" : "回收站" }}
         </el-button>
         <el-button color="#626aef" :dark="true" @click="openFocusEditDialog('新增', undefined, onSearch)">添加房源</el-button>
       </el-col>
     </el-row>
 
-    <el-row v-if="!isRecycleMode" class="search-form bg-bg_color w-full px-4 overflow-auto">
+    <el-row class="search-form bg-bg_color w-full px-4 overflow-auto">
       <el-col :span="18">
         <div class="grid-content ep-bg-purple" style="align-items: flex-start">
           <el-space>
@@ -161,10 +155,6 @@
       </el-col>
     </el-row>
 
-    <el-row v-else class="bg-bg_color w-full px-4 pb-3 overflow-auto">
-      <el-alert title="回收站仅显示已删除房间，可查看删除原因并恢复；恢复房间时如果父级房源已删除会同步恢复。" type="warning" :closable="false" show-icon />
-    </el-row>
-
     <!-- 列表模式 -->
     <el-row v-if="displayModeToList" class="bg-bg_color w-full p-4 pt-[12px] overflow-auto">
       <pure-table
@@ -178,7 +168,7 @@
         adaptive
         :adaptiveConfig="{ offsetBottom: 92 }"
         :data="roomTableList"
-        :columns="tableColumns"
+        :columns="columns"
         :pagination="pagination"
         :header-cell-style="{
           background: 'var(--el-fill-color-light)',
@@ -188,11 +178,7 @@
         @page-current-change="handleCurrentChange"
       >
         <template #operation="{ row }">
-          <div v-if="isRecycleMode" class="room-table-actions">
-            <el-button link type="primary" @click="handleRoomAction(row, 'view')">查看</el-button>
-            <el-button link type="success" @click="handleRestoreRoom(row)">恢复</el-button>
-          </div>
-          <div v-else class="room-table-actions">
+          <div class="room-table-actions">
             <el-button link type="primary" @click="handleRoomAction(row, 'view')">查看</el-button>
             <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'booking')">预约</el-button>
             <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'tenant')">签约</el-button>
@@ -216,7 +202,7 @@
     </el-row>
 
     <!-- 房态模式 -->
-    <el-row v-if="!displayModeToList && !isRecycleMode">
+    <el-row v-if="!displayModeToList">
       <el-col :span="24">
         <RoomStatusGrid v-model="queryForm" />
       </el-col>

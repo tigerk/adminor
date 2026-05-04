@@ -1,10 +1,10 @@
 import { message } from "@/utils/message";
 import { transformI18n } from "@/plugins/i18n";
 import type { PaginationProps } from "@pureadmin/table";
-import { computed, onMounted, reactive, ref, toRaw } from "vue";
+import { onMounted, reactive, ref, toRaw } from "vue";
 import router from "@/router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { closeRoom, deleteRoom, getRoomList, getRoomTotalVo, openRoom, restoreRoom, unlockRoom } from "@/api/house/room";
+import { closeRoom, deleteRoom, getRoomList, getRoomTotalVo, openRoom, unlockRoom } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
 import type { HouseLayoutDto, RoomListVo, RoomQueryDto, RoomTotalItemVo } from "@/types";
 import { ROOM_FILTER_TYPE } from "@/constants";
@@ -13,13 +13,6 @@ import useBooking from "@/views/contract/booking/utils/hook";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { useRoomLock } from "@/views/house/components/RoomLock/hook";
 
-type RoomRecycleQuery = RoomQueryDto & { deleted?: boolean };
-type RoomListWithRecycle = RoomListVo & {
-  deleteReason?: string;
-  deleteBy?: string | number;
-  deleteByName?: string;
-  deleteAt?: string;
-};
 type RoomDropdownCommand = "lock" | "unlock" | "close" | "open" | "delete";
 
 export function userFocusRoom() {
@@ -34,7 +27,7 @@ export function userFocusRoom() {
     background: true
   });
 
-  const queryForm = reactive<RoomRecycleQuery>({
+  const queryForm = reactive<RoomQueryDto>({
     keywords: "",
     leaseModeId: null,
     leaseMode: 1, // 集中式
@@ -42,7 +35,6 @@ export function userFocusRoom() {
     occupancyStatus: undefined,
     locked: undefined,
     closed: undefined,
-    deleted: false,
     pageSize: "15",
     currentPage: "1"
   });
@@ -62,7 +54,6 @@ export function userFocusRoom() {
   const treeSearchValue = ref();
   const displayModeToList = ref(false);
   const displayModeText = ref("房态模式");
-  const isRecycleMode = ref(false);
 
   const columns: TableColumnList = [
     {
@@ -163,56 +154,6 @@ export function userFocusRoom() {
     }
   ];
 
-  const recycleColumns: TableColumnList = [
-    {
-      label: "状态",
-      width: 100,
-      fixed: "left",
-      cellRenderer: () => <el-tag type="danger">已删除</el-tag>
-    },
-    {
-      label: "小区/项目名称",
-      prop: "communityName",
-      width: 150,
-      cellRenderer: ({ row }) => <span>{row.communityName || row.propertyName || "-"}</span>
-    },
-    {
-      label: "房源地址",
-      prop: "houseName",
-      minWidth: 260
-    },
-    {
-      label: "房号",
-      prop: "roomNumber",
-      width: 100
-    },
-    {
-      label: "删除原因",
-      prop: "deleteReason",
-      minWidth: 260,
-      cellRenderer: ({ row }) => <span>{row.deleteReason || "-"}</span>
-    },
-    {
-      label: "删除人",
-      width: 140,
-      cellRenderer: ({ row }) => <span>{row.deleteByName || row.deleteBy || "-"}</span>
-    },
-    {
-      label: "删除时间",
-      prop: "deleteAt",
-      width: 180,
-      cellRenderer: ({ row }) => <span>{row.deleteAt || "-"}</span>
-    },
-    {
-      label: "操作",
-      fixed: "right",
-      width: 140,
-      slot: "operation"
-    }
-  ];
-
-  const tableColumns = computed(() => (isRecycleMode.value ? recycleColumns : columns));
-
   /**
    * 处理状态栏点击。
    *
@@ -287,10 +228,6 @@ export function userFocusRoom() {
   }
 
   async function loadRoomStatusTotal() {
-    if (isRecycleMode.value) {
-      roomStatusTotal.value = [];
-      return;
-    }
     try {
       const totalQuery = {
         ...toRaw(queryForm),
@@ -340,7 +277,6 @@ export function userFocusRoom() {
     queryForm.occupancyStatus = undefined;
     queryForm.locked = undefined;
     queryForm.closed = undefined;
-    queryForm.deleted = isRecycleMode.value;
     activeStatusKey.value = "all";
     onSearch();
   };
@@ -382,26 +318,8 @@ export function userFocusRoom() {
   }
 
   function handleDisplayClick() {
-    if (isRecycleMode.value) return;
     displayModeToList.value = !displayModeToList.value;
     displayModeText.value = displayModeToList.value ? "列表模式" : "房态模式";
-  }
-
-  function toggleRecycleMode() {
-    isRecycleMode.value = !isRecycleMode.value;
-    queryForm.deleted = isRecycleMode.value;
-    queryForm.occupancyStatus = undefined;
-    queryForm.locked = undefined;
-    queryForm.closed = undefined;
-    activeStatusKey.value = "all";
-    pagination.currentPage = 1;
-    if (isRecycleMode.value) {
-      displayModeToList.value = true;
-      displayModeText.value = "回收站";
-    } else {
-      displayModeText.value = displayModeToList.value ? "列表模式" : "房态模式";
-    }
-    onSearch().then();
   }
 
   function isRoomAvailable(row: RoomListVo) {
@@ -473,24 +391,6 @@ export function userFocusRoom() {
     });
   }
 
-  function handleRestoreRoom(row: RoomListWithRecycle) {
-    ElMessageBox.prompt(`确认恢复 ${row.houseName}-房间 ${row.roomNumber}？`, "恢复房间", {
-      confirmButtonText: "确认恢复",
-      cancelButtonText: "取消",
-      inputType: "textarea",
-      inputPlaceholder: "请输入恢复原因（可选）"
-    }).then(({ value }) => {
-      restoreRoom({ roomId: row.roomId, restoreReason: value?.trim() || "恢复误删房间" }).then(res => {
-        if (res.code === 0) {
-          ElMessage.success("房间已恢复");
-          onSearch().then();
-        } else {
-          ElMessage.error(res.message || "恢复房间失败");
-        }
-      });
-    });
-  }
-
   function handleRoomDropdownCommand(row: RoomListVo, command: RoomDropdownCommand) {
     switch (command) {
       case "lock":
@@ -553,8 +453,6 @@ export function userFocusRoom() {
     curRow,
     loading,
     columns,
-    tableColumns,
-    isRecycleMode,
     rowStyle,
     roomTableList,
     focusOptions,
@@ -565,7 +463,6 @@ export function userFocusRoom() {
     displayModeToList,
     displayModeText,
     handleDisplayClick,
-    toggleRecycleMode,
     treeData,
     isLinkage,
     pagination,
@@ -575,7 +472,6 @@ export function userFocusRoom() {
     handleDelete,
     handleRoomAction,
     handleRoomDropdownCommand,
-    handleRestoreRoom,
     isRoomAvailable,
     filterMethod,
     transformI18n,
