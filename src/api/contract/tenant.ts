@@ -7,61 +7,24 @@ import type {
   LeaseBillListVo,
   LeaseBillUpdateDto,
   LeaseBillVoidDto,
+  LeaseContractDeleteDto,
+  LeaseContractDocCreateDto,
+  LeaseContractDocIdDto,
+  LeaseContractDocVoidDto,
+  LeaseContractGenerateDto,
+  LeaseContractOfflineSignDto,
+  LeaseContractSignStatusUpdateDto,
   LeaseContractVo,
   LeaseDetailVo,
   LeaseListVo,
   LeaseQueryDto,
   LeaseBillCreateDto,
   TenantInfoUpdateDto,
+  TenantProfileSearchDto,
+  TenantProfileSearchVo,
   BizOperateLogVo,
   LeaseAttachmentUpdateDto
 } from "@/types";
-
-export interface TenantProfileSearchDto {
-  keyword?: string;
-  tenantType?: number;
-  limit?: number;
-}
-
-export interface TenantProfileSearchItem {
-  profileId?: string;
-  templateId?: string;
-  sourceTenantId?: string;
-  tenantType?: number;
-  tenantName?: string;
-  tenantPhone?: string;
-  updateAt?: string;
-  tenantPersonal?: {
-    id?: string;
-    companyId?: number;
-    name?: string;
-    gender?: number;
-    idType?: number;
-    idNo?: string;
-    phone?: string;
-    tags?: string[];
-    remark?: string;
-    idCardFrontList?: string[];
-    idCardBackList?: string[];
-    idCardInHandList?: string[];
-    otherImageList?: string[];
-  };
-  tenantCompany?: {
-    id?: string;
-    companyName?: string;
-    uscc?: string;
-    legalPerson?: string;
-    legalPersonIdType?: number;
-    legalPersonIdNo?: string;
-    contactName?: string;
-    contactPhone?: string;
-    registeredAddress?: string;
-    tags?: string[];
-    remark?: string;
-    businessLicenseList?: string[];
-    otherImageList?: string[];
-  };
-}
 
 /** 获取租客统计 */
 export const getTenantTotal = (data?: object) => {
@@ -120,7 +83,7 @@ export const getLeaseDetail = (data?: object) => {
 
 /** 搜索历史租客资料 */
 export const searchTenantProfiles = (data?: TenantProfileSearchDto) => {
-  return http.request<ApiResponse<TenantProfileSearchItem[]>>("post", baseUrlApi("contract/lease/tenant/profile/search"), { data });
+  return http.request<ApiResponse<TenantProfileSearchVo[]>>("post", baseUrlApi("contract/lease/tenant/profile/search"), { data });
 };
 
 /** 获取租客账单列表 */
@@ -159,42 +122,42 @@ export const voidLeaseBill = (data?: LeaseBillVoidDto) => {
 };
 
 /** 生成租客合同 */
-export const generateLeaseContract = (data?: object) => {
+export const generateLeaseContract = (data?: LeaseContractGenerateDto) => {
   return http.request<ApiResponse<LeaseContractVo>>("post", baseUrlApi("contract/lease/contract/generate"), { data });
 };
 
 /** 新增租客签约合同 */
-export const createLeaseContractDoc = (data?: object) => {
+export const createLeaseContractDoc = (data?: LeaseContractDocCreateDto) => {
   return http.request<ApiResponse<string>>("post", baseUrlApi("contract/lease/contract/doc/create"), { data });
 };
 
 /** 下载租客合同 */
-export const downloadLeaseContract = (data?: object) => {
+export const downloadLeaseContract = (data?: LeaseContractDocIdDto) => {
   return http.request<Blob>("post", baseUrlApi("contract/lease/contract/download"), { data }, { responseType: "blob" });
 };
 
 /** 更新租客合同签署状态 */
-export const updateLeaseContractSignStatus = (data?: object) => {
+export const updateLeaseContractSignStatus = (data?: LeaseContractSignStatusUpdateDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/contract/sign/status/update"), { data });
 };
 
 /** 删除租客合同 */
-export const deleteLeaseContract = (data?: object) => {
+export const deleteLeaseContract = (data?: LeaseContractDeleteDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("contract/lease/contract/delete"), { data });
 };
 
 /** 租客合同线下签约 */
-export const offlineSignLeaseContract = (data?: object) => {
+export const offlineSignLeaseContract = (data?: LeaseContractOfflineSignDto) => {
   return http.request<ApiResponse<string>>("post", baseUrlApi("contract/lease/contract/offline-sign"), { data });
 };
 
 /** 作废租客签约合同 */
-export const voidLeaseContractDoc = (data?: object) => {
+export const voidLeaseContractDoc = (data?: LeaseContractDocVoidDto) => {
   return http.request<ApiResponse<string>>("post", baseUrlApi("contract/lease/contract/doc/void"), { data });
 };
 
 /** 还原租客签约合同 */
-export const restoreLeaseContractDoc = (data?: object) => {
+export const restoreLeaseContractDoc = (data?: LeaseContractDocIdDto) => {
   return http.request<ApiResponse<string>>("post", baseUrlApi("contract/lease/contract/doc/restore"), { data });
 };
 
@@ -204,6 +167,6 @@ export const cancelTenant = (data?: object) => {
 };
 
 /** 租客合同预览 */
-export const previewLeaseContract = (data?: object) => {
+export const previewLeaseContract = (data?: LeaseContractDocIdDto) => {
   return http.request<Blob>("post", baseUrlApi("contract/lease/contract/preview"), { data }, { responseType: "blob" });
 };

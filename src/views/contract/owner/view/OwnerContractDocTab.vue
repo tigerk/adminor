@@ -101,7 +101,7 @@
       <iframe v-if="previewPdfUrl" title="业主合同预览" :src="previewPdfUrl" style="width: 100%; height: 89vh; border: none" />
     </el-dialog>
 
-    <el-dialog v-model="attachmentPreviewVisible" :title="attachmentPreviewTitle" width="72%" top="5vh" destroy-on-close append-to-body>
+    <el-dialog v-model="attachmentPreviewVisible" :title="attachmentPreviewTitle" fullscreen destroy-on-close append-to-body class="contract-attachment-preview-dialog">
       <el-image
         v-if="attachmentPreviewUrl && isImageFile(attachmentPreviewUrl)"
         class="attachment-preview-image"
@@ -114,7 +114,7 @@
         v-else-if="attachmentPreviewUrl && isPdfFile(attachmentPreviewUrl)"
         title="线下签约资料预览"
         :src="attachmentPreviewUrl"
-        style="width: 100%; height: 72vh; border: none"
+        class="attachment-preview-frame"
       />
       <div v-else class="attachment-preview-fallback">
         <el-icon><Document /></el-icon>
@@ -968,6 +968,7 @@
     align-items: center;
     justify-content: center;
     gap: 14px;
+    height: 100%;
     min-height: 360px;
     color: var(--el-text-color-regular);
     background: var(--el-fill-color-extra-light);
@@ -983,7 +984,7 @@
   .attachment-preview-image {
     display: block;
     width: 100%;
-    height: 72vh;
+    height: 100%;
     background: var(--el-fill-color-extra-light);
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 12px;
@@ -992,6 +993,21 @@
       width: 100%;
       height: 100%;
     }
+  }
+
+  .attachment-preview-frame {
+    width: 100%;
+    height: 100%;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+  }
+
+  :deep(.contract-attachment-preview-dialog .el-dialog__body) {
+    height: calc(100vh - 58px);
+    padding: 12px 16px 16px;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .contract-row__actions {
@@ -1150,34 +1166,36 @@
   }
 
   .offline-file-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 136px);
+    gap: 12px;
+    align-content: flex-start;
     max-height: 280px;
     overflow: auto;
     padding-right: 2px;
   }
 
   .offline-file-card {
-    display: grid;
-    grid-template-columns: 76px minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: center;
-    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 136px;
+    padding: 8px;
     background: var(--el-fill-color-extra-light);
     border: 1px solid var(--el-border-color-lighter);
-    border-radius: 10px;
+    border-radius: 12px;
   }
 
   .offline-file-card__preview {
-    width: 76px;
-    height: 58px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     background: var(--el-fill-color-light);
     border: 1px solid var(--el-border-color-lighter);
-    border-radius: 8px;
+    border-radius: 10px;
 
-    :deep(.el-image) {
+    :deep(.el-image),
+    :deep(img) {
       width: 100%;
       height: 100%;
     }
@@ -1185,14 +1203,22 @@
 
   .offline-file-card__file {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     height: 100%;
     color: var(--el-color-primary);
 
     .el-icon {
-      font-size: 22px;
+      font-size: 26px;
+    }
+
+    span {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--el-text-color-secondary);
+      text-transform: uppercase;
     }
   }
 
@@ -1203,23 +1229,28 @@
   .offline-file-card__name {
     overflow: hidden;
     color: var(--el-text-color-primary);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
+    text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .offline-file-card__status {
     display: inline-block;
-    margin-top: 6px;
+    width: 100%;
+    margin-top: 3px;
     font-size: 12px;
     color: var(--el-color-success);
+    text-align: center;
   }
 
   .offline-file-card__actions {
     display: flex;
     gap: 6px;
-    justify-content: flex-end;
+    justify-content: center;
+    padding-top: 2px;
+    border-top: 1px solid var(--el-border-color-extra-light);
   }
 
   @media (max-width: 960px) {
@@ -1250,13 +1281,12 @@
       grid-template-columns: 1fr;
     }
 
-    .offline-sign-layout,
-    .offline-file-card {
+    .offline-sign-layout {
       grid-template-columns: 1fr;
     }
 
     .offline-file-card__actions {
-      justify-content: flex-start;
+      justify-content: center;
     }
   }
 </style>

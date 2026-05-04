@@ -432,7 +432,7 @@
     LEASE_CONTRACT_NATURE_OPTIONS,
     TENANT_TYPE_OPTIONS
   } from "@/constants";
-  import type { TenantsCreateFormProps } from "@/types";
+  import type { TenantProfileSearchVo, TenantsCreateFormProps } from "@/types";
   import { ContractNatureEnumMeta } from "@/types/generated/enum.meta";
   import useTenant from "@/views/contract/tenant/utils/hook";
   import UploadImage from "@/components/upload/UploadImage.vue";
@@ -440,7 +440,7 @@
   import DeptTreeSelect from "@/components/org/DeptTreeSelect.vue";
   import { getCompanyUserOptions } from "@/api/company";
   import { getMyAvailableContractTemplates } from "@/api/contract/template";
-  import { searchTenantProfiles, type TenantProfileSearchItem } from "@/api/contract/tenant";
+  import { searchTenantProfiles } from "@/api/contract/tenant";
   import RoomPicker from "@/shared/house/RoomPicker.vue";
   import RoomConfigSection from "@/views/contract/tenant/form/tenantCreateForm/sections/RoomConfigSection.vue";
   import { tenantCompanyFormRules, tenantFormRules } from "@/views/contract/tenant/form/tenantCreateForm/model/rules";
@@ -541,7 +541,7 @@
     templateId?: string;
     tenantPhone?: string;
     updateAtText?: string;
-    profileTemplate: TenantProfileSearchItem;
+    profileTemplate: TenantProfileSearchVo;
     state?: "loading" | "empty" | "error";
   }
 
@@ -744,7 +744,7 @@
   const createStateSuggestion = (text: string, state: TenantSuggestionItem["state"]): TenantSuggestionItem => ({
     value: text,
     state,
-    profileTemplate: {} as TenantProfileSearchItem
+    profileTemplate: {} as TenantProfileSearchVo
   });
 
   const queryTenantSuggestions = (keyword: string, tenantType: number, cb: (items: TenantSuggestionItem[]) => void, state: TenantSuggestionState) => {

@@ -292,19 +292,20 @@
               <el-icon><Document /></el-icon>
               <span>合同信息</span>
               <el-tag type="info" size="default" effect="plain">{{ leaseContractCount }}份</el-tag>
-              <el-tag :type="leaseContractSignTagType" size="default" effect="light">{{ leaseContractSignText }}</el-tag>
             </el-space>
           </template>
-          <LeaseContractTab
-            :lease-contract="localFormInline.leaseContract"
-            :lease-contract-doc-list="leaseContractDocs"
-            :lease-id="localFormInline.leaseId"
-            :tenant-status="localFormInline.status"
-            :readonly="readonly"
-            @contract-signed="leaseId => emit('contract-signed', leaseId)"
-            @contract-updated="contract => (localFormInline.leaseContract = contract)"
-            @updated="handleContractDocsUpdated"
-          />
+          <div class="tab-content tab-content--fill">
+            <LeaseContractTab
+              :lease-contract="localFormInline.leaseContract"
+              :lease-contract-doc-list="leaseContractDocs"
+              :lease-id="localFormInline.leaseId"
+              :tenant-status="localFormInline.status"
+              :readonly="readonly"
+              @contract-signed="leaseId => emit('contract-signed', leaseId)"
+              @contract-updated="contract => (localFormInline.leaseContract = contract)"
+              @updated="handleContractDocsUpdated"
+            />
+          </div>
         </el-tab-pane>
 
         <el-tab-pane name="attachment">
@@ -425,15 +426,9 @@
   const checkoutTabDisabled = computed(() => !checkoutLoading.value && !checkoutDetail.value);
   const operateLogPanelRef = ref<InstanceType<typeof BizOperateLogPanel>>();
   const leaseContractDocs = computed(() => {
-    const detail = localFormInline.value as LeaseDetailVo & { leaseContractDocList?: NonNullable<LeaseDetailVo["leaseContract"]>[] };
-    return detail.leaseContractDocList?.length ? detail.leaseContractDocList : detail.leaseContract ? [detail.leaseContract] : [];
+    return localFormInline.value.leaseContractDocList?.length ? localFormInline.value.leaseContractDocList : localFormInline.value.leaseContract ? [localFormInline.value.leaseContract] : [];
   });
   const leaseContractCount = computed(() => leaseContractDocs.value.length);
-  const leaseContractSignText = computed(() => {
-    const signed = leaseContractDocs.value.some(item => item?.signStatus === 1 && (item as any).docStatus !== -1);
-    return signed ? "已签字" : "待签字";
-  });
-  const leaseContractSignTagType = computed(() => (leaseContractSignText.value === "已签字" ? "success" : "danger"));
   const leaseOperateLogQuery = computed(() => ({
     bizType: "LEASE",
     bizId: localFormInline.value.leaseId,
@@ -786,8 +781,10 @@
 <style scoped lang="scss">
   .tenant-detail-view {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     gap: 8px;
+    min-height: 0;
 
     .overview-bar,
     .tabs-wrapper {
@@ -799,8 +796,16 @@
 
     .overview-bar {
       display: flex;
+      flex: 0 0 auto;
       flex-direction: column;
       gap: 10px;
+    }
+
+    .tabs-wrapper {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
     }
 
     .overview-bar__section {
@@ -889,11 +894,35 @@
     }
 
     :deep(.el-tabs__header) {
+      flex: 0 0 auto;
       margin-bottom: 14px;
+    }
+
+    :deep(.modern-tabs) {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    :deep(.modern-tabs > .el-tabs__content) {
+      display: flex;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    :deep(.modern-tabs > .el-tabs__content > .el-tab-pane) {
+      flex: 1 1 auto;
+      min-height: 0;
     }
 
     .tab-content {
       min-height: 510px;
+
+      &--fill {
+        display: flex;
+        min-height: 100%;
+      }
     }
 
     .info-section {

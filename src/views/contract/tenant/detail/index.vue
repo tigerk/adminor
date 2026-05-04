@@ -120,6 +120,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-height: calc(100vh - 126px);
     padding: 0;
 
     &__head {
@@ -195,6 +196,11 @@
       display: flex;
       gap: 10px;
       align-items: center;
+    }
+
+    :deep(.tenant-detail-view) {
+      flex: 1 1 auto;
+      min-height: 0;
     }
   }
 </style>

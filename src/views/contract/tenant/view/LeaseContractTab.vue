@@ -103,7 +103,7 @@
       <iframe v-if="previewPdfUrl" title="租客合同预览" :src="previewPdfUrl" style="width: 100%; height: 89vh; border: none" />
     </el-dialog>
 
-    <el-dialog v-model="attachmentPreviewVisible" :title="attachmentPreviewTitle" width="72%" top="5vh" destroy-on-close append-to-body>
+    <el-dialog v-model="attachmentPreviewVisible" :title="attachmentPreviewTitle" fullscreen destroy-on-close append-to-body class="contract-attachment-preview-dialog">
       <el-image
         v-if="attachmentPreviewUrl && isImageFile(attachmentPreviewUrl)"
         class="attachment-preview-image"
@@ -116,7 +116,7 @@
         v-else-if="attachmentPreviewUrl && isPdfFile(attachmentPreviewUrl)"
         title="线下签约资料预览"
         :src="attachmentPreviewUrl"
-        style="width: 100%; height: 72vh; border: none"
+        class="attachment-preview-frame"
       />
       <div v-else class="attachment-preview-fallback">
         <el-icon><Document /></el-icon>
@@ -210,32 +210,15 @@
   import { message } from "@/utils/message";
   import { deviceDetection } from "@/store/utils";
   import SelectContractTemplateDialog from "@/views/contract/tenant/view/SelectContractTemplateDialog.vue";
-  import type { FileAttachSubtypeEnum, LeaseContractVo } from "@/types";
+  import { FileAttachSubtypeEnumMeta, LeaseContractDocStatusEnumMeta, type FileAttachSubtypeEnum, type LeaseContractVo } from "@/types";
 
-  type LeaseContractDocItem = LeaseContractVo & {
-    docNo?: string;
-    docStatus?: number;
-    status?: number;
-    contractStart?: string | Date;
-    contractEnd?: string | Date;
-    contractMedium?: string;
-    contractAttachmentGroupList?: Array<{ bizSubtype?: string; attachmentUrls?: string[] }>;
-    voidReason?: string;
-    voidBy?: string | number;
-    voidByName?: string;
-    voidAt?: string;
-    createAt?: string;
-    updateAt?: string;
-  };
-
-  const DOC_STATUS_ACTIVE = 1;
-  const DOC_STATUS_VOIDED = -1;
-  const signedContractSubtype: FileAttachSubtypeEnum = "SIGNED_CONTRACT";
+  const DOC_STATUS_VOIDED = LeaseContractDocStatusEnumMeta.VOIDED.code;
+  const signedContractSubtype: FileAttachSubtypeEnum = FileAttachSubtypeEnumMeta.SIGNED_CONTRACT.value;
 
   const props = withDefaults(
     defineProps<{
-      leaseContract?: LeaseContractDocItem | null;
-      leaseContractDocList?: LeaseContractDocItem[];
+      leaseContract?: LeaseContractVo | null;
+      leaseContractDocList?: LeaseContractVo[];
       leaseId: string;
       tenantStatus: number;
       readonly?: boolean;
@@ -262,10 +245,10 @@
   const offlineSignFileList = ref<UploadFile[]>([]);
   const offlineSignVisible = ref(false);
   const offlineSigning = ref(false);
-  const offlineSignContract = ref<LeaseContractDocItem | null>(null);
+  const offlineSignContract = ref<LeaseContractVo | null>(null);
   const localSignedAttachmentMap = ref<Record<string, string[]>>({});
 
-  const contractList = computed<LeaseContractDocItem[]>(() => {
+  const contractList = computed<LeaseContractVo[]>(() => {
     const list = props.leaseContractDocList?.length ? props.leaseContractDocList : props.leaseContract ? [props.leaseContract] : [];
     return list.filter(item => item?.id);
   });
@@ -297,20 +280,20 @@
     }
   });
 
-  function contractKey(item: LeaseContractDocItem) {
+  function contractKey(item: LeaseContractVo) {
     return String(item.id || contractDocNo(item) || "");
   }
 
-  function contractDocNo(item?: LeaseContractDocItem | null) {
-    return item?.docNo || item?.contractCode || "";
+  function contractDocNo(item?: LeaseContractVo | null) {
+    return item?.docNo || "";
   }
 
-  function selectContract(item: LeaseContractDocItem) {
+  function selectContract(item: LeaseContractVo) {
     if (!item.id) return;
     selectedContractId.value = String(item.id);
   }
 
-  function isSelected(item: LeaseContractDocItem) {
+  function isSelected(item: LeaseContractVo) {
     return String(item.id) === selectedContractId.value;
   }
 
@@ -318,47 +301,47 @@
     return props.readonly || props.tenantStatus === LEASE_STATUS_MAP.TERMINATED.code || props.tenantStatus === LEASE_STATUS_MAP.VOIDED.code;
   }
 
-  function isVoidedContractDoc(item?: LeaseContractDocItem) {
+  function isVoidedContractDoc(item?: LeaseContractVo) {
     return item?.docStatus === DOC_STATUS_VOIDED;
   }
 
-  function canSignContract(item?: LeaseContractDocItem) {
+  function canSignContract(item?: LeaseContractVo) {
     if (!item?.id || isReadonlyContract() || isVoidedContractDoc(item)) return false;
     return item.signStatus !== 1;
   }
 
-  function canVoidContractDoc(item?: LeaseContractDocItem) {
+  function canVoidContractDoc(item?: LeaseContractVo) {
     return Boolean(item?.id) && !isReadonlyContract() && !isVoidedContractDoc(item);
   }
 
-  function canRestoreContractDoc(item?: LeaseContractDocItem) {
+  function canRestoreContractDoc(item?: LeaseContractVo) {
     return Boolean(item?.id) && !isReadonlyContract() && isVoidedContractDoc(item);
   }
 
-  function signStatusText(item?: LeaseContractDocItem) {
+  function signStatusText(item?: LeaseContractVo) {
     if (isVoidedContractDoc(item)) return "已作废";
     return LEASE_SIGN_STATUS_OPTIONS.find(option => option.value === item?.signStatus)?.label || "待签字";
   }
 
-  function signStatusTagType(item?: LeaseContractDocItem) {
+  function signStatusTagType(item?: LeaseContractVo) {
     if (isVoidedContractDoc(item)) return "danger";
     return item?.signStatus === 1 ? "success" : "warning";
   }
 
-  function contractMediumText(item?: LeaseContractDocItem) {
+  function contractMediumText(item?: LeaseContractVo) {
     if (item?.contractMedium === "PAPER") return "纸质合同";
     if (item?.contractMedium === "ELECTRONIC") return "电子合同";
     return item?.contractMedium || "-";
   }
 
-  function signedContractAttachmentUrls(item?: LeaseContractDocItem) {
+  function signedContractAttachmentUrls(item?: LeaseContractVo) {
     const group = item?.contractAttachmentGroupList?.find(attachGroup => attachGroup.bizSubtype === signedContractSubtype);
     const persistedUrls = (group?.attachmentUrls || []).filter(Boolean);
     const localUrls = item?.id ? localSignedAttachmentMap.value[String(item.id)] || [] : [];
     return Array.from(new Set([...persistedUrls, ...localUrls]));
   }
 
-  function signedContractImageUrls(item?: LeaseContractDocItem) {
+  function signedContractImageUrls(item?: LeaseContractVo) {
     return signedContractAttachmentUrls(item).filter(url => isImageFile(url));
   }
 
@@ -464,7 +447,7 @@
     document.body.removeChild(a);
   }
 
-  async function handlePreviewContract(item?: LeaseContractDocItem) {
+  async function handlePreviewContract(item?: LeaseContractVo) {
     if (!item?.id) return;
     const resp = await previewLeaseContract({ leaseContractDocId: item.id });
     const blob = new Blob([resp], { type: "application/pdf" });
@@ -474,7 +457,7 @@
     previewVisible.value = true;
   }
 
-  async function handleDownloadContract(item?: LeaseContractDocItem) {
+  async function handleDownloadContract(item?: LeaseContractVo) {
     if (!item?.id) return;
     const resp = await downloadLeaseContract({ leaseContractDocId: item.id });
     const blob = new Blob([resp], { type: "application/pdf" });
@@ -488,7 +471,7 @@
     window.URL.revokeObjectURL(url);
   }
 
-  function handleGenerateContract(item?: LeaseContractDocItem) {
+  function handleGenerateContract(item?: LeaseContractVo) {
     if (!item?.id) return;
     const formRef = ref();
     addDialog({
@@ -508,7 +491,6 @@
         }
         generateLeaseContract({
           leaseContractDocId: item.id,
-          leaseContractId: item.id,
           leaseId: props.leaseId,
           contractTemplateId: String(selectedTemplate)
         }).then(resp => {
@@ -525,7 +507,7 @@
     });
   }
 
-  async function handleVoidContractDoc(item?: LeaseContractDocItem) {
+  async function handleVoidContractDoc(item?: LeaseContractVo) {
     if (!item?.id) return;
     let voidReason = "";
     try {
@@ -554,7 +536,7 @@
     message(resp.message || "作废签约合同失败", { type: "error" });
   }
 
-  async function handleRestoreContractDoc(item?: LeaseContractDocItem) {
+  async function handleRestoreContractDoc(item?: LeaseContractVo) {
     if (!item?.id) return;
     try {
       await ElMessageBox.confirm(`确认将签约合同「${contractDocNo(item) || item.id}」还原为有效？`, "还原签约合同", {
@@ -608,7 +590,7 @@
     });
   }
 
-  function openOfflineSignDialog(item?: LeaseContractDocItem) {
+  function openOfflineSignDialog(item?: LeaseContractVo) {
     if (!item?.id) return;
     offlineSignContract.value = item;
     offlineSignFileList.value = signedContractAttachmentUrls(item).map((url, index) => toUploadFile(url, index));
@@ -651,12 +633,17 @@
 <style scoped lang="scss">
   .lease-contract-doc-tab {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     gap: 12px;
     min-height: 0;
   }
 
   .contract-section {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
     padding: 16px 18px 18px;
     background: var(--el-bg-color);
     border: 1px solid var(--el-border-color-lighter);
@@ -691,6 +678,7 @@
 
   .contract-list {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     gap: 10px;
   }
@@ -915,6 +903,7 @@
   }
 
   .attachment-preview-fallback {
+    height: 100%;
     min-height: 360px;
     cursor: default;
     border: 1px solid var(--el-border-color-lighter);
@@ -928,7 +917,25 @@
 
   .attachment-preview-image {
     width: 100%;
-    max-height: 72vh;
+    height: 100%;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+  }
+
+  .attachment-preview-frame {
+    width: 100%;
+    height: 100%;
+    background: var(--el-fill-color-extra-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+  }
+
+  :deep(.contract-attachment-preview-dialog .el-dialog__body) {
+    height: calc(100vh - 58px);
+    padding: 12px 16px 16px;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .offline-sign-dialog {
@@ -1027,29 +1034,32 @@
   }
 
   .offline-file-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 136px);
+    gap: 12px;
+    align-content: flex-start;
     max-height: 260px;
     overflow: auto;
   }
 
   .offline-file-card {
-    display: grid;
-    grid-template-columns: 72px minmax(0, 1fr) auto;
-    gap: 10px;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 136px;
     padding: 8px;
+    background: var(--el-fill-color-extra-light);
     border: 1px solid var(--el-border-color-lighter);
-    border-radius: 10px;
+    border-radius: 12px;
   }
 
   .offline-file-card__preview {
-    width: 72px;
-    height: 72px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     background: var(--el-fill-color-extra-light);
-    border-radius: 8px;
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
 
     :deep(.el-image),
     :deep(img) {
@@ -1059,28 +1069,49 @@
   }
 
   .offline-file-card__file {
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     height: 100%;
     color: var(--el-text-color-secondary);
-    place-items: center;
+
+    .el-icon {
+      font-size: 26px;
+    }
+
+    span {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
   }
 
   .offline-file-card__name {
     overflow: hidden;
+    font-size: 12px;
     font-weight: 700;
     color: var(--el-text-color-primary);
+    text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .offline-file-card__status {
+    display: block;
+    margin-top: 3px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
+    text-align: center;
   }
 
   .offline-file-card__actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    justify-content: center;
+    padding-top: 2px;
+    border-top: 1px solid var(--el-border-color-extra-light);
   }
 </style>
