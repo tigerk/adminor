@@ -147,7 +147,7 @@ export function userFocusRoom() {
     {
       label: "操作",
       fixed: "right",
-      width: 260,
+      width: 210,
       slot: "operation"
     }
   ];
@@ -325,19 +325,13 @@ export function userFocusRoom() {
   }
 
   function openRoomDetail(row: RoomListVo) {
-    if (!row.houseId) {
-      message("房源ID缺失，无法打开详情", { type: "warning" });
+    if (!row.roomId) {
+      message("房间ID缺失，无法打开详情", { type: "warning" });
       return;
     }
-    const currentRoute = router.currentRoute.value;
     router.push({
       name: "FocusRoomDetail",
-      params: { houseId: row.houseId },
-      query: {
-        ...currentRoute.query,
-        roomId: row.roomId,
-        returnPath: currentRoute.fullPath
-      }
+      params: { roomId: row.roomId }
     });
   }
 

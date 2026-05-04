@@ -76,7 +76,7 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const { openFocusEditDialog } = useFocusEdit();
   const { openEntireEditDialog } = useEntireEdit();
   const { openShareEditDialog } = useShareEdit();
-  const { openHouseViewDialog } = useHouseView();
+  const { openHouseDetailDialog } = useHouseView();
   const { openRoomLockDialog } = useRoomLock();
   const { openBookingDialog } = useBooking();
   const { openTenantDialog } = useTenant();
@@ -310,21 +310,16 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
   const openRoomDetail = (room: RoomListVo) => {
     const detailRouteName = route.path === "/house/focus/room" ? "FocusRoomDetail" : route.path === "/house/scatter" ? "ScatterRoomDetail" : "";
     if (!detailRouteName) {
-      openHouseViewDialog(room);
+      openHouseDetailDialog(room);
       return;
     }
-    if (!room.houseId) {
-      message("房源ID缺失，无法打开详情", { type: "warning" });
+    if (!room.roomId) {
+      message("房间ID缺失，无法打开详情", { type: "warning" });
       return;
     }
     router.push({
       name: detailRouteName,
-      params: { houseId: room.houseId },
-      query: {
-        ...route.query,
-        roomId: room.roomId,
-        returnPath: route.fullPath
-      }
+      params: { roomId: room.roomId }
     });
   };
 

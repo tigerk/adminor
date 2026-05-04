@@ -110,24 +110,13 @@
           </template>
           <template #operation="{ row }">
             <el-button link type="primary" @click.stop="openOwnerPayableBillDetailDialog(row.billId)">查看</el-button>
-            <el-button v-if="canPayOwnerPayableBill(row)" link type="primary" @click.stop="openPayableBillPaymentDialog(row)">
-              登记付款
-            </el-button>
+            <el-button v-if="canPayOwnerPayableBill(row)" link type="primary" @click.stop="openPayableBillPaymentDialog(row)">登记付款</el-button>
             <el-dropdown :hide-on-click="false" popper-class="action-dropdown" @click.stop>
               <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item
-                    :disabled="!canEditOwnerPayableBill(row)"
-                    @click="openPayableBillFormDialog(row)"
-                  >
-                    修改账单
-                  </el-dropdown-item>
-                  <el-dropdown-item
-                    :disabled="!canVoidOwnerPayableBill(row)"
-                    divided
-                    @click="openPayableBillVoidDialog(row)"
-                  >
+                  <el-dropdown-item :disabled="!canEditOwnerPayableBill(row)" @click="openPayableBillFormDialog(row)">修改账单</el-dropdown-item>
+                  <el-dropdown-item :disabled="!canVoidOwnerPayableBill(row)" divided @click="openPayableBillVoidDialog(row)">
                     <span class="text-danger">作废账单</span>
                   </el-dropdown-item>
                 </el-dropdown-menu>

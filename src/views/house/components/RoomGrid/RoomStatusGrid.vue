@@ -129,7 +129,7 @@
                   <!-- 右侧按钮组 -->
                   <div class="action-right">
                     <!-- 操作下拉菜单 -->
-                    <el-dropdown trigger="click" @command="command => handleDropdownAction(room, command)">
+                    <el-dropdown :hide-on-click="false" popper-class="action-dropdown" trigger="click" @command="command => handleDropdownAction(room, command)">
                       <el-button size="small" plain>操作</el-button>
                       <template #dropdown>
                         <el-dropdown-menu>

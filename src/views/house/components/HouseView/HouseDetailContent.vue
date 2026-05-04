@@ -18,6 +18,7 @@
     loading: boolean;
     detail: HouseDetailVo | null;
     initialRoomId?: string;
+    mode?: "dialog" | "page";
   }>();
 
   const emit = defineEmits<{
@@ -239,7 +240,7 @@
 </script>
 
 <template>
-  <div class="hv">
+  <div class="hv" :class="{ 'hv--page': mode === 'page' }">
     <!-- Loading 骨架屏 -->
     <HvLoadingSkeleton v-if="loading" />
 
@@ -365,6 +366,64 @@
     overflow: hidden;
   }
 
+  .hv--page {
+    height: auto;
+    overflow: visible;
+    background: transparent;
+
+    .hv-layout {
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 10px;
+      overflow: visible;
+      align-items: start;
+    }
+
+    :deep(.hv-topbar) {
+      padding: 12px;
+      margin-bottom: 10px;
+      overflow: visible;
+      background: var(--card);
+      border: 1px solid var(--bl);
+      border-radius: 12px;
+    }
+
+    :deep(.hv-topbar__rooms) {
+      gap: 8px;
+    }
+
+    :deep(.hv-troom) {
+      width: 178px;
+      min-width: 178px;
+      background: var(--card);
+    }
+
+    :deep(.hv-main) {
+      min-width: 0;
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--bl);
+      border-radius: 12px;
+    }
+
+    :deep(.hv-panel) {
+      overflow: visible;
+      background: transparent;
+      border: 0;
+      gap: 10px;
+    }
+
+    :deep(.hv-pcard) {
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--bl);
+      border-radius: 12px;
+    }
+
+    :deep(.hv-pcard--remark) {
+      min-height: 220px;
+    }
+  }
+
   // ════════════════════════════════════════
   //  空/错误状态
   // ════════════════════════════════════════
@@ -397,9 +456,17 @@
     .hv-layout {
       grid-template-columns: 1fr 260px;
     }
+
+    .hv--page .hv-layout {
+      grid-template-columns: minmax(0, 1fr) 300px;
+    }
   }
   @media (width <= 900px) {
     .hv-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .hv--page .hv-layout {
       grid-template-columns: 1fr;
     }
   }

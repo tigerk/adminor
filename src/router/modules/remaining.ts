@@ -151,7 +151,7 @@ export default [
     ]
   },
   {
-    path: "/house/focus/room/detail/:houseId",
+    path: "/house/focus/room/detail/:roomId",
     component: Layout,
     meta: {
       title: "房间详情",
@@ -170,10 +170,10 @@ export default [
     ]
   },
   {
-    path: "/house/scatter/detail/:houseId",
+    path: "/house/scatter/detail/:roomId",
     component: Layout,
     meta: {
-      title: "房源详情",
+      title: "房间详情",
       showLink: false
     },
     children: [
@@ -182,7 +182,7 @@ export default [
         name: "ScatterRoomDetail",
         component: () => import("@/views/house/scatter/scatterRoom/detail/index.vue"),
         meta: {
-          title: "房源详情",
+          title: "房间详情",
           showLink: false
         }
       }

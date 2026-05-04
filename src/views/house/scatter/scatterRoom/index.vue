@@ -7,6 +7,8 @@
   import RoomStatusGrid from "../../components/RoomGrid/RoomStatusGrid.vue";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
+  import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+  import More from "~icons/ep/more-filled";
 
   defineOptions({
     name: "ScatterRoom"
@@ -185,7 +187,7 @@
             <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'booking')">预约</el-button>
             <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'tenant')">签约</el-button>
             <el-dropdown :hide-on-click="false" popper-class="action-dropdown" trigger="click" @command="command => handleTableDropdownCommand(row, command)">
-              <el-button link type="primary">操作</el-button>
+              <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="lock" :disabled="row.locked">锁房</el-dropdown-item>

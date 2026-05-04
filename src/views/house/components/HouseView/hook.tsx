@@ -2,7 +2,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
-import HouseViewDialog from "@/views/house/components/HouseView/HouseViewDialog.vue";
+import HouseDetailContent from "@/views/house/components/HouseView/HouseDetailContent.vue";
 import { type BookingListVo, type HouseDetailVo, type LeaseLiteVo, LeaseModeEnumMeta, RentalTypeEnumMeta, type RoomDetailVo, type RoomListVo, TenantTypeEnumMeta } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
@@ -30,7 +30,7 @@ export const useHouseView = () => {
    * 以弹窗形式打开房源详情
    * @param room - 列表行数据，取 houseId 作为查询参数
    */
-  function openHouseViewDialog(room: RoomListVo) {
+  function openHouseDetailDialog(room: RoomListVo) {
     const state = reactive<HouseViewState>({
       loading: true,
       detail: null
@@ -48,7 +48,7 @@ export const useHouseView = () => {
       hideFooter: true,
       contentRenderer: () =>
         h("div", { style: { height: "calc(90vh - 60px)" } }, [
-          h(HouseViewDialog, {
+          h(HouseDetailContent, {
             loading: state.loading,
             detail: state.detail,
             initialRoomId: room.roomId,
@@ -186,6 +186,6 @@ export const useHouseView = () => {
   }
 
   return {
-    openHouseViewDialog
+    openHouseDetailDialog
   };
 };
