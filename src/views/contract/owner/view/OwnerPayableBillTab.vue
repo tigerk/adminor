@@ -47,6 +47,9 @@
               <span>生成：{{ bill.generatedAt || "-" }}</span>
             </div>
           </div>
+          <div class="owner-detail-finance-card__actions">
+            <el-button link type="primary" :disabled="!bill.billId" @click="openPayableBillDetailDialog(bill.billId)">查看</el-button>
+          </div>
         </div>
 
         <div class="owner-detail-finance-card__body">
@@ -149,10 +152,12 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, watch } from "vue";
+  import { computed, h, ref, watch } from "vue";
+  import { addDialog } from "@/components/ReDialog";
   import { getOwnerPayableBillDetailListByContract, getOwnerPayableBillSummary } from "@/api/owner/owner";
   import { OwnerPayableBillPaymentStatusEnumMeta, OwnerPayableBillStatusEnumMeta } from "@/types/generated/enum.meta";
   import type { OwnerPayableBillDetailVo, OwnerPayableBillQueryDto, OwnerPayableBillSummaryVo } from "@/types/generated";
+  import OwnerPayableBillDetailDialog from "@/views/finance/owner-payable-bill/view/OwnerPayableBillDetailDialog.vue";
   import "./ownerDetailFinanceTab.scss";
 
   defineOptions({ name: "OwnerPayableBillTab" });
@@ -229,6 +234,24 @@
 
   function directionTagType(direction?: string) {
     return direction === "IN" ? "success" : direction === "OUT" ? "danger" : "info";
+  }
+
+  function openPayableBillDetailDialog(billId?: string | number) {
+    if (!billId) return;
+    addDialog({
+      title: "包租应付单详情",
+      props: { billId },
+      width: "1100px",
+      top: "2vh",
+      lockScroll: true,
+      alignCenter: true,
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      hideFooter: true,
+      contentRenderer: () => h(OwnerPayableBillDetailDialog, { billId }),
+      closeCallBack: fetchData
+    });
   }
 
   watch(() => [props.ownerId, props.contractId], fetchData, { immediate: true });

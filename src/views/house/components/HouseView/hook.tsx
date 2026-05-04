@@ -51,6 +51,7 @@ export const useHouseView = () => {
           h(HouseViewDialog, {
             loading: state.loading,
             detail: state.detail,
+            initialRoomId: room.roomId,
             onBooking: (r: RoomDetailVo) => {
               openBookingDialog("添加", { roomIds: [room.roomId] }, () => {
                 loadDetail(state, room?.houseId).catch(() => message("退租操作完成", { type: "success" }));

@@ -3,12 +3,21 @@ import { transformI18n } from "@/plugins/i18n";
 import type { PaginationProps } from "@pureadmin/table";
 import { onMounted, reactive, ref, toRaw } from "vue";
 import router from "@/router";
-import { getRoomList, getRoomTotalVo } from "@/api/house/room";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { closeRoom, getRoomList, getRoomTotalVo, openRoom, unlockRoom } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
-import type { HouseLayoutDto, RoomQueryDto, RoomTotalItemVo } from "@/types";
+import type { HouseLayoutDto, RoomListVo, RoomQueryDto, RoomTotalItemVo } from "@/types";
 import { ROOM_FILTER_TYPE } from "@/constants";
+import { OccupancyStatusEnumMeta, TenantTypeEnumMeta } from "@/types";
+import useBooking from "@/views/contract/booking/utils/hook";
+import useTenant from "@/views/contract/tenant/utils/hook";
+import { useRoomLock } from "@/views/house/components/RoomLock/hook";
 
 export function userFocusRoom() {
+  const { openBookingDialog } = useBooking();
+  const { openTenantDialog } = useTenant();
+  const { openRoomLockDialog } = useRoomLock();
+
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 15,
@@ -79,8 +88,9 @@ export function userFocusRoom() {
     },
     {
       label: "小区/项目名称",
-      prop: "propertyName",
-      width: 150
+      prop: "communityName",
+      width: 150,
+      cellRenderer: ({ row }) => <span>{row.communityName || row.propertyName || "-"}</span>
     },
     {
       label: "房源地址",
@@ -133,6 +143,12 @@ export function userFocusRoom() {
           {row.salesmanName} - {row.salesmanPhone}
         </span>
       )
+    },
+    {
+      label: "操作",
+      fixed: "right",
+      width: 260,
+      slot: "operation"
     }
   ];
 
@@ -304,6 +320,114 @@ export function userFocusRoom() {
     displayModeText.value = displayModeToList.value ? "列表模式" : "房态模式";
   }
 
+  function isRoomAvailable(row: RoomListVo) {
+    return row.occupancyStatus === OccupancyStatusEnumMeta.AVAILABLE.code;
+  }
+
+  function openRoomDetail(row: RoomListVo) {
+    if (!row.houseId) {
+      message("房源ID缺失，无法打开详情", { type: "warning" });
+      return;
+    }
+    const currentRoute = router.currentRoute.value;
+    router.push({
+      name: "FocusRoomDetail",
+      params: { houseId: row.houseId },
+      query: {
+        ...currentRoute.query,
+        roomId: row.roomId,
+        returnPath: currentRoute.fullPath
+      }
+    });
+  }
+
+  function handleRoomAction(row: RoomListVo, action: "view" | "booking" | "tenant") {
+    switch (action) {
+      case "view":
+        openRoomDetail(row);
+        break;
+      case "booking":
+        if (!isRoomAvailable(row)) return;
+        openBookingDialog("添加", { roomIds: [row.roomId], roomList: [row] }, () => {
+          onSearch();
+        });
+        break;
+      case "tenant":
+        if (!isRoomAvailable(row)) return;
+        openTenantDialog(
+          "添加",
+          {
+            booking: { roomIds: [row.roomId], roomList: [row] },
+            lease: {
+              roomIds: [row.roomId],
+              contractNature: 1,
+              tenantType: TenantTypeEnumMeta.PERSONAL.code
+            } as any,
+            tenantPersonal: {} as any,
+            tenantCompany: {} as any,
+            tenantMateList: [],
+            otherFees: []
+          },
+          () => {
+            onSearch();
+          }
+        );
+        break;
+    }
+  }
+
+  function handleRoomDropdownCommand(row: RoomListVo, command: "lock" | "unlock" | "close" | "open") {
+    switch (command) {
+      case "lock":
+        openRoomLockDialog(row, () => {
+          onSearch();
+        });
+        break;
+      case "unlock":
+        ElMessageBox.confirm(`确认解锁 ${row.houseName}-房间 ${row.roomNumber}？`, "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(() => {
+          unlockRoom({ roomId: row.roomId }).then(res => {
+            if (res.code === 0) {
+              ElMessage.success(`房间 ${row.roomNumber} 已解锁`);
+              onSearch();
+            } else {
+              ElMessage.error(res.message || `解锁房间 ${row.roomNumber} 失败`);
+            }
+          });
+        });
+        break;
+      case "close":
+        ElMessageBox.confirm(`确认关闭 ${row.houseName}-房间 ${row.roomNumber}？`, "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(() => {
+          closeRoom({ roomId: row.roomId }).then(res => {
+            if (res.code === 0) {
+              ElMessage.success(`已关闭房间 ${row.roomNumber}`);
+              onSearch();
+            } else {
+              ElMessage.error(res.message || "关闭失败");
+            }
+          });
+        });
+        break;
+      case "open":
+        openRoom({ roomId: row.roomId }).then(res => {
+          if (res.code === 0) {
+            ElMessage.success(`已开启房间 ${row.roomNumber}`);
+            onSearch();
+          } else {
+            ElMessage.error(res.message || "开启失败");
+          }
+        });
+        break;
+    }
+  }
+
   return {
     queryForm,
     onBack,
@@ -328,6 +452,9 @@ export function userFocusRoom() {
     onSearch,
     resetForm,
     handleDelete,
+    handleRoomAction,
+    handleRoomDropdownCommand,
+    isRoomAvailable,
     filterMethod,
     transformI18n,
     handleSizeChange,

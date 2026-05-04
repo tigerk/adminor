@@ -14,6 +14,7 @@ import useTenant from "@/views/contract/tenant/utils/hook";
 import { message } from "@/utils/message";
 import { formatDate, formatDateByDot } from "@/utils/date";
 import { OccupancyStatusEnumMeta } from "@/types/generated/enum.meta";
+import { useRoute, useRouter } from "vue-router";
 
 // ==================== Hook 特有的类型定义 ====================
 // 说明：以下三个 Processed* 接口是必须保留的前端展示层类型。
@@ -70,6 +71,8 @@ interface ProcessedCompoundGroup {
 // ==================== Hook 定义 ====================
 
 export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
+  const route = useRoute();
+  const router = useRouter();
   const { openFocusEditDialog } = useFocusEdit();
   const { openEntireEditDialog } = useEntireEdit();
   const { openShareEditDialog } = useShareEdit();
@@ -297,11 +300,32 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         ElMessage.success(`准备为房间 ${room.roomNumber} 签约`);
         break;
       case "view":
-        openHouseViewDialog(room);
+        openRoomDetail(room);
         break;
       default:
         message(`未知操作：${action}`, { type: "error" });
     }
+  };
+
+  const openRoomDetail = (room: RoomListVo) => {
+    const detailRouteName = route.path === "/house/focus/room" ? "FocusRoomDetail" : route.path === "/house/scatter" ? "ScatterRoomDetail" : "";
+    if (!detailRouteName) {
+      openHouseViewDialog(room);
+      return;
+    }
+    if (!room.houseId) {
+      message("房源ID缺失，无法打开详情", { type: "warning" });
+      return;
+    }
+    router.push({
+      name: detailRouteName,
+      params: { houseId: room.houseId },
+      query: {
+        ...route.query,
+        roomId: room.roomId,
+        returnPath: route.fullPath
+      }
+    });
   };
 
   // 管理小区（集中式项目）

@@ -123,7 +123,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="offlineSignVisible" :title="offlineSignDialogTitle" width="860px" destroy-on-close>
+    <el-dialog v-model="offlineSignVisible" :title="offlineSignDialogTitle" width="860px" destroy-on-close append-to-body align-center :lock-scroll="true">
       <div class="offline-sign-dialog">
         <div class="offline-sign-hero">
           <div class="offline-sign-hero__icon">
@@ -1095,7 +1095,7 @@
 
   .offline-sign-layout {
     display: grid;
-    grid-template-columns: 320px minmax(0, 1fr);
+    grid-template-columns: 1fr;
     gap: 14px;
   }
 
@@ -1107,7 +1107,7 @@
   }
 
   .offline-sign-panel--files {
-    min-height: 308px;
+    min-height: 300px;
   }
 
   .offline-sign-panel__head {
@@ -1128,8 +1128,13 @@
   }
 
   .offline-sign-uploader {
+    :deep(.el-upload) {
+      width: 100%;
+    }
+
     :deep(.el-upload-dragger) {
-      min-height: 238px;
+      height: 168px;
+      min-height: 168px;
     }
   }
 
@@ -1148,7 +1153,7 @@
     }
 
     span {
-      max-width: 210px;
+      max-width: none;
       font-size: 13px;
       line-height: 1.5;
       color: var(--el-text-color-secondary);
@@ -1167,10 +1172,10 @@
 
   .offline-file-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 136px);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px;
     align-content: flex-start;
-    max-height: 280px;
+    max-height: 320px;
     overflow: auto;
     padding-right: 2px;
   }
@@ -1179,7 +1184,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: 136px;
+    min-width: 0;
     padding: 8px;
     background: var(--el-fill-color-extra-light);
     border: 1px solid var(--el-border-color-lighter);
@@ -1281,8 +1286,8 @@
       grid-template-columns: 1fr;
     }
 
-    .offline-sign-layout {
-      grid-template-columns: 1fr;
+    .offline-file-list {
+      grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
     }
 
     .offline-file-card__actions {

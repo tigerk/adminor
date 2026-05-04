@@ -17,6 +17,7 @@
   const props = defineProps<{
     loading: boolean;
     detail: HouseDetailVo | null;
+    initialRoomId?: string;
   }>();
 
   const emit = defineEmits<{
@@ -38,11 +39,16 @@
   // ── 房间列表 & 选中 ───────────────────────────────────────
   const roomTabs = computed<RoomDetailVo[]>(() => props.detail?.roomList ?? []);
   const activeRoomIndex = ref(0);
+
+  const syncActiveRoomIndex = () => {
+    const targetRoomId = props.initialRoomId ? String(props.initialRoomId) : "";
+    const nextIndex = targetRoomId ? roomTabs.value.findIndex(room => String(room.id ?? "") === targetRoomId || String((room as any).roomId ?? "") === targetRoomId) : -1;
+    activeRoomIndex.value = nextIndex >= 0 ? nextIndex : 0;
+  };
+
   watch(
-    () => roomTabs.value,
-    () => {
-      activeRoomIndex.value = 0;
-    },
+    [() => roomTabs.value, () => props.initialRoomId],
+    () => syncActiveRoomIndex(),
     { immediate: true }
   );
   const currentRoom = computed<RoomDetailVo | null>(() => roomTabs.value[activeRoomIndex.value] ?? roomTabs.value[0] ?? null);
@@ -291,7 +297,7 @@
     <div v-else class="hv-empty">
       <div class="hv-empty__ico">🏚️</div>
       <p class="hv-empty__title">房源数据加载失败</p>
-      <p class="hv-empty__sub">请关闭弹窗后重试</p>
+      <p class="hv-empty__sub">请刷新后重试</p>
       <el-button type="primary" plain @click="() => emit('reload')">重新加载</el-button>
     </div>
   </div>

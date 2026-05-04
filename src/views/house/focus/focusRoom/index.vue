@@ -33,7 +33,10 @@
     isStatusActive,
     displayModeToList,
     displayModeText,
-    handleDisplayClick
+    handleDisplayClick,
+    handleRoomAction,
+    handleRoomDropdownCommand,
+    isRoomAvailable
   } = userFocusRoom();
 
   const formRef = ref();
@@ -41,6 +44,10 @@
   const contentRef = ref();
   const treeHeight = ref();
   const tableSize = ref("default");
+
+  function handleTableDropdownCommand(row, command) {
+    handleRoomDropdownCommand(row, command);
+  }
 
   function applyRouteQuery() {
     queryForm.occupancyStatus = typeof route.query.occupancyStatus === "string" && route.query.occupancyStatus !== "" ? Number(route.query.occupancyStatus) : undefined;
@@ -167,7 +174,26 @@
         }"
         @page-size-change="handleSizeChange"
         @page-current-change="handleCurrentChange"
-      />
+      >
+        <template #operation="{ row }">
+          <div class="room-table-actions">
+            <el-button link type="primary" @click="handleRoomAction(row, 'view')">查看</el-button>
+            <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'booking')">预约</el-button>
+            <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'tenant')">签约</el-button>
+            <el-dropdown :hide-on-click="false" popper-class="action-dropdown" trigger="click" @command="command => handleTableDropdownCommand(row, command)">
+              <el-button link type="primary">操作</el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="lock" :disabled="row.locked">锁房</el-dropdown-item>
+                  <el-dropdown-item command="unlock" :disabled="!row.locked">解锁</el-dropdown-item>
+                  <el-dropdown-item command="close" :disabled="row.closed">关闭</el-dropdown-item>
+                  <el-dropdown-item command="open" :disabled="!row.closed">开启</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </template>
+      </pure-table>
     </el-row>
 
     <!-- 房态模式 -->
@@ -230,5 +256,17 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
+  }
+
+  .room-table-actions {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+    :deep(.el-button + .el-button) {
+      margin-left: 0;
+    }
   }
 </style>

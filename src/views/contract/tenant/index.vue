@@ -133,6 +133,7 @@
   const router = useRouter();
   const tenantListRefreshVersion = useTenantListRefreshVersion();
   const lastSeenRefreshVersion = ref(0);
+  const skipNextRouteQuerySync = ref(false);
 
   defineOptions({
     name: "ContractTenant"
@@ -183,11 +184,29 @@
     };
   }
 
+  function normalizeQueryValue(value: unknown) {
+    const currentValue = Array.isArray(value) ? value[0] : value;
+    return currentValue ?? undefined;
+  }
+
+  function isSameListQuery(nextQuery: ReturnType<typeof buildListQuery>) {
+    const keys = new Set([...Object.keys(route.query), ...Object.keys(nextQuery)]);
+    return [...keys].every(key => normalizeQueryValue(route.query[key]) === (nextQuery[key] ?? undefined));
+  }
+
   function syncListQuery() {
-    router.replace({
+    const nextQuery = buildListQuery();
+    if (isSameListQuery(nextQuery)) return;
+
+    skipNextRouteQuerySync.value = true;
+    router
+      .replace({
       path: "/contract/tenant",
-      query: buildListQuery()
-    });
+      query: nextQuery
+    })
+      .catch(() => {
+        skipNextRouteQuerySync.value = false;
+      });
   }
 
   function handleTenantSearch() {
@@ -277,6 +296,19 @@
       pdfUrl.value = "";
     }
   });
+
+  watch(
+    () => route.query,
+    () => {
+      if (route.path !== "/contract/tenant") return;
+      if (skipNextRouteQuerySync.value) {
+        skipNextRouteQuerySync.value = false;
+        return;
+      }
+      applyRouteQuery();
+      onTenantSearch();
+    }
+  );
 
   onMounted(() => {
     applyRouteQuery();

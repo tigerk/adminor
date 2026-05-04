@@ -56,6 +56,13 @@
     ];
   });
 
+  function getRouteViewKey(route, fullPath: string) {
+    if (route?.name === "ContractTenant" || route?.path === "/contract/tenant") {
+      return route.name ? String(route.name) : route.path;
+    }
+    return fullPath;
+  }
+
   const transitionMain = defineComponent({
     props: {
       route: {
@@ -115,11 +122,11 @@
               </el-backtop>
               <div class="grow">
                 <transitionMain :route="route">
-                  <div :key="fullPath" class="page-container">
+                  <div :key="getRouteViewKey(route, fullPath)" class="page-container">
                     <keep-alive v-if="isKeepAlive" :include="usePermissionStoreHook().cachePageList">
-                      <component :is="Comp" :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                      <component :is="Comp" :key="getRouteViewKey(route, fullPath)" :frameInfo="frameInfo" class="main-content" />
                     </keep-alive>
-                    <component :is="Comp" v-else :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                    <component :is="Comp" v-else :key="getRouteViewKey(route, fullPath)" :frameInfo="frameInfo" class="main-content" />
                   </div>
                 </transitionMain>
               </div>
@@ -127,11 +134,11 @@
             </el-scrollbar>
             <div v-else class="grow">
               <transitionMain :route="route">
-                <div :key="fullPath" class="page-container">
+                <div :key="getRouteViewKey(route, fullPath)" class="page-container">
                   <keep-alive v-if="isKeepAlive" :include="usePermissionStoreHook().cachePageList">
-                    <component :is="Comp" :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                    <component :is="Comp" :key="getRouteViewKey(route, fullPath)" :frameInfo="frameInfo" class="main-content" />
                   </keep-alive>
-                  <component :is="Comp" v-else :key="fullPath" :frameInfo="frameInfo" class="main-content" />
+                  <component :is="Comp" v-else :key="getRouteViewKey(route, fullPath)" :frameInfo="frameInfo" class="main-content" />
                 </div>
               </transitionMain>
             </div>

@@ -320,6 +320,7 @@
             <el-space>
               <el-icon><Document /></el-icon>
               <span>合同信息</span>
+              <el-tag size="small" effect="plain">{{ ownerContractDocCount }}份</el-tag>
             </el-space>
           </template>
           <div class="tab-content">
@@ -548,6 +549,7 @@
   const props = defineProps<{ formInline?: OwnerDetailData | null }>();
   const emit = defineEmits<{ updated: [] }>();
   const detailData = computed(() => props.formInline as OwnerDetailData | null | undefined);
+  const ownerContractDocCount = computed(() => detailData.value?.ownerContractDocList?.filter(item => item?.id).length || 0);
   const activeTab = ref("owner");
   const contractTemplates = ref<ContractTemplateListVo[]>([]);
   const ownerTagLabelMap = ref<Record<string, string>>({});
