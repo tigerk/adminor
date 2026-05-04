@@ -2338,6 +2338,10 @@ export type RoomQueryDto = {
      */
     leaseMode?: number;
     /**
+     * 出租类型：1=整租，2=合租，参考RentalTypeEnum
+     */
+    rentalType?: number;
+    /**
      * 模式引用ID
      */
     leaseModeId?: string;

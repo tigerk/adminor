@@ -29,8 +29,11 @@
     handleSizeChange,
     handleCurrentChange,
     focusOptions,
+    rentalTypeTabs,
     roomStatusTotal,
     activeStatusKey,
+    handleRentalTypeClick,
+    isRentalTypeActive,
     handleStatusClick,
     isStatusActive,
     displayModeToList,
@@ -121,6 +124,20 @@
       <el-col :span="18">
         <div class="grid-content ep-bg-purple" style="align-items: flex-start">
           <el-space>
+            <el-form-item>
+              <el-button-group class="rental-type-bar">
+                <el-button
+                  v-for="item in rentalTypeTabs"
+                  :key="item.value ?? 'all'"
+                  class="rental-type-btn"
+                  type="default"
+                  :class="{ 'is-active': isRentalTypeActive(item.value) }"
+                  @click="handleRentalTypeClick(item.value)"
+                >
+                  {{ item.label }}
+                </el-button>
+              </el-button-group>
+            </el-form-item>
             <el-form-item>
               <!--
                 状态栏改为手动点击分发，不再用 v-model 绑定 queryForm.roomStatus。
@@ -226,11 +243,39 @@
   }
 
   /* ========== 状态栏 ========== */
-  .status-bar {
-    display: inline-flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-  }
+	  .status-bar {
+	    display: inline-flex;
+	    flex-wrap: nowrap;
+	    align-items: stretch;
+	  }
+
+	  .rental-type-bar {
+	    display: inline-flex;
+	    flex-wrap: nowrap;
+	    align-items: stretch;
+	  }
+
+	  :deep(.rental-type-btn) {
+	    margin: 0 !important;
+	    padding: 8px 14px;
+	    font-size: 14px;
+	    color: var(--el-text-color-regular);
+	    border-color: var(--el-border-color) !important;
+	    background: var(--el-bg-color);
+	    transition: all 0.2s;
+
+	    &:hover {
+	      color: var(--el-color-primary);
+	      border-color: var(--el-color-primary-light-5);
+	      background: var(--el-fill-color-light);
+	    }
+
+	    &.is-active {
+	      color: var(--el-color-primary);
+	      background: var(--el-color-primary-light-9);
+	      border-color: var(--el-color-primary);
+	    }
+	  }
 
   :deep(.status-btn) {
     margin: 0 !important;

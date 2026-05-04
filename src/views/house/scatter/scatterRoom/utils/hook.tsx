@@ -7,11 +7,15 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { closeRoom, deleteRoom, getRoomList, getRoomTotalVo, openRoom, unlockRoom } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
 import type { HouseLayoutDto, RoomListVo, RoomQueryDto, RoomTotalItemVo } from "@/types";
-import { OccupancyStatusEnumMeta, TenantTypeEnumMeta } from "@/types";
-import { ROOM_FILTER_TYPE } from "@/constants";
-import useBooking from "@/views/contract/booking/utils/hook";
-import useTenant from "@/views/contract/tenant/utils/hook";
-import { useRoomLock } from "@/views/house/components/RoomLock/hook";
+  import { OccupancyStatusEnumMeta, RentalTypeEnumMeta, TenantTypeEnumMeta } from "@/types";
+  import { ROOM_FILTER_TYPE } from "@/constants";
+  import useBooking from "@/views/contract/booking/utils/hook";
+  import useTenant from "@/views/contract/tenant/utils/hook";
+  import { useRoomLock } from "@/views/house/components/RoomLock/hook";
+
+type ScatterRoomQueryDto = RoomQueryDto & {
+  rentalType?: number;
+};
 
 type RoomDropdownCommand = "lock" | "unlock" | "close" | "open" | "delete";
 
@@ -27,7 +31,7 @@ export function useScatterRoom() {
     background: true
   });
 
-  const queryForm = reactive<RoomQueryDto>({
+  const queryForm = reactive<ScatterRoomQueryDto>({
     keywords: "",
     leaseModeId: null,
     leaseMode: 2, // 整/合租
@@ -54,6 +58,11 @@ export function useScatterRoom() {
   const treeSearchValue = ref();
   const displayModeToList = ref(false);
   const displayModeText = ref("房态模式");
+  const rentalTypeTabs = [
+    { label: "全部房源", value: undefined },
+    { label: RentalTypeEnumMeta.ENTIRE.name, value: RentalTypeEnumMeta.ENTIRE.code },
+    { label: RentalTypeEnumMeta.SHARED.name, value: RentalTypeEnumMeta.SHARED.code }
+  ];
 
   const columns: TableColumnList = [
     {
@@ -240,6 +249,16 @@ export function useScatterRoom() {
     return false;
   }
 
+  function handleRentalTypeClick(value?: number) {
+    queryForm.rentalType = value;
+    pagination.currentPage = 1;
+    onSearch().then();
+  }
+
+  function isRentalTypeActive(value?: number) {
+    return value === undefined ? queryForm.rentalType === undefined : queryForm.rentalType === value;
+  }
+
   function handleDelete(row: any) {
     message(`您删除了角色名称为${row.name}的这条数据`, { type: "success" });
     onSearch().then();
@@ -305,6 +324,7 @@ export function useScatterRoom() {
     queryForm.occupancyStatus = undefined;
     queryForm.locked = undefined;
     queryForm.closed = undefined;
+    queryForm.rentalType = undefined;
     activeStatusKey.value = "all";
     onSearch().then();
   };
@@ -484,10 +504,13 @@ export function useScatterRoom() {
     rowStyle,
     roomTableList,
     focusOptions,
+    rentalTypeTabs,
     roomStatusTotal,
     activeStatusKey,
     handleStatusClick,
     isStatusActive,
+    handleRentalTypeClick,
+    isRentalTypeActive,
     displayModeToList,
     displayModeText,
     handleDisplayClick,
