@@ -1,30 +1,22 @@
 import { http } from "@/utils/http";
 import { baseUrlApi } from "@/api/utils";
-import type {
-  ApiResponse,
-  PaginationResponse,
-  PriceConfigDto,
-  RoomDetailVo,
-  RoomGridDto,
-  RoomIdDto,
-  RoomListVo,
-  RoomLockDto,
-  RoomQueryDto,
-  RoomSaveRemarkDto,
-  RoomLockRecordProps,
-  RoomTotalVo,
-  RoomTrackDto
-} from "@/types";
-
-export type RoomDeleteDto = {
-  roomId?: string | number;
-  deleteReason?: string;
-};
-
-export type RoomRestoreDto = {
-  roomId?: string | number;
-  restoreReason?: string;
-};
+  import type {
+    ApiResponse,
+    PaginationResponse,
+    PriceConfigDto,
+    RoomDeleteDto,
+    RoomDetailVo,
+    RoomGridDto,
+    RoomIdDto,
+    RoomListVo,
+    RoomLockDto,
+    RoomQueryDto,
+    RoomRestoreDto,
+    RoomSaveRemarkDto,
+    RoomLockRecordProps,
+    RoomTotalVo,
+    RoomTrackDto
+  } from "@/types";
 
 export const getRoomList = (data?: RoomQueryDto) => {
   return http.request<ApiResponse<PaginationResponse<RoomListVo>>>("post", baseUrlApi("room/list"), { data });

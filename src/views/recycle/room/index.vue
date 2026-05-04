@@ -17,21 +17,13 @@
     name: "RoomRecycle"
   });
 
-  type RoomRecycleQuery = RoomQueryDto & { deleted?: boolean };
-  type RoomRecycleRow = RoomListVo & {
-    deleteReason?: string;
-    deleteBy?: string | number;
-    deleteByName?: string;
-    deleteAt?: string;
-  };
-
   const router = useRouter();
   const queryFormRef = ref();
   const loading = ref(false);
   const tableSize = ref("default");
-  const tableData = ref<RoomRecycleRow[]>([]);
+  const tableData = ref<RoomListVo[]>([]);
 
-  const queryForm = reactive<RoomRecycleQuery>({
+  const queryForm = reactive<RoomQueryDto>({
     keywords: "",
     leaseMode: undefined,
     deleted: true,
@@ -111,14 +103,14 @@
     }
   ];
 
-  function layoutText(row: RoomRecycleRow) {
+  function layoutText(row: RoomListVo) {
     const layout = row.houseLayout;
     if (!layout) return "-";
     if (layout.layoutName) return layout.layoutName;
     return `${layout.bedroom || 0}室${layout.livingRoom || 0}厅${layout.kitchen || 0}厨${layout.bathroom || 0}卫`;
   }
 
-  function leaseModeText(row: RoomRecycleRow) {
+  function leaseModeText(row: RoomListVo) {
     if (row.leaseMode === LeaseModeEnumMeta.FOCUS.code) return LeaseModeEnumMeta.FOCUS.name;
     if (row.leaseMode === LeaseModeEnumMeta.SCATTER.code) {
       if (row.rentalType === RentalTypeEnumMeta.ENTIRE.code) return RentalTypeEnumMeta.ENTIRE.name;
@@ -128,7 +120,7 @@
     return "-";
   }
 
-  function leaseModeTagType(row: RoomRecycleRow) {
+  function leaseModeTagType(row: RoomListVo) {
     if (row.leaseMode === LeaseModeEnumMeta.FOCUS.code) return "warning";
     if (row.rentalType === RentalTypeEnumMeta.SHARED.code) return "success";
     return "primary";
@@ -146,7 +138,7 @@
         ElMessage.error(message || "获取房间回收站失败");
         return;
       }
-      tableData.value = (data?.list || []) as RoomRecycleRow[];
+      tableData.value = data?.list || [];
       pagination.total = Number(data?.total || 0);
       pagination.pageSize = Number(data?.pageSize || pagination.pageSize);
       pagination.currentPage = Number(data?.currentPage || pagination.currentPage);
@@ -179,7 +171,7 @@
     fetchData();
   }
 
-  function openDetail(row: RoomRecycleRow) {
+  function openDetail(row: RoomListVo) {
     if (!row.roomId) {
       ElMessage.warning("房间ID缺失，无法查看详情");
       return;
@@ -190,7 +182,7 @@
     });
   }
 
-  function handleRestore(row: RoomRecycleRow) {
+  function handleRestore(row: RoomListVo) {
     ElMessageBox.prompt(`确认恢复 ${row.houseName || "-"} - ${row.roomNumber || "-"}？`, "恢复房间", {
       confirmButtonText: "确认恢复",
       cancelButtonText: "取消",
