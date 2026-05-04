@@ -1970,6 +1970,38 @@ export type RoomListVo = {
      */
     closed?: boolean;
     /**
+     * 是否删除
+     */
+    deleted?: boolean;
+    /**
+     * 删除原因
+     */
+    deleteReason?: string;
+    /**
+     * 删除人ID
+     */
+    deleteBy?: string;
+    /**
+     * 删除人名称
+     */
+    deleteByName?: string;
+    /**
+     * 删除时间
+     */
+    deleteAt?: string;
+    /**
+     * 恢复原因
+     */
+    restoreReason?: string;
+    /**
+     * 恢复人ID
+     */
+    restoreBy?: string;
+    /**
+     * 恢复时间
+     */
+    restoreAt?: string;
+    /**
      * 负责人id
      */
     salesmanId?: string;
@@ -2326,6 +2358,10 @@ export type RoomQueryDto = {
      */
     closed?: boolean;
     /**
+     * 是否查询已删除房间：默认 false；回收站传 true
+     */
+    deleted?: boolean;
+    /**
      * 空置天数最小值
      */
     vacancyDaysMin?: number;
@@ -2358,6 +2394,24 @@ export type RoomTotalVo = {
      * 房间状态统计
      */
     statusList?: Array<RoomTotalItemVo>;
+};
+
+/**
+ * 房间恢复DTO
+ */
+export type RoomRestoreDto = {
+    /**
+     * 房间ID
+     */
+    roomId?: string;
+    /**
+     * 恢复原因
+     */
+    restoreReason?: string;
+    /**
+     * 操作人ID
+     */
+    updateBy?: string;
 };
 
 /**
@@ -2644,6 +2698,24 @@ export type ResponseResultRoomDetailVo = {
     code?: number;
     message?: string;
     data?: RoomDetailVo;
+};
+
+/**
+ * 房间删除DTO
+ */
+export type RoomDeleteDto = {
+    /**
+     * 房间ID
+     */
+    roomId?: string;
+    /**
+     * 删除原因
+     */
+    deleteReason?: string;
+    /**
+     * 操作人ID
+     */
+    updateBy?: string;
 };
 
 export type UserRegisterDto = {
@@ -11453,17 +11525,17 @@ export type MultiApproveEnum = 'OR_SIGN' | 'AND_SIGN';
 /**
  * 业务日志业务类型枚举
  */
-export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CONTRACT_DOC' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_DOC' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL';
+export type BizOperateBizTypeEnum = 'LEASE' | 'LEASE_CONTRACT_DOC' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_DOC' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_SETTLEMENT_BILL' | 'HOUSE' | 'ROOM';
 
 /**
  * 业务日志来源类型枚举
  */
-export type BizOperateSourceTypeEnum = 'NONE' | 'LEASE' | 'LEASE_CONTRACT_DOC' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_PAYABLE_BILL_PAYMENT' | 'OWNER_SETTLEMENT_BILL';
+export type BizOperateSourceTypeEnum = 'NONE' | 'LEASE' | 'LEASE_CONTRACT_DOC' | 'LEASE_CHECKOUT' | 'OWNER_CONTRACT' | 'OWNER_CONTRACT_CHECKOUT' | 'OWNER_PAYABLE_BILL' | 'OWNER_PAYABLE_BILL_PAYMENT' | 'OWNER_SETTLEMENT_BILL' | 'HOUSE' | 'ROOM';
 
 /**
  * 业务操作类型枚举
  */
-export type BizOperateTypeEnum = 'CREATE' | 'SAVE' | 'UPDATE' | 'RENEW' | 'CHECKOUT' | 'CANCEL' | 'PAY';
+export type BizOperateTypeEnum = 'CREATE' | 'SAVE' | 'UPDATE' | 'RENEW' | 'CHECKOUT' | 'CANCEL' | 'DELETE' | 'RESTORE' | 'PAY';
 
 export type BookingStatusEnum = 'BOOKING' | 'CONTRACTED' | 'TENANT_DEFAULTED' | 'OWNER_DEFAULTED' | 'CANCELLED_EXPIRED';
 
@@ -12604,6 +12676,24 @@ export type GetRoomTotalResponses = {
 
 export type GetRoomTotalResponse = GetRoomTotalResponses[keyof GetRoomTotalResponses];
 
+export type RestoreRoomData = {
+    body: RoomRestoreDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/room/restore';
+};
+
+export type RestoreRoomResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type RestoreRoomResponse = RestoreRoomResponses[keyof RestoreRoomResponses];
+
 export type ResetKeywordData = {
     body?: never;
     path?: never;
@@ -12769,6 +12859,24 @@ export type GetRoomDetailResponses = {
 };
 
 export type GetRoomDetailResponse = GetRoomDetailResponses[keyof GetRoomDetailResponses];
+
+export type DeleteRoomData = {
+    body: RoomDeleteDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/room/delete';
+};
+
+export type DeleteRoomResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultBoolean;
+};
+
+export type DeleteRoomResponse = DeleteRoomResponses[keyof DeleteRoomResponses];
 
 export type CloseRoomData = {
     body: RoomIdDto;

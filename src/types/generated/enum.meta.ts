@@ -170,7 +170,9 @@ export const BizOperateBizTypeEnumMeta = {
   OWNER_CONTRACT_DOC: {"value":"OWNER_CONTRACT_DOC","code":"OWNER_CONTRACT_DOC","name":"业主签约合同"},
   OWNER_CONTRACT_CHECKOUT: {"value":"OWNER_CONTRACT_CHECKOUT","code":"OWNER_CONTRACT_CHECKOUT","name":"业主合同退房单"},
   OWNER_PAYABLE_BILL: {"value":"OWNER_PAYABLE_BILL","code":"OWNER_PAYABLE_BILL","name":"包租业主应付单"},
-  OWNER_SETTLEMENT_BILL: {"value":"OWNER_SETTLEMENT_BILL","code":"OWNER_SETTLEMENT_BILL","name":"轻托管业主结算单"}
+  OWNER_SETTLEMENT_BILL: {"value":"OWNER_SETTLEMENT_BILL","code":"OWNER_SETTLEMENT_BILL","name":"轻托管业主结算单"},
+  HOUSE: {"value":"HOUSE","code":"HOUSE","name":"房源"},
+  ROOM: {"value":"ROOM","code":"ROOM","name":"房间"}
 } as const;
 
 export const BizOperateSourceTypeEnumMeta = {
@@ -182,7 +184,9 @@ export const BizOperateSourceTypeEnumMeta = {
   OWNER_CONTRACT_CHECKOUT: {"value":"OWNER_CONTRACT_CHECKOUT","code":"OWNER_CONTRACT_CHECKOUT","name":"业主合同退房单"},
   OWNER_PAYABLE_BILL: {"value":"OWNER_PAYABLE_BILL","code":"OWNER_PAYABLE_BILL","name":"包租业主应付单"},
   OWNER_PAYABLE_BILL_PAYMENT: {"value":"OWNER_PAYABLE_BILL_PAYMENT","code":"OWNER_PAYABLE_BILL_PAYMENT","name":"包租应付单付款"},
-  OWNER_SETTLEMENT_BILL: {"value":"OWNER_SETTLEMENT_BILL","code":"OWNER_SETTLEMENT_BILL","name":"轻托管业主结算单"}
+  OWNER_SETTLEMENT_BILL: {"value":"OWNER_SETTLEMENT_BILL","code":"OWNER_SETTLEMENT_BILL","name":"轻托管业主结算单"},
+  HOUSE: {"value":"HOUSE","code":"HOUSE","name":"房源"},
+  ROOM: {"value":"ROOM","code":"ROOM","name":"房间"}
 } as const;
 
 export const BizOperateTypeEnumMeta = {
@@ -192,6 +196,8 @@ export const BizOperateTypeEnumMeta = {
   RENEW: {"value":"RENEW","code":"RENEW","name":"续约"},
   CHECKOUT: {"value":"CHECKOUT","code":"CHECKOUT","name":"退房"},
   CANCEL: {"value":"CANCEL","code":"CANCEL","name":"作废"},
+  DELETE: {"value":"DELETE","code":"DELETE","name":"删除"},
+  RESTORE: {"value":"RESTORE","code":"RESTORE","name":"恢复"},
   PAY: {"value":"PAY","code":"PAY","name":"付款"}
 } as const;
 
