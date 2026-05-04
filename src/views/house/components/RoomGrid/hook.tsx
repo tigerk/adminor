@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type Ref, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { closeRoom, getRoomGrid, openRoom, unlockRoom } from "@/api/house/room";
+import { closeRoom, deleteRoom, getRoomGrid, openRoom, unlockRoom } from "@/api/house/room";
 import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
 import { getFocusById } from "@/api/house/focus";
 import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
@@ -455,6 +455,25 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
       });
     }
 
+    function handleDeleteRoom(room: RoomListVo) {
+      ElMessageBox.prompt(`删除 ${room.houseName}-房间 ${room.roomNumber} 后会进入回收站。`, "删除房间", {
+        confirmButtonText: "确认删除",
+        cancelButtonText: "取消",
+        inputType: "textarea",
+        inputPlaceholder: "请输入删除原因",
+        inputValidator: value => (value && value.trim() ? true : "请填写删除原因")
+      }).then(({ value }) => {
+        deleteRoom({ roomId: room.roomId, deleteReason: value.trim() }).then(res => {
+          if (res.code === 0) {
+            ElMessage.success("房间已删除并进入回收站");
+            resetAndReload().then();
+          } else {
+            ElMessage.error(res.message || "删除房间失败");
+          }
+        });
+      });
+    }
+
     switch (command) {
       case "edit":
         if (room.leaseMode === 2 && room.rentalType === 1) {
@@ -479,6 +498,9 @@ export const useRoomGrid = (queryForm: Ref<QueryFormItemProps>) => {
         break;
       case "salesman":
         ElMessage.info(`负责人：${room.salesmanName}`);
+        break;
+      case "delete":
+        handleDeleteRoom(room);
         break;
     }
   };

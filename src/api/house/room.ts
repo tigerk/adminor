@@ -16,6 +16,16 @@ import type {
   RoomTrackDto
 } from "@/types";
 
+export type RoomDeleteDto = {
+  roomId?: string | number;
+  deleteReason?: string;
+};
+
+export type RoomRestoreDto = {
+  roomId?: string | number;
+  restoreReason?: string;
+};
+
 export const getRoomList = (data?: RoomQueryDto) => {
   return http.request<ApiResponse<PaginationResponse<RoomListVo>>>("post", baseUrlApi("room/list"), { data });
 };
@@ -58,6 +68,14 @@ export const closeRoom = (data?: RoomIdDto) => {
 
 export const openRoom = (data?: RoomIdDto) => {
   return http.request<ApiResponse>("post", baseUrlApi("room/open"), { data });
+};
+
+export const deleteRoom = (data?: RoomDeleteDto) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("room/delete"), { data });
+};
+
+export const restoreRoom = (data?: RoomRestoreDto) => {
+  return http.request<ApiResponse<boolean>>("post", baseUrlApi("room/restore"), { data });
 };
 
 /**

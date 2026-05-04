@@ -153,6 +153,9 @@
                             <el-icon><Open /></el-icon>
                             开启
                           </el-dropdown-item>
+                          <el-dropdown-item command="delete" divided>
+                            <span class="text-danger">删除房间</span>
+                          </el-dropdown-item>
                           <el-dropdown-item v-if="room.salesmanName" command="salesman" divided>
                             <el-icon><User /></el-icon>
                             负责人：{{ room.salesmanName }}
