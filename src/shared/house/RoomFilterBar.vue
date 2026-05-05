@@ -1,39 +1,10 @@
 <script setup lang="ts">
-  import { computed, nextTick, ref, watch } from "vue";
+  import { computed, ref, watch } from "vue";
   import type { PropType } from "vue";
   import Filter from "~icons/ri/filter-3-line";
   import Search from "~icons/ri/search-line";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-  import type { CommunityDto, RoomTotalItemVo } from "@/types";
-
-  type RentalTypeFilterItem = {
-    label: string;
-    value?: number;
-  };
-
-  type RoomStatusFilterItem = RoomTotalItemVo & {
-    filterType?: number;
-    roomStatus?: number;
-  };
-
-  type RoomAdvancedFilterValue = {
-    rentalType?: number;
-    communityId?: string;
-    communityName?: string;
-    roomNumber?: string;
-    vacancyDaysMin?: number;
-    vacancyDaysMax?: number;
-    priceMin?: number;
-    priceMax?: number;
-    areaMin?: number;
-    areaMax?: number;
-    direction?: string;
-    hasImage?: boolean;
-  };
-
-  type CommunityOption = CommunityDto & {
-    communityId?: string;
-  };
+  import type { CommunityOption, RentalTypeFilterItem, RoomAdvancedFilterValue, RoomStatusFilterItem } from "./roomFilterTypes";
 
   const emptyAdvancedValue = (): RoomAdvancedFilterValue => ({
     rentalType: undefined,
@@ -74,8 +45,8 @@
     advancedValue: {
       type: Object as PropType<RoomAdvancedFilterValue>,
       default: () => ({
-        communityId: undefined,
         rentalType: undefined,
+        communityId: undefined,
         communityName: undefined,
         roomNumber: undefined,
         vacancyDaysMin: undefined,
@@ -117,46 +88,27 @@
     (e: "status-click", item: RoomStatusFilterItem): void;
   }>();
 
-  const filterVisible = ref(false);
-  const filterPopoverRef = ref();
-  const keywordPopoverVisible = ref(false);
-  const keywordPopoverRef = ref();
-  const draftKeyword = ref("");
+  const advancedPanelVisible = ref(false);
+  const keywordDraft = ref("");
   const draftAdvanced = ref<RoomAdvancedFilterValue>(emptyAdvancedValue());
 
   const directionOptions = ["东", "南", "西", "北", "东南", "东北", "西南", "西北", "南北", "东西"];
 
   const keywordText = computed(() => props.modelValue.trim());
-  const showRentalType = computed(() => props.rentalTypeItems.length > 0 && !props.showAdvancedSearch);
-  const draftRentalTypeValue = computed({
-    get: () => draftAdvanced.value.rentalType ?? "all",
-    set: value => {
-      draftAdvanced.value.rentalType = value === "all" ? undefined : Number(value);
-    }
-  });
-  const draftHasImageValue = computed({
-    get: () => {
-      if (draftAdvanced.value.hasImage === true) return "true";
-      if (draftAdvanced.value.hasImage === false) return "false";
-      return "all";
-    },
-    set: value => {
-      draftAdvanced.value.hasImage = value === "all" ? undefined : value === "true";
-    }
-  });
+  const showRentalType = computed(() => props.rentalTypeItems.length > 0);
   const hasAdvancedValue = computed(() =>
     Boolean(
       props.advancedValue.rentalType !== undefined ||
-        props.advancedValue.communityId ||
-        props.advancedValue.roomNumber ||
-        props.advancedValue.vacancyDaysMin !== undefined ||
-        props.advancedValue.vacancyDaysMax !== undefined ||
-        props.advancedValue.priceMin !== undefined ||
-        props.advancedValue.priceMax !== undefined ||
-        props.advancedValue.areaMin !== undefined ||
-        props.advancedValue.areaMax !== undefined ||
-        props.advancedValue.direction ||
-        props.advancedValue.hasImage !== undefined
+      props.advancedValue.communityId ||
+      props.advancedValue.roomNumber ||
+      props.advancedValue.vacancyDaysMin !== undefined ||
+      props.advancedValue.vacancyDaysMax !== undefined ||
+      props.advancedValue.priceMin !== undefined ||
+      props.advancedValue.priceMax !== undefined ||
+      props.advancedValue.areaMin !== undefined ||
+      props.advancedValue.areaMax !== undefined ||
+      props.advancedValue.direction ||
+      props.advancedValue.hasImage !== undefined
     )
   );
 
@@ -173,18 +125,29 @@
     return count;
   });
 
+  const draftHasImageValue = computed({
+    get: () => {
+      if (draftAdvanced.value.hasImage === true) return "true";
+      if (draftAdvanced.value.hasImage === false) return "false";
+      return "all";
+    },
+    set: value => {
+      draftAdvanced.value.hasImage = value === "all" ? undefined : value === "true";
+    }
+  });
+
   const vacancyText = computed(() => formatRange(props.advancedValue.vacancyDaysMin, props.advancedValue.vacancyDaysMax, "天"));
   const priceText = computed(() => formatRange(props.advancedValue.priceMin, props.advancedValue.priceMax, "元"));
   const areaText = computed(() => formatRange(props.advancedValue.areaMin, props.advancedValue.areaMax, "m²"));
-  const communityText = computed(() => props.advancedValue.communityName || props.communityOptions.find(item => item.communityId === props.advancedValue.communityId)?.name || props.advancedValue.communityId);
+  const communityText = computed(
+    () => props.advancedValue.communityName || props.communityOptions.find(item => item.communityId === props.advancedValue.communityId)?.name || props.advancedValue.communityId
+  );
   const rentalTypeText = computed(() => props.rentalTypeItems.find(item => item.value === props.advancedValue.rentalType)?.label || "");
 
   watch(
     () => props.modelValue,
     value => {
-      if (!filterVisible.value && !keywordPopoverVisible.value) {
-        draftKeyword.value = value || "";
-      }
+      keywordDraft.value = value || "";
     },
     { immediate: true }
   );
@@ -192,26 +155,12 @@
   watch(
     () => props.advancedValue,
     value => {
-      if (!filterVisible.value) {
+      if (!advancedPanelVisible.value) {
         draftAdvanced.value = normalizeAdvancedValue(value);
       }
     },
     { deep: true, immediate: true }
   );
-
-  watch(filterVisible, visible => {
-    if (visible) {
-      draftKeyword.value = props.modelValue || "";
-      draftAdvanced.value = normalizeAdvancedValue(props.advancedValue);
-      emit("community-search", "");
-    }
-  });
-
-  watch(keywordPopoverVisible, visible => {
-    if (visible) {
-      draftKeyword.value = props.modelValue || "";
-    }
-  });
 
   function statusKey(item: RoomStatusFilterItem) {
     if (item.filterType === undefined || item.filterType === null) {
@@ -220,30 +169,42 @@
     return `${item.filterType}-${item.roomStatus ?? "none"}`;
   }
 
-  function submitSearch() {
-    emit("update:modelValue", draftKeyword.value.trim());
+  function toggleAdvancedPanel() {
+    if (advancedPanelVisible.value) {
+      advancedPanelVisible.value = false;
+      return;
+    }
+    draftAdvanced.value = normalizeAdvancedValue(props.advancedValue);
+    emit("community-search", "");
+    advancedPanelVisible.value = true;
+  }
+
+  function submitKeywordSearch() {
+    emit("update:modelValue", keywordDraft.value.trim());
+    emit("search");
+  }
+
+  function submitAdvancedSearch() {
     emit("update:advancedValue", normalizeAdvancedValue(draftAdvanced.value));
     emit("search");
-    closeFilterPopover();
+    advancedPanelVisible.value = false;
   }
 
   function clearDraftFilters() {
-    draftKeyword.value = "";
     draftAdvanced.value = emptyAdvancedValue();
   }
 
   function resetAppliedFilters() {
-    draftKeyword.value = "";
+    keywordDraft.value = "";
     draftAdvanced.value = emptyAdvancedValue();
     emit("update:modelValue", "");
     emit("update:advancedValue", emptyAdvancedValue());
-    emit("reset-keyword");
-    emit("reset-filters");
-    closeFilterPopover();
-    closeKeywordPopover();
+    emit("search");
+    advancedPanelVisible.value = false;
   }
 
   function clearKeyword() {
+    keywordDraft.value = "";
     emit("update:modelValue", "");
     emit("reset-keyword");
   }
@@ -269,38 +230,6 @@
     }
     emit("update:advancedValue", next);
     emit("reset-filters");
-  }
-
-  function submitQuickSearch() {
-    emit("update:modelValue", draftKeyword.value.trim());
-    emit("search");
-  }
-
-  function submitKeywordSearch() {
-    emit("update:modelValue", draftKeyword.value.trim());
-    emit("search");
-    closeKeywordPopover();
-  }
-
-  function resetKeywordOnly() {
-    draftKeyword.value = "";
-    emit("update:modelValue", "");
-    emit("reset-keyword");
-    closeKeywordPopover();
-  }
-
-  function closeFilterPopover() {
-    filterVisible.value = false;
-    nextTick(() => {
-      filterPopoverRef.value?.hide?.();
-    });
-  }
-
-  function closeKeywordPopover() {
-    keywordPopoverVisible.value = false;
-    nextTick(() => {
-      keywordPopoverRef.value?.hide?.();
-    });
   }
 
   function handleCommunityChange(value?: string) {
@@ -329,153 +258,46 @@
 
 <template>
   <div class="room-filter-bar">
-    <div class="room-filter-bar__main">
-      <el-button-group v-if="showRentalType" class="room-filter-bar__segment">
+    <div class="room-filter-bar__toolbar">
+      <div class="room-filter-bar__filters">
+        <el-button-group class="room-filter-bar__status">
+          <el-button
+            v-for="item in statusItems"
+            :key="statusKey(item)"
+            class="room-filter-btn room-filter-btn--status"
+            :class="{ 'is-active': isStatusActive(item) }"
+            @click="emit('status-click', item)"
+          >
+            <span class="room-filter-btn__content">
+              <span v-if="item.roomStatusColor" class="room-filter-btn__dot" :style="{ backgroundColor: item.roomStatusColor }" />
+              {{ item.roomStatusName }}（{{ item.total }}）
+            </span>
+          </el-button>
+        </el-button-group>
+      </div>
+
+      <div v-if="showSearchActions" class="room-filter-bar__actions">
+        <el-input
+          v-model="keywordDraft"
+          class="room-filter-bar__search"
+          clearable
+          placeholder="项目/房号/租客/业主/标签"
+          @clear="clearKeyword"
+          @keyup.enter="submitKeywordSearch"
+        />
+        <el-button class="room-filter-bar__action-btn" :type="keywordText ? 'primary' : 'default'" plain :icon="useRenderIcon(Search)" @click="submitKeywordSearch">查询</el-button>
         <el-button
-          v-for="item in rentalTypeItems"
-          :key="item.value ?? 'all'"
-          class="room-filter-btn room-filter-btn--type"
-          :class="{ 'is-active': isRentalTypeActive(item.value) }"
-          @click="emit('rental-type-click', item.value)"
+          v-if="showAdvancedSearch"
+          class="room-filter-bar__action-btn"
+          :type="hasAdvancedValue || advancedPanelVisible ? 'primary' : 'default'"
+          plain
+          :icon="useRenderIcon(Filter)"
+          @click="toggleAdvancedPanel"
         >
-          <span class="room-filter-btn__content">{{ item.label }}</span>
+          {{ advancedPanelVisible ? "收起筛选" : `筛选${activeFilterCount ? `（${activeFilterCount}）` : ""}` }}
         </el-button>
-      </el-button-group>
-
-      <el-button-group class="room-filter-bar__status">
-        <el-button
-          v-for="item in statusItems"
-          :key="statusKey(item)"
-          class="room-filter-btn room-filter-btn--status"
-          :class="{ 'is-active': isStatusActive(item) }"
-          @click="emit('status-click', item)"
-        >
-          <span class="room-filter-btn__content">
-            <span v-if="item.roomStatusColor" class="room-filter-btn__dot" :style="{ backgroundColor: item.roomStatusColor }" />
-            {{ item.roomStatusName }}（{{ item.total }}）
-          </span>
-        </el-button>
-      </el-button-group>
-    </div>
-
-    <div v-if="showSearchActions && showAdvancedSearch" class="room-filter-bar__actions">
-      <el-input v-model="draftKeyword" class="room-filter-bar__search" clearable placeholder="请输入关键字" @keyup.enter="submitQuickSearch" />
-      <el-button class="room-filter-bar__action-btn" :type="keywordText ? 'primary' : 'default'" plain :icon="useRenderIcon(Search)" @click="submitQuickSearch">查询</el-button>
-      <el-popover
-        v-if="showAdvancedSearch"
-        ref="filterPopoverRef"
-        v-model:visible="filterVisible"
-        trigger="click"
-        placement="bottom-end"
-        :width="760"
-        popper-class="room-search-popover room-search-popover--wide"
-      >
-        <template #reference>
-          <el-button class="room-filter-bar__action-btn" :type="hasAdvancedValue ? 'primary' : 'default'" plain :icon="useRenderIcon(Filter)">筛选{{ activeFilterCount ? `（${activeFilterCount}）` : "" }}</el-button>
-        </template>
-
-        <div class="room-search-popover__content" @click.stop>
-          <div class="room-search-popover__head">
-            <div>
-              <div class="room-search-popover__title">筛选房源</div>
-              <div class="room-search-popover__desc">组合小区、房间号、价格、面积等条件进行过滤</div>
-            </div>
-            <el-button link type="primary" native-type="button" @click="clearDraftFilters">清空当前填写</el-button>
-          </div>
-          <el-form class="room-search-form" label-position="top" @submit.prevent>
-            <el-form-item v-if="rentalTypeItems.length" label="房源类型">
-              <el-radio-group v-model="draftRentalTypeValue" class="room-filter-radio">
-                <el-radio-button label="all">全部</el-radio-button>
-                <el-radio-button :label="1">整租</el-radio-button>
-                <el-radio-button :label="2">合租</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="小区/项目">
-              <el-select
-                v-model="draftAdvanced.communityId"
-                clearable
-                filterable
-                remote
-                reserve-keyword
-                :remote-method="value => emit('community-search', value)"
-                :loading="communityLoading"
-                placeholder="请选择小区/项目"
-                @change="handleCommunityChange"
-              >
-                <el-option
-                  v-for="item in communityOptions"
-                  :key="item.communityId"
-                  :label="item.address ? `${item.name}（${item.address}）` : item.name"
-                  :value="item.communityId"
-                />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="房间号">
-              <el-input v-model="draftAdvanced.roomNumber" clearable placeholder="请输入房间号" @keyup.enter="submitSearch" />
-            </el-form-item>
-            <el-form-item label="空置天数">
-              <div class="room-range-input">
-                <el-input-number v-model="draftAdvanced.vacancyDaysMin" :min="0" :controls="false" placeholder="最小空置天数" />
-                <span>~</span>
-                <el-input-number v-model="draftAdvanced.vacancyDaysMax" :min="0" :controls="false" placeholder="最大空置天数" />
-              </div>
-            </el-form-item>
-            <el-form-item label="出租价格">
-              <div class="room-range-input">
-                <el-input-number v-model="draftAdvanced.priceMin" :min="0" :precision="0" :controls="false" placeholder="最低价格" />
-                <span>~</span>
-                <el-input-number v-model="draftAdvanced.priceMax" :min="0" :precision="0" :controls="false" placeholder="最高价格" />
-              </div>
-            </el-form-item>
-            <el-form-item label="房屋面积">
-              <div class="room-range-input">
-                <el-input-number v-model="draftAdvanced.areaMin" :min="0" :precision="1" :controls="false" placeholder="最小面积" />
-                <span>~</span>
-                <el-input-number v-model="draftAdvanced.areaMax" :min="0" :precision="1" :controls="false" placeholder="最大面积" />
-              </div>
-            </el-form-item>
-            <el-form-item label="朝向">
-              <el-select v-model="draftAdvanced.direction" clearable placeholder="全部">
-                <el-option v-for="item in directionOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="是否有图">
-              <el-radio-group v-model="draftHasImageValue" class="room-filter-radio">
-                <el-radio-button label="all">全部</el-radio-button>
-                <el-radio-button label="true">有图</el-radio-button>
-                <el-radio-button label="false">无图</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-          </el-form>
-          <div class="room-search-popover__footer">
-            <el-button native-type="button" @click="clearDraftFilters">清空</el-button>
-            <el-button type="primary" native-type="button" @click="submitSearch">过滤</el-button>
-          </div>
-        </div>
-      </el-popover>
-      <el-button v-if="keywordText || hasAdvancedValue" class="room-filter-bar__action-btn" plain @click="resetAppliedFilters">重置</el-button>
-    </div>
-
-    <div v-else-if="showSearchActions" class="room-filter-bar__actions">
-      <el-tag v-if="keywordText" class="room-filter-bar__keyword" closable @close="clearKeyword">关键词：{{ keywordText }}</el-tag>
-      <el-popover ref="keywordPopoverRef" v-model:visible="keywordPopoverVisible" trigger="click" placement="bottom-end" :width="360" popper-class="room-search-popover">
-        <template #reference>
-          <el-button :type="keywordText ? 'primary' : 'default'" plain :icon="useRenderIcon(Search)">搜索</el-button>
-        </template>
-
-        <div class="room-search-popover__content" @click.stop>
-          <div class="room-search-popover__title">搜索房间</div>
-          <el-form label-position="top" @submit.prevent>
-            <el-form-item label="关键词">
-              <el-input v-model="draftKeyword" clearable placeholder="项目/房号/租客/业主/标签" @keyup.enter="submitKeywordSearch" />
-            </el-form-item>
-          </el-form>
-          <div class="room-search-popover__footer">
-            <el-button native-type="button" @click="resetKeywordOnly">重置</el-button>
-            <el-button type="primary" native-type="button" @click="submitKeywordSearch">查询</el-button>
-          </div>
-        </div>
-      </el-popover>
+        <el-button v-if="keywordText || hasAdvancedValue || advancedPanelVisible" class="room-filter-bar__action-btn" plain @click="resetAppliedFilters">重置</el-button>
+      </div>
     </div>
 
     <div v-if="showAdvancedSearch && (keywordText || hasAdvancedValue)" class="room-filter-bar__tags">
@@ -491,22 +313,110 @@
         {{ props.advancedValue.hasImage ? "有图" : "无图" }}
       </el-tag>
     </div>
+
+    <transition name="room-filter-panel">
+      <div v-if="showAdvancedSearch && advancedPanelVisible" class="room-filter-panel">
+        <div class="room-filter-panel__head">
+          <div>
+            <div class="room-filter-panel__title">筛选房源</div>
+            <div class="room-filter-panel__desc">组合小区、房间号、价格、面积等条件进行过滤。</div>
+          </div>
+          <el-button link type="primary" native-type="button" @click="clearDraftFilters">清空当前填写</el-button>
+        </div>
+
+        <el-form class="room-filter-form" label-position="top" @submit.prevent>
+          <el-form-item v-if="showRentalType" class="room-filter-form__wide" label="房源类型">
+            <el-button-group class="room-filter-bar__segment">
+              <el-button
+                v-for="item in rentalTypeItems"
+                :key="item.value ?? 'all'"
+                class="room-filter-btn room-filter-btn--type"
+                :class="{ 'is-active': draftAdvanced.rentalType === item.value || (item.value === undefined && draftAdvanced.rentalType === undefined) }"
+                @click="draftAdvanced.rentalType = item.value"
+              >
+                <span class="room-filter-btn__content">{{ item.label }}</span>
+              </el-button>
+            </el-button-group>
+          </el-form-item>
+          <el-form-item label="小区/项目">
+            <el-select
+              v-model="draftAdvanced.communityId"
+              clearable
+              filterable
+              remote
+              reserve-keyword
+              :remote-method="value => emit('community-search', value)"
+              :loading="communityLoading"
+              placeholder="请选择小区/项目"
+              @change="handleCommunityChange"
+            >
+              <el-option v-for="item in communityOptions" :key="item.communityId" :label="item.address ? `${item.name}（${item.address}）` : item.name" :value="item.communityId" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="房间号">
+            <el-input v-model="draftAdvanced.roomNumber" clearable placeholder="请输入房间号" @keyup.enter="submitAdvancedSearch" />
+          </el-form-item>
+          <el-form-item label="出租价格">
+            <div class="room-range-input">
+              <el-input-number v-model="draftAdvanced.priceMin" :min="0" :precision="0" :controls="false" placeholder="最低价格" />
+              <span>~</span>
+              <el-input-number v-model="draftAdvanced.priceMax" :min="0" :precision="0" :controls="false" placeholder="最高价格" />
+            </div>
+          </el-form-item>
+          <el-form-item label="房屋面积">
+            <div class="room-range-input">
+              <el-input-number v-model="draftAdvanced.areaMin" :min="0" :precision="1" :controls="false" placeholder="最小面积" />
+              <span>~</span>
+              <el-input-number v-model="draftAdvanced.areaMax" :min="0" :precision="1" :controls="false" placeholder="最大面积" />
+            </div>
+          </el-form-item>
+          <el-form-item label="空置天数">
+            <div class="room-range-input">
+              <el-input-number v-model="draftAdvanced.vacancyDaysMin" :min="0" :controls="false" placeholder="最小空置天数" />
+              <span>~</span>
+              <el-input-number v-model="draftAdvanced.vacancyDaysMax" :min="0" :controls="false" placeholder="最大空置天数" />
+            </div>
+          </el-form-item>
+          <el-form-item label="朝向">
+            <el-select v-model="draftAdvanced.direction" clearable placeholder="全部">
+              <el-option v-for="item in directionOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="是否有图">
+            <el-radio-group v-model="draftHasImageValue" class="room-filter-radio">
+              <el-radio-button label="all">全部</el-radio-button>
+              <el-radio-button label="true">有图</el-radio-button>
+              <el-radio-button label="false">无图</el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
+
+        <div class="room-filter-panel__footer">
+          <el-button native-type="button" @click="clearDraftFilters">清空</el-button>
+          <el-button type="primary" native-type="button" @click="submitAdvancedSearch">过滤</el-button>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <style lang="scss" scoped>
   .room-filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    justify-content: flex-start;
     width: 100%;
     padding: 0 16px 10px;
     background: var(--el-bg-color);
+    border-bottom: 1px solid var(--el-border-color-lighter);
   }
 
-  .room-filter-bar__main {
+  .room-filter-bar__toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .room-filter-bar__filters {
     display: flex;
     flex: 1 1 auto;
     gap: 8px;
@@ -522,10 +432,6 @@
     align-items: stretch;
   }
 
-  .room-filter-bar__status {
-    min-width: 0;
-  }
-
   .room-filter-bar__actions {
     display: inline-flex;
     flex: none;
@@ -535,7 +441,7 @@
   }
 
   .room-filter-bar__search {
-    width: clamp(260px, 24vw, 360px);
+    width: clamp(280px, 28vw, 230px);
 
     :deep(.el-input__wrapper) {
       height: 34px;
@@ -558,36 +464,28 @@
     border-radius: 6px;
   }
 
-  .room-filter-bar__keyword {
-    max-width: 260px;
-
-    :deep(.el-tag__content) {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
   .room-filter-bar__tags {
     display: flex;
-    flex-basis: 100%;
     flex-wrap: wrap;
     gap: 6px;
     align-items: center;
-    margin-top: -2px;
+    margin-top: 10px;
   }
 
   .room-filter-btn {
-    height: 32px;
-    min-width: 64px;
+    height: 34px;
+    min-width: 70px;
     margin: 0 !important;
-    padding: 0 10px;
+    padding: 0 12px;
     font-size: 13px;
     font-weight: 500;
     color: var(--el-text-color-regular);
     background: var(--el-bg-color);
     border-color: var(--el-border-color) !important;
-    transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+    transition:
+      color 0.2s,
+      background-color 0.2s,
+      border-color 0.2s;
 
     &:hover {
       color: var(--el-color-primary);
@@ -606,6 +504,10 @@
     font-weight: 700;
   }
 
+  .room-filter-btn--status {
+    min-width: 90px;
+  }
+
   .room-filter-btn__content {
     display: inline-flex;
     gap: 6px;
@@ -614,54 +516,49 @@
     white-space: nowrap;
   }
 
-  .room-filter-btn--status {
-    min-width: 86px;
-  }
-
   .room-filter-btn__dot {
     display: inline-block;
     flex: none;
-    min-width: 7px;
-    max-width: 7px;
     width: 7px;
     height: 7px;
-    min-height: 7px;
-    max-height: 7px;
     border-radius: 50%;
   }
 
-  .room-search-popover__content {
-    width: 100%;
-    pointer-events: auto;
+  .room-filter-panel {
+    padding: 16px;
+    margin-top: 12px;
+    background: linear-gradient(180deg, var(--el-fill-color-extra-light), var(--el-bg-color) 90px), var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgb(15 23 42 / 6%);
   }
 
-  .room-search-popover__head {
+  .room-filter-panel__head {
     display: flex;
     gap: 12px;
     align-items: flex-start;
     justify-content: space-between;
     padding-bottom: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     border-bottom: 1px solid var(--el-border-color-lighter);
   }
 
-  .room-search-popover__title {
+  .room-filter-panel__title {
     font-size: var(--el-font-size-base);
     font-weight: 700;
     color: var(--el-text-color-primary);
   }
 
-  .room-search-popover__desc {
+  .room-filter-panel__desc {
     margin-top: 4px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
   }
 
-  .room-search-form {
+  .room-filter-form {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 14px;
-    overflow: visible;
+    gap: 14px 18px;
 
     :deep(.el-form-item) {
       margin-bottom: 0;
@@ -731,18 +628,6 @@
     }
   }
 
-  .room-search-popover__footer {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    padding-top: 14px;
-    margin-top: 14px;
-    justify-content: flex-end;
-    gap: 8px;
-    border-top: 1px solid var(--el-border-color-lighter);
-    pointer-events: auto;
-  }
-
   .room-range-input {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
@@ -753,22 +638,35 @@
     text-align: center;
   }
 
-  :global(.room-search-popover) {
-    padding: 14px !important;
-    border-radius: 8px !important;
-    overflow: visible !important;
+  .room-filter-panel__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 14px;
+    margin-top: 16px;
+    border-top: 1px solid var(--el-border-color-lighter);
   }
 
-  :global(.room-search-popover--wide) {
-    max-width: calc(100vw - 48px);
+  .room-filter-panel-enter-active,
+  .room-filter-panel-leave-active {
+    overflow: hidden;
+    transition:
+      opacity 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  .room-filter-panel-enter-from,
+  .room-filter-panel-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 
   @media (max-width: 1200px) {
-    .room-filter-bar {
+    .room-filter-bar__toolbar {
       flex-wrap: wrap;
     }
 
-    .room-filter-bar__main {
+    .room-filter-bar__filters {
       flex-wrap: wrap;
       width: 100%;
       overflow-x: visible;
@@ -776,7 +674,6 @@
 
     .room-filter-bar__actions {
       justify-content: flex-end;
-      width: 100%;
     }
 
     .room-filter-bar__search {
@@ -786,7 +683,7 @@
   }
 
   @media (max-width: 900px) {
-    .room-search-form {
+    .room-filter-form {
       grid-template-columns: 1fr;
     }
   }

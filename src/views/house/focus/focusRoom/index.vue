@@ -6,7 +6,7 @@
   import RoomStatusGrid from "@/views/house/components/RoomGrid/RoomStatusGrid.vue";
   import { getRoomCommunityOptions } from "@/api/house/room";
   import RoomFilterBar from "@/shared/house/RoomFilterBar.vue";
-  import type { CommunityDto } from "@/types";
+  import type { CommunityOption, RoomAdvancedFilterValue } from "@/shared/house/roomFilterTypes";
   import More from "~icons/ep/more-filled";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
@@ -39,21 +39,8 @@
   } = userFocusRoom();
 
   const tableSize = ref("default");
-  const communityOptions = ref<(CommunityDto & { communityId?: string })[]>([]);
+  const communityOptions = ref<CommunityOption[]>([]);
   const communityLoading = ref(false);
-  type RoomAdvancedFilterValue = {
-    communityId?: string;
-    communityName?: string;
-    roomNumber?: string;
-    vacancyDaysMin?: number;
-    vacancyDaysMax?: number;
-    priceMin?: number;
-    priceMax?: number;
-    areaMin?: number;
-    areaMax?: number;
-    direction?: string;
-    hasImage?: boolean;
-  };
   const advancedFilter = computed<RoomAdvancedFilterValue>({
     get: () => ({
       communityId: queryForm.communityId,
