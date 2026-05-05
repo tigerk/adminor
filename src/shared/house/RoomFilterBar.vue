@@ -257,7 +257,8 @@
 </script>
 
 <template>
-  <div class="room-filter-bar">
+  <div class="room-filter-bar" :class="{ 'room-filter-bar--expanded': showAdvancedSearch && advancedPanelVisible }">
+    <!-- 顶部工具栏 -->
     <div class="room-filter-bar__toolbar">
       <div class="room-filter-bar__filters">
         <el-button-group class="room-filter-bar__status">
@@ -288,112 +289,150 @@
         <el-button class="room-filter-bar__action-btn" :type="keywordText ? 'primary' : 'default'" plain :icon="useRenderIcon(Search)" @click="submitKeywordSearch">查询</el-button>
         <el-button
           v-if="showAdvancedSearch"
-          class="room-filter-bar__action-btn"
+          class="room-filter-bar__action-btn room-filter-bar__action-btn--filter"
+          :class="{ 'is-active': hasAdvancedValue || advancedPanelVisible }"
           :type="hasAdvancedValue || advancedPanelVisible ? 'primary' : 'default'"
           plain
           :icon="useRenderIcon(Filter)"
           @click="toggleAdvancedPanel"
         >
           {{ advancedPanelVisible ? "收起筛选" : `筛选${activeFilterCount ? `（${activeFilterCount}）` : ""}` }}
+          <span v-if="activeFilterCount && !advancedPanelVisible" class="filter-badge">{{ activeFilterCount }}</span>
         </el-button>
         <el-button v-if="keywordText || hasAdvancedValue || advancedPanelVisible" class="room-filter-bar__action-btn" plain @click="resetAppliedFilters">重置</el-button>
       </div>
     </div>
 
+    <!-- 已选筛选标签 -->
     <div v-if="showAdvancedSearch && (keywordText || hasAdvancedValue)" class="room-filter-bar__tags">
-      <el-tag v-if="keywordText" closable @close="clearKeyword">关键词：{{ keywordText }}</el-tag>
-      <el-tag v-if="props.advancedValue.rentalType !== undefined" closable @close="clearAdvancedField('rentalType')">类型：{{ rentalTypeText }}</el-tag>
-      <el-tag v-if="props.advancedValue.communityId" closable @close="clearAdvancedField('communityId')">小区：{{ communityText }}</el-tag>
-      <el-tag v-if="props.advancedValue.roomNumber" closable @close="clearAdvancedField('roomNumber')">房间号：{{ props.advancedValue.roomNumber }}</el-tag>
-      <el-tag v-if="vacancyText" closable @close="clearAdvancedField('vacancyDaysMin')">空置：{{ vacancyText }}</el-tag>
-      <el-tag v-if="priceText" closable @close="clearAdvancedField('priceMin')">价格：{{ priceText }}</el-tag>
-      <el-tag v-if="areaText" closable @close="clearAdvancedField('areaMin')">面积：{{ areaText }}</el-tag>
-      <el-tag v-if="props.advancedValue.direction" closable @close="clearAdvancedField('direction')">朝向：{{ props.advancedValue.direction }}</el-tag>
-      <el-tag v-if="props.advancedValue.hasImage !== undefined" closable @close="clearAdvancedField('hasImage')">
+      <el-tag v-if="keywordText" closable type="info" effect="light" round @close="clearKeyword">关键词：{{ keywordText }}</el-tag>
+      <el-tag v-if="props.advancedValue.rentalType !== undefined" closable effect="light" round @close="clearAdvancedField('rentalType')">类型：{{ rentalTypeText }}</el-tag>
+      <el-tag v-if="props.advancedValue.communityId" closable effect="light" round @close="clearAdvancedField('communityId')">小区：{{ communityText }}</el-tag>
+      <el-tag v-if="props.advancedValue.roomNumber" closable effect="light" round @close="clearAdvancedField('roomNumber')">房间号：{{ props.advancedValue.roomNumber }}</el-tag>
+      <el-tag v-if="vacancyText" closable effect="light" round @close="clearAdvancedField('vacancyDaysMin')">空置：{{ vacancyText }}</el-tag>
+      <el-tag v-if="priceText" closable effect="light" round @close="clearAdvancedField('priceMin')">价格：{{ priceText }}</el-tag>
+      <el-tag v-if="areaText" closable effect="light" round @close="clearAdvancedField('areaMin')">面积：{{ areaText }}</el-tag>
+      <el-tag v-if="props.advancedValue.direction" closable effect="light" round @close="clearAdvancedField('direction')">朝向：{{ props.advancedValue.direction }}</el-tag>
+      <el-tag v-if="props.advancedValue.hasImage !== undefined" closable effect="light" round @close="clearAdvancedField('hasImage')">
         {{ props.advancedValue.hasImage ? "有图" : "无图" }}
       </el-tag>
     </div>
 
+    <!-- 高级筛选面板 -->
     <transition name="room-filter-panel">
       <div v-if="showAdvancedSearch && advancedPanelVisible" class="room-filter-panel">
+        <!-- 面板头部 -->
         <div class="room-filter-panel__head">
-          <div>
-            <div class="room-filter-panel__title">筛选房源</div>
-            <div class="room-filter-panel__desc">组合小区、房间号、价格、面积等条件进行过滤。</div>
+          <div class="room-filter-panel__head-left">
+            <div class="room-filter-panel__icon-wrap">
+              <el-icon :size="14"><component :is="useRenderIcon(Filter)" /></el-icon>
+            </div>
+            <div>
+              <div class="room-filter-panel__title">筛选房源</div>
+              <div class="room-filter-panel__desc">先选快速条件，再组合小区、房号、价格和面积等条件过滤。</div>
+            </div>
           </div>
-          <el-button link type="primary" native-type="button" @click="clearDraftFilters">清空当前填写</el-button>
         </div>
 
         <el-form class="room-filter-form" label-position="top" @submit.prevent>
-          <el-form-item v-if="showRentalType" class="room-filter-form__wide" label="房源类型">
-            <el-button-group class="room-filter-bar__segment">
-              <el-button
-                v-for="item in rentalTypeItems"
-                :key="item.value ?? 'all'"
-                class="room-filter-btn room-filter-btn--type"
-                :class="{ 'is-active': draftAdvanced.rentalType === item.value || (item.value === undefined && draftAdvanced.rentalType === undefined) }"
-                @click="draftAdvanced.rentalType = item.value"
+          <!-- 快速选项区 -->
+          <div class="room-filter-form__quick" :class="{ 'is-single': !showRentalType }">
+            <el-form-item v-if="showRentalType" class="room-filter-form__type" label="房源类型">
+              <el-button-group class="room-filter-bar__segment room-filter-bar__segment--fluid">
+                <el-button
+                  v-for="item in rentalTypeItems"
+                  :key="item.value ?? 'all'"
+                  class="room-filter-btn room-filter-btn--type"
+                  :class="{ 'is-active': draftAdvanced.rentalType === item.value || (item.value === undefined && draftAdvanced.rentalType === undefined) }"
+                  @click="draftAdvanced.rentalType = item.value"
+                >
+                  <span class="room-filter-btn__content">{{ item.label }}</span>
+                </el-button>
+              </el-button-group>
+            </el-form-item>
+            <el-form-item label="是否有图" class="room-filter-form__image">
+              <el-radio-group v-model="draftHasImageValue" class="room-filter-radio">
+                <el-radio-button label="all">全部</el-radio-button>
+                <el-radio-button label="true">有图</el-radio-button>
+                <el-radio-button label="false">无图</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+
+          <!-- 详细字段区 -->
+          <div class="room-filter-form__fields">
+            <!-- 小区/项目 占2列 -->
+            <el-form-item label="小区 / 项目" class="room-filter-form__community">
+              <el-select
+                v-model="draftAdvanced.communityId"
+                clearable
+                filterable
+                remote
+                reserve-keyword
+                :remote-method="value => emit('community-search', value)"
+                :loading="communityLoading"
+                placeholder="请选择小区/项目"
+                @change="handleCommunityChange"
               >
-                <span class="room-filter-btn__content">{{ item.label }}</span>
-              </el-button>
-            </el-button-group>
-          </el-form-item>
-          <el-form-item label="小区/项目">
-            <el-select
-              v-model="draftAdvanced.communityId"
-              clearable
-              filterable
-              remote
-              reserve-keyword
-              :remote-method="value => emit('community-search', value)"
-              :loading="communityLoading"
-              placeholder="请选择小区/项目"
-              @change="handleCommunityChange"
-            >
-              <el-option v-for="item in communityOptions" :key="item.communityId" :label="item.address ? `${item.name}（${item.address}）` : item.name" :value="item.communityId" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="房间号">
-            <el-input v-model="draftAdvanced.roomNumber" clearable placeholder="请输入房间号" @keyup.enter="submitAdvancedSearch" />
-          </el-form-item>
-          <el-form-item label="出租价格">
-            <div class="room-range-input">
-              <el-input-number v-model="draftAdvanced.priceMin" :min="0" :precision="0" :controls="false" placeholder="最低价格" />
-              <span>~</span>
-              <el-input-number v-model="draftAdvanced.priceMax" :min="0" :precision="0" :controls="false" placeholder="最高价格" />
-            </div>
-          </el-form-item>
-          <el-form-item label="房屋面积">
-            <div class="room-range-input">
-              <el-input-number v-model="draftAdvanced.areaMin" :min="0" :precision="1" :controls="false" placeholder="最小面积" />
-              <span>~</span>
-              <el-input-number v-model="draftAdvanced.areaMax" :min="0" :precision="1" :controls="false" placeholder="最大面积" />
-            </div>
-          </el-form-item>
-          <el-form-item label="空置天数">
-            <div class="room-range-input">
-              <el-input-number v-model="draftAdvanced.vacancyDaysMin" :min="0" :controls="false" placeholder="最小空置天数" />
-              <span>~</span>
-              <el-input-number v-model="draftAdvanced.vacancyDaysMax" :min="0" :controls="false" placeholder="最大空置天数" />
-            </div>
-          </el-form-item>
-          <el-form-item label="朝向">
-            <el-select v-model="draftAdvanced.direction" clearable placeholder="全部">
-              <el-option v-for="item in directionOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="是否有图">
-            <el-radio-group v-model="draftHasImageValue" class="room-filter-radio">
-              <el-radio-button label="all">全部</el-radio-button>
-              <el-radio-button label="true">有图</el-radio-button>
-              <el-radio-button label="false">无图</el-radio-button>
-            </el-radio-group>
-          </el-form-item>
+                <el-option
+                  v-for="item in communityOptions"
+                  :key="item.communityId"
+                  :label="item.address ? `${item.name}（${item.address}）` : item.name"
+                  :value="item.communityId"
+                />
+              </el-select>
+            </el-form-item>
+
+            <!-- 房间号 -->
+            <el-form-item label="房间号" class="room-filter-form__room">
+              <el-input v-model="draftAdvanced.roomNumber" clearable placeholder="请输入房间号" @keyup.enter="submitAdvancedSearch" />
+            </el-form-item>
+
+            <!-- 出租价格 -->
+            <el-form-item label="出租价格" class="room-filter-form__price">
+              <div class="room-range-input">
+                <el-input-number v-model="draftAdvanced.priceMin" :min="0" :precision="0" :controls="false" placeholder="最低价格" />
+                <span class="room-range-input__sep">~</span>
+                <el-input-number v-model="draftAdvanced.priceMax" :min="0" :precision="0" :controls="false" placeholder="最高价格" />
+              </div>
+            </el-form-item>
+
+            <!-- 房屋面积 -->
+            <el-form-item label="房屋面积" class="room-filter-form__area">
+              <div class="room-range-input">
+                <el-input-number v-model="draftAdvanced.areaMin" :min="0" :precision="1" :controls="false" placeholder="最小面积" />
+                <span class="room-range-input__sep">~</span>
+                <el-input-number v-model="draftAdvanced.areaMax" :min="0" :precision="1" :controls="false" placeholder="最大面积" />
+              </div>
+            </el-form-item>
+
+            <!-- 空置天数 -->
+            <el-form-item label="空置天数" class="room-filter-form__vacancy">
+              <div class="room-range-input">
+                <el-input-number v-model="draftAdvanced.vacancyDaysMin" :min="0" :controls="false" placeholder="最小空置天数" />
+                <span class="room-range-input__sep">~</span>
+                <el-input-number v-model="draftAdvanced.vacancyDaysMax" :min="0" :controls="false" placeholder="最大空置天数" />
+              </div>
+            </el-form-item>
+
+            <!-- 朝向 -->
+            <el-form-item label="朝向" class="room-filter-form__direction">
+              <el-select v-model="draftAdvanced.direction" clearable placeholder="全部">
+                <el-option v-for="item in directionOptions" :key="item" :label="item" :value="item" />
+              </el-select>
+            </el-form-item>
+          </div>
         </el-form>
 
+        <!-- 底部操作 -->
         <div class="room-filter-panel__footer">
-          <el-button native-type="button" @click="clearDraftFilters">清空</el-button>
-          <el-button type="primary" native-type="button" @click="submitAdvancedSearch">过滤</el-button>
+          <el-button native-type="button" class="footer-btn-reset" @click="clearDraftFilters">
+            <span>清空条件</span>
+          </el-button>
+          <el-button type="primary" native-type="button" class="footer-btn-submit" @click="submitAdvancedSearch">
+            <el-icon :size="13"><component :is="useRenderIcon(Filter)" /></el-icon>
+            <span>应用过滤</span>
+          </el-button>
         </div>
       </div>
     </transition>
@@ -401,13 +440,27 @@
 </template>
 
 <style lang="scss" scoped>
+  // ─── 颜色变量 ───────────────────────────────────────────────────
+  $primary: var(--el-color-primary);
+  $primary-light: var(--el-color-primary-light-9);
+  $primary-border: var(--el-color-primary-light-5);
+  $primary-text: var(--el-color-primary);
+
+  // ─── 外层容器 ───────────────────────────────────────────────────
   .room-filter-bar {
+    position: relative;
+    z-index: 2;
     width: 100%;
     padding: 0 16px 10px;
     background: var(--el-bg-color);
     border-bottom: 1px solid var(--el-border-color-lighter);
   }
 
+  .room-filter-bar--expanded {
+    z-index: 12;
+  }
+
+  // ─── 工具栏 ─────────────────────────────────────────────────────
   .room-filter-bar__toolbar {
     display: flex;
     gap: 12px;
@@ -432,6 +485,16 @@
     align-items: stretch;
   }
 
+  .room-filter-bar__segment--fluid {
+    display: flex;
+    width: 100%;
+
+    .room-filter-btn--type {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
   .room-filter-bar__actions {
     display: inline-flex;
     flex: none;
@@ -441,7 +504,7 @@
   }
 
   .room-filter-bar__search {
-    width: clamp(280px, 28vw, 230px);
+    width: clamp(280px, 28vw, 430px);
 
     :deep(.el-input__wrapper) {
       height: 34px;
@@ -453,7 +516,7 @@
       }
 
       &.is-focus {
-        box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+        box-shadow: 0 0 0 1px $primary inset;
       }
     }
   }
@@ -462,8 +525,29 @@
     height: 34px;
     padding: 0 14px;
     border-radius: 6px;
+
+    &--filter {
+      position: relative;
+    }
   }
 
+  .filter-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    color: #fff;
+    text-align: center;
+    background: var(--el-color-danger);
+    border-radius: 8px;
+  }
+
+  // ─── 筛选标签 ───────────────────────────────────────────────────
   .room-filter-bar__tags {
     display: flex;
     flex-wrap: wrap;
@@ -472,6 +556,7 @@
     margin-top: 10px;
   }
 
+  // ─── 状态/类型按钮 ──────────────────────────────────────────────
   .room-filter-btn {
     height: 34px;
     min-width: 70px;
@@ -488,15 +573,15 @@
       border-color 0.2s;
 
     &:hover {
-      color: var(--el-color-primary);
+      color: $primary-text;
       background: var(--el-fill-color-light);
-      border-color: var(--el-color-primary-light-5) !important;
+      border-color: $primary-border !important;
     }
 
     &.is-active {
-      color: var(--el-color-primary);
-      background: var(--el-color-primary-light-9);
-      border-color: var(--el-color-primary-light-5) !important;
+      color: $primary-text;
+      background: $primary-light;
+      border-color: $primary-border !important;
     }
   }
 
@@ -524,52 +609,83 @@
     border-radius: 50%;
   }
 
+  // ─── 筛选面板 ───────────────────────────────────────────────────
   .room-filter-panel {
-    padding: 16px;
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
     margin-top: 12px;
-    background: linear-gradient(180deg, var(--el-fill-color-extra-light), var(--el-bg-color) 90px), var(--el-bg-color);
+    background: var(--el-bg-color);
     border: 1px solid var(--el-border-color-lighter);
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgb(15 23 42 / 6%);
+    border-radius: 12px;
+    box-shadow:
+      0 4px 24px rgb(15 23 42 / 6%),
+      0 1px 4px rgb(15 23 42 / 4%);
+    overflow: hidden;
   }
 
+  // ─── 面板头部 ───────────────────────────────────────────────────
   .room-filter-panel__head {
     display: flex;
-    gap: 12px;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    padding-bottom: 12px;
-    margin-bottom: 14px;
-    border-bottom: 1px solid var(--el-border-color-lighter);
+    padding: 14px 18px 12px;
+    background: linear-gradient(to right, var(--el-color-primary-light-9), var(--el-fill-color-extra-light) 60%);
+    border-bottom: 1px solid var(--el-border-color-extra-light);
+  }
+
+  .room-filter-panel__head-left {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .room-filter-panel__icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: $primary-text;
+    background: var(--el-color-primary-light-8);
+    border: 1px solid $primary-border;
+    border-radius: 8px;
+    flex-shrink: 0;
   }
 
   .room-filter-panel__title {
-    font-size: var(--el-font-size-base);
+    font-size: 13px;
     font-weight: 700;
     color: var(--el-text-color-primary);
+    line-height: 1.4;
   }
 
   .room-filter-panel__desc {
-    margin-top: 4px;
-    font-size: 12px;
+    margin-top: 2px;
+    font-size: 11px;
     color: var(--el-text-color-secondary);
+    line-height: 1.5;
   }
 
+  // ─── 表单整体 ───────────────────────────────────────────────────
   .room-filter-form {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
 
     :deep(.el-form-item) {
       margin-bottom: 0;
     }
 
     :deep(.el-form-item__label) {
-      height: 20px;
-      padding: 0 0 6px;
-      line-height: 20px;
+      height: 18px;
+      padding: 0 0 5px;
+      line-height: 18px;
+      font-size: 12px;
       font-weight: 600;
-      color: var(--el-text-color-primary);
+      color: var(--el-text-color-secondary);
+      letter-spacing: 0.02em;
     }
 
     :deep(.el-form-item__content) {
@@ -584,8 +700,9 @@
 
     :deep(.el-input__wrapper),
     :deep(.el-select__wrapper) {
-      min-height: 34px;
-      border-radius: 6px;
+      min-height: 36px;
+      border-radius: 8px;
+      transition: box-shadow 0.15s;
     }
 
     :deep(.el-input-number .el-input__inner) {
@@ -593,10 +710,38 @@
     }
   }
 
-  .room-filter-form__wide {
-    grid-column: 1 / -1;
+  // ─── 快速条件区（租赁类型 + 是否有图）──────────────────────────
+  .room-filter-form__quick {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 20px;
+    padding: 16px 18px;
+    background: var(--el-fill-color-extra-light);
+    border-bottom: 1px solid var(--el-border-color-extra-light);
+
+    &.is-single {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    :deep(.el-form-item__content) {
+      align-items: center;
+    }
   }
 
+  // ─── 详细字段区 ─────────────────────────────────────────────────
+  .room-filter-form__fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px 20px;
+    padding: 16px 18px;
+    background: var(--el-bg-color);
+  }
+
+  .room-filter-form__community {
+    grid-column: span 2;
+  }
+
+  // ─── Radio 按钮组 ────────────────────────────────────────────────
   .room-filter-radio {
     display: flex;
     width: 100%;
@@ -615,42 +760,86 @@
       background: var(--el-bg-color);
       border-color: var(--el-border-color);
       box-shadow: none;
+      transition:
+        background 0.15s,
+        color 0.15s;
     }
 
     :deep(.el-radio-button:first-child .el-radio-button__inner) {
-      border-radius: 6px 0 0 6px;
+      border-radius: 8px 0 0 8px;
     }
 
     :deep(.el-radio-button:last-child .el-radio-button__inner) {
-      border-radius: 0 6px 6px 0;
+      border-radius: 0 8px 8px 0;
     }
 
     :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-      color: var(--el-color-primary);
-      background: var(--el-color-primary-light-9);
-      border-color: var(--el-color-primary-light-5);
+      color: $primary-text;
+      background: $primary-light;
+      border-color: $primary-border;
+      font-weight: 600;
     }
   }
 
+  // ─── 范围输入组 ─────────────────────────────────────────────────
   .room-range-input {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
-    gap: 6px;
+    grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr);
+    gap: 4px;
     align-items: center;
     width: 100%;
-    color: var(--el-text-color-placeholder);
-    text-align: center;
+
+    &__sep {
+      text-align: center;
+      font-size: 13px;
+      color: var(--el-text-color-placeholder);
+      user-select: none;
+    }
   }
 
+  // ─── 底部操作栏 ─────────────────────────────────────────────────
   .room-filter-panel__footer {
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
-    padding-top: 14px;
-    margin-top: 16px;
-    border-top: 1px solid var(--el-border-color-lighter);
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: var(--el-fill-color-extra-light);
+    border-top: 1px solid var(--el-border-color-extra-light);
+
+    .footer-btn-reset {
+      height: 34px;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--el-text-color-regular);
+      border-color: var(--el-border-color);
+      background: var(--el-bg-color);
+
+      &:hover {
+        color: var(--el-color-danger);
+        border-color: var(--el-color-danger-light-5);
+        background: var(--el-color-danger-light-9);
+      }
+    }
+
+    .footer-btn-submit {
+      height: 34px;
+      padding: 0 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    :deep(.el-button) {
+      pointer-events: auto;
+    }
   }
 
+  // ─── 动画 ────────────────────────────────────────────────────────
   .room-filter-panel-enter-active,
   .room-filter-panel-leave-active {
     overflow: hidden;
@@ -665,6 +854,7 @@
     transform: translateY(-6px);
   }
 
+  // ─── 响应式 ──────────────────────────────────────────────────────
   @media (max-width: 1200px) {
     .room-filter-bar__toolbar {
       flex-wrap: wrap;
@@ -686,9 +876,30 @@
     }
   }
 
+  @media (max-width: 1280px) {
+    .room-filter-form__quick,
+    .room-filter-form__fields {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .room-filter-form__quick.is-single {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .room-filter-form__community {
+      grid-column: span 2;
+    }
+  }
+
   @media (max-width: 900px) {
-    .room-filter-form {
+    .room-filter-form__quick,
+    .room-filter-form__quick.is-single,
+    .room-filter-form__fields {
       grid-template-columns: 1fr;
+    }
+
+    .room-filter-form__community {
+      grid-column: auto;
     }
   }
 </style>
