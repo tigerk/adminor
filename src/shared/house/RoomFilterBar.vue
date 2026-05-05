@@ -593,6 +593,10 @@
     }
   }
 
+  .room-filter-form__wide {
+    grid-column: 1 / -1;
+  }
+
   .room-filter-radio {
     display: flex;
     width: 100%;
