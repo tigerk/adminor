@@ -122,14 +122,14 @@
           </template>
           <template #operation="{ row }">
             <el-button link type="primary" @click.stop="openDetail(row.contractId)">查看</el-button>
-            <el-dropdown :hide-on-click="false" popper-class="action-dropdown" trigger="click" @click.stop @command="command => handleOwnerActionCommand(row, command)">
-              <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
+            <el-dropdown :hide-on-click="false" popper-class="action-dropdown" trigger="click">
+              <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" @click.stop />
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="edit">编辑合同</el-dropdown-item>
-                  <el-dropdown-item command="renew">业主续约</el-dropdown-item>
-                  <el-dropdown-item command="checkout" :disabled="!canCheckoutContract(row)">业主退房</el-dropdown-item>
-                  <el-dropdown-item v-if="canVoidContract(row)" command="void" divided>
+                  <el-dropdown-item @click="openEdit(row.contractId)">编辑合同</el-dropdown-item>
+                  <el-dropdown-item @click="handleOwnerRenew(row)">业主续约</el-dropdown-item>
+                  <el-dropdown-item :disabled="!canCheckoutContract(row)" @click="handleOwnerCheckout(row)">业主退房</el-dropdown-item>
+                  <el-dropdown-item divided :disabled="!canVoidContract(row)" @click="handleVoidContract(row)">
                     <span class="text-danger">作废合同</span>
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -139,7 +139,6 @@
         </pure-table>
       </template>
     </PureTableBar>
-
   </div>
 </template>
 
@@ -189,8 +188,6 @@
     ownerTag?: string;
     updateAt?: string;
   };
-  type OwnerActionCommand = "edit" | "renew" | "checkout" | "void";
-
   type OwnerContractTotal = {
     total?: number;
     pendingApprovalTotal?: number;
@@ -431,24 +428,6 @@
       return;
     }
     openOwnerCheckoutDialog(row, loadList);
-  }
-
-  function handleOwnerActionCommand(row: OwnerListRow, command: OwnerActionCommand) {
-    if (command === "edit") {
-      openEdit(row.contractId);
-      return;
-    }
-    if (command === "renew") {
-      handleOwnerRenew(row);
-      return;
-    }
-    if (command === "checkout") {
-      handleOwnerCheckout(row);
-      return;
-    }
-    if (command === "void") {
-      handleVoidContract(row);
-    }
   }
 
   function canCheckoutContract(row: OwnerListRow) {

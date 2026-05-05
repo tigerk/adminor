@@ -1,12 +1,10 @@
 <script setup lang="ts">
-  import { nextTick, onMounted, ref, watch } from "vue";
+  import { onMounted, ref, watch } from "vue";
   import { useRoute } from "vue-router";
-  import { delay, subBefore, useResizeObserver } from "@pureadmin/utils";
-  import Search from "~icons/ri/search-eye-line";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { userFocusRoom } from "@/views/house/focus/focusRoom/utils/hook";
-  import { getFocusById } from "@/api/house/focus";
   import RoomStatusGrid from "@/views/house/components/RoomGrid/RoomStatusGrid.vue";
+  import RoomFilterBar from "@/shared/house/RoomFilterBar.vue";
   import More from "~icons/ep/more-filled";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
@@ -24,12 +22,9 @@
     roomTableList,
     pagination,
     onSearch,
-    resetForm,
     handleSizeChange,
     handleCurrentChange,
-    focusOptions,
     roomStatusTotal,
-    activeStatusKey,
     handleStatusClick,
     isStatusActive,
     displayModeToList,
@@ -41,14 +36,16 @@
     isRoomAvailable
   } = userFocusRoom();
 
-  const formRef = ref();
-  const tableRef = ref();
-  const contentRef = ref();
-  const treeHeight = ref();
   const tableSize = ref("default");
 
   function handleTableDropdownCommand(row, command) {
     handleRoomDropdownCommand(row, command);
+  }
+
+  function searchFromFirstPage() {
+    pagination.currentPage = 1;
+    queryForm.currentPage = "1";
+    onSearch();
   }
 
   function applyRouteQuery() {
@@ -66,12 +63,6 @@
     if (route.query.occupancyStatus || route.query.vacancyDaysMin || route.query.vacancyDaysMax) {
       onSearch();
     }
-    useResizeObserver(contentRef, async () => {
-      await nextTick();
-      delay(60).then(() => {
-        treeHeight.value = parseFloat(subBefore(tableRef.value.getTableDoms().tableWrapper.style.height, "px"));
-      });
-    });
   });
 
   watch(
@@ -82,13 +73,6 @@
     }
   );
 
-  function modifyFocusHouse() {
-    if (queryForm.leaseModeId) {
-      getFocusById({ id: queryForm.leaseModeId }).then(res => {
-        openFocusEditDialog("更新", res.data);
-      });
-    }
-  }
 </script>
 
 <template>
@@ -113,47 +97,14 @@
       </el-col>
     </el-row>
 
-    <el-row class="search-form bg-bg_color w-full px-4 overflow-auto">
-      <el-col :span="18">
-        <div class="grid-content ep-bg-purple" style="align-items: flex-start">
-          <el-space>
-            <el-form-item>
-              <!--
-                状态栏改为手动点击分发，不再用 v-model 绑定 queryForm.roomStatus。
-                原因：锁房(BY_LOCKED) 和 已关闭(BY_CLOSED) 不是 roomStatus 的枚举值，
-                而是独立的 locked / closed 字段，无法通过单一 v-model 表达。
-                后端 filterType 决定用哪个字段查询：
-                  0 = BY_STATUS  → queryForm.roomStatus
-                  1 = BY_LOCKED  → queryForm.locked = true
-                  2 = BY_CLOSED  → queryForm.closed = true
-              -->
-              <el-button-group class="status-bar">
-                <el-button
-                  v-for="item in roomStatusTotal"
-                  :key="item.filterType !== undefined ? `${item.filterType}-${item.roomStatus}` : 'all'"
-                  class="status-btn"
-                  type="default"
-                  :class="{ 'is-active': isStatusActive(item) }"
-                  @click="handleStatusClick(item)"
-                >
-                  <span class="status-content">
-                    <span v-if="item.roomStatusColor" class="status-dot" :style="{ backgroundColor: item.roomStatusColor }" />
-                    {{ item.roomStatusName }}（{{ item.total }}）
-                  </span>
-                </el-button>
-              </el-button-group>
-            </el-form-item>
-          </el-space>
-        </div>
-      </el-col>
-      <el-col :span="6" class="text-right">
-        <el-input v-model="queryForm.keywords" placeholder="项目名称/房间号/租客电话/业主姓名/业主电话/标签" clearable class="w-full" @keyup.enter="onSearch" @clear="onSearch">
-          <template #suffix>
-            <IconifyIconOffline :icon="Search" />
-          </template>
-        </el-input>
-      </el-col>
-    </el-row>
+    <RoomFilterBar
+      v-model="queryForm.keywords"
+      :status-items="roomStatusTotal"
+      :is-status-active="isStatusActive"
+      @status-click="handleStatusClick"
+      @search="searchFromFirstPage"
+      @reset-keyword="searchFromFirstPage"
+    />
 
     <!-- 列表模式 -->
     <el-row v-if="displayModeToList" class="bg-bg_color w-full p-4 pt-[12px] overflow-auto">
@@ -213,54 +164,6 @@
 <style lang="scss" scoped>
   :deep(.el-dropdown-menu__item i) {
     margin: 0;
-  }
-
-  .search-form {
-    :deep(.el-form-item) {
-      margin-bottom: 12px;
-    }
-  }
-
-  /* ========== 状态栏 ========== */
-  .status-bar {
-    display: inline-flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-  }
-
-  :deep(.status-btn) {
-    margin: 0 !important;
-    padding: 8px 16px;
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-    border-color: var(--el-border-color) !important;
-    transition: all 0.2s;
-
-    &:hover {
-      color: var(--el-color-primary);
-      border-color: var(--el-color-primary-light-5);
-      background: var(--el-color-primary-light-9);
-    }
-
-    &.is-active {
-      color: var(--el-color-primary);
-      background: var(--el-color-primary-light-9);
-      border-color: var(--el-color-primary);
-    }
-  }
-
-  .status-content {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-
-  .status-dot {
-    display: inline-block;
-    flex-shrink: 0;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
   }
 
   .room-table-actions {

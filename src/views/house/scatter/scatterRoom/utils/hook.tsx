@@ -7,15 +7,11 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { closeRoom, deleteRoom, getRoomList, getRoomTotalVo, openRoom, unlockRoom } from "@/api/house/room";
 import { getFocusHouseOptions } from "@/api/house/focus";
 import type { HouseLayoutDto, RoomListVo, RoomQueryDto, RoomTotalItemVo } from "@/types";
-  import { OccupancyStatusEnumMeta, RentalTypeEnumMeta, TenantTypeEnumMeta } from "@/types";
-  import { ROOM_FILTER_TYPE } from "@/constants";
-  import useBooking from "@/views/contract/booking/utils/hook";
-  import useTenant from "@/views/contract/tenant/utils/hook";
-  import { useRoomLock } from "@/views/house/components/RoomLock/hook";
-
-type ScatterRoomQueryDto = RoomQueryDto & {
-  rentalType?: number;
-};
+import { OccupancyStatusEnumMeta, RentalTypeEnumMeta, TenantTypeEnumMeta } from "@/types";
+import { ROOM_FILTER_TYPE } from "@/constants";
+import useBooking from "@/views/contract/booking/utils/hook";
+import useTenant from "@/views/contract/tenant/utils/hook";
+import { useRoomLock } from "@/views/house/components/RoomLock/hook";
 
 type RoomDropdownCommand = "lock" | "unlock" | "close" | "open" | "delete";
 
@@ -31,7 +27,7 @@ export function useScatterRoom() {
     background: true
   });
 
-  const queryForm = reactive<ScatterRoomQueryDto>({
+  const queryForm = reactive<RoomQueryDto>({
     keywords: "",
     leaseModeId: null,
     leaseMode: 2, // 整/合租
