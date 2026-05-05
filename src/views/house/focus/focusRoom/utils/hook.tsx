@@ -35,6 +35,16 @@ export function userFocusRoom() {
     occupancyStatus: undefined,
     locked: undefined,
     closed: undefined,
+    communityId: undefined,
+    roomNumber: undefined,
+    vacancyDaysMin: undefined,
+    vacancyDaysMax: undefined,
+    areaMin: undefined,
+    areaMax: undefined,
+    priceMin: undefined,
+    priceMax: undefined,
+    direction: undefined,
+    hasImage: undefined,
     pageSize: "15",
     currentPage: "1"
   });

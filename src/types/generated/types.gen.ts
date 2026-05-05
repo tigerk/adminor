@@ -1264,6 +1264,10 @@ export type BookingListVo = {
  */
 export type CommunityDto = {
     /**
+     * 小区ID
+     */
+    communityId?: string;
+    /**
      * 小区名称
      */
     name?: string;
@@ -2350,6 +2354,10 @@ export type RoomQueryDto = {
      */
     keywords?: string;
     /**
+     * 房间号
+     */
+    roomNumber?: string;
+    /**
      * 出租占用状态：0=空置，1=已租，2=已预定，3=配置中。locked=true 或 closed=true 时此字段无效
      */
     occupancyStatus?: number;
@@ -2373,6 +2381,30 @@ export type RoomQueryDto = {
      * 空置天数最大值
      */
     vacancyDaysMax?: number;
+    /**
+     * 房屋面积最小值
+     */
+    areaMin?: number;
+    /**
+     * 房屋面积最大值
+     */
+    areaMax?: number;
+    /**
+     * 出租价格最小值
+     */
+    priceMin?: number;
+    /**
+     * 出租价格最大值
+     */
+    priceMax?: number;
+    /**
+     * 朝向
+     */
+    direction?: string;
+    /**
+     * 是否有图
+     */
+    hasImage?: boolean;
 };
 
 export type ResponseResultRoomTotalVo = {

@@ -1,10 +1,12 @@
 <script setup lang="ts">
-  import { onMounted, ref, watch } from "vue";
+  import { computed, onMounted, ref, watch } from "vue";
   import { useRoute } from "vue-router";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { userFocusRoom } from "@/views/house/focus/focusRoom/utils/hook";
   import RoomStatusGrid from "@/views/house/components/RoomGrid/RoomStatusGrid.vue";
+  import { getRoomCommunityOptions } from "@/api/house/room";
   import RoomFilterBar from "@/shared/house/RoomFilterBar.vue";
+  import type { CommunityDto } from "@/types";
   import More from "~icons/ep/more-filled";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 
@@ -37,6 +39,48 @@
   } = userFocusRoom();
 
   const tableSize = ref("default");
+  const communityOptions = ref<(CommunityDto & { communityId?: string })[]>([]);
+  const communityLoading = ref(false);
+  type RoomAdvancedFilterValue = {
+    communityId?: string;
+    communityName?: string;
+    roomNumber?: string;
+    vacancyDaysMin?: number;
+    vacancyDaysMax?: number;
+    priceMin?: number;
+    priceMax?: number;
+    areaMin?: number;
+    areaMax?: number;
+    direction?: string;
+    hasImage?: boolean;
+  };
+  const advancedFilter = computed<RoomAdvancedFilterValue>({
+    get: () => ({
+      communityId: queryForm.communityId,
+      communityName: communityOptions.value.find(item => item.communityId === queryForm.communityId)?.name,
+      roomNumber: queryForm.roomNumber,
+      vacancyDaysMin: queryForm.vacancyDaysMin,
+      vacancyDaysMax: queryForm.vacancyDaysMax,
+      priceMin: queryForm.priceMin,
+      priceMax: queryForm.priceMax,
+      areaMin: queryForm.areaMin,
+      areaMax: queryForm.areaMax,
+      direction: queryForm.direction,
+      hasImage: queryForm.hasImage
+    }),
+    set: value => {
+      queryForm.communityId = value.communityId;
+      queryForm.roomNumber = value.roomNumber;
+      queryForm.vacancyDaysMin = value.vacancyDaysMin;
+      queryForm.vacancyDaysMax = value.vacancyDaysMax;
+      queryForm.priceMin = value.priceMin;
+      queryForm.priceMax = value.priceMax;
+      queryForm.areaMin = value.areaMin;
+      queryForm.areaMax = value.areaMax;
+      queryForm.direction = value.direction;
+      queryForm.hasImage = value.hasImage;
+    }
+  });
 
   function handleTableDropdownCommand(row, command) {
     handleRoomDropdownCommand(row, command);
@@ -46,6 +90,19 @@
     pagination.currentPage = 1;
     queryForm.currentPage = "1";
     onSearch();
+  }
+
+  async function loadCommunityOptions(keywords = "") {
+    communityLoading.value = true;
+    try {
+      const { data } = await getRoomCommunityOptions({
+        keywords,
+        leaseMode: queryForm.leaseMode
+      });
+      communityOptions.value = data || [];
+    } finally {
+      communityLoading.value = false;
+    }
   }
 
   function applyRouteQuery() {
@@ -60,6 +117,7 @@
 
   onMounted(() => {
     applyRouteQuery();
+    loadCommunityOptions();
     if (route.query.occupancyStatus || route.query.vacancyDaysMin || route.query.vacancyDaysMax) {
       onSearch();
     }
@@ -100,10 +158,16 @@
     <RoomFilterBar
       v-model="queryForm.keywords"
       :status-items="roomStatusTotal"
+      v-model:advanced-value="advancedFilter"
+      show-advanced-search
+      :community-options="communityOptions"
+      :community-loading="communityLoading"
       :is-status-active="isStatusActive"
       @status-click="handleStatusClick"
       @search="searchFromFirstPage"
       @reset-keyword="searchFromFirstPage"
+      @reset-filters="searchFromFirstPage"
+      @community-search="loadCommunityOptions"
     />
 
     <!-- 列表模式 -->
