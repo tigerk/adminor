@@ -862,7 +862,7 @@
       justify-content: center;
       gap: 5px;
       color: var(--t3);
-      font-size: 10px;
+      font-size: 11px;
     }
 
     &__badge {
@@ -877,7 +877,7 @@
       background: rgba(0, 0, 0, 0.45);
       backdrop-filter: blur(3px);
       border-radius: 20px;
-      font-size: 10px;
+      font-size: 11px;
       color: #fff;
       pointer-events: none;
     }
@@ -915,7 +915,7 @@
     gap: 4px;
     padding: 2px 8px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
 
     &__dot {
@@ -963,7 +963,7 @@
       font-variant-numeric: tabular-nums;
     }
     &__unit {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--t3);
     }
     &__edit {
@@ -976,7 +976,7 @@
       border: 1px solid var(--b);
       background: transparent;
       color: var(--t3);
-      font-size: 10px;
+      font-size: 11px;
       cursor: pointer;
       transition: all 0.15s;
       &:hover {
@@ -998,7 +998,7 @@
     display: flex;
     align-items: center;
     gap: 3px;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--t3);
     white-space: nowrap;
     em {
@@ -1053,7 +1053,7 @@
     }
 
     &__val {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--t1);
       white-space: nowrap;
@@ -1072,18 +1072,18 @@
         display: flex;
         align-items: center;
         gap: 3px;
-        font-size: 12px;
+        font-size: 13px;
       }
     }
 
     &__lbl {
-      font-size: 10px;
+      font-size: 11px;
       color: var(--t3);
       white-space: nowrap;
     }
 
     &__phone {
-      font-size: 10px;
+      font-size: 11px;
       color: var(--t3);
       font-weight: 400;
     }
@@ -1172,7 +1172,7 @@
       }
     }
     &__count {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--t3);
       background: var(--sub);
       border-radius: 10px;

@@ -358,7 +358,7 @@
     flex-direction: column;
     height: 100%;
     background: var(--bg);
-    font-size: 13px;
+    font-size: 14px;
     color: var(--t1);
     overflow: hidden;
     font-family: -apple-system, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;

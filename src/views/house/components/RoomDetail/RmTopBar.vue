@@ -43,7 +43,7 @@
         tenantName: room.lease?.tenantName || room.booking?.tenantName || "待登记租客",
         tenantSub: room.lease?.tenantName
           ? `押 ${room.lease.depositMonths ?? 1} 付 ${room.lease.paymentMonths}`
-          : room.booking?.tenantPhone || "待登记租客"
+          : room.booking?.tenantPhone || ""
       };
     })
   );
@@ -143,7 +143,7 @@
             <div class="hv-troom__divider" />
             <div class="hv-troom__right">
               <span class="hv-troom__info-line hv-troom__info-line--tenant">{{ item.tenantName }}</span>
-              <span class="hv-troom__info-line">{{ item.tenantSub }}</span>
+              <span v-if="item.tenantSub" class="hv-troom__info-line">{{ item.tenantSub }}</span>
             </div>
           </button>
 
@@ -240,14 +240,14 @@
     background: var(--sub);
 
     &-type {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--t1);
       white-space: nowrap;
     }
 
     &-stat {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--t3);
       white-space: nowrap;
     }
@@ -311,7 +311,7 @@
   }
 
   .hv-room-rail-option__room {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--t1);
     flex-shrink: 0;
@@ -323,7 +323,7 @@
     height: 20px;
     padding: 0 6px;
     border-radius: 10px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     flex-shrink: 0;
 
@@ -350,7 +350,7 @@
 
   .hv-room-rail-option__tenant {
     overflow: hidden;
-    font-size: 12px;
+    font-size: 13px;
     color: var(--t3);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -413,14 +413,14 @@
   }
 
   .hv-troom__num {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 800;
     line-height: 1;
     color: var(--t1);
   }
 
   .hv-troom__status {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     white-space: nowrap;
 
@@ -462,7 +462,7 @@
   .hv-troom__info-line {
     display: block;
     overflow: hidden;
-    font-size: 11px;
+    font-size: 12px;
     text-overflow: ellipsis;
     white-space: nowrap;
 
@@ -491,7 +491,7 @@
     border-radius: 8px;
     background: var(--sub);
     color: var(--t2);
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
     transition: all 0.15s;
 
@@ -521,7 +521,7 @@
   }
 
   .hv-occ__label {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--t2);
   }
@@ -563,7 +563,7 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--t3);
       white-space: nowrap;
     }
