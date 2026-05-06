@@ -1,8 +1,8 @@
 <script setup lang="ts">
+  import { computed } from "vue";
   import { Plus } from "@element-plus/icons-vue";
-  import { HouseDetailVo, RoomDetailVo } from "@/types";
+  import type { HouseDetailVo, RoomDetailVo } from "@/types";
   import { getRoomStatus } from "@/utils/house";
-  import { formatDate } from "@/utils/date";
   import { getOptionNameByCode, RENTAL_TYPE_OPTIONS } from "@/constants";
 
   const props = defineProps<{
@@ -12,52 +12,83 @@
     isShareRental: boolean;
     roomStats: { total: number; leased: number; available: number; booked: number };
     occupancyRate: number;
+    mode?: "dialog" | "page";
   }>();
 
   const emit = defineEmits<{
     "update:activeRoomIndex": [idx: number];
     editHouse: [detail: HouseDetailVo];
   }>();
+
+  const showRoomSwitcher = computed(() => props.roomTabs.length > 1);
+  const showRoomCards = computed(() => props.roomTabs.length > 1 && props.roomTabs.length <= 8);
+
+  function roomKey(room: RoomDetailVo, idx: number) {
+    return String(room.id ?? room.roomNumber ?? idx);
+  }
+
+  const roomOptions = computed(() =>
+    props.roomTabs.map((room, idx) => {
+      const status = getRoomStatus(room);
+      const roomNumber = room.roomNumber || `房间${idx + 1}`;
+      const ownerText = room.lease?.tenantName || room.booking?.tenantName || "待登记租客";
+      return {
+        key: roomKey(room, idx),
+        index: idx,
+        statusCls: status.cls,
+        statusText: status.text,
+        label: `${roomNumber} · ${status.text}`,
+        sub: ownerText
+      };
+    })
+  );
+
+  const activeRoomKey = computed({
+    get() {
+      const room = props.roomTabs[props.activeRoomIndex];
+      if (!room) return "";
+      return roomKey(room, props.activeRoomIndex);
+    },
+    set(key: string) {
+      const idx = roomOptions.value.findIndex(item => item.key === key);
+      if (idx >= 0) {
+        emit("update:activeRoomIndex", idx);
+      }
+    }
+  });
+
+  function stepRoom(direction: -1 | 1) {
+    const total = props.roomTabs.length;
+    if (total <= 1) return;
+    const next = (props.activeRoomIndex + direction + total) % total;
+    emit("update:activeRoomIndex", next);
+  }
 </script>
 
 <template>
-  <div class="hv-topbar">
-    <!-- 左侧：房源概要 -->
-    <div class="hv-topbar__summary">
-      <div class="hv-topbar__summary-type">{{ getOptionNameByCode(RENTAL_TYPE_OPTIONS, detail.rentalType) }}</div>
-      <div class="hv-topbar__summary-stat">已租 {{ roomStats.leased }} 间 / 共 {{ roomStats.total }} 间</div>
-    </div>
+  <div class="hv-topbar" :class="{ 'is-page': mode === 'page' }">
+    <div class="hv-topbar__primary">
+      <div class="hv-topbar__summary">
+        <div class="hv-topbar__summary-type">{{ getOptionNameByCode(RENTAL_TYPE_OPTIONS, detail.rentalType) }}</div>
+        <div class="hv-topbar__summary-stat">已租 {{ roomStats.leased }} 间 / 共 {{ roomStats.total }} 间</div>
+      </div>
 
-    <!-- 房间卡片列表 -->
-    <div class="hv-topbar__rooms">
-      <button
-        v-for="(room, idx) in roomTabs"
-        :key="room.id || idx"
-        class="hv-troom"
-        :class="[`hv-troom--${getRoomStatus(room).cls}`, { 'is-active': activeRoomIndex === idx }]"
-        @click="() => emit('update:activeRoomIndex', idx)"
-      >
-        <div class="hv-troom__left">
-          <span class="hv-troom__num">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
-          <span class="hv-troom__status" :class="`hv-troom__status--${getRoomStatus(room).cls}`">
-            {{ getRoomStatus(room).text }}
-          </span>
+      <div v-if="showRoomSwitcher" class="hv-room-switcher">
+        <div class="hv-room-switcher__label">房间切换</div>
+        <div class="hv-room-switcher__main">
+          <el-button plain size="small" @click="stepRoom(-1)">上一间</el-button>
+          <el-select v-model="activeRoomKey" filterable class="hv-room-switcher__select" placeholder="选择房间">
+            <el-option v-for="item in roomOptions" :key="item.key" :label="item.label" :value="item.key">
+              <div class="hv-room-option">
+                <span class="hv-room-option__status" :class="`is-${item.statusCls}`">{{ item.statusText }}</span>
+                <span class="hv-room-option__label">{{ item.label }}</span>
+                <span class="hv-room-option__sub">{{ item.sub }}</span>
+              </div>
+            </el-option>
+          </el-select>
+          <el-button plain size="small" @click="stepRoom(1)">下一间</el-button>
         </div>
-        <div class="hv-troom__divider" />
-        <div class="hv-troom__right">
-          <template v-if="room.lease?.tenantName">
-            <span class="hv-troom__info-line hv-troom__info-line--tenant">♂ {{ room.lease.tenantName }}</span>
-            <span class="hv-troom__info-line">✭ 押 {{ room.lease.depositMonths ?? 1 }} 付 {{ room.lease.paymentMonths }}</span>
-          </template>
-          <template v-else-if="room.booking?.tenantName">
-            <span class="hv-troom__info-line hv-troom__info-line--booking">{{ room.booking.tenantName }}</span>
-            <span class="hv-troom__info-line hv-troom__info-line--date">{{ formatDate(room.booking.tenantPhone) }}</span>
-          </template>
-          <template v-else>
-            <span class="hv-troom__info-line hv-troom__info-line--empty">待登记租客</span>
-          </template>
-        </div>
-      </button>
+      </div>
 
       <button v-if="isShareRental" class="hv-troom hv-troom--add" @click="() => emit('editHouse', detail)">
         <el-icon :size="14"><Plus /></el-icon>
@@ -65,7 +96,6 @@
       </button>
     </div>
 
-    <!-- 右侧：出租率 -->
     <div class="hv-topbar__occ">
       <div class="hv-occ">
         <div class="hv-occ__head">
@@ -93,21 +123,60 @@
       </div>
     </div>
   </div>
+
+  <div v-if="showRoomCards" class="hv-topbar__rooms">
+    <button
+      v-for="(room, idx) in roomTabs"
+      :key="room.id || idx"
+      class="hv-troom"
+      :class="[`hv-troom--${getRoomStatus(room).cls}`, { 'is-active': activeRoomIndex === idx }]"
+      @click="() => emit('update:activeRoomIndex', idx)"
+    >
+      <div class="hv-troom__left">
+        <span class="hv-troom__num">{{ room.roomNumber || String.fromCharCode(65 + idx) }}</span>
+        <span class="hv-troom__status" :class="`hv-troom__status--${getRoomStatus(room).cls}`">
+          {{ getRoomStatus(room).text }}
+        </span>
+      </div>
+      <div class="hv-troom__divider" />
+      <div class="hv-troom__right">
+        <template v-if="room.lease?.tenantName">
+          <span class="hv-troom__info-line hv-troom__info-line--tenant">{{ room.lease.tenantName }}</span>
+          <span class="hv-troom__info-line">押 {{ room.lease.depositMonths ?? 1 }} 付 {{ room.lease.paymentMonths }}</span>
+        </template>
+        <template v-else-if="room.booking?.tenantName">
+          <span class="hv-troom__info-line hv-troom__info-line--booking">{{ room.booking.tenantName }}</span>
+          <span class="hv-troom__info-line hv-troom__info-line--date">{{ room.booking.tenantPhone || "-" }}</span>
+        </template>
+        <template v-else>
+          <span class="hv-troom__info-line hv-troom__info-line--empty">待登记租客</span>
+        </template>
+      </div>
+    </button>
+  </div>
 </template>
 
 <style scoped lang="scss">
   .hv-topbar {
     display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 0 8px 14px 0;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 0 10px;
     background: var(--card);
-    border-bottom: 1px solid var(--bl);
     flex-shrink: 0;
-    overflow-x: auto;
-    &::-webkit-scrollbar {
-      height: 0;
+
+    &.is-page {
+      padding-bottom: 8px;
     }
+  }
+
+  .hv-topbar__primary {
+    display: flex;
+    flex: 1;
+    gap: 10px;
+    align-items: stretch;
+    min-width: 0;
   }
 
   .hv-topbar__summary {
@@ -121,7 +190,6 @@
     border: 1px solid var(--bl);
     border-radius: 8px;
     padding: 6px 14px;
-    margin-right: 10px;
 
     &-type {
       font-size: 13px;
@@ -136,14 +204,103 @@
     }
   }
 
+  .hv-room-switcher {
+    display: flex;
+    flex: 1;
+    gap: 6px;
+    min-width: 0;
+    padding: 6px 10px;
+    border: 1px solid var(--bl);
+    border-radius: 8px;
+    background: var(--sub);
+
+    &__label {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 30px;
+      color: var(--t2);
+    }
+
+    &__main {
+      display: flex;
+      flex: 1;
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    &__select {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  .hv-room-option {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+
+    &__status {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+
+      &.is-leased {
+        color: var(--success);
+        background: var(--success-bg);
+      }
+
+      &.is-available {
+        color: var(--danger);
+        background: var(--danger-bg);
+      }
+
+      &.is-booked {
+        color: var(--warning);
+        background: var(--warning-bg);
+      }
+
+      &.is-locked {
+        color: var(--info);
+        background: var(--info-bg);
+      }
+    }
+
+    &__label {
+      overflow: hidden;
+      font-size: 12px;
+      color: var(--t1);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &__sub {
+      margin-left: auto;
+      overflow: hidden;
+      max-width: 140px;
+      font-size: 11px;
+      color: var(--t3);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
+
   .hv-topbar__rooms {
     display: flex;
     align-items: stretch;
     gap: 6px;
-    flex: 1;
-    min-width: 0;
     flex-wrap: wrap;
-    padding: 0 10px 0 0;
+    padding: 0 0 4px;
+    border-bottom: 1px solid var(--bl);
+    margin-bottom: 6px;
   }
 
   .hv-troom {
@@ -352,6 +509,30 @@
     &--available {
       background: var(--danger);
       opacity: 0.5;
+    }
+  }
+
+  @media (width <= 1280px) {
+    .hv-topbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .hv-topbar__occ {
+      padding-top: 8px;
+      padding-left: 0;
+      border-top: 1px solid var(--bl);
+      border-left: 0;
+    }
+  }
+
+  @media (width <= 900px) {
+    .hv-topbar__primary {
+      flex-direction: column;
+    }
+
+    .hv-room-switcher__main {
+      flex-wrap: wrap;
     }
   }
 </style>

@@ -22,7 +22,7 @@
     </el-page-header>
 
     <section class="room-detail-page__body">
-      <HouseDetailContent
+      <RoomDetailContent
         :loading="loading"
         :detail="detail"
         :initial-room-id="initialRoomId"
@@ -35,6 +35,7 @@
         @open-booking-detail="handleOpenBookingDetail"
         @renew-lease="handleRenewLease"
         @reload="fetchDetail"
+        @room-change="handleRoomChange"
       />
     </section>
   </div>
@@ -46,8 +47,8 @@
   import { getRoomDetail } from "@/api/house/room";
   import { getFocusById } from "@/api/house/focus";
   import { message } from "@/utils/message";
-  import HouseDetailContent from "@/views/house/components/HouseView/HouseDetailContent.vue";
-  import { buildHouseDetailFromRoom } from "@/views/house/components/HouseView/houseDetailAdapter";
+  import RoomDetailContent from "@/views/house/components/RoomDetail/RoomDetailContent.vue";
+  import { buildHouseDetailFromRoom } from "@/views/house/components/RoomDetail/roomDetailAdapter";
   import { useFocusEdit } from "@/views/house/components/FocusCreate/utils/hook";
   import { useEntireEdit } from "@/views/house/components/EntireCreate/hook";
   import { useShareEdit } from "@/views/house/components/ShareCreate/hook";
@@ -71,9 +72,13 @@
 
   const loading = ref(false);
   const detail = ref<HouseDetailVo | null>(null);
+  const selectedRoom = ref<RoomDetailVo | null>(null);
   const routeRoomId = computed(() => route.params.roomId as string);
   const initialRoomId = computed(() => routeRoomId.value);
-  const currentRoom = computed(() => detail.value?.roomList?.find(room => String(room.id ?? "") === initialRoomId.value) ?? detail.value?.roomList?.[0] ?? null);
+  const currentRoom = computed(() => {
+    if (selectedRoom.value?.id) return selectedRoom.value;
+    return detail.value?.roomList?.find(room => String(room.id ?? "") === initialRoomId.value) ?? detail.value?.roomList?.[0] ?? null;
+  });
   const roomStatus = computed(() => (currentRoom.value ? getRoomStatus(currentRoom.value) : { text: "-", cls: "available", color: "" }));
   const pageTitle = computed(() => currentRoom.value?.roomNumber || detail.value?.houseName || "房间详情");
 
@@ -82,6 +87,7 @@
       message("房间ID缺失，无法加载详情", { type: "warning" });
       return;
     }
+    const preferredRoomId = String(selectedRoom.value?.id ?? routeRoomId.value);
 
     loading.value = true;
     try {
@@ -93,8 +99,10 @@
       }
 
       detail.value = buildHouseDetailFromRoom(roomResp.data);
+      selectedRoom.value = detail.value?.roomList?.find(room => String(room.id ?? "") === preferredRoomId) ?? detail.value?.roomList?.[0] ?? null;
     } catch {
       detail.value = null;
+      selectedRoom.value = null;
       message("获取房间详情失败", { type: "error" });
     } finally {
       loading.value = false;
@@ -163,6 +171,10 @@
 
   function handleOpenBookingDetail(booking: BookingListVo) {
     handleViewBooking(booking);
+  }
+
+  function handleRoomChange(_roomId: string, room: RoomDetailVo | null) {
+    selectedRoom.value = room;
   }
 
   function handleEditHouse(house: HouseDetailVo) {

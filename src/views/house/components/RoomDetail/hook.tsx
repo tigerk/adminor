@@ -2,7 +2,7 @@ import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
 import { h, reactive, ref } from "vue";
 import { message } from "@/utils/message";
-import HouseDetailContent from "@/views/house/components/HouseView/HouseDetailContent.vue";
+import RoomDetailContent from "@/views/house/components/RoomDetail/RoomDetailContent.vue";
 import { type BookingListVo, type HouseDetailVo, type LeaseLiteVo, LeaseModeEnumMeta, RentalTypeEnumMeta, type RoomDetailVo, type RoomListVo, TenantTypeEnumMeta } from "@/types";
 import useTenant from "@/views/contract/tenant/utils/hook";
 import { getHouseDetail } from "@/api/house/house";
@@ -13,12 +13,12 @@ import { useCheckoutDialog } from "@/views/contract/checkout/form/checkoutCreate
 import useBooking from "@/views/contract/booking/utils/hook";
 
 /** 弹窗内部使用的状态包装（loading + 数据） */
-export interface HouseViewState {
+export interface RoomDetailDialogState {
   loading: boolean;
   detail: HouseDetailVo | null;
 }
 
-export const useHouseView = () => {
+export const useRoomDetail = () => {
   const { openTenantDialog, openTenantViewDialog, openTenantRenewDialog } = useTenant();
   const { handleEditFocus } = useFocusHouse();
   const { openEntireEditDialog } = useEntireEdit();
@@ -30,8 +30,8 @@ export const useHouseView = () => {
    * 以弹窗形式打开房源详情
    * @param room - 列表行数据，取 houseId 作为查询参数
    */
-  function openHouseDetailDialog(room: RoomListVo) {
-    const state = reactive<HouseViewState>({
+  function openRoomDetailDialog(room: RoomListVo) {
+    const state = reactive<RoomDetailDialogState>({
       loading: true,
       detail: null
     });
@@ -48,7 +48,7 @@ export const useHouseView = () => {
       hideFooter: true,
       contentRenderer: () =>
         h("div", { style: { height: "calc(90vh - 60px)" } }, [
-          h(HouseDetailContent, {
+          h(RoomDetailContent, {
             loading: state.loading,
             detail: state.detail,
             initialRoomId: room.roomId,
@@ -106,7 +106,7 @@ export const useHouseView = () => {
   /**
    * 退租 → CheckoutDialog.open(roomId, leaseId)
    */
-  function handleOpenCheckout(state: HouseViewState, room: RoomDetailVo) {
+  function handleOpenCheckout(state: RoomDetailDialogState, room: RoomDetailVo) {
     if (!room.lease) {
       message("当前房间没有在租租客", { type: "warning" });
       return;
@@ -133,7 +133,7 @@ export const useHouseView = () => {
    * @param state   - reactive 状态包装，更新 loading 和 detail
    * @param houseId - 房源 ID
    */
-  async function loadDetail(state: HouseViewState, houseId: string) {
+  async function loadDetail(state: RoomDetailDialogState, houseId: string) {
     if (!houseId) {
       message("房源ID缺失，无法加载详情", { type: "warning" });
       state.loading = false;
@@ -186,6 +186,9 @@ export const useHouseView = () => {
   }
 
   return {
-    openHouseDetailDialog
+    openRoomDetailDialog
   };
 };
+
+// 向后兼容旧命名，避免外部临时引用报错
+export const useHouseView = useRoomDetail;

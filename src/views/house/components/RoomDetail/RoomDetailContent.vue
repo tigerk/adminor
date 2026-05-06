@@ -8,10 +8,10 @@
   import { addRoomTrack, getRoomLockRecords, getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
   import { getRoomStatus } from "@/utils/house";
 
-  import HvLoadingSkeleton from "./HvLoadingSkeleton.vue";
-  import HvTopBar from "./HvTopBar.vue";
-  import HvRoomMain from "./HvRoomMain.vue";
-  import HvPanel from "./HvPanel.vue";
+  import RmLoadingSkeleton from "./RmLoadingSkeleton.vue";
+  import RmTopBar from "./RmTopBar.vue";
+  import RmRoomMain from "./RmRoomMain.vue";
+  import RmPanel from "./RmPanel.vue";
   import { getDictDataByDictCode } from "@/api/sys/dict";
 
   const props = defineProps<{
@@ -32,6 +32,7 @@
     renewLease: [lease: LeaseLiteVo];
     addRoom: [];
     reload: [];
+    roomChange: [roomId: string, room: RoomDetailVo | null];
   }>();
 
   // ── 房源级信息 ────────────────────────────────────────────
@@ -53,6 +54,14 @@
     { immediate: true }
   );
   const currentRoom = computed<RoomDetailVo | null>(() => roomTabs.value[activeRoomIndex.value] ?? roomTabs.value[0] ?? null);
+
+  watch(
+    () => currentRoom.value,
+    room => {
+      emit("roomChange", String(room?.id ?? ""), room ?? null);
+    },
+    { immediate: true }
+  );
 
   // ── 图片 ──────────────────────────────────────────────────
   const allImages = computed(() => {
@@ -137,7 +146,7 @@
   };
 
   // ── 字典：房间特色 & 房间配置 ─────────────────────────────
-  /** value → label 映射，供 HvRoomMain 展示时翻译 */
+  /** value → label 映射，供 RmRoomMain 展示时翻译 */
   const tagsMap = ref<Record<string, string>>({});
   const focusTagsMap = ref<Record<string, string>>({});
   const facilitiesMap = ref<Record<string, string>>({});
@@ -242,25 +251,26 @@
 <template>
   <div class="hv" :class="{ 'hv--page': mode === 'page' }">
     <!-- Loading 骨架屏 -->
-    <HvLoadingSkeleton v-if="loading" />
+    <RmLoadingSkeleton v-if="loading" />
 
     <!-- 主体三栏 -->
     <template v-else-if="detail">
       <!-- 顶部：房间选择 + 出租率 -->
-      <HvTopBar
+      <RmTopBar
         :detail="detail"
         :room-tabs="roomTabs"
         :active-room-index="activeRoomIndex"
         :is-share-rental="isShareRental"
         :room-stats="roomStats"
         :occupancy-rate="occupancyRate"
+        :mode="mode"
         @update:active-room-index="idx => (activeRoomIndex = idx)"
         @edit-house="d => emit('editHouse', d)"
       />
 
       <div class="hv-layout">
         <!-- 中间：房间详情（含房源信息Tab） -->
-        <HvRoomMain
+        <RmRoomMain
           :detail="detail"
           :current-room="currentRoom"
           :current-status="currentStatus"
@@ -281,7 +291,7 @@
         />
 
         <!-- 右侧：租客/预定/备注 -->
-        <HvPanel
+        <RmPanel
           :current-room="currentRoom"
           @tenant="r => emit('tenant', r)"
           @checkout="r => emit('checkout', r)"
