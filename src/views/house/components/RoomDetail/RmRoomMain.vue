@@ -1137,6 +1137,7 @@
       background: var(--b);
       border-radius: 2px;
     }
+    min-height: 600px;
   }
 
   // ════════════════════════════════════════

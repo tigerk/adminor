@@ -22,6 +22,7 @@
   }>();
 
   const emit = defineEmits<{
+    back: [];
     booking: [room: RoomDetailVo];
     tenant: [room: RoomDetailVo];
     checkout: [room: RoomDetailVo];
@@ -266,6 +267,8 @@
         :mode="mode"
         @update:active-room-index="idx => (activeRoomIndex = idx)"
         @edit-house="d => emit('editHouse', d)"
+        @back="() => emit('back')"
+        @reload="() => emit('reload')"
       />
 
       <div class="hv-layout">

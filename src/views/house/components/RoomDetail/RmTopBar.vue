@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-  import { MoreFilled, Plus } from "@element-plus/icons-vue";
+  import { ArrowLeft, MoreFilled, Plus, RefreshRight } from "@element-plus/icons-vue";
   import type { HouseDetailVo, RoomDetailVo } from "@/types";
   import { getRoomStatus } from "@/utils/house";
   import { getOptionNameByCode, RENTAL_TYPE_OPTIONS } from "@/constants";
@@ -18,6 +18,8 @@
   const emit = defineEmits<{
     "update:activeRoomIndex": [idx: number];
     editHouse: [detail: HouseDetailVo];
+    back: [];
+    reload: [];
   }>();
 
   const roomRailRef = ref<HTMLElement>();
@@ -25,6 +27,7 @@
   let roomRailObserver: ResizeObserver | null = null;
 
   const showRoomCards = computed(() => props.roomTabs.length > 0);
+  const showPageActions = computed(() => props.mode === "page");
 
   function roomKey(room: RoomDetailVo, idx: number) {
     return String(room.id ?? room.roomNumber ?? idx);
@@ -122,6 +125,13 @@
 <template>
   <div class="hv-topbar" :class="{ 'is-page': mode === 'page' }">
     <div class="hv-topbar__primary">
+      <div v-if="showPageActions" class="hv-page-actions">
+        <el-button class="hv-page-action-btn" @click="emit('back')">
+          <el-icon><ArrowLeft /></el-icon>
+          <span>返回</span>
+        </el-button>
+      </div>
+
       <div class="hv-topbar__summary">
         <div class="hv-topbar__summary-type">{{ getOptionNameByCode(RENTAL_TYPE_OPTIONS, detail.rentalType) }}</div>
         <div class="hv-topbar__summary-stat">已租 {{ roomStats.leased }} 间 / 共 {{ roomStats.total }} 间</div>
@@ -205,6 +215,8 @@
 
 <style scoped lang="scss">
   .hv-topbar {
+    --rm-topbar-action-height: 60px;
+
     display: flex;
     align-items: stretch;
     justify-content: space-between;
@@ -224,6 +236,44 @@
     gap: 10px;
     align-items: stretch;
     min-width: 0;
+  }
+
+  .hv-page-actions {
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: 8px;
+    align-items: stretch;
+    align-self: stretch;
+  }
+
+  .hv-page-action-btn {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    min-width: 86px;
+    height: 100%;
+    min-height: var(--rm-topbar-action-height);
+    align-self: stretch;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border: 1px solid var(--bl);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--t2);
+    font-weight: 500;
+    transition: all 0.18s ease;
+    box-shadow: none;
+
+    &:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    :deep(.el-icon) {
+      font-size: 14px;
+    }
   }
 
   .hv-topbar__summary {
@@ -475,6 +525,7 @@
   .hv-topbar__side {
     display: flex;
     align-items: stretch;
+    align-self: stretch;
     gap: 12px;
     min-width: 0;
     flex-shrink: 0;
@@ -486,12 +537,18 @@
     justify-content: center;
     gap: 4px;
     min-width: 108px;
+    height: 100%;
+    min-height: var(--rm-topbar-action-height);
+    align-self: stretch;
+    box-sizing: border-box;
     padding: 0 14px;
     border: 1px dashed var(--bl);
     border-radius: 8px;
     background: var(--sub);
     color: var(--t2);
+    font-family: inherit;
     font-size: 13px;
+    line-height: 1;
     cursor: pointer;
     transition: all 0.15s;
 
