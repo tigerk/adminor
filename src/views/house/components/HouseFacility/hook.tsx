@@ -2,24 +2,23 @@
 import HouseFacilityDialog from "./HouseFacilityDialog.vue";
 import { addDialog } from "@/components/ReDialog";
 import { deviceDetection } from "@pureadmin/utils";
-import { defineEmits, h, ref } from "vue";
+import { h, ref } from "vue";
 import { message } from "@/utils/message";
 import type { FacilityItemDto } from "@/types";
 
 export function useFacilityEdit() {
   const facilityFormRef = ref();
 
-  const emit = defineEmits(["selected-facilities"]);
-
   function openFacilityEditDialog(
     title = "新增",
     row?: FacilityItemDto[],
     onConfirm?: (facilities: FacilityItemDto[]) => void // 添加回调函数参数
   ) {
+    const formInline = row ?? [];
     addDialog({
-      title: `${title} 房源配置`,
+      title: title ? `${title} 房源配置` : "房源配置",
       props: {
-        formInline: row ?? null
+        formInline
       },
       top: "5%",
       width: "800px",
@@ -27,9 +26,9 @@ export function useFacilityEdit() {
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(HouseFacilityDialog, { ref: facilityFormRef, formInline: null }),
+      contentRenderer: () => h(HouseFacilityDialog, { ref: facilityFormRef, formInline }),
       beforeSure: (done, { options }) => {
-        const selectedFacilities = facilityFormRef.value.getRef();
+        const selectedFacilities = facilityFormRef.value?.getRef?.() ?? {};
 
         const result: FacilityItemDto[] = Object.entries(selectedFacilities).map(([name, count]) => ({
           name,

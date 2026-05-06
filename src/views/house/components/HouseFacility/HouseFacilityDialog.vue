@@ -3,37 +3,65 @@
   import { Minus, Plus } from "@element-plus/icons-vue";
   import { type FacilityFormProps } from "@/views/house/components/HouseFacility/types";
   import { getDictDataByDictCode } from "@/api/sys/dict";
+  import type { FacilityItemDto } from "@/types";
 
-  const props = withDefaults(defineProps<FacilityFormProps>(), {});
-  const facilities = reactive(props.formInline);
+  interface FacilityOption {
+    label: string;
+    value: string;
+    fromDict: boolean;
+  }
 
-  // 存储选中的配置及其数量
+  const props = defineProps<FacilityFormProps>();
   const selectedFacilities = reactive<Record<string, number>>({});
+  const facilityOptions = ref<FacilityOption[]>([]);
 
-  if (facilities) {
-    // 清空现有数据
+  const normalizeCount = (count?: string | number) => {
+    const value = Number(count);
+    return Number.isFinite(value) && value > 0 ? value : 1;
+  };
+
+  const seedSelectedFacilities = (facilities: FacilityItemDto[] = []) => {
     Object.keys(selectedFacilities).forEach(key => {
       delete selectedFacilities[key];
     });
 
-    // 加载传入的数据
-    if (facilities && facilities.length > 0) {
-      facilities.forEach(item => {
-        selectedFacilities[item.name] = Number(item.count);
-      });
-    }
-  }
+    facilities.forEach(item => {
+      if (!item?.name) return;
+      selectedFacilities[item.name] = normalizeCount(item.count);
+    });
+  };
 
-  const facilityOptions = ref([]);
+  const mergeInitialFacilities = (dictOptions: FacilityOption[]) => {
+    const optionMap = new Map<string, FacilityOption>();
+
+    dictOptions.forEach(item => {
+      optionMap.set(item.value, item);
+    });
+
+    (props.formInline ?? []).forEach(item => {
+      if (!item?.name || optionMap.has(item.name)) return;
+      optionMap.set(item.name, {
+        label: item.name,
+        value: item.name,
+        fromDict: false
+      });
+    });
+
+    facilityOptions.value = Array.from(optionMap.values());
+  };
+
+  seedSelectedFacilities(props.formInline ?? []);
 
   onMounted(() => {
     getDictDataByDictCode({
       dictCode: "house_facilities"
     }).then(res => {
-      facilityOptions.value = res.data.map(item => ({
+      const dictOptions = (res.data ?? []).map(item => ({
         label: item.name,
-        value: item.value
+        value: item.value,
+        fromDict: true
       }));
+      mergeInitialFacilities(dictOptions);
     });
   });
 
@@ -62,7 +90,7 @@
 
   // 判断是否选中
   const isSelected = (value: string) => {
-    return selectedFacilities.hasOwnProperty(value);
+    return Object.prototype.hasOwnProperty.call(selectedFacilities, value);
   };
 
   // 获取数量
@@ -72,7 +100,7 @@
 
   // 全选状态
   const isAllSelected = () => {
-    return facilityOptions.value.every(option => selectedFacilities.hasOwnProperty(option.value));
+    return facilityOptions.value.length > 0 && facilityOptions.value.every(option => isSelected(option.value));
   };
 
   // 全选/取消全选
@@ -108,7 +136,8 @@
     <div class="facilities-grid">
       <div v-for="option in facilityOptions" :key="option.value" class="facility-item">
         <el-checkbox :model-value="isSelected(option.value)" @change="toggleFacility(option.value)">
-          {{ option.label }}
+          <span class="facility-item__label">{{ option.label }}</span>
+          <el-tag v-if="!option.fromDict" class="facility-item__legacy" size="small" type="warning" effect="plain">未入字典</el-tag>
         </el-checkbox>
 
         <div v-if="isSelected(option.value)" class="count-control">
@@ -167,6 +196,16 @@
 
   .facility-item:hover {
     background: var(--el-fill-color);
+  }
+
+  .facility-item__label {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .facility-item__legacy {
+    margin-left: 6px;
+    vertical-align: middle;
   }
 
   .count-control {

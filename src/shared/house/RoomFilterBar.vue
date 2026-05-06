@@ -4,6 +4,7 @@
   import Filter from "~icons/ri/filter-3-line";
   import Search from "~icons/ri/search-line";
   import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+  import { DIRECTION_OPTIONS } from "@/types";
   import type { CommunityOption, RentalTypeFilterItem, RoomAdvancedFilterValue, RoomStatusFilterItem } from "./roomFilterTypes";
 
   const emptyAdvancedValue = (): RoomAdvancedFilterValue => ({
@@ -92,7 +93,6 @@
   const keywordDraft = ref("");
   const draftAdvanced = ref<RoomAdvancedFilterValue>(emptyAdvancedValue());
 
-  const directionOptions = ["东", "南", "西", "北", "东南", "东北", "西南", "西北", "南北", "东西"];
   const ALL_RENTAL_TYPE_VALUE = "__all__";
 
   const keywordText = computed(() => props.modelValue.trim());
@@ -371,7 +371,7 @@
 
             <el-form-item label="朝向" class="room-filter-form__direction">
               <el-select v-model="draftAdvanced.direction" clearable placeholder="全部">
-                <el-option v-for="item in directionOptions" :key="item" :label="item" :value="item" />
+                <el-option v-for="item in DIRECTION_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
 

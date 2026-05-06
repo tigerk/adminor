@@ -1,6 +1,7 @@
 // 全局类型统一出口
 
 export * from "./common";
+export * from "./house";
 export * from "./models";
 export * from "./generated";
 export * from "./generated/enum.meta";
