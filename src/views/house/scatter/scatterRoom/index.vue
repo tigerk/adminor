@@ -203,19 +203,51 @@
       >
         <template #operation="{ row }">
           <div class="room-table-actions">
-            <el-button link type="primary" @click="handleRoomAction(row, 'view')">查看</el-button>
-            <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'booking')">预约</el-button>
-            <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'tenant')">签约</el-button>
+            <el-button link type="primary" @click="handleRoomAction(row, 'view')">
+              <IconifyIconOnline icon="ep:view" class="mr-1" />
+              查看
+            </el-button>
+            <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'booking')">
+              <IconifyIconOnline icon="ep:calendar" class="mr-1" />
+              预约
+            </el-button>
+            <el-button link type="primary" :disabled="!isRoomAvailable(row)" @click="handleRoomAction(row, 'tenant')">
+              <IconifyIconOnline icon="ep:edit-pen" class="mr-1" />
+              签约
+            </el-button>
             <el-dropdown :hide-on-click="false" popper-class="action-dropdown" trigger="click" @command="command => handleTableDropdownCommand(row, command)">
               <el-button class="ml-3! mt-[2px]!" link type="info" size="default" :icon="useRenderIcon(More)" />
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="lock" :disabled="row.locked">锁房</el-dropdown-item>
-                  <el-dropdown-item command="unlock" :disabled="!row.locked">解锁</el-dropdown-item>
-                  <el-dropdown-item command="close" :disabled="row.closed">关闭</el-dropdown-item>
-                  <el-dropdown-item command="open" :disabled="!row.closed">开启</el-dropdown-item>
+                  <el-dropdown-item command="lock" :disabled="row.locked">
+                    <div class="room-dropdown-item">
+                      <IconifyIconOnline icon="ep:lock" />
+                      <span>锁房</span>
+                    </div>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="unlock" :disabled="!row.locked">
+                    <div class="room-dropdown-item">
+                      <IconifyIconOnline icon="ep:unlock" />
+                      <span>解锁</span>
+                    </div>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="close" :disabled="row.closed">
+                    <div class="room-dropdown-item">
+                      <IconifyIconOnline icon="ep:circle-close" />
+                      <span>关闭</span>
+                    </div>
+                  </el-dropdown-item>
+                  <el-dropdown-item command="open" :disabled="!row.closed">
+                    <div class="room-dropdown-item">
+                      <IconifyIconOnline icon="ep:circle-check" />
+                      <span>开启</span>
+                    </div>
+                  </el-dropdown-item>
                   <el-dropdown-item command="delete" divided>
-                    <span class="text-danger">删除房间</span>
+                    <div class="room-dropdown-item text-danger">
+                      <IconifyIconOnline icon="ep:delete" />
+                      <span>删除房间</span>
+                    </div>
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -249,6 +281,12 @@
     :deep(.el-button + .el-button) {
       margin-left: 0;
     }
+  }
+
+  .room-dropdown-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
 
 </style>

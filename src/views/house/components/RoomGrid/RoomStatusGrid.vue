@@ -154,6 +154,7 @@
                             开启
                           </el-dropdown-item>
                           <el-dropdown-item command="delete" divided>
+                            <el-icon><Delete /></el-icon>
                             <span class="text-danger">删除房间</span>
                           </el-dropdown-item>
                           <el-dropdown-item v-if="room.salesmanName" command="salesman" divided>
@@ -197,7 +198,7 @@
 
 <script setup lang="ts">
   import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-  import { CircleClose, CloseBold, EditPen, Loading, Location, Lock, OfficeBuilding, Open, Setting, Unlock, User } from "@element-plus/icons-vue";
+  import { CircleClose, CloseBold, Delete, EditPen, Loading, Location, Lock, OfficeBuilding, Open, Setting, Unlock, User } from "@element-plus/icons-vue";
   import { useRoomGrid } from "@/views/house/components/RoomGrid/hook";
   import type { QueryFormItemProps } from "@/views/house/focus/focusRoom/utils/types";
   import { getDaysDifference } from "@/utils/date";

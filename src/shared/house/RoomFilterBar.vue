@@ -401,7 +401,7 @@
           </div>
 
           <!-- 快速选项区 -->
-          <div class="room-filter-form__quick mb-2" :class="{ 'is-single': !showRentalType }">
+          <div class="room-filter-form__quick mb-3" :class="{ 'is-single': !showRentalType }">
             <el-form-item v-if="showRentalType" class="room-filter-form__type" label="房源类型">
               <el-radio-group v-model="draftRentalTypeValue" size="small" class="room-filter-radio room-filter-radio--small">
                 <el-radio-button v-for="item in rentalTypeItems" :key="item.value ?? 'all'" :label="item.value === undefined ? ALL_RENTAL_TYPE_VALUE : String(item.value)">
@@ -680,7 +680,7 @@
       height: 18px;
       padding: 0 0 5px;
       line-height: 18px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--el-text-color-primary);
       letter-spacing: 0.02em;
@@ -713,13 +713,13 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px 20px;
-    padding: 12px;
-    background: var(--el-bg-color);
-    border: 1px solid var(--el-border-color-extra-light);
-    border-radius: 10px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
 
     &.is-single {
-      grid-template-columns: minmax(0, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     :deep(.el-form-item__content) {
@@ -732,10 +732,10 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px 20px;
-    padding: 12px;
-    background: var(--el-bg-color);
-    border: 1px solid var(--el-border-color-extra-light);
-    border-radius: 10px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
   }
 
   .room-filter-form__quick-spacer {

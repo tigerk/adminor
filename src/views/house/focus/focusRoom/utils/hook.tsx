@@ -159,7 +159,7 @@ export function userFocusRoom() {
     {
       label: "操作",
       fixed: "right",
-      width: 210,
+      width: 245,
       slot: "operation"
     }
   ];
