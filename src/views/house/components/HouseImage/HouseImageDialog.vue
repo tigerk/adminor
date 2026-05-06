@@ -10,16 +10,24 @@
   const imageList = ref<any[]>([]);
   const videoList = ref<any[]>([]);
 
+  const toUrlList = (list: any[]) =>
+    list
+      .map(item => {
+        if (typeof item === "string") return item;
+        return item?.url;
+      })
+      .filter((url): url is string => Boolean(url));
+
   // 获取图片列表的方法
   function getImageList() {
     console.log("当前图片列表:", imageList.value);
-    return imageList.value.map(item => item.url);
+    return toUrlList(imageList.value);
   }
 
   // 获取图片列表的方法
   function getVideoList() {
     console.log("当前图片列表:", imageList.value);
-    return videoList.value.map(item => item.url);
+    return toUrlList(videoList.value);
   }
 
   // 初始化时加载已有的图片数据
@@ -45,11 +53,7 @@
 </script>
 
 <template>
-  <div class="image-container">
-    <div class="image-grid">
-      <!-- v-model 绑定到 ref -->
-      <UploadVideo v-model="videoList" :limit="1" />
-    </div>
+  <div class="image-container mb-3">
     <el-card shadow="never" class="mb-4">
       <div class="image-grid">
         <!-- v-model 绑定到 ref -->
@@ -62,5 +66,9 @@
         <p>* 直接拖拽图片可调整顺序</p>
       </div>
     </el-card>
+    <div class="image-grid">
+      <!-- v-model 绑定到 ref -->
+      <UploadVideo v-model="videoList" :limit="1" />
+    </div>
   </div>
 </template>

@@ -1,6 +1,6 @@
 // 表单
 interface ImageFormProps {
-  formInline: number[];
+  formInline?: string[] | null;
 }
 
 export type { ImageFormProps };

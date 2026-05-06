@@ -84,6 +84,15 @@
     trackInput.value = "";
   };
 
+  const trackAuthorName = (record: RoomTrackVo) => {
+    const item = record as RoomTrackVo & { createByName?: string };
+    return item.createByName || item.updateByName || item.createBy || item.updateBy || "未知人员";
+  };
+
+  const trackAuthorInitial = (record: RoomTrackVo) => trackAuthorName(record).slice(0, 1);
+
+  const trackRecordTime = (record: RoomTrackVo) => record.createAt || record.updateAt || "-";
+
   // 暴露 tab 切换方法供父级调用（如顶部"添加跟进"按钮）
   defineExpose({
     switchToTrackTab: () => {
@@ -651,40 +660,52 @@
 
       <!-- ── 跟进记录 ── -->
       <template v-if="activeDetailTab === 'track'">
-        <div class="hv-track-compose">
-          <div class="hv-track-compose__avatar">{{ salesmanName.slice(0, 1) }}</div>
-          <div class="hv-track-compose__right">
-            <el-input v-model="trackInput" type="textarea" :rows="3" placeholder="记录跟进情况，支持描述客户意向、看房情况、沟通进展…" resize="none" />
+        <div class="hv-track-panel">
+          <div class="hv-track-compose">
+            <div class="hv-track-compose__head">
+              <div class="hv-track-compose__avatar">{{ salesmanName.slice(0, 1) }}</div>
+              <div>
+                <div class="hv-track-compose__title">新增跟进记录</div>
+                <div class="hv-track-compose__sub">记录客户意向、看房反馈、沟通进展和下一步动作。</div>
+              </div>
+            </div>
+            <el-input v-model="trackInput" type="textarea" :rows="4" placeholder="请输入本次跟进内容" resize="none" />
             <div class="hv-track-compose__footer">
               <span class="hv-track-compose__hint">{{ trackInput.length }} 字</span>
-              <el-button type="primary" size="small" :loading="trackLoading" :disabled="!trackInput.trim()" @click="handleAddTrack">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 3px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
-                提交记录
+              <el-button type="primary" :loading="trackLoading" :disabled="!trackInput.trim()" @click="handleAddTrack">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+                保存跟进
               </el-button>
             </div>
           </div>
-        </div>
 
-        <div class="hv-timeline">
-          <div v-if="!trackRecords.length" class="hv-timeline__empty">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" fill="currentColor" opacity=".2" />
-            </svg>
-            <p>暂无跟进记录</p>
-            <span>记录每一次跟进，把握租客意向</span>
-          </div>
-          <div v-for="(rec, idx) in trackRecords" :key="rec.id" class="hv-timeline__item">
-            <div v-if="idx < trackRecords.length - 1" class="hv-timeline__line" />
-            <div class="hv-timeline__dot" />
-            <div class="hv-timeline__card">
-              <div class="hv-timeline__meta">
-                <div class="hv-timeline__author-wrap">
-                  <div class="hv-timeline__author-avatar">{{ (rec.updateByName || rec.updateBy || "?").slice(0, 1) }}</div>
-                  <span class="hv-timeline__author">{{ rec.updateByName || rec.updateBy || "未知" }}</span>
+          <div class="hv-track-list">
+            <div class="hv-track-list__head">
+              <span>历史跟进</span>
+              <em>{{ trackRecords.length }} 条</em>
+            </div>
+            <div v-if="!trackRecords.length" class="hv-track-empty">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" fill="currentColor" opacity=".22" />
+              </svg>
+              <p>暂无跟进记录</p>
+              <span>保存第一条跟进后，会在这里按时间倒序展示。</span>
+            </div>
+            <div v-for="(rec, idx) in trackRecords" :key="rec.id || idx" class="hv-track-record">
+              <div class="hv-track-record__avatar">{{ trackAuthorInitial(rec) }}</div>
+              <div class="hv-track-record__content">
+                <div class="hv-track-record__top">
+                  <div class="hv-track-record__operator">
+                    <strong>{{ trackAuthorName(rec) }}</strong>
+                    <span>添加了跟进记录</span>
+                  </div>
+                  <div class="hv-track-record__meta">
+                    <span>{{ trackRecordTime(rec) }}</span>
+                    <em>#{{ trackRecords.length - idx }}</em>
+                  </div>
                 </div>
-                <span class="hv-timeline__time">{{ rec.createAt }}</span>
+                <p>{{ rec.trackContent || "-" }}</p>
               </div>
-              <p class="hv-timeline__body">{{ rec.trackContent }}</p>
             </div>
           </div>
         </div>
@@ -1699,154 +1720,214 @@
   // ════════════════════════════════════════
   //  跟进记录
   // ════════════════════════════════════════
-  .hv-track-compose {
+  .hv-track-panel {
+    padding: 18px 20px 24px;
     display: flex;
-    gap: 12px;
-    padding: 18px 20px 14px;
-    border-bottom: 1px solid var(--bl);
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .hv-track-compose {
+    padding: 16px;
+    border: 1px solid var(--b);
+    border-radius: var(--r);
+    background:
+      linear-gradient(135deg, rgba(230, 100, 38, 0.08), transparent 38%),
+      var(--card);
+    box-shadow: var(--shadow);
+
+    &__head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
 
     &__avatar {
-      width: 32px;
-      height: 32px;
-      min-width: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--primary));
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), #f59e0b);
       color: #fff;
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 2px;
       flex-shrink: 0;
     }
-    &__right {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+
+    &__title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--t1);
+      line-height: 1.3;
     }
+
+    &__sub {
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--t3);
+      line-height: 1.4;
+    }
+
     &__footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
     }
+
     &__hint {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--t3);
     }
   }
 
-  .hv-timeline {
-    padding: 20px 20px 24px;
+  .hv-track-list {
+    border: 1px solid var(--b);
+    border-radius: var(--r);
+    background: var(--card);
+    overflow: hidden;
+
+    &__head {
+      min-height: 48px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--bl);
+      background: var(--sub);
+
+      span {
+        font-size: 15px;
+        font-weight: 800;
+        color: var(--t1);
+      }
+
+      em {
+        padding: 2px 8px;
+        border: 1px solid var(--b);
+        border-radius: 999px;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 700;
+        color: var(--t2);
+        background: var(--card);
+      }
+    }
+  }
+
+  .hv-track-empty {
+    min-height: 180px;
     display: flex;
     flex-direction: column;
-    gap: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--t3);
 
-    &__empty {
+    p {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--t2);
+    }
+
+    span {
+      font-size: 12px;
+      color: var(--t3);
+    }
+
+    svg {
+      color: var(--t3);
+    }
+  }
+
+  .hv-track-record {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--bl);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &__avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 0;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--el-color-primary-light-3), var(--primary));
+      box-shadow: 0 8px 18px rgba(230, 100, 38, 0.18);
+    }
+
+    &__content {
+      min-width: 0;
+    }
+
+    &__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    &__operator {
+      display: flex;
+      align-items: center;
       gap: 8px;
-      color: var(--t3);
-      p {
-        margin: 0;
+      min-width: 0;
+
+      strong {
         font-size: 14px;
-        font-weight: 600;
-        color: var(--t2);
+        font-weight: 800;
+        color: var(--t1);
       }
+
       span {
         font-size: 12px;
         color: var(--t3);
       }
-      svg {
-        color: var(--t3);
-      }
     }
 
-    &__item {
-      display: flex;
-      gap: 14px;
-      position: relative;
-      padding-bottom: 20px;
-      &:last-child {
-        padding-bottom: 0;
-      }
-    }
-    &__dot {
-      width: 10px;
-      height: 10px;
-      min-width: 10px;
-      border-radius: 50%;
-      background: var(--primary);
-      border: 2px solid var(--dot-border);
-      box-shadow: 0 0 0 2px var(--el-color-primary-light-5);
-      margin-top: 13px;
-      flex-shrink: 0;
-      z-index: 1;
-    }
-    &__line {
-      position: absolute;
-      left: 4px;
-      top: 22px;
-      bottom: 0;
-      width: 2px;
-      background: var(--bl);
-    }
-    &__card {
-      flex: 1;
-      background: var(--card);
-      border: 1px solid var(--b);
-      border-radius: var(--r);
-      padding: 12px 14px;
-      box-shadow: var(--shadow);
-      transition: box-shadow 0.15s;
-      &:hover {
-        box-shadow:
-          0 2px 8px rgba(0, 0, 0, 0.08),
-          0 8px 24px rgba(0, 0, 0, 0.06);
-      }
-    }
     &__meta {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    &__author-wrap {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-    &__author-avatar {
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
-      background: linear-gradient(135deg, var(--el-color-primary-light-5), var(--primary));
-      color: #fff;
-      font-size: 11px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    &__author {
+      gap: 8px;
+      flex-shrink: 0;
       font-size: 12px;
-      font-weight: 700;
-      color: var(--t1);
-    }
-    &__time {
-      font-size: 11px;
       color: var(--t3);
       font-variant-numeric: tabular-nums;
+
+      em {
+        padding: 1px 7px;
+        border-radius: 999px;
+        font-style: normal;
+        font-weight: 700;
+        color: var(--primary);
+        background: var(--primary-light);
+        border: 1px solid rgba(230, 100, 38, 0.18);
+      }
     }
-    &__body {
+
+    p {
       margin: 0;
-      font-size: 13px;
+      padding: 10px 0 0;
+      font-size: 14px;
       color: var(--t2);
       line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
   }
 

@@ -4,6 +4,7 @@
   import { OccupancyStatusEnumMeta } from "@/types/generated/enum.meta";
 
   import { message } from "@/utils/message";
+  import { useUserStoreHook } from "@/store/modules/user";
   import { usePriceConfigEdit } from "@/views/house/components/PriceConfig/hook";
   import { addRoomTrack, getRoomLockRecords, getRoomPriceConfig, saveRoomPriceConfig } from "@/api/house/room";
   import { getRoomStatus } from "@/utils/house";
@@ -42,18 +43,36 @@
   // ── 房间列表 & 选中 ───────────────────────────────────────
   const roomTabs = computed<RoomDetailVo[]>(() => props.detail?.roomList ?? []);
   const activeRoomIndex = ref(0);
+  const selectedRoomId = ref("");
+
+  const getRoomIdentity = (room?: RoomDetailVo | null) => String(room?.id ?? (room as any)?.roomId ?? "");
 
   const syncActiveRoomIndex = () => {
-    const targetRoomId = props.initialRoomId ? String(props.initialRoomId) : "";
-    const nextIndex = targetRoomId ? roomTabs.value.findIndex(room => String(room.id ?? "") === targetRoomId || String((room as any).roomId ?? "") === targetRoomId) : -1;
+    const targetRoomId = selectedRoomId.value || (props.initialRoomId ? String(props.initialRoomId) : "");
+    const nextIndex = targetRoomId ? roomTabs.value.findIndex(room => getRoomIdentity(room) === targetRoomId) : -1;
     activeRoomIndex.value = nextIndex >= 0 ? nextIndex : 0;
   };
 
   watch(
-    [() => roomTabs.value, () => props.initialRoomId],
+    () => props.initialRoomId,
+    roomId => {
+      selectedRoomId.value = roomId ? String(roomId) : "";
+      syncActiveRoomIndex();
+    },
+    { immediate: true }
+  );
+
+  watch(
+    () => roomTabs.value,
     () => syncActiveRoomIndex(),
     { immediate: true }
   );
+
+  const handleActiveRoomIndexChange = (idx: number) => {
+    activeRoomIndex.value = idx;
+    selectedRoomId.value = getRoomIdentity(roomTabs.value[idx]);
+  };
+
   const currentRoom = computed<RoomDetailVo | null>(() => roomTabs.value[activeRoomIndex.value] ?? roomTabs.value[0] ?? null);
 
   watch(
@@ -179,6 +198,8 @@
   });
 
   // ── 跟进记录 ──────────────────────────────────────────────
+  const userStore = useUserStoreHook();
+  const currentOperatorName = computed(() => userStore.nickname || userStore.username || "当前用户");
   const localTrackRecords = ref<RoomTrackVo[]>([]);
   const trackLoading = ref(false);
   const trackRecords = computed<RoomTrackVo[]>(() => [...localTrackRecords.value, ...(currentRoom.value?.roomTracks ?? [])]);
@@ -206,7 +227,8 @@
           roomId,
           trackContent: content,
           createAt: timeStr,
-          updateByName: props.detail?.salesman?.nickname || props.detail?.salesmanName || "当前用户"
+          createBy: userStore.username || currentOperatorName.value,
+          updateByName: currentOperatorName.value
         });
         message("跟进记录已保存", { type: "success" });
       } else {
@@ -265,7 +287,7 @@
         :room-stats="roomStats"
         :occupancy-rate="occupancyRate"
         :mode="mode"
-        @update:active-room-index="idx => (activeRoomIndex = idx)"
+        @update:active-room-index="handleActiveRoomIndexChange"
         @edit-house="d => emit('editHouse', d)"
         @back="() => emit('back')"
         @reload="() => emit('reload')"

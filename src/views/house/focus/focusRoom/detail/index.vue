@@ -173,12 +173,12 @@
     }
 
     if (house.rentalType === RentalTypeEnumMeta.SHARED.code) {
-      openShareEditDialog(`修改${house.houseName || ""}`, house.id).then(fetchDetail);
+      openShareEditDialog(`修改${house.houseName || ""}`, house.id, () => fetchDetail());
       return;
     }
 
     if (house.rentalType === RentalTypeEnumMeta.ENTIRE.code) {
-      openEntireEditDialog(`修改${house.houseName || ""}`, house.id).then(fetchDetail);
+      openEntireEditDialog(`修改${house.houseName || ""}`, house.id, () => fetchDetail());
       return;
     }
 

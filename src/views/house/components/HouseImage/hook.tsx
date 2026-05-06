@@ -23,7 +23,7 @@ export function useHouseImageEdit() {
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(HouseImageDialog, { ref: imageFormRef, formInline: null }),
+      contentRenderer: () => h(HouseImageDialog, { ref: imageFormRef, formInline: row ?? [] }),
       beforeSure: (done, { options }) => {
         const selectedImage = imageFormRef.value.getImageList();
 
