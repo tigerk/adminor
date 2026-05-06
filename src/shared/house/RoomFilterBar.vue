@@ -93,6 +93,7 @@
   const draftAdvanced = ref<RoomAdvancedFilterValue>(emptyAdvancedValue());
 
   const directionOptions = ["东", "南", "西", "北", "东南", "东北", "西南", "西北", "南北", "东西"];
+  const ALL_RENTAL_TYPE_VALUE = "__all__";
 
   const keywordText = computed(() => props.modelValue.trim());
   const showRentalType = computed(() => props.rentalTypeItems.length > 0);
@@ -133,6 +134,12 @@
     },
     set: value => {
       draftAdvanced.value.hasImage = value === "all" ? undefined : value === "true";
+    }
+  });
+  const draftRentalTypeValue = computed({
+    get: () => (draftAdvanced.value.rentalType === undefined ? ALL_RENTAL_TYPE_VALUE : String(draftAdvanced.value.rentalType)),
+    set: value => {
+      draftAdvanced.value.rentalType = value === ALL_RENTAL_TYPE_VALUE ? undefined : Number(value);
     }
   });
 
@@ -335,33 +342,8 @@
         </div>
 
         <el-form class="room-filter-form" label-position="top" @submit.prevent>
-          <!-- 快速选项区 -->
-          <div class="room-filter-form__quick" :class="{ 'is-single': !showRentalType }">
-            <el-form-item v-if="showRentalType" class="room-filter-form__type" label="房源类型">
-              <el-button-group class="room-filter-bar__segment room-filter-bar__segment--fluid">
-                <el-button
-                  v-for="item in rentalTypeItems"
-                  :key="item.value ?? 'all'"
-                  class="room-filter-btn room-filter-btn--type"
-                  :class="{ 'is-active': draftAdvanced.rentalType === item.value || (item.value === undefined && draftAdvanced.rentalType === undefined) }"
-                  @click="draftAdvanced.rentalType = item.value"
-                >
-                  <span class="room-filter-btn__content">{{ item.label }}</span>
-                </el-button>
-              </el-button-group>
-            </el-form-item>
-            <el-form-item label="是否有图" class="room-filter-form__image">
-              <el-radio-group v-model="draftHasImageValue" class="room-filter-radio">
-                <el-radio-button label="all">全部</el-radio-button>
-                <el-radio-button label="true">有图</el-radio-button>
-                <el-radio-button label="false">无图</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-          </div>
-
           <!-- 详细字段区 -->
           <div class="room-filter-form__fields">
-            <!-- 小区/项目 占2列 -->
             <el-form-item label="小区 / 项目" class="room-filter-form__community">
               <el-select
                 v-model="draftAdvanced.communityId"
@@ -383,12 +365,16 @@
               </el-select>
             </el-form-item>
 
-            <!-- 房间号 -->
             <el-form-item label="房间号" class="room-filter-form__room">
               <el-input v-model="draftAdvanced.roomNumber" clearable placeholder="请输入房间号" @keyup.enter="submitAdvancedSearch" />
             </el-form-item>
 
-            <!-- 出租价格 -->
+            <el-form-item label="朝向" class="room-filter-form__direction">
+              <el-select v-model="draftAdvanced.direction" clearable placeholder="全部">
+                <el-option v-for="item in directionOptions" :key="item" :label="item" :value="item" />
+              </el-select>
+            </el-form-item>
+
             <el-form-item label="出租价格" class="room-filter-form__price">
               <div class="room-range-input">
                 <el-input-number v-model="draftAdvanced.priceMin" :min="0" :precision="0" :controls="false" placeholder="最低价格" />
@@ -397,7 +383,6 @@
               </div>
             </el-form-item>
 
-            <!-- 房屋面积 -->
             <el-form-item label="房屋面积" class="room-filter-form__area">
               <div class="room-range-input">
                 <el-input-number v-model="draftAdvanced.areaMin" :min="0" :precision="1" :controls="false" placeholder="最小面积" />
@@ -406,7 +391,6 @@
               </div>
             </el-form-item>
 
-            <!-- 空置天数 -->
             <el-form-item label="空置天数" class="room-filter-form__vacancy">
               <div class="room-range-input">
                 <el-input-number v-model="draftAdvanced.vacancyDaysMin" :min="0" :controls="false" placeholder="最小空置天数" />
@@ -414,22 +398,34 @@
                 <el-input-number v-model="draftAdvanced.vacancyDaysMax" :min="0" :controls="false" placeholder="最大空置天数" />
               </div>
             </el-form-item>
+          </div>
 
-            <!-- 朝向 -->
-            <el-form-item label="朝向" class="room-filter-form__direction">
-              <el-select v-model="draftAdvanced.direction" clearable placeholder="全部">
-                <el-option v-for="item in directionOptions" :key="item" :label="item" :value="item" />
-              </el-select>
+          <!-- 快速选项区 -->
+          <div class="room-filter-form__quick mb-2" :class="{ 'is-single': !showRentalType }">
+            <el-form-item v-if="showRentalType" class="room-filter-form__type" label="房源类型">
+              <el-radio-group v-model="draftRentalTypeValue" size="small" class="room-filter-radio room-filter-radio--small">
+                <el-radio-button v-for="item in rentalTypeItems" :key="item.value ?? 'all'" :label="item.value === undefined ? ALL_RENTAL_TYPE_VALUE : String(item.value)">
+                  {{ item.label }}
+                </el-radio-button>
+              </el-radio-group>
             </el-form-item>
+            <el-form-item label="是否有图" class="room-filter-form__image">
+              <el-radio-group v-model="draftHasImageValue" size="small" class="room-filter-radio room-filter-radio--small">
+                <el-radio-button label="all">全部</el-radio-button>
+                <el-radio-button label="true">有图</el-radio-button>
+                <el-radio-button label="false">无图</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+            <div v-if="showRentalType" class="room-filter-form__quick-spacer" aria-hidden="true" />
           </div>
         </el-form>
 
         <!-- 底部操作 -->
         <div class="room-filter-panel__footer">
-          <el-button native-type="button" class="footer-btn-reset" @click="clearDraftFilters">
+          <el-button native-type="button" class="footer-btn-reset" @click.stop.prevent="clearDraftFilters">
             <span>清空条件</span>
           </el-button>
-          <el-button type="primary" native-type="button" class="footer-btn-submit" @click="submitAdvancedSearch">
+          <el-button type="primary" native-type="button" class="footer-btn-submit" @click.stop.prevent="submitAdvancedSearch">
             <el-icon :size="13"><component :is="useRenderIcon(Filter)" /></el-icon>
             <span>应用过滤</span>
           </el-button>
@@ -449,6 +445,7 @@
   // ─── 外层容器 ───────────────────────────────────────────────────
   .room-filter-bar {
     position: relative;
+    isolation: isolate;
     z-index: 2;
     width: 100%;
     padding: 0 16px 10px;
@@ -457,7 +454,7 @@
   }
 
   .room-filter-bar--expanded {
-    z-index: 12;
+    z-index: 60;
   }
 
   // ─── 工具栏 ─────────────────────────────────────────────────────
@@ -612,10 +609,11 @@
   // ─── 筛选面板 ───────────────────────────────────────────────────
   .room-filter-panel {
     position: relative;
-    z-index: 3;
+    z-index: 61;
     pointer-events: auto;
     margin-top: 12px;
-    background: var(--el-bg-color);
+    padding: 0 0 2px;
+    background: linear-gradient(180deg, var(--el-bg-color), var(--el-fill-color-extra-light));
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 12px;
     box-shadow:
@@ -629,8 +627,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 18px 12px;
-    background: linear-gradient(to right, var(--el-color-primary-light-9), var(--el-fill-color-extra-light) 60%);
+    padding: 14px 16px 12px;
+    background: linear-gradient(to right, var(--el-fill-color-extra-light), var(--el-bg-color) 70%);
     border-bottom: 1px solid var(--el-border-color-extra-light);
   }
 
@@ -644,17 +642,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     color: $primary-text;
     background: var(--el-color-primary-light-8);
     border: 1px solid $primary-border;
-    border-radius: 8px;
+    border-radius: 6px;
     flex-shrink: 0;
   }
 
   .room-filter-panel__title {
-    font-size: 13px;
+    font-size: var(--el-font-size-base);
     font-weight: 700;
     color: var(--el-text-color-primary);
     line-height: 1.4;
@@ -662,7 +660,7 @@
 
   .room-filter-panel__desc {
     margin-top: 2px;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--el-text-color-secondary);
     line-height: 1.5;
   }
@@ -671,8 +669,8 @@
   .room-filter-form {
     display: flex;
     flex-direction: column;
-    gap: 0;
-    padding: 0;
+    gap: 10px;
+    padding: 12px 16px 0;
 
     :deep(.el-form-item) {
       margin-bottom: 0;
@@ -684,7 +682,7 @@
       line-height: 18px;
       font-size: 12px;
       font-weight: 600;
-      color: var(--el-text-color-secondary);
+      color: var(--el-text-color-primary);
       letter-spacing: 0.02em;
     }
 
@@ -700,7 +698,7 @@
 
     :deep(.el-input__wrapper),
     :deep(.el-select__wrapper) {
-      min-height: 36px;
+      min-height: 38px;
       border-radius: 8px;
       transition: box-shadow 0.15s;
     }
@@ -713,11 +711,12 @@
   // ─── 快速条件区（租赁类型 + 是否有图）──────────────────────────
   .room-filter-form__quick {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px 20px;
-    padding: 16px 18px;
-    background: var(--el-fill-color-extra-light);
-    border-bottom: 1px solid var(--el-border-color-extra-light);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 20px;
+    padding: 12px;
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-extra-light);
+    border-radius: 10px;
 
     &.is-single {
       grid-template-columns: minmax(0, 1fr);
@@ -732,13 +731,15 @@
   .room-filter-form__fields {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px 20px;
-    padding: 16px 18px;
+    gap: 12px 20px;
+    padding: 12px;
     background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-extra-light);
+    border-radius: 10px;
   }
 
-  .room-filter-form__community {
-    grid-column: span 2;
+  .room-filter-form__quick-spacer {
+    min-height: 1px;
   }
 
   // ─── Radio 按钮组 ────────────────────────────────────────────────
@@ -753,9 +754,9 @@
 
     :deep(.el-radio-button__inner) {
       width: 100%;
-      height: 34px;
+      height: 38px;
       padding: 0 12px;
-      line-height: 32px;
+      line-height: 36px;
       color: var(--el-text-color-regular);
       background: var(--el-bg-color);
       border-color: var(--el-border-color);
@@ -781,10 +782,18 @@
     }
   }
 
+  .room-filter-radio--small {
+    :deep(.el-radio-button__inner) {
+      height: 34px;
+      line-height: 32px;
+      font-size: 13px;
+    }
+  }
+
   // ─── 范围输入组 ─────────────────────────────────────────────────
   .room-range-input {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
     gap: 4px;
     align-items: center;
     width: 100%;
@@ -799,16 +808,20 @@
 
   // ─── 底部操作栏 ─────────────────────────────────────────────────
   .room-filter-panel__footer {
+    position: relative;
+    z-index: 62;
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 10px;
-    padding: 12px 18px;
-    background: var(--el-fill-color-extra-light);
+    padding: 12px 16px 10px;
+    margin-top: 2px;
+    background: var(--el-bg-color);
     border-top: 1px solid var(--el-border-color-extra-light);
+    pointer-events: auto;
 
     .footer-btn-reset {
-      height: 34px;
+      height: 36px;
       padding: 0 16px;
       border-radius: 8px;
       font-size: 13px;
@@ -824,7 +837,7 @@
     }
 
     .footer-btn-submit {
-      height: 34px;
+      height: 36px;
       padding: 0 20px;
       border-radius: 8px;
       font-size: 13px;
@@ -885,10 +898,6 @@
     .room-filter-form__quick.is-single {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
-    .room-filter-form__community {
-      grid-column: span 2;
-    }
   }
 
   @media (max-width: 900px) {
@@ -896,10 +905,6 @@
     .room-filter-form__quick.is-single,
     .room-filter-form__fields {
       grid-template-columns: 1fr;
-    }
-
-    .room-filter-form__community {
-      grid-column: auto;
     }
   }
 </style>
