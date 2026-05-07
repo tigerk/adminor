@@ -15,6 +15,19 @@ import { useRoomLock } from "@/views/house/components/RoomLock/hook";
 
 type RoomDropdownCommand = "lock" | "unlock" | "close" | "open" | "delete";
 
+const SCATTER_ROOM_DISPLAY_MODE_STORAGE_KEY = "domix:house:scatter-room:display-mode";
+
+function getStoredDisplayModeToList() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return window.localStorage.getItem(SCATTER_ROOM_DISPLAY_MODE_STORAGE_KEY) === "list";
+}
+
+function getDisplayModeText(isList: boolean) {
+  return isList ? "列表模式" : "房态模式";
+}
+
 export function useScatterRoom() {
   const { openBookingDialog } = useBooking();
   const { openTenantDialog } = useTenant();
@@ -62,8 +75,9 @@ export function useScatterRoom() {
   const loading = ref(true);
   const isLinkage = ref(false);
   const treeSearchValue = ref();
-  const displayModeToList = ref(false);
-  const displayModeText = ref("房态模式");
+  const initialDisplayModeToList = getStoredDisplayModeToList();
+  const displayModeToList = ref(initialDisplayModeToList);
+  const displayModeText = ref(getDisplayModeText(initialDisplayModeToList));
   const rentalTypeTabs = [
     { label: "全部房源", value: undefined },
     { label: RentalTypeEnumMeta.ENTIRE.name, value: RentalTypeEnumMeta.ENTIRE.code },
@@ -373,7 +387,8 @@ export function useScatterRoom() {
 
   function handleDisplayClick() {
     displayModeToList.value = !displayModeToList.value;
-    displayModeText.value = displayModeToList.value ? "列表模式" : "房态模式";
+    displayModeText.value = getDisplayModeText(displayModeToList.value);
+    window.localStorage.setItem(SCATTER_ROOM_DISPLAY_MODE_STORAGE_KEY, displayModeToList.value ? "list" : "grid");
   }
 
   function isRoomAvailable(row: RoomListVo) {

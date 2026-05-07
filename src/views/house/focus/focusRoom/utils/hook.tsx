@@ -15,6 +15,19 @@ import { useRoomLock } from "@/views/house/components/RoomLock/hook";
 
 type RoomDropdownCommand = "lock" | "unlock" | "close" | "open" | "delete";
 
+const FOCUS_ROOM_DISPLAY_MODE_STORAGE_KEY = "domix:house:focus-room:display-mode";
+
+function getStoredDisplayModeToList() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return window.localStorage.getItem(FOCUS_ROOM_DISPLAY_MODE_STORAGE_KEY) === "list";
+}
+
+function getDisplayModeText(isList: boolean) {
+  return isList ? "列表模式" : "房态模式";
+}
+
 export function userFocusRoom() {
   const { openBookingDialog } = useBooking();
   const { openTenantDialog } = useTenant();
@@ -62,8 +75,9 @@ export function userFocusRoom() {
   const loading = ref(true);
   const isLinkage = ref(false);
   const treeSearchValue = ref();
-  const displayModeToList = ref(false);
-  const displayModeText = ref("房态模式");
+  const initialDisplayModeToList = getStoredDisplayModeToList();
+  const displayModeToList = ref(initialDisplayModeToList);
+  const displayModeText = ref(getDisplayModeText(initialDisplayModeToList));
 
   const columns: TableColumnList = [
     {
@@ -329,7 +343,8 @@ export function userFocusRoom() {
 
   function handleDisplayClick() {
     displayModeToList.value = !displayModeToList.value;
-    displayModeText.value = displayModeToList.value ? "列表模式" : "房态模式";
+    displayModeText.value = getDisplayModeText(displayModeToList.value);
+    window.localStorage.setItem(FOCUS_ROOM_DISPLAY_MODE_STORAGE_KEY, displayModeToList.value ? "list" : "grid");
   }
 
   function isRoomAvailable(row: RoomListVo) {

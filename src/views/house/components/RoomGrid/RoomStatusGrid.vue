@@ -129,7 +129,12 @@
                   <!-- 右侧按钮组 -->
                   <div class="action-right">
                     <!-- 操作下拉菜单 -->
-                    <el-dropdown :hide-on-click="false" popper-class="action-dropdown" trigger="click" @command="command => handleDropdownAction(room, command)">
+                    <el-dropdown
+                      :hide-on-click="false"
+                      popper-class="action-dropdown room-grid-action-dropdown"
+                      trigger="click"
+                      @command="command => handleDropdownAction(room, command)"
+                    >
                       <el-button size="small" plain>操作</el-button>
                       <template #dropdown>
                         <el-dropdown-menu>
@@ -156,10 +161,6 @@
                           <el-dropdown-item command="delete" divided>
                             <el-icon><Delete /></el-icon>
                             <span class="text-danger">删除房间</span>
-                          </el-dropdown-item>
-                          <el-dropdown-item v-if="room.salesmanName" command="salesman" divided>
-                            <el-icon><User /></el-icon>
-                            负责人：{{ room.salesmanName }}
                           </el-dropdown-item>
                         </el-dropdown-menu>
                       </template>
@@ -693,6 +694,27 @@
     .el-icon {
       margin-right: 8px;
     }
+  }
+
+  :global(.room-grid-action-dropdown) {
+    min-width: 104px !important;
+    padding: 4px !important;
+  }
+
+  :global(.room-grid-action-dropdown .el-dropdown-menu__item) {
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 13px;
+    line-height: 30px;
+  }
+
+  :global(.room-grid-action-dropdown .el-dropdown-menu__item .el-icon) {
+    margin-right: 6px;
+    font-size: 14px;
+  }
+
+  :global(.room-grid-action-dropdown .el-dropdown-menu__item--divided) {
+    margin-top: 4px;
   }
 
   // ==================== 响应式设计 ====================
