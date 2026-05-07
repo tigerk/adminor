@@ -844,16 +844,20 @@
     border-bottom: 1px solid var(--bl);
     flex-shrink: 0;
     background: var(--card);
-    min-height: 0;
+    height: 124px;
+    min-height: 124px;
+    max-height: 124px;
+    overflow: hidden;
   }
 
   // 缩略图
   .hv-rh-thumb {
     position: relative;
-    width: 96px;
+    width: 140px;
     min-width: 140px;
+    height: 100%;
     align-self: stretch;
-    min-height: 100px;
+    min-height: 0;
     flex-shrink: 0;
     background: var(--sub);
     overflow: hidden;
@@ -865,6 +869,7 @@
       display: block;
       cursor: pointer;
       transition: transform 0.3s ease;
+      :deep(.el-image__inner),
       :deep(img) {
         width: 100%;
         height: 100%;
