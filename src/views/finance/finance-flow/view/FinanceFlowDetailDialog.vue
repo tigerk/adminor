@@ -38,7 +38,7 @@
 
     <div class="ffd-grid">
       <div class="info-card">
-        <div class="info-card__header"><span class="info-card__title">费用关联</span></div>
+        <div class="info-card__header"><span class="info-card__title">业务关联</span></div>
         <div class="info-card__body">
           <div class="info-row">
             <span class="info-row__key">业务类型</span>
@@ -49,34 +49,34 @@
             <span class="info-row__val mono">{{ detail.bizId || "—" }}</span>
           </div>
           <div class="info-row">
-            <span class="info-row__key">费用类型</span>
-            <span class="info-row__val">{{ feeTypeText(detail.feeType) }}</span>
+            <span class="info-row__key">业务明细</span>
+            <span class="info-row__val">{{ businessTypeText(detail) }}</span>
           </div>
           <div class="info-row">
-            <span class="info-row__key">费用名称</span>
-            <span class="info-row__val">{{ detail.feeName || "—" }}</span>
+            <span class="info-row__key">业务单据</span>
+            <span class="info-row__val">{{ businessNameText(detail) }}</span>
           </div>
           <div class="info-row">
-            <span class="info-row__key">所属账单</span>
-            <span class="info-row__val">{{ detail.sortOrder ? `第 ${detail.sortOrder} 期` : "—" }}</span>
+            <span class="info-row__key">关联账单</span>
+            <span class="info-row__val">{{ billText(detail) }}</span>
           </div>
         </div>
       </div>
 
       <div class="info-card">
-        <div class="info-card__header"><span class="info-card__title">租客与房源</span></div>
+        <div class="info-card__header"><span class="info-card__title">对象与房源</span></div>
         <div class="info-card__body">
           <div class="info-row">
-            <span class="info-row__key">租客姓名</span>
-            <span class="info-row__val">{{ detail.tenantName || "—" }}</span>
+            <span class="info-row__key">租客/业主</span>
+            <span class="info-row__val">{{ subjectNameText(detail) }}</span>
           </div>
           <div class="info-row">
             <span class="info-row__key">联系电话</span>
-            <span class="info-row__val">{{ detail.tenantPhone || "—" }}</span>
+            <span class="info-row__val">{{ subjectPhoneText(detail) }}</span>
           </div>
           <div class="info-row info-row--full">
             <span class="info-row__key">房源信息</span>
-            <span class="info-row__val">{{ detail.roomAddress || "—" }}</span>
+            <span class="info-row__val">{{ subjectText(detail) }}</span>
           </div>
           <div class="info-row">
             <span class="info-row__key">账单周期</span>
@@ -169,9 +169,25 @@
     PaymentFlowStatusEnumMeta
   } from "@/types";
 
+  type FinanceFlowDetailRow = FinanceFlowFinanceItemVo & {
+    sourceType?: string;
+    sourceId?: string;
+    sourceNo?: string;
+    ownerId?: string;
+    ownerName?: string;
+    ownerPhone?: string;
+    ownerPayableBillId?: string;
+    ownerPayableBillNo?: string;
+    ownerPayableBillSubjectName?: string;
+  };
+
+  const FINANCE_BIZ_TYPE_LABEL_MAP: Record<string, string> = {
+    OWNER_PAYABLE_BILL_PAYMENT: "包租应付单付款"
+  };
+
   const props = defineProps<{ flowId: string }>();
   const loading = ref(false);
-  const detail = ref<FinanceFlowFinanceItemVo>({});
+  const detail = ref<FinanceFlowDetailRow>({});
 
   async function fetchDetail() {
     if (!props.flowId) return;
@@ -216,11 +232,33 @@
   }
   function bizTypeText(value?: string) {
     if (!value) return "—";
-    return (FinanceBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || value;
+    return (FinanceBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || FINANCE_BIZ_TYPE_LABEL_MAP[value] || value;
   }
   function feeTypeText(value?: string) {
     if (!value) return "—";
     return (LeaseBillFeeTypeEnumMeta as Record<string, { label: string }>)[value]?.label || value;
+  }
+  function businessTypeText(row: FinanceFlowDetailRow) {
+    const feeLabel = feeTypeText(row.feeType);
+    return feeLabel !== "—" ? feeLabel : bizTypeText(row.bizType);
+  }
+  function businessNameText(row: FinanceFlowDetailRow) {
+    return row.feeName || row.ownerPayableBillNo || row.bizNo || row.sourceNo || "—";
+  }
+  function billText(row: FinanceFlowDetailRow) {
+    if (row.sortOrder) {
+      return `第 ${row.sortOrder} 期`;
+    }
+    return row.ownerPayableBillNo || row.bizNo || row.sourceNo || "—";
+  }
+  function subjectNameText(row: FinanceFlowDetailRow) {
+    return row.tenantName || row.ownerName || row.receiverName || row.payerName || "—";
+  }
+  function subjectPhoneText(row: FinanceFlowDetailRow) {
+    return row.tenantPhone || row.ownerPhone || row.payerPhone || "—";
+  }
+  function subjectText(row: FinanceFlowDetailRow) {
+    return row.roomAddress || row.ownerPayableBillSubjectName || "—";
   }
   function channelText(value?: string) {
     if (!value) return "—";

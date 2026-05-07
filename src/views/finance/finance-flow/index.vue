@@ -12,11 +12,26 @@
     FinanceFlowDirectionEnumMeta,
     FinanceFlowStatusEnumMeta,
     FinanceFlowTypeEnumMeta,
-    LeaseBillFeeTypeEnumMeta,
-    PaymentFlowChannelEnumMeta
+    LeaseBillFeeTypeEnumMeta
   } from "@/types";
 
   defineOptions({ name: "FinanceFlowIndex" });
+
+  type FinanceFlowRow = FinanceFlowFinanceItemVo & {
+    sourceType?: string;
+    sourceId?: string;
+    sourceNo?: string;
+    ownerId?: string;
+    ownerName?: string;
+    ownerPhone?: string;
+    ownerPayableBillId?: string;
+    ownerPayableBillNo?: string;
+    ownerPayableBillSubjectName?: string;
+  };
+
+  const FINANCE_BIZ_TYPE_LABEL_MAP: Record<string, string> = {
+    OWNER_PAYABLE_BILL_PAYMENT: "包租应付单付款"
+  };
 
   const loading = ref(false);
   const list = ref<FinanceFlowFinanceItemVo[]>([]);
@@ -96,17 +111,30 @@
       formatter: ({ bizType }) => financeBizTypeText(bizType)
     },
     {
-      label: "费用类型",
+      label: "业务明细",
       prop: "feeType",
       minWidth: 110,
-      formatter: ({ feeType }) => feeTypeText(feeType)
+      formatter: row => businessTypeText(row as FinanceFlowRow)
     },
-    { label: "费用名称", prop: "feeName", minWidth: 140, showOverflowTooltip: true },
-    { label: "房源信息", prop: "roomAddress", minWidth: 220, showOverflowTooltip: true },
     {
-      label: "所属账单",
-      minWidth: 110,
-      formatter: ({ sortOrder }) => (sortOrder ? `第 ${sortOrder} 期` : "—")
+      label: "业务单据",
+      prop: "feeName",
+      minWidth: 160,
+      showOverflowTooltip: true,
+      formatter: row => businessNameText(row as FinanceFlowRow)
+    },
+    {
+      label: "房源/对象",
+      prop: "roomAddress",
+      minWidth: 220,
+      showOverflowTooltip: true,
+      formatter: row => subjectText(row as FinanceFlowRow)
+    },
+    {
+      label: "关联账单",
+      minWidth: 150,
+      showOverflowTooltip: true,
+      formatter: row => billText(row as FinanceFlowRow)
     },
     {
       label: "金额",
@@ -166,7 +194,7 @@
     fetchPage();
   }
 
-  function onSwitchStatus(status: number) {
+  function onSwitchStatus(status?: number) {
     queryForm.status = status;
     onSearch();
   }
@@ -225,7 +253,7 @@
 
   function financeBizTypeText(value?: string) {
     if (!value) return "—";
-    return (FinanceBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || value;
+    return (FinanceBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || FINANCE_BIZ_TYPE_LABEL_MAP[value] || value;
   }
 
   function feeTypeText(value?: string) {
@@ -233,9 +261,24 @@
     return (LeaseBillFeeTypeEnumMeta as Record<string, { label: string }>)[value]?.label || value;
   }
 
-  function channelText(value?: string) {
-    if (!value) return "—";
-    return (PaymentFlowChannelEnumMeta as Record<string, { label: string }>)[value]?.label || value;
+  function businessTypeText(row: FinanceFlowRow) {
+    const feeLabel = feeTypeText(row.feeType);
+    return feeLabel !== "—" ? feeLabel : financeBizTypeText(row.bizType);
+  }
+
+  function businessNameText(row: FinanceFlowRow) {
+    return row.feeName || row.ownerPayableBillNo || row.bizNo || row.sourceNo || "—";
+  }
+
+  function subjectText(row: FinanceFlowRow) {
+    return row.roomAddress || row.ownerPayableBillSubjectName || row.ownerName || row.receiverName || row.payerName || "—";
+  }
+
+  function billText(row: FinanceFlowRow) {
+    if (row.sortOrder) {
+      return `第 ${row.sortOrder} 期`;
+    }
+    return row.ownerPayableBillNo || row.bizNo || row.sourceNo || "—";
   }
 
   function moneyText(value?: number) {
@@ -274,12 +317,12 @@
             <el-option v-for="item in flowTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="费用类型">
-          <el-select v-model="queryForm.feeType" clearable placeholder="请选择费用类型" class="filter-input">
+        <el-form-item label="租客费用类型">
+          <el-select v-model="queryForm.feeType" clearable placeholder="请选择租客费用类型" class="filter-input">
             <el-option v-for="item in feeTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="房源信息">
+        <el-form-item label="租客房源">
           <el-input v-model="queryForm.roomKeyword" clearable placeholder="楼栋 / 门牌 / 小区" class="filter-input" />
         </el-form-item>
         <el-form-item>
