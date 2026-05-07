@@ -5,7 +5,7 @@ import { useTimeoutFn } from "@vueuse/core";
 import { isString, cloneDeep, isAllEmpty, intersection, storageLocal, isIncludeAllChildren } from "@pureadmin/utils";
 import { getConfig } from "@/config";
 import { buildHierarchyTree } from "@/utils/tree";
-import { userKey, type DataInfo } from "@/utils/auth";
+import { getUserInfo } from "@/utils/auth";
 import { type menuType, routerArrays } from "@/layout/types";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
@@ -51,9 +51,9 @@ function isOneOfArray(a: Array<string>, b: Array<string>) {
   return Array.isArray(a) && Array.isArray(b) ? (intersection(a, b).length > 0 ? true : false) : true;
 }
 
-/** 从localStorage里取出当前登录用户的角色roles，过滤无权限的菜单 */
+/** 从当前标签页会话中取出当前登录用户的角色 roles，过滤无权限的菜单 */
 function filterNoPermissionTree(data: RouteComponent[]) {
-  const currentRoles = storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [];
+  const currentRoles = getUserInfo()?.roles ?? [];
   const newTree = cloneDeep(data).filter((v: any) => isOneOfArray(v.meta?.roles, currentRoles));
   newTree.forEach((v: any) => v.children && (v.children = filterNoPermissionTree(v.children)));
   return filterChildrenTree(newTree);

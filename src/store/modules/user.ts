@@ -1,65 +1,54 @@
 import { defineStore } from "pinia";
-import { type userType, store, router, resetRouter, routerArrays, storageLocal } from "../utils";
+import { type userType, store, router, resetRouter, routerArrays } from "../utils";
 import { type UserResult, type RefreshTokenResult, getLogin, refreshTokenApi } from "@/api/login";
 import { useMultiTagsStoreHook } from "./multiTags";
-import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
+import { getUserInfo, setToken, removeToken, setUserInfo } from "@/utils/auth";
 import { message } from "@/utils/message";
 
 export const useUserStore = defineStore("pure-user", {
-  state: (): userType => ({
-    // 头像
-    avatar: storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "",
-    // 用户名
-    username: storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "",
-    // 昵称
-    nickname: storageLocal().getItem<DataInfo<number>>(userKey)?.nickname ?? "",
-    // 页面级别权限
-    roles: storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [],
-    // 按钮级别权限
-    permissions: storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [],
-    // 前端生成的验证码（按实际需求替换）
-    verifyCode: "",
-    // 判断登录页面显示哪个组件（0：登录（默认）、1：手机登录、2：二维码登录、3：注册、4：忘记密码）
-    currentPage: 0,
-    // 是否勾选了登录页的免登录
-    isRemembered: false,
-    // 登录页的免登录存储几天，默认7天
-    loginDay: 7,
-    // 当前公司
-    curCompanyId: storageLocal().getItem<DataInfo<number>>(userKey)?.curCompanyId ?? 0,
-    // 用户关联的公司列表
-    companyList: storageLocal().getItem<DataInfo<number>>(userKey)?.companyList ?? []
-  }),
+  state: (): userType => {
+    const userInfo = getUserInfo();
+    return {
+      // 头像
+      avatar: userInfo?.avatar ?? "",
+      // 用户名
+      username: userInfo?.username ?? "",
+      // 昵称
+      nickname: userInfo?.nickname ?? "",
+      // 页面级别权限
+      roles: userInfo?.roles ?? [],
+      // 按钮级别权限
+      permissions: userInfo?.permissions ?? [],
+      // 前端生成的验证码（按实际需求替换）
+      verifyCode: "",
+      // 判断登录页面显示哪个组件（0：登录（默认）、1：手机登录、2：二维码登录、3：注册、4：忘记密码）
+      currentPage: 0,
+      // 是否勾选了登录页的免登录
+      isRemembered: false,
+      // 登录页的免登录存储几天，默认7天
+      loginDay: 7,
+      // 当前公司
+      curCompanyId: userInfo?.curCompanyId ?? 0,
+      // 用户关联的公司列表
+      companyList: userInfo?.companyList ?? []
+    };
+  },
   actions: {
     /** 存储头像 */
     SET_AVATAR(avatar: string) {
       this.avatar = avatar;
-      // 【关键】同步更新本地缓存，否则刷新页面会变回旧的
-      const userItem = storageLocal().getItem<DataInfo<number>>(userKey);
-      if (userItem) {
-        userItem.avatar = avatar;
-        storageLocal().setItem(userKey, userItem);
-      }
+      // 同步当前标签页会话，刷新页面后仍保持最新资料。
+      setUserInfo({ avatar });
     },
     /** 存储用户名 */
     SET_USERNAME(username: string) {
       this.username = username;
-      // 【关键】同步更新本地缓存
-      const userItem = storageLocal().getItem<DataInfo<number>>(userKey);
-      if (userItem) {
-        userItem.username = username;
-        storageLocal().setItem(userKey, userItem);
-      }
+      setUserInfo({ username });
     },
     /** 存储昵称 */
     SET_NICKNAME(nickname: string) {
       this.nickname = nickname;
-      // 【关键】同步更新本地缓存
-      const userItem = storageLocal().getItem<DataInfo<number>>(userKey);
-      if (userItem) {
-        userItem.nickname = nickname;
-        storageLocal().setItem(userKey, userItem);
-      }
+      setUserInfo({ nickname });
     },
     /** 存储角色 */
     SET_ROLES(roles: Array<string>) {
