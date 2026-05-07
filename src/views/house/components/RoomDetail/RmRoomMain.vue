@@ -852,7 +852,8 @@
     position: relative;
     width: 96px;
     min-width: 140px;
-    height: 100px;
+    align-self: stretch;
+    min-height: 100px;
     flex-shrink: 0;
     background: var(--sub);
     overflow: hidden;
@@ -1731,9 +1732,7 @@
     padding: 16px;
     border: 1px solid var(--b);
     border-radius: var(--r);
-    background:
-      linear-gradient(135deg, rgba(230, 100, 38, 0.08), transparent 38%),
-      var(--card);
+    background: linear-gradient(135deg, rgba(230, 100, 38, 0.08), transparent 38%), var(--card);
     box-shadow: var(--shadow);
 
     &__head {

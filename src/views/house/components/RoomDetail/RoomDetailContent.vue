@@ -378,6 +378,13 @@
     --track-icon-bg: var(--el-color-primary-light-9);
     --track-icon-color: var(--el-color-primary);
     --dot-border: var(--el-bg-color);
+    --rm-page-font-xs: 12px;
+    --rm-page-font-sm: 13px;
+    --rm-page-font-base: 15px;
+    --rm-page-font-md: 16px;
+    --rm-page-font-lg: 18px;
+    --rm-page-font-xl: 24px;
+    --rm-page-line-height: 1.55;
 
     display: flex;
     flex-direction: column;
@@ -405,6 +412,8 @@
     height: auto;
     overflow: visible;
     background: transparent;
+    font-size: var(--rm-page-font-base);
+    line-height: var(--rm-page-line-height);
 
     .hv-layout {
       grid-template-columns: minmax(0, 1fr) 340px;
@@ -456,6 +465,126 @@
 
     :deep(.hv-pcard--remark) {
       min-height: 220px;
+    }
+
+    :deep(.hv-main),
+    :deep(.hv-panel),
+    :deep(.hv-tab-body) {
+      font-size: var(--rm-page-font-base);
+      line-height: var(--rm-page-line-height);
+    }
+
+    :deep(.hv-page-action-btn),
+    :deep(.hv-add-room),
+    :deep(.hv-topbar__summary-type),
+    :deep(.hv-room-rail__label),
+    :deep(.hv-tab),
+    :deep(.hv-section__title),
+    :deep(.hv-pcard__title),
+    :deep(.hv-occ__label) {
+      font-size: var(--rm-page-font-base) !important;
+      line-height: 1.45 !important;
+    }
+
+    :deep(.hv-topbar__summary-stat),
+    :deep(.hv-room-rail-option__tenant),
+    :deep(.hv-troom__info-line),
+    :deep(.hv-rh-sub-price),
+    :deep(.hv-rh-price__unit),
+    :deep(.hv-rh-col__lbl),
+    :deep(.hv-rh-col__phone),
+    :deep(.hv-section__count),
+    :deep(.hv-prop-item__label),
+    :deep(.hv-kv__k),
+    :deep(.hv-chip),
+    :deep(.hv-tag em),
+    :deep(.hv-owner-card__phone),
+    :deep(.hv-owner-card__dept),
+    :deep(.hv-panel-empty),
+    :deep(.hv-tenant__phone),
+    :deep(.hv-tenant__dates),
+    :deep(.hv-booking__lbl),
+    :deep(.hv-booking__link),
+    :deep(.hv-lock-card__index),
+    :deep(.hv-lock-card__col-label),
+    :deep(.hv-lock-card__time-label),
+    :deep(.hv-lock-card__meta-label),
+    :deep(.hv-lock-card__meta-val),
+    :deep(.hv-track-compose__sub),
+    :deep(.hv-track-compose__hint),
+    :deep(.hv-track-record__operator span),
+    :deep(.hv-track-record__meta),
+    :deep(.hv-empty-tip),
+    :deep(.hv-remark-box p) {
+      font-size: var(--rm-page-font-sm) !important;
+      line-height: 1.55 !important;
+    }
+
+    :deep(.hv-room-rail-option__room),
+    :deep(.hv-rh-badge),
+    :deep(.hv-rh-price__edit),
+    :deep(.hv-rh-col__val),
+    :deep(.hv-rh-col__val--owner),
+    :deep(.hv-prop-item__value),
+    :deep(.hv-kv__v),
+    :deep(.hv-tag),
+    :deep(.hv-owner-card__name),
+    :deep(.hv-tenant__name),
+    :deep(.hv-tenant__rent),
+    :deep(.hv-booking__name),
+    :deep(.hv-booking__row),
+    :deep(.hv-track-compose__title),
+    :deep(.hv-track-record__operator strong),
+    :deep(.hv-track-record p),
+    :deep(.hv-lock-card__reason),
+    :deep(.hv-lock-card__time-val),
+    :deep(.hv-lock-card__remark-text),
+    :deep(.hv-lock-status-badge) {
+      font-size: var(--rm-page-font-base) !important;
+      line-height: 1.55 !important;
+    }
+
+    :deep(.hv-troom__num),
+    :deep(.hv-track-list__head span),
+    :deep(.hv-track-empty p),
+    :deep(.hv-lock-empty__title) {
+      font-size: var(--rm-page-font-lg) !important;
+      line-height: 1.35 !important;
+    }
+
+    :deep(.hv-rh-price__amount),
+    :deep(.hv-occ__pct),
+    :deep(.hv-price-card__val strong) {
+      font-size: var(--rm-page-font-xl) !important;
+      line-height: 1.1 !important;
+    }
+
+    :deep(.hv-rh-thumb__empty),
+    :deep(.hv-rh-thumb__badge),
+    :deep(.hv-troom__status),
+    :deep(.hv-room-rail-option__status),
+    :deep(.hv-tenant__dur),
+    :deep(.hv-focus-badge),
+    :deep(.hv-plan-table__head),
+    :deep(.hv-price-card__lbl),
+    :deep(.hv-prop-item__value em),
+    :deep(.hv-lock-card__avatar) {
+      font-size: var(--rm-page-font-xs) !important;
+      line-height: 1.4 !important;
+    }
+
+    :deep(.hv-plan-table),
+    :deep(.hv-plan-table__row),
+    :deep(.hv-fee-row) {
+      font-size: var(--rm-page-font-sm) !important;
+      line-height: 1.55 !important;
+    }
+
+    :deep(.el-button),
+    :deep(.el-input),
+    :deep(.el-textarea),
+    :deep(.el-select) {
+      font-size: var(--rm-page-font-sm);
     }
   }
 
