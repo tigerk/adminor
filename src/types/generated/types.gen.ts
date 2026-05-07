@@ -1264,10 +1264,6 @@ export type BookingListVo = {
  */
 export type CommunityDto = {
     /**
-     * 小区ID
-     */
-    communityId?: string;
-    /**
      * 小区名称
      */
     name?: string;
@@ -2754,6 +2750,12 @@ export type RoomDeleteDto = {
     updateBy?: string;
 };
 
+export type ResponseResultListCommunityDto = {
+    code?: number;
+    message?: string;
+    data?: Array<CommunityDto>;
+};
+
 export type UserRegisterDto = {
     nature: number;
     companyName: string;
@@ -4155,6 +4157,18 @@ export type OwnerPayableBillPaymentVo = {
      * 备注
      */
     remark?: string;
+    /**
+     * 付款记录状态
+     */
+    paymentStatus?: number;
+    /**
+     * 审批状态
+     */
+    approvalStatus?: number;
+    /**
+     * 财务流水ID
+     */
+    financeFlowId?: string;
     /**
      * 凭证地址
      */
@@ -5816,7 +5830,7 @@ export type ResponseResultPageVoLeaseBillFeeFinanceItemVo = {
 };
 
 /**
- * 租客财务流水查询DTO
+ * 财务流水查询DTO
  */
 export type FinanceFlowFinanceQueryDto = {
     currentPage?: string;
@@ -5830,11 +5844,11 @@ export type FinanceFlowFinanceQueryDto = {
      */
     flowType?: string;
     /**
-     * 费用类型
+     * 租客账单费用类型
      */
     feeType?: string;
     /**
-     * 房源信息关键词
+     * 租客账单房源信息关键词
      */
     roomKeyword?: string;
 };
@@ -5876,7 +5890,7 @@ export type ResponseResultFinanceFlowFinanceSummaryVo = {
 };
 
 /**
- * 租客财务流水列表项
+ * 财务流水列表项
  */
 export type FinanceFlowFinanceItemVo = {
     /**
@@ -5888,9 +5902,17 @@ export type FinanceFlowFinanceItemVo = {
      */
     flowNo?: string;
     /**
-     * 支付流水ID
+     * 来源类型
      */
-    paymentFlowId?: string;
+    sourceType?: string;
+    /**
+     * 来源单据ID
+     */
+    sourceId?: string;
+    /**
+     * 来源单据编号
+     */
+    sourceNo?: string;
     /**
      * 业务类型
      */
@@ -5916,9 +5938,17 @@ export type FinanceFlowFinanceItemVo = {
      */
     amount?: number;
     /**
+     * 币种
+     */
+    currency?: string;
+    /**
      * 状态
      */
     status?: number;
+    /**
+     * 扩展字段
+     */
+    extJson?: string;
     /**
      * 费用类型
      */
@@ -5940,9 +5970,33 @@ export type FinanceFlowFinanceItemVo = {
      */
     tenantPhone?: string;
     /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 业主姓名
+     */
+    ownerName?: string;
+    /**
+     * 业主电话
+     */
+    ownerPhone?: string;
+    /**
      * 账单ID
      */
     billId?: string;
+    /**
+     * 包租应付单ID
+     */
+    ownerPayableBillId?: string;
+    /**
+     * 包租应付单号
+     */
+    ownerPayableBillNo?: string;
+    /**
+     * 包租应付单房源
+     */
+    ownerPayableBillSubjectName?: string;
     /**
      * 租约ID
      */
@@ -11548,7 +11602,7 @@ export type ApprovalActionStatusEnum = 'PENDING' | 'APPROVED' | 'SKIPPED';
 
 export type ApprovalActionTypeEnum = 'APPROVE' | 'REJECT' | 'TRANSFER';
 
-export type ApprovalBizTypeEnum = 'TENANT_CHECKIN' | 'OWNER_CONTRACT' | 'TENANT_CHECKOUT' | 'HOUSE_CREATE' | 'PAYMENT_FLOW';
+export type ApprovalBizTypeEnum = 'TENANT_CHECKIN' | 'OWNER_CONTRACT' | 'TENANT_CHECKOUT' | 'HOUSE_CREATE' | 'PAYMENT_FLOW' | 'OWNER_PAYABLE_BILL_PAYMENT';
 
 export type ApprovalInstanceStatusEnum = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN' | 'CANCELLED';
 
@@ -11623,9 +11677,11 @@ export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE'
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 
-export type FinanceBizTypeEnum = 'LEASE_BILL_FEE';
+export type FinanceBizTypeEnum = 'LEASE_BILL_FEE' | 'OWNER_PAYABLE_BILL_PAYMENT';
 
 export type FinanceFlowDirectionEnum = 'IN' | 'OUT';
+
+export type FinanceFlowSourceTypeEnum = 'PAYMENT_FLOW' | 'OWNER_PAYABLE_BILL_PAYMENT';
 
 export type FinanceFlowStatusEnum = 'PENDING' | 'SUCCESS' | 'VOIDED';
 
@@ -11738,6 +11794,11 @@ export type OwnerFreeTypeEnum = 'BUILT_IN' | 'OUTSIDE';
  * 业主结算收入口径枚举
  */
 export type OwnerIncomeBasisEnum = 'RECEIVED' | 'RECEIVABLE';
+
+/**
+ * 包租业主应付单付款记录状态枚举
+ */
+export type OwnerPayableBillPaymentRecordStatusEnum = 'PENDING_APPROVAL' | 'SUCCESS' | 'CLOSED';
 
 /**
  * 包租业主应付单付款状态枚举
@@ -12913,6 +12974,24 @@ export type DeleteRoomResponses = {
 };
 
 export type DeleteRoomResponse = DeleteRoomResponses[keyof DeleteRoomResponses];
+
+export type GetRoomCommunityOptionsData = {
+    body: RoomQueryDto;
+    path?: never;
+    query: {
+        arg1: UserLoginVo;
+    };
+    url: '/saas/room/community/options';
+};
+
+export type GetRoomCommunityOptionsResponses = {
+    /**
+     * OK
+     */
+    200: ResponseResultListCommunityDto;
+};
+
+export type GetRoomCommunityOptionsResponse = GetRoomCommunityOptionsResponses[keyof GetRoomCommunityOptionsResponses];
 
 export type CloseRoomData = {
     body: RoomIdDto;
