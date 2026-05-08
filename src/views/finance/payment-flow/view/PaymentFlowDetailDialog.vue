@@ -217,7 +217,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, ref } from "vue";
+  import { ref, watch } from "vue";
   import dayjs from "dayjs";
   import { ElMessageBox } from "element-plus";
   import type { FinanceFlowVo, PaymentFlowFinanceItemVo } from "@/types";
@@ -260,15 +260,22 @@
   const detail = ref<PaymentFlowDetailRow & { financeFlowList?: FinanceFlowVo[] }>({});
   const canVoidFlow = ref(false);
 
-  async function fetchDetail() {
-    if (!props.flowId) return;
+  async function fetchDetail(flowId = props.flowId) {
+    if (!flowId) {
+      detail.value = {};
+      canVoidFlow.value = false;
+      return;
+    }
     loading.value = true;
     try {
-      const { data } = await getFinancePaymentFlowDetail({ id: props.flowId });
+      const { data } = await getFinancePaymentFlowDetail({ id: flowId });
+      if (props.flowId !== flowId) return;
       detail.value = data || {};
       canVoidFlow.value = detail.value.status === PaymentFlowStatusEnumMeta.SUCCESS.code;
     } finally {
-      loading.value = false;
+      if (props.flowId === flowId) {
+        loading.value = false;
+      }
     }
   }
 
@@ -404,7 +411,13 @@
     return (LeaseBillFeeTypeEnumMeta as Record<string, { label: string }>)[type]?.label || type;
   }
 
-  onMounted(fetchDetail);
+  watch(
+    () => props.flowId,
+    flowId => {
+      void fetchDetail(flowId);
+    },
+    { immediate: true }
+  );
 </script>
 
 <style scoped>
