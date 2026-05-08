@@ -38,6 +38,7 @@
       :master-lease-bill-locked="masterLeaseBillLocked"
       :master-lease-bill-lock-reason="masterLeaseBillLockReason"
       :other-fee-type-options="otherFeeTypeOptions"
+      :settlement-fee-type-options="settlementFeeTypeOptions"
       :settlement-fee-cascader-values="settlementFeeCascaderValues"
       :lease-fee-cascader-values="leaseFeeCascaderValues"
       @add-settlement-item="addSettlementItem"
@@ -79,7 +80,6 @@
         </div>
       </template>
     </el-dialog>
-
   </el-form>
 </template>
 
@@ -117,6 +117,7 @@
     contractDateRange,
     contractTemplates,
     otherFeeTypeOptions,
+    settlementFeeTypeOptions,
     leaseFeeCascaderValues,
     settlementFeeCascaderValues,
     ownerTagOptions,
@@ -163,9 +164,7 @@
   const subjectTypeDialogVisible = ref(false);
   const pendingLeaseMode = ref<SubjectLeaseModeValue>(LeaseModeEnumMeta.SCATTER.code as SubjectLeaseModeValue);
   const masterLeaseBillLocked = computed(() => props.isEdit && form.ownerContract.cooperationMode === "MASTER_LEASE" && Boolean(props.formInline?.masterLeaseBillLocked));
-  const masterLeaseBillLockReason = computed(
-    () => props.formInline?.masterLeaseBillLockReason || "该包租合同已发生付款或结算，账单条款已锁定；如需调整，请走合同变更。"
-  );
+  const masterLeaseBillLockReason = computed(() => props.formInline?.masterLeaseBillLockReason || "该包租合同已发生付款或结算，账单条款已锁定；如需调整，请走合同变更。");
 
   const currentLeaseMode = computed<SubjectLeaseModeValue>(() =>
     selectedSubjectType.value === OwnerContractSubjectTypeEnumMeta.HOUSE.value

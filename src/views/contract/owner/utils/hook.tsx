@@ -27,6 +27,20 @@ function useOwnerContract() {
     return "请检查表单必填项后再提交";
   }
 
+  function validateRealtimeSettlementItems(payload: any) {
+    if (payload?.ownerContract?.cooperationMode !== "LIGHT_MANAGED") return;
+    const subjectList = Array.isArray(payload?.contractSubjectList) ? payload.contractSubjectList : [];
+    for (const subject of subjectList) {
+      const rule = subject?.settlementRule;
+      if (!rule) throw new Error("请配置轻托管结算规则");
+      if (rule.settlementTiming !== "TENANT_PAYMENT_REALTIME") continue;
+      const commissionValue = Number(rule.commissionValue);
+      if (!Number.isFinite(commissionValue) || commissionValue <= 0 || commissionValue > 100) {
+        throw new Error("租客支付实时分账的业主分成比例必须大于0且不超过100%");
+      }
+    }
+  }
+
   function openOwnerDialog(title = "添加业主合同", row?: { contractId?: string | number; isEdit?: boolean } | OwnerDetailVo | null, onSuccess?: () => void) {
     const isEdit = Boolean((row as { isEdit?: boolean } | undefined)?.isEdit);
 
@@ -73,6 +87,7 @@ function useOwnerContract() {
             message("请填写完整信息", { type: "warning" });
             return;
           }
+          validateRealtimeSettlementItems(payload);
 
           const resp = isEdit ? await updateOwnerContract(payload as OwnerUpdateDto) : await createOwnerContract(payload);
           if (resp.code === 0) {
@@ -149,6 +164,7 @@ function useOwnerContract() {
               message("请填写完整信息", { type: "warning" });
               return;
             }
+            validateRealtimeSettlementItems(payload);
             const result = await renewOwnerContract({ ...(payload as any), sourceContractId });
             if (result.code === 0) {
               message("业主续约成功", { type: "success" });

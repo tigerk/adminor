@@ -1,7 +1,9 @@
 .owner-contract-form {
+  --owner-contract-module-gap: 10px;
+
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--owner-contract-module-gap);
 }
 
 .form-card {
@@ -101,11 +103,11 @@
 .contract-info-grid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--owner-contract-module-gap);
 }
 
 .owner-info-grid {
-  margin-top: 12px;
+  margin-top: var(--owner-contract-module-gap);
 }
 
 .info-panel {
@@ -259,7 +261,7 @@
 }
 
 .sub-panel {
-  margin-top: 12px;
+  margin-top: var(--owner-contract-module-gap);
   padding: 16px;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 12px;
@@ -277,7 +279,12 @@
 .rule-editor {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--owner-contract-module-gap);
+}
+
+.rule-editor > .sub-panel,
+.rule-editor > .config-card--full {
+  margin-top: 0;
 }
 
 .mode-guide {
@@ -309,7 +316,7 @@
 .config-card-grid {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--owner-contract-module-gap);
   align-items: start;
 }
 
@@ -323,7 +330,7 @@
 }
 
 .config-card--full {
-  margin-top: 12px;
+  margin-top: var(--owner-contract-module-gap);
 }
 
 .config-card__header {

@@ -89,7 +89,7 @@
           {{
             sharedContractSubject.settlementRule.settlementMode === "AGENCY"
               ? "业主结转比例：平台代收代付后，剩余金额按约定比例结给业主。"
-              : "业主分成比例：业主从可分账收入中拿多少。管理费比例：平台额外向业主收取多少服务管理费用。"
+              : "业主分成比例：租金先按该比例结给业主。管理费比例：再按业主租金收入扣取管理费。"
           }}
         </div>
       </template>
@@ -100,7 +100,7 @@
         <div class="config-card__header">
           <div class="config-card__header-left">
             <div class="config-card__title">管理费</div>
-            <div class="config-card__desc">按租金比例向业主额外收取管理费。</div>
+            <div class="config-card__desc">按业主租金收入向业主额外收取管理费。</div>
           </div>
           <el-switch v-model="sharedContractSubject.settlementRule.managementFeeEnabled" />
         </div>
@@ -114,7 +114,7 @@
               </el-form-item>
               <div class="fee-inline-hint">
                 <el-form-item label="&nbsp;" class="fee-inline-item">
-                  按业主实收租金的
+                  按业主租金收入的
                   <strong>{{ sharedContractSubject.settlementRule.managementFeeValue ?? 0 }}%</strong>
                   向业主收取管理费。
                 </el-form-item>
@@ -219,16 +219,24 @@
     <div class="config-card config-card--full">
       <div class="config-card__header">
         <div class="config-card__header-left">
-          <div class="config-card__title">分账费用科目</div>
-          <div class="config-card__desc">先选收支和费用类型，再填写转给业主的比例。每一条都是一张独立费用卡片。</div>
+          <div class="config-card__title">押金及其他费用分账规则</div>
+          <div class="config-card__desc">不含租金，租金按上方业主分成比例自动结算。这里配置押金和其他费用是否转给业主。</div>
         </div>
         <el-button type="primary" plain size="small" @click="emit('addSettlementItem', sharedContractSubject)">
           <Plus />
-          添加费用科目
+          添加费用规则
         </el-button>
       </div>
       <div class="config-card__content">
-        <div v-if="!sharedContractSubject.settlementRule.settlementItemList?.length" class="config-card__empty">暂无分账费用科目，点击右上角"添加费用科目"新增。</div>
+        <el-alert
+          v-if="sharedContractSubject.settlementRule.settlementTiming === 'TENANT_PAYMENT_REALTIME'"
+          class="settlement-fee-alert"
+          type="warning"
+          show-icon
+          :closable="false"
+          title="租金由业主分成比例自动结算；押金和其他费用需要在这里单独配置，未配置则不结给业主。"
+        />
+        <div v-if="!sharedContractSubject.settlementRule.settlementItemList?.length" class="config-card__empty">暂无押金及其他费用分账规则，点击右上角"添加费用规则"新增。</div>
         <template v-else>
           <div class="fee-table-wrapper">
             <table class="fee-table settlement-fee-table">
@@ -252,8 +260,8 @@
                   <td>
                     <el-cascader
                       v-model="localSettlementFeeCascaderValues[`shared-${index}`]"
-                      :options="otherFeeTypeOptions"
-                      :props="{ emitPath: true, checkStrictly: false }"
+                      :options="settlementFeeTypeOptions"
+                      :props="{ expandTrigger: 'hover' }"
                       clearable
                       filterable
                       class="w-full"
@@ -299,10 +307,10 @@
   import type { ContractSubjectFormItem, OwnerRentFreeRuleForm } from "../model/ownerContractFormTypes";
 
   const props = defineProps<{
-    otherFeeTypeOptions: any[];
+    settlementFeeTypeOptions: any[];
     settlementFeeCascaderValues: Record<string, any[]>;
   }>();
-  const { otherFeeTypeOptions, settlementFeeCascaderValues } = toRefs(props);
+  const { settlementFeeTypeOptions, settlementFeeCascaderValues } = toRefs(props);
 
   const sharedContractSubject = defineModel<ContractSubjectFormItem | undefined>("sharedContractSubject", { required: true });
   const localSettlementFeeCascaderValues = reactive<Record<string, any[]>>({});
@@ -322,3 +330,9 @@
     { immediate: true, deep: true }
   );
 </script>
+
+<style scoped>
+  .settlement-fee-alert {
+    margin-bottom: 12px;
+  }
+</style>

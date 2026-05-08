@@ -55,11 +55,11 @@ export const createLeaseFee = (): OwnerLeaseFeeForm => ({
 
 export const createDefaultSettlementRule = (): OwnerSettlementRuleForm => ({
   incomeBasis: "RECEIVED",
-  settlementMode: "FIXED",
+  settlementMode: "SHARE_NET",
   guaranteedRentAmount: 0,
   hasGuaranteedRent: false,
   commissionMode: "RATIO",
-  commissionValue: 0,
+  commissionValue: 100,
   serviceFeeMode: "FIXED",
   serviceFeeValue: 0,
   managementFeeEnabled: false,
@@ -102,11 +102,13 @@ export function cloneSettlementRule(rule?: OwnerSettlementRuleForm): OwnerSettle
   return {
     ...createDefaultSettlementRule(),
     ...(rule || {}),
-    settlementItemList: ((rule?.settlementItemList || []) as OwnerSettlementItemForm[]).map(item => ({
-      ...createSettlementItem(),
-      ...item,
-      dictDataId: item.dictDataId
-    }))
+    settlementItemList: ((rule?.settlementItemList || []) as OwnerSettlementItemForm[])
+      .filter(item => item?.feeType !== "RENTAL")
+      .map(item => ({
+        ...createSettlementItem(),
+        ...item,
+        dictDataId: item.dictDataId
+      }))
   };
 }
 
@@ -208,6 +210,18 @@ export function useOwnerContractForm() {
   const templateParams = ref<ContractTemplateParamItem[]>([]);
   const templateParamsLoading = ref(false);
   const otherFeeTypeOptions = ref<any[]>([]);
+  const settlementFeeTypeOptions = computed(() => [
+    { label: "押金", value: "DEPOSIT" },
+    {
+      label: "其他费用",
+      value: "OTHER_FEE",
+      children: otherFeeTypeOptions.value.map((item: any) => ({
+        label: item.label,
+        value: item.value,
+        children: item.children || []
+      }))
+    }
+  ]);
   const leaseFeeCascaderValues = ref<Record<number, any[]>>({});
   const settlementFeeCascaderValues = ref<Record<string, any[]>>({});
   const ownerTagOptions = ref<{ label: string; value: string }[]>([]);
@@ -250,11 +264,13 @@ export function useOwnerContractForm() {
 
   async function loadFeeTypeOptions() {
     const res = await getDictDataByParentCode({ dictCode: "fee_type" });
-    otherFeeTypeOptions.value = (res.data || []).map((dict: any) => ({
-      label: dict.dictName,
-      value: dict.dictCode,
-      children: (dict.dictDataList || []).map((item: any) => ({ label: item.name, value: item.id }))
-    }));
+    otherFeeTypeOptions.value = (res.data || [])
+      .filter((dict: any) => dict.dictCode !== "RENTAL")
+      .map((dict: any) => ({
+        label: dict.dictName,
+        value: dict.dictCode,
+        children: (dict.dictDataList || []).map((item: any) => ({ label: item.name, value: item.id }))
+      }));
   }
 
   async function loadOwnerTagOptions() {
@@ -415,12 +431,24 @@ export function useOwnerContractForm() {
   function syncSettlementFeeCascaderValues() {
     const values: Record<string, any[]> = {};
     ((sharedContractSubject.value?.settlementRule.settlementItemList || []) as OwnerSettlementItemForm[]).forEach((item, index) => {
+      if (item.feeType === "DEPOSIT") {
+        values[`shared-${index}`] = ["DEPOSIT"];
+        return;
+      }
       const targetDictDataId = item.dictDataId ?? item.feeType;
       if (!targetDictDataId || !otherFeeTypeOptions.value.length) return;
+      if (item.feeType === "OTHER_FEE" && !item.dictDataId) {
+        values[`shared-${index}`] = ["OTHER_FEE"];
+        return;
+      }
       for (const parent of otherFeeTypeOptions.value) {
+        if (String(parent.value) === String(targetDictDataId)) {
+          values[`shared-${index}`] = ["OTHER_FEE", parent.value];
+          break;
+        }
         const child = parent.children?.find((option: any) => String(option.value) === String(targetDictDataId));
         if (child) {
-          values[`shared-${index}`] = [parent.value, child.value];
+          values[`shared-${index}`] = ["OTHER_FEE", parent.value, child.value];
           break;
         }
       }
@@ -435,13 +463,30 @@ export function useOwnerContractForm() {
 
   function handleSettlementFeeTypeChange(value: any, house: ContractSubjectFormItem, index: number) {
     const target = house.settlementRule.settlementItemList?.[index];
-    if (!target || !Array.isArray(value) || value.length < 2) return;
-    const parent = otherFeeTypeOptions.value.find((item: any) => item.value === value[0]);
-    const child = parent?.children?.find((item: any) => item.value === value[1]);
-    if (!child) return;
-    target.dictDataId = String(child.value);
-    target.feeType = String(parent?.value || "");
-    target.feeName = child.label;
+    if (!target) return;
+    if (!Array.isArray(value) || value.length < 1) {
+      target.dictDataId = undefined;
+      target.feeType = "";
+      target.feeName = "";
+      return;
+    }
+    const [feeType, dictCode, dictDataId] = value;
+    if (feeType === "DEPOSIT") {
+      target.dictDataId = undefined;
+      target.feeType = "DEPOSIT";
+      target.feeName = "押金";
+      target.transferEnabled = true;
+      return;
+    }
+    if (feeType !== "OTHER_FEE") return;
+    target.feeType = "OTHER_FEE";
+    target.dictDataId = undefined;
+    target.feeName = "";
+    const parent = otherFeeTypeOptions.value.find((item: any) => item.value === dictCode);
+    if (!parent) return;
+    const child = parent.children?.find((item: any) => item.value === dictDataId);
+    target.dictDataId = child ? String(child.value) : undefined;
+    target.feeName = child?.label || parent?.label || "";
     target.transferEnabled = true;
   }
 
@@ -474,6 +519,7 @@ export function useOwnerContractForm() {
 
   function normalizeLightManagedRule(rule: OwnerSettlementRuleForm): OwnerSettlementRuleForm {
     const next = { ...rule };
+    const isRealtimeSettlement = next.settlementTiming === "TENANT_PAYMENT_REALTIME";
     next.commissionMode = "RATIO";
     next.managementFeeMode = "RATIO";
     next.serviceFeeMode = "FIXED";
@@ -491,15 +537,15 @@ export function useOwnerContractForm() {
       case "SHARE_GROSS":
         next.settlementMode = "SHARE_NET";
         next.hasGuaranteedRent = false;
-        next.incomeBasis = "RECEIVABLE";
+        next.incomeBasis = isRealtimeSettlement ? "RECEIVED" : "RECEIVABLE";
         break;
       case "SHARE_NET":
         next.hasGuaranteedRent = false;
-        next.incomeBasis = "RECEIVABLE";
+        next.incomeBasis = isRealtimeSettlement ? "RECEIVED" : "RECEIVABLE";
         break;
       case "AGENCY":
         next.hasGuaranteedRent = false;
-        next.incomeBasis = "RECEIVABLE";
+        next.incomeBasis = isRealtimeSettlement ? "RECEIVED" : "RECEIVABLE";
         break;
       default:
         next.hasGuaranteedRent = false;
@@ -535,16 +581,18 @@ export function useOwnerContractForm() {
                 guaranteedRentAmount: sharedSettlementRule?.settlementMode === "FIXED" || sharedSettlementRule?.hasGuaranteedRent ? sharedSettlementRule?.guaranteedRentAmount : 0,
                 managementFeeValue: sharedSettlementRule?.managementFeeEnabled ? sharedSettlementRule?.managementFeeValue : 0,
                 rentFreeEnabled: Boolean(sharedRentFreeRule?.enabled),
-                settlementItemList: ((sharedSettlementRule?.settlementItemList || []) as OwnerSettlementItemForm[]).map(si => ({
-                  feeDirection: si.feeDirection,
-                  feeType: si.feeType,
-                  dictDataId: si.dictDataId,
-                  feeName: si.feeName,
-                  transferEnabled: si.transferEnabled,
-                  transferRatio: si.transferRatio,
-                  sortOrder: si.sortOrder,
-                  remark: si.remark
-                }))
+                settlementItemList: ((sharedSettlementRule?.settlementItemList || []) as OwnerSettlementItemForm[])
+                  .filter(si => si.feeType !== "RENTAL")
+                  .map(si => ({
+                    feeDirection: si.feeDirection,
+                    feeType: si.feeType,
+                    dictDataId: si.dictDataId,
+                    feeName: si.feeName,
+                    transferEnabled: si.transferEnabled,
+                    transferRatio: si.transferRatio,
+                    sortOrder: si.sortOrder,
+                    remark: si.remark
+                  }))
               }
             : undefined,
         rentFreeRule:
@@ -599,6 +647,7 @@ export function useOwnerContractForm() {
     templateParams,
     templateParamsLoading,
     otherFeeTypeOptions,
+    settlementFeeTypeOptions,
     leaseFeeCascaderValues,
     settlementFeeCascaderValues,
     ownerTagOptions,

@@ -4,7 +4,7 @@
       <div class="card-header">
         <div class="header-inline">
           <span class="card-title">轻托管条款配置</span>
-          <span class="card-desc card-desc--inline">所有已选房源统一使用同一套分账规则、管理费、免租与费用科目配置。</span>
+          <span class="card-desc card-desc--inline">所有已选房源统一使用同一套租金分成、管理费、免租与押金及其他费用规则。</span>
         </div>
         <span class="card-tip">统一配置后自动应用到全部房源</span>
       </div>
@@ -12,7 +12,7 @@
 
     <LightManagedClause
       v-model:shared-contract-subject="sharedContractSubjectModel"
-      :other-fee-type-options="otherFeeTypeOptions"
+      :settlement-fee-type-options="settlementFeeTypeOptions"
       :settlement-fee-cascader-values="settlementFeeCascaderValues"
       @add-settlement-item="emit('addSettlementItem', $event)"
       @settlement-fee-type-change="(value, house, index) => emit('settlementFeeTypeChange', value, house, index)"
@@ -55,6 +55,7 @@
     masterLeaseBillLocked: boolean;
     masterLeaseBillLockReason: string;
     otherFeeTypeOptions: any[];
+    settlementFeeTypeOptions: any[];
     settlementFeeCascaderValues: Record<string, any[]>;
     leaseFeeCascaderValues: Record<number, any[]>;
   }>();
