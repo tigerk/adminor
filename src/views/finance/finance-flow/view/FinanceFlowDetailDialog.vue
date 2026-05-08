@@ -123,12 +123,18 @@
   });
 
   const hasBillInfo = computed(() =>
-    Boolean(detail.value.billId || detail.value.feeName || detail.value.sortOrder || detail.value.billStart || detail.value.billEnd || detail.value.dueDate || detail.value.roomAddress)
+    Boolean(
+      detail.value.billId || detail.value.feeName || detail.value.sortOrder || detail.value.billStart || detail.value.billEnd || detail.value.dueDate || detail.value.roomAddress
+    )
   );
 
-  const hasOwnerPayableInfo = computed(() => Boolean(detail.value.ownerPayableBillId || detail.value.ownerPayableBillNo || detail.value.ownerName || detail.value.ownerPayableBillSubjectName));
+  const hasOwnerPayableInfo = computed(() =>
+    Boolean(detail.value.ownerPayableBillId || detail.value.ownerPayableBillNo || detail.value.ownerName || detail.value.ownerPayableBillSubjectName)
+  );
 
-  const hasPaymentInfo = computed(() => Boolean(detail.value.paymentNo || detail.value.paymentChannel || detail.value.paymentStatus != null || detail.value.thirdTradeNo || detail.value.payAt));
+  const hasPaymentInfo = computed(() =>
+    Boolean(detail.value.paymentNo || detail.value.paymentChannel || detail.value.paymentStatus != null || detail.value.thirdTradeNo || detail.value.payAt)
+  );
 
   const hasRemarkInfo = computed(() => Boolean(detail.value.remark || detail.value.paymentRemark || detail.value.extJson));
 

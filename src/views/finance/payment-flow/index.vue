@@ -20,9 +20,9 @@
     bizNo?: string;
     bizType?: string;
   };
-
-  const PAYMENT_BIZ_TYPE_LABEL_MAP: Record<string, string> = {
-    OWNER_PAYABLE_BILL_PAYMENT: "包租应付付款"
+  type PaymentFlowBizTab = {
+    label: string;
+    value?: string;
   };
 
   const loading = ref(false);
@@ -32,6 +32,7 @@
   const queryForm = reactive<PaymentFlowFinanceQueryDto>({
     currentPage: "1",
     pageSize: "15",
+    bizType: undefined,
     tenantName: "",
     tenantPhone: "",
     roomKeyword: "",
@@ -50,8 +51,16 @@
     { label: "待审批", value: PaymentFlowStatusEnumMeta.PENDING_APPROVAL.code, color: "amber" },
     { label: "支付成功", value: PaymentFlowStatusEnumMeta.SUCCESS.code, color: "emerald" },
     { label: "已关闭", value: PaymentFlowStatusEnumMeta.CLOSED.code, color: "slate" },
-    { label: "已作废", value: PaymentFlowStatusEnumMeta.VOIDED.code, color: "slate" },
+    { label: "已作废", value: PaymentFlowStatusEnumMeta.VOIDED.code, color: "slate" }
   ];
+
+  const bizTypeTabs = computed<PaymentFlowBizTab[]>(() => [
+    { label: "全部", value: undefined },
+    ...Object.values(PaymentFlowBizTypeEnumMeta).map(item => ({
+      label: item.label,
+      value: item.code
+    }))
+  ]);
 
   const summaryCards = computed(() => [
     {
@@ -154,6 +163,7 @@
     return {
       currentPage: String(pagination.currentPage),
       pageSize: String(pagination.pageSize),
+      bizType: queryForm.bizType,
       status: queryForm.status,
       tenantName: queryForm.tenantName?.trim() || undefined,
       tenantPhone: queryForm.tenantPhone?.trim() || undefined,
@@ -195,6 +205,12 @@
   function onSwitchStatus(status: number | null) {
     queryForm.status = status;
     onSearch();
+  }
+
+  function onSwitchBizType(bizType?: string) {
+    queryForm.bizType = bizType;
+    pagination.currentPage = 1;
+    fetchPage();
   }
 
   function handleSizeChange(val: number) {
@@ -242,7 +258,29 @@
 
   function paymentBizTypeText(value?: string) {
     if (!value) return "—";
-    return (PaymentFlowBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || PAYMENT_BIZ_TYPE_LABEL_MAP[value] || value;
+    return (PaymentFlowBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || value;
+  }
+
+  function selectedBizTypeText() {
+    return queryForm.bizType ? paymentBizTypeText(queryForm.bizType) : "全部支付流水";
+  }
+
+  function objectNamePlaceholder() {
+    if (queryForm.bizType === PaymentFlowBizTypeEnumMeta.OWNER_PAYABLE_BILL_PAYMENT.code) return "请输入业主名称";
+    if (queryForm.bizType === PaymentFlowBizTypeEnumMeta.LEASE_BILL.code) return "请输入租客名称";
+    return "租客 / 业主 / 收款对象";
+  }
+
+  function objectPhonePlaceholder() {
+    if (queryForm.bizType === PaymentFlowBizTypeEnumMeta.OWNER_PAYABLE_BILL_PAYMENT.code) return "请输入业主电话";
+    if (queryForm.bizType === PaymentFlowBizTypeEnumMeta.LEASE_BILL.code) return "请输入租客电话";
+    return "租客电话 / 业主电话";
+  }
+
+  function roomKeywordPlaceholder() {
+    if (queryForm.bizType === PaymentFlowBizTypeEnumMeta.OWNER_PAYABLE_BILL_PAYMENT.code) return "应付单 / 合同房源";
+    if (queryForm.bizType === PaymentFlowBizTypeEnumMeta.LEASE_BILL.code) return "房源 / 账单期数";
+    return "房源 / 账单 / 对象";
   }
 
   function subjectNameText(row: PaymentFlowRow) {
@@ -280,8 +318,26 @@
 
 <template>
   <div class="pf-page">
+    <div class="biz-type-card">
+      <div class="biz-type-card__title">
+        <span>业务类型</span>
+        <strong>{{ selectedBizTypeText() }}</strong>
+      </div>
+      <div class="biz-type-tabs">
+        <button
+          v-for="tab in bizTypeTabs"
+          :key="tab.value || 'all'"
+          class="biz-type-tab"
+          :class="{ 'is-active': queryForm.bizType === tab.value }"
+          @click="onSwitchBizType(tab.value)"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+    </div>
+
     <!-- ── 汇总卡片区（紧凑横向布局）── -->
-    <div class="summary-row mb-2 mt-1">
+    <div class="summary-row">
       <div v-for="card in summaryCards" :key="card.key" class="summary-card" :class="card.colorClass">
         <div class="summary-card__left">
           <span class="summary-card__label">{{ card.sublabel }}</span>
@@ -301,13 +357,13 @@
     <div class="filter-card">
       <el-form :inline="true" :model="queryForm" class="filter-form">
         <el-form-item label="对象名称">
-          <el-input v-model="queryForm.tenantName" clearable placeholder="请输入对象名称" class="filter-input" />
+          <el-input v-model="queryForm.tenantName" clearable :placeholder="objectNamePlaceholder()" class="filter-input" />
         </el-form-item>
         <el-form-item label="联系电话">
-          <el-input v-model="queryForm.tenantPhone" clearable placeholder="请输入联系电话" class="filter-input" />
+          <el-input v-model="queryForm.tenantPhone" clearable :placeholder="objectPhonePlaceholder()" class="filter-input" />
         </el-form-item>
         <el-form-item label="房源/对象">
-          <el-input v-model="queryForm.roomKeyword" clearable placeholder="房源 / 账单 / 对象" class="filter-input" />
+          <el-input v-model="queryForm.roomKeyword" clearable :placeholder="roomKeywordPlaceholder()" class="filter-input" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSearch">查询</el-button>
@@ -317,63 +373,123 @@
     </div>
 
     <!-- ── 表格区 ── -->
+    <div class="flow-table-card">
       <PureTableBar title="支付流水" :columns="columns" @refresh="fetchPage">
-      <template #buttons>
-        <div class="status-tab-group">
-          <button
-            v-for="tab in statusTabs"
-            :key="tab.value"
-            class="status-tab"
-            :class="{ 'is-active': queryForm.status === tab.value, [`tab-${tab.color}`]: true }"
-            @click="onSwitchStatus(tab.value)"
+        <template #buttons>
+          <div class="status-tab-group">
+            <button
+              v-for="tab in statusTabs"
+              :key="tab.value"
+              class="status-tab"
+              :class="{ 'is-active': queryForm.status === tab.value, [`tab-${tab.color}`]: true }"
+              @click="onSwitchStatus(tab.value)"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+        </template>
+
+        <template #default="{ size, dynamicColumns }">
+          <pure-table
+            row-key="id"
+            adaptive
+            :adaptiveConfig="{ offsetBottom: 80 }"
+            alignWhole="center"
+            table-layout="auto"
+            showOverflowTooltip
+            :loading="loading"
+            :size="size"
+            :data="list"
+            :columns="dynamicColumns"
+            :pagination="pagination"
+            class="pf-table"
+            @page-size-change="handleSizeChange"
+            @page-current-change="handleCurrentChange"
+            @row-click="handleRowClick"
           >
-            {{ tab.label }}
-          </button>
-        </div>
-      </template>
+            <!-- 状态列 -->
+            <template #status="{ row }">
+              <div class="status-badge" :class="`status-badge--${statusConfig(row.status).type}`">
+                <span class="status-badge__dot" />
+                {{ statusText(row.status) }}
+              </div>
+            </template>
 
-      <template #default="{ size, dynamicColumns }">
-        <pure-table
-          row-key="id"
-          adaptive
-          :adaptiveConfig="{ offsetBottom: 80 }"
-          alignWhole="center"
-          table-layout="auto"
-          showOverflowTooltip
-          :loading="loading"
-          :size="size"
-          :data="list"
-          :columns="dynamicColumns"
-          :pagination="pagination"
-          class="pf-table"
-          @page-size-change="handleSizeChange"
-          @page-current-change="handleCurrentChange"
-          @row-click="handleRowClick"
-        >
-          <!-- 状态列 -->
-          <template #status="{ row }">
-            <div class="status-badge" :class="`status-badge--${statusConfig(row.status).type}`">
-              <span class="status-badge__dot" />
-              {{ statusText(row.status) }}
-            </div>
-          </template>
-
-          <!-- 金额列 -->
-          <template #amount="{ row }">
-            <span class="amount-cell">{{ moneyText(row.amount) }}</span>
-          </template>
-        </pure-table>
-      </template>
-    </PureTableBar>
+            <!-- 金额列 -->
+            <template #amount="{ row }">
+              <span class="amount-cell">{{ moneyText(row.amount) }}</span>
+            </template>
+          </pure-table>
+        </template>
+      </PureTableBar>
+    </div>
   </div>
 </template>
 
 <style scoped>
   /* ── 页面容器 ── */
   .pf-page {
+    --flow-page-module-gap: 6px;
+
     display: flex;
     flex-direction: column;
-    gap: 0 !important;
+    gap: var(--flow-page-module-gap) !important;
+  }
+
+  .biz-type-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 14px;
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 10px;
+    background: var(--el-bg-color);
+  }
+
+  .biz-type-card__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .biz-type-card__title strong {
+    color: var(--el-text-color-primary);
+    font-size: 14px;
+  }
+
+  .biz-type-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .biz-type-tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 5px 14px;
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--el-text-color-regular);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .biz-type-tab:hover,
+  .biz-type-tab.is-active {
+    border-color: var(--el-color-primary);
+    background: color-mix(in srgb, var(--el-color-primary) 10%, var(--el-bg-color));
+    color: var(--el-color-primary);
   }
 
   /* ── 汇总卡片：横向紧凑 ── */
@@ -381,6 +497,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+    margin: 0;
   }
 
   .summary-card {
@@ -491,6 +608,15 @@
     border: 1px solid var(--el-border-color-light);
     border-radius: 10px;
     padding: 10px 14px 2px;
+    margin: 0;
+  }
+
+  .flow-table-card {
+    margin: 0;
+  }
+
+  .flow-table-card :deep(.mt-2) {
+    margin-top: 0 !important;
   }
 
   .filter-form {
@@ -653,6 +779,15 @@
 
   /* ── 响应式 ── */
   @media (max-width: 900px) {
+    .biz-type-card {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .biz-type-tabs {
+      justify-content: flex-start;
+    }
+
     .summary-row {
       grid-template-columns: 1fr;
     }

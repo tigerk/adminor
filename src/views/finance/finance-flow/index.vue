@@ -12,7 +12,8 @@
     FinanceFlowDirectionEnumMeta,
     FinanceFlowStatusEnumMeta,
     FinanceFlowTypeEnumMeta,
-    LeaseBillFeeTypeEnumMeta
+    LeaseBillFeeTypeEnumMeta,
+    OwnerBillingItemTypeEnumMeta
   } from "@/types";
 
   defineOptions({ name: "FinanceFlowIndex" });
@@ -25,6 +26,15 @@
     ownerPayableBillNo?: string;
     ownerPayableBillSubjectName?: string;
   };
+  type FinanceBizTab = {
+    label: string;
+    value?: string;
+  };
+  type SelectOption = {
+    label: string;
+    value: string;
+  };
+  type EnumTextMeta = Record<string, { value: string; label?: string; name?: string }>;
 
   const loading = ref(false);
   const list = ref<FinanceFlowRow[]>([]);
@@ -33,6 +43,7 @@
   const queryForm = reactive<FinanceFlowFinanceQueryDto>({
     currentPage: "1",
     pageSize: "15",
+    bizType: undefined,
     status: undefined,
     flowType: undefined,
     feeType: undefined,
@@ -53,7 +64,22 @@
   ];
 
   const flowTypeOptions = Object.values(FinanceFlowTypeEnumMeta);
-  const feeTypeOptions = Object.values(LeaseBillFeeTypeEnumMeta);
+  const bizTypeTabs = computed<FinanceBizTab[]>(() => [
+    { label: "全部", value: undefined },
+    ...Object.values(FinanceBizTypeEnumMeta).map(item => ({
+      label: item.label,
+      value: item.code
+    }))
+  ]);
+  const feeTypeOptions = computed<SelectOption[]>(() => {
+    if (queryForm.bizType === FinanceBizTypeEnumMeta.LEASE_BILL_FEE.code) {
+      return enumOptions(LeaseBillFeeTypeEnumMeta as EnumTextMeta);
+    }
+    if (queryForm.bizType === FinanceBizTypeEnumMeta.OWNER_PAYABLE_BILL_FEE.code) {
+      return enumOptions(OwnerBillingItemTypeEnumMeta as EnumTextMeta);
+    }
+    return dedupeOptions([...enumOptions(LeaseBillFeeTypeEnumMeta as EnumTextMeta), ...enumOptions(OwnerBillingItemTypeEnumMeta as EnumTextMeta)]);
+  });
 
   const summaryCards = computed(() => [
     // {
@@ -149,6 +175,7 @@
     return {
       currentPage: String(pagination.currentPage),
       pageSize: String(pagination.pageSize),
+      bizType: queryForm.bizType,
       status: queryForm.status,
       flowType: queryForm.flowType,
       feeType: queryForm.feeType,
@@ -190,6 +217,13 @@
   function onSwitchStatus(status?: number) {
     queryForm.status = status;
     onSearch();
+  }
+
+  function onSwitchBizType(bizType?: string) {
+    queryForm.bizType = bizType;
+    queryForm.feeType = undefined;
+    pagination.currentPage = 1;
+    fetchPage();
   }
 
   function handleSizeChange(val: number) {
@@ -251,7 +285,38 @@
 
   function feeTypeText(value?: string) {
     if (!value) return "—";
-    return (LeaseBillFeeTypeEnumMeta as Record<string, { label: string }>)[value]?.label || value;
+    return enumText(LeaseBillFeeTypeEnumMeta as EnumTextMeta, value) || enumText(OwnerBillingItemTypeEnumMeta as EnumTextMeta, value) || value;
+  }
+
+  function enumText(meta: EnumTextMeta, value: string) {
+    return meta[value]?.label || meta[value]?.name;
+  }
+
+  function enumOptions(meta: EnumTextMeta): SelectOption[] {
+    return Object.values(meta).map(item => ({
+      label: item.label || item.name || item.value,
+      value: item.value
+    }));
+  }
+
+  function dedupeOptions(options: SelectOption[]) {
+    const map = new Map<string, SelectOption>();
+    options.forEach(item => {
+      if (!map.has(item.value)) {
+        map.set(item.value, item);
+      }
+    });
+    return Array.from(map.values());
+  }
+
+  function selectedBizTypeText() {
+    return queryForm.bizType ? financeBizTypeText(queryForm.bizType) : "全部财务流水";
+  }
+
+  function roomKeywordPlaceholder() {
+    if (queryForm.bizType === FinanceBizTypeEnumMeta.OWNER_PAYABLE_BILL_FEE.code) return "应付单 / 合同房源";
+    if (queryForm.bizType === FinanceBizTypeEnumMeta.LEASE_BILL_FEE.code) return "房源 / 账单期数";
+    return "对象 / 房源 / 账单";
   }
 
   function businessTypeText(row: FinanceFlowRow) {
@@ -287,7 +352,25 @@
 
 <template>
   <div class="pf-page">
-    <div class="summary-row mb-2 mt-1">
+    <div class="biz-type-card">
+      <div class="biz-type-card__title">
+        <span>业务类型</span>
+        <strong>{{ selectedBizTypeText() }}</strong>
+      </div>
+      <div class="biz-type-tabs">
+        <button
+          v-for="tab in bizTypeTabs"
+          :key="tab.value || 'all'"
+          class="biz-type-tab"
+          :class="{ 'is-active': queryForm.bizType === tab.value }"
+          @click="onSwitchBizType(tab.value)"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+    </div>
+
+    <div class="summary-row">
       <div v-for="card in summaryCards" :key="card.key" class="summary-card" :class="card.colorClass">
         <div class="summary-card__left">
           <span class="summary-card__label">{{ card.sublabel }}</span>
@@ -316,7 +399,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="对象/房源">
-          <el-input v-model="queryForm.roomKeyword" clearable placeholder="对象 / 房源 / 账单" class="filter-input" />
+          <el-input v-model="queryForm.roomKeyword" clearable :placeholder="roomKeywordPlaceholder()" class="filter-input" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSearch">查询</el-button>
@@ -325,66 +408,127 @@
       </el-form>
     </div>
 
-    <PureTableBar title="财务流水" :columns="columns" @refresh="fetchPage">
-      <template #buttons>
-        <div class="status-tab-group">
-          <button
-            v-for="tab in statusTabs"
-            :key="tab.value"
-            class="status-tab"
-            :class="{ 'is-active': queryForm.status === tab.value, [`tab-${tab.color}`]: true }"
-            @click="onSwitchStatus(tab.value)"
+    <div class="flow-table-card">
+      <PureTableBar title="财务流水" :columns="columns" @refresh="fetchPage">
+        <template #buttons>
+          <div class="status-tab-group">
+            <button
+              v-for="tab in statusTabs"
+              :key="tab.value"
+              class="status-tab"
+              :class="{ 'is-active': queryForm.status === tab.value, [`tab-${tab.color}`]: true }"
+              @click="onSwitchStatus(tab.value)"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+        </template>
+
+        <template #default="{ size, dynamicColumns }">
+          <pure-table
+            row-key="id"
+            adaptive
+            :adaptiveConfig="{ offsetBottom: 80 }"
+            alignWhole="center"
+            table-layout="auto"
+            showOverflowTooltip
+            :loading="loading"
+            :size="size"
+            :data="list"
+            :columns="dynamicColumns"
+            :pagination="pagination"
+            class="pf-table"
+            @page-size-change="handleSizeChange"
+            @page-current-change="handleCurrentChange"
+            @row-click="handleRowClick"
           >
-            {{ tab.label }}
-          </button>
-        </div>
-      </template>
+            <template #status="{ row }">
+              <div class="status-badge" :class="`status-badge--${statusConfig(row.status).type}`">
+                <span class="status-badge__dot" />
+                {{ statusText(row.status) }}
+              </div>
+            </template>
 
-      <template #default="{ size, dynamicColumns }">
-        <pure-table
-          row-key="id"
-          adaptive
-          :adaptiveConfig="{ offsetBottom: 80 }"
-          alignWhole="center"
-          table-layout="auto"
-          showOverflowTooltip
-          :loading="loading"
-          :size="size"
-          :data="list"
-          :columns="dynamicColumns"
-          :pagination="pagination"
-          class="pf-table"
-          @page-size-change="handleSizeChange"
-          @page-current-change="handleCurrentChange"
-          @row-click="handleRowClick"
-        >
-          <template #status="{ row }">
-            <div class="status-badge" :class="`status-badge--${statusConfig(row.status).type}`">
-              <span class="status-badge__dot" />
-              {{ statusText(row.status) }}
-            </div>
-          </template>
-
-          <template #amount="{ row }">
-            <span class="amount-cell">{{ moneyText(row.amount) }}</span>
-          </template>
-        </pure-table>
-      </template>
-    </PureTableBar>
+            <template #amount="{ row }">
+              <span class="amount-cell">{{ moneyText(row.amount) }}</span>
+            </template>
+          </pure-table>
+        </template>
+      </PureTableBar>
+    </div>
   </div>
 </template>
 
 <style scoped>
   .pf-page {
+    --flow-page-module-gap: 6px;
+
     display: flex;
     flex-direction: column;
-    gap: 0 !important;
+    gap: var(--flow-page-module-gap) !important;
+  }
+
+  .biz-type-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 14px;
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 10px;
+    background: var(--el-bg-color);
+  }
+
+  .biz-type-card__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .biz-type-card__title strong {
+    color: var(--el-text-color-primary);
+    font-size: 14px;
+  }
+
+  .biz-type-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .biz-type-tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 5px 14px;
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--el-text-color-regular);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .biz-type-tab:hover,
+  .biz-type-tab.is-active {
+    border-color: var(--el-color-primary);
+    background: color-mix(in srgb, var(--el-color-primary) 10%, var(--el-bg-color));
+    color: var(--el-color-primary);
   }
 
   .summary-row {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+    margin: 0;
   }
 
   .summary-card {
@@ -493,6 +637,15 @@
     border: 1px solid var(--el-border-color-light);
     border-radius: 10px;
     padding: 10px 14px 2px;
+    margin: 0;
+  }
+
+  .flow-table-card {
+    margin: 0;
+  }
+
+  .flow-table-card :deep(.mt-2) {
+    margin-top: 0 !important;
   }
 
   .filter-form {
@@ -629,6 +782,15 @@
   }
 
   @media (max-width: 1280px) {
+    .biz-type-card {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .biz-type-tabs {
+      justify-content: flex-start;
+    }
+
     .summary-row {
       grid-template-columns: 1fr;
     }
