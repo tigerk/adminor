@@ -11713,7 +11713,7 @@ export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE'
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 
-export type FinanceBizTypeEnum = 'LEASE_BILL_FEE' | 'OWNER_PAYABLE_BILL_PAYMENT';
+export type FinanceBizTypeEnum = 'LEASE_BILL_FEE' | 'OWNER_PAYABLE_BILL_FEE' | 'OWNER_PAYABLE_BILL_PAYMENT';
 
 export type FinanceFlowDirectionEnum = 'IN' | 'OUT';
 

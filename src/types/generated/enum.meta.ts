@@ -412,6 +412,7 @@ export const FileTypeEnumMeta = {
 
 export const FinanceBizTypeEnumMeta = {
   LEASE_BILL_FEE: {"value":"LEASE_BILL_FEE","code":"LEASE_BILL_FEE","label":"租客账单费用项"},
+  OWNER_PAYABLE_BILL_FEE: {"value":"OWNER_PAYABLE_BILL_FEE","code":"OWNER_PAYABLE_BILL_FEE","label":"包租应付费用项"},
   OWNER_PAYABLE_BILL_PAYMENT: {"value":"OWNER_PAYABLE_BILL_PAYMENT","code":"OWNER_PAYABLE_BILL_PAYMENT","label":"包租应付付款"}
 } as const;
 
