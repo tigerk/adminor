@@ -418,6 +418,10 @@ export function useOwnerContractForm() {
       const targetDictDataId = item.dictDataId ?? item.feeType;
       if (!targetDictDataId || !otherFeeTypeOptions.value.length) return;
       for (const parent of otherFeeTypeOptions.value) {
+        if (String(parent.value) === String(targetDictDataId)) {
+          values[`shared-${index}`] = [parent.value];
+          break;
+        }
         const child = parent.children?.find((option: any) => String(option.value) === String(targetDictDataId));
         if (child) {
           values[`shared-${index}`] = [parent.value, child.value];
@@ -435,13 +439,13 @@ export function useOwnerContractForm() {
 
   function handleSettlementFeeTypeChange(value: any, house: ContractSubjectFormItem, index: number) {
     const target = house.settlementRule.settlementItemList?.[index];
-    if (!target || !Array.isArray(value) || value.length < 2) return;
+    if (!target || !Array.isArray(value) || value.length < 1) return;
     const parent = otherFeeTypeOptions.value.find((item: any) => item.value === value[0]);
-    const child = parent?.children?.find((item: any) => item.value === value[1]);
-    if (!child) return;
-    target.dictDataId = String(child.value);
+    if (!parent) return;
+    const child = value.length > 1 ? parent?.children?.find((item: any) => item.value === value[1]) : undefined;
+    target.dictDataId = child ? String(child.value) : undefined;
     target.feeType = String(parent?.value || "");
-    target.feeName = child.label;
+    target.feeName = child?.label || parent?.label || "";
     target.transferEnabled = true;
   }
 

@@ -228,6 +228,14 @@
         </el-button>
       </div>
       <div class="config-card__content">
+        <el-alert
+          v-if="sharedContractSubject.settlementRule.settlementTiming === 'TENANT_PAYMENT_REALTIME'"
+          class="settlement-fee-alert"
+          type="warning"
+          show-icon
+          :closable="false"
+          title="租客支付实时分账需要至少配置一条“收 / 租金 / 转给比例大于 0”的费用科目，管理费比例只在租金入账后扣减。"
+        />
         <div v-if="!sharedContractSubject.settlementRule.settlementItemList?.length" class="config-card__empty">暂无分账费用科目，点击右上角"添加费用科目"新增。</div>
         <template v-else>
           <div class="fee-table-wrapper">
@@ -253,7 +261,7 @@
                     <el-cascader
                       v-model="localSettlementFeeCascaderValues[`shared-${index}`]"
                       :options="otherFeeTypeOptions"
-                      :props="{ emitPath: true, checkStrictly: false }"
+                      :props="{ emitPath: true, checkStrictly: true }"
                       clearable
                       filterable
                       class="w-full"
@@ -322,3 +330,9 @@
     { immediate: true, deep: true }
   );
 </script>
+
+<style scoped>
+  .settlement-fee-alert {
+    margin-bottom: 12px;
+  }
+</style>
