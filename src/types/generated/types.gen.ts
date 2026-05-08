@@ -4158,7 +4158,7 @@ export type OwnerPayableBillPaymentVo = {
      */
     remark?: string;
     /**
-     * 付款记录状态
+     * 支付流水状态
      */
     paymentStatus?: number;
     /**
@@ -4166,7 +4166,7 @@ export type OwnerPayableBillPaymentVo = {
      */
     approvalStatus?: number;
     /**
-     * 财务流水ID
+     * 首条关联财务流水ID
      */
     financeFlowId?: string;
     /**
@@ -11709,11 +11709,11 @@ export type DeliveryHandoverTypeEnum = 'CHECK_IN' | 'CHECK_OUT';
 
 export type DeliveryStatusEnum = 'CANCELLED' | 'DRAFT' | 'COMPLETED' | 'SIGNED';
 
-export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'OWNER_CONTRACT_DOC' | 'LEASE_CONTRACT_DOC' | 'LEASE_ATTACHMENT' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'OWNER_PAYABLE_BILL_PAYMENT_VOUCHER' | 'DELIVERY_IMAGE' | 'DELIVERY_WATER_PROOF_IMAGE' | 'DELIVERY_ELECTRICITY_PROOF_IMAGE' | 'DELIVERY_GAS_PROOF_IMAGE' | 'CONTRACT_SEAL_IMAGE';
+export type FileAttachBizTypeEnum = 'USER_AVATAR' | 'HOUSE_IMAGE' | 'ROOM_IMAGE' | 'TENANT_ID_CARD_FRONT' | 'TENANT_ID_CARD_BACK' | 'TENANT_ID_CARD_IN_HAND' | 'TENANT_OTHER_IMAGE' | 'CONTRACT_FILE' | 'OWNER_CONTRACT_DOC' | 'LEASE_CONTRACT_DOC' | 'LEASE_ATTACHMENT' | 'TENANT_IMAGE' | 'BUSINESS_LICENSE' | 'TENANT_MATE_ID_CARD_FRONT' | 'TENANT_MATE_ID_CARD_BACK' | 'TENANT_MATE_ID_CARD_IN_HAND' | 'TENANT_MATE_OTHER_IMAGE' | 'OWNER_ID_CARD_FRONT' | 'OWNER_ID_CARD_BACK' | 'OWNER_ID_CARD_IN_HAND' | 'OWNER_OTHER_IMAGE' | 'OWNER_BUSINESS_LICENSE' | 'PAYMENT_FLOW_VOUCHER' | 'DELIVERY_IMAGE' | 'DELIVERY_WATER_PROOF_IMAGE' | 'DELIVERY_ELECTRICITY_PROOF_IMAGE' | 'DELIVERY_GAS_PROOF_IMAGE' | 'CONTRACT_SEAL_IMAGE';
 
 export type FileTypeEnum = 'IMAGE' | 'VIDEO' | 'PDF';
 
-export type FinanceBizTypeEnum = 'LEASE_BILL_FEE' | 'OWNER_PAYABLE_BILL_FEE' | 'OWNER_PAYABLE_BILL_PAYMENT';
+export type FinanceBizTypeEnum = 'LEASE_BILL_FEE' | 'OWNER_PAYABLE_BILL_FEE';
 
 export type FinanceFlowDirectionEnum = 'IN' | 'OUT';
 
@@ -11828,11 +11828,6 @@ export type OwnerFreeTypeEnum = 'BUILT_IN' | 'OUTSIDE';
  * 业主结算收入口径枚举
  */
 export type OwnerIncomeBasisEnum = 'RECEIVED' | 'RECEIVABLE';
-
-/**
- * 包租业主应付单付款记录状态枚举
- */
-export type OwnerPayableBillPaymentRecordStatusEnum = 'PENDING_APPROVAL' | 'SUCCESS' | 'CLOSED';
 
 /**
  * 包租业主应付单付款状态枚举

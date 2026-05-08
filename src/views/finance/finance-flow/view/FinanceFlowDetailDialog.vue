@@ -112,10 +112,6 @@
     ownerPayableBillSubjectName?: string;
   };
 
-  const FINANCE_BIZ_TYPE_LABEL_MAP: Record<string, string> = {
-    OWNER_PAYABLE_BILL_PAYMENT: "包租应付付款"
-  };
-
   const props = defineProps<{ flowId: string }>();
   const loading = ref(false);
   const detail = ref<FinanceFlowDetailRow>({});
@@ -290,7 +286,7 @@
 
   function bizTypeText(value?: string) {
     if (!value) return "—";
-    return (FinanceBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || FINANCE_BIZ_TYPE_LABEL_MAP[value] || value;
+    return (FinanceBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || value;
   }
 
   function feeTypeText(value?: string) {

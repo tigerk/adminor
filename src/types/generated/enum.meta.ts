@@ -132,7 +132,7 @@ export const ApprovalBizTypeEnumMeta = {
   TENANT_CHECKOUT: {"value":"TENANT_CHECKOUT","code":"TENANT_CHECKOUT","name":"租客退租","tableName":"lease_checkout","pkField":"id"},
   HOUSE_CREATE: {"value":"HOUSE_CREATE","code":"HOUSE_CREATE","name":"房源录入","tableName":"house","pkField":"id"},
   PAYMENT_FLOW: {"value":"PAYMENT_FLOW","code":"PAYMENT_FLOW","name":"支付流水","tableName":"payment_flow","pkField":"id"},
-  OWNER_PAYABLE_BILL_PAYMENT: {"value":"OWNER_PAYABLE_BILL_PAYMENT","code":"OWNER_PAYABLE_BILL_PAYMENT","name":"包租应付付款","tableName":"owner_payable_bill_payment","pkField":"id"}
+  OWNER_PAYABLE_BILL_PAYMENT: {"value":"OWNER_PAYABLE_BILL_PAYMENT","code":"OWNER_PAYABLE_BILL_PAYMENT","name":"包租应付付款","tableName":"payment_flow","pkField":"id"}
 } as const;
 
 export const ApprovalInstanceStatusEnumMeta = {
@@ -396,7 +396,7 @@ export const FileAttachBizTypeEnumMeta = {
   OWNER_ID_CARD_IN_HAND: {"value":"OWNER_ID_CARD_IN_HAND","bizType":"owner_id_card_in_hand"},
   OWNER_OTHER_IMAGE: {"value":"OWNER_OTHER_IMAGE","bizType":"owner_other_image"},
   OWNER_BUSINESS_LICENSE: {"value":"OWNER_BUSINESS_LICENSE","bizType":"owner_business_license"},
-  OWNER_PAYABLE_BILL_PAYMENT_VOUCHER: {"value":"OWNER_PAYABLE_BILL_PAYMENT_VOUCHER","bizType":"owner_payable_bill_payment_voucher"},
+  PAYMENT_FLOW_VOUCHER: {"value":"PAYMENT_FLOW_VOUCHER","bizType":"payment_flow_voucher"},
   DELIVERY_IMAGE: {"value":"DELIVERY_IMAGE","bizType":"delivery_image"},
   DELIVERY_WATER_PROOF_IMAGE: {"value":"DELIVERY_WATER_PROOF_IMAGE","bizType":"delivery_water_proof_image"},
   DELIVERY_ELECTRICITY_PROOF_IMAGE: {"value":"DELIVERY_ELECTRICITY_PROOF_IMAGE","bizType":"delivery_electricity_proof_image"},
@@ -412,8 +412,7 @@ export const FileTypeEnumMeta = {
 
 export const FinanceBizTypeEnumMeta = {
   LEASE_BILL_FEE: {"value":"LEASE_BILL_FEE","code":"LEASE_BILL_FEE","label":"租客账单费用项"},
-  OWNER_PAYABLE_BILL_FEE: {"value":"OWNER_PAYABLE_BILL_FEE","code":"OWNER_PAYABLE_BILL_FEE","label":"包租应付费用项"},
-  OWNER_PAYABLE_BILL_PAYMENT: {"value":"OWNER_PAYABLE_BILL_PAYMENT","code":"OWNER_PAYABLE_BILL_PAYMENT","label":"包租应付付款"}
+  OWNER_PAYABLE_BILL_FEE: {"value":"OWNER_PAYABLE_BILL_FEE","code":"OWNER_PAYABLE_BILL_FEE","label":"包租应付费用项"}
 } as const;
 
 export const FinanceFlowDirectionEnumMeta = {
@@ -627,12 +626,6 @@ export const OwnerFreeTypeEnumMeta = {
 export const OwnerIncomeBasisEnumMeta = {
   RECEIVED: {"value":"RECEIVED","code":"RECEIVED","name":"按实收"},
   RECEIVABLE: {"value":"RECEIVABLE","code":"RECEIVABLE","name":"按应收"}
-} as const;
-
-export const OwnerPayableBillPaymentRecordStatusEnumMeta = {
-  PENDING_APPROVAL: {"value":"PENDING_APPROVAL","code":0,"name":"待审核"},
-  SUCCESS: {"value":"SUCCESS","code":1,"name":"付款成功"},
-  CLOSED: {"value":"CLOSED","code":2,"name":"已关闭"}
 } as const;
 
 export const OwnerPayableBillPaymentStatusEnumMeta = {
