@@ -12,8 +12,11 @@
           </div>
         </div>
         <div class="pfd-hero__chips">
-          <span>{{ paymentBizTypeText(detail.bizType) }}</span>
-          <span v-if="detail.bizNo">业务 {{ detail.bizNo }}</span>
+          <div class="pfd-hero__chip pfd-hero__chip--biz">
+            <span class="pfd-hero__chip-label">业务类型</span>
+            <strong>{{ paymentBizTypeText(detail.bizType) }}</strong>
+          </div>
+          <div v-if="detail.bizNo" class="pfd-hero__chip">单号 {{ detail.bizNo }}</div>
         </div>
       </div>
       <div class="pfd-hero__right">
@@ -229,12 +232,14 @@
     FinanceFlowDirectionEnumMeta,
     FinanceFlowTypeEnumMeta,
     LeaseBillFeeTypeEnumMeta,
+    OwnerBillingItemTypeEnumMeta,
     PaymentFlowBizTypeEnumMeta,
     PaymentFlowChannelEnumMeta,
     PaymentFlowStatusEnumMeta
   } from "@/types/generated/enum.meta";
 
   type IdLike = string | number | null | undefined;
+  type EnumTextMeta = Record<string, { label?: string; name?: string }>;
   type PaymentFlowDetailRow = PaymentFlowFinanceItemVo & {
     billId?: IdLike;
     ownerName?: string;
@@ -408,7 +413,11 @@
 
   function feeTypeText(type?: string) {
     if (!type) return "—";
-    return (LeaseBillFeeTypeEnumMeta as Record<string, { label: string }>)[type]?.label || type;
+    return enumText(LeaseBillFeeTypeEnumMeta as EnumTextMeta, type) || enumText(OwnerBillingItemTypeEnumMeta as EnumTextMeta, type) || type;
+  }
+
+  function enumText(meta: EnumTextMeta, value: string) {
+    return meta[value]?.label || meta[value]?.name;
   }
 
   watch(
@@ -472,17 +481,44 @@
     margin-top: 8px;
   }
 
-  .pfd-hero__chips span {
+  .pfd-hero__chip {
     display: inline-flex;
     align-items: center;
+    gap: 6px;
     max-width: 100%;
-    padding: 3px 10px;
+    min-height: 26px;
+    padding: 4px 10px;
     border: 1px solid var(--el-border-color-light);
-    border-radius: 999px;
+    border-radius: 8px;
     background: var(--el-fill-color-light);
     color: var(--el-text-color-regular);
     font-size: 12px;
     line-height: 1.4;
+  }
+
+  .pfd-hero__chip--biz {
+    border-color: color-mix(in srgb, var(--el-color-primary) 38%, var(--el-border-color));
+    background: color-mix(in srgb, var(--el-color-primary) 10%, var(--el-bg-color));
+    color: var(--el-color-primary);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .pfd-hero__chip-label {
+    padding-right: 6px;
+    border-right: 1px solid color-mix(in srgb, var(--el-color-primary) 35%, transparent);
+    color: var(--el-text-color-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .pfd-hero__chip--biz strong {
+    min-width: 0;
+    color: var(--el-color-primary);
+    font-weight: 800;
+    word-break: break-word;
   }
 
   .pfd-hero__right {

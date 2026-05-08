@@ -84,7 +84,7 @@
 
   const columns: TableColumnList = [
     { label: "状态", prop: "status", minWidth: 170, align: "center", slot: "status", fixed: "left" },
-    { label: "财务流水号", prop: "flowNo", minWidth: 180 },
+    { label: "财务流水号", prop: "flowNo", minWidth: 200 },
     {
       label: "流水类型",
       prop: "flowType",
@@ -100,7 +100,7 @@
     {
       label: "业务类型",
       prop: "bizType",
-      minWidth: 120,
+      minWidth: 140,
       formatter: ({ bizType }) => financeBizTypeText(bizType)
     },
     {
@@ -125,14 +125,14 @@
     },
     {
       label: "关联账单",
-      minWidth: 150,
+      minWidth: 210,
       showOverflowTooltip: true,
       formatter: row => billText(row as FinanceFlowRow)
     },
     {
       label: "金额",
       prop: "amount",
-      minWidth: 110,
+      minWidth: 150,
       align: "right",
       slot: "amount"
     },
