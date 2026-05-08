@@ -18,9 +18,6 @@
   defineOptions({ name: "FinanceFlowIndex" });
 
   type FinanceFlowRow = FinanceFlowFinanceItemVo & {
-    sourceType?: string;
-    sourceId?: string;
-    sourceNo?: string;
     ownerId?: string;
     ownerName?: string;
     ownerPhone?: string;
@@ -34,7 +31,7 @@
   };
 
   const loading = ref(false);
-  const list = ref<FinanceFlowFinanceItemVo[]>([]);
+  const list = ref<FinanceFlowRow[]>([]);
   const summary = ref<FinanceFlowFinanceSummaryVo>({});
 
   const queryForm = reactive<FinanceFlowFinanceQueryDto>({
@@ -222,7 +219,7 @@
     });
   }
 
-  function handleRowClick(row: FinanceFlowFinanceItemVo) {
+  function handleRowClick(row: FinanceFlowRow) {
     openDetail(row.id);
   }
 
@@ -267,7 +264,7 @@
   }
 
   function businessNameText(row: FinanceFlowRow) {
-    return row.feeName || row.ownerPayableBillNo || row.bizNo || row.sourceNo || "—";
+    return row.feeName || row.ownerPayableBillNo || row.bizNo || "—";
   }
 
   function subjectText(row: FinanceFlowRow) {
@@ -278,7 +275,7 @@
     if (row.sortOrder) {
       return `第 ${row.sortOrder} 期`;
     }
-    return row.ownerPayableBillNo || row.bizNo || row.sourceNo || "—";
+    return row.ownerPayableBillNo || row.bizNo || "—";
   }
 
   function moneyText(value?: number) {
@@ -317,13 +314,13 @@
             <el-option v-for="item in flowTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="租客费用类型">
-          <el-select v-model="queryForm.feeType" clearable placeholder="请选择租客费用类型" class="filter-input">
+        <el-form-item label="费用类型">
+          <el-select v-model="queryForm.feeType" clearable placeholder="请选择费用类型" class="filter-input">
             <el-option v-for="item in feeTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="租客房源">
-          <el-input v-model="queryForm.roomKeyword" clearable placeholder="楼栋 / 门牌 / 小区" class="filter-input" />
+        <el-form-item label="对象/房源">
+          <el-input v-model="queryForm.roomKeyword" clearable placeholder="对象 / 房源 / 账单" class="filter-input" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSearch">查询</el-button>

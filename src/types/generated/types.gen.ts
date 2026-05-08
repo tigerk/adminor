@@ -5414,7 +5414,7 @@ export type PageVoPaymentFlowFinanceItemVo = {
 };
 
 /**
- * 租客支付流水列表项
+ * 支付流水列表项
  */
 export type PaymentFlowFinanceItemVo = {
     /**
@@ -5425,6 +5425,22 @@ export type PaymentFlowFinanceItemVo = {
      * 支付流水号
      */
     paymentNo?: string;
+    /**
+     * 业务类型
+     */
+    bizType?: string;
+    /**
+     * 业务单据ID
+     */
+    bizId?: string;
+    /**
+     * 业务单据编号
+     */
+    bizNo?: string;
+    /**
+     * 资金方向
+     */
+    flowDirection?: string;
     /**
      * 账单ID
      */
@@ -5450,6 +5466,30 @@ export type PaymentFlowFinanceItemVo = {
      */
     tenantPhone?: string;
     /**
+     * 业主ID
+     */
+    ownerId?: string;
+    /**
+     * 业主姓名
+     */
+    ownerName?: string;
+    /**
+     * 业主电话
+     */
+    ownerPhone?: string;
+    /**
+     * 包租应付单ID
+     */
+    ownerPayableBillId?: string;
+    /**
+     * 包租应付单号
+     */
+    ownerPayableBillNo?: string;
+    /**
+     * 包租应付单房源
+     */
+    ownerPayableBillSubjectName?: string;
+    /**
      * 房源信息
      */
     roomAddress?: string;
@@ -5461,6 +5501,10 @@ export type PaymentFlowFinanceItemVo = {
      * 付款人电话
      */
     payerPhone?: string;
+    /**
+     * 收款方名称
+     */
+    receiverName?: string;
     /**
      * 支付方式
      */
@@ -5902,17 +5946,9 @@ export type FinanceFlowFinanceItemVo = {
      */
     flowNo?: string;
     /**
-     * 来源类型
+     * 关联通用支付流水ID
      */
-    sourceType?: string;
-    /**
-     * 来源单据ID
-     */
-    sourceId?: string;
-    /**
-     * 来源单据编号
-     */
-    sourceNo?: string;
+    paymentFlowId?: string;
     /**
      * 业务类型
      */
@@ -11681,13 +11717,11 @@ export type FinanceBizTypeEnum = 'LEASE_BILL_FEE' | 'OWNER_PAYABLE_BILL_PAYMENT'
 
 export type FinanceFlowDirectionEnum = 'IN' | 'OUT';
 
-export type FinanceFlowSourceTypeEnum = 'PAYMENT_FLOW' | 'OWNER_PAYABLE_BILL_PAYMENT';
-
 export type FinanceFlowStatusEnum = 'PENDING' | 'SUCCESS' | 'VOIDED';
 
 export type FinanceFlowTypeEnum = 'RECEIVE' | 'PAY' | 'REFUND' | 'VOID' | 'ADJUST';
 
-export type PaymentFlowBizTypeEnum = 'LEASE_BILL' | 'TENANT_CHECKOUT';
+export type PaymentFlowBizTypeEnum = 'LEASE_BILL' | 'TENANT_CHECKOUT' | 'OWNER_PAYABLE_BILL_PAYMENT';
 
 export type PaymentFlowChannelEnum = 'CASH' | 'TRANSFER' | 'ALIPAY' | 'WECHAT' | 'YEEPAY' | 'POS' | 'OTHER';
 

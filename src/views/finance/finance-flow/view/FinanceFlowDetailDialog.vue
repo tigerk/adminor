@@ -11,9 +11,9 @@
           </span>
         </div>
         <div class="ffd-chip-row">
-          <span class="ffd-chip">{{ sourceTypeText(detail.sourceType) }}</span>
-          <span v-if="detail.sourceNo" class="ffd-chip">来源 {{ detail.sourceNo }}</span>
-          <span v-if="detail.bizNo" class="ffd-chip">业务 {{ detail.bizNo }}</span>
+          <span class="ffd-chip">{{ bizTypeText(detail.bizType) }}</span>
+          <span v-if="detail.bizNo" class="ffd-chip">业务单号 {{ detail.bizNo }}</span>
+          <span v-if="detail.paymentNo || detail.paymentFlowId" class="ffd-chip">支付流水 {{ detail.paymentNo || detail.paymentFlowId }}</span>
         </div>
       </div>
 
@@ -100,9 +100,8 @@
   };
 
   type FinanceFlowDetailRow = FinanceFlowFinanceItemVo & {
-    sourceType?: string;
-    sourceId?: IdLike;
-    sourceNo?: string;
+    paymentFlowId?: IdLike;
+    paymentNo?: string;
     currency?: string;
     extJson?: string;
     ownerId?: IdLike;
@@ -111,11 +110,6 @@
     ownerPayableBillId?: IdLike;
     ownerPayableBillNo?: string;
     ownerPayableBillSubjectName?: string;
-  };
-
-  const FINANCE_SOURCE_TYPE_LABEL_MAP: Record<string, string> = {
-    PAYMENT_FLOW: "租客支付流水",
-    OWNER_PAYABLE_BILL_PAYMENT: "包租应付付款"
   };
 
   const FINANCE_BIZ_TYPE_LABEL_MAP: Record<string, string> = {
@@ -154,16 +148,16 @@
     const sections: DetailSection[] = [
       {
         key: "relation",
-        title: "单据关系",
-        desc: "用于定位这笔财务流水来自哪个业务动作",
+        title: "业务关系",
+        desc: "用于定位这笔财务流水对应的业务单据和支付流水",
         wide: true,
         items: [
-          { label: "来源类型", value: sourceTypeText(row.sourceType) },
-          { label: "来源编号", value: row.sourceNo, mono: true },
-          { label: "来源ID", value: idText(row.sourceId), mono: true },
           { label: "业务类型", value: bizTypeText(row.bizType) },
           { label: "业务编号", value: row.bizNo, mono: true },
           { label: "业务ID", value: idText(row.bizId), mono: true },
+          { label: "财务流水ID", value: idText(row.id), mono: true },
+          { label: "关联支付流水ID", value: idText(row.paymentFlowId), mono: true },
+          { label: "支付流水号", value: row.paymentNo, mono: true },
           { label: "业务明细", value: businessTypeText(row) }
         ]
       },
@@ -212,7 +206,7 @@
     if (hasPaymentInfo.value) {
       sections.push({
         key: "payment",
-        title: "租客支付流水",
+        title: "支付流水",
         items: [
           { label: "支付流水号", value: row.paymentNo, mono: true },
           { label: "支付方式", value: channelText(row.paymentChannel) },
@@ -294,11 +288,6 @@
     return (FinanceFlowDirectionEnumMeta as Record<string, { label: string }>)[value]?.label || value;
   }
 
-  function sourceTypeText(value?: string) {
-    if (!value) return "—";
-    return FINANCE_SOURCE_TYPE_LABEL_MAP[value] || value;
-  }
-
   function bizTypeText(value?: string) {
     if (!value) return "—";
     return (FinanceBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || FINANCE_BIZ_TYPE_LABEL_MAP[value] || value;
@@ -315,14 +304,14 @@
   }
 
   function businessNameText(row: FinanceFlowDetailRow) {
-    return row.feeName || row.ownerPayableBillNo || row.bizNo || row.sourceNo || "—";
+    return row.feeName || row.ownerPayableBillNo || row.bizNo || "—";
   }
 
   function billText(row: FinanceFlowDetailRow) {
     if (row.sortOrder) {
       return `第 ${row.sortOrder} 期`;
     }
-    return row.ownerPayableBillNo || row.bizNo || row.sourceNo || "—";
+    return row.ownerPayableBillNo || row.bizNo || "—";
   }
 
   function billPeriodText(row: FinanceFlowDetailRow) {
@@ -339,7 +328,7 @@
   }
 
   function subjectText(row: FinanceFlowDetailRow) {
-    return row.roomAddress || row.ownerPayableBillSubjectName || "—";
+    return row.roomAddress || row.ownerPayableBillSubjectName || subjectNameText(row);
   }
 
   function channelText(value?: string) {

@@ -420,11 +420,6 @@ export const FinanceFlowDirectionEnumMeta = {
   OUT: {"value":"OUT","code":"OUT","label":"支出"}
 } as const;
 
-export const FinanceFlowSourceTypeEnumMeta = {
-  PAYMENT_FLOW: {"value":"PAYMENT_FLOW","code":"PAYMENT_FLOW","label":"租客支付流水"},
-  OWNER_PAYABLE_BILL_PAYMENT: {"value":"OWNER_PAYABLE_BILL_PAYMENT","code":"OWNER_PAYABLE_BILL_PAYMENT","label":"包租应付付款"}
-} as const;
-
 export const FinanceFlowStatusEnumMeta = {
   PENDING: {"value":"PENDING","code":0,"label":"入账中"},
   SUCCESS: {"value":"SUCCESS","code":1,"label":"已入账"},
@@ -441,7 +436,8 @@ export const FinanceFlowTypeEnumMeta = {
 
 export const PaymentFlowBizTypeEnumMeta = {
   LEASE_BILL: {"value":"LEASE_BILL","code":"LEASE_BILL","label":"租客账单"},
-  TENANT_CHECKOUT: {"value":"TENANT_CHECKOUT","code":"TENANT_CHECKOUT","label":"租客退租"}
+  TENANT_CHECKOUT: {"value":"TENANT_CHECKOUT","code":"TENANT_CHECKOUT","label":"租客退租"},
+  OWNER_PAYABLE_BILL_PAYMENT: {"value":"OWNER_PAYABLE_BILL_PAYMENT","code":"OWNER_PAYABLE_BILL_PAYMENT","label":"包租应付付款"}
 } as const;
 
 export const PaymentFlowChannelEnumMeta = {

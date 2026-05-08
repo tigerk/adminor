@@ -11,6 +11,10 @@
             {{ statusText(detail.status) }}
           </div>
         </div>
+        <div class="pfd-hero__chips">
+          <span>{{ paymentBizTypeText(detail.bizType) }}</span>
+          <span v-if="detail.bizNo">业务 {{ detail.bizNo }}</span>
+        </div>
       </div>
       <div class="pfd-hero__right">
         <el-button v-if="canVoidFlow" type="danger" round plain @click="handleVoidFlow">作废支付流水</el-button>
@@ -43,7 +47,7 @@
 
     <!-- ── 双列信息区 ── -->
     <div class="pfd-grid">
-      <!-- 租客信息 -->
+      <!-- 交易对象 -->
       <div class="info-card">
         <div class="info-card__header">
           <span class="info-card__icon tenant-icon">
@@ -51,16 +55,16 @@
               <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
             </svg>
           </span>
-          <span class="info-card__title">租客信息</span>
+          <span class="info-card__title">交易对象</span>
         </div>
         <div class="info-card__body">
           <div class="info-row">
-            <span class="info-row__key">租客姓名</span>
-            <span class="info-row__val">{{ detail.tenantName || "—" }}</span>
+            <span class="info-row__key">对象名称</span>
+            <span class="info-row__val">{{ subjectNameText(detail) }}</span>
           </div>
           <div class="info-row">
             <span class="info-row__key">联系电话</span>
-            <span class="info-row__val">{{ detail.tenantPhone || "—" }}</span>
+            <span class="info-row__val">{{ subjectPhoneText(detail) }}</span>
           </div>
           <div class="info-row">
             <span class="info-row__key">付款人</span>
@@ -70,9 +74,13 @@
             <span class="info-row__key">付款人电话</span>
             <span class="info-row__val">{{ detail.payerPhone || "—" }}</span>
           </div>
+          <div class="info-row">
+            <span class="info-row__key">收款方</span>
+            <span class="info-row__val">{{ detail.receiverName || "—" }}</span>
+          </div>
           <div class="info-row info-row--full">
-            <span class="info-row__key">房源信息</span>
-            <span class="info-row__val">{{ detail.roomAddress || "—" }}</span>
+            <span class="info-row__key">房源/对象</span>
+            <span class="info-row__val">{{ subjectText(detail) }}</span>
           </div>
         </div>
       </div>
@@ -104,7 +112,7 @@
       </div>
     </div>
 
-    <!-- ── 账单关联 ── -->
+    <!-- ── 业务关联 ── -->
     <div class="info-card">
       <div class="info-card__header">
         <span class="info-card__icon bill-icon">
@@ -116,23 +124,27 @@
             />
           </svg>
         </span>
-        <span class="info-card__title">账单关联</span>
+        <span class="info-card__title">业务关联</span>
       </div>
       <div class="info-card__body info-card__body--row">
         <div class="info-row">
-          <span class="info-row__key">所属账单</span>
-          <span class="info-row__val">{{ detail.sortOrder ? `第 ${detail.sortOrder} 期` : "—" }}</span>
+          <span class="info-row__key">业务类型</span>
+          <span class="info-row__val">{{ paymentBizTypeText(detail.bizType) }}</span>
         </div>
         <div class="info-row">
-          <span class="info-row__key">账单 ID</span>
-          <span class="info-row__val mono">{{ detail.billId || "—" }}</span>
+          <span class="info-row__key">业务单据</span>
+          <span class="info-row__val">{{ paymentBizNoText(detail) }}</span>
         </div>
         <div class="info-row">
-          <span class="info-row__key">账单周期</span>
+          <span class="info-row__key">业务 ID</span>
+          <span class="info-row__val mono">{{ paymentBizIdText(detail) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row__key">业务周期</span>
           <span class="info-row__val">{{ formatDate(detail.billStart) }} ~ {{ formatDate(detail.billEnd) }}</span>
         </div>
         <div class="info-row">
-          <span class="info-row__key">应收日期</span>
+          <span class="info-row__key">应收/应付日期</span>
           <span class="info-row__val">{{ formatDate(detail.dueDate) }}</span>
         </div>
       </div>
@@ -217,16 +229,35 @@
     FinanceFlowDirectionEnumMeta,
     FinanceFlowTypeEnumMeta,
     LeaseBillFeeTypeEnumMeta,
+    PaymentFlowBizTypeEnumMeta,
     PaymentFlowChannelEnumMeta,
     PaymentFlowStatusEnumMeta
   } from "@/types/generated/enum.meta";
+
+  type IdLike = string | number | null | undefined;
+  type PaymentFlowDetailRow = PaymentFlowFinanceItemVo & {
+    billId?: IdLike;
+    ownerName?: string;
+    ownerPhone?: string;
+    ownerPayableBillNo?: string;
+    ownerPayableBillId?: IdLike;
+    ownerPayableBillSubjectName?: string;
+    receiverName?: string;
+    bizNo?: string;
+    bizId?: IdLike;
+    bizType?: string;
+  };
+
+  const PAYMENT_BIZ_TYPE_LABEL_MAP: Record<string, string> = {
+    OWNER_PAYABLE_BILL_PAYMENT: "包租应付付款"
+  };
 
   const props = defineProps<{ flowId: string }>();
   const emit = defineEmits<{
     voided: [];
   }>();
   const loading = ref(false);
-  const detail = ref<PaymentFlowFinanceItemVo & { financeFlowList?: FinanceFlowVo[] }>({});
+  const detail = ref<PaymentFlowDetailRow & { financeFlowList?: FinanceFlowVo[] }>({});
   const canVoidFlow = ref(false);
 
   async function fetchDetail() {
@@ -273,6 +304,32 @@
     if (status === PaymentFlowStatusEnumMeta.VOIDED.code || status === PaymentFlowStatusEnumMeta.REFUNDED.code) return "danger";
     if (status === PaymentFlowStatusEnumMeta.CLOSED.code || status === PaymentFlowStatusEnumMeta.FAILED.code) return "info";
     return "warning";
+  }
+
+  function paymentBizTypeText(value?: string) {
+    if (!value) return "—";
+    return (PaymentFlowBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || PAYMENT_BIZ_TYPE_LABEL_MAP[value] || value;
+  }
+
+  function subjectNameText(row: PaymentFlowDetailRow) {
+    return row.tenantName || row.ownerName || row.receiverName || row.payerName || "—";
+  }
+
+  function subjectPhoneText(row: PaymentFlowDetailRow) {
+    return row.tenantPhone || row.ownerPhone || row.payerPhone || "—";
+  }
+
+  function subjectText(row: PaymentFlowDetailRow) {
+    return row.roomAddress || row.ownerPayableBillSubjectName || subjectNameText(row);
+  }
+
+  function paymentBizNoText(row: PaymentFlowDetailRow) {
+    if (row.sortOrder) return `第 ${row.sortOrder} 期`;
+    return row.ownerPayableBillNo || row.bizNo || "—";
+  }
+
+  function paymentBizIdText(row: PaymentFlowDetailRow) {
+    return row.billId || row.ownerPayableBillId || row.bizId || "—";
   }
 
   async function handleVoidFlow() {
@@ -393,6 +450,26 @@
     gap: 12px;
     margin-top: 4px;
     flex-wrap: wrap;
+  }
+
+  .pfd-hero__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .pfd-hero__chips span {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 3px 10px;
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 999px;
+    background: var(--el-fill-color-light);
+    color: var(--el-text-color-regular);
+    font-size: 12px;
+    line-height: 1.4;
   }
 
   .pfd-hero__right {

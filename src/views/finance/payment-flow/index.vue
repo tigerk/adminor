@@ -7,12 +7,26 @@
   import { PaymentFlowFinanceItemVo, PaymentFlowFinanceQueryDto, PaymentFlowFinanceSummaryVo } from "@/types";
   import { getFinancePaymentFlowPage, getFinancePaymentFlowSummary } from "@/api/finance/paymentFlow";
   import PaymentFlowDetailDialog from "@/views/finance/payment-flow/view/PaymentFlowDetailDialog.vue";
-  import { PaymentFlowChannelEnumMeta, PaymentFlowStatusEnumMeta } from "@/types/generated/enum.meta";
+  import { PaymentFlowBizTypeEnumMeta, PaymentFlowChannelEnumMeta, PaymentFlowStatusEnumMeta } from "@/types/generated/enum.meta";
 
   defineOptions({ name: "FinancePaymentFlow" });
 
+  type PaymentFlowRow = PaymentFlowFinanceItemVo & {
+    ownerName?: string;
+    ownerPhone?: string;
+    ownerPayableBillNo?: string;
+    ownerPayableBillSubjectName?: string;
+    receiverName?: string;
+    bizNo?: string;
+    bizType?: string;
+  };
+
+  const PAYMENT_BIZ_TYPE_LABEL_MAP: Record<string, string> = {
+    OWNER_PAYABLE_BILL_PAYMENT: "包租应付付款"
+  };
+
   const loading = ref(false);
-  const list = ref<PaymentFlowFinanceItemVo[]>([]);
+  const list = ref<PaymentFlowRow[]>([]);
   const summary = ref<PaymentFlowFinanceSummaryVo>({});
 
   const queryForm = reactive<PaymentFlowFinanceQueryDto>({
@@ -76,13 +90,36 @@
       fixed: "left"
     },
     { label: "支付流水号", prop: "paymentNo", minWidth: 185 },
-    { label: "租客姓名", prop: "tenantName", minWidth: 100 },
-    { label: "联系电话", prop: "tenantPhone", minWidth: 125 },
-    { label: "房源信息", prop: "roomAddress", minWidth: 220, showOverflowTooltip: true },
     {
-      label: "所属账单",
-      minWidth: 110,
-      formatter: ({ sortOrder }) => (sortOrder ? `第 ${sortOrder} 期` : "—")
+      label: "业务类型",
+      prop: "bizType",
+      minWidth: 140,
+      formatter: row => paymentBizTypeText((row as PaymentFlowRow).bizType)
+    },
+    {
+      label: "对象名称",
+      prop: "tenantName",
+      minWidth: 120,
+      formatter: row => subjectNameText(row as PaymentFlowRow)
+    },
+    {
+      label: "联系电话",
+      prop: "tenantPhone",
+      minWidth: 125,
+      formatter: row => subjectPhoneText(row as PaymentFlowRow)
+    },
+    {
+      label: "房源/对象",
+      prop: "roomAddress",
+      minWidth: 220,
+      showOverflowTooltip: true,
+      formatter: row => subjectText(row as PaymentFlowRow)
+    },
+    {
+      label: "业务单据",
+      minWidth: 130,
+      showOverflowTooltip: true,
+      formatter: row => paymentBizNoText(row as PaymentFlowRow)
     },
     {
       label: "支付方式",
@@ -155,7 +192,7 @@
     fetchPage();
   }
 
-  function onSwitchStatus(status: number) {
+  function onSwitchStatus(status: number | null) {
     queryForm.status = status;
     onSearch();
   }
@@ -187,7 +224,7 @@
     });
   }
 
-  function handleRowClick(row: PaymentFlowFinanceItemVo) {
+  function handleRowClick(row: PaymentFlowRow) {
     openDetail(row.id);
   }
 
@@ -201,6 +238,28 @@
     if (status === 7) return { type: "danger", dot: "bg-red-500" };
     if (status === 4) return { type: "info", dot: "bg-slate-400" };
     return { type: "warning", dot: "bg-amber-400" };
+  }
+
+  function paymentBizTypeText(value?: string) {
+    if (!value) return "—";
+    return (PaymentFlowBizTypeEnumMeta as Record<string, { label: string }>)[value]?.label || PAYMENT_BIZ_TYPE_LABEL_MAP[value] || value;
+  }
+
+  function subjectNameText(row: PaymentFlowRow) {
+    return row.tenantName || row.ownerName || row.receiverName || row.payerName || "—";
+  }
+
+  function subjectPhoneText(row: PaymentFlowRow) {
+    return row.tenantPhone || row.ownerPhone || row.payerPhone || "—";
+  }
+
+  function subjectText(row: PaymentFlowRow) {
+    return row.roomAddress || row.ownerPayableBillSubjectName || subjectNameText(row);
+  }
+
+  function paymentBizNoText(row: PaymentFlowRow) {
+    if (row.sortOrder) return `第 ${row.sortOrder} 期`;
+    return row.ownerPayableBillNo || row.bizNo || "—";
   }
 
   function channelText(channel?: string) {
@@ -241,14 +300,14 @@
     <!-- ── 查询工具栏 ── -->
     <div class="filter-card">
       <el-form :inline="true" :model="queryForm" class="filter-form">
-        <el-form-item label="租客姓名">
-          <el-input v-model="queryForm.tenantName" clearable placeholder="请输入租客姓名" class="filter-input" />
+        <el-form-item label="对象名称">
+          <el-input v-model="queryForm.tenantName" clearable placeholder="请输入对象名称" class="filter-input" />
         </el-form-item>
         <el-form-item label="联系电话">
           <el-input v-model="queryForm.tenantPhone" clearable placeholder="请输入联系电话" class="filter-input" />
         </el-form-item>
-        <el-form-item label="房源信息">
-          <el-input v-model="queryForm.roomKeyword" clearable placeholder="楼栋 / 门牌 / 小区" class="filter-input" />
+        <el-form-item label="房源/对象">
+          <el-input v-model="queryForm.roomKeyword" clearable placeholder="房源 / 账单 / 对象" class="filter-input" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSearch">查询</el-button>
@@ -258,7 +317,7 @@
     </div>
 
     <!-- ── 表格区 ── -->
-    <PureTableBar title="租客支付流水" :columns="columns" @refresh="fetchPage">
+      <PureTableBar title="支付流水" :columns="columns" @refresh="fetchPage">
       <template #buttons>
         <div class="status-tab-group">
           <button
